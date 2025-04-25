@@ -29,7 +29,7 @@ def attach_nb_methods(config: Config) -> tp.ClassWrapper:
         config (Config): A dictionary mapping target method names (str) to
             configuration dictionaries with the following keys:
 
-            * `func` (callable): Function to be wrapped, where the first argument accepts a 2-dim array.
+            * `func` (Callable): Function to be wrapped, where the first argument accepts a 2-dim array.
             * `is_reducing` (bool): Specifies if the function performs a reduction.
             * `disable_jitted` (bool): Disables the jitted option when set.
             * `disable_chunked` (bool): Disables the chunked option when set.
@@ -121,7 +121,7 @@ def attach_transform_methods(config: Config) -> tp.ClassWrapper:
         config (Config): A dictionary mapping target method names (str) to
             configuration dictionaries with the following keys:
 
-            * `transformer` (Union[Type[Transformer], Transformer]): A transformer class or instance.
+            * `transformer` (MaybeType[Transformer]): A transformer class or instance.
             * `docstring` (str): Docstring assigned to the generated method.
             * `replace_signature` (bool): Replaces the target method signature with that of the transformer.
 
@@ -144,7 +144,7 @@ def attach_transform_methods(config: Config) -> tp.ClassWrapper:
             def new_method(
                 self,
                 _target_name: str = target_name,
-                _transformer: tp.Union[tp.Type[TransformerT], TransformerT] = transformer,
+                _transformer: tp.MaybeType[TransformerT] = transformer,
                 **kwargs,
             ) -> tp.SeriesFrame:
                 if inspect.isclass(_transformer):

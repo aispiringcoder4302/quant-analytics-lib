@@ -464,8 +464,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
                 `'ohlc'` or `'candlestick'`, or a Plotly trace class.
 
                 If None, the default trace type from settings is used.
-            trace_kwargs (KwargsLike): Keyword arguments for configuring the trace constructor.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -547,9 +548,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         """Plot volume data.
 
         Args:
-            trace_kwargs (KwargsLike): Keyword arguments for configuring
-                the `plotly.graph_objects.Bar` trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Bar`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -619,11 +620,11 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
                 If None, the default trace type from settings is used.
             plot_volume (bool): Indicates whether to plot volume in a subplot below the OHLC chart.
-            ohlc_trace_kwargs (KwargsLike): Keyword arguments for configuring the OHLC trace.
-            volume_trace_kwargs (KwargsLike): Keyword arguments for configuring the volume
-                trace using `plotly.graph_objects.Bar`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-            volume_add_trace_kwargs (KwargsLike): Keyword arguments for adding the volume trace to the figure.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            volume_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Bar` for the volume data.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            volume_add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for the volume trace.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

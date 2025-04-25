@@ -132,10 +132,11 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         See https://github.com/python-telegram-bot/python-telegram-bot/wiki/ to get started.
 
         Args:
-            giphy_kwargs (KwargsLike): Configuration options for Giphy, merged with default Giphy settings.
+            giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
 
                 These settings are merged with the default configuration obtained from
                 `vectorbtpro._settings.telegram` under the giphy key.
+                See `vectorbtpro.utils.requests_.text_to_giphy_url`.
             **kwargs: Keyword arguments for configuring the updater;
                 they override settings for the bot.
 
@@ -432,6 +433,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 text (str): The text from which to generate a GIPHY URL.
                 *args: Positional arguments for `TelegramBot.send`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
+                
+                    If not provided, defaults to `TelegramBot.giphy_kwargs`.
+                    See `vectorbtpro.utils.requests_.text_to_giphy_url`.
                 **kwargs: Keyword arguments for `TelegramBot.send`.
 
             Returns:
@@ -450,6 +454,9 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 text (str): The text from which to generate a GIPHY URL.
                 *args: Positional arguments for `TelegramBot.send_to_all`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
+                
+                    If not provided, defaults to `TelegramBot.giphy_kwargs`.
+                    See `vectorbtpro.utils.requests_.text_to_giphy_url`.
                 **kwargs: Keyword arguments for `TelegramBot.send_to_all`.
 
             Returns:
@@ -624,10 +631,11 @@ else:
         See https://github.com/python-telegram-bot/python-telegram-bot/wiki/ to get started.
 
         Args:
-            giphy_kwargs (KwargsLike): Configuration options for Giphy, merged with default Giphy settings.
+            giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
 
                 These settings are merged with the default configuration obtained from
                 `vectorbtpro._settings.telegram` under the giphy key.
+                See `vectorbtpro.utils.requests_.text_to_giphy_url`.
             **kwargs: Keyword arguments for configuring the updater;
                 they override settings for the bot.
 
@@ -929,9 +937,10 @@ else:
                 chat_id (int): The target chat ID.
                 text (str): Text to convert into a GIPHY URL.
                 *args: Positional arguments for `TelegramBot.send`.
-                giphy_kwargs (KwargsLike): Keyword arguments for configuring the GIPHY request.
+                giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
 
-                    If not provided, defaults to the `giphy_kwargs` property.
+                    If not provided, defaults to `TelegramBot.giphy_kwargs`.
+                    See `vectorbtpro.utils.requests_.text_to_giphy_url`.
                 **kwargs: Keyword arguments for `TelegramBot.send`.
 
             Returns:
@@ -949,10 +958,11 @@ else:
             Args:
                 text (str): Text to convert into a GIPHY URL.
                 *args: Positional arguments for `TelegramBot.send_all`.
-                giphy_kwargs (KwargsLike): Keyword arguments for configuring the GIPHY request.
+                giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
 
-                    If not provided, defaults to the `giphy_kwargs` property.
-                **kwargs: Keyword arguments for `TelegramBot.send_all`.
+                    If not provided, defaults to `TelegramBot.giphy_kwargs`.
+                    See `vectorbtpro.utils.requests_.text_to_giphy_url`.
+                **kwargs: Keyword arguments for `TelegramBot.send_to_all`.
 
             Returns:
                 None

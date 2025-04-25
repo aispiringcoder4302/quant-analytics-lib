@@ -1873,8 +1873,9 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             *objs (MaybeSequence[PortfolioOptimizer]): (Additional) `PortfolioOptimizer` instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments for configuring
-                `vectorbtpro.base.wrapping.ArrayWrapper.row_stack`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `PortfolioOptimizer` through
                 `PortfolioOptimizer.resolve_row_stack_kwargs` and `PortfolioOptimizer.resolve_stack_kwargs`.
 
@@ -1935,8 +1936,9 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             *objs (MaybeSequence[PortfolioOptimizer]): (Additional) `PortfolioOptimizer` instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments for configuring
-                `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `PortfolioOptimizer` through
                 `PortfolioOptimizer.resolve_column_stack_kwargs` and `PortfolioOptimizer.resolve_stack_kwargs`.
 
@@ -2280,7 +2282,11 @@ class PortfolioOptimizer(Analyzable):
             index_points (Union[None, MaybeSequence[int], Param]): Manually specified index points.
             rescale_to (Union[None, Tuple[float, float], Param]): Tuple specifying rescaling bounds for allocations.
             parameterizer (Optional[MaybeType[Parameterizer]]): Parameterizer instance for detecting parameters.
+            
+                See `vectorbtpro.utils.params.Parameterizer`.
             param_search_kwargs (KwargsLike): Keyword arguments for parameter search.
+            
+                See `vectorbtpro.utils.params.Parameterizer.find_params_in_obj`.
             name_tuple_to_str (Union[None, bool, Callable]): Determines conversion of name tuples to strings.
             group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]):
                 Configuration(s) for allocation groups.
@@ -2293,7 +2299,9 @@ class PortfolioOptimizer(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             template_context (KwargsLike): Additional context for template substitution.
-            group_execute_kwargs (KwargsLike): Keyword arguments for executing allocation groups.
+            group_execute_kwargs (KwargsLike): Keyword arguments for the execution handler of allocation groups.
+            
+                See `vectorbtpro.utils.execution.execute`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute`.
@@ -2301,8 +2309,9 @@ class PortfolioOptimizer(Analyzable):
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
                 See `vectorbtpro.base.indexes.clean_index`.
-            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the output
-                `vectorbtpro.base.wrapping.ArrayWrapper`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `allocate_func`.
 
         Returns:
@@ -3336,7 +3345,11 @@ class PortfolioOptimizer(Analyzable):
             rescale_to (Union[None, Tuple[float, float], Param]): Tuple specifying the rescaling range for allocations.
             alloc_wait (Union[int, Param]): Wait parameter used during allocation processing.
             parameterizer (Optional[MaybeType[Parameterizer]]): A parameterizer class or instance for handling parameters.
+            
+                See `vectorbtpro.utils.params.Parameterizer`.
             param_search_kwargs (KwargsLike): Keyword arguments for parameter search.
+            
+                See `vectorbtpro.utils.params.Parameterizer.find_params_in_obj`.
             name_tuple_to_str (Union[None, bool, Callable]): Option or function to convert name tuples to strings.
             group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]): Group configuration(s) for optimization.
             pre_group_func (Optional[Callable]): Function to preprocess each group configuration.
@@ -3350,7 +3363,9 @@ class PortfolioOptimizer(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             template_context (KwargsLike): Additional context for template substitution.
-            group_execute_kwargs (KwargsLike): Keyword arguments for executing optimization groups.
+            group_execute_kwargs (KwargsLike): Keyword arguments for the execution handler of optimization groups.
+            
+                See `vectorbtpro.utils.execution.execute`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute`.
@@ -3358,8 +3373,9 @@ class PortfolioOptimizer(Analyzable):
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
                 See `vectorbtpro.base.indexes.clean_index`.
-            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the output
-                `vectorbtpro.base.wrapping.ArrayWrapper`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `optimize_func`.
 
         Returns:
@@ -3869,6 +3885,8 @@ class PortfolioOptimizer(Analyzable):
             dropna (Optional[str]): Strategy for removing rows, either "all" or "head".
             fill_value (Scalar): Value used to fill empty DataFrame entries.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             squeeze_groups (bool): Determines whether to squeeze group levels when appropriate.
 
         Returns:
@@ -4025,7 +4043,8 @@ class PortfolioOptimizer(Analyzable):
                 Defaults to True if there are no more than 20 rebalancing dates.
             trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each shape.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

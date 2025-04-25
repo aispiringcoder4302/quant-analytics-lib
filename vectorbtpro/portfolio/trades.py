@@ -798,6 +798,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
@@ -836,6 +838,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
@@ -878,6 +882,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
@@ -922,6 +928,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
@@ -1106,6 +1114,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.base.indexes.clean_index`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Wrapped series frame of expanding best prices.
@@ -1163,6 +1173,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.base.indexes.clean_index`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Wrapped series frame of expanding worst prices.
@@ -1435,6 +1447,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             SeriesFrame: The computed edge ratio.
@@ -1523,6 +1537,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The computed running edge ratio.
@@ -1769,16 +1785,13 @@ class Trades(Ranges):
                 if False, displays PnL.
             marker_size_range (Tuple[float, float]): Range for marker sizes.
             opacity_range (Tuple[float, float]): Range for marker opacities.
-            closed_trace_kwargs (KwargsLike): Keyword arguments for
-                the `plotly.graph_objects.Scatter` trace of closed trades.
-            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for
-                the `plotly.graph_objects.Scatter` trace of closed trades with profit.
-            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for
-                the `plotly.graph_objects.Scatter` trace of closed trades with loss.
-            open_trace_kwargs (KwargsLike): Keyword arguments for
-                the `plotly.graph_objects.Scatter` trace of open trades.
+            closed_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trades.
+            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trades with profit.
+            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trades with loss.
+            open_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for open trades.
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -1985,17 +1998,14 @@ class Trades(Ranges):
                 See `vectorbtpro.base.grouping.base.Grouper`.
             pct_scale (bool): If True, set the x-axis to use returns; otherwise, use PnL.
             field_pct_scale (bool): If True, format the y-axis values as percentages.
-            closed_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for "Closed" markers.
-            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for "Closed - Profit" markers.
-            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for "Closed - Loss" markers.
-            open_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for "Open" markers.
+            closed_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade markers.
+            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed profit markers.
+            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed loss markers.
+            open_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for open trade markers.
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
             vline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the vertical line.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -2283,7 +2293,8 @@ class Trades(Ranges):
 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
             field_pct_scale (bool): If True, sets the y-axis to a percentage scale.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
 
@@ -2526,22 +2537,17 @@ class Trades(Ranges):
             ohlc_type (Union[None, str, BaseTraceType]): Either 'OHLC', 'Candlestick', or a Plotly trace type.
 
                 Use None to apply the default type.
-            ohlc_trace_kwargs (KwargsLike): Keyword arguments for configuring the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for configuring
-                the close price line via `plotly.graph_objects.Scatter` for `Trades.close`.
-            entry_trace_kwargs (KwargsLike): Keyword arguments for configuring
-                entry markers via `plotly.graph_objects.Scatter`.
-            exit_trace_kwargs (KwargsLike): Keyword arguments for configuring
-                exit markers via `plotly.graph_objects.Scatter`.
-            exit_profit_trace_kwargs (KwargsLike): Keyword arguments for configuring
-                exit markers for profitable trades.
-            exit_loss_trace_kwargs (KwargsLike): Keyword arguments for configuring
-                exit markers for losing trades.
-            active_trace_kwargs (KwargsLike): Keyword arguments for configuring
-                active trade markers.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for entry markers.
+            exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for exit markers.
+            exit_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for profit exit markers.
+            exit_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for loss exit markers.
+            active_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for active trade markers.
             profit_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for profit zone shapes.
             loss_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for loss zone shapes.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -3018,13 +3024,11 @@ class EntryTrades(Trades):
 
                 Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for the close price trace in
-                `plotly.graph_objects.Scatter`.
-            long_entry_trace_kwargs (KwargsLike): Keyword arguments for plotting long entry markers in
-                `plotly.graph_objects.Scatter`.
-            short_entry_trace_kwargs (KwargsLike): Keyword arguments for plotting short entry markers in
-                `plotly.graph_objects.Scatter`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            long_entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for long entry markers.
+            short_entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for short entry markers.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -3307,13 +3311,11 @@ class ExitTrades(Trades):
 
                 Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for the close price trace in
-                `plotly.graph_objects.Scatter`.
-            long_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting long exit markers in
-                `plotly.graph_objects.Scatter`.
-            short_exit_trace_kwargs (KwargsLike): Keyword arguments for plotting short exit markers in
-                `plotly.graph_objects.Scatter`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            long_exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for long exit markers.
+            short_exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for short exit markers.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

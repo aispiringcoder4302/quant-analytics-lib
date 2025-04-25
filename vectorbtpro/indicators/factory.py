@@ -645,7 +645,7 @@ class IndicatorBase(Analyzable):
                 If provided as a mapping, keys should correspond to those in `in_outputs`. Accepted keys:
 
                 * `dtype`: Data type to use when creating the array with `np.empty`.
-            broadcast_named_args (KwargsLike): Named arguments to broadcast along with inputs.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
                 Arguments wrapped with `vectorbtpro.utils.template.Rep` are substituted
                 with their broadcasted values.
@@ -703,15 +703,16 @@ class IndicatorBase(Analyzable):
                 The list length must match the number of parameters.
             hide_levels (Optional[Sequence[Union[str, int]]]): List of level names or indices
                 to hide from the output.
-            build_col_kwargs (KwargsLike): Keyword arguments for the `build_columns` function.
+            build_col_kwargs (KwargsLike): Keyword arguments for `build_columns`.
             return_raw (Union[bool, str]): If set, returns raw outputs and hashed parameter tuples
                 without further post-processing.
 
                 Passing "outputs" returns only the raw outputs.
             use_raw (Optional[IFRawOutput]): If True, uses the raw results obtained previously
                 instead of executing `custom_func`.
-            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the
-                `vectorbtpro.base.wrapping.ArrayWrapper`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             seed (Optional[int]): Seed to ensure deterministic output.
             **kwargs: Keyword arguments for `custom_func`.
 
@@ -1215,7 +1216,9 @@ class IndicatorBase(Analyzable):
 
         Args:
             *objs (MaybeSequence[IndicatorBase]): (Additional) indicator instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments for row stacking of wrappers.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `IndicatorBase` through
                 `IndicatorBase.resolve_row_stack_kwargs` and `IndicatorBase.resolve_stack_kwargs`.
 
@@ -1277,8 +1280,10 @@ class IndicatorBase(Analyzable):
 
         Args:
             *objs (MaybeSequence[IndicatorBase]): (Additional) indicator instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments for column stacking of wrappers.
-            reindex_kwargs (KwargsLike): Keyword arguments for reindexing the data.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
             **kwargs: Keyword arguments for `IndicatorBase` through
                 `IndicatorBase.resolve_column_stack_kwargs` and `IndicatorBase.resolve_stack_kwargs`.
 
@@ -1672,9 +1677,9 @@ class IndicatorBase(Analyzable):
         """Iterate over columns or groups.
 
         Iterates over columns or groups based on the specified grouping criteria. When grouping is enabled via
-        `Wrapping.group_select`, groups are returned instead of individual columns. The `group_by` parameter can
-        be provided as a column name present in the wrapper, the string "all_params" for full parameter mapping,
-        "params" for only visible parameters, or as a specific parameter name.
+        `vectorbtpro.base.wrapping.Wrapping.group_select`, groups are returned instead of individual columns. 
+        The `group_by` parameter can be provided as a column name present in the wrapper, the string "all_params" 
+        for full parameter mapping, "params" for only visible parameters, or as a specific parameter name.
 
         Args:
             group_by (GroupByLike): Grouping specification.
@@ -3994,8 +3999,6 @@ Returns:
         Args:
             func_name (str): The name of the TA-Lib function to wrap.
             factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
-
-                Additional configuration for creating the indicator class.
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
@@ -4145,7 +4148,8 @@ Returns:
                 
                     If provided, selects the corresponding column from the indicator output.
                 add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
-                add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+                add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                    for example, `dict(row=1, col=1)`.
                 fig (Optional[BaseFigure]): A figure instance to update; if None, a new figure is created.
                 **kwargs: Keyword arguments for the plotting function.
     
@@ -4514,7 +4518,7 @@ Returns:
 
         Args:
             cls_name (str): The name of the target TA class.
-            factory_kwargs (KwargsLike): Keyword arguments for configuring the `IndicatorFactory`.
+            factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
@@ -4850,7 +4854,7 @@ Returns:
 
         Args:
             consensus_cls (Type): A consensus class that subclasses `technical.consensus.consensus.Consensus`.
-            factory_kwargs (KwargsLike): Keyword arguments for customizing the indicator factory.
+            factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
@@ -4953,11 +4957,10 @@ Returns:
 
             Args:
                 column (Optional[Label]): Name of the column to plot.
-                buy_trace_kwargs (KwargsLike): Keyword arguments for
-                    `plotly.graph_objects.Scatter` for the buy trace.
-                sell_trace_kwargs (KwargsLike): Keyword arguments for
-                    `plotly.graph_objects.Scatter` for the sell trace.
-                add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+                buy_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the buy line.
+                sell_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the sell line.
+                add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                    for example, `dict(row=1, col=1)`.
                 fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
                 **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -5215,7 +5218,7 @@ Returns:
             func_name (str): The name of the smartmoneyconcepts function to wrap.
             collapse (bool): Flag to collapse all nested indicators into a single configuration.
             parse_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory.parse_smc_config`.
-            factory_kwargs (KwargsLike): Keyword arguments for constructing the indicator.
+            factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:

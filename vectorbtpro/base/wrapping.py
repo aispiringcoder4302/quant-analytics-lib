@@ -378,7 +378,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             n_chunks (Union[None, int, str]): Desired number of chunks.
             chunk_len (Union[None, int, str]): Desired length of each chunk.
             chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable of chunk metadata.
-                Refer to `vectorbtpro.utils.chunking.iter_chunk_meta` for details.
+                
+                See `vectorbtpro.utils.chunking.iter_chunk_meta`.
             select (bool): Flag indicating whether to select chunks using `ArraySelector`.
             wrap (Optional[bool]): Flag to specify whether to wrap the result.
             return_chunk_meta (bool): Flag indicating whether to yield chunk metadata alongside each chunk.
@@ -431,7 +432,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             apply_func (Union[str, Callable]): Function or method name to apply to each chunk.
             *args: Positional arguments for `apply_func`.
             chunk_kwargs (KwargsLike): Keyword arguments controlling the chunking process.
-                Refer to `Wrapping.chunk` for details.
+            
+                See `HasWrapper.chunk`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute`.
@@ -1182,7 +1184,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrapper_kwargs (KwargsLike): Keyword arguments for `ArrayWrapper.replace`.
 
         Returns:
             dict: Dictionary containing:
@@ -1527,7 +1529,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             *args: Positional arguments for `ArrayWrapper.get_resampler`.
-            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            wrapper_kwargs (KwargsLike): Keyword arguments for `ArrayWrapper.replace`.
             **kwargs: Keyword arguments for `ArrayWrapper.get_resampler`.
 
         Returns:
@@ -2131,8 +2133,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         !!! info
             For default settings, see `vectorbtpro._settings.wrapping`.
 
-        !!! note
-            Refer to `ArrayWrapper.wrap` for details on the wrapping pipeline.
+        !!! info
+            See `ArrayWrapper.wrap` for details on the wrapping pipeline.
         """
         from vectorbtpro._settings import settings
 
@@ -2842,6 +2844,8 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         Args:
             *objs (MaybeSequence[Wrapping]): Wrapping instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `ArrayWrapper`.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -2864,6 +2868,8 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         Args:
             *objs (MaybeSequence[Wrapping]): Wrapping instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `ArrayWrapper`.
             **kwargs: Additional keyword arguments.
 
         Returns:

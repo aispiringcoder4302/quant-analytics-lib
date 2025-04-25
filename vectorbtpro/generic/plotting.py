@@ -164,8 +164,11 @@ class Gauge(TraceType, TraceUpdater):
 
             See the [list of available colormaps](https://matplotlib.org/tutorials/colors/colormaps.html).
         trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Indicator`.
-        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-        make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
+        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+        make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+            See `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -303,12 +306,14 @@ class Bar(TraceType, TraceUpdater):
             Must be convertible to a NumPy array and have shape (`x_labels`, `trace_names`).
         trace_names (TraceNames): Names of the traces corresponding to data columns.
         x_labels (Optional[Labels]): X-axis labels corresponding to the index in pandas.
-        trace_kwargs (KwargsLikeSequence): Keyword arguments for customizing individual
-            `plotly.graph_objects.Bar` traces.
+        trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Bar`.
 
-            If provided as a sequence, each dictionary applies to the corresponding trace.
-        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-        make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
+            Can be provided per trace as a sequence of dictionaries.
+        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+        make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+            See `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -416,9 +421,12 @@ class Scatter(TraceType, TraceUpdater):
         x_labels (Optional[Labels]): Labels for the x-axis, typically representing the index in a Pandas DataFrame.
         trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
 
-            Can be specified individually for each trace when provided as a sequence of dictionaries.
-        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-        make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
+            Can be provided per trace as a sequence of dictionaries.
+        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+        make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+            See `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         use_gl (bool): Flag to use `plotly.graph_objects.Scattergl`.
 
@@ -569,11 +577,14 @@ class Histogram(TraceType, TraceUpdater):
         to_quantile (float): Upper quantile threshold used to filter out data points.
 
             Must be in the range [0, 1].
-        trace_kwargs (KwargsLikeSequence): Keyword arguments to pass to `plotly.graph_objects.Histogram`.
+        trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Histogram`.
 
             Can be provided per trace as a sequence of dictionaries.
-        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-        make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
+        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+        make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+            See `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -774,9 +785,14 @@ class Box(TraceType, TraceUpdater):
         to_quantile (Optional[float]): Upper quantile threshold to filter out data.
 
             Data above this quantile are excluded.
-        trace_kwargs (KwargsLikeSequence): Keyword arguments for configuring individual traces.
-        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-        make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
+        trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Box`.
+        
+            Can be provided per trace as a sequence of dictionaries.
+        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+        make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+            See `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -964,9 +980,12 @@ class Heatmap(TraceType, TraceUpdater):
         y_labels (Optional[ArrayLike]): Labels for the Y-axis corresponding to dataframe index.
         is_x_category (bool): Indicates whether the X-axis represents categorical data.
         is_y_category (bool): Indicates whether the Y-axis represents categorical data.
-        trace_kwargs (KwargsLike): Keyword arguments to be passed to `plotly.graph_objects.Heatmap`.
-        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
-        make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
+        trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Heatmap`.
+        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+        make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+            See `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -1096,9 +1115,12 @@ class Volume(TraceType, TraceUpdater):
         y_labels (Optional[ArrayLike]): Labels for the Y-axis.
         z_labels (Optional[ArrayLike]): Labels for the Z-axis.
         trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Volume`.
-        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
         scene_name (str): Name of the 3D scene.
-        make_figure_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.figure.make_figure`.
+        make_figure_kwargs (KwargsLike): Keyword arguments for making the figure.
+
+            See `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

@@ -270,6 +270,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Ranges`.
 
         Returns:
@@ -513,6 +515,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: A boolean mask representing the ranges.
@@ -685,6 +689,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
@@ -724,6 +730,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
 
         Returns:
@@ -762,6 +770,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed coverage of the ranges.
@@ -843,6 +853,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
                 See `vectorbtpro.base.indexes.clean_index`.
@@ -1102,20 +1114,15 @@ class Ranges(PriceRecords):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
             ohlc_type (Union[None, str, BaseTraceType]): Either 'OHLC', 'Candlestick',
                 or a Plotly trace; pass None to use the default.
-            ohlc_trace_kwargs (KwargsLike): Keyword arguments for the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for the close data.
-            projection_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for projections.
-            lower_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for the lower band.
-            middle_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for the middle band.
-            upper_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for the upper band.
-            aux_middle_trace_kwargs (KwargsLike): Keyword arguments
-                for `plotly.graph_objects.Scatter` for the auxiliary middle band.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close data.
+            projection_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for projections.
+            lower_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower band.
+            middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the middle band.
+            upper_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper band.
+            aux_middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the auxiliary middle band.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -1373,11 +1380,11 @@ class Ranges(PriceRecords):
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the trace type for OHLC data.
 
                 Either `'OHLC'`, `'Candlestick'` or a Plotly trace. Pass None to use the default.
-            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type`.
-            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                for plotting close values.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close data.
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (BaseFigure): Figure object to which traces are added.
@@ -1564,16 +1571,14 @@ class Ranges(PriceRecords):
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
-            ohlc_trace_kwargs (KwargsLike): Keyword arguments for configuring the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for configuring
-                the `plotly.graph_objects.Scatter` trace for the close data.
-            start_trace_kwargs (KwargsLike): Keyword arguments for configuring
-                the `plotly.graph_objects.Scatter` trace for start markers.
-            end_trace_kwargs (KwargsLike): Keyword arguments for configuring
-                the `plotly.graph_objects.Scatter` trace for end markers.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close data.
+            start_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for start markers.
+            end_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for end markers.
             open_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for open zones.
             closed_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for closed zones.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -2237,6 +2242,8 @@ class PatternRanges(Ranges):
 
                 See `vectorbtpro.base.indexes.clean_index`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `PatternRanges`.
 
         Returns:
@@ -2575,13 +2582,11 @@ class PatternRanges(Ranges):
             fill_distance (bool): Controls whether to fill the space between close and pattern.
 
                 Visible for every interpolation mode except discrete.
-            pattern_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for pattern.
-            lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for lower max error.
-            upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for upper max error.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            pattern_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the pattern.
+            lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower max error.
+            upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper max error.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.

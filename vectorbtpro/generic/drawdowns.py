@@ -326,6 +326,8 @@ class Drawdowns(Ranges):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Drawdowns`.
 
         Returns:
@@ -490,6 +492,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
@@ -519,6 +523,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.min`.
 
         Returns:
@@ -581,6 +587,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
@@ -616,6 +624,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
 
         Returns:
@@ -752,6 +762,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The active drawdown.
@@ -789,6 +801,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
@@ -829,6 +843,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The active recovery.
@@ -867,6 +883,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
@@ -908,6 +926,8 @@ class Drawdowns(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
@@ -1113,24 +1133,17 @@ class Drawdowns(Ranges):
             ohlc_type (Union[None, str, BaseTraceType]): Chart type for OHLC representation.
 
                 Specify 'OHLC', 'Candlestick', or a Plotly trace; use None for the default.
-            ohlc_trace_kwargs (KwargsLike): Keyword arguments for the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                when plotting close values.
-            peak_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                when plotting peak markers.
-            valley_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                when plotting valley markers.
-            recovery_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                when plotting recovery markers.
-            active_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                when plotting active recovery markers.
-            decline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for
-                shapes representing decline zones.
-            recovery_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for
-                shapes representing recovery zones.
-            active_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for
-                shapes representing active recovery zones
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for close values.
+            peak_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for peak markers.
+            valley_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for valley markers.
+            recovery_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for recovery markers.
+            active_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for active recovery markers.
+            decline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for shapes representing decline zones.
+            recovery_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for shapes representing recovery zones.
+            active_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for shapes representing active recovery zones.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.

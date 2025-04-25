@@ -231,6 +231,8 @@ def suggest_module_path(
         section_name (str): The name of the section.
         path (Optional[PathLike]): A base directory or file path.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+            
+            See `vectorbtpro.utils.path_.check_mkdir`.
 
     Returns:
         Path: The determined file path.
@@ -264,6 +266,8 @@ def cut_and_save(
         section_name (str): The name of the section to extract.
         path (Optional[PathLike]): File path or directory in which to save the extracted section.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+            
+            See `vectorbtpro.utils.path_.check_mkdir`.
         **kwargs: Keyword arguments for `cut_from_source`.
 
     Returns:
@@ -696,7 +700,9 @@ def refine_source(
 
             If None, becomes True if `split` is True.
         dump_engine (str): Name of the dump engine.
-        dump_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.formatting.dump`.
+        dump_kwargs (KwargsLike): Keyword arguments for dumping structured data.
+        
+            See `vectorbtpro.utils.formatting.dump`.
         chunk_size (Optional[int]): Maximum token count for each chunk.
 
             If None, processes the entire source as a single chunk.
@@ -707,18 +713,19 @@ def refine_source(
         uniform_chunks (bool): Whether to each chunk should start and end at the same base level.
 
             If nested chunks (with level > base) are present, includes them only if they fit as a whole.
-        tokenize_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.knowledge.chatting.tokenize`.
+        tokenize_kwargs (KwargsLike): Keyword arguments for tokenization.
+        
+            See `vectorbtpro.utils.knowledge.chatting.tokenize`.
         show_progress (Optional[bool]): Whether to display progress during chunk processing.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
             See `vectorbtpro.utils.pbar.ProgressBar`.
-        mult_show_progress (Optional[bool]): Whether to display progress when processing multiple sources.
-
+        mult_show_progress (Optional[bool]): Whether to display progress during processing multiple sources.
+        
             If not provided, defaults to `show_progress`.
-        mult_pbar_kwargs (KwargsLike): Keyword arguments for the progress bar
-            when processing multiple sources.
+        mult_pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar for multiple sources.
 
-            These are merged with `pbar_kwargs`.
+            See `vectorbtpro.utils.pbar.ProgressBar`.
         modify (bool): Whether to update the source file with the refined code.
         copy_to_clipboard (bool): Whether to copy the refined source code to the clipboard.
 

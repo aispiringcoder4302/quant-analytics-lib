@@ -511,9 +511,6 @@ def contains_in_obj(
     Returns:
         bool: True if any element matches the criteria, False otherwise.
 
-    !!! note
-        Refer to `find_in_obj` for additional argument details.
-
     !!! info
         For default settings, see `vectorbtpro._settings.search`.
     """
@@ -770,8 +767,6 @@ def find_and_replace_in_obj(
     **kwargs,
 ) -> tp.Any:
     """Recursively find and replace matching elements within an object.
-
-    Refer to `find_in_obj` for details on arguments.
 
     Args:
         obj (Any): The object to search and replace within.

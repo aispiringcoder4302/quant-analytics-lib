@@ -195,7 +195,7 @@ class ParquetData(FileData):
                 When None, default partition columns will be removed using `ParquetData.list_partition_cols`.
             engine (Optional[str]): Parquet engine to use.
 
-                Refer to `pd.read_parquet` for details.
+                See `pd.read_parquet` for details.
             **read_kwargs: Keyword arguments for `pd.read_parquet`.
 
                 See https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html for additional arguments.

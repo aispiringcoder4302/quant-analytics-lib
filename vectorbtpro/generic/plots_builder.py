@@ -224,7 +224,9 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             hide_id_labels (bool): Whether to hide duplicate legend labels (duplicates have the same name,
                 marker style, and line style).
             group_id_labels (bool): Whether to group identical legend labels.
-            make_subplots_kwargs (KwargsLike): Keyword arguments for `plotly.subplots.make_subplots`.
+            make_subplots_kwargs (KwargsLike): Keyword arguments for creating subplots.
+            
+                See `vectorbtpro.utils.figure.make_subplots`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

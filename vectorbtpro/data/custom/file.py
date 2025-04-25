@@ -187,8 +187,8 @@ class FileData(LocalData):
             match_paths (Optional[bool]): Flag to enable or disable path matching.
             match_regex (Optional[str]): Regular expression pattern for filtering paths.
             sort_paths (Optional[bool]): Indicates if the matched paths should be sorted.
-            match_path_kwargs (KwargsLike): Positional arguments for `FileData.match_path`.
-            path_to_key_kwargs (KwargsLike): Positional arguments for `FileData.path_to_key`.
+            match_path_kwargs (KwargsLike): Keyword arguments for `FileData.match_path`.
+            path_to_key_kwargs (KwargsLike): Keyword arguments for `FileData.path_to_key`.
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.file.FileData.pull`.
 
         Returns:

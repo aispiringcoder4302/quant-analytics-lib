@@ -542,7 +542,9 @@ class DuckDBData(DBData):
             symbols (MaybeSymbols): Symbols used for filtering the data.
             catalog (Optional[str]): Catalog name for database lookup.
             schema (Optional[str]): Schema name for database lookup.
-            list_tables_kwargs: Keyword arguments for listing database tables.
+            list_tables_kwargs (KwargsLike): Keyword arguments for listing database tables.
+            
+                See `DuckDBData.list_tables`.
             read_path (Optional[PathLike]): File or directory path for reading data.
             read_format (Optional[str]): Format to use when reading data.
             connection (Union[None, str, DuckDBPyConnection]): Database connection instance or identifier.

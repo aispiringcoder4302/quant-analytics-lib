@@ -76,7 +76,7 @@ def split(
         splitter_cls (Optional[Type[Splitter]]): Class type to use for constructing or validating the splitter.
 
             Defaults to `vectorbtpro.generic.splitting.base.Splitter` if not provided.
-        splitter_kwargs (KwargsLike): Keyword arguments provided to the splitter factory method.
+        splitter_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter`.
         index (Optional[IndexLike]): Index used for splitting.
 
             If not provided, it is derived from `index_from` or by parsing the first argument in `takeable_args`.
@@ -88,8 +88,8 @@ def split(
         forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments when forwarding them.
         return_splitter (bool): If True, returns the constructed splitter instance instead of
             applying it to the function.
-        apply_kwargs (KwargsLike): Keyword arguments to pass to `Splitter.apply`.
-        **var_kwargs: Variable keyword arguments used to update `splitter_kwargs` or `apply_kwargs`.
+        apply_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.apply`.
+        **var_kwargs: Keyword arguments to be distributed between `splitter_kwargs` or `apply_kwargs`.
 
     Returns:
         Callable: The wrapper function that executes the original function using the splitter.
@@ -375,8 +375,7 @@ def cv_split(
             an error or `NoResultsException`, omitting it from the final results.
         raise_no_results (bool): If True, raises a `NoResultsException` when no valid results are obtained.
         template_context (KwargsLike): Additional context for template substitution.
-        **split_kwargs: Keyword arguments for the splitting functionality from
-            `vectorbtpro.generic.splitting.base.Splitter.apply`.
+        **split_kwargs: Keyword arguments for `split`.
 
     Returns:
         Callable: A decorated function that applies cross-validation via splitting and parameterized execution.

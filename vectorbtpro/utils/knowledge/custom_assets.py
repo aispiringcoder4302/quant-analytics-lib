@@ -173,7 +173,9 @@ class VBTAsset(KnowledgeAsset):
             chunk_size (Optional[int]): Number of bytes per download chunk.
             cache (Optional[bool]): Use a local cache directory if available.
             cache_dir (Optional[PathLike]): Directory for caching asset files (`assets_dir` in settings).
-            cache_mkdir_kwargs (KwargsLike): Keyword arguments for creating the cache directory.
+            cache_mkdir_kwargs (KwargsLike): Keyword arguments for cache directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
             clear_cache (Optional[bool]): Remove the cache directory before downloading if True.
             show_progress (Optional[bool]): Display a progress bar during asset download.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
@@ -548,10 +550,12 @@ class VBTAsset(KnowledgeAsset):
         Args:
             root_metadata_key (Optional[Key]): The root key for organizing metadata in the Markdown output.
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
-            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata,
-                passed to `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
-            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata,
-                passed to `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
@@ -653,7 +657,9 @@ class VBTAsset(KnowledgeAsset):
 
                 Otherwise, creates a temporary directory.
             cache_dir (Optional[PathLike]): Directory for saving Markdown files (`markdown_dir` in settings).
-            cache_mkdir_kwargs (KwargsLike): Keyword arguments for creating the cache directory.
+            cache_mkdir_kwargs (KwargsLike): Keyword arguments for cache directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
             clear_cache (Optional[bool]): Flag to clear any existing directory before saving new files.
             use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
             show_progress (Optional[bool]): Flag to display a progress bar during file creation.
@@ -740,13 +746,18 @@ class VBTAsset(KnowledgeAsset):
         Args:
             root_metadata_key (Optional[Key]): The root key for organizing metadata in the Markdown output.
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
-            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata,
-                passed to `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
-            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata,
-                passed to `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
             to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
-            format_html_kwargs (KwargsLike): Positional arguments for HTML formatting passed to
-                `vectorbtpro.utils.knowledge.formatting.format_html`.
+            
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+            format_html_kwargs (KwargsLike): Keyword arguments for HTML formatting.
+                
+                See `vectorbtpro.utils.knowledge.formatting.format_html`.
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Returns:
@@ -847,7 +858,9 @@ class VBTAsset(KnowledgeAsset):
         Args:
             cache (Optional[bool]): Flag to use the cache directory defined by `html_dir` in settings.
             cache_dir (Optional[PathLike]): Directory for saving HTML files when caching is enabled.
-            cache_mkdir_kwargs (KwargsLike): Keyword arguments for creating the cache directory.
+            cache_mkdir_kwargs (KwargsLike): Keyword arguments for cache directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
             clear_cache (Optional[bool]): Flag to clear any existing directory before saving.
             use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
             show_progress (Optional[bool]): Flag to display a progress bar during the save process.
@@ -1675,7 +1688,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             links (List[str]): A list of link strings to aggregate.
-            aggregate_kwargs (KwargsLike): Additional parameters for aggregation.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
             **kwargs: Keyword arguments for `replace`.
 
         Returns:
@@ -1716,7 +1729,7 @@ class PagesAsset(VBTAsset):
         Args:
             link (MaybeList[str]): A link or list of links to search for.
             aggregate (bool): Whether to aggregate redundant links.
-            aggregate_kwargs (KwargsLike): Additional parameters for aggregation.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
             incl_descendants (bool): Whether to include descendant headings.
             single_item (bool): Whether to return a single item.
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
@@ -1920,7 +1933,7 @@ class PagesAsset(VBTAsset):
                 and references respectively.
             aggregate_ancestors (Optional[bool]): Override aggregation for ancestor headings.
             aggregate_refs (Optional[bool]): Override aggregation for reference headings.
-            aggregate_kwargs (KwargsLike): Additional parameters for aggregation.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
             topo_sort (Optional[bool]): Create a topological graph from reference names and sort pages and headings.
 
                 Set `return_refname_graph` to True to also return the graph.
@@ -2305,7 +2318,7 @@ class PagesAsset(VBTAsset):
             up_aggregate_th (Union[None, int, float]): Threshold for upward aggregation of headings.
             up_aggregate_pages (Optional[bool]): Whether to aggregate pages.
             aggregate (Optional[bool]): Whether to perform aggregation on matched items.
-            aggregate_kwargs (KwargsLike): Keyword arguments for aggregation.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
             **kwargs: Keyword arguments for `PagesAsset.find_obj_mentions`.
 
         Returns:
@@ -2866,8 +2879,14 @@ class MessagesAsset(VBTAsset):
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
             clean_metadata (Optional[bool]): Whether to clean metadata.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
-            to_markdown_kwargs (KwargsLike): Keyword arguments for converting messages to markdown.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
+            
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
@@ -2904,8 +2923,9 @@ class MessagesAsset(VBTAsset):
         `vectorbtpro.utils.knowledge.custom_asset_funcs.AggBlockAssetFunc` to aggregate each group.
 
         Args:
-            collect_kwargs (KwargsLike): Keyword arguments for collecting messages;
-                if not provided, an empty dict with `uniform_groups` set to True is used.
+            collect_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.collect`.
+            
+                If not provided, an empty dict with `uniform_groups` set to True is used.
             aggregate_fields (Union[None, bool, Iterable[str]]): Fields to aggregate instead of
                 including in child metadata. True aggregates all lists; False aggregates none.
             parent_links_only (Optional[bool]): If True, excludes links from the metadata.
@@ -2913,8 +2933,14 @@ class MessagesAsset(VBTAsset):
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
             clean_metadata (Optional[bool]): Whether to clean metadata.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
-            to_markdown_kwargs (KwargsLike): Keyword arguments for converting messages to markdown.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
+            
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
@@ -2959,8 +2985,9 @@ class MessagesAsset(VBTAsset):
         `vectorbtpro.utils.knowledge.custom_asset_funcs.AggThreadAssetFunc` to aggregate each group.
 
         Args:
-            collect_kwargs (KwargsLike): Keyword arguments for collecting messages;
-                if not provided, an empty dict with `uniform_groups` set to True is used.
+            collect_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.collect`.
+            
+                If not provided, an empty dict with `uniform_groups` set to True is used.
             aggregate_fields (Union[None, bool, Iterable[str]]): Fields to aggregate instead of
                 including in child metadata. True aggregates all lists; False aggregates none.
             parent_links_only (Optional[bool]): If True, excludes links from the metadata.
@@ -2968,8 +2995,14 @@ class MessagesAsset(VBTAsset):
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
             clean_metadata (Optional[bool]): Whether to clean metadata.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
-            to_markdown_kwargs (KwargsLike): Keyword arguments for converting messages to markdown.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
+            
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
@@ -3014,8 +3047,9 @@ class MessagesAsset(VBTAsset):
         `vectorbtpro.utils.knowledge.custom_asset_funcs.AggChannelAssetFunc` to aggregate each group.
 
         Args:
-            collect_kwargs (KwargsLike): Keyword arguments for collecting messages;
-                if not provided, an empty dict with `uniform_groups` set to True is used.
+            collect_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.collect`.
+            
+                If not provided, an empty dict with `uniform_groups` set to True is used.
             aggregate_fields (Union[None, bool, Iterable[str]]): Fields to aggregate instead of
                 including in child metadata. True aggregates all lists; False aggregates none.
             parent_links_only (Optional[bool]): If True, excludes links from the metadata.
@@ -3023,8 +3057,14 @@ class MessagesAsset(VBTAsset):
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
             clean_metadata (Optional[bool]): Whether to clean metadata.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
-            to_markdown_kwargs (KwargsLike): Keyword arguments for converting messages to markdown.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
+            
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
@@ -3328,9 +3368,9 @@ def find_api(
         module (Optional[Union[str, ModuleType]]): The module to constrain the search.
         resolve (bool): Whether to resolve object references.
         pages_asset (Optional[MaybeType[PagesAsset]]): An asset for API page lookup.
-        pull_kwargs (KwargsLike): Keyword arguments for pulling pages.
+        pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
         aggregate (bool): Whether to aggregate the pages.
-        aggregate_kwargs (KwargsLike): Keyword arguments for aggregation.
+        aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         **kwargs: Keyword arguments for `PagesAsset.find_obj_api` or `PagesAsset.rank`.
 
     Returns:
@@ -3386,9 +3426,9 @@ def find_docs(
         module (Optional[Union[str, ModuleType]]): The module to constrain the documentation search.
         resolve (bool): Whether to resolve object references.
         pages_asset (Optional[MaybeType[PagesAsset]]): An asset for documentation page lookup.
-        pull_kwargs (KwargsLike): Keyword arguments for pulling documentation pages.
+        pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
         aggregate (bool): Whether to aggregate the pages.
-        aggregate_kwargs (KwargsLike): Keyword arguments for aggregation.
+        aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         **kwargs: Keyword arguments for `PagesAsset.find_obj_docs` or `PagesAsset.rank`.
 
     Returns:
@@ -3446,7 +3486,7 @@ def find_messages(
         messages_asset (Optional[MaybeType[MessagesAsset]]): The source asset to retrieve messages from.
         pull_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.pull`.
         aggregate (Union[bool, str]): Option to aggregate messages; if a string, it specifies the aggregation key.
-        aggregate_kwargs (KwargsLike): Keyword arguments for message aggregation.
+        aggregate_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
         latest_first (bool): If True, sorts messages in reverse chronological order.
         shuffle (bool): If True, shuffles the order of messages.
         **kwargs: Keyword arguments for `MessagesAsset.find_obj_messages` or `MessagesAsset.rank`.
@@ -3522,12 +3562,12 @@ def find_examples(
         return_type (Optional[str]): Specifies the format of returned content; e.g., "field", "match", or "item".
         pages_asset (Optional[MaybeType[PagesAsset]]): The asset for retrieving page-based content.
         messages_asset (Optional[MaybeType[MessagesAsset]]): The asset for retrieving message-based content.
-        pull_kwargs (KwargsLike): Keyword arguments for pulling data from assets.
+        pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull` and `MessagesAsset.pull`.
         aggregate_pages (bool): Indicates whether to aggregate the pages asset.
-        aggregate_pages_kwargs (KwargsLike): Keyword arguments for pages aggregation.
+        aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
-        aggregate_messages_kwargs (KwargsLike): Keyword arguments for messages aggregation.
+        aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
         latest_messages_first (bool): If True, orders messages from most recent to oldest.
         shuffle_messages (bool): If True, shuffles the order of messages.
         find_kwargs (KwargsLike): Keyword arguments specifically for the find method.
@@ -3669,10 +3709,10 @@ def find_assets(
         messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
         pull_kwargs (KwargsLike): Keyword arguments for pulling assets.
         aggregate_pages (bool): Whether to aggregate the pages asset.
-        aggregate_pages_kwargs (KwargsLike): Keyword arguments for aggregating the pages asset.
+        aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
-        aggregate_messages_kwargs (KwargsLike): Keyword arguments for messages aggregation.
+        aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
         latest_messages_first (bool): Whether to order messages with the latest first.
         shuffle_messages (bool): Whether to shuffle the order of messages.
         api_kwargs (KwargsLike): Keyword arguments for `find_api`.
@@ -3685,14 +3725,13 @@ def find_assets(
             It defaults to True if `combine` is True, otherwise, it defaults to False.
         minimize_pages (Optional[bool]): Whether to remove non-chat-relevant fields from the pages asset.
         minimize_messages (Optional[bool]): Whether to remove non-chat-relevant fields from the messages asset.
-        minimize_kwargs (KwargsLike): Keyword arguments for minimizing asset content.
+        minimize_kwargs (KwargsLike): Keyword arguments for `VBTAsset.minimize`.
 
             Arguments `minimize_pages_kwargs` and `minimize_messages_kwargs` are merged over `minimize_kwargs`.
-        minimize_pages_kwargs (KwargsLike): Keyword arguments for minimizing the pages asset.
-        minimize_messages_kwargs (KwargsLike): Keyword arguments for minimizing the messages asset.
-        combine (bool): Whether to combine all found assets into a single asset using
-            `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.combine`.
-        combine_kwargs (KwargsLike): Keyword arguments for combining assets.
+        minimize_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.minimize`.
+        minimize_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.minimize`.
+        combine (bool): Whether to combine all found assets into a single asset.
+        combine_kwargs (KwargsLike): Keyword arguments for `VBTAsset.combine`.
         **kwargs: Keyword arguments for asset functions (except for `find_api`
             when `obj_or_query` is an object; if both `combine` and `as_query` are True, these are
             instead passed to `VBTAsset.rank`).
@@ -3930,7 +3969,7 @@ def chat_about(
         latest_messages_first (bool): If True, sorts messages in reverse chronological order.
         shuffle_messages (Optional[bool]): If True, shuffles the order of messages.
         shuffle (Optional[bool]): If True, shuffles the combined asset.
-        find_assets_kwargs (KwargsLike): Keyword arguments for the asset search.
+        find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.chat`.
 
     Returns:
@@ -4001,12 +4040,13 @@ def search(
 
             Running the same method again will use the cached documents.
         cache_key (Optional[str]): Identifier for cached documents.
-        asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance managing asset caching.
-        asset_cache_manager_kwargs (KwargsLike): Additional parameters for configuring the asset cache manager.
+        asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of 
+            `vectorbtpro.utils.knowledge.base_assets.AssetCacheManager`.
+        asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
-        aggregate_messages_kwargs (KwargsLike): Keyword arguments for messages aggregation.
-        find_assets_kwargs (KwargsLike): Additional parameters for the `find_assets` function.
+        aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
+        find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
         display (Union[bool, int]): If True, displays the top results as static HTML pages with `VBTAsset.display`.
 
             Pass an integer to display n top results. Will return the path to the temporary file.
@@ -4134,19 +4174,20 @@ def chat(
         chat_history (ChatHistory): The current chat history.
         cache_documents (bool): Enable caching of generated text documents.
         cache_key (Optional[str]): Identifier for cached documents.
-        asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance managing asset caching.
-        asset_cache_manager_kwargs (KwargsLike): Additional parameters for configuring the asset cache manager.
+        asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of 
+            `vectorbtpro.utils.knowledge.base_assets.AssetCacheManager`.
+        asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
-        aggregate_messages_kwargs (KwargsLike): Keyword arguments for messages aggregation.
-        find_assets_kwargs (KwargsLike): Additional parameters for the `find_assets` function.
+        aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
+        find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
         rank (Optional[bool]): Enable ranking of assets.
         top_k (TopKLike): Number of top items to consider for ranking.
         min_top_k (TopKLike): Minimum number of top items for ranking.
         max_top_k (TopKLike): Maximum number of top items for ranking.
         cutoff (Optional[float]): Score cutoff for ranking.
         return_chunks (Optional[bool]): Return text chunks if True.
-        rank_kwargs (KwargsLike): Additional parameters for ranking.
+        rank_kwargs (KwargsLike): Keyword arguments for `VBTAsset.rank`.
         wrap_documents (Optional[bool]): Wrap documents during processing if True.
         silence_warnings (bool): Suppress caching warnings.
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.chat`.
@@ -4239,7 +4280,7 @@ def quick_chat(
         *args: Positional arguments for `chat`.
         min_top_k (TopKLike): Minimum number of top items for ranking.
         max_top_k (TopKLike): Maximum number of top items for ranking.
-        rank_kwargs (KwargsLike): Additional ranking parameters.
+        rank_kwargs (KwargsLike): Keyword arguments for `VBTAsset.rank`.
         **kwargs: Keyword arguments for `chat`.
 
     Returns:

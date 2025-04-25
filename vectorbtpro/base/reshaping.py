@@ -1172,6 +1172,8 @@ def broadcast(
             `vectorbtpro.base.reshaping.Default` for default values.
         return_wrapper (bool): Whether to also return the associated wrapper.
         wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         ignore_sr_names (Optional[bool]): Whether to ignore Series names during broadcasting via `broadcast_index`.
         ignore_ranges (Optional[bool]): Whether to ignore range attributes during broadcasting via `broadcast_index`.
         check_index_names (Optional[bool]): Whether to check index names during broadcasting via `broadcast_index`.
@@ -2135,7 +2137,7 @@ def broadcast_to_axis_of(
         arg1 (ArrayLike): Input value or array to be broadcast.
         arg2 (ArrayLike): Array whose specified axis determines the target length.
         axis (int): Axis index along which to broadcast `arg1`.
-        require_kwargs (KwargsLike): Keyword arguments for array requirements.
+        require_kwargs (KwargsLike): Keyword arguments for `np.require`.
 
     Returns:
         Array: The broadcasted array.

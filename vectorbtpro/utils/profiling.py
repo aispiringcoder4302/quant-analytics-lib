@@ -336,8 +336,8 @@ def with_memtracer(
 
     Args:
         func (Callable): Function to be decorated.
-        memtracer_kwargs (KwargsLike): Keyword arguments for initializing `MemTracer`.
-        usage_kwargs (KwargsLike): Keyword arguments for computing memory usage.
+        memtracer_kwargs (KwargsLike): Keyword arguments for `MemTracer`.
+        usage_kwargs (KwargsLike): Keyword arguments for `MemTracer.peak_usage` and `MemTracer.final_usage`.
         print_func (Optional[Callable]): Function used to print the memory report.
         print_format (Optional[str]): Format string for displaying memory usage.
         print_kwargs (KwargsLike): Keyword arguments for `print_func`.

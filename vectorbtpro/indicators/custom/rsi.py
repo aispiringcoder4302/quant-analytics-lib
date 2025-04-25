@@ -75,10 +75,10 @@ class _RSI(RSI):
         Args:
             column (Optional[Label]): Label of the column to plot.
             limits (Tuple[float, float]): A tuple representing the lower and upper boundaries for the RSI plot.
-            rsi_trace_kwargs (KwargsLike): Keyword arguments for
-                configuring the `RSI.rsi` trace, passed to `plotly.graph_objects.Scatter`.
+            rsi_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `RSI.rsi`.
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

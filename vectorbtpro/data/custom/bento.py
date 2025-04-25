@@ -180,10 +180,10 @@ class BentoData(RemoteData):
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             dataset (Optional[str]): Dataset identifier.
 
-                Refer to `databento.historical.client.Historical.get_range` for details.
+                See `databento.historical.client.Historical.get_range` for details.
             schema (Optional[str]): Schema identifier.
 
-                Refer to `databento.historical.client.Historical.get_range` for details.
+                See `databento.historical.client.Historical.get_range` for details.
             return_params (bool): If True, return the client and resolved parameters instead of fetched data.
 
                 Used by `BentoData.get_cost`.

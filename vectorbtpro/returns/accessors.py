@@ -110,7 +110,7 @@ dtype: object
 ## Plots
 
 !!! hint
-    Refer to `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `ReturnsAccessor.subplots`.
+    See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `ReturnsAccessor.subplots`.
 
 The `ReturnsAccessor` class provides a single subplot based on `ReturnsAccessor.plot_cumulative`:
 
@@ -237,7 +237,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Wrapper instance for array operations.
-            wrapper_kwargs (KwargsLike): Keyword arguments to configure the wrapper.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             return_values (bool): If True, return wrapped return values instead of a `ReturnsAccessor` instance.
             **kwargs: Keyword arguments for `ReturnsAccessor`.
 
@@ -327,7 +329,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Args:
             *objs (MaybeSequence[ReturnsAccessor]): Instances of `ReturnsAccessor` to be merged.
-            reindex_kwargs (KwargsLike): Parameters for reindexing after stacking.
+            reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -877,6 +879,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The mirrored returns.
@@ -921,6 +925,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The cumulative returns.
@@ -1109,6 +1115,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The final cumulative return value.
@@ -1166,6 +1174,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The wrapped array of rolling final values.
@@ -1215,6 +1225,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed total return.
@@ -1265,6 +1277,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The wrapped array of rolling total returns.
@@ -1314,6 +1328,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed annualized return.
@@ -1367,6 +1383,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The computed rolling annualized return.
@@ -1422,6 +1440,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed annualized volatility.
@@ -1486,6 +1506,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: A series of rolling annualized volatility values.
@@ -1541,6 +1563,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: A series of Calmar ratio values.
@@ -1594,6 +1618,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: A series of rolling Calmar ratio values.
@@ -1649,6 +1675,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: A series of Omega ratio values.
@@ -1712,6 +1740,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: A series of rolling Omega ratio values.
@@ -1773,6 +1803,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: A series of Sharpe ratio values.
@@ -1847,6 +1879,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: Series representing the rolling Sharpe ratio.
@@ -1904,6 +1938,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bias (bool): Indicates whether bias correction is applied for skewness and kurtosis.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: Standard deviation of the Sharpe ratio estimation.
@@ -1952,6 +1988,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bias (bool): Flag indicating whether to apply bias correction for skewness and kurtosis.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed probabilistic Sharpe ratio.
@@ -2001,6 +2039,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bias (bool): Indicates whether bias correction for skewness and kurtosis should be applied.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The deflated Sharpe ratio.
@@ -2057,6 +2097,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The calculated downside risk.
@@ -2113,6 +2155,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The rolling downside risk series wrapped with the configured wrapper.
@@ -2165,6 +2209,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The sortino ratio values wrapped with the configured wrapper.
@@ -2221,6 +2267,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The rolling sortino ratio series wrapped with the configured wrapper.
@@ -2277,6 +2325,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The information ratio series wrapped with the configured wrapper.
@@ -2341,6 +2391,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The rolling information ratio series wrapped with the configured wrapper.
@@ -2401,6 +2453,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The beta values wrapped with the configured wrapper.
@@ -2466,6 +2520,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The computed rolling beta values.
@@ -2527,6 +2583,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed alpha values.
@@ -2592,6 +2650,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The computed rolling alpha values.
@@ -2647,6 +2707,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed tail ratio values.
@@ -2699,6 +2761,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The computed rolling tail ratio values.
@@ -2745,6 +2809,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed profit factor values.
@@ -2794,6 +2860,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The rolling profit factor.
@@ -2839,6 +2907,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed Common Sense Ratio.
@@ -2888,6 +2958,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The rolling Common Sense Ratio.
@@ -2939,6 +3011,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed Value at Risk.
@@ -2998,6 +3072,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The rolling Value at Risk.
@@ -3053,6 +3129,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed Conditional Value at Risk.
@@ -3112,6 +3190,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The rolling CVaR values.
@@ -3168,6 +3248,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The computed capture ratio.
@@ -3230,6 +3312,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The rolling capture ratio values.
@@ -3289,6 +3373,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The up-market capture ratio values.
@@ -3351,6 +3437,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: The rolling up-market capture ratio values.
@@ -3410,6 +3498,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: Wrapped series or DataFrame containing the down-market capture ratio.
@@ -3472,6 +3562,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: Rolling down-market capture ratio values.
@@ -3524,6 +3616,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Series or DataFrame representing the relative drawdown.
@@ -3561,6 +3655,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: Maximum drawdown values.
@@ -3611,6 +3707,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeries: Rolling maximum drawdown values.
@@ -3954,7 +4052,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot` for the benchmark plot.
             pct_scale (bool): Use percentage scale for the y-axis.
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             fig (Optional[BaseFigure]): Figure to update.

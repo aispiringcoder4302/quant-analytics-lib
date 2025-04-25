@@ -45,9 +45,11 @@ class ToMarkdown(Configured):
     """Class for converting text to Markdown.
 
     Args:
-        remove_code_title (Optional[bool]): Whether to remove the code block title and display it above the block.
-        even_indentation (Optional[bool]): Whether to adjust leading spaces to even numbers.
-        newline_before_list (Optional[bool]): Whether to insert a newline before list items.
+        remove_code_title (Optional[bool]): Whether to remove the `title` attribute from a code block 
+            and display it above the block.
+        even_indentation (Optional[bool]): Whether a newline should be inserted before list items.
+        newline_before_list (Optional[bool]): Whether leading spaces should be adjusted to 
+            even numbers (e.g., converting 3 spaces to 4).
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
@@ -304,7 +306,7 @@ class FormatHTML(Configured):
 
     Args:
         html_template (Optional[str]): Template for HTML formatting, as a string, function, or custom template.
-        style_extras (Optional[MaybeList[str]]): Additional CSS rules for the `<style>` element.
+        style_extras (Optional[MaybeList[str]]): Extra CSS rules for the `<style>` element.
         head_extras (Optional[MaybeList[str]]): Extra HTML elements to inject into the `<head>` section.
         body_extras (Optional[MaybeList[str]]): Extra content to insert at the end of the `<body>` section.
         invert_colors (Optional[bool]): Flag to enable color inversion.
@@ -315,7 +317,7 @@ class FormatHTML(Configured):
         spinner_style (Optional[str]): CSS style for the spinner.
         spinner_body (Optional[str]): HTML or script for spinner placement.
         use_pygments (Optional[bool]): Flag to enable code highlighting with Pygments.
-        pygments_kwargs (KwargsLike): Arguments passed to `pygments.formatters.HtmlFormatter`.
+        pygments_kwargs (KwargsLike): Keyword arguments for `pygments.formatters.HtmlFormatter`.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
@@ -422,7 +424,7 @@ class FormatHTML(Configured):
 
     @property
     def html_template(self) -> CustomTemplate:
-        """HTML template used for formatting.
+        """Template for HTML formatting, as a string, function, or custom template.
 
         Returns:
             CustomTemplate: The HTML template used for formatting.
@@ -431,7 +433,7 @@ class FormatHTML(Configured):
 
     @property
     def style_extras(self) -> str:
-        """Additional CSS rules for the `<style>` element.
+        """Extra CSS rules for the `<style>` element.
 
         Returns:
             str: The string with additional CSS rules.
@@ -440,7 +442,7 @@ class FormatHTML(Configured):
 
     @property
     def head_extras(self) -> str:
-        """HTML elements to inject into the `<head>` section.
+        """Extra HTML elements to inject into the `<head>` section.
 
         Returns:
             str: The string with additional head extras.
@@ -449,7 +451,7 @@ class FormatHTML(Configured):
 
     @property
     def body_extras(self) -> str:
-        """Additional content for the `<body>` section.
+        """Extra content to insert at the end of the `<body>` section.
 
         Returns:
             str: The string with additional body extras.
@@ -458,7 +460,7 @@ class FormatHTML(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context dictionary used for template substitution.
+        """Additional context for template substitution.
 
         Returns:
             Kwargs: The dictionary with template context.
@@ -649,7 +651,7 @@ class ContentFormatter(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Template substitution context.
+        """Additional context for template substitution.
 
         Returns:
             Kwargs: A dictionary representing the template substitution context.
@@ -950,7 +952,7 @@ class IPythonMarkdownFormatter(IPythonFormatter):
 
     Args:
         *args: Positional arguments for `IPythonFormatter`.
-        to_markdown_kwargs (KwargsLike): Keyword arguments forwarded to `to_markdown`.
+        to_markdown_kwargs (KwargsLike): Keyword arguments for `to_markdown`.
         **kwargs: Keyword arguments for `IPythonFormatter`.
 
     !!! info
@@ -1004,8 +1006,8 @@ class IPythonHTMLFormatter(IPythonFormatter):
 
     Args:
         *args: Positional arguments for `IPythonFormatter`.
-        to_markdown_kwargs (KwargsLike): Keyword arguments for converting content to Markdown.
-        to_html_kwargs (KwargsLike): Keyword arguments for converting Markdown content to HTML.
+        to_markdown_kwargs (KwargsLike): Keyword arguments for `to_markdown`.
+        to_html_kwargs (KwargsLike): Keyword arguments for `to_html`.
         **kwargs: Keyword arguments for `IPythonFormatter`.
 
     !!! info
@@ -1047,7 +1049,7 @@ class IPythonHTMLFormatter(IPythonFormatter):
 
     @property
     def to_markdown_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments forwarded to `to_markdown`.
+        """Keyword arguments for `to_markdown`.
 
         Returns:
             Kwargs: The dictionary of keyword arguments for Markdown conversion.
@@ -1056,7 +1058,7 @@ class IPythonHTMLFormatter(IPythonFormatter):
 
     @property
     def to_html_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments forwarded to `to_html`.
+        """Keyword arguments for `to_html`.
 
         Returns:
             Kwargs: The dictionary of keyword arguments for HTML conversion.
@@ -1085,15 +1087,17 @@ class HTMLFileFormatter(ContentFormatter):
         refresh_page (Optional[bool]): Determines whether the HTML page should refresh.
         dir_path (Optional[PathLike]): Directory path for saving HTML files.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+            
+            See `vectorbtpro.utils.path_.check_mkdir`.
         temp_files (Optional[bool]): Indicates if HTML content is saved as temporary files.
         file_prefix_len (Optional[int]): Number of characters for the truncated title prefix.
         file_suffix_len (Optional[int]): Number of characters for the random hash suffix.
         auto_scroll (Optional[bool]): Enables automatic scrolling during refreshing.
         show_spinner (Optional[bool]): Enables a spinner display during refreshing.
         open_browser (Optional[bool]): Opens the default browser.
-        to_markdown_kwargs (KwargsLike): Keyword arguments for converting content to Markdown.
-        to_html_kwargs (KwargsLike): Keyword arguments for converting Markdown to HTML.
-        format_html_kwargs (KwargsLike): Keyword arguments for HTML formatting.
+        to_markdown_kwargs (KwargsLike): Keyword arguments for `to_markdown`.
+        to_html_kwargs (KwargsLike): Keyword arguments for `to_html`.
+        format_html_kwargs (KwargsLike): Keyword arguments for `format_html`.
         **kwargs: Keyword arguments for `ContentFormatter`.
 
     !!! info
@@ -1199,7 +1203,7 @@ class HTMLFileFormatter(ContentFormatter):
 
     @property
     def page_title(self) -> str:
-        """HTML page title.
+        """Title of the HTML page.
 
         Returns:
             str: The title text for the HTML page.
@@ -1217,7 +1221,7 @@ class HTMLFileFormatter(ContentFormatter):
 
     @property
     def dir_path(self) -> tp.Optional[tp.Path]:
-        """Directory path where HTML files are saved.
+        """Directory path for saving HTML files.
 
         Returns:
             Optional[Path]: The directory path where the HTML files are stored, or None if not set.
@@ -1227,6 +1231,8 @@ class HTMLFileFormatter(ContentFormatter):
     @property
     def mkdir_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for directory creation.
+            
+        See `vectorbtpro.utils.path_.check_mkdir`.
 
         Returns:
             Kwargs: A dictionary of keyword arguments used by the directory creation function.
@@ -1289,7 +1295,7 @@ class HTMLFileFormatter(ContentFormatter):
 
     @property
     def to_markdown_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to the to_markdown function.
+        """Keyword arguments passed to the `to_markdown` function.
 
         Returns:
             Kwargs: A dictionary containing settings for the Markdown conversion.
@@ -1298,7 +1304,7 @@ class HTMLFileFormatter(ContentFormatter):
 
     @property
     def to_html_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to the to_html function.
+        """Keyword arguments passed to the `to_html` function.
 
         Returns:
             Kwargs: A dictionary containing settings for the HTML conversion.
@@ -1307,7 +1313,7 @@ class HTMLFileFormatter(ContentFormatter):
 
     @property
     def format_html_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to the format_html function.
+        """Keyword arguments passed to the `format_html` function.
 
         Returns:
             Kwargs: A dictionary of keyword arguments used during HTML formatting.

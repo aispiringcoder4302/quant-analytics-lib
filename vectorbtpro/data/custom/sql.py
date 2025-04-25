@@ -713,6 +713,8 @@ class SQLData(DBData):
             symbols (Union[MaybeSymbols]): Mapping of symbols associated with the database tables.
             schema (Optional[str]): Database schema name for table identification.
             list_tables_kwargs (KwargsLike): Keyword arguments for listing database tables.
+            
+                See `SQLData.list_tables`.
             engine (Union[None, str, Engine]): Identifier or object for the database engine.
             engine_name (Optional[str]): Name used to reference the database engine.
             engine_config (KwargsLike): Additional configuration parameters for the engine.

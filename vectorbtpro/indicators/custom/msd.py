@@ -69,9 +69,9 @@ class _MSD(MSD):
 
         Args:
             column (Optional[Label]): The name of the column to plot.
-            msd_trace_kwargs (KwargsLike): Keyword arguments for styling
-                the `plotly.graph_objects.Scatter` trace representing `MSD.msd`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            msd_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MSD.msd`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

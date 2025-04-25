@@ -558,7 +558,9 @@ class MappedArray(Analyzable):
 
         Args:
             *objs (MaybeSequence[MappedArray]): (Additional) `MappedArray` instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments for `ArrayWrapper.row_stack`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `MappedArray` through
                 `MappedArray.resolve_row_stack_kwargs` and `MappedArray.resolve_stack_kwargs`.
 
@@ -665,8 +667,9 @@ class MappedArray(Analyzable):
         Args:
             *objs (MaybeSequence[MappedArray]): (Additional) `MappedArray` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            get_indexer_kwargs (KwargsLike): Keyword arguments for `pd.Index.get_indexer`
-                for index translation.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            get_indexer_kwargs (KwargsLike): Keyword arguments for `pd.Index.get_indexer`.
             **kwargs: Keyword arguments for `MappedArray` through
                 `MappedArray.resolve_column_stack_kwargs` and `MappedArray.resolve_stack_kwargs`.
 
@@ -1269,7 +1272,9 @@ class MappedArray(Analyzable):
         Args:
             mapping (Union[None, bool, MappingLike]): Mapping configuration;
                 if None or True, the instance's mapping is used.
-            mapping_kwargs (KwargsLike): Keyword arguments for configuring the mapping conversion.
+            mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
+            
+                See `vectorbtpro.utils.mapping.apply_mapping`.
             **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
@@ -1520,6 +1525,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeriesFrame: The reduced output wrapped in an appropriate structure.
@@ -1627,6 +1634,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -1680,6 +1689,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -1731,6 +1742,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -1773,6 +1786,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -1815,6 +1830,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -1857,6 +1874,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -1901,6 +1920,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -1954,6 +1975,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -1997,6 +2020,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -2039,6 +2064,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -2087,6 +2114,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `MappedArray.reduce`.
 
         Returns:
@@ -2142,6 +2171,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: Series with the count of values per column or group.
@@ -2202,6 +2233,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
         Returns:
@@ -2350,6 +2383,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: A Series or DataFrame representing the coverage map.
@@ -2406,7 +2441,9 @@ class MappedArray(Analyzable):
                 Otherwise, positional conflicts raise a warning and only the latest value is retained.
             fill_value (float): Value used for positions with no data.
             mapping (Union[None, bool, MappingLike]): Mapping configuration for processing.
-            mapping_kwargs (KwargsLike): Keyword arguments for mapping.
+            mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
+            
+                See `vectorbtpro.utils.mapping.apply_mapping`.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2417,6 +2454,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             silence_warnings (bool): Whether to suppress warnings about index conflicts.
 
         Returns:
@@ -2518,6 +2557,8 @@ class MappedArray(Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: A wrapped mask array as a Series or DataFrame.

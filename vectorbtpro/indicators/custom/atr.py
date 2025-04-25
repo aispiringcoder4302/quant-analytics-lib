@@ -70,9 +70,10 @@ class _ATR(ATR):
 
         Args:
             column (Optional[Label]): Name of the column to plot.
-            tr_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` used to plot `ATR.tr`.
-            atr_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` used to plot `ATR.atr`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            tr_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ATR.tr`.
+            atr_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ATR.atr`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

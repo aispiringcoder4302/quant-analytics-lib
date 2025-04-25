@@ -440,7 +440,7 @@ def mean_labels_1d_nb(
         window (FlexArray1dLike): Window length(s) used for calculating the future average.
         wtype (FlexArray1dLike): Weighting type(s) for averaging.
 
-            Refer to `vectorbtpro.generic.enums.WType` for available options.
+            See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Number(s) of periods to wait before applying the window.
         minp (Optional[int]): Minimum number of valid observations required.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -481,7 +481,7 @@ def mean_labels_nb(
         window (FlexArray1dLike): Window length(s) for computing the future average.
         wtype (FlexArray1dLike): Weighting type(s) for averaging.
 
-            Refer to `vectorbtpro.generic.enums.WType` for available options.
+            See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Number(s) of periods to wait before applying the window.
         minp (Optional[int]): Minimum number of valid observations required.
         adjust (bool): Flag indicating whether to adjust weights.

@@ -284,7 +284,9 @@ class SerialEngine(ExecutionEngine):
 
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
-        """Configuration keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
+        """Keyword arguments for configuring the progress bar.
+
+        See `vectorbtpro.utils.pbar.ProgressBar`.
 
         Returns:
             Kwargs: Keyword arguments for the progress bar.
@@ -385,7 +387,7 @@ class ThreadPoolEngine(ExecutionEngine):
     """Class for executing functions using `ThreadPoolExecutor` from `concurrent.futures`.
 
     Args:
-        init_kwargs (KwargsLike): Keyword arguments for initializing `ThreadPoolExecutor`.
+        init_kwargs (KwargsLike): Keyword arguments for `ThreadPoolExecutor`.
         timeout (Optional[int]): Timeout for waiting on task results.
         hide_inner_progress (Optional[bool]): Indicates whether inner progress bars are hidden.
         **kwargs: Keyword arguments for `ExecutionEngine`.
@@ -468,7 +470,7 @@ class ProcessPoolEngine(ExecutionEngine):
     """Class for executing functions using `ProcessPoolExecutor` from `concurrent.futures`.
 
     Args:
-        init_kwargs (KwargsLike): Keyword arguments for initializing `ProcessPoolExecutor`.
+        init_kwargs (KwargsLike): Keyword arguments for `ProcessPoolExecutor`.
         timeout (Optional[int]): Timeout for waiting on task results.
         hide_inner_progress (Optional[bool]): Indicates whether inner progress bars are hidden.
         **kwargs: Keyword arguments for `ExecutionEngine`.
@@ -667,7 +669,9 @@ class PathosEngine(ExecutionEngine):
 
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for initializing `vectorbtpro.utils.pbar.ProgressBar`.
+        """Keyword arguments for configuring the progress bar.
+
+        See `vectorbtpro.utils.pbar.ProgressBar`.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -1234,39 +1238,79 @@ class Executor(Configured):
     Args:
         engine (Optional[ExecutionEngineLike]): Execution engine.
         engine_config (KwargsLike): Configuration for the execution engine.
-        min_size (Optional[int]): Minimum size of the input data.
-        n_chunks (Union[None, int, str]): Number of chunks to split the data into.
-        chunk_len (Union[None, int, str]): Length of each chunk.
-        chunk_meta (Optional[Iterable[ChunkMeta]]): Metadata for each chunk.
-        distribute (Optional[str]): Distribution strategy for tasks and chunks.
-        warmup (Optional[bool]): Flag indicating if the engine should be warmed up.
-        in_chunk_order (Optional[bool]): Flag indicating if results should be in chunk order.
-        cache_chunks (Optional[bool]): Flag indicating if chunks should be cached.
-        chunk_cache_dir (Optional[PathLike]): Directory for caching chunks.
-        chunk_cache_save_kwargs (KwargsLike): Keyword arguments for saving cached chunks.
-        chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading cached chunks.
-        pre_clear_chunk_cache (Optional[bool]): Flag indicating if the chunk cache should be cleared before execution.
-        post_clear_chunk_cache (Optional[bool]): Flag indicating if the chunk cache should be cleared after execution.
-        release_chunk_cache (Optional[bool]): Flag indicating if the chunk cache should be released.
-        chunk_clear_cache (Union[None, bool, int]): Flag indicating if the chunk cache should be cleared.
-        chunk_collect_garbage (Union[None, bool, int]): Flag indicating if garbage collection should be performed.
-        chunk_delay (Optional[float]): Delay between processing chunks.
-        pre_execute_func (Optional[Callable]): Function to be called before executing tasks.
-        pre_execute_kwargs (KwargsLike): Keyword arguments for the pre-execute function.
-        pre_chunk_func (Optional[Callable]): Function to be called before processing each chunk.
-        pre_chunk_kwargs (KwargsLike): Keyword arguments for the pre-chunk function.
-        post_chunk_func (Optional[Callable]): Function to be called after processing each chunk.
-        post_chunk_kwargs (KwargsLike): Keyword arguments for the post-chunk function.
-        post_execute_func (Optional[Callable]): Function to be called after executing all tasks.
-        post_execute_kwargs (KwargsLike): Keyword arguments for the post-execute function.
-        post_execute_on_sorted (Optional[bool]): Flag indicating if the post-execute function should be called
-            after sorting the results.
-        filter_results (Optional[bool]): Flag indicating if results should be filtered.
-        raise_no_results (Optional[bool]): Flag indicating if an exception should be raised when no results are found.
-        merge_func (Optional[MergeFuncLike]): Function to merge results.
-        merge_kwargs (KwargsLike): Keyword arguments for the merge function.
+        min_size (Optional[int]): Minimum chunk size used by `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        n_chunks (Union[None, int, str]): Specification for the number of chunks as defined in 
+            `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        chunk_len (Union[None, int, str]): Chunk length specification as defined in 
+            `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        chunk_meta (Optional[Iterable[ChunkMeta]]): Metadata for chunks as defined in 
+            `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        distribute (Optional[str]): Distribution mode.
+
+            * "tasks": Distributes tasks within each chunk.
+            * "chunks": Distributes chunks.
+        warmup (Optional[bool]): Flag indicating whether to execute the first task 
+            as a warmup before distribution.
+
+            This is useful for engines that require a warmup run to optimize performance.
+        in_chunk_order (Optional[bool]): Flag that determines whether results are returned 
+            in the order specified by `chunk_meta`.
+
+            Otherwise, results follow the order of `tasks`.
+        cache_chunks (Optional[bool]): Flag indicating whether chunks should be cached.
+        chunk_cache_dir (Optional[PathLike]): Directory for storing chunk cache files.
+        chunk_cache_save_kwargs (KwargsLike): Keyword arguments for saving chunk cache.
+            
+            See `vectorbtpro.utils.pickling.save`.
+        chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading chunk cache.
+        
+            See `vectorbtpro.utils.pickling.load`.
+        pre_clear_chunk_cache (Optional[bool]): Flag indicating if the chunk cache directory should 
+            be removed before execution.
+        post_clear_chunk_cache (Optional[bool]): Flag indicating if the chunk cache directory should 
+            be removed after execution.
+        release_chunk_cache (Optional[bool]): Flag that replaces the chunk cache with dummy objects 
+            after execution and loads the full cache after all chunks complete.
+        chunk_clear_cache (Union[None, bool, int]): Boolean or integer specifying if the global cache should 
+            be cleared after each chunk or every n chunks.
+        chunk_collect_garbage (Union[None, bool, int]): Boolean or integer specifying if garbage collection should 
+            be performed after each chunk or every n chunks.
+        chunk_delay (Optional[float]): Optional float specifying the delay in seconds after processing each chunk.
+        pre_execute_func (Optional[Callable]): Callable to be executed before processing all tasks.
+        pre_execute_kwargs (KwargsLike): Keyword arguments for `pre_execute_func`.
+        pre_chunk_func (Optional[Callable]): Callable executed before processing each chunk.
+
+            If the callable returns a value other than None, its return value is appended to
+            the results and the chunk is skipped.
+        pre_chunk_kwargs (KwargsLike): Keyword arguments for `pre_chunk_func`.
+        post_chunk_func (Optional[Callable]): Callable executed after processing each chunk.
+
+            If it returns None, the existing chunk results are retained; otherwise, its return
+            value replaces them.
+        post_chunk_kwargs (KwargsLike): Keyword arguments for `post_chunk_func`.
+        post_execute_func (Optional[Callable]): Callable executed after processing all tasks.
+
+            If it returns None, the default results are preserved; otherwise, its return value replaces them.
+        post_execute_kwargs (KwargsLike): Keyword arguments for `post_execute_func`.
+        post_execute_on_sorted (Optional[bool]): Flag indicating whether `post_execute_func` should 
+            be invoked after sorting call indices.
+        filter_results (Optional[bool]): Flag determining if results equal to `NoResult` should 
+            be filtered out.
+        raise_no_results (Optional[bool]): Flag indicating if a `NoResultsException` should 
+            be raised when no results are obtained.
+
+            This flag applies only when `filter_results` is True and is forwarded to the merging
+            function if pre-configured.
+        merge_func (MergeFuncLike): Function to merge the results.
+        
+            See `vectorbtpro.utils.merging.MergeFunc`.
+        merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
         template_context (KwargsLike): Additional context for template substitution.
-        show_progress (Optional[bool]): Flag indicating if a progress bar should be shown.
+        show_progress (Optional[bool]): Flag that determines whether to display a progress bar 
+            when iterating over chunks.
+
+            If `engine` accepts `show_progress` and the key is absent in `engine_config`,
+            it is forwarded to the engine.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
             See `vectorbtpro.utils.pbar.ProgressBar`.
@@ -1310,7 +1354,7 @@ class Executor(Configured):
         post_execute_on_sorted: tp.Optional[bool] = None,
         filter_results: tp.Optional[bool] = None,
         raise_no_results: tp.Optional[bool] = None,
-        merge_func: tp.Optional[tp.MergeFuncLike] = None,
+        merge_func: tp.MergeFuncLike = None,
         merge_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         show_progress: tp.Optional[bool] = None,
@@ -1610,7 +1654,7 @@ class Executor(Configured):
 
     @property
     def warmup(self) -> bool:
-        """Boolean flag indicating whether to execute the first task as a warmup before distribution.
+        """Flag indicating whether to execute the first task as a warmup before distribution.
 
         This is useful for engines that require a warmup run to optimize performance.
 
@@ -1621,7 +1665,7 @@ class Executor(Configured):
 
     @property
     def in_chunk_order(self) -> bool:
-        """Boolean flag that determines whether results are returned in the order specified by `chunk_meta`.
+        """Flag that determines whether results are returned in the order specified by `chunk_meta`.
 
         Otherwise, results follow the order of `tasks`.
 
@@ -1632,7 +1676,7 @@ class Executor(Configured):
 
     @property
     def cache_chunks(self) -> bool:
-        """Boolean flag indicating whether chunks should be cached.
+        """Flag indicating whether chunks should be cached.
 
         Returns:
             bool: True if chunks are cached, False otherwise.
@@ -1650,7 +1694,7 @@ class Executor(Configured):
 
     @property
     def chunk_cache_save_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments forwarded to `vectorbtpro.utils.pickling.save` during chunk caching.
+        """Keyword arguments for `vectorbtpro.utils.pickling.save` during chunk caching.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -1659,7 +1703,7 @@ class Executor(Configured):
 
     @property
     def chunk_cache_load_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments forwarded to `vectorbtpro.utils.pickling.load` during chunk caching.
+        """Keyword arguments for `vectorbtpro.utils.pickling.load` during chunk caching.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -1668,7 +1712,7 @@ class Executor(Configured):
 
     @property
     def pre_clear_chunk_cache(self) -> bool:
-        """Boolean flag indicating if the chunk cache directory should be removed before execution.
+        """Flag indicating if the chunk cache directory should be removed before execution.
 
         Returns:
             bool: True if the chunk cache directory is removed before execution, False otherwise.
@@ -1677,7 +1721,7 @@ class Executor(Configured):
 
     @property
     def post_clear_chunk_cache(self) -> bool:
-        """Boolean flag indicating if the chunk cache directory should be removed after execution.
+        """Flag indicating if the chunk cache directory should be removed after execution.
 
         Returns:
             bool: True if the chunk cache directory should be removed after execution, False otherwise.
@@ -1686,7 +1730,7 @@ class Executor(Configured):
 
     @property
     def release_chunk_cache(self) -> bool:
-        """Boolean flag that replaces the chunk cache with dummy objects after execution and loads
+        """Flag that replaces the chunk cache with dummy objects after execution and loads
         the full cache after all chunks complete.
 
         Returns:
@@ -1734,7 +1778,7 @@ class Executor(Configured):
 
     @property
     def pre_execute_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments forwarded to `Executor.pre_execute_func`.
+        """Keyword arguments for `Executor.pre_execute_func`.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -1755,7 +1799,7 @@ class Executor(Configured):
 
     @property
     def pre_chunk_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments forwarded to `Executor.pre_chunk_func`.
+        """Keyword arguments for `Executor.pre_chunk_func`.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -1776,7 +1820,7 @@ class Executor(Configured):
 
     @property
     def post_chunk_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments forwarded to `Executor.post_chunk_func`.
+        """Keyword arguments for `Executor.post_chunk_func`.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -1796,7 +1840,7 @@ class Executor(Configured):
 
     @property
     def post_execute_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments forwarded to `Executor.post_execute_func`.
+        """Keyword arguments for `Executor.post_execute_func`.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -1805,7 +1849,7 @@ class Executor(Configured):
 
     @property
     def post_execute_on_sorted(self) -> bool:
-        """Boolean flag indicating whether `Executor.post_execute_func` should be invoked
+        """Flag indicating whether `Executor.post_execute_func` should be invoked
         after sorting call indices.
 
         Returns:
@@ -1815,7 +1859,7 @@ class Executor(Configured):
 
     @property
     def filter_results(self) -> bool:
-        """Boolean flag determining if results equal to `NoResult` should be filtered out.
+        """Flag determining if results equal to `NoResult` should be filtered out.
 
         Returns:
             bool: True if results are filtered, False otherwise.
@@ -1824,7 +1868,7 @@ class Executor(Configured):
 
     @property
     def raise_no_results(self) -> bool:
-        """Boolean flag indicating if a `NoResultsException` should be raised when no results are obtained.
+        """Flag indicating if a `NoResultsException` should be raised when no results are obtained.
 
         This flag applies only when `Executor.filter_results` is True and is forwarded to the merging
         function if pre-configured.
@@ -1836,7 +1880,9 @@ class Executor(Configured):
 
     @property
     def merge_func(self) -> tp.Optional[tp.MergeFuncLike]:
-        """Callable for merging results, resolved using `vectorbtpro.base.merging.resolve_merge_func`.
+        """Function to merge the results.
+        
+        See `vectorbtpro.utils.merging.MergeFunc`.
 
         Returns:
             Optional[MergeFuncLike]: A callable for merging results; None if not set.
@@ -1845,7 +1891,7 @@ class Executor(Configured):
 
     @property
     def merge_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments forwarded to the merging function.
+        """Keyword arguments for `Executor.merge_func`.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -1854,7 +1900,7 @@ class Executor(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Dictionary representing the context for template substitution.
+        """Additional context for template substitution.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -1863,7 +1909,7 @@ class Executor(Configured):
 
     @property
     def show_progress(self) -> bool:
-        """Boolean flag that determines whether to display a progress bar when iterating over chunks.
+        """Flag that determines whether to display a progress bar when iterating over chunks.
 
         If `Executor.engine` accepts `show_progress` and the key is absent in `engine_config`,
         it is forwarded to the engine.
@@ -1875,7 +1921,9 @@ class Executor(Configured):
 
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments forwarded to `vectorbtpro.utils.pbar.ProgressBar`.
+        """Keyword arguments for configuring the progress bar.
+
+        See `vectorbtpro.utils.pbar.ProgressBar`.
 
         Returns:
             Kwargs: Configuration keyword arguments.
@@ -2230,7 +2278,9 @@ class Executor(Configured):
             call_indices (List[int]): Indices corresponding to the calls within the chunk.
             cache_chunks (bool): Flag indicating whether chunk caching is enabled.
             chunk_cache_dir (Optional[PathLike]): Directory for cached chunks; required if caching is enabled.
-            chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading chunk cache data.
+            chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading chunk cache.
+            
+                See `vectorbtpro.utils.pickling.load`.
             release_chunk_cache (bool): If True, release the chunk cache by substituting dummy data after loading.
             pre_chunk_func (Optional[Callable]): Function to be invoked before processing the chunk.
             pre_chunk_kwargs (KwargsLike): Keyword arguments for `pre_chunk_func`.
@@ -2335,7 +2385,9 @@ class Executor(Configured):
             cache_chunks (bool): Flag indicating whether chunk caching is enabled.
             chunk_cache_dir (Optional[PathLike]): Directory for saving or loading cached chunks;
                 required if caching is enabled.
-            chunk_cache_save_kwargs (KwargsLike): Keyword arguments for saving the chunk cache.
+            chunk_cache_save_kwargs (KwargsLike): Keyword arguments for saving chunk cache.
+            
+                See `vectorbtpro.utils.pickling.save`.
             release_chunk_cache (bool): If True, release the chunk cache by substituting dummy data after saving.
             chunk_clear_cache (Union[bool, int]): Determines whether to clear the cache immediately or
                 after a specified number of chunks.
@@ -2424,7 +2476,9 @@ class Executor(Configured):
             results (ExecResults): The initial execution results.
             cache_chunks (bool): Flag indicating whether chunk caching is enabled.
             chunk_cache_dir (Optional[PathLike]): Directory for cached chunks; required if caching is enabled.
-            chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading cached chunks.
+            chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading chunk cache.
+            
+                See `vectorbtpro.utils.pickling.load`.
             post_clear_chunk_cache (bool): If True, clear the chunk cache directory after loading cached results.
             release_chunk_cache (bool): If True, release cached chunk data by replacing with dummy values.
             post_execute_func (Optional[Callable]): Function to post-process the overall execution results.
@@ -2481,7 +2535,7 @@ class Executor(Configured):
         keys: tp.Optional[tp.IndexLike] = None,
         filter_results: bool = False,
         raise_no_results: bool = True,
-        merge_func: tp.Optional[tp.MergeFuncLike] = None,
+        merge_func: tp.MergeFuncLike = None,
         merge_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
     ) -> tp.Union[tp.ExecResults, tp.MergeResult]:
@@ -2492,8 +2546,10 @@ class Executor(Configured):
             keys (Optional[IndexLike]): Index or keys associated with the results.
             filter_results (bool): Indicates whether to filter out results with no output.
             raise_no_results (bool): Specifies whether to raise an exception if no results remain after filtering.
-            merge_func (Optional[MergeFuncLike]): Function used to merge the results.
-            merge_kwargs (KwargsLike): Keyword arguments for merging.
+            merge_func (MergeFuncLike): Function to merge the results.
+        
+                See `vectorbtpro.utils.merging.MergeFunc`.
+            merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
             template_context (KwargsLike): Additional context for template substitution.
 
         Returns:

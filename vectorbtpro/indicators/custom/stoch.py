@@ -101,14 +101,12 @@ class _STOCH(STOCH):
         Args:
             column (Optional[Label]): The name of the column to select for plotting.
             limits (Tuple[float, float]): Lower and upper y-axis limits for the filled range.
-            fast_k_trace_kwargs (KwargsLike): Keyword arguments for
-                the `plotly.graph_objects.Scatter` trace of `STOCH.fast_k`.
-            slow_k_trace_kwargs (KwargsLike): Keyword arguments for
-                the `plotly.graph_objects.Scatter` trace of `STOCH.slow_k`.
-            slow_d_trace_kwargs (KwargsLike): Keyword arguments for
-                the `plotly.graph_objects.Scatter` trace of `STOCH.slow_d`.
+            fast_k_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `STOCH.fast_k`.
+            slow_k_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `STOCH.slow_k`.
+            slow_d_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `STOCH.slow_d`.
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

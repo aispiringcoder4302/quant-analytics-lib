@@ -388,6 +388,8 @@ def save_bytes(
         bytes_ (bytes): The byte stream to write.
         path (PathLike): The destination file path.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+            
+            See `vectorbtpro.utils.path_.check_mkdir`.
         compression (CompressionLike): The compression algorithm to use.
         compress_kwargs (KwargsLike): Keyword arguments for compression.
 
@@ -464,6 +466,8 @@ def save(
 
             If a directory is provided, the file name is derived from the object's class name.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+            
+            See `vectorbtpro.utils.path_.check_mkdir`.
         compression (CompressionLike): The compression algorithm to use.
         compress_kwargs (KwargsLike): Keyword arguments for compression.
         **kwargs: Keyword arguments for `dumps`.
@@ -769,7 +773,7 @@ class Pickleable(Base):
                 If `get_id_from_class` returns None, will pickle the definition.
             nested (bool): Flag indicating whether to represent sub-dictionaries as individual sections.
             to_dict (bool): Flag to treat objects as dictionaries during encoding.
-            parser_kwargs (KwargsLike): Keyword arguments for initializing the configuration parser.
+            parser_kwargs (KwargsLike): Keyword arguments for `configparser.RawConfigParser`.
             **kwargs: Keyword arguments for `Pickleable.encode_config_node`.
 
         Returns:
@@ -948,7 +952,7 @@ class Pickleable(Base):
                 using a DAG constructed with `graphlib`.
             use_class_ids (bool): Replace class identifiers prefixed with `@` with corresponding classes.
             code_context (KwargsLike): A context dictionary used during execution of Python code.
-            parser_kwargs (KwargsLike): Keyword arguments for configuring the parser.
+            parser_kwargs (KwargsLike): Keyword arguments for `configparser.RawConfigParser`.
             check_type (bool): Check types during decoding.
             **kwargs: Keyword arguments for `Pickleable.decode_config_node`.
 
@@ -1400,6 +1404,8 @@ class Pickleable(Base):
             file_format (Optional[str]): Format used for serialization.
             compression (CompressionLike): Compression method if applicable.
             mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
             **kwargs: Keyword arguments for `Pickleable.dumps` for pickle extensions
                 and `Pickleable.encode_config` for config extensions.
 

@@ -796,6 +796,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
             apply_func (Union[str, Callable]): Function or method name to apply to each chunk.
             *args: Positional arguments for `apply_func`.
             chunk_kwargs (KwargsLike): Keyword arguments for the chunking process.
+
+                See `BaseIDXAccessor.chunk`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute`.
@@ -1028,7 +1030,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             *objs (MaybeTuple[BaseAccessor]): Accessor instances to be stacked.
-            reindex_kwargs (KwargsLike): Keyword arguments for reindexing.
+            reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -1058,6 +1060,8 @@ class BaseAccessor(Wrapping):
         Args:
             *objs (MaybeSequence[BaseAccessor]): (Additional) accessor instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `BaseAccessor` through
                 `BaseAccessor.resolve_row_stack_kwargs` and `BaseAccessor.resolve_stack_kwargs`.
 
@@ -1107,7 +1111,9 @@ class BaseAccessor(Wrapping):
         Args:
             *objs (MaybeSequence[BaseAccessor]): (Additional) accessor instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            reindex_kwargs (KwargsLike): Keyword arguments for reindexing columns.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
             **kwargs: Keyword arguments for `BaseAccessor` through
                 `BaseAccessor.resolve_column_stack_kwargs` and `BaseAccessor.resolve_stack_kwargs`.
 
@@ -1566,6 +1572,8 @@ class BaseAccessor(Wrapping):
             keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
             axis (int): Axis along which to tile the data (1 for columns, 0 for index).
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The tiled data, with updated index or columns if `keys` is provided.
@@ -1604,6 +1612,8 @@ class BaseAccessor(Wrapping):
             keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
             axis (int): Axis along which to repeat the data (1 for columns, 0 for index).
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The repeated data, with updated index or columns if `keys` is provided.
@@ -1632,6 +1642,8 @@ class BaseAccessor(Wrapping):
 
                 Must be a `pd.Series` or `pd.DataFrame`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.align_index_to`.
 
         Returns:
@@ -1727,6 +1739,8 @@ class BaseAccessor(Wrapping):
         Args:
             other (SeriesFrame): Object to cross align with. Must be a `pd.Series` or `pd.DataFrame`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The cross aligned object.
@@ -1972,6 +1986,8 @@ class BaseAccessor(Wrapping):
                 See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `apply_func`.
 
         Returns:
@@ -2109,12 +2125,14 @@ class BaseAccessor(Wrapping):
             keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert inputs to arrays.
             to_2d (bool): If True, convert input arrays to a two-dimensional format.
             keys (Optional[IndexLike]): Labels for the concatenated results along columns.
-            broadcast_named_args (KwargsLike): Named arguments for broadcasting, merged with the object's data.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `apply_func`.
 
         Returns:
@@ -2260,6 +2278,8 @@ class BaseAccessor(Wrapping):
                 See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `combine_func`.
 
         Returns:
@@ -2444,6 +2464,8 @@ class BaseAccessor(Wrapping):
 
                 See `vectorbtpro.base.reshaping.broadcast`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             Any: Evaluated expression wrapped using the broadcast wrapper.

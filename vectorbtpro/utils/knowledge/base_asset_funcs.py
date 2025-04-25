@@ -153,19 +153,6 @@ class GetAssetFunc(AssetFunc):
         source: tp.Optional[tp.CustomTemplate] = None,
         template_context: tp.KwargsLike = None,
     ) -> tp.Any:
-        """Retrieve asset data from the input based on the provided parameters.
-
-        Args:
-            d: The input data from which to extract asset information.
-            path (Optional[MaybeList[PathLikeKey]]): The key or list of keys to locate the asset.
-            keep_path (bool): Whether to retain the full lookup path in the result.
-            skip_missing (bool): Whether to skip missing keys without raising errors.
-            source (Optional[CustomTemplate]): Template or callable for post-processing the retrieved data.
-            template_context (KwargsLike): Additional context for template substitution.
-
-        Returns:
-            Any: The transformed asset data, or `NoResult` if no valid data is found.
-        """
         x = d
         if path is not None:
             if isinstance(path, list):
@@ -272,20 +259,6 @@ class SetAssetFunc(AssetFunc):
         changed_only: bool = False,
         template_context: tp.KwargsLike = None,
     ) -> tp.Any:
-        """Set asset data in the input based on the specified paths and value.
-
-        Args:
-            d: The input data in which the asset will be updated.
-            value: The data value or transformation template to apply.
-            paths (List[PathLikeKey]): List of keys indicating where to set the new value.
-            skip_missing (bool): Whether to skip missing intermediate keys without error.
-            make_copy (bool): Whether to perform updates on a copy of the input data.
-            changed_only (bool): Whether to return the updated data only if modifications occurred.
-            template_context (KwargsLike): Additional context for template substitution.
-
-        Returns:
-            Any: The updated data if changes were made, or `NoResult` if no modifications occurred.
-        """
         prev_keys = []
         for p in paths:
             x = d
@@ -512,20 +485,8 @@ class RenameAssetFunc(MoveAssetFunc):
 
 
 class ReorderAssetFunc(AssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.reorder`.
-
-    Args:
-        new_order (Union[str, PathKeyTokens]): Specifies the desired ordering.
-
-            It can be a string (e.g., "asc" or "desc") or a callable that computes the order.
-        path (Optional[List[PathLikeKey]]): A key path or list of key paths indicating where in the
-            data the reordering should be applied.
-        skip_missing (Optional[bool]): Determines whether to skip keys that are missing in the data.
-        make_copy (Optional[bool]): Indicates if the operation should be performed on a copy of the data.
-        changed_only (Optional[bool]): If True, returns the data only when changes have occurred.
-        template_context (KwargsLike): Additional context for template substitution.
-        asset_cls (Optional[Type[KnowledgeAsset]]): The asset class used to resolve settings for the operation.
-    """
+    """Asset function class for reordering asset data with
+    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.reorder`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "reorder"
 
@@ -648,16 +609,8 @@ class ReorderAssetFunc(AssetFunc):
 
 
 class QueryAssetFunc(AssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.query`.
-
-    Args:
-        expression (CustomTemplateLike): Expression used to query the asset. It may be a string,
-            function, or template.
-        template_context (KwargsLike): Additional context for template substitution.
-        return_type (Optional[str]): Specifies the expected return type; use "item" for filtering or
-            "bool" for boolean evaluation.
-        asset_cls (Optional[Type[KnowledgeAsset]]): The asset class used to resolve settings for the query.
-    """
+    """Asset function class for querying asset data with
+    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.query`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "query"
 
@@ -732,7 +685,8 @@ class QueryAssetFunc(AssetFunc):
 
 
 class FindAssetFunc(AssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.find`.
+    """Asset function class for searching in asset data with
+    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.find`.
 
     Implements logic to locate assets using configurable search parameters.
     """

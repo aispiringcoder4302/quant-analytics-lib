@@ -423,7 +423,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             n (Union[int, FrequencyLike]): The number of periods to shift the data.
             fill_value (Scalar): The value to fill in for missing data.
-            get_indexer_kwargs (KwargsLike): Additional arguments for `get_indexer`.
+            get_indexer_kwargs (KwargsLike): Keyword arguments for `pd.Index.get_indexer`.
             **kwargs: Keyword arguments for `GenericAccessor.fshift`.
 
         Returns:
@@ -500,6 +500,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: A Series/DataFrame containing the indices of the minimum values
@@ -555,6 +557,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: A Series/DataFrame containing the indices of the maximum values
@@ -608,6 +612,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated rolling mean values.
@@ -659,6 +665,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated rolling standard deviation values.
@@ -710,6 +718,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated rolling z-score values.
@@ -756,6 +766,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated weighted moving mean values.
@@ -790,6 +802,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated exponentially weighted moving mean values.
@@ -825,6 +839,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated exponentially weighted moving standard deviation values.
@@ -859,6 +875,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated weighted window moving mean values.
@@ -894,6 +912,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated weighted window moving standard deviation values.
@@ -927,6 +947,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated VIDYA values.
@@ -965,6 +987,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated moving average values.
@@ -1008,6 +1032,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated moving standard deviation values.
@@ -1053,6 +1079,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Calculated rolling covariance values.
@@ -1110,6 +1138,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The rolling correlation computed over the specified window.
@@ -1166,6 +1196,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             Tuple[SeriesFrame, SeriesFrame]: A tuple containing the slope and intercept arrays.
@@ -1231,6 +1263,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The rolling rank result.
@@ -1325,6 +1359,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The rolling pattern similarity result.
@@ -1414,6 +1450,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The result of applying the mapping function to the input data, wrapped appropriately.
@@ -1556,6 +1594,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The result of applying the function to the input data.
@@ -1734,6 +1774,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The result of the rolling reduction.
@@ -1939,6 +1981,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             SeriesFrame: The wrapped result after applying the groupby reduction.
@@ -2086,6 +2130,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 module using the `_transform_nb` suffix.
             *args: Positional arguments for `transform_func_nb`.
             groupby_kwargs (KwargsLike): Keyword arguments for the groupby operation.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -2096,6 +2142,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Transformed data as a Series or DataFrame.
@@ -2229,6 +2277,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             template_context (KwargsLike): Additional context for template substitution.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `reduce_func_nb`.
 
         Returns:
@@ -2404,6 +2454,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             Series: The result of the apply and reduce operation.
@@ -2583,6 +2635,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeriesFrame: The reduced data as a Series or DataFrame.
@@ -2853,6 +2907,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             Frame: The resulting frame after applying the proximity reduction.
@@ -3008,6 +3064,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeriesFrame: The squeezed data as a Series or DataFrame.
@@ -3147,6 +3205,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             MaybeSeriesFrame: The flattened data as a Series or DataFrame.
@@ -3249,6 +3309,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             silence_warnings (Optional[bool]): Flag to suppress warnings during resampling.
 
         Returns:
@@ -3442,6 +3504,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             silence_warnings (Optional[bool]): If True, suppress warnings during resampling.
 
         Returns:
@@ -3654,6 +3718,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
             wrap_with_lbound (Optional[bool]): Determines if the lower bound index is used for wrapping the output.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: A resampled series or frame with aggregated values,
@@ -3849,6 +3915,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The minimum value computed from non-NaN elements.
@@ -3910,6 +3978,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The maximum value computed from non-NaN elements.
@@ -3971,6 +4041,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The mean value computed from non-NaN elements.
@@ -4032,6 +4104,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The median value computed from non-NaN elements.
@@ -4095,6 +4169,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The standard deviation computed from non-NaN elements.
@@ -4157,6 +4233,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The sum computed from non-NaN elements.
@@ -4220,6 +4298,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The count computed from non-NaN elements.
@@ -4284,6 +4364,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The covariance computed from non-NaN elements.
@@ -4340,6 +4422,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: The correlation coefficient computed from non-NaN elements.
@@ -4389,6 +4473,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The rank as a Pandas Series or DataFrame.
@@ -4425,6 +4511,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             SeriesFrame: The labeled index as a Pandas Series or DataFrame.
@@ -4478,6 +4566,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             SeriesFrame: The labeled index as a panPandasdas Series or DataFrame.
@@ -4538,6 +4628,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The descriptive statistics as a Pandas Series or DataFrame.
@@ -4614,6 +4706,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             return_mapping (bool): Whether to return a mapping of bin indices to bin
                 intervals along with the digitized data.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             Union[SeriesFrame, Tuple[SeriesFrame, dict]]: The digitized data.
@@ -4713,6 +4807,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
         Returns:
@@ -4886,6 +4982,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If provided, the data is demeaned separately for each group.
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The demeaned data as a Series or DataFrame.
@@ -4912,6 +5010,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             transformer (Transformer): An instance with `transform` and `fit_transform` methods.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for the transformer methods.
 
         Returns:
@@ -4982,6 +5082,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The rebased data as a Series or DataFrame.
@@ -5015,6 +5117,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: The drawdown series as a Series or DataFrame.
@@ -5035,6 +5139,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             *args: Positional arguments for `vectorbtpro.generic.ranges.Ranges.from_array`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_array`.
 
         Returns:
@@ -5245,6 +5351,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Boolean series or dataframe indicating crossing events.
@@ -5326,6 +5434,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: Boolean series or dataframe indicating crossing events.
@@ -5747,16 +5857,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             other (ArrayLike): The second array to compare, which will be broadcast to match the primary data.
             column (Optional[Label]): Column identifier to select from inputs.
-            trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                used to plot the main series.
-            other_trace_kwargs (Union[str, KwargsLike]): Keyword arguments for
-                `plotly.graph_objects.Scatter` used to plot the second series.
+            trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the main series.
+            other_trace_kwargs (Union[str, KwargsLike]): Keyword arguments for `plotly.graph_objects.Scatter` for the second series.
 
                 Use 'hidden' to omit the secondary line.
-            pos_trace_kwargs (KwargsLike): Keyword arguments for plotting the positive area between the series.
-            neg_trace_kwargs (KwargsLike): Keyword arguments for plotting the negative area between the series.
-            hidden_trace_kwargs (KwargsLike): Keyword arguments for plotting hidden lines.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            pos_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the positive area between the series.
+            neg_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the negative area between the series.
+            hidden_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for hidden lines.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -5904,11 +6013,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
             other (ArrayLike): The second array to compare, which will be broadcast
                 to match the primary data.
             column (Optional[Label]): Column identifier to select from inputs.
-            trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                used to plot the line.
-            heatmap_kwargs (KwargsLike): Keyword arguments for `GenericDFAccessor.heatmap`
-                used to generate the heatmap.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the line.
+            heatmap_kwargs (KwargsLike): Keyword arguments for `GenericDFAccessor.heatmap` used to generate the heatmap.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -6439,8 +6547,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             line_visible (bool): Determines whether the line outlining the area is displayed.
             colorway (Union[None, str, Sequence[str]]): Name of a built-in qualitative
                 color palette or a sequence of colors.
-            trace_kwargs (KwargsLike): Keyword arguments for configuring each `plotly.graph_objects.Scatter` trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the area.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -6582,11 +6691,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
             column (Optional[Label]): Column label for data selection.
             plot_obj (bool): If True, includes the original object data in the plot.
             fill_distance (bool): If True, fills the area under the pattern trace.
-            obj_trace_kwargs (KwargsLike): Keyword arguments for the original data trace.
-            pattern_trace_kwargs (KwargsLike): Keyword arguments for the pattern trace.
-            lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for the lower error bound trace.
-            upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for the upper error bound trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            obj_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the original data.
+            pattern_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the pattern.
+            lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower error bound.
+            upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper error bound.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -6975,6 +7085,8 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             Union[Series, Tuple[Series, Series]]: The Renko series or a tuple containing
@@ -7025,6 +7137,8 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             Frame: A DataFrame representing the OHLC Renko bars with columns
@@ -7255,12 +7369,13 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 * "last": Colorize by last value.
                 * Callable: Function that reduces a Series or DataFrame to compute a metric.
             rename_levels (Union[None, dict, Sequence]): Mapping or sequence to rename multi-index legend levels.
-            projection_trace_kwargs (KwargsLike): Keyword arguments for the projection trace.
-            upper_trace_kwargs (KwargsLike): Keyword arguments for the upper band trace.
-            middle_trace_kwargs (KwargsLike): Keyword arguments for the middle band trace.
-            lower_trace_kwargs (KwargsLike): Keyword arguments for the lower band trace.
-            aux_middle_trace_kwargs (KwargsLike): Keyword arguments for the auxiliary middle band trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            projection_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the projection.
+            upper_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper band.
+            middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the middle band.
+            lower_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower band.
+            aux_middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the auxiliary middle band.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

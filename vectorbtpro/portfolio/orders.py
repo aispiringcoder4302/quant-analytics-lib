@@ -336,6 +336,8 @@ class Orders(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
@@ -483,14 +485,12 @@ class Orders(PriceRecords):
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the type of OHLC plot.
 
                 Either `OHLC`, `Candlestick`, or a Plotly trace.
-            ohlc_trace_kwargs (KwargsLike): Keyword arguments for the OHLC trace.
-            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                used for plotting the close price.
-            buy_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                to plot buy markers.
-            sell_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter`
-                to plot sell markers.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            buy_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for buy markers.
+            sell_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for sell markers.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

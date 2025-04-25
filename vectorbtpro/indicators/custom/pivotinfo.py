@@ -116,11 +116,10 @@ class _PIVOTINFO(PIVOTINFO):
 
         Args:
             column (Optional[Label]): Name of the column to plot.
-            conf_value_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for the `PIVOTINFO.conf_value` line.
-            last_value_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for the `PIVOTINFO.last_value` line.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            conf_value_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PIVOTINFO.conf_value`.
+            last_value_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PIVOTINFO.last_value`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -189,9 +188,9 @@ class _PIVOTINFO(PIVOTINFO):
         Args:
             column (Optional[Label]): Name of the column to plot.
 
-            zigzag_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for the zigzag line.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            zigzag_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the zigzag line.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

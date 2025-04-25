@@ -56,11 +56,10 @@ class _FMAX(FMAX):
         Args:
             column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Flag indicating whether to plot `FMAX.close`.
-            close_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for plotting `FMAX.close`.
-            fmax_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for plotting `FMAX.fmax`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMAX.close`.
+            fmax_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMAX.fmax`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

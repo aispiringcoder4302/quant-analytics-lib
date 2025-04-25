@@ -134,7 +134,10 @@ def concat_merge(
 
             If None, the value is inferred from the presence of `wrapper`, `keys`, or `wrap_kwargs`.
         wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-        wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping arrays.
+        wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
+            can be a dictionary or a list of dictionaries.
+            
+            See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
             See `vectorbtpro.base.indexes.clean_index`.
@@ -291,8 +294,10 @@ def row_stack_merge(
 
             Without wrapping, arrays will be kept as-is and merged using `row_stack_arrays`.
         wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-        wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping each array;
+        wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
             can be a dictionary or a list of dictionaries.
+            
+            See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
         clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning
             the concatenated index.
         **kwargs: Keyword arguments for `pd.concat` and
@@ -457,8 +462,10 @@ def column_stack_merge(
             * "sr" or "series": Wrap each array as a Pandas Series.
             * "df", "frame", or "dataframe": Wrap each array as a Pandas DataFrame.
         wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
-        wrap_kwargs (KwargsLikeSequence): Positional arguments for wrapping, provided as a
-            mapping or sequence of mappings.
+        wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
+            can be a dictionary or a list of dictionaries.
+            
+            See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
         clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning
             column indexes via `clean_index`.
         **kwargs: Keyword arguments for `pd.concat` and
@@ -821,14 +828,13 @@ def resolve_merge_func(merge_func: tp.MergeFuncLike) -> tp.Optional[tp.Callable]
     """Resolve a merging function into a callable.
 
     Args:
-        merge_func (MergeFuncLike): A merging function to resolve. If provided as a string,
-            it is looked up in `merge_func_config`.
-
-            If provided as a sequence, a partial application of `mixed_merge` with
-            `merge_funcs=merge_func` is returned.
-
-            If provided as an instance of `vectorbtpro.utils.merging.MergeFunc`,
-            its `resolve_merge_func` method is called to obtain the actual callable.
+        merge_func (MergeFuncLike): A merging function to resolve. 
+        
+            * If provided as a string, it is looked up in `merge_func_config`.
+            *If provided as a sequence, a partial application of `mixed_merge` with
+                `merge_funcs=merge_func` is returned.
+            * If provided as an instance of `vectorbtpro.utils.merging.MergeFunc`,
+                its `resolve_merge_func` method is called to obtain the actual callable.
 
     Returns:
         Optional[Callable]: The resolved merging function as a callable, or None if `merge_func` is None.

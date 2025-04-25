@@ -53,11 +53,17 @@ class AssetCacheManager(Configured):
     Args:
         persist_cache (Optional[bool]): Whether to persist the cache to disk.
         cache_dir (Optional[PathLike]): Directory path for storing cached assets.
-        cache_mkdir_kwargs (KwargsLike): Keyword arguments for creating the cache directory.
+        cache_mkdir_kwargs (KwargsLike): Keyword arguments for cache directory creation.
+            
+            See `vectorbtpro.utils.path_.check_mkdir`.
         clear_cache (Optional[bool]): Whether to clear existing cache in the directory.
         max_cache_count (Optional[int]): Maximum number of assets to retain, evicting older ones.
         save_cache_kwargs (KwargsLike): Keyword arguments for saving assets to disk.
+        
+            See `vectorbtpro.utils.pickling.save`.
         load_cache_kwargs (KwargsLike): Keyword arguments for loading assets from disk.
+        
+            See `vectorbtpro.utils.pickling.load`.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
@@ -128,7 +134,7 @@ class AssetCacheManager(Configured):
 
     @property
     def persist_cache(self) -> bool:
-        """Whether cache persistence to disk is enabled.
+        """Whether to persist the cache to disk.
 
         Returns:
             bool: True if cache persistence is enabled, otherwise False.
@@ -137,7 +143,7 @@ class AssetCacheManager(Configured):
 
     @property
     def cache_dir(self) -> tp.Path:
-        """Path of the directory used for caching assets.
+        """Directory path for storing cached assets.
 
         Returns:
             Path: The path of the cache directory.
@@ -146,7 +152,7 @@ class AssetCacheManager(Configured):
 
     @property
     def max_cache_count(self) -> tp.Optional[int]:
-        """Maximum number of assets to be cached; older assets are evicted based on usage.
+        """Maximum number of assets to retain, evicting older ones.
 
         Returns:
             Optional[int]: The maximum number of assets to retain in the cache.
@@ -155,7 +161,9 @@ class AssetCacheManager(Configured):
 
     @property
     def save_cache_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `vectorbtpro.utils.pickling.save`.
+        """Keyword arguments for saving assets to disk.
+        
+        See `vectorbtpro.utils.pickling.save`.
 
         Returns:
             Kwargs: The keyword arguments used for saving assets to disk.
@@ -164,7 +172,9 @@ class AssetCacheManager(Configured):
 
     @property
     def load_cache_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `vectorbtpro.utils.pickling.load`.
+        """Keyword arguments for loading assets from disk.
+        
+        See `vectorbtpro.utils.pickling.load`.
 
         Returns:
             Kwargs: The keyword arguments used for loading assets from disk.
@@ -362,6 +372,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             *objs (MaybeSequence[KnowledgeAsset]): (Additional) `KnowledgeAsset` instances to merge.
             flatten_kwargs (KwargsLike): Keyword arguments for flattening data items.
+            
+                See `vectorbtpro.utils.search_.flatten_obj`.
             **kwargs: Keyword arguments for `KnowledgeAsset.merge_lists` or
                 `KnowledgeAsset.merge_dicts` or `KnowledgeAsset`.
 
@@ -450,6 +462,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Returns:
             KnowledgeAsset: A new asset populated with data from the JSON file.
+            
+        See:
+            `vectorbtpro.utils.pickling.load_bytes`
         """
         bytes_ = load_bytes(path, compression=compression, decompress_kwargs=decompress_kwargs)
         json_str = bytes_.decode("utf-8")
@@ -473,6 +488,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Returns:
             KnowledgeAsset: A new asset containing data from the JSON bytes.
+            
+        See:
+            `vectorbtpro.utils.pickling.decompress`
         """
         if decompress_kwargs is None:
             decompress_kwargs = {}
@@ -1626,7 +1644,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing (Optional[bool]): If True, skips data items missing the specified path.
             source (Optional[CustomTemplateLike]): Template for preprocessing the source data.
             in_dumps (Optional[bool]): If True, converts the entire data item to string for searching.
-            dump_kwargs (KwargsLike): Arguments for `vectorbtpro.utils.formatting.dump`.
+            dump_kwargs (KwargsLike): Keyword arguments for dumping structured data.
+        
+                See `vectorbtpro.utils.formatting.dump`.
             template_context (KwargsLike): Additional context for template substitution.
             return_type (Optional[str]): Indicates the return type: "item", "field", or "bool".
             return_path (Optional[bool]): Specifies whether to include the path in the returned result.
@@ -2467,7 +2487,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             *args: Positional arguments for `KnowledgeAsset.reduce`.
             by (Optional[PathLikeKey]): Key or path used to group data items.
             uniform_groups (Optional[bool]): Whether to group only contiguous identical key values.
-            get_kwargs (KwargsLike): Extra keyword arguments for retrieving keys via `KnowledgeAsset.get`.
+            get_kwargs (KwargsLike): Keyword arguments for retrieving keys via `KnowledgeAsset.get`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute`.
@@ -2813,7 +2833,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             cache_documents (bool): Whether to cache converted text documents.
             cache_key (Optional[str]): Key for caching documents.
             asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Asset cache manager class or instance.
-            asset_cache_manager_kwargs (KwargsLike): Keyword arguments for initializing or updating the cache manager.
+            asset_cache_manager_kwargs (KwargsLike): Keyword arguments for initializing or updating `asset_cache_manager`.
             silence_warnings (bool): If True, caching warnings are suppressed.
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.rank_documents`.
 

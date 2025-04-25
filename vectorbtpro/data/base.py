@@ -1399,7 +1399,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             *objs (MaybeSequence[Data]): (Additional) `Data` instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.row_stack`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Data`.
 
         Returns:
@@ -1472,7 +1474,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             *objs (MaybeSequence[Data]): (Additional) `Data` instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Data`.
 
         Returns:
@@ -1600,8 +1604,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             *args: Positional arguments for `Data.indexing_func_meta`.
-            replace_kwargs (KwargsLike): Keyword arguments to pass to `Data.replace`
-                for further configuration.
+            replace_kwargs (KwargsLike): Keyword arguments for `Data.replace`.
             **kwargs: Keyword arguments for `Data.indexing_func_meta`.
 
         Returns:
@@ -2815,6 +2818,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 See `Data.align_columns`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             fetch_kwargs (Optional[dict]): Additional keyword arguments
                 initially passed to `Data.fetch_symbol`.
             returned_kwargs (Optional[dict]): Additional keyword arguments
@@ -3303,6 +3308,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             reuse_fetch_kwargs (bool): Whether to reuse fetch kwargs from the current instance.
             run_kwargs (KwargsLike): Keyword arguments for `Data.run`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             merge_kwargs (KwargsLike): Keyword arguments for `Data.merge`.
             **kwargs: Keyword arguments for `Data.from_data`.
 
@@ -4081,6 +4088,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             missing_index (Optional[str]): Parameter for handling a missing index as used in `Data.from_data`.
             missing_columns (Optional[str]): Parameter for handling missing columns as used in `Data.from_data`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper for `Data.from_data`.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             skip_on_error (Optional[bool]): Skip the feature or symbol if an exception occurs.
             silence_warnings (Optional[bool]): Silence all warnings.
 
@@ -4352,7 +4361,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             feature (Feature): The feature identifier to update.
             skip_on_error (bool): If True, skip update when an error occurs.
             silence_warnings (bool): If True, silence warning messages.
-            update_kwargs (KwargsLike): Keyword arguments passed for feature update.
+            update_kwargs (KwargsLike): Keyword arguments for `Data.update_feature`.
 
         Returns:
             FeatureData: The updated data and (optionally) a metadata dictionary, or None.
@@ -4405,7 +4414,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             symbol (Symbol): The symbol to update.
             skip_on_error (bool): If True, skip symbol update on error.
             silence_warnings (bool): If True, silence warning messages.
-            update_kwargs (KwargsLike): Keyword arguments passed for symbol update.
+            update_kwargs (KwargsLike): Keyword arguments for `Data.update_symbol`.
 
         Returns:
             SymbolData: The updated data and (optionally) a metadata dictionary, or None.
@@ -5102,7 +5111,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.run`.
 
         Returns:
-            Any: The result of executing `Data.run`, or `NoResult` if execution fails without raising an error.
+            Any: The result of executing `Data.run`, or `vectorbtpro.utils.execution.NoResult` 
+                if execution fails without raising an error.
         """
         try:
             return data.run(*args, **kwargs)
@@ -5245,7 +5255,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 Use True, "dict", or "frame" to apply post-processing.
             concat (bool): If True, concatenates results from multiple function calls.
-            data_kwargs (KwargsLike): Keyword arguments for data processing.
+            data_kwargs (KwargsLike): Keyword arguments for `Data.from_data`.
             silence_warnings (bool): If True, suppresses warnings during execution.
             raise_errors (bool): If True, raises any exceptions encountered.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
@@ -5253,8 +5263,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 See `vectorbtpro.utils.execution.execute`.
             filter_results (bool): If True, filters out function calls that yield no results.
             raise_no_results (bool): If True, raises an exception when no results are obtained.
-            merge_func (MergeFuncLike): Function to merge results from multiple function calls.
-            merge_kwargs (KwargsLike): Keyword arguments for merging results.
+            merge_func (MergeFuncLike): Function to merge the results.
+            
+                See `vectorbtpro.utils.merging.MergeFunc`.
+            merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
             template_context (KwargsLike): Additional context for template substitution.
             return_keys (bool): If True, includes keys representing function names in the return.
             **kwargs: Keyword arguments for the function.
@@ -5579,7 +5591,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             ext (Union[str, feature_dict, symbol_dict, CustomTemplate]):
                 The file extension to use for CSV files when saving multiple files.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
-                Keyword arguments for creating directories.
+                Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
             check_dict_type (bool): Indicates whether to validate that dictionary-type
                 arguments match expected types.
             template_context (KwargsLike): Additional context for template substitution.
@@ -5695,6 +5709,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 If None, the key defaults to the string representation of the feature or symbol.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
                 Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
             format (str): The file format for HDF storage.
             check_dict_type (bool): Indicates whether to validate that dictionary-type
                 arguments match expected types.
@@ -5803,7 +5819,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 When a directory is provided or no file suffix is detected,
                 the key is appended with a ".feather" extension to form the file name.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
-                Keyword arguments for creating directories for each key.
+                Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
             check_dict_type (bool): Flag indicating whether to verify the structure of
                 dict-like arguments per key.
             template_context (KwargsLike): Additional context for template substitution.
@@ -5874,6 +5892,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             *args: Positional arguments for `vectorbtpro.data.custom.feather.FeatherData.pull`.
             fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
+
+                Refer to the fetching function for further details.
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.feather.FeatherData.pull`.
 
         Returns:
@@ -5916,6 +5936,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 If a directory is provided, each feature or symbol is saved in a separate file.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
                 Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
             partition_cols (Union[None, List[str], feature_dict, symbol_dict, CustomTemplate]):
                 Column names for partitioning the data.
 
@@ -6079,8 +6101,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             *args: Positional arguments for `vectorbtpro.data.custom.parquet.ParquetData.pull`.
-            fetch_kwargs (KwargsLike): Keyword arguments originally used in data fetching,
-                which are applied to the returned object.
+            fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
+
+                Refer to the fetching function for further details.
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.parquet.ParquetData.pull`.
 
         Returns:
@@ -6316,6 +6339,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             *args: Positional arguments for `vectorbtpro.data.custom.sql.SQLData.pull`.
             fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
+
+                Refer to the fetching function for further details.
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.sql.SQLData.pull`.
 
         Returns:
@@ -6397,7 +6422,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Format for writing data to a file.
 
                 Must be "csv", "parquet", or "json" if specified.
-            write_path (Union[tp.PathLike, feature_dict, symbol_dict, CustomTemplate]):
+            write_path (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]):
                 File path or directory where data is saved.
 
                 If a directory or a path without a file suffix, each feature or symbol is saved
@@ -6406,9 +6431,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Options to pass to the `COPY` command.
 
                 Provide these as a dictionary or a preformatted string.
-            mkdir_kwargs (Union[tp.KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
+            mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
                 Keyword arguments for directory creation.
-            to_utc (Union[None, bool, str, tp.Sequence[str], feature_dict, symbol_dict, CustomTemplate]):
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
+            to_utc (Union[None, bool, str, Sequence[str], feature_dict, symbol_dict, CustomTemplate]):
                 Whether to convert datetime columns to UTC.
 
                 See `Data.prepare_dt`.
@@ -6418,10 +6445,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Action to take if the target table already exists.
 
                 Options are "fail", "replace", or "append".
-            connection_config (tp.KwargsLike): Keyword arguments for connection configuration.
+            connection_config (KwargsLike): Keyword arguments for connection configuration.
             check_dict_type (bool): Validates that feature/symbol-specific arguments are
                 provided as a dictionary.
-            template_context (tp.KwargsLike): Context for template resolution.
+            template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata including all processed arguments
                 per feature or symbol.
             return_connection (bool): If True and a connection string was provided, returns the
@@ -6639,7 +6666,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             *args: Positional arguments for `vectorbtpro.data.custom.duckdb.DuckDBData.pull`.
-            fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching.
+            fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
+
+                Refer to the fetching function for further details.
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.duckdb.DuckDBData.pull`.
 
         Returns:

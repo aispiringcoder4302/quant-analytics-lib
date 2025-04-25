@@ -200,7 +200,7 @@ class PriceRecords(Records):
 
         Args:
             *objs (MaybeSequence[PriceRecords]): `PriceRecords` instances to be stacked.
-            reindex_kwargs (KwargsLike): Keyword arguments for reindexing.
+            reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
             ffill_close (bool): Flag to forward fill close prices.
             fbfill_close (bool): Flag to backward fill close prices.
             **kwargs: Keyword arguments for `PriceRecords`.

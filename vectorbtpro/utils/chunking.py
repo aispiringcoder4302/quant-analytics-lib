@@ -1271,23 +1271,38 @@ class Chunker(Configured):
     4. Optionally, post-processes and merges the results by passing them and `**merge_kwargs` to `merge_func`.
 
     Args:
-        size (Optional[int]): Chunk size for splitting function arguments.
-        min_size (Optional[int]): Minimum allowed chunk size.
-        n_chunks (Optional[SizeLike]): Desired number of chunks.
-        chunk_len (Optional[SizeLike]): Length of each chunk.
-        chunk_meta (Optional[ChunkMetaLike]): Custom chunk metadata overriding default generation.
+        size (Optional[int]): Chunk size used for metadata generation.
+
+            See `Chunker.get_chunk_meta_from_args`.
+        min_size (Optional[int]): Minimum chunk size used in metadata generation.
+
+            See `Chunker.get_chunk_meta_from_args`.
+        n_chunks (Optional[SizeLike]): Desired number of chunks used in metadata generation.
+
+            See `Chunker.get_chunk_meta_from_args`.
+        chunk_len (Optional[SizeLike]): Length of each chunk used in metadata generation.
+
+            See `Chunker.get_chunk_meta_from_args`.
+        chunk_meta (Optional[ChunkMetaLike]): Custom chunk metadata for argument chunking.
+
+            See `Chunker.get_chunk_meta_from_args`.
         prepend_chunk_meta (Optional[bool]): Determines whether to prepend a `ChunkMeta` instance to the arguments.
 
-            If set to None, prepending occurs automatically when the first argument is named 'chunk_meta'.
-        skip_single_chunk (Optional[bool]): Indicates whether to bypass chunking when only one chunk is present.
-        arg_take_spec (Optional[ArgTakeSpecLike]): Specification for selecting arguments during chunking.
+            If set to None, prepending occurs automatically when the first argument is named `chunk_meta`.
+        skip_single_chunk (Optional[bool]): Specifies whether to bypass chunking and execute the function 
+            directly when only one chunk is present.
+        arg_take_spec (Optional[ArgTakeSpecLike]): Specification for selecting function arguments during chunking.
         template_context (KwargsLike): Additional context for template substitution.
-        merge_func (Optional[MergeFuncLike]): Function used to merge results from multiple chunks.
-        merge_kwargs (KwargsLike): Keyword arguments for the merging function.
-        return_raw_chunks (Optional[bool]): Determines whether to return raw chunk data.
-        silence_warnings (Optional[bool]): Indicates whether to suppress warnings.
-        forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments, including variables
-            from the scope of `Chunker.run`.
+        merge_func (MergeFuncLike): Function to merge the results.
+        
+            See `vectorbtpro.utils.merging.MergeFunc`.
+        merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
+        return_raw_chunks (Optional[bool]): Determines whether to return raw chunk data instead 
+            of post-processed results.
+        silence_warnings (Optional[bool]): Indicates whether to suppress warnings during chunk processing.
+        forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments.
+
+            Variables from the context of `Chunker.run` may be included.
         execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
             See `vectorbtpro.utils.execution.execute`.
@@ -1311,7 +1326,7 @@ class Chunker(Configured):
         skip_single_chunk: tp.Optional[bool] = None,
         arg_take_spec: tp.Optional[tp.ArgTakeSpecLike] = None,
         template_context: tp.KwargsLike = None,
-        merge_func: tp.Optional[tp.MergeFuncLike] = None,
+        merge_func: tp.MergeFuncLike = None,
         merge_kwargs: tp.KwargsLike = None,
         return_raw_chunks: tp.Optional[bool] = None,
         silence_warnings: tp.Optional[bool] = None,
@@ -1417,7 +1432,7 @@ class Chunker(Configured):
     def prepend_chunk_meta(self) -> tp.Optional[bool]:
         """Determines whether to prepend a `ChunkMeta` instance to the function arguments.
 
-        If set to None, prepending occurs automatically when the first argument is named 'chunk_meta'.
+        If set to None, prepending occurs automatically when the first argument is named `chunk_meta`.
 
         Returns:
             Optional[bool]: True if chunk metadata should be prepended; otherwise False.
@@ -1447,22 +1462,18 @@ class Chunker(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Template context for substituting templates in `execute_kwargs` and `merge_kwargs`.
+        """Additional context for template substitution.
 
         Returns:
-            Kwargs: A dictionary representing the template context. Available keys:
-
-                * `ann_args`
-                * `chunk_meta`
-                * `arg_take_spec`
-                * `tasks`
+            Kwargs: A dictionary representing the template context.
         """
         return self._template_context
 
     @property
     def merge_func(self) -> tp.Optional[tp.MergeFuncLike]:
-        """Function used to merge results from multiple chunks. Resolved via
-        `vectorbtpro.base.merging.resolve_merge_func`.
+        """Function to merge the results.
+        
+        See `vectorbtpro.utils.merging.MergeFunc`.
 
         Returns:
             Optional[MergeFuncLike]: The merging function or merge function configuration.
@@ -1471,7 +1482,7 @@ class Chunker(Configured):
 
     @property
     def merge_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to the merging function.
+        """Keyword arguments for `Chunker.merge_func`.
 
         Returns:
             Kwargs: A dictionary of keyword arguments for merging results.
@@ -1509,7 +1520,9 @@ class Chunker(Configured):
 
     @property
     def execute_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments provided to `vectorbtpro.utils.execution.execute` for executing chunks.
+        """Keyword arguments for the execution handler.
+
+        See `vectorbtpro.utils.execution.execute`.
 
         Returns:
             Kwargs: The dictionary of execution keyword arguments.

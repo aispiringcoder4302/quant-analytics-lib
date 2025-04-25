@@ -142,7 +142,7 @@ class Tokenizer(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Template context used for substituting templates.
+        """Additional context for template substitution.
 
         Returns:
             Kwargs: The template context.
@@ -338,7 +338,7 @@ def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokeni
     """Resolve a `Tokenizer` subclass or instance.
 
     Args:
-        tokenizer (TokenizerLike): An option, subclass, or instance of `Tokenizer`.
+        tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
 
             Supported options:
 
@@ -379,8 +379,10 @@ def tokenize(text: str, tokenizer: tp.TokenizerLike = None, **kwargs) -> tp.Toke
 
     Args:
         text (str): The text to tokenize.
-        tokenizer (TokenizerLike): A tokenizer identifier, subclass, or instance.
-        **kwargs: Keyword arguments for initializing or updating `tokenizer`.
+        tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
+        
+            Resolved using `resolve_tokenizer`.
+        **kwargs: Keyword arguments to initialize or update `tokenizer`.
 
     Returns:
         Tokens: A list of tokens representing the input text.
@@ -398,8 +400,10 @@ def detokenize(tokens: tp.Tokens, tokenizer: tp.TokenizerLike = None, **kwargs) 
 
     Args:
         tokens (Tokens): A list of tokens to decode.
-        tokenizer (TokenizerLike): A tokenizer identifier, subclass, or instance.
-        **kwargs: Keyword arguments for initializing or updating `tokenizer`.
+        tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
+        
+            Resolved using `resolve_tokenizer`.
+        **kwargs: Keyword arguments to initialize or update `tokenizer`.
 
     Returns:
         str: The decoded text.
@@ -422,7 +426,7 @@ class Embeddings(Configured):
         batch_size (Optional[int]): Batch size for processing queries. Use None to disable batching.
         show_progress (Optional[bool]): Flag indicating whether to display a progress bar.
         pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
-        template_context (Kwargs): Context for template substitution.
+        template_context (Kwargs): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
@@ -495,7 +499,7 @@ class Embeddings(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used for template substitution.
+        """Additional context for template substitution.
 
         Returns:
             Kwargs: The template context.
@@ -571,10 +575,9 @@ class OpenAIEmbeddings(Embeddings):
 
     Args:
         model (Optional[str]): OpenAI model identifier.
-        client_kwargs (KwargsLike): Parameters for the OpenAI client.
-        embeddings_kwargs (KwargsLike): Parameters for creating embeddings.
-        **kwargs: Keyword arguments either passed to `Embeddings` or used as
-            `client_kwargs` or `embeddings_kwargs`.
+        client_kwargs (KwargsLike): Keyword arguments for `openai.OpenAI`.
+        embeddings_kwargs (KwargsLike): Keyword arguments for `openai.resources.embeddings.Embeddings.create`.
+        **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `embeddings_kwargs`.
 
     !!! info
         For default settings, see `chat.embeddings_configs.openai` in `vectorbtpro._settings.knowledge`.
@@ -674,8 +677,8 @@ class LiteLLMEmbeddings(Embeddings):
 
     Args:
         model (Optional[str]): LiteLLM model identifier.
-        embedding_kwargs (KwargsLike): Parameters for creating embeddings.
-        **kwargs: Keyword arguments either passed to `Embeddings` or used as `embedding_kwargs`.
+        embedding_kwargs (KwargsLike): Keyword arguments for `litellm.embedding`.
+        **kwargs: Keyword arguments for `Embeddings` or used as `embedding_kwargs`.
 
     !!! info
         For default settings, see `chat.embeddings_configs.litellm` in `vectorbtpro._settings.knowledge`.
@@ -759,8 +762,8 @@ class LlamaIndexEmbeddings(Embeddings):
         embedding (Union[None, str, BaseEmbedding]): An embedding identifier or instance.
 
             If None, a default from settings is used.
-        embedding_kwargs (KwargsLike): Positional arguments for embedding initialization.
-        **kwargs: Keyword arguments either passed to `Embeddings` or used as `embedding_kwargs`.
+        embedding_kwargs (KwargsLike): Keyword arguments for embedding initialization.
+        **kwargs: Keyword arguments for `Embeddings` or used as `embedding_kwargs`.
 
     !!! info
         For default settings, see `chat.embeddings_configs.llama_index` in `vectorbtpro._settings.knowledge`.
@@ -880,7 +883,7 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
     """Return a subclass or instance of `Embeddings` based on the provided identifier or object.
 
     Args:
-        embeddings (EmbeddingsLike): An option, subclass, or instance of `Embeddings`.
+        embeddings (EmbeddingsLike): Identifier, subclass, or instance of `Embeddings`.
 
             Supported options:
 
@@ -937,10 +940,10 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
 
     Args:
         query (MaybeList[str]): A query string or a list of query strings to embed.
-        embeddings (EmbeddingsLike): An identifier, subclass, or instance of `Embeddings`.
-
-            If None, defaults are applied.
-        **kwargs: Keyword arguments for initializing or updating `embeddings`.
+        embeddings (EmbeddingsLike): Identifier, subclass, or instance of `Embeddings`.
+            
+            Resolved using `resolve_embeddings`.
+        **kwargs: Keyword arguments to initialize or update `embeddings`.
 
     Returns:
         MaybeList[List[float]]: The embedding vector(s) corresponding to the input query or queries.
@@ -962,24 +965,42 @@ class Completions(Configured):
     """Abstract class for completion providers.
 
     Args:
-        context (str): The text context provided for completion requests.
-        chat_history (Optional[ChatHistory]): History of chat messages.
-        stream (Optional[bool]): Indicates whether to stream the response.
-        max_tokens (Optional[int]): Maximum tokens allowed in a response.
-        tokenizer (TokenizerLike): A tokenizer class or instance.
-        tokenizer_kwargs (KwargsLike): Keyword arguments for configuring the tokenizer.
-        system_prompt (Optional[str]): A system-level prompt preceding the context prompt.
-        system_as_user (Optional[bool]): Flag to use the user role for system messages.
-        context_prompt (Optional[str]): A template requiring a 'context' variable; evaluated to a user message.
-        formatter (ContentFormatterLike): A content formatter class or instance.
-        formatter_kwargs (KwargsLike): Keyword arguments for configuring the content formatter.
-        minimal_format (Optional[bool]): Indicates if the input is minimally formatted.
-        quick_mode (Optional[bool]): Flag to enable quick mode processing.
-        silence_warnings (Optional[bool]): Indicates whether warnings are suppressed.
+        context (str): Context string to be used as a user message.
+        chat_history (Optional[ChatHistory]): Chat history, a list of dictionaries with defined roles.
+
+            After a response is generated, the assistant message is appended to this history.
+        stream (Optional[bool]): Boolean indicating whether responses are streamed.
+
+            In streaming mode, chunks are appended and displayed incrementally; otherwise,
+            the entire message is displayed.
+        max_tokens (Optional[int]): Maximum token limit configured for messages.
+        tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
+        
+            Resolved using `resolve_tokenizer`.
+        tokenizer_kwargs (KwargsLike): Keyword arguments to initialize or update `tokenizer`.
+        system_prompt (Optional[str]): System prompt that precedes the context prompt.
+
+            This prompt is used to set the system's behavior or context for the conversation.
+        system_as_user (Optional[bool]): Boolean indicating whether to use the user role for the system message.
+
+            This is mainly used for experimental models where a dedicated system role is not available.
+        context_prompt (Optional[str]): Context prompt template requiring a 'context' variable.
+
+            The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
+
+            This prompt is used to provide context for the conversation.
+        formatter (ContentFormatterLike): Identifier, subclass, or instance of 
+            `vectorbtpro.utils.knowledge.formatting.ContentFormatter`.
+        
+            Resolved using `vectorbtpro.utils.knowledge.formatting.resolve_formatter`.
+
+            This formatter is used to format the content of the response.
+        formatter_kwargs (KwargsLike): Keyword arguments to initialize or update `formatter`.
+        minimal_format (Optional[bool]): Boolean indicating if the input is minimally formatted.
+        quick_mode (Optional[bool]): Boolean indicating whether quick mode is enabled.
+        silence_warnings (Optional[bool]): Boolean indicating whether warnings are suppressed.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    For argument descriptions, refer to corresponding properties such as `Completions.chat_history`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.knowledge` and
@@ -1103,7 +1124,7 @@ class Completions(Configured):
 
     @property
     def max_tokens_set(self) -> tp.Optional[int]:
-        """Boolean indicating if `max_tokens` was explicitly provided by the user.
+        """Boolean indicating if `Completions.max_tokens` was explicitly provided by the user.
 
         Returns:
             Optional[int]: The maximum token limit set by the user; None if not set.
@@ -1121,7 +1142,9 @@ class Completions(Configured):
 
     @property
     def tokenizer(self) -> tp.MaybeType[Tokenizer]:
-        """Tokenizer subclass or instance, resolved using `resolve_tokenizer`.
+        """Subclass or instance of `Tokenizer`.
+        
+        Resolved using `resolve_tokenizer`.
 
         Returns:
             MaybeType[Tokenizer]: The resolved tokenizer instance or subclass.
@@ -1130,7 +1153,7 @@ class Completions(Configured):
 
     @property
     def tokenizer_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `Completions.tokenizer` used during tokenizer initialization or update.
+        """Keyword arguments to initialize or update `Completions.tokenizer`.
 
         Returns:
             Kwargs: The keyword arguments for tokenizer initialization or update.
@@ -1174,8 +1197,9 @@ class Completions(Configured):
 
     @property
     def formatter(self) -> tp.MaybeType[ContentFormatter]:
-        """Content formatter subclass or instance, resolved using
-        `vectorbtpro.utils.knowledge.formatting.resolve_formatter`.
+        """Content formatter subclass or instance. 
+        
+        Resolved using `vectorbtpro.utils.knowledge.formatting.resolve_formatter`.
 
         This formatter is used to format the content of the response.
 
@@ -1186,8 +1210,7 @@ class Completions(Configured):
 
     @property
     def formatter_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `Completions.formatter` used to initialize or update a
-        `vectorbtpro.utils.knowledge.formatting.ContentFormatter` instance.
+        """Keyword arguments to initialize or update `Completions.formatter`.
 
         Returns:
             Kwargs: The keyword arguments for the content formatter.
@@ -1223,9 +1246,7 @@ class Completions(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context used for template substitution.
-
-        This context is used to replace variables in templates and prompts.
+        """Additional context for template substitution.
 
         Returns:
             Kwargs: The template context for substitution.
@@ -1467,10 +1488,9 @@ class OpenAICompletions(Completions):
 
     Args:
         model (Optional[str]): Identifier for the model to use.
-        client_kwargs (KwargsLike): Arguments for initializing the OpenAI client.
-        completions_kwargs (KwargsLike): Arguments for the completion API call.
-        **kwargs: Keyword arguments either passed to `Completions` or used as
-            `client_kwargs` or `completions_kwargs`.
+        client_kwargs (KwargsLike): Keyword arguments for `openai.OpenAI`.
+        completions_kwargs (KwargsLike): Keyword arguments for `openai.Completions.create`.
+        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `completions_kwargs`.
 
     !!! info
         For default settings, see `chat.completions_configs.openai` in `vectorbtpro._settings.knowledge`.
@@ -1550,7 +1570,7 @@ class OpenAICompletions(Completions):
 
     @property
     def completions_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for the `openai.Completions.create` API call.
+        """Keyword arguments for `openai.Completions.create`.
 
         Returns:
             Kwargs: The keyword arguments for the completion API call.
@@ -1585,8 +1605,8 @@ class LiteLLMCompletions(Completions):
 
     Args:
         model (Optional[str]): Identifier for the model to use.
-        completion_kwargs (KwargsLike): Arguments for the completion API call.
-        **kwargs: Keyword arguments either passed to `Completions` or used as `completion_kwargs`.
+        completion_kwargs (KwargsLike): Keyword arguments for `litellm.completion`.
+        **kwargs: Keyword arguments for `Completions` or used as `completion_kwargs`.
 
     !!! info
         For default settings, see `chat.completions_configs.litellm` in `vectorbtpro._settings.knowledge`.
@@ -1681,8 +1701,8 @@ class LlamaIndexCompletions(Completions):
     Args:
         llm (Union[None, str, MaybeType[LLM]]): Identifier, class path, subclass, or instance of
             `llama_index.core.llms.LLM`.
-        llm_kwargs (KwargsLike): Additional parameters for initializing the LLM.
-        **kwargs: Keyword arguments either passed to `Completions` or used as `llm_kwargs`.
+        llm_kwargs (KwargsLike): Additional parameters for LLM initialization.
+        **kwargs: Keyword arguments for `Completions` or used as `llm_kwargs`.
 
     !!! info
         For default settings, see `chat.completions_configs.llama_index` in `vectorbtpro._settings.knowledge`.
@@ -1816,7 +1836,7 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
     """Resolve and return a `Completions` subclass or instance.
 
     Args:
-        completions (CompletionsLike): An option, subclass, or instance of `Completions`.
+        completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
 
             Supported options:
 
@@ -1871,9 +1891,10 @@ def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> 
 
     Args:
         message (str): The input message for which to generate a completion.
-        completions (CompletionsLike): A string identifier, subclass,
-            or instance specifying the completions backend.
-        **kwargs: Keyword arguments for initializing or updating `completions`.
+        completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
+        
+            Resolved using `resolve_completions`.
+        **kwargs: Keyword arguments to initialize or update `completions`.
 
     Returns:
         ChatOutput: The completion output generated by the resolved completions.
@@ -1891,8 +1912,10 @@ def completed(message: str, completions: tp.CompletionsLike = None, **kwargs) ->
 
     Args:
         message (str): The input message.
-        completions (CompletionsLike): A completions instance or class to be resolved.
-        **kwargs: Keyword arguments for initializing or updating `completions`.
+        completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
+        
+            Resolved using `resolve_completions`.
+        **kwargs: Keyword arguments to initialize or update `completions`.
 
     Returns:
         str: The completion content based on the input message.
@@ -1960,7 +1983,7 @@ class TextSplitter(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context dictionary for template substitution.
+        """Additional context for template substitution.
 
         Returns:
             Kwargs: The context mapping used for expression evaluation.
@@ -2018,8 +2041,10 @@ class TokenSplitter(TextSplitter):
         chunk_size (Optional[int]): Maximum number of tokens per chunk.
         chunk_overlap (Union[None, int, float]): Number or fraction of tokens
             overlapping between consecutive chunks.
-        tokenizer (TokenizerLike): A tokenizer to encode and decode text.
-        tokenizer_kwargs (KwargsLike): Positional arguments for the tokenizer.
+        tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
+            
+            Resolved using `resolve_tokenizer`.
+        tokenizer_kwargs (KwargsLike): Keyword arguments to initialize or update `tokenizer`.
         **kwargs: Keyword arguments for `TextSplitter`.
 
     !!! info
@@ -2459,8 +2484,8 @@ class LlamaIndexSplitter(TextSplitter):
     Args:
         node_parser (Union[None, str, NodeParser]): The node parser to use,
             specified as a string key, class, or instance.
-        node_parser_kwargs (KwargsLike): Additional configuration for initializing the node parser.
-        **kwargs: Keyword arguments either passed to `TextSplitter` or used as `node_parser_kwargs`.
+        node_parser_kwargs (KwargsLike): Keyword arguments to node parser initialization.
+        **kwargs: Keyword arguments for `TextSplitter` or used as `node_parser_kwargs`.
 
     !!! info
         For default settings, see `chat.text_splitter_configs.llama_index` in `vectorbtpro._settings.knowledge`.
@@ -2581,7 +2606,7 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
     """Resolve a `TextSplitter` subclass or instance.
 
     Args:
-        text_splitter (TextSplitterLike): An option, subclass, or instance of `TextSplitter`.
+        text_splitter (TextSplitterLike): Identifier, subclass, or instance of `TextSplitter`.
 
             Supported options:
 
@@ -2624,8 +2649,10 @@ def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -
 
     Args:
         text (str): The input text to be split.
-        text_splitter (TextSplitterLike): Identifier for the text splitter to use.
-        **kwargs: Keyword arguments for initializing or updating `text_splitter`.
+        text_splitter (TextSplitterLike): Identifier, subclass, or instance of `TextSplitter`.
+        
+            Resolved using `resolve_text_splitter`.
+        **kwargs: Keyword arguments to initialize or update `text_splitter`.
 
     Returns:
         List[str]: A list of text chunks.
@@ -3025,7 +3052,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context dictionary used for template substitution.
+        """Additional context for template substitution.
 
         Returns:
             Kwargs: A dictionary mapping template keys to their values.
@@ -3249,12 +3276,16 @@ class FileStore(DictStore):
     file and subsequent modifications as patch files (with the directory name serving as the index id).
 
     Args:
-        dir_path (Optional[PathLike]): Directory path for file storage.
-        compression (Union[None, bool, str]): Compression setting applied to file operations.
-        save_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.pickling.save`.
-        load_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.pickling.load`.
-        use_patching (Optional[bool]): Flag indicating whether to use patch files.
-        consolidate (Optional[bool]): Flag indicating whether to consolidate patch files.
+        dir_path (Optional[PathLike]): Directory path used for file storage.
+        compression (Union[None, bool, str]): Compression setting used for file operations.
+        save_kwargs (KwargsLike): Keyword arguments for saving objects.
+        
+            See `vectorbtpro.utils.pickling.save`.
+        load_kwargs (KwargsLike): Keyword arguments for loading objects.
+        
+            See `vectorbtpro.utils.pickling.load`.
+        use_patching (Optional[bool]): Whether patch files are used instead of a single file.
+        consolidate (Optional[bool]): Whether patch files should be consolidated.
         **kwargs: Keyword arguments for `DictStore`.
 
     !!! info
@@ -3336,7 +3367,9 @@ class FileStore(DictStore):
 
     @property
     def save_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for saving objects using `vectorbtpro.utils.pickling.save`.
+        """Keyword arguments for saving objects.
+        
+        See `vectorbtpro.utils.pickling.save`.
 
         Returns:
             Kwargs: A dictionary of parameters used when saving objects.
@@ -3345,7 +3378,9 @@ class FileStore(DictStore):
 
     @property
     def load_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for loading objects using `vectorbtpro.utils.pickling.load`.
+        """Keyword arguments for loading objects.
+        
+        See `vectorbtpro.utils.pickling.load`.
 
         Returns:
             Kwargs: A dictionary of parameters used when loading objects.
@@ -3545,11 +3580,17 @@ class LMDBStore(ObjectStore):
     """Store class based on LMDB (Lightning Memory-Mapped Database) using the `lmdbm` package.
 
     Args:
-        dir_path (Optional[PathLike]): Directory path for the LMDB database.
-        mkdir_kwargs (KwargsLike): Keyword arguments for creating directories.
-        dumps_kwargs (KwargsLike): Keyword arguments for serializing objects.
-        loads_kwargs (KwargsLike): Keyword arguments for deserializing objects.
-        open_kwargs (KwargsLike): Keyword arguments for opening the LMDB database.
+        dir_path (Optional[PathLike]): Directory path used for the LMDB store.
+        mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+            
+            See `vectorbtpro.utils.path_.check_mkdir`.
+        dumps_kwargs (KwargsLike): Keyword arguments used for serializing objects.
+        
+            See `vectorbtpro.utils.pickling.dumps`.
+        loads_kwargs (KwargsLike): Keyword arguments used for deserializing objects.
+        
+            See `vectorbtpro.utils.pickling.loads`.
+        open_kwargs (KwargsLike): Keyword arguments used when opening the LMDB database via `Lmdb.open`.
         **kwargs: Keyword arguments for `ObjectStore`.
 
     !!! info
@@ -3630,7 +3671,9 @@ class LMDBStore(ObjectStore):
 
     @property
     def mkdir_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments used for directory creation via `vectorbtpro.utils.path_.check_mkdir`.
+        """Keyword arguments used for directory creation.
+        
+        See `vectorbtpro.utils.path_.check_mkdir`.
 
         Returns:
             Kwargs: A dictionary of parameters for directory creation.
@@ -3639,7 +3682,9 @@ class LMDBStore(ObjectStore):
 
     @property
     def dumps_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments used for serializing objects via `vectorbtpro.utils.pickling.dumps`.
+        """Keyword arguments used for serializing objects.
+        
+        See `vectorbtpro.utils.pickling.dumps`.
 
         Returns:
             Kwargs: A dictionary of parameters for object serialization.
@@ -3648,7 +3693,9 @@ class LMDBStore(ObjectStore):
 
     @property
     def loads_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments used for deserializing objects via `vectorbtpro.utils.pickling.loads`.
+        """Keyword arguments used for deserializing objects.
+        
+        See `vectorbtpro.utils.pickling.loads`.
 
         Returns:
             Kwargs: A dictionary of parameters for object deserialization.
@@ -3907,7 +3954,7 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
     """Resolve a subclass or an instance of `ObjectStore`.
 
     Args:
-        obj_store (ObjectStoreLike): An option, subclass, or instance of `ObjectStore`.
+        obj_store (ObjectStoreLike): Identifier, subclass, or instance of `ObjectStore`.
 
             Supported options:
 
@@ -3983,25 +4030,46 @@ class DocumentRanker(Configured):
 
     Args:
         dataset_id (Optional[str]): Identifier for the dataset.
-        embeddings (EmbeddingsLike): Embeddings engine or class for processing document embeddings.
-        embeddings_kwargs (KwargsLike): Keyword arguments for initializing or updating embeddings.
-        doc_store (TokenizerLike): Document store factory or instance for managing documents.
-        doc_store_kwargs (KwargsLike): Keyword arguments for initializing or updating the document store.
-        cache_doc_store (Optional[bool]): Flag to indicate if the document store should be cached.
-        emb_store (TokenizerLike): Embedding store factory or instance for managing embeddings.
-        emb_store_kwargs (KwargsLike): Keyword arguments for initializing or updating the embedding store.
-        cache_emb_store (Optional[bool]): Flag to indicate if the embedding store should be cached.
+        embeddings (EmbeddingsLike): Identifier, subclass, or instance of `Embeddings`.
+            
+            Resolved using `resolve_embeddings`.
+        embeddings_kwargs (KwargsLike): Keyword arguments to initialize or update `embeddings`.
+        doc_store (ObjectStoreLike): Identifier, subclass, or instance of `ObjectStore` for documents.
+            
+            Resolved using `resolve_obj_store`.
+        doc_store_kwargs (KwargsLike): Keyword arguments to initialize or update `doc_store`.
+        cache_doc_store (Optional[bool]): Flag to indicate if `doc_store` should be cached.
+        emb_store (ObjectStoreLike): Identifier, subclass, or instance of `ObjectStore` for embeddings.
+            
+            Resolved using `resolve_obj_store`.
+        emb_store_kwargs (KwargsLike): Keyword arguments to initialize or update `emb_store`.
+        cache_emb_store (Optional[bool]): Flag to indicate if `emb_store` should be cached.
         search_method (Optional[str]): Strategy for document search.
+
+            Supported strategies: 
+            
+            * "embeddings"
+            * "bm25"
+            * "hybrid"
         bm25_tokenizer (Optional[BM25Tokenizer]): BM25 tokenizer for processing text.
-        bm25_tokenizer_kwargs (KwargsLike): Keyword arguments for initializing the BM25 tokenizer.
+        
+            Resolved using `DocumentRanker.resolve_bm25_tokenizer`.
+        bm25_tokenizer_kwargs (KwargsLike): Keyword arguments to initialize `bm25_tokenizer`.
         bm25_retriever (Optional[MaybeType[BM25]]): BM25 retriever for document retrieval.
-        bm25_retriever_kwargs (KwargsLike): Keyword arguments for initializing the BM25 retriever.
+        
+            Resolved using `DocumentRanker.resolve_bm25_retriever`.
+        bm25_retriever_kwargs (KwargsLike): Keyword arguments to initialize `bm25_retriever`.
         bm25_mirror_store_id (Optional[str]): Identifier for the BM25 mirror store.
-        bm25_score_weight (Optional[float]): Weight applied to BM25 scoring.
+        bm25_score_weight (Optional[float]): BM25 score weight.
+
+            The embedding score weight is computed as 1 minus this value and is applied to
+            scores normalized to [0, 1].
         score_func (Union[None, str, Callable]): Function or identifier for scoring documents.
+        
+            See `DocumentRanker.compute_score`.
         score_agg_func (Union[None, str, Callable]): Function or identifier for aggregating scores.
-        normalize_scores (Optional[bool]): Flag to indicate whether to normalize scores.
-        show_progress (Optional[bool]): Flag to display progress during operations.
+        normalize_scores (Optional[bool]): Whether scores should be normalized before filtering.
+        show_progress (Optional[bool]): Whether to display a progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
             See `vectorbtpro.utils.pbar.ProgressBar`.
@@ -4020,10 +4088,10 @@ class DocumentRanker(Configured):
         dataset_id: tp.Optional[str] = None,
         embeddings: tp.EmbeddingsLike = None,
         embeddings_kwargs: tp.KwargsLike = None,
-        doc_store: tp.TokenizerLike = None,
+        doc_store: tp.ObjectStoreLike = None,
         doc_store_kwargs: tp.KwargsLike = None,
         cache_doc_store: tp.Optional[bool] = None,
-        emb_store: tp.TokenizerLike = None,
+        emb_store: tp.ObjectStoreLike = None,
         emb_store_kwargs: tp.KwargsLike = None,
         cache_emb_store: tp.Optional[bool] = None,
         search_method: tp.Optional[str] = None,
@@ -4236,9 +4304,13 @@ class DocumentRanker(Configured):
 
     @property
     def search_method(self) -> bool:
-        """Search method used.
+        """Strategy for document search.
 
-        Supported values: "embeddings", "bm25", and "hybrid".
+        Supported strategies: 
+        
+        * "embeddings"
+        * "bm25"
+        * "hybrid"
 
         Returns:
             bool: The search method used for document retrieval.
@@ -4333,7 +4405,9 @@ class DocumentRanker(Configured):
 
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments used for initializing `vectorbtpro.utils.pbar.ProgressBar`.
+        """Keyword arguments for configuring the progress bar.
+
+        See `vectorbtpro.utils.pbar.ProgressBar`.
 
         Returns:
             Kwargs: The dictionary of parameters for the progress bar.
@@ -4342,7 +4416,7 @@ class DocumentRanker(Configured):
 
     @property
     def template_context(self) -> tp.Kwargs:
-        """Context dictionary used for template substitution.
+        """Additional context for template substitution.
 
         Returns:
             Kwargs: The dictionary of context variables for template substitution.
@@ -5270,7 +5344,7 @@ def embed_documents(
         return_embeddings (bool): Flag indicating whether to return embeddings.
         return_documents (bool): Flag indicating whether to return documents.
         doc_ranker (Optional[MaybeType[DocumentRanker]]): A `DocumentRanker` class or instance.
-        **kwargs: Keyword arguments for initializing or updating `doc_ranker`.
+        **kwargs: Keyword arguments to initialize or update `doc_ranker`.
 
     Returns:
         Optional[EmbeddedDocuments]: The embedded documents output.
@@ -5324,7 +5398,7 @@ def rank_documents(
         return_chunks (bool): Whether to return document chunks.
         return_scores (bool): Whether to return scored documents with their scores.
         doc_ranker (Optional[MaybeType[DocumentRanker]]): A `DocumentRanker` class or instance.
-        **kwargs: Keyword arguments for initializing or updating `doc_ranker`.
+        **kwargs: Keyword arguments to initialize or update `doc_ranker`.
 
     Returns:
         RankedDocuments: The ranked documents based on the query relevance.
@@ -5457,9 +5531,11 @@ class Contextable(HasSettings):
         """Count the number of tokens in the generated context.
 
         Args:
-            to_context_kwargs (KwargsLike): Keyword arguments for `to_context`.
-            tokenizer (TokenizerLike): A tokenizer class or instance.
-            tokenizer_kwargs (KwargsLike): Keyword arguments for the tokenizer.
+            to_context_kwargs (KwargsLike): Keyword arguments for `Contextable.to_context`.
+            tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
+            
+                Resolved using `resolve_tokenizer`.
+        tokenizer_kwargs (KwargsLike): Keyword arguments to initialize or update `tokenizer`.
 
         Returns:
             int: The number of tokens in the context.
@@ -5485,9 +5561,11 @@ class Contextable(HasSettings):
         """Create a chat interface using the generated context.
 
         Args:
-            to_context_kwargs (KwargsLike): Keyword arguments for generating the context.
-            completions (CompletionsLike): A `Completions` class or instance.
-            **kwargs: Keyword arguments for initializing or updating `completions`.
+            to_context_kwargs (KwargsLike): Keyword arguments for `Contextable.to_context`.
+            completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
+        
+                Resolved using `resolve_completions`.
+            **kwargs: Keyword arguments to initialize or update `completions`.
 
         Returns:
             Completions: An instance of `Completions` configured with the generated context.
@@ -5598,7 +5676,7 @@ class RankContextable(Rankable, Contextable):
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.
             return_chunks (Optional[bool]): Whether to return document chunks.
-            rank_kwargs (KwargsLike): Additional keyword arguments for ranking.
+            rank_kwargs (KwargsLike): Keyword arguments for `Rankable.rank`.
             **kwargs: Keyword arguments for `Contextable.chat`.
 
         Returns:

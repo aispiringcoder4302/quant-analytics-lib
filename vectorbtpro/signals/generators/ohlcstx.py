@@ -145,11 +145,12 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
             ohlc_kwargs (KwargsLike): Keyword arguments for plotting OHLC data using
                 `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot`.
             entry_price_kwargs (KwargsLike): Keyword arguments for plotting the entry price line.
-            entry_trace_kwargs (KwargsLike): Keyword arguments for plotting entry signals using
+            entry_trace_kwargs (KwargsLike): Keyword arguments for 
                 `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-            exit_trace_kwargs (KwargsLike): Keyword arguments for plotting exit signals using
+            exit_trace_kwargs (KwargsLike): Keyword arguments for 
                 `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for adding extra traces to the figure.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

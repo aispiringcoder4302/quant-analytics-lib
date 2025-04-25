@@ -121,9 +121,9 @@ class _PATSIM(PATSIM):
         Args:
             column (Optional[Label]): Name of the column to plot.
 
-            similarity_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for plotting `PATSIM.similarity`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            similarity_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PATSIM.similarity`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -182,11 +182,10 @@ class _PATSIM(PATSIM):
         Args:
             column (Optional[Label]): Name of the column to plot.
 
-            close_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for plotting `PATSIM.close`.
-            similarity_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Heatmap` for plotting `PATSIM.similarity`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PATSIM.close`.
+            similarity_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Heatmap` for `PATSIM.similarity`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

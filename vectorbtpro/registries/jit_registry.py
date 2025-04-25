@@ -403,7 +403,9 @@ class JitableSetup(DefineMixin):
     """Python function to be JIT-compiled."""
 
     jitter_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments provided to `vectorbtpro.utils.jitting.resolve_jitter`."""
+    """Keyword arguments for configuring the jitter.
+    
+    See `vectorbtpro.utils.jitting.resolve_jitter`."""
 
     tags: tp.SetLike = define.field(default=None)
     """Set of tags used for categorization."""
@@ -485,10 +487,12 @@ class JITRegistry(Base):
             jitter_id (Hashable): Unique identifier for the jitter type.
             py_func (Callable): Python function to be jitted.
             jitter_kwargs (KwargsLike): Keyword arguments for configuring the jitter.
+            
+                See `vectorbtpro.utils.jitting.resolve_jitter`.
             tags (set): Set of tags associated with the setup.
 
         Returns:
-            JitableSetup: The registered jitable setup instance.
+            JitableSetup: The registered `JitableSetup` instance.
         """
         jitable_setup = JitableSetup(
             task_id=task_id,
@@ -517,7 +521,7 @@ class JITRegistry(Base):
             jitted_func (Callable): The jitted (decorated) version of the function.
 
         Returns:
-            JittedSetup: The registered jitted setup instance.
+            JittedSetup: The registered `JittedSetup` instance.
         """
         jitable_setup_hash = hash(jitable_setup)
         jitted_setup = JittedSetup(jitter=jitter, jitted_func=jitted_func)
@@ -535,7 +539,7 @@ class JITRegistry(Base):
         jitter: tp.Optional[tp.JitterLike] = None,
         jitter_kwargs: tp.KwargsLike = None,
         tags: tp.Optional[set] = None,
-    ):
+    ) -> tp.Callable:
         """Decorate a jitable function and register both jitable and jitted setups.
 
         Args:
@@ -543,6 +547,8 @@ class JITRegistry(Base):
             py_func (Callable): Python function to decorate.
             jitter (JitterLike): Jitter specification used for resolving the jitter.
             jitter_kwargs (KwargsLike): Keyword arguments for configuring the jitter.
+            
+                See `vectorbtpro.utils.jitting.resolve_jitter`.
             tags (set): Set of tags associated with the function.
 
         Returns:

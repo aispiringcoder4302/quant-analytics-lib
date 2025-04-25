@@ -49,7 +49,8 @@ def resolve_axis_refs(
     """Calculate x-axis and y-axis references based on provided trace settings.
 
     Args:
-        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
         xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
             If None, it is inferred from the figure.
@@ -400,6 +401,8 @@ class FigureMixin(Base):
             figure_name (str): The base name for the saved SVG files (without extension).
             dir_path (PathLike): Directory where SVG files will be saved.
             mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
             show (bool): Whether to display the SVG after saving.
             show_kwargs (KwargsLike): Keyword arguments for `FigureMixin.show_svg`.
             **kwargs: Keyword arguments for `FigureMixin.write_image`.

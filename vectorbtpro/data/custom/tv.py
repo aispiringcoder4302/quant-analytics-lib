@@ -1049,7 +1049,7 @@ class TVData(RemoteData):
             timeframe (Optional[str]): The timeframe, allowing human-readable values such as "15 minutes".
             tz (TimezoneLike): The timezone setting.
 
-                Refer to `vectorbtpro.utils.datetime_.to_timezone`.
+                See `vectorbtpro.utils.datetime_.to_timezone`.
             fut_contract (Optional[int]): Futures contract type: None for cash,
                 1 for the current continuous contract front, or 2 for the following contract.
             adjustment (Optional[str]): The adjustment type, either "splits" or "dividends".

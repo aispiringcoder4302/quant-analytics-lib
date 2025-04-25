@@ -386,7 +386,7 @@ class CCXTData(RemoteData):
                 In this case, the `exchange` parameter is ignored.
             exchange (Union[None, str, Exchange]): Exchange identifier or instance.
 
-                Refer to `CCXTData.resolve_exchange` for details.
+                See `CCXTData.resolve_exchange`.
             exchange_config (KwargsLike): Exchange configuration.
 
                 See `CCXTData.resolve_exchange`.

@@ -816,7 +816,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
     @cachedproperty
     def template_context(self) -> tp.Kwargs:
-        """Complete template context.
+        """Additional context for template substitution.
 
         Merges details from the array wrapper (`wrapper`, `target_shape`, `index`, `freq`),
         broadcast arguments from `BasePreparer.arg_config`, post-broadcast named arguments,

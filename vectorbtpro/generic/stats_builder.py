@@ -297,7 +297,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         !!! info
             For default settings, see `vectorbtpro._settings.stats_builder` and `StatsBuilderMixin.stats_defaults`.
 
-            Refer to `vectorbtpro.utils.template` for template logic.
+            See `vectorbtpro.utils.template` for template logic.
 
         !!! hint
             Optional (resolution) arguments are passed only if they appear in the function's signature,

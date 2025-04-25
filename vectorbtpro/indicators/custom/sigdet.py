@@ -72,9 +72,9 @@ class _SIGDET(SIGDET):
 
         Args:
             column (Optional[Label]): Name of the column to plot.
-            signal_trace_kwargs (KwargsLike): Keyword arguments forwarded to
-                `plotly.graph_objects.Scatter` for plotting `SIGDET.signal`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            signal_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.signal`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -128,13 +128,11 @@ class _SIGDET(SIGDET):
         Args:
             column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Whether to plot `SIGDET.close`.
-            close_trace_kwargs (KwargsLike): Keyword arguments forwarded to
-                `plotly.graph_objects.Scatter` for plotting `SIGDET.close`.
-            upper_band_trace_kwargs (KwargsLike): Keyword arguments forwarded to
-                `plotly.graph_objects.Scatter` for plotting `SIGDET.upper_band`.
-            lower_band_trace_kwargs (KwargsLike): Keyword arguments forwarded to
-                `plotly.graph_objects.Scatter` for plotting `SIGDET.lower_band`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.close`.
+            upper_band_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.upper_band`.
+            lower_band_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.lower_band`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

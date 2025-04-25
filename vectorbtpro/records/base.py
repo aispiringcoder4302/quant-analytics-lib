@@ -649,7 +649,9 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             *objs (MaybeSequence[Records]): (Additional) `Records` instances to stack.
-            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the row stacking of wrappers.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Records` through
                 `Records.resolve_row_stack_kwargs` and `Records.resolve_stack_kwargs`.
 
@@ -698,7 +700,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             *objs (MaybeSequence[RecordArray]): Record arrays to stack.
-            get_indexer_kwargs (KwargsLike): Keyword arguments for indexer calculation.
+            get_indexer_kwargs (KwargsLike): Keyword arguments for `pd.Index.get_indexer`.
             **kwargs: Additional keyword arguments.
 
                 Must include a key "wrapper" representing the wrapper instance.
@@ -798,7 +800,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             *objs (MaybeSequence[Records]): (Additional) `Records` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            get_indexer_kwargs (KwargsLike): Keyword arguments for index translation.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            get_indexer_kwargs (KwargsLike): Keyword arguments for `pd.Index.get_indexer`.
             **kwargs: Keyword arguments for `Records` through
                 `Records.resolve_column_stack_kwargs` and `Records.resolve_stack_kwargs`.
 
@@ -1276,6 +1280,8 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             field (str): The field identifier.
             mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
+            
+                See `vectorbtpro.records.base.MappedArray.apply_mapping`.
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
         Returns:
@@ -1294,6 +1300,8 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             field (str): The field identifier.
             mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
+            
+                See `vectorbtpro.records.base.MappedArray.apply_mapping`.
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
         Returns:
@@ -1687,6 +1695,8 @@ class Records(Analyzable, metaclass=MetaRecords):
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             SeriesFrame: A Series or DataFrame representing the mask.
@@ -1724,6 +1734,8 @@ class Records(Analyzable, metaclass=MetaRecords):
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             MaybeSeries: Series containing the count by column.

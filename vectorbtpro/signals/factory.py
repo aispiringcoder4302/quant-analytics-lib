@@ -202,9 +202,9 @@ class SignalFactory(IndicatorFactory):
                 exit_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting exit markers.
                 entry_types (Optional[ArrayLike]): Entry types in string format.
                 exit_types (Optional[ArrayLike]): Exit types in string format.
-                entry_trace_kwargs (KwargsLike): Keyword arguments for plotting entries, 
-                    forwarded to `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-                exit_trace_kwargs (KwargsLike): Keyword arguments for plotting exits, forwarded to 
+                entry_trace_kwargs (KwargsLike): Keyword arguments for 
+                    `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
+                exit_trace_kwargs (KwargsLike): Keyword arguments for 
                     `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
                 fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
                 **kwargs: Keyword arguments for `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.

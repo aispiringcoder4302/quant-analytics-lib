@@ -94,7 +94,11 @@ class ToMarkdownAssetFunc(AssetFunc):
             minimize_keys (Optional[Union[PathLikeKey, list]]): Key or list of keys to remove during minimization.
             clean_metadata (bool): If True, clean the metadata to remove empty or irrelevant values.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
             **to_markdown_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
@@ -257,8 +261,14 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             minimize_keys (Optional[List[PathLikeKey]]): Keys to minimize in the metadata.
             clean_metadata (bool): Flag indicating whether to clean metadata.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
+
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             **to_html_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Returns:
@@ -290,6 +300,8 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         Args:
             d (dict): Data dictionary containing content information.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
+            
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Returns:

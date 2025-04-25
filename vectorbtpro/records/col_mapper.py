@@ -71,6 +71,8 @@ class ColumnMapper(Wrapping):
         Args:
             *objs (MaybeSequence[ColumnMapper]): (Additional) `ColumnMapper` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `ColumnMapper` through
                 `ColumnMapper.resolve_row_stack_kwargs` and `ColumnMapper.resolve_stack_kwargs`.
 
@@ -125,6 +127,8 @@ class ColumnMapper(Wrapping):
         Args:
             *objs (MaybeSequence[ColumnMapper]): (Additional) `ColumnMapper` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `ColumnMapper` through
                 `ColumnMapper.resolve_column_stack_kwargs` and `ColumnMapper.resolve_stack_kwargs`.
 

@@ -519,6 +519,8 @@ class SimRangeMixin(Base):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             Union[None, Array1d, Series]: The final simulation start result, either wrapped or raw.
@@ -572,6 +574,8 @@ class SimRangeMixin(Base):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             Union[None, Array1d, Series]: The final simulation end result, either wrapped or raw.
@@ -623,6 +627,8 @@ class SimRangeMixin(Base):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             Optional[Series]: The resolved simulation start index, or None.
@@ -688,6 +694,8 @@ class SimRangeMixin(Base):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             Optional[Series]: The resolved simulation end index, or None.
@@ -760,6 +768,8 @@ class SimRangeMixin(Base):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
             Optional[Series]: The duration of the simulation range.

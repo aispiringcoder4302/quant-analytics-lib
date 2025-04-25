@@ -294,15 +294,21 @@ def talib_func(func_name: str) -> tp.Callable:
                 Resamples the input arrays to this frequency, runs the function, and then resamples 
                 the output arrays back to the original frequency.
             resample_map (KwargsLike): Mapping from input names to resampling aggregation methods.
-            resample_kwargs (KwargsLikeSequence): Keyword arguments for resampling, passed to 
-                `vectorbtpro.generic.accessors.GenericAccessor.resample_apply`.
-            realign_kwargs (KwargsLikeSequence): Keyword arguments for realigning outputs, passed to 
-                `vectorbtpro.generic.accessors.GenericAccessor.realign`.
+            resample_kwargs (KwargsLikeSequence): Keyword arguments for resampling inputs. 
+            
+                See `vectorbtpro.generic.accessors.GenericAccessor.resample_apply`.
+            realign_kwargs (KwargsLikeSequence): Keyword arguments for realigning outputs.
+            
+                See `vectorbtpro.generic.accessors.GenericAccessor.realign`.
             wrapper (Optional[ArrayWrapper]): Optional instance used for wrapping inputs and outputs.
             skipna (bool): If True, apply the TA-Lib function only on non-NA values.
             silence_warnings (bool): If True, suppress warnings during frequency handling.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting input arrays.
-            wrap_kwargs (KwargsLike): Keyword arguments for wrapping output arrays.
+            
+                See `vectorbtpro.base.reshaping.broadcast`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output arrays.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             wrap (Optional[bool]): Determines whether to wrap the outputs in a Pandas format.
             unpack_to (Optional[str]): If provided, unpacks the output into a dictionary or DataFrame.
             **kwargs: Keyword arguments for the TA-Lib function.
@@ -503,12 +509,16 @@ def talib_plot_func(func_name: str) -> tp.Callable:
         )
     new_parameters.append(inspect.Parameter("layout_kwargs", inspect.Parameter.VAR_KEYWORD))
     run_talib_plot_func.__signature__ = signature.replace(parameters=new_parameters)
-    output_trace_kwargs_docstring = "\n    ".join(
-        [
-            f"{output_name}_trace_kwargs (KwargsLike): Keyword arguments for the trace of `{output_name}`."
-            for output_name in output_names
-        ]
-    )
+    output_trace_arg_lines = []
+    for output_name in output_names:
+        flags = set(output_flags.get(output_name))
+        if abstract.TA_OUTPUT_FLAGS[16] in flags:
+            plot_trace_name = "plotly.graph_objects.Bar"
+        else:
+            plot_trace_name = "plotly.graph_objects.Scatter"
+        arg_line = f"{output_name}_trace_kwargs (KwargsLike): Keyword arguments for `{plot_trace_name}` for `{output_name}`."
+        output_trace_arg_lines.append(arg_line)
+    output_trace_kwargs_docstring = "\n            ".join(output_trace_arg_lines)
     run_talib_plot_func.__name__ = "plot_" + func_name.lower()
     run_talib_plot_func.__qualname__ = run_talib_plot_func.__name__
     run_talib_plot_func.__doc__ = inspect.cleandoc(
@@ -519,12 +529,14 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             {', '.join(output_names)} (ArrayLike): TA-Lib indicator output arrays corresponding to the respective outputs.
             wrapper (Optional[ArrayWrapper]): Optional wrapper instance used to convert raw output arrays.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output arrays.
-        
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             column (Optional[Label]): Name of the column to plot.
             limits (Optional[Tuple[float, float]]): Tuple representing the lower and upper limits for the plot.
             {output_trace_kwargs_docstring}
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
         

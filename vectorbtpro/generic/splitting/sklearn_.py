@@ -36,10 +36,9 @@ class SplitterCV(BaseCrossValidator, Base):
         splitter_cls (Optional[Type[Splitter]]): The splitter class used as the factory.
 
             Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
-        split_group_by (tp.AnyGroupByLike): Group labels for splitting.
-        set_group_by (tp.AnyGroupByLike): Group labels for setting.
-        template_context (tp.KwargsLike): Mapping for template substitution in ranges,
-            passed to the splitter factory.
+        split_group_by (AnyGroupByLike): Group labels for splitting.
+        set_group_by (AnyGroupByLike): Group labels for setting.
+        template_context (KwargsLike): Additional context for template substitution.
         **splitter_kwargs: Keyword arguments for the splitter factory method.
 
     Examples:
@@ -158,7 +157,7 @@ class SplitterCV(BaseCrossValidator, Base):
 
     @property
     def template_context(self) -> tp.KwargsLike:
-        """Mapping used for template substitution in ranges, passed to the splitter factory.
+        """Additional context for template substitution.
 
         Returns:
             KwargsLike: Mapping for template substitution in ranges.

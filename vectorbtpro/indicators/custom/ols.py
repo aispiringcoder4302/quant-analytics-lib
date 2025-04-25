@@ -95,11 +95,10 @@ class _OLS(OLS):
         Args:
             column (Optional[Label]): Name of the column to plot.
             plot_y (bool): Whether to plot `OLS.y`.
-            y_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for `OLS.y`.
-            pred_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for `OLS.pred`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            y_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `OLS.y`.
+            pred_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `OLS.pred`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
@@ -172,10 +171,10 @@ class _OLS(OLS):
             alpha (float): The alpha level for the confidence interval.
 
                 The default alpha value of 0.05 returns a 95% confidence interval.
-            zscore_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` for `OLS.zscore`.
+            zscore_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `OLS.zscore`.
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

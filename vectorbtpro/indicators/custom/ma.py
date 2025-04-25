@@ -71,9 +71,10 @@ class _MA(MA):
         Args:
             column (Optional[Label]): Name of the column to select for plotting.
             plot_close (bool): Whether to include the close price trace in the plot.
-            close_trace_kwargs (KwargsLike): Keyword arguments for the `MA.close` scatter trace.
-            ma_trace_kwargs (KwargsLike): Keyword arguments for the `MA.ma` scatter trace.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MA.close`.
+            ma_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MA.ma`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 

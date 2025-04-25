@@ -89,11 +89,10 @@ class _VWAP(VWAP):
         Args:
             column (Optional[Label]): The name of the column to plot.
             plot_close (bool): Whether to include the `VWAP.close` values in the plot.
-            close_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` used to plot `VWAP.close`.
-            vwap_trace_kwargs (KwargsLike): Keyword arguments for
-                `plotly.graph_objects.Scatter` used to plot `VWAP.vwap`.
-            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `VWAP.close`.
+            vwap_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `VWAP.vwap`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): The figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
