@@ -647,7 +647,7 @@ def from_basic_signals_nb(
         init_cash (FlexArray1dLike): Initial cash amount.
 
             Provided as a scalar or per group.
-        init_position (FlexArray1dLike): Initial position value.
+        init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): Initial position price.
@@ -1621,7 +1621,7 @@ def from_signals_nb(
         init_cash (FlexArray1dLike): Initial cash amount.
 
             Provided as a scalar or per group.
-        init_position (FlexArray1dLike): Initial position value.
+        init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): Initial position price.
@@ -4474,7 +4474,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         init_cash (FlexArray1dLike): Initial cash amount.
 
             Provided as a scalar, per group with cash sharing or per column otherwise.
-        init_position (FlexArray1dLike): Initial position value.
+        init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): Initial position price.

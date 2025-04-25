@@ -143,7 +143,7 @@ def from_orders_nb(
         init_cash (FlexArray1dLike): Initial cash amount.
 
             Provided as a scalar or per group.
-        init_position (FlexArray1dLike): Initial position value.
+        init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): Initial position price.

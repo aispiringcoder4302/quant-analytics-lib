@@ -419,7 +419,7 @@ def rolling_std_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
         arr (Array1d): One-dimensional array of numeric data.
         window (int): Window size for the rolling computation.
         minp (Optional[int]): Minimum number of observations required for a valid computation.
-        ddof (int): Delta degrees of freedom for the standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array1d: Array containing rolling standard deviation values.
@@ -469,7 +469,7 @@ def rolling_std_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, 
         arr (Array2d): Two-dimensional array of numeric data.
         window (int): Window size for the rolling computation.
         minp (Optional[int]): Minimum number of observations required per window.
-        ddof (int): Delta degrees of freedom used in the standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array2d: Array containing column-wise rolling standard deviation values.
@@ -542,7 +542,7 @@ def rolling_zscore_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = 
         arr (Array1d): One-dimensional array of numeric data.
         window (int): Window size for the rolling calculation.
         minp (Optional[int]): Minimum number of observations required per window.
-        ddof (int): Delta degrees of freedom used in the rolling standard deviation computation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array1d: Array containing rolling z-score values.
@@ -1418,7 +1418,7 @@ def msd_1d_nb(
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required in the window.
         adjust (bool): Flag indicating whether to adjust weights.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array1d: Array containing the computed moving standard deviation.
@@ -1458,7 +1458,7 @@ def msd_nb(
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required in the window.
         adjust (bool): Flag indicating whether to adjust weights.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array2d: Array with computed moving standard deviation for each column.
@@ -1549,7 +1549,7 @@ def rolling_cov_1d_nb(
         arr2 (Array1d): Second input array.
         window (int): Rolling window size.
         minp (Optional[int]): Minimum number of observations required in the window.
-        ddof (int): Delta degrees of freedom for the covariance calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array1d: Array containing the computed rolling covariance values.
@@ -1609,7 +1609,7 @@ def rolling_cov_nb(
         arr2 (Array2d): Second 2-dimensional input array.
         window (int): Rolling window size.
         minp (Optional[int]): Minimum number of observations required in the window.
-        ddof (int): Delta degrees of freedom for the covariance calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array2d: Array with computed rolling covariance for each column.

@@ -149,7 +149,7 @@ def future_std_1d_nb(
         wait (int): Number of periods to delay the result to exclude the current value.
         minp (Optional[int]): Minimum number of observations required in a window.
         adjust (bool): Flag indicating whether to adjust weights.
-        ddof (int): Degree of freedom for the standard deviation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array1d: An array containing the computed rolling standard deviations over future values.
@@ -194,7 +194,7 @@ def future_std_nb(
         wait (FlexArray1dLike): Waiting period(s).
         minp (Optional[int]): Minimum number of observations required per window.
         adjust (bool): Flag indicating whether to adjust weights.
-        ddof (int): Degree of freedom for the calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array2d: A 2-D array containing the computed rolling standard deviations

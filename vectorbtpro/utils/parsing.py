@@ -346,7 +346,9 @@ def ann_args_to_args(ann_args: tp.AnnArgs) -> tp.ArgsKwargs:
     """Convert annotated arguments to positional and keyword arguments.
 
     Args:
-        ann_args (AnnArgs): Annotated arguments mapping.
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
 
     Returns:
         ArgsKwargs: A tuple containing positional arguments and keyword arguments.
@@ -371,7 +373,9 @@ def flat_ann_args_to_args(ann_args: tp.AnnArgs) -> tp.ArgsKwargs:
     """Convert annotated arguments to positional and keyword arguments after flattening them.
 
     Args:
-        ann_args (AnnArgs): Annotated arguments mapping.
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
 
     Returns:
         ArgsKwargs: A tuple containing positional arguments and keyword arguments.
@@ -383,7 +387,9 @@ def flatten_ann_args(ann_args: tp.AnnArgs) -> tp.FlatAnnArgs:
     """Flatten annotated arguments into a dictionary of flattened argument entries.
 
     Args:
-        ann_args (AnnArgs): Annotated arguments mapping.
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
 
     Returns:
         FlatAnnArgs: A flattened dictionary representation of the annotated arguments.
@@ -523,6 +529,8 @@ def match_ann_arg(
 
     Args:
         ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
         query (AnnArgQuery): Query to identify the argument.
         return_name (bool): If True, return the argument's name.
         return_index (bool): If True, return the argument's positional index.

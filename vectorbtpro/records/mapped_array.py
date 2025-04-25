@@ -2103,7 +2103,7 @@ class MappedArray(Analyzable):
             percentiles (Optional[ArrayLike]): List of percentiles to compute.
 
                 If None, defaults are used.
-            ddof (int): Delta degrees of freedom for standard deviation calculation.
+            ddof (int): Delta degrees of freedom.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.

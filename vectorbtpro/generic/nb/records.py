@@ -159,7 +159,7 @@ def get_ranges_from_delta_nb(
         n_rows (int): Total number of rows in the dataset.
         idx_arr (Array1d): Array of record positions.
         id_arr (Array1d): Array of record identifiers.
-        col_map (GroupMap): Tuple containing column indices and corresponding group lengths.
+        col_map (GroupMap): Tuple of column indices and lengths.
         index (Optional[Array1d]): Array of index values used for delta-based calculations.
         delta (int): Delta offset to compute range boundaries.
         delta_use_index (bool): Flag indicating whether to use the index values for delta calculation.
@@ -305,7 +305,7 @@ def range_coverage_nb(
         start_idx_arr (Array1d): Array of starting indices for each range record.
         end_idx_arr (Array1d): Array of ending indices for each range record.
         status_arr (Array2d): Array indicating the status of each range record.
-        col_map (GroupMap): Tuple containing column indices and their corresponding lengths.
+        col_map (GroupMap): Tuple of column indices and lengths.
         index_lens (Array1d): Array of index lengths for each group.
         overlapping (bool): If True, compute the count of overlapping steps.
         normalize (bool): If True, return the coverage as a normalized ratio relative
@@ -379,7 +379,7 @@ def ranges_to_mask_nb(
         start_idx_arr (Array1d): Array of starting indices for each range record.
         end_idx_arr (Array1d): Array of ending indices for each range record.
         status_arr (Array2d): Array indicating the status of each range record.
-        col_map (GroupMap): Tuple containing column indices and their corresponding lengths.
+        col_map (GroupMap): Tuple of column indices and lengths.
         index_len (int): Length of the index for the resulting mask.
 
     Returns:

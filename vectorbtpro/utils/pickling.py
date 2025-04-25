@@ -55,6 +55,7 @@ def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[st
 
     Args:
         cls_name (Optional[str]): Class name to retrieve specific serialization extensions.
+        
             If omitted, returns a union of all serialization extensions.
 
     Returns:
@@ -77,6 +78,7 @@ def get_compression_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]
 
     Args:
         cls_name (Optional[str]): Class name to retrieve specific compression extensions.
+        
             If omitted, returns a union of all compression extensions.
 
     Returns:
@@ -105,6 +107,7 @@ def compress(
     Args:
         bytes_ (bytes): Data to be compressed.
         compression (CompressionLike): Compression algorithm identifier.
+        
             If set to True, the default compression from settings is used.
         file_name (Optional[str]): File name for the compressed data when using archive-based compression.
         **compress_kwargs: Keyword arguments for the compression function
@@ -201,6 +204,7 @@ def decompress(
     Args:
         bytes_ (bytes): Compressed data to be decompressed.
         compression (CompressionLike): Compression algorithm identifier.
+        
             If set to True, the default compression from settings is used.
         file_name (Optional[str]): File name to extract from the archive when using archive-based compression.
         **decompress_kwargs: Keyword arguments for the decompression function

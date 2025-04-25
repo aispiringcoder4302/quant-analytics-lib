@@ -978,6 +978,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         This function performs the following:
 
         * Determines the final index. If all wrappers share the same index, that index is used.
+        
             Otherwise, if `union_index` is True, the union of the indexes is computed.
             The merged index must contain no duplicates, have a consistent data type,
             and be monotonically increasing. A custom index can be provided via the `index` parameter.

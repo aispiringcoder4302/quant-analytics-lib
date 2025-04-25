@@ -792,7 +792,7 @@ def annualized_volatility_1d_nb(
         returns (Array1d): Array of returns.
         ann_factor (float): Annualization factor.
         levy_alpha (float): Levy alpha parameter.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         float: Computed annualized volatility.
@@ -827,7 +827,7 @@ def annualized_volatility_nb(
         returns (Array2d): Two-dimensional array of returns.
         ann_factor (float): Annualization factor.
         levy_alpha (float): Levy alpha parameter.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
         sim_start (Optional[FlexArray1dLike]): Array-like of simulation start indices for each column.
         sim_end (Optional[FlexArray1dLike]): Array-like of simulation end indices for each column.
 
@@ -891,7 +891,7 @@ def rolling_annualized_volatility_nb(
         window (int): Size of the rolling window.
         ann_factor (float): Annualization factor.
         levy_alpha (float): Levy alpha parameter.
-        ddof (int): Delta degrees of freedom for the volatility calculation.
+        ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of observations required in each window.
         sim_start (Optional[FlexArray1dLike]): Array-like of simulation start indices for each column.
         sim_end (Optional[FlexArray1dLike]): Array-like of simulation end indices for each column.
@@ -1397,7 +1397,7 @@ def sharpe_ratio_1d_nb(
     Args:
         returns (Array1d): 1D array of strategy returns.
         ann_factor (float): Annualization factor.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         float: Computed Sharpe ratio.
@@ -1440,7 +1440,7 @@ def sharpe_ratio_nb(
     Args:
         returns (Array2d): 2D array of returns.
         ann_factor (float): Annualization factor.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
         sim_start (Optional[FlexArray1dLike]): Start indices for the simulation window.
         sim_end (Optional[FlexArray1dLike]): End indices for the simulation window.
 
@@ -1552,7 +1552,7 @@ def rolling_sharpe_ratio_stream_nb(
         returns (Array2d): 2D array of strategy returns.
         window (int): Rolling window size.
         ann_factor (float): Annualization factor.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start indices for the simulation window.
         sim_end (Optional[FlexArray1dLike]): End indices for the simulation window.
@@ -1643,7 +1643,7 @@ def rolling_sharpe_ratio_nb(
 
             Determines the number of observations used in each rolling calculation.
         ann_factor (float): Annualization factor applied to the returns.
-        ddof (int): Degrees of freedom for Sharpe ratio calculation.
+        ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of periods required for a valid calculation.
         sim_start (Optional[FlexArray1dLike]): Flexible array specifying simulation start indices.
         sim_end (Optional[FlexArray1dLike]): Flexible array specifying simulation end indices.
@@ -1971,7 +1971,7 @@ def information_ratio_1d_nb(returns: tp.Array1d, ddof: int = 0) -> float:
 
     Args:
         returns (Array1d): Array of strategy returns.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         float: The information ratio, computed as the ratio of the mean to the standard deviation.
@@ -2006,7 +2006,7 @@ def information_ratio_nb(
 
     Args:
         returns (Array2d): 2D array of strategy returns.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices.
 
@@ -2059,7 +2059,7 @@ def rolling_information_ratio_nb(
     Args:
         returns (Array2d): 2D array of strategy returns.
         window (int): Size of the rolling window.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices.
@@ -2104,7 +2104,7 @@ def beta_1d_nb(
     Args:
         returns (Array1d): Array of strategy returns.
         bm_returns (Array1d): Array of benchmark returns.
-        ddof (int): Delta degrees of freedom for variance calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         float: The beta coefficient computed as covariance divided by variance.
@@ -2142,7 +2142,7 @@ def beta_nb(
     Args:
         returns (Array2d): 2D array of strategy returns.
         bm_returns (Array2d): 2D array of benchmark returns.
-        ddof (int): Delta degrees of freedom for variance calculation.
+        ddof (int): Delta degrees of freedom.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices.
 
@@ -2202,7 +2202,7 @@ def rolling_beta_nb(
         returns (Array2d): 2D array of strategy returns.
         bm_returns (Array2d): 2D array of benchmark returns.
         window (int): Size of the rolling window.
-        ddof (int): Delta degrees of freedom for variance calculation.
+        ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices.

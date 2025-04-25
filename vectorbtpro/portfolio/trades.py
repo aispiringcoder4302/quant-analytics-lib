@@ -916,7 +916,7 @@ class Trades(Ranges):
         """Return the System Quality Number (SQN) based on trades.
 
         Args:
-            ddof (int): Degrees of freedom for variance calculation.
+            ddof (int): Delta degrees of freedom.
             use_returns (bool): Whether to use trade returns instead of profit and loss.
             group_by (GroupByLike): Grouping specification.
             
@@ -2283,8 +2283,6 @@ class Trades(Ranges):
             column (Optional[Label]): The column name to plot.
             group_by (GroupByLike): Grouping specification.
             
-                See `vectorbtpro.base.grouping.base.Grouper`.
-
                 See `vectorbtpro.base.grouping.base.Grouper`.
             plot_bands (bool): Controls whether to plot bands.
 

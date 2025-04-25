@@ -284,7 +284,7 @@ def talib_func(func_name: str) -> tp.Callable:
     run_talib_func.__doc__ = inspect.cleandoc(
         f"""
         Run `talib.{func_name}` on NumPy arrays, Series, and DataFrames.
-            
+        
         Requires [TA-Lib](https://github.com/mrjbq7/ta-lib) installed.
         
         Args:

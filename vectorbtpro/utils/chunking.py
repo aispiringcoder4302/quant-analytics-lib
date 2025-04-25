@@ -87,7 +87,9 @@ class ArgGetter(DefineMixin):
         """Retrieve argument using `vectorbtpro.utils.parsing.match_ann_arg`.
 
         Args:
-            ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
             Any: The argument value.
@@ -131,7 +133,9 @@ class Sizer(Evaluable, Annotatable, DefineMixin):
         """Retrieve the size based on the provided annotated arguments.
 
         Args:
-            ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
             int: Retrieved size.
@@ -142,7 +146,9 @@ class Sizer(Evaluable, Annotatable, DefineMixin):
         """Apply the sizer to compute the size from annotated arguments.
 
         Args:
-            ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
             int: Retrieved size.
@@ -316,7 +322,9 @@ class ChunkMetaGenerator(Base):
         """Generate an iterable of chunk metadata from the provided annotated arguments.
 
         Args:
-            ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
             Iterable[ChunkMeta]: The argument value.
@@ -1552,7 +1560,9 @@ class Chunker(Configured):
         """Generate chunk metadata from annotated arguments.
 
         Args:
-            ann_args (AnnArgs): Function arguments annotated by `vectorbtpro.utils.parsing.annotate_args`.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             size (Optional[SizeLike]): Chunk size used for metadata generation.
 
                 It can be an integer, an instance of `Sizer`, or a callable that receives the annotated
@@ -1728,7 +1738,9 @@ class Chunker(Configured):
         """Extract chunks from the annotated arguments based on the provided taking specification.
 
         Args:
-            ann_args (AnnArgs): Annotated arguments from `vectorbtpro.utils.parsing.annotate_args`.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             arg_take_spec (ArgTakeSpec): Mapping specifying the extraction rules for each argument.
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             silence_warnings (bool): Indicator to suppress warnings when a specification is missing.
@@ -1783,7 +1795,9 @@ class Chunker(Configured):
 
         Args:
             func (Callable): The callable to execute as a task.
-            ann_args (AnnArgs): Arguments annotated with `vectorbtpro.utils.parsing.annotate_args`.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             chunk_meta (Iterable[ChunkMeta]): An iterable of chunk metadata.
             arg_take_spec (Optional[tp.ArgTakeSpecLike]): The specification for chunk-taking.
 
@@ -1969,7 +1983,9 @@ class Chunker(Configured):
         """Parse and return the chunk-taking specification derived from annotated arguments.
 
         Args:
-            ann_args (AnnArgs): A mapping of argument names to annotation details.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             eval_id (Optional[Hashable]): The evaluation identifier to filter Chunkable instances.
 
         Returns:
@@ -2015,7 +2031,9 @@ class Chunker(Configured):
 
         Args:
             arg_take_spec (ArgTakeSpec): The initial chunk-taking specification.
-            ann_args (AnnArgs): A mapping of annotated arguments.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
             ArgTakeSpec: The updated chunk-taking specification with missing keys filled with None.
@@ -2031,7 +2049,9 @@ class Chunker(Configured):
         """Adapt and return annotated arguments by replacing Chunkable objects with their evaluated values.
 
         Args:
-            ann_args (AnnArgs): A mapping of argument names to their annotations.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             eval_id (Optional[Hashable]): The evaluation identifier used to filter Chunkable objects.
 
         Returns:
@@ -2072,7 +2092,9 @@ class Chunker(Configured):
 
         Args:
             cls: The class reference.
-            ann_args (AnnArgs): Mapping of annotated arguments with metadata.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             arg_take_spec (ArgTakeSpec): Specification for extracting chunk-taking parameters.
             eval_id (Optional[Hashable]): Evaluation identifier for filtering chunk takers.
             **kwargs: Keyword arguments for `ChunkTaker.suggest_size`.

@@ -1323,7 +1323,7 @@ def nanvar_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
 
     Args:
         arr (Array1d): A one-dimensional array containing numerical values that may include NaNs.
-        ddof (int): Delta degrees of freedom for the variance calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         float: The computed variance based on the non-NaN elements.
@@ -1349,7 +1349,7 @@ def nanstd_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
 
     Args:
         arr (Array1d): A one-dimensional array containing numerical values with possible NaNs.
-        ddof (int): Delta degrees of freedom for the standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         float: The computed standard deviation based on the non-NaN elements.
@@ -1368,7 +1368,7 @@ def nanstd_nb(arr: tp.Array2d, ddof: int = 0) -> tp.Array1d:
 
     Args:
         arr (Array2d): A 2-dimensional array containing numerical data.
-        ddof (int): Degrees of freedom used in the standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array1d: A 1-dimensional array of standard deviations computed for each column.
@@ -1389,7 +1389,7 @@ def nancov_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, ddof: int = 0) -> float:
     Args:
         arr1 (Array1d): The first 1-dimensional numerical array.
         arr2 (Array1d): The second 1-dimensional numerical array.
-        ddof (int): Degrees of freedom used in the covariance calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         float: The covariance between `arr1` and `arr2`, or NaN if there is insufficient valid data.
@@ -1425,7 +1425,7 @@ def nancov_nb(arr1: tp.Array2d, arr2: tp.Array2d, ddof: int = 0) -> tp.Array1d:
     Args:
         arr1 (Array2d): The first 2-dimensional numerical array.
         arr2 (Array2d): The second 2-dimensional numerical array.
-        ddof (int): Degrees of freedom used in the covariance calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array1d: A 1-dimensional array where each element is the covariance of the

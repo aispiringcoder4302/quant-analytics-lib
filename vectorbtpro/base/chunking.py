@@ -79,7 +79,9 @@ class GroupLensSizer(ArgSizer):
         """Get the size based on the annotated arguments.
 
         Args:
-            ann_args (AnnArgs): Annotated arguments containing the group lengths or group map.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             **kwargs: Additional keyword arguments.
 
         Returns:

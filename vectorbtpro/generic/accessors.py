@@ -4157,7 +4157,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Return the standard deviation of non-NaN elements.
 
         Args:
-            ddof (int): Delta degrees of freedom for standard deviation calculation.
+            ddof (int): Delta degrees of freedom.
             use_jitted (Optional[bool]): Whether to use jitted execution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -4350,7 +4350,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             other (SeriesFrame): Series or frame to compute covariance with.
-            ddof (int): Degrees of freedom for the covariance calculation.
+            ddof (int): Delta degrees of freedom.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -4617,7 +4617,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             percentiles (Optional[ArrayLike]): Percentiles to include in the summary.
-            ddof (int): Delta degrees of freedom used in the computation of the standard deviation.
+            ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

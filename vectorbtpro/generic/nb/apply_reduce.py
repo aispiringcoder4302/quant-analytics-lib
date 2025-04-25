@@ -2075,7 +2075,7 @@ def std_reduce_nb(arr: tp.Array1d, ddof) -> float:
 
     Args:
         arr (Array1d): The input array.
-        ddof (int): Delta degrees of freedom for the calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         float: The standard deviation computed with the specified ddof.
@@ -2193,7 +2193,7 @@ def describe_reduce_nb(arr: tp.Array1d, perc: tp.Array1d, ddof: int) -> tp.Array
     Args:
         arr (Array1d): Input array.
         perc (Array1d): Array of percentiles as fractions (e.g., 0.25, 0.5, 0.75).
-        ddof (int): Degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array1d: An array of descriptive statistics.
@@ -2230,7 +2230,7 @@ def cov_reduce_grouped_meta_nb(
         group (int): Group identifier (not used in the computation).
         arr1 (Array2d): First input array.
         arr2 (Array2d): Second input array.
-        ddof (int): Degrees of freedom for covariance calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         float: Covariance of the selected group elements.

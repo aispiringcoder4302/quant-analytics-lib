@@ -3003,7 +3003,7 @@ Fields:
     price_area_low: Low price.
     price_area_close: Close price.
     st0_cash: Initial cash value.
-    st0_position: Initial position value.
+    st0_position: Initial position.
     st0_debt: Initial debt value.
     st0_locked_cash: Initial locked cash value.
     st0_free_cash: Initial free cash value.
@@ -3053,7 +3053,7 @@ Fields:
 
         Reference to `OrderStatusInfo`.
     st1_cash: Final cash value after execution.
-    st1_position: Final position value after execution.
+    st1_position: Final position after execution.
     st1_debt: Final debt value after execution.
     st1_locked_cash: Final locked cash value after execution.
     st1_free_cash: Final free cash value after execution.

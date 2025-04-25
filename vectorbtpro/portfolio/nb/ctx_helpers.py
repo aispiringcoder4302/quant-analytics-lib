@@ -1326,7 +1326,7 @@ def get_col_entry_trade_records_nb(
     Args:
         c (NamedTuple): A context object containing order records and related market data.
         col (int): Column index for which to retrieve entry trade records.
-        init_position (FlexArray1dLike): Initial position before any trades.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial price before any trades.
 
     Returns:
@@ -1361,7 +1361,7 @@ def get_entry_trade_records_nb(
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             A context object with order records.
-        init_position (FlexArray1dLike): Initial position before any trades.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial price before any trades.
 
     Returns:
@@ -1382,7 +1382,7 @@ def get_col_exit_trade_records_nb(
     Args:
         c (NamedTuple): A context object containing order records and market data.
         col (int): Column index for which to retrieve exit trade records.
-        init_position (FlexArray1dLike): Initial position before exit trades.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial price before exit trades.
 
     Returns:
@@ -1417,7 +1417,7 @@ def get_exit_trade_records_nb(
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             A context object with order records.
-        init_position (FlexArray1dLike): Initial position before exit trades.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial price before exit trades.
 
     Returns:
@@ -1438,7 +1438,7 @@ def get_col_position_records_nb(
     Args:
         c (NamedTuple): A context object containing order records and target shape information.
         col (int): Column index for which to retrieve position records.
-        init_position (FlexArray1dLike): Initial position value.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial price value.
 
     Returns:
@@ -1466,7 +1466,7 @@ def get_position_records_nb(
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             A context object with order records.
-        init_position (FlexArray1dLike): Initial position value.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial price value.
 
     Returns:

@@ -137,7 +137,7 @@ def msd_1d_nb(
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of elements required for the computation.
         adjust (bool): Flag indicating whether to adjust weights.
-        ddof (int): Delta degrees of freedom used in the standard deviation computation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array1d: The moving standard deviation.
@@ -178,7 +178,7 @@ def msd_nb(
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum required observations.
         adjust (bool): Flag indicating whether to adjust weights.
-        ddof (int): Delta degrees of freedom for the standard deviation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Array2d: A 2D array of moving standard deviation values.
@@ -228,7 +228,7 @@ def bbands_1d_nb(
         alpha (float): Multiplier for the moving standard deviation to determine the band width.
         minp (Optional[int]): Minimum data points required for the computation.
         adjust (bool): Flag indicating whether to adjust weights.
-        ddof (int): Delta degrees of freedom for the standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Tuple[Array1d, Array1d, Array1d]: The upper band, middle band, and lower band.
@@ -277,7 +277,7 @@ def bbands_nb(
         alpha (FlexArray1dLike): Multiplier(s) for the standard deviation.
         minp (Optional[int]): Minimum required observations.
         adjust (bool): Flag indicating whether to adjust weights.
-        ddof (int): Delta degrees of freedom for the standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         Tuple[Array2d, Array2d, Array2d]: The upper, middle, and lower Bollinger Bands for each column.
@@ -1588,7 +1588,7 @@ def ols_1d_nb(
 
             Defaults to `window` if None.
         minp (Optional[int]): Minimum number of data points required for computation.
-        ddof (int): Delta degrees of freedom used in standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
         with_zscore (bool): Whether to compute and return the z-score of regression errors.
 
     Returns:
@@ -1645,7 +1645,7 @@ def ols_nb(
 
             Defaults to `window` if None.
         minp (Optional[int]): Minimum number of data points required for computation.
-        ddof (int): Delta degrees of freedom used in standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
         with_zscore (bool): Whether to compute and return the z-score of regression errors.
 
     Returns:

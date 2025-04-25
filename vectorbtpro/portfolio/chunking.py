@@ -28,7 +28,9 @@ def get_init_cash_slicer(ann_args: tp.AnnArgs) -> ArraySlicer:
     """Return the slicer for `init_cash` based on the cash sharing configuration.
 
     Args:
-        ann_args (AnnArgs): Dictionary of annotation arguments containing cash sharing settings.
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
 
     Returns:
         ArraySlicer: A slicer configured for slicing the initial cash values.
@@ -43,7 +45,9 @@ def get_cash_deposits_slicer(ann_args: tp.AnnArgs) -> ArraySlicer:
     """Return the slicer for `cash_deposits` based on the cash sharing configuration.
 
     Args:
-        ann_args (AnnArgs): Dictionary of annotation arguments containing cash sharing settings.
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
 
     Returns:
         ArraySlicer: A slicer configured for slicing the cash deposit values.
@@ -69,7 +73,9 @@ def in_outputs_merge_func(
     Args:
         results (List[SimulationOutput]): List of simulation output chunks.
         chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
-        ann_args (AnnArgs): Dictionary of annotation arguments.
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
         mapper (GroupLensMapper): Mapper for grouping and lens mapping.
 
     Returns:
@@ -112,7 +118,9 @@ def merge_sim_outs(
     Args:
         results (List[SimulationOutput]): List of simulation output chunks.
         chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
-        ann_args (AnnArgs): Dictionary of annotation arguments.
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
         mapper (GroupLensMapper): Mapper for grouping and lens mapping.
         in_outputs_merge_func (Callable): Function to merge in-output objects.
         **kwargs: Keyword arguments for `in_outputs_merge_func`.

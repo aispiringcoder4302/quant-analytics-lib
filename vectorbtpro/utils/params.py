@@ -296,6 +296,7 @@ def pick_from_param_grid(
 
     Returns:
         Union[ParamCombOrDict, List[Array1d]]: The selected parameter combination.
+        
             Returns a dictionary if `param_grid` is a dict, or a list otherwise.
     """
     if isinstance(param_grid, dict):
@@ -1692,7 +1693,9 @@ class Parameterizer(Configured):
         `VAR_POSITIONAL` and `VAR_KEYWORD`.
 
         Args:
-            ann_args (AnnArgs): The dictionary of annotated arguments.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
             Tuple[str, str]: A tuple containing the names of variable positional and keyword arguments.
@@ -1712,7 +1715,9 @@ class Parameterizer(Configured):
 
         Args:
             param_config (dict): Parameter configuration dictionary.
-            ann_args (AnnArgs): Annotation arguments to determine variable argument names.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
             dict: Updated configuration with expanded variable arguments.
@@ -1733,7 +1738,9 @@ class Parameterizer(Configured):
 
         Args:
             param_config (dict): Configuration dictionary with expanded variable arguments.
-            ann_args (AnnArgs): Annotation arguments to determine variable argument names.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
             dict: Updated configuration with collapsed variable arguments.
@@ -1849,7 +1856,9 @@ class Parameterizer(Configured):
 
         Args:
             func (Callable): The function to be executed.
-            ann_args (AnnArgs): Annotation arguments defining the function's parameters.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             param_configs (List[Kwargs]): List of parameter configuration dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
 
@@ -1937,7 +1946,9 @@ class Parameterizer(Configured):
             chunk_indices (List[int]): List of indices defining the mono-chunk.
             param_configs (List[Kwargs]): List of parameter configuration dictionaries.
             param_config_keys (Set[str]): Set of keys required in each parameter configuration.
-            ann_args (AnnArgs): Annotation arguments for processing parameters.
+            ann_args (AnnArgs): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             flat_ann_args (Optional[FlatAnnArgs]): Flattened annotation arguments.
             mono_reduce (Union[bool, Kwargs]): Configuration for reducing parameters.
             mono_merge_func (MaybeDict[MergeFuncLike]): Merging function or a dictionary of such 

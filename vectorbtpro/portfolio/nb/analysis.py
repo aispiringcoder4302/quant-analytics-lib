@@ -107,7 +107,7 @@ def asset_flow_nb(
     Args:
         target_shape (Shape): Shape of the output array.
         order_records (RecordArray): Array of order records.
-        col_map (GroupMap): Mapping for grouping orders by column.
+        col_map (GroupMap): Tuple of column indices and lengths.
         direction (int): Direction filter for orders.
 
             See `vectorbtpro.portfolio.enums.Direction`.
@@ -200,7 +200,7 @@ def assets_nb(
         direction (int): Direction specifier.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        init_position (FlexArray1dLike): Initial asset position for each column.
+        init_position (FlexArray1dLike): Initial position for each column.
         sim_start (Optional[FlexArray1dLike]): Start indices for simulation per column.
         sim_end (Optional[FlexArray1dLike]): End indices for simulation per column.
 
@@ -936,7 +936,7 @@ def cash_flow_nb(
     Args:
         target_shape (Shape): Target shape of the output array.
         order_records (RecordArray): Array of order records.
-        col_map (GroupMap): Mapping of group indices and their lengths.
+        col_map (GroupMap): Tuple of column indices and lengths.
         free (bool): Flag indicating whether to compute free cash flow differences.
         cash_earnings (FlexArray2dLike): Array of cash earnings.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices.
@@ -1333,7 +1333,7 @@ def init_position_value_nb(
 
     Args:
         n_cols (int): Number of columns.
-        init_position (FlexArray1dLike): Initial positions for each column.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial prices for each column.
 
     Returns:
@@ -1364,7 +1364,7 @@ def init_position_value_grouped_nb(
 
     Args:
         group_lens (GroupLens): Array specifying the number of columns in each group.
-        init_position (FlexArray1dLike): Initial positions for each column.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial prices for each column.
 
     Returns:
@@ -1394,7 +1394,7 @@ def init_value_nb(init_position_value: tp.Array1d, init_cash: tp.FlexArray1d) ->
     """Compute the total initial value per column or group by summing initial cash and initial position value.
 
     Args:
-        init_position_value (Array1d): Initial position values per column.
+        init_position_value (Array1d): Initial position per column.
         init_cash (FlexArray1d): Initial cash amounts per column.
 
     Returns:
@@ -1767,8 +1767,8 @@ def total_profit_nb(
         target_shape (Shape): Target shape of the simulation output.
         close (Array2d): Matrix of closing prices.
         order_records (RecordArray): Array of order records.
-        col_map (GroupMap): Mapping specifying column indices and group lengths.
-        init_position (FlexArray1dLike): Initial asset positions for each column.
+        col_map (GroupMap): Tuple of column indices and lengths.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial asset prices for each column.
         cash_earnings (FlexArray2dLike): Matrix of cash earnings.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices for each column.

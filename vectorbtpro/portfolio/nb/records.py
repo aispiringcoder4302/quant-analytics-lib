@@ -227,7 +227,7 @@ def fill_entry_trades_in_position_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
-        col_map (GroupMap): Group mapping containing order indices and their lengths.
+        col_map (GroupMap): Tuple of column indices and lengths.
         col (int): Column index for the orders.
         sim_start (int): Simulation start index.
         sim_end (int): Simulation end index.
@@ -353,10 +353,8 @@ def get_entry_trades_nb(
     Args:
         order_records (RecordArray): Array of order records.
         close (FlexArray2dLike): 2D array of closing prices.
-        col_map (GroupMap): Mapping of columns for aggregating order records.
-        init_position (FlexArray1dLike): 1D array of initial positions.
-
-            Specifies the starting position for each asset.
+        col_map (GroupMap): Tuple of column indices and lengths.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): 1D array of initial prices.
 
             Used to calculate the entry price when an initial position exists.
@@ -698,12 +696,8 @@ def get_exit_trades_nb(
         close (FlexArray2dLike): 2D array of closing prices.
             
             Each element represents the closing price at a specific index for each column.
-        col_map (GroupMap): Mapping of group columns.
-            
-            Consists of column indices and lengths used to group orders.
-        init_position (FlexArray1dLike): Initial positions for each column.
-            
-            Represented as a 1D array-like structure.
+        col_map (GroupMap): Tuple of column indices and lengths.
+        init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial prices for each column.
             
             Represented as a 1D array-like structure.
@@ -1089,7 +1083,7 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
 
     Args:
         trade_records (RecordArray): Array of trade records to aggregate.
-        col_map (GroupMap): Mapping of columns containing indices and group lengths.
+        col_map (GroupMap): Tuple of column indices and lengths.
 
     Returns:
         RecordArray: Array of aggregated position records after repartitioning based on group counts.
@@ -1201,9 +1195,9 @@ def get_long_view_orders_nb(
     Args:
         order_records (RecordArray): Array of structured order records.
         close (Array2d): Array of closing prices.
-        col_map (GroupMap): Tuple containing column indices and group lengths for orders.
-        init_position (FlexArray1dLike): Initial position for each group.
-        init_price (FlexArray1dLike): Initial price for each group.
+        col_map (GroupMap): Tuple of column indices and lengths.
+        init_position (FlexArray1dLike): Initial position for each column.
+        init_price (FlexArray1dLike): Initial price for each column.
         sim_start (Optional[FlexArray1dLike]): Simulation start index for each group.
         sim_end (Optional[FlexArray1dLike]): Simulation end index for each group.
 
@@ -1374,13 +1368,9 @@ def get_short_view_orders_nb(
         order_records (RecordArray): Order records as a NumPy record array
             containing trading order details.
         close (Array2d): A 2D array of closing prices.
-        col_map (GroupMap): Mapping information for group columns,
-            containing grouped column indices and lengths.
-        init_position (FlexArray1dLike): Initial position for each group.
-
-            A negative value indicates a short initial position.
-            A positive value indicates a long initial position.
-        init_price (FlexArray1dLike): Initial price for each group.
+        col_map (GroupMap): Tuple of column indices and lengths.
+        init_position (FlexArray1dLike): Initial position for each column.
+        init_price (FlexArray1dLike): Initial price for each column.
         sim_start (Optional[FlexArray1dLike]): Simulation start indices for filtering orders.
         sim_end (Optional[FlexArray1dLike]): Simulation end indices for filtering orders.
 
@@ -1556,12 +1546,12 @@ def get_position_feature_nb(
     Args:
         order_records (RecordArray): Order records array.
         close (Array2d): Array of market close prices.
-        col_map (GroupMap): Mapping of columns to their corresponding indices.
+        col_map (GroupMap): Tuple of column indices and lengths.
         feature (int): Position feature to compute.
 
             See `vectorbtpro.portfolio.enums.PositionFeature`.
-        init_position (FlexArray1dLike): Initial positions for each group.
-        init_price (FlexArray1dLike): Initial prices for each group.
+        init_position (FlexArray1dLike): Initial position for each column.
+        init_price (FlexArray1dLike): Initial prices for each column.
         fill_closed_position (bool): If True, forward-fill missing values using
             prices from a previously closed position.
         fill_exit_price (bool): If True, fill exit prices for open positions using
@@ -1925,7 +1915,7 @@ def sqn_reduce_nb(pnl_arr: tp.Array1d, ddof: int = 0) -> float:
 
     Args:
         pnl_arr (Array1d): Array of profit and loss values.
-        ddof (int): Delta degrees of freedom for standard deviation calculation.
+        ddof (int): Delta degrees of freedom.
 
     Returns:
         float: The SQN computed as `sqrt(count) * mean / std`, or NaN if the standard deviation is zero.
@@ -2728,7 +2718,7 @@ def edge_ratio_nb(
 
     Args:
         records (RecordArray): Trade records used for calculation.
-        col_map (GroupMap): Mapping of column indices and their respective lengths.
+        col_map (GroupMap): Tuple of column indices and lengths.
         open (Optional[FlexArray2d]): 2D array representing open prices.
         high (Optional[FlexArray2d]): 2D array representing high prices.
         low (Optional[FlexArray2d]): 2D array representing low prices.
@@ -2841,7 +2831,7 @@ def running_edge_ratio_nb(
 
     Args:
         records (RecordArray): Array of trade records.
-        col_map (GroupMap): Tuple containing column indices and their corresponding lengths.
+        col_map (GroupMap): Tuple of column indices and lengths.
         open (Optional[FlexArray2d]): Array of opening prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.

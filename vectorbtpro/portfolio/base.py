@@ -2040,7 +2040,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): The array wrapper instance.
 
                 If None, defaults to `Portfolio.wrapper`.
-            group_by (GroupByLike): Determines the grouping structure to check if the object is grouped.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             indexing_func (Optional[Callable]): Custom indexing function that must accept `Portfolio`,
                 the object, wrapper_meta, and the remaining arguments, including `**kwargs`.
 
@@ -2883,7 +2885,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Set to a lower number to conserve memory, or 0 to disable logging.
             seed (Optional[int]): Seed value for generating the call sequence and initializing the simulation.
-            group_by (GroupByLike): Grouping specification for columns.
+            group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             broadcast_kwargs (KwargsLike): Keyword arguments to pass to
@@ -3650,7 +3652,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                     When using Numba below 0.54, `in_outputs` must be a globally defined
                     named tuple rather than a mapping.
             seed (Optional[int]): Seed value for generating the call sequence and initializing the simulation.
-            group_by (GroupByLike): Grouping specification for columns.
+            group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
@@ -4793,7 +4795,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                     For Numba versions below 0.54, `in_outputs` must be a globally defined named tuple
                     rather than a mapping.
             seed (Optional[int]): Seed value for generating the call sequence and initializing the simulation.
-            group_by (GroupByLike): Grouping specification for columns.
+            group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
@@ -7109,7 +7111,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders (Optional[Orders]): Orders instance containing order data.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            init_position (Optional[ArrayLike]): Initial position values used at the start of the simulation.
+            init_position (Optional[ArrayLike]): Initial position used at the start of the simulation.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
             sim_start (Optional[ArrayLike]): Start time of the simulation.
@@ -7200,7 +7202,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             asset_flow (Optional[SeriesFrame]): Asset flow series.
 
                 Defaults to `Portfolio.get_asset_flow` with `direction="both"` if not provided.
-            init_position (Optional[ArrayLike]): Initial position values used at the start of the simulation.
+            init_position (Optional[ArrayLike]): Initial position used at the start of the simulation.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
             sim_start (Optional[ArrayLike]): Start time of the simulation.
@@ -9499,7 +9501,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the result.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            group_by (GroupByLike): Grouping specification for aggregating data.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
@@ -9588,7 +9592,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the output.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            group_by (GroupByLike): Grouping specification for aggregating data.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -9704,7 +9710,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the result.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            group_by (GroupByLike): Grouping specification for aggregating data.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
