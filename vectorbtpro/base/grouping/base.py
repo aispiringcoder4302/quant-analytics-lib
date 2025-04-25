@@ -256,7 +256,7 @@ class Grouper(Configured):
         """Iterate over group indices based on group lengths.
 
         Args:
-            group_lens (GroupLens): A sequence of group lengths.
+            group_lens (GroupLens): Array defining the number of columns in each group.
 
         Yields:
             GroupIdxs: Array of indices representing a single group.

@@ -315,8 +315,8 @@ class Drawdowns(Ranges):
             open (Optional[ArrayLike]): Array of open prices.
             high (Optional[ArrayLike]): Array of high prices.
             low (Optional[ArrayLike]): Array of low prices.
-            sim_start (Optional[ArrayLike]): Simulation start.
-            sim_end (Optional[ArrayLike]): Simulation end.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             attach_data (bool): Whether to attach the price data to the instance.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -324,7 +324,7 @@ class Drawdowns(Ranges):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
 
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.

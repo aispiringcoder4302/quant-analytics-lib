@@ -57,7 +57,7 @@ class ProgressBar(Base):
         postfix (Union[None, str, dict]): Postfix for the progress bar description.
         desc_kwargs (KwargsLike): Keyword arguments for customizing the description.
         registry (Optional[PBarRegistry]): Registry for managing progress bar instances.
-        silence_warnings (Optional[bool]): Flag to suppress warnings.
+        silence_warnings (Optional[bool]): Flag to suppress warning messages.
         **kwargs: Keyword arguments for the progress bar constructor.
 
     !!! info

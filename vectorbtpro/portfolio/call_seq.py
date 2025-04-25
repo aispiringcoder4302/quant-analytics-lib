@@ -26,7 +26,7 @@ def shuffle_call_seq_nb(call_seq: tp.Array2d, group_lens: tp.GroupLens) -> None:
 
     Args:
         call_seq (Array2d): Array representing the call sequence.
-        group_lens (GroupLens): Sequence of group lengths defining segments in the array.
+        group_lens (GroupLens): Array defining the number of columns in each group.
 
     Returns:
         None: The function modifies `call_seq` in place.
@@ -49,7 +49,7 @@ def build_call_seq_nb(
 
     Args:
         target_shape (Shape): Desired shape of the output call sequence array.
-        group_lens (GroupLens): Sequence of group lengths defining segments.
+        group_lens (GroupLens): Array defining the number of columns in each group.
         call_seq_type (int): Identifier for the type of call sequence construction.
 
             See `vectorbtpro.portfolio.enums.CallSeqType`.
@@ -93,7 +93,7 @@ def build_call_seq(
 
     Args:
         target_shape (Shape): Desired shape of the output call sequence array.
-        group_lens (GroupLens): Sequence of group lengths defining segments.
+        group_lens (GroupLens): Array defining the number of columns in each group.
         call_seq_type (int): Identifier for the type of call sequence construction.
 
             See `vectorbtpro.portfolio.enums.CallSeqType`.

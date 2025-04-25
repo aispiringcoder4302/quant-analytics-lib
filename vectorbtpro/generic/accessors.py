@@ -491,7 +491,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[int]): Window size for computing the index of the minimum value.
 
                 If None, uses the full length of the data.
-            minp (Optional[int]): Minimum number of observations required within the window.
+            minp (Optional[int]): Minimum number of observations required.
             local (bool): If True, computes the index of the minimum value within the local window.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -524,7 +524,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         window as in `GenericAccessor.rolling_idxmin`.
 
         Args:
-            minp (Optional[int]): Minimum number of observations required within the window.
+            minp (Optional[int]): Minimum number of observations required.
             **kwargs: Keyword arguments for `GenericAccessor.rolling_idxmin`.
 
         Returns:
@@ -548,7 +548,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[int]): Window size for computing the index of the maximum value.
 
                 If None, uses the full length of the data.
-            minp (Optional[int]): Minimum number of observations required within the window.
+            minp (Optional[int]): Minimum number of observations required.
             local (bool): If True, computes the index of the maximum value within the local window.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -581,7 +581,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         window as in `GenericAccessor.rolling_idxmax`.
 
         Args:
-            minp (Optional[int]): Minimum number of observations required before computing the index.
+            minp (Optional[int]): Minimum number of observations required.
             **kwargs: Keyword arguments for `GenericAccessor.rolling_idxmax`.
 
         Returns:
@@ -604,7 +604,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[int]): Window size for computing the mean.
 
                 If None, uses the full length of the data.
-            minp (Optional[int]): Minimum number of observations required within the window.
+            minp (Optional[int]): Minimum number of observations required.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -633,7 +633,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         the full-length window as in `GenericAccessor.rolling_mean`.
 
         Args:
-            minp (Optional[int]): Minimum number of observations required before computing the mean.
+            minp (Optional[int]): Minimum number of observations required.
             **kwargs: Keyword arguments for `GenericAccessor.rolling_mean`.
 
         Returns:
@@ -656,7 +656,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[int]): Window size for computing the standard deviation.
 
                 If None, uses the full length of the data.
-            minp (Optional[int]): Minimum number of observations required within the window.
+            minp (Optional[int]): Minimum number of observations required.
             ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -686,7 +686,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         equivalent to using the full-length window as in `GenericAccessor.rolling_std`.
 
         Args:
-            minp (Optional[int]): Minimum number of observations required before computing the standard deviation.
+            minp (Optional[int]): Minimum number of observations required.
             **kwargs: Keyword arguments for `GenericAccessor.rolling_std`.
 
         Returns:
@@ -709,7 +709,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[int]): Window size for computing the z-score.
 
                 If None, uses the full length of the data.
-            minp (Optional[int]): Minimum number of observations required within the window.
+            minp (Optional[int]): Minimum number of observations required.
             ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -738,7 +738,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the expanding z-score for the instance's data over its entire length.
 
         Args:
-            minp (Optional[int]): Minimum number of observations required before computing the z-score.
+            minp (Optional[int]): Minimum number of observations required.
             **kwargs: Keyword arguments for `GenericAccessor.rolling_zscore`.
 
         Returns:
@@ -758,7 +758,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             span (int): Window span for computing the weighted moving mean.
-            minp (Optional[int]): Minimum number of observations required within the span.
+            minp (Optional[int]): Minimum number of observations required.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -938,8 +938,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         using a specified window.
 
         Args:
-            window (int): Window size for computing VIDYA.
-            minp (Optional[int]): Minimum number of observations required within the window.
+            window (int): Size of the rolling window.
+            minp (Optional[int]): Minimum number of observations required.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -974,11 +974,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the moving average for the instance's data using a specified window and weighting type.
 
         Args:
-            window (int): Window size for computing the moving average.
+            window (int): Size of the rolling window.
             wtype (Union[int, str]): Type of weighting to use for the moving average.
 
                 See `vectorbtpro.generic.enums.WType`.
-            minp (Optional[int]): Minimum number of observations required within the window.
+            minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -1018,11 +1018,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
         window and weighting type.
 
         Args:
-            window (int): Window size for computing the moving standard deviation.
+            window (int): Size of the rolling window.
             wtype (Union[int, str]): Type of weighting to use for the moving standard deviation.
 
                 See `vectorbtpro.generic.enums.WType`.
-            minp (Optional[int]): Minimum number of observations required within the window.
+            minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1067,7 +1067,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[int]): Window size for computing covariance.
 
                 If None, uses the full series length.
-            minp (Optional[int]): Minimum number of observations required within the window.
+            minp (Optional[int]): Minimum number of observations required.
             ddof (int): Delta degrees of freedom.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -1102,7 +1102,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             other (SeriesFrame): Another data series to compute covariance with.
-            minp (Optional[int]): Minimum number of observations required before computing covariance.
+            minp (Optional[int]): Minimum number of observations required.
             **kwargs: Keyword arguments for `GenericAccessor.rolling_cov`.
 
         Returns:
@@ -1127,7 +1127,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[int]): Size of the rolling window.
 
                 If None, uses the full data length.
-            minp (Optional[int]): Minimum number of observations required in each window.
+            minp (Optional[int]): Minimum number of observations required.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -1185,7 +1185,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[int]): Size of the rolling window.
 
                 If None, uses the full series length.
-            minp (Optional[int]): Minimum number of observations required per window.
+            minp (Optional[int]): Minimum number of observations required.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -1254,7 +1254,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[int]): Size of the rolling window.
 
                 If None, uses the full series length.
-            minp (Optional[int]): Minimum number of observations required per window.
+            minp (Optional[int]): Minimum number of observations required.
             pct (bool): If True, compute percentile rank; otherwise, compute ordinal rank.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -1351,7 +1351,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             max_pct_change (float): Maximum percent change applied during rescaling.
             min_similarity (float): Minimum similarity threshold; if the computed similarity
                 falls below this, returns NaN.
-            minp (Optional[int]): Minimum number of valid data points required for computation.
+            minp (Optional[int]): Minimum number of observations required.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1448,7 +1448,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -1592,7 +1592,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -1760,7 +1760,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             reduce_func_nb (Union[str, ReduceFunc, RangeReduceMetaFunc]):
                 Reduction function identifier or function.
             *args: Positional arguments for the reduction function.
-            minp (Optional[int]): Minimum number of observations required in the window.
+            minp (Optional[int]): Minimum number of observations required.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -1772,7 +1772,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -1979,7 +1979,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
@@ -2140,7 +2140,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -2275,7 +2275,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -2452,7 +2452,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
@@ -2630,7 +2630,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2893,7 +2893,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         The method supports broadcasting and template substitution to flexibly process input data.
 
         Args:
-            window (int): Window size over which the reduction function is applied.
+            window (int): Size of the rolling window.
             reduce_func_nb (Union[str, ReduceFunc, ProximityReduceMetaFunc]):
                 The reduction function or its string identifier.
             *args: Positional arguments for `reduce_func_nb`.
@@ -2905,7 +2905,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -3059,7 +3059,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -3311,7 +3311,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-            silence_warnings (Optional[bool]): Flag to suppress warnings during resampling.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             MaybeSeriesFrame: Realigned data as a Series or DataFrame.
@@ -3502,11 +3502,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-            silence_warnings (Optional[bool]): If True, suppress warnings during resampling.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             SeriesFrame: The resampled data as a Pandas Series or DataFrame.
@@ -3715,7 +3715,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_with_lbound (Optional[bool]): Determines if the lower bound index is used for wrapping the output.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
@@ -5480,7 +5480,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             cond_kwargs (KwargsLike): Keyword arguments that may alter instance conditions.
             custom_arg_names (Optional[Set[str]]): Set of custom argument names to consider.
             impacts_caching (bool): Indicator whether modifications affect caching.
-            silence_warnings (bool): If True, suppress warnings when creating a copy.
+            silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
             GenericAccessor: The resolved instance, possibly a new copy if conditions are met.

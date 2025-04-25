@@ -2496,7 +2496,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 * 'nan': Set missing data points to NaN.
                 * 'drop': Remove missing data points.
                 * 'raise': Raise an error.
-            silence_warnings (Optional[bool]): Indicates whether to suppress warnings during alignment.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             dict: A dictionary with all data reindexed to a common index.
@@ -2550,7 +2550,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 * 'nan': Set missing data points to NaN.
                 * 'drop': Remove missing data points.
                 * 'raise': Raise an error.
-            silence_warnings (Optional[bool]): Indicates whether to suppress warnings during alignment.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             dict: A dictionary with all data reindexed to a common set of columns.
@@ -2704,7 +2704,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             tz_convert (Union[None, bool, TimezoneLike]): Timezone conversion flag or value.
             missing_index (Optional[str]): Name to use when an index is missing.
             missing_columns (Optional[str]): Name to use when columns are missing.
-            silence_warnings (Optional[bool]): If True, suppress warning messages during alignment.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             dict: Aligned data dictionary with cleaned and ordered indices and columns.
@@ -2826,7 +2826,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 returned by `Data.fetch_symbol`.
             last_index (Optional[dict]): Last fetched index per symbol.
             delisted (Optional[dict]): Indicator dictionary for delisted symbols.
-            silence_warnings (Optional[bool]): Flag to silence all warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
@@ -3873,7 +3873,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             feature (Feature): The feature to retrieve.
             skip_on_error (bool): If True, exceptions during fetching are suppressed.
-            silence_warnings (bool): If True, warning messages are not displayed.
+            silence_warnings (bool): Flag to suppress warning messages.
             fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_feature`.
 
         Returns:
@@ -3935,7 +3935,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             symbol (Symbol): The symbol to retrieve.
             skip_on_error (bool): If True, exceptions during fetching are suppressed.
-            silence_warnings (bool): If True, warning messages are not displayed.
+            silence_warnings (bool): Flag to suppress warning messages.
             fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_symbol`.
 
         Returns:
@@ -4091,7 +4091,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             skip_on_error (Optional[bool]): Skip the feature or symbol if an exception occurs.
-            silence_warnings (Optional[bool]): Silence all warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
                 This flag is also forwarded to `Data.fetch_feature`/`Data.fetch_symbol` if applicable.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
@@ -4360,7 +4360,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             feature (Feature): The feature identifier to update.
             skip_on_error (bool): If True, skip update when an error occurs.
-            silence_warnings (bool): If True, silence warning messages.
+            silence_warnings (bool): Flag to suppress warning messages.
             update_kwargs (KwargsLike): Keyword arguments for `Data.update_feature`.
 
         Returns:
@@ -4413,7 +4413,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             symbol (Symbol): The symbol to update.
             skip_on_error (bool): If True, skip symbol update on error.
-            silence_warnings (bool): If True, silence warning messages.
+            silence_warnings (bool): Flag to suppress warning messages.
             update_kwargs (KwargsLike): Keyword arguments for `Data.update_symbol`.
 
         Returns:
@@ -4453,7 +4453,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             concat (bool): Whether to concatenate existing data with updated/new data.
             skip_on_error (Optional[bool]): Whether to skip updating a feature or symbol if an exception occurs.
-            silence_warnings (Optional[bool]): Whether to suppress warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
                 Also passed to `Data.update_feature` or `Data.update_symbol` if accepted by
                 `Data.fetch_feature` or `Data.fetch_symbol`.
@@ -5107,7 +5107,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             func_name (str): The name identifying the function to run.
             *args: Positional arguments for `Data.run`.
             raise_errors (bool): If True, exceptions encountered during execution are raised.
-            silence_warnings (bool): If True, warnings are suppressed when execution fails.
+            silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `Data.run`.
 
         Returns:
@@ -5256,7 +5256,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Use True, "dict", or "frame" to apply post-processing.
             concat (bool): If True, concatenates results from multiple function calls.
             data_kwargs (KwargsLike): Keyword arguments for `Data.from_data`.
-            silence_warnings (bool): If True, suppresses warnings during execution.
+            silence_warnings (bool): Flag to suppress warning messages.
             raise_errors (bool): If True, raises any exceptions encountered.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 

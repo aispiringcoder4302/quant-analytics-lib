@@ -226,7 +226,7 @@ class BinanceData(RemoteData):
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.
-            silence_warnings (bool): Silence warnings if True.
+            silence_warnings (bool): Flag to suppress warning messages.
             **get_klines_kwargs: Keyword arguments for `binance.client.Client.get_klines`.
 
         Returns:

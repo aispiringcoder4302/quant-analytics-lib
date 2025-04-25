@@ -2068,7 +2068,7 @@ def check_group_lens_nb(group_lens: tp.GroupLens, n_cols: int) -> None:
     """Ensure the group lengths sum to the total number of columns.
 
     Args:
-        group_lens (GroupLens): An array specifying the length of each group.
+        group_lens (GroupLens): Array defining the number of columns in each group.
         n_cols (int): Total expected number of columns.
 
     Returns:
@@ -2083,7 +2083,7 @@ def is_grouped_nb(group_lens: tp.GroupLens) -> bool:
     """Determine if columns are grouped.
 
     Args:
-        group_lens (GroupLens): Array of group lengths.
+        group_lens (GroupLens): Array defining the number of columns in each group.
 
     Returns:
         bool: True if at least one group contains more than one column, otherwise False.
@@ -2134,7 +2134,7 @@ def prepare_last_cash_nb(
 
     Args:
         target_shape (Shape): Target shape used to determine dimensions.
-        group_lens (GroupLens): Array of group lengths.
+        group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Indicates whether cash is shared across columns within each group.
         init_cash (FlexArray1d): Array of initial cash values.
 
@@ -2182,7 +2182,7 @@ def prepare_last_value_nb(
 
     Args:
         target_shape (Shape): Target shape used to determine the output dimensions.
-        group_lens (GroupLens): Array of group lengths.
+        group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Indicates if cash is shared among columns within each group.
         init_cash (FlexArray1d): Array of initial cash values.
         init_position (FlexArray1d): Array of initial position values.

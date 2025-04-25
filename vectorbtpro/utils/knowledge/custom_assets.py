@@ -4051,7 +4051,7 @@ def search(
 
             Pass an integer to display n top results. Will return the path to the temporary file.
         display_kwargs (KwargsLike): Keyword arguments for `VBTAsset.display`.
-        silence_warnings (bool): Suppress warnings during the search process.
+        silence_warnings (bool): Flag to suppress warning messages.
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.rank`.
 
     Returns:
@@ -4189,7 +4189,7 @@ def chat(
         return_chunks (Optional[bool]): Return text chunks if True.
         rank_kwargs (KwargsLike): Keyword arguments for `VBTAsset.rank`.
         wrap_documents (Optional[bool]): Wrap documents during processing if True.
-        silence_warnings (bool): Suppress caching warnings.
+        silence_warnings (bool): Flag to suppress warning messages.
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.chat`.
 
     Returns:

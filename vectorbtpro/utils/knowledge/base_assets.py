@@ -2834,7 +2834,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             cache_key (Optional[str]): Key for caching documents.
             asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Asset cache manager class or instance.
             asset_cache_manager_kwargs (KwargsLike): Keyword arguments for initializing or updating `asset_cache_manager`.
-            silence_warnings (bool): If True, caching warnings are suppressed.
+            silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.rank_documents`.
 
         Returns:

@@ -2953,8 +2953,8 @@ class EntryTrades(Trades):
                 If None, uses `orders._close`.
             init_position (ArrayLike): Initial position.
             init_price (ArrayLike): Initial price.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3240,8 +3240,8 @@ class ExitTrades(Trades):
                 If None, uses `orders._close`.
             init_position (ArrayLike): Initial position.
             init_price (ArrayLike): Initial price.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3524,8 +3524,8 @@ class Positions(Trades):
                 If None, uses `trades._close`.
             init_position (ArrayLike): Initial position.
             init_price (ArrayLike): Initial price.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

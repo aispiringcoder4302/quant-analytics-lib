@@ -93,7 +93,7 @@ def group_lens_select_nb(group_lens: tp.GroupLens, new_groups: tp.Array1d) -> tp
     """Perform selection indexing on a sorted group array using group lengths.
 
     Args:
-        group_lens (GroupLens): An array containing the lengths of the groups.
+        group_lens (GroupLens): Array defining the number of columns in each group.
         new_groups (Array1d): Array of group identifiers to select.
 
     Returns:

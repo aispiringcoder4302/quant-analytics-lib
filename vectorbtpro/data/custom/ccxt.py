@@ -416,7 +416,7 @@ class CCXTData(RemoteData):
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.
-            silence_warnings (Optional[bool]): Flag to suppress warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
             return_fetch_method (bool): If True, returns the fetch method and settings instead of fetched data.
 
         Returns:

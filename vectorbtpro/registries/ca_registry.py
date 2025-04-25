@@ -2123,7 +2123,7 @@ class CABaseDelegatorSetup(CABaseSetup, CASetupDelegatorMixin):
 
         Args:
             force (bool): Flag to force the enabling of caching.
-            silence_warnings (Optional[bool]): Flag to control the suppression of warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `CASetupDelegatorMixin.enable_caching`.
 
         Returns:
@@ -3436,7 +3436,7 @@ class CachingDisabled(Base):
         disable_whitelist (bool): Whether to disable the whitelist.
         disable_machinery (bool): Whether to disable caching machinery.
         clear_cache (bool): Whether to clear the cache when disabling caching.
-        silence_warnings (bool): Whether to suppress warnings during caching operations.
+        silence_warnings (bool): Flag to suppress warning messages.
 
     !!! info
         For default settings, see `vectorbtpro._settings.caching`.
@@ -3703,7 +3703,7 @@ class CachingEnabled(Base):
         enable_whitelist (bool): Flag to enable whitelist for caching setups.
         enable_machinery (bool): Flag to enable the caching machinery.
         clear_cache (bool): Flag to clear caches upon exiting the context.
-        silence_warnings (bool): Flag to silence caching-related warnings.
+        silence_warnings (bool): Flag to suppress warning messages.
 
     !!! info
         For default settings, see `vectorbtpro._settings.caching`.

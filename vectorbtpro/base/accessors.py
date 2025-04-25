@@ -527,7 +527,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Args:
             a (MaybeArray): The input array containing numerical values.
             to_pd (bool): Determines whether to return a Pandas timedelta representation.
-            silence_warnings (Optional[bool]): Flag to suppress warning messages regarding frequency parsing.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             Union[pd.Index, MaybeArray]: The array converted to time durations.
@@ -615,7 +615,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             freq (Optional[FrequencyLike]): The target frequency for the resampler.
             resample_kwargs (KwargsLike): Keyword arguments for the Pandas resample method.
             return_pd_resampler (bool): Flag indicating whether to return a Pandas resampler.
-            silence_warnings (Optional[bool]): If set, suppresses warning messages.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             Union[Resampler, PandasResampler]: The constructed index resampler.

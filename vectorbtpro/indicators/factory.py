@@ -680,7 +680,7 @@ class IndicatorBase(Analyzable):
                 !!! note
                     Cache, raw output, and extra outputs beyond `num_ret_outputs` are returned
                     only for unique parameter combinations.
-            silence_warnings (bool): If True, suppresses warnings (e.g., those related to `run_unique`).
+            silence_warnings (bool): Flag to suppress warning messages.
             per_column (Optional[bool]): Flag indicating whether parameter values should be applied per column.
 
                 When True, each list of parameter values is broadcast to the number of input columns and applied
@@ -4185,7 +4185,7 @@ Returns:
 
                 Used to identify input columns if not explicitly annotated.
             test_index_len (int): The number of rows in the generated test DataFrame.
-            silence_warnings (bool): Flag to suppress warnings during output parsing.
+            silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for the indicator function.
 
         Returns:
@@ -4280,7 +4280,7 @@ Returns:
         Only indicator functions that are successfully parsed are included in the final list.
 
         Args:
-            silence_warnings (bool): Flag indicating whether to suppress warnings during parsing.
+            silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `IndicatorFactory.parse_pandas_ta_config`.
 
         Returns:
@@ -4707,7 +4707,7 @@ Returns:
         `IndicatorFactory.parse_technical_config`. Returns a sorted list of indicator names in uppercase.
 
         Args:
-            silence_warnings (bool): Flag to suppress warnings if indicator parsing fails.
+            silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `IndicatorFactory.parse_technical_config`.
 
         Returns:
@@ -5178,7 +5178,7 @@ Returns:
         those that can be successfully parsed into a configuration.
 
         Args:
-            silence_warnings (bool): Flag indicating whether to suppress warnings during parsing.
+            silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `IndicatorFactory.parse_smc_config`.
 
         Returns:

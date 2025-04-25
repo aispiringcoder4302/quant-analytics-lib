@@ -327,8 +327,7 @@ class SignalsAccessor(GenericAccessor):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): An `vectorbtpro.base.wrapping.ArrayWrapper`
-                instance to wrap the output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -455,7 +454,7 @@ class SignalsAccessor(GenericAccessor):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Output wrapper instance used to wrap the resulting signals.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -973,7 +972,7 @@ class SignalsAccessor(GenericAccessor):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper used for wrapping the output arrays.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.

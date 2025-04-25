@@ -525,7 +525,7 @@ class AttrResolverMixin(Base):
             cond_kwargs (KwargsLike): Keyword arguments for conditional resolution.
             custom_arg_names (Optional[Set[str]]): Set of custom argument names affecting caching.
             impacts_caching (bool): Flag indicating whether resolution impacts caching.
-            silence_warnings (bool): Flag to silence warnings during resolution.
+            silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
             AttrResolverMixin: The resolved self.

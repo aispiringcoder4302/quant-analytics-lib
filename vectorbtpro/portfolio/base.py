@@ -534,8 +534,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         cash_earnings (ArrayLike): Earnings added at each timestamp.
 
             Provided in a format that supports flexible indexing.
-        sim_start (Optional[ArrayLike]): Simulation start per column.
-        sim_end (Optional[ArrayLike]): Simulation end per column.
+        sim_start (Optional[ArrayLike]): Start index of the simulation range.
+        sim_end (Optional[ArrayLike]): End index of the simulation range.
         call_seq (Optional[Array2d]): Sequence of calls per row and column.
         in_outputs (Optional[NamedTuple]): Named tuple containing in-output objects.
 
@@ -766,7 +766,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Supported options include "columns_or_groups", "columns", "groups", and "cash_sharing".
             obj_name (Optional[str]): Identifier for the object.
             obj_type (Optional[str]): Expected type of the object, which influences the stacking logic.
-            wrapper (Optional[ArrayWrapper]): Target array wrapper used for performing the stacking.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             cash_sharing (bool): Flag indicating whether cash sharing is enabled.
             row_stack_func (Optional[Callable]): Custom function for row stacking that must accept the
                 portfolio class and all provided arguments.
@@ -1199,7 +1199,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Supported options include "columns_or_groups", "columns", "groups", and "cash_sharing".
             obj_name (Optional[str]): Name of the object, used for error messages.
             obj_type (Optional[str]): Type of the object (e.g., "array" or "red_array").
-            wrapper (Optional[ArrayWrapper]): Wrapper to be used for stacking.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             cash_sharing (bool): Flag indicating whether cash sharing mode is enabled.
             column_stack_func (Optional[Callable]): Custom function for stacking columns.
 
@@ -1702,7 +1702,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 If provided, the field's object type must match.
             group_by_aware (bool): Flag indicating whether to account for grouping awareness.
-            wrapper (Optional[ArrayWrapper]): Wrapper used to determine grouping.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 If None, the instance's wrapper is used.
             group_by (GroupByLike): Grouping specification.
@@ -1775,7 +1775,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             obj_type (Optional[str]): The type of the object.
 
                 Supported options include "records", "array", and "red_array".
-            wrapper (Optional[ArrayWrapper]): The wrapper instance to use.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -1788,7 +1788,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap` and 
                 `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
             force_wrapping (bool): If True, forces wrapping and raises an error when wrapping is not feasible.
-            silence_warnings (bool): If True, suppresses warnings when wrapping cannot be determined.
+            silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `wrap_func`.
 
         Returns:
@@ -1927,7 +1927,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             field (str): The name of the field to retrieve.
-            wrapper (Optional[ArrayWrapper]): An optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2037,7 +2037,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Possible values include "columns_or_groups", "cash_sharing", "groups", and "columns".
             obj_type (Optional[str]): Specifies the type of the object (e.g., "records", "array", "red_array").
-            wrapper (Optional[ArrayWrapper]): The array wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 If None, defaults to `Portfolio.wrapper`.
             group_by (GroupByLike): Grouping specification.
@@ -2049,8 +2049,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 If unused, leave as None.
             force_indexing (bool): Indicates if indexing should be forced,
                 raising an error if it cannot be applied.
-            silence_warnings (bool): If True, suppresses warnings when
-                indexing decisions cannot be determined.
+            silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `indexing_func`.
 
         Returns:
@@ -2430,7 +2429,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             
                 See `vectorbtpro.generic.accessors.GenericAccessor.resample_apply`.
             force_resampling (bool): Flag to force resampling if conditions are met.
-            silence_warnings (bool): If True, suppresses warnings during resampling.
+            silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `resample_func`.
 
         Returns:
@@ -2845,10 +2844,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             from_ago (Optional[ArrayLike]): Number of bars to look back for order information.
 
                 Negative values are converted to positive to avoid look-ahead bias.
-            sim_start (Optional[ArrayLike]): Simulation start row or index (inclusive).
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
 
                 Can be "auto" to automatically select the first non-NA size value.
-            sim_end (Optional[ArrayLike]): Simulation end row or index (exclusive).
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
 
                 Can be "auto" to automatically select the first non-NA size value.
             call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are
@@ -3594,11 +3593,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             from_ago (Optional[ArrayLike]): Number of bars to look back for order information.
 
                 Negative values are converted to positive to avoid look-ahead bias.
-            sim_start (Optional[ArrayLike]): Simulation start (inclusive).
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
 
                 Can be "auto", which will be substituted by the index of the first signal across
                 long and short entries and long and short exits.
-            sim_end (Optional[ArrayLike]): Simulation end (exclusive).
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
 
                 Can be "auto", which will be substituted by the index of the last signal across
                 long and short entries and long and short exits.
@@ -4683,8 +4682,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 !!! warning
                     Enables cross-asset dependencies by assuming that all orders in a cash-sharing group
                     execute in the same tick and retain their price.
-            sim_start (Optional[ArrayLike]): Simulation start index (inclusive).
-            sim_end (Optional[ArrayLike]): Simulation end index (exclusive).
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are
                 processed per row and group.
 
@@ -5392,10 +5391,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 !!! note
                     Ensure that the timestamp associated with `val_price` precedes all order
                     timestamps in a cash-sharing group.
-            sim_start (Optional[ArrayLike]): Simulation start row or index (inclusive).
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
 
                 Can be "auto" to automatically select the first non-NA size value.
-            sim_end (Optional[ArrayLike]): Simulation end row or index (exclusive).
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
 
                 Can be "auto" to automatically select the first non-NA size value.
             call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are
@@ -5880,7 +5879,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -5944,7 +5943,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -5989,7 +5988,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio._weights` if not provided.
 
                 If None or False, the function returns None.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -6095,8 +6094,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_price (Optional[ArrayLike]): Initial prices.
 
                 Defaults to `Portfolio._init_price` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -6163,8 +6162,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_price (Optional[ArrayLike]): Initial prices.
 
                 Defaults to `Portfolio._init_price` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -6257,8 +6256,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders_cls (Optional[type]): Class to instantiate orders.
 
                 Defaults to `Portfolio.orders_cls` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             weights (Union[None, bool, ArrayLike]): Asset weights; if False, weights are ignored.
 
@@ -6266,7 +6265,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for processing records.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -6381,13 +6380,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             logs_cls (Optional[type]): Class to construct logs.
 
                 Defaults to `Portfolio.logs_cls` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for records.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -6471,10 +6470,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             entry_trades_cls (Optional[type]): Class used to generate entry trades.
 
                 Defaults to `Portfolio.entry_trades_cls` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for formatting.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -6556,10 +6555,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             exit_trades_cls (Optional[type]): Class used to generate exit trades.
 
                 Defaults to `Portfolio.exit_trades_cls` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for formatting.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -6633,10 +6632,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             positions_cls (Optional[type]): Class used to represent positions.
 
                 Defaults to `Portfolio.positions_cls` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for formatting.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -6680,10 +6679,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             trades_type (Optional[Union[str, int]]): The type of trades to retrieve.
 
                 Defaults to `Portfolio.trades_type` if not provided.
-            sim_start (Optional[ArrayLike]): The simulation start index.
-            sim_end (Optional[ArrayLike]): The simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance for record transformation.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -6754,10 +6753,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             exit_trades (Optional[ExitTrades]): Exit trade records.
 
                 Defaults to `Portfolio.get_exit_trades` if not provided.
-            sim_start (Optional[ArrayLike]): The simulation start index.
-            sim_end (Optional[ArrayLike]): The simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance for record transformation.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -6876,10 +6875,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 If a string, it is used with `vectorbtpro.records.base.Records.map_field`;
                 otherwise, with `vectorbtpro.records.base.Records.map_array`.
-            sim_start (Optional[ArrayLike]): Simulation start dates passed to shortcut resolution.
-            sim_end (Optional[ArrayLike]): Simulation end dates passed to shortcut resolution.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for formatting output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -6978,13 +6977,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             value (Optional[SeriesFrame]): Price series used to compute drawdowns.
 
                 Defaults to `Portfolio.get_value` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start dates passed to shortcut resolution.
-            sim_end (Optional[ArrayLike]): Simulation end dates passed to shortcut resolution.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             drawdowns_cls (Optional[type]): Class for creating drawdown records.
 
                 Defaults to `Portfolio.drawdowns_cls` if not provided.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for formatting output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -7049,7 +7048,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_weights` if not provided.
 
                 If False, weights are ignored.
-            wrapper (Optional[ArrayWrapper]): Array wrapper used to shape and format the output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -7114,8 +7113,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_position (Optional[ArrayLike]): Initial position used at the start of the simulation.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
-            sim_start (Optional[ArrayLike]): Start time of the simulation.
-            sim_end (Optional[ArrayLike]): End time of the simulation.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -7123,7 +7122,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -7205,8 +7204,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_position (Optional[ArrayLike]): Initial position used at the start of the simulation.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
-            sim_start (Optional[ArrayLike]): Start time of the simulation.
-            sim_end (Optional[ArrayLike]): End time of the simulation.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -7214,7 +7213,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -7293,8 +7292,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             assets (Optional[SeriesFrame]): Asset series data to generate the mask.
 
                 Defaults to `Portfolio.get_assets` if not provided.
-            sim_start (Optional[ArrayLike]): Start time of the simulation.
-            sim_end (Optional[ArrayLike]): End time of the simulation.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -7302,7 +7301,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance used for formatting the output array.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -7388,8 +7387,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_assets` if not provided.
             granular_groups (bool): Flag to determine if coverage is computed per individual column within a group.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -7397,7 +7396,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance used for post-processing.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -7487,8 +7486,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
             fill_closed_position (bool): If True, forward-fill missing values using
                 prices from a previously closed position.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -7496,7 +7495,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance used for processing.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -7594,8 +7593,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 prices from a previously closed position.
             fill_exit_price (bool): If True, fill exit prices for open positions using
                 the current close price.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -7603,7 +7602,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance used for processing.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
@@ -7700,8 +7699,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.cash_sharing` if not provided.
             split_shared (bool): If cash is shared, determines whether to split the deposits evenly across columns.
-            sim_start (Optional[ArrayLike]): Start index or time for the simulation.
-            sim_end (Optional[ArrayLike]): End index or time for the simulation.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             weights (Union[None, bool, ArrayLike]): Weights for scaling cash deposits.
 
@@ -7715,7 +7714,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -7817,8 +7816,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.cash_sharing` if not provided.
             split_shared (bool): If cash is shared, determines whether to split the deposits evenly across columns.
-            sim_start (Optional[ArrayLike]): Start index or time for the simulation.
-            sim_end (Optional[ArrayLike]): End index or time for the simulation.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             weights (Union[None, bool, ArrayLike]): Weights for scaling cash deposits.
 
@@ -7831,7 +7830,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -7891,8 +7890,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_earnings_raw (Optional[ArrayLike]): Raw cash earnings data.
 
                 Defaults to `Portfolio._cash_earnings` or 0 if not provided.
-            sim_start (Optional[ArrayLike]): Start index or time for the simulation.
-            sim_end (Optional[ArrayLike]): End index or time for the simulation.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             weights (Union[None, bool, ArrayLike]): Weights for scaling cash earnings.
 
@@ -7906,7 +7905,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -7992,8 +7991,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_earnings_raw (Optional[ArrayLike]): Raw cash earnings data.
 
                 Defaults to `Portfolio._cash_earnings` if not provided.
-            sim_start (Optional[ArrayLike]): Start index or time for the simulation.
-            sim_end (Optional[ArrayLike]): End index or time for the simulation.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             weights (Union[None, bool, ArrayLike]): Weights for scaling cash earnings.
 
@@ -8006,7 +8005,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -8069,8 +8068,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_earnings (Optional[ArrayLike]): Cash earnings array.
 
                 Defaults to `Portfolio.get_cash_earnings` with `keep_flex=True` and `group_by=False` or 0 if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start boundary.
-            sim_end (Optional[ArrayLike]): Simulation end boundary.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             weights (Union[None, bool, ArrayLike]): Weights used for calculations.
 
@@ -8083,7 +8082,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Instance used to wrap the resulting array.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -8199,8 +8198,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.cash_sharing` if not provided.
             split_shared (bool): If True, split shared cash equally among columns in a group.
-            sim_start (Optional[ArrayLike]): Simulation start date or index.
-            sim_end (Optional[ArrayLike]): Simulation end date or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             weights (Union[None, bool, ArrayLike]): Weighting factor; if set to False, weights are ignored.
 
@@ -8346,8 +8345,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_flow (Optional[SeriesFrame]): Cash flow data.
 
                 Defaults to `Portfolio.get_cash_flow` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start date or index.
-            sim_end (Optional[ArrayLike]): Simulation end date or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -8495,7 +8494,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -8579,8 +8578,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_init_cash` if not provided.
             split_shared (bool): Indicates whether to split shared cash among columns.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -8588,7 +8587,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -8661,8 +8660,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_value (Optional[MaybeSeries]): The initial portfolio value.
 
                 Defaults to `Portfolio.get_init_value` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time for resolving deposits and value.
-            sim_end (Optional[ArrayLike]): Simulation end time for resolving deposits and value.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -8670,7 +8669,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -8750,8 +8749,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             assets (Optional[SeriesFrame]): Series or DataFrame of asset amounts.
 
                 Defaults to `Portfolio.get_assets` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -8759,7 +8758,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for output formatting.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -8850,8 +8849,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             asset_value (Optional[SeriesFrame]): Asset value series for computation.
 
                 Defaults to `Portfolio.get_asset_value` if not provided.
-            sim_start (Optional[ArrayLike]): Start indices for simulation.
-            sim_end (Optional[ArrayLike]): End indices for simulation.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -8948,8 +8947,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             value (Optional[SeriesFrame]): Portfolio value series.
 
                 Defaults to `Portfolio.get_value` if not provided.
-            sim_start (Optional[ArrayLike]): Start indices for simulation.
-            sim_end (Optional[ArrayLike]): End indices for simulation.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -9072,8 +9071,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             short_exposure (Optional[SeriesFrame]): Exposure series for short positions.
 
                 Defaults to `Portfolio.get_gross_exposure` with `direction="shortonly"` if not provided.
-            sim_start (Optional[ArrayLike]): Start indices for simulation.
-            sim_end (Optional[ArrayLike]): End indices for simulation.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -9172,8 +9171,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             value (Optional[SeriesFrame]): Portfolio value series used for allocation calculation.
 
                 Defaults to `Portfolio.get_value` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -9181,7 +9180,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance for formatting the output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -9280,8 +9279,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_earnings (Optional[ArrayLike]): Cash earnings component included in the profit computation.
 
                 Defaults to `Portfolio.get_cash_earnings` with `keep_flex=True` and `group_by=False` or 0 if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -9289,7 +9288,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance for formatting the output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -9410,8 +9409,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             total_profit (Optional[MaybeSeries]): Total profit to be added to the input value.
 
                 Defaults to `Portfolio.get_total_profit` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -9419,7 +9418,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance for formatting the output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -9489,8 +9488,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             total_profit (Optional[MaybeSeries]): Total profit values per column or group.
 
                 Defaults to `Portfolio.get_total_profit` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -9498,7 +9497,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the result.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -9580,8 +9579,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_value` if not provided.
             log_returns (bool): Flag to compute logarithmic returns.
             daily_returns (bool): Flag to convert computed returns to daily returns.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -9589,7 +9588,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the output.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -9698,8 +9697,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_flow (Optional[SeriesFrame]): Cash flow series related to asset transactions.
 
                 Defaults to `Portfolio.get_cash_flow` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -9707,7 +9706,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance used to wrap the result.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -9809,8 +9808,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_cash_flow` if not provided.
             log_returns (bool): Compute logarithmic returns if True.
             daily_returns (bool): Convert the computed returns to daily return rates if True.
-            sim_start (Optional[ArrayLike]): Simulation start date or index.
-            sim_end (Optional[ArrayLike]): Simulation end date or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -9818,7 +9817,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -9920,8 +9919,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_cash_deposits` with `split_shared=True`, `keep_flex=True`,
                 and `group_by=False` or 0 if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start date or index.
-            sim_end (Optional[ArrayLike]): Simulation end date or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -9929,7 +9928,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -10079,8 +10078,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_market_value` if not provided.
             log_returns (bool): Compute logarithmic returns if True.
             daily_returns (bool): Convert the computed returns to daily frequency if True.
-            sim_start (Optional[ArrayLike]): Simulation start date or index.
-            sim_end (Optional[ArrayLike]): Simulation end date or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -10088,7 +10087,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance used to format the result.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -10193,8 +10192,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             market_value (Optional[SeriesFrame]): Market value series used for computing returns.
 
                 Defaults to `Portfolio.get_market_value` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start date or index.
-            sim_end (Optional[ArrayLike]): Simulation end date or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -10202,7 +10201,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for formatting the result.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -10285,8 +10284,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 If not provided, uses `Portfolio.filled_bm_close` if available; otherwise, uses `Portfolio.bm_close`.
             init_value (Optional[MaybeSeries]): Initial portfolio value.
             cash_deposits (Optional[ArrayLike]): Cash deposit values.
-            sim_start (Optional[ArrayLike]): Simulation start date or index.
-            sim_end (Optional[ArrayLike]): Simulation end date or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -10294,7 +10293,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance for processing.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -10361,8 +10360,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_bm_value` if not provided.
             log_returns (bool): Compute logarithmic returns if True.
             daily_returns (bool): Convert the computed returns to daily frequency if True.
-            sim_start (Optional[ArrayLike]): Simulation start date or index.
-            sim_end (Optional[ArrayLike]): Simulation end date or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -10370,7 +10369,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance used to format the result.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -10447,8 +10446,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_bm_returns` if not provided.
             log_returns (bool): Flag to compute logarithmic returns.
             daily_returns (bool): Flag to compute daily returns.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             freq (Optional[FrequencyLike]): Frequency for returns calculation.
 
@@ -10588,8 +10587,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             bm_returns (Union[None, bool, ArrayLike]): Benchmark returns or a flag to resolve benchmark returns.
             log_returns (bool): Flag to compute logarithmic returns.
             daily_returns (bool): Flag to compute daily returns.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             freq (Optional[FrequencyLike]): Frequency for returns calculation.
             year_freq (Optional[FrequencyLike]): Yearly frequency for returns calculation.
@@ -11012,10 +11011,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             bm_returns (Union[None, bool, ArrayLike]): Benchmark returns or a flag to resolve benchmark returns.
             log_returns (bool): Flag to compute logarithmic returns.
             daily_returns (bool): Flag to compute daily returns.
-            sim_start (Optional[ArrayLike]): Simulation start time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
 
                 Passed inside `settings`.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
 
                 Passed inside `settings`.
             freq (Optional[FrequencyLike]): Frequency for returns calculation.
@@ -11080,11 +11079,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders (Optional[Drawdowns]): Orders instance for plotting.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Flag specifying whether to adjust the figure to the simulation range.
-            wrapper (Optional[ArrayWrapper]): Array wrapper used for data transformations.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
                 If None, it is inferred from the figure.
@@ -11148,11 +11147,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_trades` if not provided.
             trades_type (Optional[Union[str, int]]): Identifier for the type of trades.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Flag specifying whether to adjust the figure to the simulation range.
-            wrapper (Optional[ArrayWrapper]): Array wrapper used for data transformations.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             **kwargs: Keyword arguments for `vectorbtpro.portfolio.trades.Trades.plot`.
@@ -11210,11 +11209,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_trades` if not provided.
             trades_type (Optional[Union[str, int]]): Identifier for the type of trades.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Flag specifying whether to adjust the figure to the simulation range.
-            wrapper (Optional[ArrayWrapper]): Array wrapper used for data transformations.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             pct_scale (bool): Flag to display trade P&L on a percentage scale.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
@@ -11289,11 +11288,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             positions (Optional[Positions]): Positions data for plotting position shapes.
 
                 Defaults to `Portfolio.get_positions` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): If True, adjusts the figure to the simulation range.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for processing data.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             plot_positions (Union[bool, str]): Determines how to plot positions. Valid options:
@@ -11488,11 +11487,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_flow (Optional[SeriesFrame]): Cash flow data used for plotting.
 
                 Defaults to `Portfolio.get_cash_flow` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start index.
-            sim_end (Optional[ArrayLike]): Simulation end index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): If True, adjusts the figure to the simulation range.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for processing the cash flow data.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -11615,11 +11614,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash (Optional[SeriesFrame]): Cash balance data.
 
                 Defaults to `Portfolio.get_cash` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time or index.
-            sim_end (Optional[ArrayLike]): Simulation end time or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Adjust the figure to simulation range if True.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for data handling.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -11759,11 +11758,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             asset_flow (Optional[SeriesFrame]): Asset flow data.
 
                 Defaults to `Portfolio.get_asset_flow` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time or index.
-            sim_end (Optional[ArrayLike]): Simulation end time or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Adjust the figure to simulation range if True.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for data handling.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             line_shape (str): Line shape style for the plot.
@@ -11879,11 +11878,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             assets (Optional[SeriesFrame]): Asset data to plot.
 
                 Defaults to `Portfolio.get_assets` if not provided.
-            sim_start (Optional[ArrayLike]): Start of the simulation range.
-            sim_end (Optional[ArrayLike]): End of the simulation range.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Flag indicating whether to adjust the plot to the simulation range.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for processing asset data.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             line_shape (str): Shape of the plot line (e.g. "hv").
@@ -12009,11 +12008,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             asset_value (Optional[SeriesFrame]): Asset value data to plot.
 
                 Defaults to `Portfolio.get_asset_value` if not provided.
-            sim_start (Optional[ArrayLike]): Start of the simulation range.
-            sim_end (Optional[ArrayLike]): End of the simulation range.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Flag indicating whether to adjust the plot to the simulation range.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for processing asset value data.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -12142,11 +12141,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             value (Optional[SeriesFrame]): Value data to plot.
 
                 Defaults to `Portfolio.get_value` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start index or date.
-            sim_end (Optional[ArrayLike]): Simulation end index or date.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): If True, adjust the figure range to match the simulation period.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance for column selection.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -12279,11 +12278,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_returns_acc` if not provided.
             use_asset_returns (bool): Flag indicating whether to use asset returns instead of portfolio returns.
             bm_returns (Union[None, bool, ArrayLike]): Benchmark returns specification.
-            sim_start (Optional[ArrayLike]): Simulation start index or date.
-            sim_end (Optional[ArrayLike]): Simulation end index or date.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): If True, adjust the figure range to match the simulation period.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance used for data extraction.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -12365,11 +12364,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             drawdowns (Optional[Drawdowns]): Drawdowns instance.
 
                 Defaults to `Portfolio.get_drawdowns` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start index or date.
-            sim_end (Optional[ArrayLike]): Simulation end index or date.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): If True, adjust the figure range to match the simulation period.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance used for data processing.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -12453,11 +12452,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             returns_acc (Optional[ReturnsAccessor]): Returns accessor instance to compute drawdowns.
 
                 Defaults to `Portfolio.get_returns_acc` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start date or index.
-            sim_end (Optional[ArrayLike]): Simulation end date or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Flag to adjust the figure to fit the simulation range.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance for data manipulation.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -12592,11 +12591,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             gross_exposure (Optional[SeriesFrame]): Gross exposure data series.
 
                 Defaults to `Portfolio.get_gross_exposure` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start date or index.
-            sim_end (Optional[ArrayLike]): Simulation end date or index.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Flag to adjust the figure to fit the simulation range.
-            wrapper (Optional[ArrayWrapper]): Array wrapper instance for data manipulation.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -12722,11 +12721,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             net_exposure (Optional[SeriesFrame]): Net exposure data.
 
                 Defaults to `Portfolio.get_net_exposure` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time.
-            sim_end (Optional[ArrayLike]): Simulation end time.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Flag to fit the figure to the simulation range.
-            wrapper (Optional[ArrayWrapper]): Data wrapper for managing exposures.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -12852,11 +12851,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             allocations (Optional[SeriesFrame]): Allocation data.
 
                 Defaults to `Portfolio.get_allocations` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start time for the plot.
-            sim_end (Optional[ArrayLike]): Simulation end time for the plot.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            fit_sim_range (bool): Flag to adjust the figure to the simulation range.
-            wrapper (Optional[ArrayWrapper]): Data wrapper for allocations.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
             group_by (GroupByLike): Grouping specification.

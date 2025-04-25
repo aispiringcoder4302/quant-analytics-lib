@@ -666,7 +666,7 @@ def find_pattern_1d_nb(
         min_similarity (float): Minimum similarity threshold.
 
             If the computed similarity falls below this, returns NaN.
-        minp (Optional[int]): Minimum number of observations in the price window required to yield a value.
+        minp (Optional[int]): Minimum number of observations required.
         overlap_mode (int): Mode for handling overlapping matches.
 
             See `vectorbtpro.generic.enums.OverlapMode`.
@@ -957,7 +957,7 @@ def find_pattern_nb(
         min_similarity (float): Minimum similarity threshold.
 
             If the computed similarity falls below this, returns NaN.
-        minp (Optional[int]): Minimum number of observations in the price window required to yield a value.
+        minp (Optional[int]): Minimum number of observations required.
         overlap_mode (int): Mode for handling overlapping matches.
 
             See `vectorbtpro.generic.enums.OverlapMode`.
@@ -1142,8 +1142,8 @@ def get_drawdowns_nb(
         high (Optional[Array2d]): Highest price time series for each asset column.
         low (Optional[Array2d]): Lowest price time series for each asset column.
         close (Array2d): Closing price time series for each asset column.
-        sim_start (Optional[FlexArray1dLike]): Simulation start indices for each column.
-        sim_end (Optional[FlexArray1dLike]): Simulation end indices for each column.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
     Returns:
         RecordArray: Array of computed drawdown records.

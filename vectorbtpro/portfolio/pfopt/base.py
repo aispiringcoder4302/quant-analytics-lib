@@ -658,7 +658,7 @@ def pypfopt_optimize(
         discrete_allocation (Optional[bool]): If True, perform discrete allocation using
             `pypfopt.discrete_allocation.DiscreteAllocation`.
         allocation_method (Optional[str]): Method name used to compute discrete allocation.
-        silence_warnings (Optional[bool]): Suppress warnings if True.
+        silence_warnings (Optional[bool]): Flag to suppress warning messages.
         ignore_opt_errors (Optional[bool]): Ignore errors related to target optimization if True.
         ignore_errors (Optional[bool]): Ignore all errors if True.
         **kwargs: Keyword arguments for PyPortfolioOpt functions through
@@ -1342,7 +1342,7 @@ def riskfolio_optimize(
         func_kwargs (KwargsLike): Keyword arguments for function calls.
 
             Wrapped with `pfopt_func_dict` and used to override or add parameters.
-        silence_warnings (Optional[bool]): Whether to silence all warnings.
+        silence_warnings (Optional[bool]): Flag to suppress warning messages.
         return_port (Optional[bool]): Whether to return the portfolio along with the allocation weights.
         ignore_errors (Optional[bool]): Whether to ignore errors and return an empty dictionary.
         **kwargs: Keyword arguments for Riskfolio-Lib functions through `resolve_riskfolio_func_kwargs`.
@@ -2759,7 +2759,7 @@ class PortfolioOptimizer(Analyzable):
             valid_only (bool): Flag to filter only valid allocation points.
             nonzero_only (bool): Flag to filter only nonzero allocation points.
             unique_only (bool): Flag to filter only unique allocation points.
-            wrapper (Optional[ArrayWrapper]): The array wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Required if allocations is not a DataFrame.
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
@@ -2884,7 +2884,7 @@ class PortfolioOptimizer(Analyzable):
             valid_only (bool): Flag to filter only valid allocation points.
             nonzero_only (bool): Flag to filter only nonzero allocation points.
             unique_only (bool): Flag to filter only unique allocation points.
-            wrapper (Optional[ArrayWrapper]): The array wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Required if `S` is not a DataFrame.
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
@@ -2963,7 +2963,7 @@ class PortfolioOptimizer(Analyzable):
             pre_group_func (Callable): An optional callable to preprocess the group configuration.
 
                 This function is invoked on the group configuration dictionary before optimization.
-            silence_warnings (bool): Flag to suppress warnings during processing.
+            silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
             Tuple[RecordArray, Array2d]: A tuple containing the allocation records and
@@ -3757,8 +3757,7 @@ class PortfolioOptimizer(Analyzable):
         with `pypfopt_optimize` (PyPortfolioOpt).
 
         Args:
-            wrapper (Optional[ArrayWrapper]): An instance of
-                `vectorbtpro.base.wrapping.ArrayWrapper` used for data handling.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Must be provided if `prices` and `returns` arguments are not available.
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_optimize_func` and `pypfopt_optimize`.
@@ -3793,8 +3792,7 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             returns (AnyArray2d): A 2D array representing asset returns data.
-            wrapper (Optional[ArrayWrapper]): An instance of
-                `vectorbtpro.base.wrapping.ArrayWrapper` used for data handling.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Must be provided if `returns` is a template.
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_optimize_func` and `riskfolio_optimize`.

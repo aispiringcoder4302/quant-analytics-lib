@@ -352,7 +352,7 @@ def pattern_similarity_nb(
         max_pct_change (float): Maximum percent change applied during rescaling.
         min_similarity (float): Minimum similarity threshold; if the computed similarity
             falls below this, returns NaN.
-        minp (Optional[int]): Minimum number of valid data points required for computation.
+        minp (Optional[int]): Minimum number of observations required.
 
     Returns:
         float: Similarity measure between `arr` and `pattern`,

@@ -998,7 +998,7 @@ class Completions(Configured):
         formatter_kwargs (KwargsLike): Keyword arguments to initialize or update `formatter`.
         minimal_format (Optional[bool]): Boolean indicating if the input is minimally formatted.
         quick_mode (Optional[bool]): Boolean indicating whether quick mode is enabled.
-        silence_warnings (Optional[bool]): Boolean indicating whether warnings are suppressed.
+        silence_warnings (Optional[bool]): Flag to suppress warning messages.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 

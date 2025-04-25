@@ -2456,7 +2456,7 @@ class MappedArray(Analyzable):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-            silence_warnings (bool): Whether to suppress warnings about index conflicts.
+            silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
             SeriesFrame: A wrapped Series or DataFrame representing the unstacked mapped array.

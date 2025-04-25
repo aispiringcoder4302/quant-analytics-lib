@@ -136,7 +136,7 @@ def get_group_lens_slice(group_lens: tp.GroupLens, chunk_meta: ChunkMeta) -> sli
     """Compute a slice object for group lengths using the provided chunk metadata.
 
     Args:
-        group_lens (GroupLens): Array of group lengths.
+        group_lens (GroupLens): Array defining the number of columns in each group.
         chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
 
     Returns:

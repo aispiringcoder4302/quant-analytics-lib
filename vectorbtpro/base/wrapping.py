@@ -218,7 +218,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             **kwargs: Keyword arguments for `ArrayWrapper.regroup`.
 
         Returns:
@@ -2002,7 +2002,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             prec_strict (Optional[bool]): If True, apply strict checking during precision conversion.
             to_timedelta (bool): If True, convert the output object to timedelta.
             to_index (bool): If True, map output values to the original index.
-            silence_warnings (Optional[bool]): If True, suppress warnings during timedelta conversion.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             SeriesFrame: The wrapped Pandas Series or DataFrame with applied metadata.
@@ -2126,7 +2126,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             dtype (Optional[PandasDTypeLike]): Data type for converting the output.
             to_timedelta (bool): Flag indicating whether to convert the output to timedelta format.
             to_index (bool): Flag indicating whether to map scalar results to the object's index.
-            silence_warnings (Optional[bool]): Flag to suppress warnings during processing.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             MaybeSeriesFrame: Wrapped series or DataFrame resulting from the reduction operation.
@@ -2990,7 +2990,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
                 potentially including a different frequency.
             custom_arg_names (Optional[Set[str]]): A set of custom argument names.
             impacts_caching (bool): A flag indicating whether the changes affect caching.
-            silence_warnings (Optional[bool]): A flag to suppress warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             AttrResolverMixin: The resolved instance.

@@ -33,8 +33,8 @@ class SimRangeMixin(Base):
     Should be subclassed by a subclass of `vectorbtpro.base.wrapping.Wrapping`.
 
     Args:
-        sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-        sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+        sim_start (Optional[ArrayLike]): Start index of the simulation range.
+        sim_end (Optional[ArrayLike]): End index of the simulation range.
     """
 
     def __init__(
@@ -316,7 +316,7 @@ class SimRangeMixin(Base):
 
         Args:
             value (Scalar): A scalar simulation start value to resolve.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
         Returns:
             int: The resolved position corresponding to the simulation start.
@@ -340,7 +340,7 @@ class SimRangeMixin(Base):
 
         Args:
             value (Scalar): A scalar simulation end value to resolve.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
         Returns:
             int: The resolved position corresponding to the simulation end.
@@ -365,9 +365,9 @@ class SimRangeMixin(Base):
         """Resolve simulation start positions.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
             allow_none (bool): Flag indicating whether None is allowed as a simulation start value.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -437,9 +437,9 @@ class SimRangeMixin(Base):
         """Resolve simulation end positions.
 
         Args:
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             allow_none (bool): Flag indicating whether None is allowed as a simulation end value.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -511,10 +511,10 @@ class SimRangeMixin(Base):
         """Return the simulation start positions after resolution and optional wrapping.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
             keep_flex (bool): If True, return the raw resolved simulation start positions without wrapping.
             allow_none (bool): Flag indicating whether None is allowed as a simulation start value.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -566,10 +566,10 @@ class SimRangeMixin(Base):
         """Return the simulation end positions after resolution and optional wrapping.
 
         Args:
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             keep_flex (bool): If True, return the raw resolved simulation end positions without wrapping.
             allow_none (bool): Flag indicating whether None is allowed as a simulation end value.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -620,9 +620,9 @@ class SimRangeMixin(Base):
         """Return the simulation start index.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
             allow_none (bool): Indicates whether None is allowed for the simulation start.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -686,10 +686,10 @@ class SimRangeMixin(Base):
         """Return the simulation end index.
 
         Args:
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             allow_none (bool): Indicates whether None is allowed for the simulation end.
             inclusive (bool): Determines if the simulation end should be treated as inclusive.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -761,9 +761,9 @@ class SimRangeMixin(Base):
         """Return the duration of the simulation range.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -821,9 +821,9 @@ class SimRangeMixin(Base):
         Args:
             fig (BaseFigure): Figure to update.
             column (Optional[Label]): Column to use for simulation range selection.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
-            wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.

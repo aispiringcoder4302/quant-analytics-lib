@@ -41,8 +41,8 @@ def records_within_sim_range_nb(
         records (RecordArray): Array of record entries.
         col_arr (Array1d): Array of column indices corresponding to each record.
         idx_arr (Array1d): Array of row indices corresponding to each record.
-        sim_start (Optional[FlexArray1dLike]): Starting indices for the simulation range.
-        sim_end (Optional[FlexArray1dLike]): Ending indices for the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
     Returns:
         RecordArray: An array of records filtered to lie within the simulation range.
@@ -358,12 +358,8 @@ def get_entry_trades_nb(
         init_price (FlexArray1dLike): 1D array of initial prices.
 
             Used to calculate the entry price when an initial position exists.
-        sim_start (Optional[FlexArray1dLike]): 1D array of simulation start indices.
-
-            Indicates the beginning of the simulation range.
-        sim_end (Optional[FlexArray1dLike]): 1D array of simulation end indices.
-
-            Indicates the end of the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
     Returns:
         RecordArray: Array of entry trade records aggregated from order records.
@@ -701,12 +697,8 @@ def get_exit_trades_nb(
         init_price (FlexArray1dLike): Initial prices for each column.
             
             Represented as a 1D array-like structure.
-        sim_start (Optional[FlexArray1dLike]): Simulation start indices.
-            
-            Denotes the beginning of the simulation range for each column.
-        sim_end (Optional[FlexArray1dLike]): Simulation end indices.
-            
-            Denotes the end of the simulation range for each column.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
     Returns:
         RecordArray: Array of aggregated exit trade records.
@@ -1198,8 +1190,8 @@ def get_long_view_orders_nb(
         col_map (GroupMap): Tuple of column indices and lengths.
         init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial price for each column.
-        sim_start (Optional[FlexArray1dLike]): Simulation start index for each group.
-        sim_end (Optional[FlexArray1dLike]): Simulation end index for each group.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
     Returns:
         RecordArray: Filtered order records containing only long position entries.
@@ -1371,8 +1363,8 @@ def get_short_view_orders_nb(
         col_map (GroupMap): Tuple of column indices and lengths.
         init_position (FlexArray1dLike): Initial position for each column.
         init_price (FlexArray1dLike): Initial price for each column.
-        sim_start (Optional[FlexArray1dLike]): Simulation start indices for filtering orders.
-        sim_end (Optional[FlexArray1dLike]): Simulation end indices for filtering orders.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
     Returns:
         RecordArray: Filtered order records corresponding to short positions.
@@ -1556,8 +1548,8 @@ def get_position_feature_nb(
             prices from a previously closed position.
         fill_exit_price (bool): If True, fill exit prices for open positions using
             the current close price.
-        sim_start (Optional[FlexArray1dLike]): Simulation start indices for each group.
-        sim_end (Optional[FlexArray1dLike]): Simulation end indices for each group.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
     Returns:
         Array2d: Array of computed feature values matching the shape of `close`.

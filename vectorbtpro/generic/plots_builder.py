@@ -207,8 +207,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 as in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             split_columns (Optional[bool]): Flag indicating whether to split columns,
                 as in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            silence_warnings (Optional[bool]): Flag to specify if warnings should be silenced,
-                as in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
             template_context (KwargsLike): Additional context for template substitution.
             filters (KwargsLike): Filters as specified in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             settings (KwargsLike): Settings as specified in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.

@@ -47,11 +47,11 @@ def ma_1d_nb(
 
     Args:
         close (Array1d): 1D array of numerical values.
-        window (int): The number of elements to include in each calculation window.
+        window (int): Size of the rolling window.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum number of data points required for the calculation.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -89,7 +89,7 @@ def ma_nb(
         wtype (FlexArray1dLike): Weight type(s).
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum required observations.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -131,11 +131,11 @@ def msd_1d_nb(
 
     Args:
         close (Array1d): 1D array of numerical values.
-        window (int): The window size used for the calculation.
+        window (int): Size of the rolling window.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum number of elements required for the computation.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom.
 
@@ -176,7 +176,7 @@ def msd_nb(
         wtype (FlexArray1dLike): Weight type(s).
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum required observations.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom.
 
@@ -221,12 +221,12 @@ def bbands_1d_nb(
 
     Args:
         close (Array1d): 1D array of numerical values.
-        window (int): The number of observations used for computing the moving average.
+        window (int): Size of the rolling window.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
         alpha (float): Multiplier for the moving standard deviation to determine the band width.
-        minp (Optional[int]): Minimum data points required for the computation.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom.
 
@@ -275,7 +275,7 @@ def bbands_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         alpha (FlexArray1dLike): Multiplier(s) for the standard deviation.
-        minp (Optional[int]): Minimum required observations.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom.
 
@@ -419,11 +419,11 @@ def avg_gain_1d_nb(
 
     Args:
         close (Array1d): 1-dimensional array of closing prices.
-        window (int): Window size for the moving average.
+        window (int): Size of the rolling window.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum periods for computation.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -471,7 +471,7 @@ def avg_gain_nb(
         close (Array2d): 2-dimensional array of closing prices.
         window (FlexArray1dLike): Window size(s) for the moving average.
         wtype (FlexArray1dLike): Weighting type(s); refer to `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum periods for computation.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -510,11 +510,11 @@ def avg_loss_1d_nb(
 
     Args:
         close (Array1d): 1-dimensional array of closing prices.
-        window (int): Window size for the moving average.
+        window (int): Size of the rolling window.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum periods for computation.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -562,7 +562,7 @@ def avg_loss_nb(
         close (Array2d): 2-dimensional array of closing prices.
         window (FlexArray1dLike): Window size(s) for the moving average.
         wtype (FlexArray1dLike): Weighting type(s); refer to `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum periods for computation.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -600,11 +600,11 @@ def rsi_1d_nb(
 
     Args:
         close (Array1d): 1-dimensional array of closing prices.
-        window (int): Window size for average gain and loss calculations.
+        window (int): Size of the rolling window.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum periods for computation.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -642,7 +642,7 @@ def rsi_nb(
         close (Array2d): 2-dimensional array of closing prices.
         window (FlexArray1dLike): Window size(s) for RSI calculation.
         wtype (FlexArray1dLike): Weighting type(s); see `vectorbtpro.generic.enums.WType` for available options.
-        minp (Optional[int]): Minimum periods for computation.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -683,8 +683,8 @@ def stoch_k_1d_nb(
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
         close (Array1d): Array of closing prices.
-        window (int): Period for computing the rolling minimum and maximum.
-        minp (Optional[int]): Minimum number of periods required for a valid calculation.
+        window (int): Size of the rolling window.
+        minp (Optional[int]): Minimum number of observations required.
 
     Returns:
         Array1d: The computed %K values.
@@ -721,7 +721,7 @@ def stoch_k_nb(
         low (Array2d): Two-dimensional array of low prices.
         close (Array2d): Two-dimensional array of closing prices.
         window (FlexArray1dLike): Period(s) for computing the rolling minimum and maximum.
-        minp (Optional[int]): Minimum number of periods required for valid computation.
+        minp (Optional[int]): Minimum number of observations required.
 
     Returns:
         Array2d: The computed %K values for each column.
@@ -782,7 +782,7 @@ def stoch_1d_nb(
         slow_d_wtype (Optional[int]): Weight type for the slow %D moving average.
 
             Defaults to `wtype` if not provided.
-        minp (Optional[int]): Minimum number of periods required for computation.
+        minp (Optional[int]): Minimum number of observations required.
         fast_k_minp (Optional[int]): Minimum periods for fast %K calculation.
 
             Falls back to `minp` if not specified.
@@ -898,7 +898,7 @@ def stoch_nb(
         slow_d_wtype (Optional[FlexArray1dLike]): Weight type for the slow %D moving average.
 
             Uses `wtype` if not provided.
-        minp (Optional[int]): Minimum number of periods required for computation.
+        minp (Optional[int]): Minimum number of observations required.
         fast_k_minp (Optional[int]): Minimum periods for fast %K calculation.
 
             Falls back to `minp` if not specified.
@@ -998,7 +998,7 @@ def macd_1d_nb(
         signal_wtype (Optional[int]): Alternative weighting type for signal computation.
 
             Uses `wtype` if not provided.
-        minp (Optional[int]): Minimum period required for moving average calculation.
+        minp (Optional[int]): Minimum number of observations required.
         macd_minp (Optional[int]): Minimum period for the MACD moving average.
 
             Uses `minp` if not provided.
@@ -1102,7 +1102,7 @@ def macd_nb(
         signal_wtype (Optional[FlexArray1dLike]): Alternative weighting type for signal computation.
 
             Uses `wtype` if not provided.
-        minp (Optional[int]): Minimum period required for moving average calculation.
+        minp (Optional[int]): Minimum number of observations required.
         macd_minp (Optional[int]): Minimum period for the MACD moving average.
 
             Uses `minp` if not provided.
@@ -1300,11 +1300,11 @@ def atr_1d_nb(
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
         close (Array1d): Array of close prices.
-        window (int): Window size for moving average calculation.
+        window (int): Size of the rolling window.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum periods required.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -1350,7 +1350,7 @@ def atr_nb(
         wtype (FlexArray1dLike): Weight type(s) for moving average computation.
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum periods required.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -1399,11 +1399,11 @@ def adx_1d_nb(
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
         close (Array1d): Array of close prices.
-        window (int): Window size for calculation.
+        window (int): Size of the rolling window.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum periods required.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -1476,7 +1476,7 @@ def adx_nb(
         wtype (FlexArray1dLike): Weight type(s) for moving average computation.
 
             See `vectorbtpro.generic.enums.WType`.
-        minp (Optional[int]): Minimum periods required.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -1583,11 +1583,11 @@ def ols_1d_nb(
     Args:
         x (Array1d): 1-dimensional array of independent variable values.
         y (Array1d): 1-dimensional array of dependent variable values.
-        window (int): Length of the rolling regression window.
+        window (int): Size of the rolling window.
         norm_window (Optional[int]): Window length for error normalization.
 
             Defaults to `window` if None.
-        minp (Optional[int]): Minimum number of data points required for computation.
+        minp (Optional[int]): Minimum number of observations required.
         ddof (int): Delta degrees of freedom.
         with_zscore (bool): Whether to compute and return the z-score of regression errors.
 
@@ -1644,7 +1644,7 @@ def ols_nb(
         norm_window (Optional[FlexArray1dLike]): Rolling window length for error normalization.
 
             Defaults to `window` if None.
-        minp (Optional[int]): Minimum number of data points required for computation.
+        minp (Optional[int]): Minimum number of observations required.
         ddof (int): Delta degrees of freedom.
         with_zscore (bool): Whether to compute and return the z-score of regression errors.
 
@@ -1872,7 +1872,7 @@ def vwap_1d_nb(
         low (Array1d): 1-dimensional array of low prices.
         close (Array1d): 1-dimensional array of closing prices.
         volume (Array1d): 1-dimensional array of trading volumes.
-        group_lens (GroupLens): Array defining lengths of consecutive groups over which VWAP is computed.
+        group_lens (GroupLens): Array defining the number of columns in each group.
 
     Returns:
         Array1d: Computed VWAP values for each element.
@@ -1925,7 +1925,7 @@ def vwap_nb(
         low (Array2d): Array of low prices.
         close (Array2d): Array of closing prices.
         volume (Array2d): Array of traded volumes.
-        group_lens (GroupLens): Group lengths used for segmenting the input arrays.
+        group_lens (GroupLens): Array defining the number of columns in each group.
 
     Returns:
         Array2d: A 2D array containing the calculated VWAP values.
@@ -3045,7 +3045,7 @@ def rolling_hurst_1d_nb(
         min_chunk (int): Minimum chunk size for RS and DMA methods.
         max_chunk (int): Maximum chunk size for RS and DMA methods.
         num_chunks (int): Number of chunks for RS and DMA methods.
-        minp (Optional[int]): Minimum number of valid observations required within the window.
+        minp (Optional[int]): Minimum number of observations required.
         stabilize (bool): If True, applies stabilization during computation.
 
     Returns:
@@ -3135,7 +3135,7 @@ def rolling_hurst_nb(
         min_chunk (int): Minimum chunk size for RS and DMA methods.
         max_chunk (int): Maximum chunk size for RS and DMA methods.
         num_chunks (int): Number of chunks for RS and DMA methods.
-        minp (Optional[int]): Minimum number of valid observations required within each rolling window.
+        minp (Optional[int]): Minimum number of observations required.
         stabilize (bool): If True, applies stabilization during computation.
 
     Returns:

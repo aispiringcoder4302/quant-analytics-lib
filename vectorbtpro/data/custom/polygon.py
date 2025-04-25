@@ -213,7 +213,7 @@ class PolygonData(RemoteData):
             retries (Optional[int]): Number of retry attempts on fetch failures.
             show_progress (Optional[bool]): Whether to display a progress bar.
             pbar_kwargs (DictLike): Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
-            silence_warnings (Optional[bool]): Whether to suppress warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             SymbolData: The updated data and a metadata dictionary.

@@ -52,12 +52,12 @@ def future_mean_1d_nb(
 
     Args:
         close (Array1d): 1-D array of input values.
-        window (int): Window length for the rolling calculation.
+        window (int): Size of the rolling window.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
         wait (int): Number of periods to delay the result to exclude the current value.
-        minp (Optional[int]): Minimum number of observations required in a window.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -99,7 +99,7 @@ def future_mean_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Waiting period(s).
-        minp (Optional[int]): Minimum number of observations required per window.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -142,12 +142,12 @@ def future_std_1d_nb(
 
     Args:
         close (Array1d): 1-D array of input values.
-        window (int): Window length for calculating the standard deviation.
+        window (int): Size of the rolling window.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
         wait (int): Number of periods to delay the result to exclude the current value.
-        minp (Optional[int]): Minimum number of observations required in a window.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom.
 
@@ -192,7 +192,7 @@ def future_std_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Waiting period(s).
-        minp (Optional[int]): Minimum number of observations required per window.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom.
 
@@ -235,9 +235,9 @@ def future_min_1d_nb(
 
     Args:
         close (Array1d): 1-D array of input values.
-        window (int): Window length for computing the minimum.
+        window (int): Size of the rolling window.
         wait (int): Number of periods to delay the result to exclude the current value.
-        minp (Optional[int]): Minimum number of observations required in a window.
+        minp (Optional[int]): Minimum number of observations required.
 
     Returns:
         Array1d: An array with the computed rolling minimum values over future values.
@@ -271,7 +271,7 @@ def future_min_nb(
         close (Array2d): 2-D array of input values.
         window (FlexArray1dLike): Window size(s).
         wait (FlexArray1dLike): Waiting period(s).
-        minp (Optional[int]): Minimum number of observations required per window.
+        minp (Optional[int]): Minimum number of observations required.
 
     Returns:
         Array2d: A 2-D array containing the computed rolling minimum values over future values for each column.
@@ -307,9 +307,9 @@ def future_max_1d_nb(
 
     Args:
         close (Array1d): 1-D array of input values.
-        window (int): Window length for computing the maximum.
+        window (int): Size of the rolling window.
         wait (int): Number of periods to delay the result to exclude the current value.
-        minp (Optional[int]): Minimum number of observations required in a window.
+        minp (Optional[int]): Minimum number of observations required.
 
     Returns:
         Array1d: An array with the computed rolling maximum values over future values.
@@ -343,7 +343,7 @@ def future_max_nb(
         close (Array2d): A two-dimensional array containing close prices.
         window (FlexArray1dLike): Window length(s) used for calculating the maximum.
         wait (FlexArray1dLike): Number(s) of periods to wait before starting computation.
-        minp (Optional[int]): Minimum number of valid observations required.
+        minp (Optional[int]): Minimum number of observations required.
 
     Returns:
         Array2d: A two-dimensional array where each column contains the computed future maximum values.
@@ -442,7 +442,7 @@ def mean_labels_1d_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Number(s) of periods to wait before applying the window.
-        minp (Optional[int]): Minimum number of valid observations required.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -483,7 +483,7 @@ def mean_labels_nb(
 
             See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Number(s) of periods to wait before applying the window.
-        minp (Optional[int]): Minimum number of valid observations required.
+        minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
@@ -1093,7 +1093,7 @@ def breakout_labels_1d_nb(
     Args:
         high (Array1d): 1D array of high prices.
         low (Array1d): 1D array of low prices.
-        window (int): Number of periods to search for breakout events.
+        window (int): Size of the rolling window.
         up_th (FlexArray1dLike): 1D flexible array representing the positive threshold factor.
         down_th (FlexArray1dLike): 1D flexible array representing the negative threshold factor.
         wait (int): Number of periods to delay before starting the breakout search.

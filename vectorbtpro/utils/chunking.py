@@ -1307,7 +1307,7 @@ class Chunker(Configured):
         merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
         return_raw_chunks (Optional[bool]): Determines whether to return raw chunk data instead 
             of post-processed results.
-        silence_warnings (Optional[bool]): Indicates whether to suppress warnings during chunk processing.
+        silence_warnings (Optional[bool]): Flag to suppress warning messages.
         forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments.
 
             Variables from the context of `Chunker.run` may be included.
@@ -1743,7 +1743,7 @@ class Chunker(Configured):
                 See `vectorbtpro.utils.parsing.annotate_args`.
             arg_take_spec (ArgTakeSpec): Mapping specifying the extraction rules for each argument.
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
-            silence_warnings (bool): Indicator to suppress warnings when a specification is missing.
+            silence_warnings (bool): Flag to suppress warning messages.
             eval_id (Optional[Hashable]): Evaluation identifier.
             **kwargs: Keyword arguments for `Chunker.take_from_arg`.
 

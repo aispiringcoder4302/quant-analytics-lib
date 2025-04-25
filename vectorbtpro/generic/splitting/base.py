@@ -3482,7 +3482,7 @@ class Splitter(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            silence_warnings (bool): Flag to silence warnings during resampling.
+            silence_warnings (bool): Flag to suppress warning messages.
             index (Optional[IndexLike]): The source index associated with the range.
             freq (Optional[FrequencyLike]): The frequency corresponding to the source index.
 
@@ -3565,7 +3565,7 @@ class Splitter(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            silence_warnings (bool): Flag to silence warnings during processing.
+            silence_warnings (bool): Flag to suppress warning messages.
             index (Optional[IndexLike]): The source index associated with the range.
             freq (Optional[FrequencyLike]): The frequency corresponding to the source index.
             return_obj_meta (bool): Whether to return metadata for the object.
@@ -3793,7 +3793,7 @@ class Splitter(Analyzable):
                 Options include True, "index", "source", "target", etc.
             right_inclusive (bool): If true, treats the right bound as inclusive.
             template_context (KwargsLike): Additional context for template substitution.
-            silence_warnings (bool): If true, suppresses warnings during processing.
+            silence_warnings (bool): Flag to suppress warning messages.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
             
                 See `vectorbtpro.base.indexes.combine_indexes`.
@@ -4270,7 +4270,7 @@ class Splitter(Analyzable):
                 If True or "source", attaches the source bounds; other string options are supported.
             right_inclusive (bool): Whether the range's right bound is inclusive.
             template_context (KwargsLike): Additional context for template substitution.
-            silence_warnings (bool): Whether to suppress warnings during range selection and processing.
+            silence_warnings (bool): Flag to suppress warning messages.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
             
                 See `vectorbtpro.base.indexes.combine_indexes`.

@@ -36,7 +36,7 @@ def resolve_sim_start_nb(
 
     Args:
         sim_shape (Shape): A tuple representing the dimensions of the simulation.
-        sim_start (Optional[FlexArray1dLike]): Simulation start position(s).
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         allow_none (bool): Flag to allow returning None if all start positions are default.
         check_bounds (bool): Flag to validate that start positions are within simulation bounds.
 
@@ -81,7 +81,7 @@ def resolve_sim_end_nb(
 
     Args:
         sim_shape (Shape): A tuple representing the dimensions of the simulation.
-        sim_end (Optional[FlexArray1dLike]): Simulation end position(s).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         allow_none (bool): Flag to allow returning None if all end positions are default.
         check_bounds (bool): Flag to validate that end positions are within simulation bounds.
 
@@ -127,8 +127,8 @@ def resolve_sim_range_nb(
 
     Args:
         sim_shape (Shape): A tuple representing the dimensions of the simulation.
-        sim_start (Optional[FlexArray1dLike]): Simulation start position(s).
-        sim_end (Optional[FlexArray1dLike]): Simulation end position(s).
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         allow_none (bool): Flag to allow returning None if default positions are used.
         check_bounds (bool): Flag to validate that positions are within simulation bounds.
 
@@ -162,8 +162,8 @@ def resolve_grouped_sim_start_nb(
 
     Args:
         target_shape (Shape): A tuple representing the dimensions of the target simulation.
-        group_lens (GroupLens): A sequence indicating the lengths of each simulation group.
-        sim_start (Optional[FlexArray1dLike]): Simulation start position(s) for individual simulations.
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         allow_none (bool): Flag to allow returning None if all group start positions are default.
         check_bounds (bool): Flag to validate that start positions are within simulation bounds.
 
@@ -224,8 +224,8 @@ def resolve_grouped_sim_end_nb(
 
     Args:
         target_shape (Shape): A tuple representing the dimensions of the target simulation.
-        group_lens (GroupLens): A sequence indicating the lengths of each simulation group.
-        sim_end (Optional[FlexArray1dLike]): Simulation end position(s) for individual simulations.
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         allow_none (bool): Flag to allow returning None if all group end positions are default.
         check_bounds (bool): Flag to validate that end positions are within simulation bounds.
 
@@ -287,9 +287,9 @@ def resolve_grouped_sim_range_nb(
 
     Args:
         target_shape (Shape): The target simulation array shape.
-        group_lens (GroupLens): The lengths of each group.
-        sim_start (Optional[FlexArray1dLike]): The initial simulation start position(s).
-        sim_end (Optional[FlexArray1dLike]): The initial simulation end position(s).
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         allow_none (bool): Allow simulation positions to be None when applicable.
         check_bounds (bool): Enforce bounds checking for simulation positions.
 
@@ -326,8 +326,8 @@ def resolve_ungrouped_sim_start_nb(
 
     Args:
         target_shape (Shape): The target simulation array shape.
-        group_lens (GroupLens): The lengths of each group.
-        sim_start (Optional[FlexArray1dLike]): The input simulation start position(s).
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         allow_none (bool): Allow simulation start to be None when applicable.
         check_bounds (bool): Enforce simulation start bounds if True.
 
@@ -385,8 +385,8 @@ def resolve_ungrouped_sim_end_nb(
 
     Args:
         target_shape (Shape): The target simulation array shape.
-        group_lens (GroupLens): The lengths of each group.
-        sim_end (Optional[FlexArray1dLike]): The input simulation end position(s).
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         allow_none (bool): Allow simulation end to be None when applicable.
         check_bounds (bool): Enforce simulation end bounds if True.
 
@@ -445,9 +445,9 @@ def resolve_ungrouped_sim_range_nb(
 
     Args:
         target_shape (Shape): The target simulation array shape.
-        group_lens (GroupLens): The lengths of each group.
-        sim_start (Optional[FlexArray1dLike]): The input simulation start position(s).
-        sim_end (Optional[FlexArray1dLike]): The input simulation end position(s).
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         allow_none (bool): Allow simulation positions to be None when applicable.
         check_bounds (bool): Enforce bounds checking for simulation positions.
 
@@ -482,7 +482,7 @@ def prepare_sim_start_nb(
 
     Args:
         sim_shape (Shape): The shape of the simulation array.
-        sim_start (Optional[FlexArray1dLike]): The input simulation start position(s).
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         check_bounds (bool): Enforce bounds checking for the simulation start positions if True.
 
     Returns:
@@ -518,7 +518,7 @@ def prepare_sim_end_nb(
 
     Args:
         sim_shape (Shape): The shape of the simulation array.
-        sim_end (Optional[FlexArray1dLike]): The input simulation end position(s).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         check_bounds (bool): Enforce bounds checking for the simulation end positions if True.
 
     Returns:
@@ -555,8 +555,8 @@ def prepare_sim_range_nb(
 
     Args:
         sim_shape (Shape): The shape of the simulation array.
-        sim_start (Optional[FlexArray1dLike]): The input simulation start position(s).
-        sim_end (Optional[FlexArray1dLike]): The input simulation end position(s).
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         check_bounds (bool): Enforce bounds checking for simulation positions if True.
 
     Returns:
@@ -586,10 +586,8 @@ def prepare_grouped_sim_start_nb(
 
     Args:
         target_shape (Shape): A tuple where the first element indicates the simulation step count.
-        group_lens (GroupLens): An array-like sequence representing the number of columns per group.
-        sim_start (Optional[FlexArray1dLike]): An array-like object containing simulation start positions.
-
-            If None, all groups default to a start index of zero.
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         check_bounds (bool): Flag indicating whether to validate and adjust start positions within bounds.
 
     Returns:
@@ -640,10 +638,8 @@ def prepare_grouped_sim_end_nb(
 
     Args:
         target_shape (Shape): A tuple where the first element indicates the simulation step count.
-        group_lens (GroupLens): An array-like sequence representing the number of columns per group.
-        sim_end (Optional[FlexArray1dLike]): An array-like object containing simulation end positions.
-
-            If None, all groups default to an end index equal to the simulation step count.
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         check_bounds (bool): Flag indicating whether to validate and adjust end positions within bounds.
 
     Returns:
@@ -695,13 +691,9 @@ def prepare_grouped_sim_range_nb(
 
     Args:
         target_shape (Shape): A tuple where the first element indicates the simulation step count.
-        group_lens (GroupLens): An array-like sequence representing the number of columns per group.
-        sim_start (Optional[FlexArray1dLike]): An array-like object containing simulation start positions.
-
-            If None, all groups default to a start index of zero.
-        sim_end (Optional[FlexArray1dLike]): An array-like object containing simulation end positions.
-
-            If None, all groups default to an end index equal to the simulation step count.
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         check_bounds (bool): Flag indicating whether to validate and adjust positions within bounds.
 
     Returns:
@@ -734,10 +726,8 @@ def prepare_ungrouped_sim_start_nb(
     Args:
         target_shape (Shape): A tuple where the first element indicates the simulation step count
             and the second indicates the number of columns.
-        group_lens (GroupLens): An array-like sequence representing group lengths.
-        sim_start (Optional[FlexArray1dLike]): An array-like object containing simulation start positions.
-
-            If None, all columns default to a start index of zero.
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         check_bounds (bool): Flag indicating whether to validate and adjust start positions within bounds.
 
     Returns:
@@ -786,10 +776,8 @@ def prepare_ungrouped_sim_end_nb(
     Args:
         target_shape (Shape): A tuple where the first element indicates the simulation step
             count and the second indicates the number of columns.
-        group_lens (GroupLens): An array-like sequence representing group lengths.
-        sim_end (Optional[FlexArray1dLike]): An array-like object containing simulation end positions.
-
-            If None, all columns default to an end index equal to the simulation step count.
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         check_bounds (bool): Flag indicating whether to validate and adjust end positions within bounds.
 
     Returns:
@@ -839,13 +827,9 @@ def prepare_ungrouped_sim_range_nb(
     Args:
         target_shape (Shape): A tuple where the first element indicates the simulation step count
             and the second indicates the number of columns.
-        group_lens (GroupLens): An array-like sequence representing group lengths.
-        sim_start (Optional[FlexArray1dLike]): An array-like object containing simulation start positions.
-
-            If None, all columns default to a start index of zero.
-        sim_end (Optional[FlexArray1dLike]): An array-like object containing simulation end positions.
-
-            If None, all columns default to an end index equal to the simulation step count.
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         check_bounds (bool): Flag indicating whether to validate and adjust positions within bounds.
 
     Returns:

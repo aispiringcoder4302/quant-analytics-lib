@@ -168,8 +168,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         log_returns (bool): Indicates whether the provided returns are in log format.
         year_freq (Optional[FrequencyLike]): Frequency used for annualization.
         defaults (KwargsLike): Overrides for default settings in `vectorbtpro._settings.returns`.
-        sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-        sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+        sim_start (Optional[ArrayLike]): Start index of the simulation range.
+        sim_end (Optional[ArrayLike]): End index of the simulation range.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor`.
 
     !!! info
@@ -236,7 +236,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            wrapper (Optional[ArrayWrapper]): Wrapper instance for array operations.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
@@ -474,8 +474,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns data.
 
                 If not provided, the `bm_returns` property is used.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
 
         Returns:
             Optional[ReturnsAccessorT]: A returns accessor instance for benchmark returns,
@@ -761,9 +761,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             periods (Union[None, str, ArrayLike]): Designation of periods to prepare.
 
                 If None, defaults are used.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
-            wrapper (Optional[ArrayWrapper]): Array wrapper for index extraction.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -870,8 +870,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Mirror returns based on simulation indices.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -916,8 +916,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             start_value (Optional[float]): Initial value for cumulative returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1106,8 +1106,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             start_value (Optional[float]): Initial value for cumulative returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1159,14 +1159,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of periods required.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             start_value (Optional[float]): Starting value for the calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation period start.
-            sim_end (Optional[ArrayLike]): Simulation period end.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1216,8 +1216,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute total return.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation period start.
-            sim_end (Optional[ArrayLike]): Simulation period end.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1265,11 +1265,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of periods required.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation period start.
-            sim_end (Optional[ArrayLike]): Simulation period end.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1319,8 +1319,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             periods (Union[None, str, ArrayLike]): Period specification resolved
                 using `ReturnsAccessor.get_periods`.
-            sim_start (Optional[ArrayLike]): Simulation period start.
-            sim_end (Optional[ArrayLike]): Simulation period end.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1371,11 +1371,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of periods required.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation period start.
-            sim_end (Optional[ArrayLike]): Simulation period end.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1431,8 +1431,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             ddof (Optional[int]): Degrees of freedom for the standard deviation calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation period start.
-            sim_end (Optional[ArrayLike]): Simulation period end.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1497,8 +1497,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             ddof (Optional[int]): Degrees of freedom for standard deviation computation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1554,8 +1554,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             periods (Union[None, str, ArrayLike]): Period specification resolved
                 using `ReturnsAccessor.get_periods`.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1609,8 +1609,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1666,8 +1666,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             required_return (Optional[float]): Required return threshold.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1731,8 +1731,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             required_return (Optional[float]): Required return threshold.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1794,8 +1794,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             ddof (Optional[int]): Degrees of freedom for standard deviation calculation.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1859,7 +1859,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Window length for the rolling calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of observations required to calculate the ratio.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             risk_free (Optional[float]): Risk-free return used in the excess return computation.
@@ -1869,8 +1869,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             annualized (bool): Whether to annualize the Sharpe ratio.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             stream_mode (bool): Indicates if stream mode processing is enabled.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2088,8 +2088,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             required_return (Optional[float]): The minimum required return threshold for downside risk.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2140,14 +2140,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of periods required.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             required_return (Optional[float]): Required return threshold; subtracted from returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2200,8 +2200,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             required_return (Optional[float]): Required return threshold.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2252,14 +2252,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of periods required.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             required_return (Optional[float]): Required return threshold; subtracted from returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2316,8 +2316,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             ddof (Optional[int]): Delta degrees of freedom for statistical calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2373,7 +2373,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of periods required.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bm_returns (Optional[ArrayLike]): Benchmark returns for comparison.
@@ -2382,8 +2382,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             ddof (Optional[int]): Delta degrees of freedom for statistical calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2444,8 +2444,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             ddof (Optional[int]): Delta degrees of freedom for normalization.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2502,7 +2502,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Window length for the rolling beta calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of observations required for calculation.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bm_returns (Optional[ArrayLike]): Benchmark returns array.
@@ -2511,8 +2511,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             ddof (Optional[int]): Degrees of freedom for the calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2574,8 +2574,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             risk_free (Optional[float]): Risk-free rate applied in the calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2632,7 +2632,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Window length for the rolling alpha calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of observations required for calculation.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bm_returns (Optional[ArrayLike]): Benchmark returns array.
@@ -2641,8 +2641,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             risk_free (Optional[float]): Risk-free rate applied in the calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2697,8 +2697,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute tail ratio values.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             noarr_mode (bool): Flag indicating whether to operate in no-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2748,11 +2748,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Window length for the rolling tail ratio calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of observations required for calculation.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             noarr_mode (bool): Flag indicating whether to operate in no-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2800,8 +2800,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute the profit factor.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2848,11 +2848,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum periods required.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2898,8 +2898,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute Common Sense Ratio (CSR).
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2946,11 +2946,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum periods required.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3001,8 +3001,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             cutoff (Optional[float]): Cutoff value.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             noarr_mode (bool): Flag indicating whether to use non-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -3056,14 +3056,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum periods required.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             cutoff (Optional[float]): Cutoff value.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             noarr_mode (bool): Flag indicating whether to use non-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -3119,8 +3119,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             cutoff (Optional[float]): Cutoff value.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             noarr_mode (bool): Flag indicating whether to use non-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -3174,14 +3174,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of valid data points.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             cutoff (Optional[float]): Cutoff probability for the CVaR calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             noarr_mode (bool): Flag to enable no-array mode.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -3239,8 +3239,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
             periods (Union[None, str, ArrayLike]): Period specification resolved
                 using `ReturnsAccessor.get_periods`.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3297,14 +3297,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of valid data points.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3364,8 +3364,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
             periods (Union[None, str, ArrayLike]): Period specification resolved
                 using `ReturnsAccessor.get_periods`.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3422,14 +3422,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Rolling window size.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of valid data points.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3489,8 +3489,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
             periods (Union[None, str, ArrayLike]): Period specification resolved
                 using `ReturnsAccessor.get_periods`.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3547,14 +3547,14 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Length of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of periods required for computation.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3607,8 +3607,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute the relative decline from a peak based on cumulative returns.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3646,8 +3646,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         `ReturnsAccessor.drawdowns.max_drawdown`.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3695,11 +3695,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             window (Optional[int]): Length of the rolling window.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            minp (Optional[int]): Minimum number of periods required for computation.
+            minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3755,8 +3755,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Generate drawdown records from cumulative returns.
 
         Args:
-            sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3812,7 +3812,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             cond_kwargs (KwargsLike): Keyword arguments for condition overrides.
             custom_arg_names (Optional[Set[str]]): Set of custom attribute names to consider during resolution.
             impacts_caching (bool): Flag indicating whether the changes affect caching.
-            silence_warnings (bool): If True, suppress warnings regarding object copying.
+            silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
             ReturnsAccessor: The resolved instance.
@@ -4037,13 +4037,13 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 Will be broadcast per element.
             start_value (float): The starting value for cumulative returns.
-            sim_start (Optional[ArrayLike]): Simulation start row or index (inclusive).
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
 
                 May be an int, datetime-like, or array-like.
-            sim_end (Optional[ArrayLike]): Simulation end row or index (exclusive).
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
 
                 May be an int, datetime-like, or array-like.
-            fit_sim_range (bool): Whether to adjust the figure to the simulation range.
+            fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
             fill_to_benchmark (bool): Whether to fill between the main plot and the benchmark plot or
                 between the main plot and the start value.
             main_kwargs (KwargsLike): Keyword arguments for
@@ -4240,8 +4240,8 @@ class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
         bm_returns (Optional[ArrayLike]): Benchmark returns.
         year_freq (Optional[FrequencyLike]): Frequency identifier for annualization.
         defaults (KwargsLike): Default configuration parameters.
-        sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-        sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+        sim_start (Optional[ArrayLike]): Start index of the simulation range.
+        sim_end (Optional[ArrayLike]): End index of the simulation range.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor` and `ReturnsAccessor`.
     """
 
@@ -4285,8 +4285,8 @@ class ReturnsDFAccessor(ReturnsAccessor, GenericDFAccessor):
         bm_returns (Optional[ArrayLike]): Benchmark returns.
         year_freq (Optional[FrequencyLike]): Frequency identifier for annualization.
         defaults (KwargsLike): Default configuration parameters.
-        sim_start (Optional[ArrayLike]): Simulation start, which can be a scalar or array-like.
-        sim_end (Optional[ArrayLike]): Simulation end, which can be a scalar or array-like.
+        sim_start (Optional[ArrayLike]): Start index of the simulation range.
+        sim_end (Optional[ArrayLike]): End index of the simulation range.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor` and `ReturnsAccessor`.
     """
 

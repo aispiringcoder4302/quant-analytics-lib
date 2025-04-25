@@ -41,7 +41,7 @@ class Resampler(Configured):
         target_freq (Union[None, bool, FrequencyLike]): Target index frequency or date offset.
 
             Set to False to disable automatic frequency inference.
-        silence_warnings (bool): Flag indicating whether warnings should be silenced.
+        silence_warnings (bool): Flag to suppress warning messages.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 
@@ -154,7 +154,7 @@ class Resampler(Configured):
         Args:
             pd_resampler (pandas.core.resample.Resampler): A Pandas resampler object.
             source_freq (Optional[FrequencyLike]): Frequency for the source index.
-            silence_warnings (bool): Flag indicating whether warnings should be silenced.
+            silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
             Resampler: A new `Resampler` instance.
@@ -183,7 +183,7 @@ class Resampler(Configured):
             source_index (index_like): Source index for resampling.
             *args: Positional arguments for `pd.Series.resample`.
             source_freq (Optional[FrequencyLike]): Frequency for the source index.
-            silence_warnings (bool): Flag indicating whether warnings should be silenced.
+            silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `pd.Series.resample`.
 
         Returns:
@@ -207,7 +207,7 @@ class Resampler(Configured):
             source_index (index_like): Source index for resampling.
             *args: Positional arguments for `vectorbtpro.utils.datetime_.date_range`.
             source_freq (Optional[FrequencyLike]): Frequency for the source index.
-            silence_warnings (Optional[bool]): Flag indicating whether warnings should be silenced.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.date_range`.
 
         Returns:
@@ -226,7 +226,7 @@ class Resampler(Configured):
         """Convert the source index frequency to NumPy format.
 
         Args:
-            silence_warnings (Optional[bool]): Flag indicating whether warnings should be silenced.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             AnyPandasFrequency: Source index frequency in NumPy format.
@@ -254,7 +254,7 @@ class Resampler(Configured):
         """Convert the target index frequency to NumPy format.
 
         Args:
-            silence_warnings (Optional[bool]): Flag indicating whether warnings should be silenced.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             AnyPandasFrequency: Target index frequency in NumPy format.
@@ -369,7 +369,7 @@ class Resampler(Configured):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            silence_warnings (Optional[bool]): Whether to silence warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             Union[Array1d, Index]: The mapped index values.
@@ -441,7 +441,7 @@ class Resampler(Configured):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            silence_warnings (Optional[bool]): Whether to silence warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             Tuple[Array1d, Array1d]: A tuple with the start and end indices of the source ranges.
@@ -546,7 +546,7 @@ class Resampler(Configured):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            silence_warnings (Optional[bool]): Whether to silence warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             Array1d: A resampled array corresponding to the source mask.

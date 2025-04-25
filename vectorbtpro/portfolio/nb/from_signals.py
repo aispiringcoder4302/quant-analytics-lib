@@ -804,10 +804,10 @@ def from_basic_signals_nb(
             Provided as a scalar, or per row and/or column.
 
             Negative values are converted to positive to avoid look-ahead bias.
-        sim_start (Optional[FlexArray1dLike]): Start indices of the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per group.
-        sim_end (Optional[FlexArray1dLike]): End indices of the simulation range.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per group.
         call_seq (Optional[Array2d]): Sequence array for call order.
@@ -1921,10 +1921,10 @@ def from_signals_nb(
         from_ago (FlexArray2dLike): Lookback offset for price selection.
 
             Provided as a scalar, or per row and/or column.
-        sim_start (Optional[FlexArray1dLike]): Start indices of the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per group.
-        sim_end (Optional[FlexArray1dLike]): End indices of the simulation range.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per group.
         call_seq (Optional[Array2d]): Sequence array for call order.
@@ -4109,7 +4109,7 @@ def init_FSInOutputs_nb(
 
     Args:
         target_shape (Shape): Target shape for output arrays.
-        group_lens (GroupLens): Lengths of groups for shaping cash-sharing arrays.
+        group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Indicates if cash should be shared among columns within the same group.
         save_state (bool): Determines if state arrays (position, debt, locked_cash, cash, free_cash) are saved.
         save_value (bool): Determines if the value array is saved.
@@ -4775,10 +4775,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         from_ago (FlexArray2dLike): Lookback offset for price selection.
 
             Provided as a scalar, or per row and/or column.
-        sim_start (Optional[FlexArray1dLike]): Start indices of the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per group.
-        sim_end (Optional[FlexArray1dLike]): End indices of the simulation range.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per group.
         call_seq (Optional[Array2d]): Sequence array for call order.

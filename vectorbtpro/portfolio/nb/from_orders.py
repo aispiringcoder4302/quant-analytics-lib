@@ -260,10 +260,10 @@ def from_orders_nb(
             Provided as a scalar, or per row and/or column.
 
             Negative values are converted to positive to avoid look-ahead bias.
-        sim_start (Optional[FlexArray1dLike]): Start indices of the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per group.
-        sim_end (Optional[FlexArray1dLike]): End indices of the simulation range.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per group.
         call_seq (Optional[Array2d]): Sequence array for call order.

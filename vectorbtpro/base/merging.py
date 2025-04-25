@@ -133,7 +133,7 @@ def concat_merge(
         wrap (Optional[bool]): If True, wrap each array with a Pandas Series using `pd.concat`.
 
             If None, the value is inferred from the presence of `wrapper`, `keys`, or `wrap_kwargs`.
-        wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+        wrapper (Optional[ArrayWrapper]): Array wrapper instance.
         wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
             can be a dictionary or a list of dictionaries.
             
@@ -293,7 +293,7 @@ def row_stack_merge(
             * "df", "frame", or "dataframe": Wraps each array as a Pandas DataFrame.
 
             Without wrapping, arrays will be kept as-is and merged using `row_stack_arrays`.
-        wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+        wrapper (Optional[ArrayWrapper]): Array wrapper instance.
         wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
             can be a dictionary or a list of dictionaries.
             
@@ -461,7 +461,7 @@ def column_stack_merge(
             * True: Wrap each array using Pandas Series or DataFrame based on its dimensions.
             * "sr" or "series": Wrap each array as a Pandas Series.
             * "df", "frame", or "dataframe": Wrap each array as a Pandas DataFrame.
-        wrapper (Optional[ArrayWrapper]): Optional wrapper instance.
+        wrapper (Optional[ArrayWrapper]): Array wrapper instance.
         wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
             can be a dictionary or a list of dictionaries.
             

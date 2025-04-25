@@ -263,7 +263,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 * It takes effect only if the global `agg_func` is not None.
                 * A warning is raised if it is None but the calculation returns multiple values.
             dropna (Optional[bool]): If True, omit metrics that are entirely NaN.
-            silence_warnings (Optional[bool]): If True, suppress all warnings.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
             template_context (KwargsLike): Additional context for template substitution.
 
                 Merged with `template_context` from `vectorbtpro._settings.stats_builder` and
