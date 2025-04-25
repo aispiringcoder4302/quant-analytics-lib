@@ -108,7 +108,7 @@ def asset_flow_nb(
         target_shape (Shape): Shape of the output array.
         order_records (RecordArray): Array of order records.
         col_map (GroupMap): Tuple of column indices and lengths.
-        direction (int): Direction filter for orders.
+        direction (int): Position direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         init_position (FlexArray1dLike): Initial position for each column.
@@ -197,7 +197,7 @@ def assets_nb(
 
     Args:
         asset_flow (Array2d): Array of asset flow values.
-        direction (int): Direction specifier.
+        direction (int): Position direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         init_position (FlexArray1dLike): Initial position for each column.

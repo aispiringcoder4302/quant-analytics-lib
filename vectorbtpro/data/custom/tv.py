@@ -570,7 +570,7 @@ class TVClient(Configured):
                 If not specified, all available pages are fetched.
             delay (Optional[int]): Delay in seconds between retry attempts and between fetching pages.
             retries (int): Number of retries allowed for each API request in case of JSON decoding errors.
-            show_progress (bool): Flag indicating whether to display a progress bar during symbol fetching.
+            show_progress (bool): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.
@@ -767,7 +767,7 @@ class TVData(RemoteData):
             pages (Optional[int]): Number of pages to retrieve during symbol search.
             delay (Optional[int]): Delay between requests during symbol search.
             retries (Optional[int]): Number of retry attempts for symbol search requests.
-            show_progress (Optional[bool]): Whether to display a progress bar during symbol search.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.

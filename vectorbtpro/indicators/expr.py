@@ -50,7 +50,7 @@ def delay(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days specifying the delay.
+        d (float): Number of days.
 
     Returns:
         Array2d: The shifted array reflecting the value from the specified delay.
@@ -63,7 +63,7 @@ def delta(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days delay.
+        d (float): Number of days.
 
     Returns:
         Array2d: The difference between the current and delayed values.
@@ -121,7 +121,7 @@ def ts_min(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days defining the rolling window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The rolling minimum values.
@@ -134,7 +134,7 @@ def ts_max(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days defining the rolling window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The rolling maximum values.
@@ -148,7 +148,7 @@ def ts_argmin(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days defining the rolling window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The 1-indexed rolling indices of the minimum values,
@@ -166,7 +166,7 @@ def ts_argmax(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days defining the rolling window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The 1-indexed rolling indices of the maximum values,
@@ -184,7 +184,7 @@ def ts_rank(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days defining the rolling window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The rolling ranks as percentages.
@@ -197,7 +197,7 @@ def ts_sum(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days defining the rolling window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The rolling sum.
@@ -210,7 +210,7 @@ def ts_product(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days defining the rolling window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The rolling product.
@@ -223,7 +223,7 @@ def ts_mean(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days defining the rolling window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The rolling mean.
@@ -236,7 +236,7 @@ def ts_wmean(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days over which to compute the weighted average.
+        d (float): Number of days.
 
     Returns:
         Array2d: The weighted moving average.
@@ -249,7 +249,7 @@ def ts_std(x: tp.Array2d, d: float) -> tp.Array2d:
 
     Args:
         x (Array2d): Input array.
-        d (float): Number of days defining the rolling window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The rolling standard deviation.
@@ -263,7 +263,7 @@ def ts_corr(x: tp.Array2d, y: tp.Array2d, d: float) -> tp.Array2d:
     Args:
         x (Array2d): First input array.
         y (Array2d): Second input array.
-        d (float): Number of days defining the time window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The rolling correlation values.
@@ -277,7 +277,7 @@ def ts_cov(x: tp.Array2d, y: tp.Array2d, d: float) -> tp.Array2d:
     Args:
         x (Array2d): First input array.
         y (Array2d): Second input array.
-        d (float): Number of days defining the time window.
+        d (float): Number of days.
 
     Returns:
         Array2d: The rolling covariance values.
@@ -289,7 +289,7 @@ def adv(d: float, context: tp.KwargsLike = None) -> tp.Array2d:
     """Return the average daily dollar volume calculated over the past `d` days.
 
     Args:
-        d (float): Number of days to consider.
+        d (float): Number of days.
         context (KwargsLike): A context dictionary expected to contain volume data
             under the key "volume".
 

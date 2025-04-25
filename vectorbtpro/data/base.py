@@ -5262,7 +5262,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 See `vectorbtpro.utils.execution.execute`.
             filter_results (bool): If True, filters out function calls that yield no results.
-            raise_no_results (bool): If True, raises an exception when no results are obtained.
+            raise_no_results (bool): Flag indicating whether to raise a 
+                `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
             merge_func (MergeFuncLike): Function to merge the results.
             
                 See `vectorbtpro.utils.merging.MergeFunc`.

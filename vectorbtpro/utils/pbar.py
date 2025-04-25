@@ -51,7 +51,7 @@ class ProgressBar(Base):
         force_open_bar (Optional[bool]): Flag to force the progress bar to open.
         reuse (Optional[bool]): Flag indicating whether the progress bar can be reused.
         disable (Optional[bool]): Flag to disable the progress bar.
-        show_progress (Optional[bool]): Flag indicating if the progress bar is displayed.
+        show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         show_progress_desc (Optional[bool]): Flag indicating if the description is shown.
         prefix (Union[None, str, dict]): Prefix for the progress bar description.
         postfix (Union[None, str, dict]): Postfix for the progress bar description.

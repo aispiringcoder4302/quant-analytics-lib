@@ -163,7 +163,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         obj (Optional[ArrayLike]): The Pandas object containing return data.
 
             Represents the return series.
-        bm_returns (Optional[ArrayLike]): Benchmark return data.
+        bm_returns (Optional[ArrayLike]): Benchmark returns.
         log_returns (bool): Indicates whether the provided returns are in log format.
         year_freq (Optional[FrequencyLike]): Frequency used for annualization.
         defaults (KwargsLike): Overrides for default settings in `vectorbtpro._settings.returns`.
@@ -470,7 +470,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Return a returns accessor for benchmark returns based on provided data and simulation range.
 
         Args:
-            bm_returns (Optional[ArrayLike]): Benchmark returns data.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 If not provided, the `bm_returns` property is used.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -566,7 +566,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Convert an annualization factor into a year frequency.
 
         Args:
-            ann_factor (float): The annualization factor.
+            ann_factor (float): Annualization factor.
             freq (PandasFrequency): Data frequency to be scaled.
             method_name (Optional[str]): Name of the NumPy method to apply to the annualization factor.
 
@@ -1976,7 +1976,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         If benchmark returns are provided, the benchmark Sharpe ratio is computed for comparison.
 
         Args:
-            bm_returns (Optional[ArrayLike]): Benchmark returns used for comparison.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
             risk_free (Optional[float]): Risk-free return utilized in the Sharpe ratio computation.
@@ -2309,7 +2309,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute information ratio.
 
         Args:
-            bm_returns (Optional[ArrayLike]): Benchmark returns for comparison.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
             ddof (Optional[int]): Delta degrees of freedom for statistical calculation.
@@ -2375,7 +2375,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            bm_returns (Optional[ArrayLike]): Benchmark returns for comparison.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             ddof (Optional[int]): Delta degrees of freedom for statistical calculation.
@@ -2437,7 +2437,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute beta.
 
         Args:
-            bm_returns (Optional[ArrayLike]): Benchmark returns for beta calculation.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
             ddof (Optional[int]): Delta degrees of freedom for normalization.
@@ -2504,7 +2504,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            bm_returns (Optional[ArrayLike]): Benchmark returns array.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
             ddof (Optional[int]): Degrees of freedom for the calculation.
@@ -2567,7 +2567,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute alpha values.
 
         Args:
-            bm_returns (Optional[ArrayLike]): Benchmark returns array.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
             risk_free (Optional[float]): Risk-free rate applied in the calculation.
@@ -2634,7 +2634,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            bm_returns (Optional[ArrayLike]): Benchmark returns array.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
             risk_free (Optional[float]): Risk-free rate applied in the calculation.
@@ -4032,7 +4032,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Args:
             column (Optional[Label]): Name of the column to plot.
-            bm_returns (Optional[ArrayLike]): Benchmark returns to compare against.
+            bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Will be broadcast per element.
             start_value (float): The starting value for cumulative returns.
@@ -4055,7 +4055,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
-            fig (Optional[BaseFigure]): Figure to update.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
 
                 If None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.

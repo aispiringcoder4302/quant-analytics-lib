@@ -120,7 +120,7 @@ def apply_mapping(
         reverse (bool): Whether to reverse the mapping's keys and values.
 
             See `to_value_mapping`.
-        ignore_case (bool): Whether to ignore case in string keys.
+        ignore_case (bool): Whether to ignore case when matching.
         ignore_underscores (bool): Whether to ignore underscores in string keys.
         ignore_invalid (bool): Whether to remove characters not allowed in a Python variable.
         ignore_type (Optional[MaybeTuple[DTypeLike]]): One or multiple data types to ignore.

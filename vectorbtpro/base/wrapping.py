@@ -1185,7 +1185,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            wrapper_kwargs (KwargsLike): Keyword arguments for `ArrayWrapper.replace`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
 
         Returns:
             dict: Dictionary containing:
@@ -1530,7 +1530,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Args:
             *args: Positional arguments for `ArrayWrapper.get_resampler`.
-            wrapper_kwargs (KwargsLike): Keyword arguments for `ArrayWrapper.replace`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
             **kwargs: Keyword arguments for `ArrayWrapper.get_resampler`.
 
         Returns:

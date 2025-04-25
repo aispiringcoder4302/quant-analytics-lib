@@ -89,7 +89,7 @@ def save_animation(
 
             Internally converted to a frame duration using `1000 / fps`.
         writer_kwargs (KwargsLike): Keyword arguments for `imageio.get_writer`.
-        show_progress (bool): Whether to display the progress bar.
+        show_progress (bool): Flag indicating whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
             See `vectorbtpro.utils.pbar.ProgressBar`.

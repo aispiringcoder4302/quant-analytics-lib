@@ -38,7 +38,7 @@ def records_within_sim_range_nb(
 
     Args:
         target_shape (Shape): The target shape specification for the simulation.
-        records (RecordArray): Array of record entries.
+        records (RecordArray): Array of records.
         col_arr (Array1d): Array of column indices corresponding to each record.
         idx_arr (Array1d): Array of row indices corresponding to each record.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -154,7 +154,7 @@ def fill_trade_record_nb(
     """Fill a trade record in the provided records array.
 
     Args:
-        new_records (RecordArray): Array to store the trade record.
+        new_records (RecordArray): Array of records to be filled.
         r (int): Index at which to fill the trade record.
         col (int): Column index associated with the trade.
         size (float): Trade size.
@@ -245,7 +245,7 @@ def fill_entry_trades_in_position_nb(
             See `vectorbtpro.portfolio.enums.TradeDirection`.
         status (int): Trade status indicating whether the position is closed.
         parent_id (int): Identifier linking orders to a parent trade.
-        new_records (RecordArray): Array where filled trade records are stored.
+        new_records (RecordArray): Array of records to be filled.
         r (int): Current trade index used as the starting ID.
 
     Returns:
@@ -984,9 +984,9 @@ def fill_position_record_nb(new_records: tp.RecordArray, r: int, trade_records: 
     is stored in `new_records` at the specified index.
 
     Args:
-        new_records (RecordArray): Array to store the aggregated position record.
+        new_records (RecordArray): Array of records to be filled.
         r (int): Index where the new position record will be inserted.
-        trade_records (RecordArray): Array of trade records to aggregate.
+        trade_records (RecordArray): Array of trade records.
 
     Returns:
         None: The function modifies `new_records` in place.
@@ -1032,7 +1032,7 @@ def copy_trade_record_nb(new_records: tp.RecordArray, r: int, trade_record: tp.R
     Copies a single trade record into the provided `new_records` array at the specified index.
 
     Args:
-        new_records (RecordArray): Array to which the trade record is copied.
+        new_records (RecordArray): Array of records to be filled.
         r (int): Index in `new_records` where the trade record will be inserted.
         trade_record (Record): Trade record to copy.
 
@@ -1074,7 +1074,7 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
     aggregated metrics such as size, weighted entry and exit prices, fees, profit, and return.
 
     Args:
-        trade_records (RecordArray): Array of trade records to aggregate.
+        trade_records (RecordArray): Array of trade records.
         col_map (GroupMap): Tuple of column indices and lengths.
 
     Returns:
@@ -1185,7 +1185,7 @@ def get_long_view_orders_nb(
     """Return a view of order records corresponding to long positions only.
 
     Args:
-        order_records (RecordArray): Array of structured order records.
+        order_records (RecordArray): Array of order records.
         close (Array2d): Array of closing prices.
         col_map (GroupMap): Tuple of column indices and lengths.
         init_position (FlexArray1dLike): Initial position for each column.
@@ -1357,8 +1357,7 @@ def get_short_view_orders_nb(
     initial position and price, and applies simulation range filters defined by `sim_start` and `sim_end`.
 
     Args:
-        order_records (RecordArray): Order records as a NumPy record array
-            containing trading order details.
+        order_records (RecordArray): Array of order records.
         close (Array2d): A 2D array of closing prices.
         col_map (GroupMap): Tuple of column indices and lengths.
         init_position (FlexArray1dLike): Initial position for each column.
@@ -1536,7 +1535,7 @@ def get_position_feature_nb(
     `feature` and the flags controlling the treatment of open and closed positions.
 
     Args:
-        order_records (RecordArray): Order records array.
+        order_records (RecordArray): Array of order records.
         close (Array2d): Array of market close prices.
         col_map (GroupMap): Tuple of column indices and lengths.
         feature (int): Position feature to compute.
@@ -1726,14 +1725,14 @@ def get_position_feature_nb(
 
 @register_jitted(cache=True)
 def price_status_nb(
-    records: tp.RecordArray,
+    order_records: tp.RecordArray,
     high: tp.Optional[tp.FlexArray2d],
     low: tp.Optional[tp.FlexArray2d],
 ) -> tp.Array1d:
     """Return the status of each order's price relative to provided high and low arrays.
 
     Args:
-        records (RecordArray): Array of order records.
+        order_records (RecordArray): Array of order records.
         high (Optional[FlexArray2d]): Array of high prices corresponding to orders.
         low (Optional[FlexArray2d]): Array of low prices corresponding to orders.
 
@@ -1741,9 +1740,9 @@ def price_status_nb(
         Array1d: Array of `vectorbtpro.portfolio.enums.OrderPriceStatus` codes indicating
             the price condition for each order.
     """
-    out = np.full(len(records), 0, dtype=int_)
-    for i in range(len(records)):
-        order = records[i]
+    out = np.full(len(order_records), 0, dtype=int_)
+    for i in range(len(order_records)):
+        order = order_records[i]
         if high is not None:
             _high = float(flex_select_nb(high, order["idx"], order["col"]))
         else:
@@ -1765,19 +1764,19 @@ def price_status_nb(
 
 
 @register_jitted(cache=True)
-def trade_winning_streak_nb(records: tp.RecordArray) -> tp.Array1d:
+def trade_winning_streak_nb(trade_records: tp.RecordArray) -> tp.Array1d:
     """Return the current winning streak for each trade.
 
     Args:
-        records (RecordArray): Array of trade records containing profit and loss details.
+        trade_records (RecordArray): Array of trade records.
 
     Returns:
         Array1d: Array of integers representing the winning streak count for each trade.
     """
-    out = np.full(len(records), 0, dtype=int_)
+    out = np.full(len(trade_records), 0, dtype=int_)
     curr_rank = 0
-    for i in range(len(records)):
-        if records[i]["pnl"] > 0:
+    for i in range(len(trade_records)):
+        if trade_records[i]["pnl"] > 0:
             curr_rank += 1
         else:
             curr_rank = 0
@@ -1786,19 +1785,19 @@ def trade_winning_streak_nb(records: tp.RecordArray) -> tp.Array1d:
 
 
 @register_jitted(cache=True)
-def trade_losing_streak_nb(records: tp.RecordArray) -> tp.Array1d:
+def trade_losing_streak_nb(trade_records: tp.RecordArray) -> tp.Array1d:
     """Return the current losing streak for each trade.
 
     Args:
-        records (RecordArray): Array of trade records containing profit and loss details.
+        trade_records (RecordArray): Array of trade records.
 
     Returns:
         Array1d: Array of integers representing the losing streak count for each trade.
     """
-    out = np.full(len(records), 0, dtype=int_)
+    out = np.full(len(trade_records), 0, dtype=int_)
     curr_rank = 0
-    for i in range(len(records)):
-        if records[i]["pnl"] < 0:
+    for i in range(len(trade_records)):
+        if trade_records[i]["pnl"] < 0:
             curr_rank += 1
         else:
             curr_rank = 0
@@ -2038,9 +2037,9 @@ def trade_best_worst_price_nb(
 
 
 @register_chunkable(
-    size=ch.ArraySizer(arg_query="records", axis=0),
+    size=ch.ArraySizer(arg_query="trade_records", axis=0),
     arg_take_spec=dict(
-        records=ch.ArraySlicer(axis=0),
+        trade_records=ch.ArraySlicer(axis=0),
         open=None,
         high=None,
         low=None,
@@ -2053,7 +2052,7 @@ def trade_best_worst_price_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def best_price_nb(
-    records: tp.RecordArray,
+    trade_records: tp.RecordArray,
     open: tp.Optional[tp.FlexArray2d],
     high: tp.Optional[tp.FlexArray2d],
     low: tp.Optional[tp.FlexArray2d],
@@ -2065,7 +2064,7 @@ def best_price_nb(
     """Compute the best price for each trade using `trade_best_worst_price_nb`.
 
     Args:
-        records (RecordArray): Array of trade records.
+        trade_records (RecordArray): Array of trade records.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2080,9 +2079,9 @@ def best_price_nb(
     !!! tip
         This function is parallelizable.
     """
-    out = np.empty(len(records), dtype=float_)
-    for r in prange(len(records)):
-        trade = records[r]
+    out = np.empty(len(trade_records), dtype=float_)
+    for r in prange(len(trade_records)):
+        trade = trade_records[r]
         out[r] = trade_best_worst_price_nb(
             trade=trade,
             open=open,
@@ -2097,9 +2096,9 @@ def best_price_nb(
 
 
 @register_chunkable(
-    size=ch.ArraySizer(arg_query="records", axis=0),
+    size=ch.ArraySizer(arg_query="trade_records", axis=0),
     arg_take_spec=dict(
-        records=ch.ArraySlicer(axis=0),
+        trade_records=ch.ArraySlicer(axis=0),
         open=None,
         high=None,
         low=None,
@@ -2112,7 +2111,7 @@ def best_price_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def worst_price_nb(
-    records: tp.RecordArray,
+    trade_records: tp.RecordArray,
     open: tp.Optional[tp.FlexArray2d],
     high: tp.Optional[tp.FlexArray2d],
     low: tp.Optional[tp.FlexArray2d],
@@ -2124,7 +2123,7 @@ def worst_price_nb(
     """Compute the worst price for each trade using `trade_best_worst_price_nb`.
 
     Args:
-        records (RecordArray): Array of trade records.
+        trade_records (RecordArray): Array of trade records.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2139,9 +2138,9 @@ def worst_price_nb(
     !!! tip
         This function is parallelizable.
     """
-    out = np.empty(len(records), dtype=float_)
-    for r in prange(len(records)):
-        trade = records[r]
+    out = np.empty(len(trade_records), dtype=float_)
+    for r in prange(len(trade_records)):
+        trade = trade_records[r]
         out[r] = trade_best_worst_price_nb(
             trade=trade,
             open=open,
@@ -2156,9 +2155,9 @@ def worst_price_nb(
 
 
 @register_chunkable(
-    size=ch.ArraySizer(arg_query="records", axis=0),
+    size=ch.ArraySizer(arg_query="trade_records", axis=0),
     arg_take_spec=dict(
-        records=ch.ArraySlicer(axis=0),
+        trade_records=ch.ArraySlicer(axis=0),
         open=None,
         high=None,
         low=None,
@@ -2172,7 +2171,7 @@ def worst_price_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def best_price_idx_nb(
-    records: tp.RecordArray,
+    trade_records: tp.RecordArray,
     open: tp.Optional[tp.FlexArray2d],
     high: tp.Optional[tp.FlexArray2d],
     low: tp.Optional[tp.FlexArray2d],
@@ -2185,7 +2184,7 @@ def best_price_idx_nb(
     """Compute the index of the best price for each trade using `trade_best_worst_price_nb`.
 
     Args:
-        records (RecordArray): Array of trade records.
+        trade_records (RecordArray): Array of trade records.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2201,9 +2200,9 @@ def best_price_idx_nb(
     !!! tip
         This function is parallelizable.
     """
-    out = np.empty(len(records), dtype=float_)
-    for r in prange(len(records)):
-        trade = records[r]
+    out = np.empty(len(trade_records), dtype=float_)
+    for r in prange(len(trade_records)):
+        trade = trade_records[r]
         out[r] = trade_best_worst_price_nb(
             trade=trade,
             open=open,
@@ -2219,9 +2218,9 @@ def best_price_idx_nb(
 
 
 @register_chunkable(
-    size=ch.ArraySizer(arg_query="records", axis=0),
+    size=ch.ArraySizer(arg_query="trade_records", axis=0),
     arg_take_spec=dict(
-        records=ch.ArraySlicer(axis=0),
+        trade_records=ch.ArraySlicer(axis=0),
         open=None,
         high=None,
         low=None,
@@ -2235,7 +2234,7 @@ def best_price_idx_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def worst_price_idx_nb(
-    records: tp.RecordArray,
+    trade_records: tp.RecordArray,
     open: tp.Optional[tp.FlexArray2d],
     high: tp.Optional[tp.FlexArray2d],
     low: tp.Optional[tp.FlexArray2d],
@@ -2248,7 +2247,7 @@ def worst_price_idx_nb(
     """Return worst price index for each trade by applying `trade_best_worst_price_nb` on each trade.
 
     Args:
-        records (RecordArray): Array of trade records.
+        trade_records (RecordArray): Array of trade records.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2264,9 +2263,9 @@ def worst_price_idx_nb(
     !!! tip
         This function is parallelizable.
     """
-    out = np.empty(len(records), dtype=float_)
-    for r in prange(len(records)):
-        trade = records[r]
+    out = np.empty(len(trade_records), dtype=float_)
+    for r in prange(len(trade_records)):
+        trade = trade_records[r]
         out[r] = trade_best_worst_price_nb(
             trade=trade,
             open=open,
@@ -2283,7 +2282,7 @@ def worst_price_idx_nb(
 
 @register_jitted(cache=True, tags={"can_parallel"})
 def expanding_best_price_nb(
-    records: tp.RecordArray,
+    trade_records: tp.RecordArray,
     open: tp.Optional[tp.FlexArray2d],
     high: tp.Optional[tp.FlexArray2d],
     low: tp.Optional[tp.FlexArray2d],
@@ -2298,7 +2297,7 @@ def expanding_best_price_nb(
     the best price reached up to that time index, starting from the trade's entry.
 
     Args:
-        records (RecordArray): Array of trade records.
+        trade_records (RecordArray): Array of trade records.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2316,17 +2315,17 @@ def expanding_best_price_nb(
     """
     if max_duration is None:
         _max_duration = 0
-        for r in range(len(records)):
-            trade = records[r]
+        for r in range(len(trade_records)):
+            trade = trade_records[r]
             trade_duration = trade["exit_idx"] - trade["entry_idx"]
             if trade_duration > _max_duration:
                 _max_duration = trade_duration
     else:
         _max_duration = max_duration
-    out = np.full((_max_duration + 1, len(records)), np.nan, dtype=float_)
+    out = np.full((_max_duration + 1, len(trade_records)), np.nan, dtype=float_)
 
-    for r in prange(len(records)):
-        trade = records[r]
+    for r in prange(len(trade_records)):
+        trade = trade_records[r]
         from_i = trade["entry_idx"]
         to_i = trade["exit_idx"]
         vmin = np.nan
@@ -2359,7 +2358,7 @@ def expanding_best_price_nb(
 
 @register_jitted(cache=True, tags={"can_parallel"})
 def expanding_worst_price_nb(
-    records: tp.RecordArray,
+    trade_records: tp.RecordArray,
     open: tp.Optional[tp.FlexArray2d],
     high: tp.Optional[tp.FlexArray2d],
     low: tp.Optional[tp.FlexArray2d],
@@ -2374,7 +2373,7 @@ def expanding_worst_price_nb(
     the worst price reached up to that time index, starting from the trade's entry.
 
     Args:
-        records (RecordArray): Array of trade records.
+        trade_records (RecordArray): Array of trade records.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2392,17 +2391,17 @@ def expanding_worst_price_nb(
     """
     if max_duration is None:
         _max_duration = 0
-        for r in range(len(records)):
-            trade = records[r]
+        for r in range(len(trade_records)):
+            trade = trade_records[r]
             trade_duration = trade["exit_idx"] - trade["entry_idx"]
             if trade_duration > _max_duration:
                 _max_duration = trade_duration
     else:
         _max_duration = max_duration
-    out = np.full((_max_duration + 1, len(records)), np.nan, dtype=float_)
+    out = np.full((_max_duration + 1, len(trade_records)), np.nan, dtype=float_)
 
-    for r in prange(len(records)):
-        trade = records[r]
+    for r in prange(len(trade_records)):
+        trade = trade_records[r]
         from_i = trade["entry_idx"]
         to_i = trade["exit_idx"]
         vmin = np.nan
@@ -2596,9 +2595,9 @@ def mae_nb(
 
 
 @register_chunkable(
-    size=ch.ArraySizer(arg_query="records", axis=0),
+    size=ch.ArraySizer(arg_query="trade_records", axis=0),
     arg_take_spec=dict(
-        records=ch.ArraySlicer(axis=0),
+        trade_records=ch.ArraySlicer(axis=0),
         expanding_best_price=ch.ArraySlicer(axis=1),
         use_returns=None,
     ),
@@ -2606,14 +2605,14 @@ def mae_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def expanding_mfe_nb(
-    records: tp.RecordArray,
+    trade_records: tp.RecordArray,
     expanding_best_price: tp.Array2d,
     use_returns: bool = False,
 ) -> tp.Array2d:
     """Get expanding maximum favorable excursion (MFE) for each trade using expanding best prices.
 
     Args:
-        records (RecordArray): Trade records containing trade data.
+        trade_records (RecordArray): Array of trade records.
         expanding_best_price (Array2d): 2D array of expanding best prices for each trade.
         use_returns (bool): Flag indicating whether to compute MFE using returns instead of absolute prices.
 
@@ -2627,9 +2626,9 @@ def expanding_mfe_nb(
     for r in prange(expanding_best_price.shape[1]):
         for i in range(expanding_best_price.shape[0]):
             out[i, r] = trade_mfe_nb(
-                size=records["size"][r],
-                direction=records["direction"][r],
-                entry_price=records["entry_price"][r],
+                size=trade_records["size"][r],
+                direction=trade_records["direction"][r],
+                entry_price=trade_records["entry_price"][r],
                 best_price=expanding_best_price[i, r],
                 use_returns=use_returns,
             )
@@ -2637,9 +2636,9 @@ def expanding_mfe_nb(
 
 
 @register_chunkable(
-    size=ch.ArraySizer(arg_query="records", axis=0),
+    size=ch.ArraySizer(arg_query="trade_records", axis=0),
     arg_take_spec=dict(
-        records=ch.ArraySlicer(axis=0),
+        trade_records=ch.ArraySlicer(axis=0),
         expanding_worst_price=ch.ArraySlicer(axis=1),
         use_returns=None,
     ),
@@ -2647,14 +2646,14 @@ def expanding_mfe_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def expanding_mae_nb(
-    records: tp.RecordArray,
+    trade_records: tp.RecordArray,
     expanding_worst_price: tp.Array2d,
     use_returns: bool = False,
 ) -> tp.Array2d:
     """Get expanding maximum adverse excursion (MAE) for each trade using expanding worst prices.
 
     Args:
-        records (RecordArray): Trade records containing trade data.
+        trade_records (RecordArray): Array of trade records.
         expanding_worst_price (Array2d): 2D array of expanding worst prices for each trade.
         use_returns (bool): Flag indicating whether to compute MAE using returns instead of absolute prices.
 
@@ -2668,9 +2667,9 @@ def expanding_mae_nb(
     for r in prange(expanding_worst_price.shape[1]):
         for i in range(expanding_worst_price.shape[0]):
             out[i, r] = trade_mae_nb(
-                size=records["size"][r],
-                direction=records["direction"][r],
-                entry_price=records["entry_price"][r],
+                size=trade_records["size"][r],
+                direction=trade_records["direction"][r],
+                entry_price=trade_records["entry_price"][r],
                 worst_price=expanding_worst_price[i, r],
                 use_returns=use_returns,
             )
@@ -2680,7 +2679,7 @@ def expanding_mae_nb(
 @register_chunkable(
     size=base_ch.GroupLensSizer(arg_query="col_map"),
     arg_take_spec=dict(
-        records=ch.ArraySlicer(axis=0, mapper=records_ch.col_idxs_mapper),
+        trade_records=ch.ArraySlicer(axis=0, mapper=records_ch.col_idxs_mapper),
         col_map=base_ch.GroupMapSlicer(),
         open=None,
         high=None,
@@ -2695,7 +2694,7 @@ def expanding_mae_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def edge_ratio_nb(
-    records: tp.RecordArray,
+    trade_records: tp.RecordArray,
     col_map: tp.GroupMap,
     open: tp.Optional[tp.FlexArray2d],
     high: tp.Optional[tp.FlexArray2d],
@@ -2709,7 +2708,7 @@ def edge_ratio_nb(
     """Get the edge ratio for each column based on normalized trade outcomes.
 
     Args:
-        records (RecordArray): Trade records used for calculation.
+        trade_records (RecordArray): Array of trade records.
         col_map (GroupMap): Tuple of column indices and lengths.
         open (Optional[FlexArray2d]): 2D array representing open prices.
         high (Optional[FlexArray2d]): 2D array representing high prices.
@@ -2743,7 +2742,7 @@ def edge_ratio_nb(
         norm_mae_sum = 0.0
         norm_mae_cnt = 0
         for r in ridxs:
-            trade = records[r]
+            trade = trade_records[r]
             best_price, worst_price, _, _ = trade_best_worst_price_nb(
                 trade=trade,
                 open=open,
@@ -2802,7 +2801,7 @@ def edge_ratio_nb(
 
 @register_jitted(cache=True, tags={"can_parallel"})
 def running_edge_ratio_nb(
-    records: tp.RecordArray,
+    trade_records: tp.RecordArray,
     col_map: tp.GroupMap,
     open: tp.Optional[tp.FlexArray2d],
     high: tp.Optional[tp.FlexArray2d],
@@ -2822,7 +2821,7 @@ def running_edge_ratio_nb(
     the provided volatility array.
 
     Args:
-        records (RecordArray): Array of trade records.
+        trade_records (RecordArray): Array of trade records.
         col_map (GroupMap): Tuple of column indices and lengths.
         open (Optional[FlexArray2d]): Array of opening prices.
         high (Optional[FlexArray2d]): Array of high prices.
@@ -2833,7 +2832,7 @@ def running_edge_ratio_nb(
         exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
         max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
 
-            If None, it is determined from the maximum trade duration in `records`.
+            If None, it is determined from the maximum trade duration in `trade_records`.
         incl_shorter (bool): Whether to include trades shorter than the current duration step.
 
     Returns:
@@ -2847,8 +2846,8 @@ def running_edge_ratio_nb(
 
     if max_duration is None:
         _max_duration = 0
-        for r in range(len(records)):
-            trade = records[r]
+        for r in range(len(trade_records)):
+            trade = trade_records[r]
             trade_duration = trade["exit_idx"] - trade["entry_idx"]
             if trade_duration > _max_duration:
                 _max_duration = trade_duration
@@ -2869,7 +2868,7 @@ def running_edge_ratio_nb(
             norm_mae_sum = 0.0
             norm_mae_cnt = 0
             for r in ridxs:
-                trade = records[r]
+                trade = trade_records[r]
                 if not incl_shorter:
                     trade_duration = trade["exit_idx"] - trade["entry_idx"]
                     if trade_duration < k + 1:

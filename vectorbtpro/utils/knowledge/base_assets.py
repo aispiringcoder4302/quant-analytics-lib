@@ -2338,7 +2338,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             initializer (Optional[Any]): Initial value for the reduction.
             by (Optional[PathLikeKey]): Key to group data items for reduction.
             template_context (KwargsLike): Additional context for template substitution.
-            show_progress (Optional[bool]): Whether to display a progress bar.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.

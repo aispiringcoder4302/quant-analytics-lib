@@ -424,7 +424,7 @@ class Embeddings(Configured):
 
     Args:
         batch_size (Optional[int]): Batch size for processing queries. Use None to disable batching.
-        show_progress (Optional[bool]): Flag indicating whether to display a progress bar.
+        show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
         template_context (Kwargs): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
@@ -4069,7 +4069,7 @@ class DocumentRanker(Configured):
             See `DocumentRanker.compute_score`.
         score_agg_func (Union[None, str, Callable]): Function or identifier for aggregating scores.
         normalize_scores (Optional[bool]): Whether scores should be normalized before filtering.
-        show_progress (Optional[bool]): Whether to display a progress bar.
+        show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
             See `vectorbtpro.utils.pbar.ProgressBar`.

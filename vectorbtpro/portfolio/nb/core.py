@@ -1263,8 +1263,9 @@ def get_diraware_size_nb(size: float, direction: int) -> float:
 
     Args:
         size (float): Base size value.
-        direction (int): Order direction; if equal to `Direction.ShortOnly`, the size is negated.
-
+        direction (int): Order direction. 
+        
+            If equal to `Direction.ShortOnly`, the size is negated.
             See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
@@ -3545,7 +3546,7 @@ def set_limit_info_nb(
         init_size_type (int): Indicator for size type.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        init_direction (int): Order direction indicator.
+        init_direction (int): Order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         init_stop_type (int): Initial stop type.

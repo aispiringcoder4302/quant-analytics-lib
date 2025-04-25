@@ -122,7 +122,7 @@ def parse_merge_func(func: tp.Callable, eval_id: tp.Optional[tp.Hashable] = None
 
     Args:
         func (Callable): Function from which to parse the merging function annotation.
-        eval_id (Optional[Hashable]): Evaluation identifier for filtering merge functions.
+        eval_id (Optional[Hashable]): Evaluation identifier.
 
     Returns:
         Optional[MergeFunc]: The merging function(s) extracted from the annotations,

@@ -2327,7 +2327,7 @@ def final_basic_bands_nb(
         lower (float): The lower band value before adjustments.
         prev_upper (float): The previous upper band value.
         prev_lower (float): The previous lower band value.
-        prev_direction (int): The previous direction indicator.
+        prev_direction (int): The previous direction.
 
     Returns:
         Tuple[float, float, float, int, float, float]: A tuple containing the adjusted

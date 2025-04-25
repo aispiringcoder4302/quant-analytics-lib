@@ -50,7 +50,7 @@ def resolve_axis_refs(
 
     Args:
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
-                for example, `dict(row=1, col=1)`.
+            for example, `dict(row=1, col=1)`.
         xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
             If None, it is inferred from the figure.

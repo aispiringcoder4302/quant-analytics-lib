@@ -2887,8 +2887,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            broadcast_kwargs (KwargsLike): Keyword arguments to pass to
-                `vectorbtpro.base.reshaping.broadcast`.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            
+                See `vectorbtpro.base.reshaping.broadcast`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3657,8 +3658,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
                 Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
-            broadcast_kwargs (KwargsLike): Keyword arguments to pass to
-                `vectorbtpro.base.reshaping.broadcast`.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            
+                See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -4800,8 +4802,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
                 Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
-            broadcast_kwargs (KwargsLike): Keyword arguments to pass to
-                `vectorbtpro.base.reshaping.broadcast`.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            
+                See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             keep_inout_flex (Optional[bool]): Whether to preserve raw, editable arrays during
                 broadcasting for in-outputs.
@@ -5418,8 +5421,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
                 Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
-            broadcast_kwargs (KwargsLike): Keyword arguments to pass to
-                `vectorbtpro.base.reshaping.broadcast`.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+            
+                See `vectorbtpro.base.reshaping.broadcast`.
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
@@ -11307,7 +11311,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             short_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for short position shapes.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
-            fig (Optional[BaseFigure]): Figure object to update; if None, a new figure is created.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
                 If None, it is inferred from the figure.

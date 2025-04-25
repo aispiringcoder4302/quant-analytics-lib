@@ -1857,7 +1857,7 @@ class Chunker(Configured):
 
         Args:
             func (Callable): The function to parse for sizer annotations.
-            eval_id (Optional[Hashable]): The evaluation identifier to filter sizer annotations.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             Optional[Sizer]: The sizer instance that meets the evaluation criteria, or None if not found.
@@ -1889,7 +1889,7 @@ class Chunker(Configured):
 
         Args:
             annotations (Annotations): A mapping of parameter names to their annotations.
-            eval_id (Optional[Hashable]): The evaluation identifier to filter the annotations.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             ArgTakeSpec: A dictionary mapping parameter names to their chunk-taking specifications.
@@ -1923,7 +1923,7 @@ class Chunker(Configured):
 
         Args:
             func (Callable): The function to parse.
-            eval_id (Optional[Hashable]): The evaluation identifier for filtering annotations.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             ArgTakeSpec: A dictionary mapping parameter names to chunk-taking specifications.
@@ -1986,7 +1986,7 @@ class Chunker(Configured):
             ann_args (AnnArgs): Annotated arguments.
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
-            eval_id (Optional[Hashable]): The evaluation identifier to filter Chunkable instances.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             ArgTakeSpec: A dictionary mapping argument names to chunk-taking specifications.
@@ -2052,7 +2052,7 @@ class Chunker(Configured):
             ann_args (AnnArgs): Annotated arguments.
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
-            eval_id (Optional[Hashable]): The evaluation identifier used to filter Chunkable objects.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             AnnArgs: A new dictionary of annotated arguments with updated values.
@@ -2096,7 +2096,7 @@ class Chunker(Configured):
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
             arg_take_spec (ArgTakeSpec): Specification for extracting chunk-taking parameters.
-            eval_id (Optional[Hashable]): Evaluation identifier for filtering chunk takers.
+            eval_id (Optional[Hashable]): Evaluation identifier.
             **kwargs: Keyword arguments for `ChunkTaker.suggest_size`.
 
         Returns:
@@ -2129,7 +2129,7 @@ class Chunker(Configured):
         Args:
             func (Callable): The function to execute.
             *args: Positional arguments for `func`.
-            eval_id (Optional[Hashable]): Evaluation identifier used for filtering chunk takers and sizers.
+            eval_id (Optional[Hashable]): Evaluation identifier.
             **kwargs: Keyword arguments for `func`.
 
         Returns:

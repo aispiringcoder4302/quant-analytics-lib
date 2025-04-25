@@ -277,7 +277,7 @@ class SignalFactory(IndicatorFactory):
                 selection function.
 
                 By default, sets `nogil` to True.
-            jitted (JittedOption): Option controlling JIT compilation for generation functions.
+            jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 

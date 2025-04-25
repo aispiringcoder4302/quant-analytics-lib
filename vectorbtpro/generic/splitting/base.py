@@ -4159,8 +4159,7 @@ class Splitter(Analyzable):
         Args:
             flat_ann_args (FlatAnnArgs): A dictionary mapping keys to dictionaries that may
                 include an `annotation` and a `value`.
-            eval_id (Optional[Hashable]): An evaluation identifier used to determine whether
-                to process a `Takeable` instance.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             FlatAnnArgs: A dictionary with updated annotated arguments after processing `Takeable` instances.
@@ -4282,14 +4281,15 @@ class Splitter(Analyzable):
 
                 See `vectorbtpro.utils.execution.execute`.
             filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
-            raise_no_results (bool): Whether to raise an exception if no valid results are produced.
+            raise_no_results (bool): Flag indicating whether to raise a 
+                `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
             merge_func (MergeFuncLike): Function to merge the results.
 
                 See `vectorbtpro.utils.merging.MergeFunc`.
             merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
             merge_all (bool): Whether to merge all results across iterations regardless of the iteration mode.
             wrap_results (bool): Whether to wrap the final merged result in a Pandas object.
-            eval_id (Optional[Hashable]): Evaluation identifier for template substitution and annotation.
+            eval_id (Optional[Hashable]): Evaluation identifier.
             **apply_kwargs: Keyword arguments for `apply_func`.
 
         Returns:
@@ -6437,7 +6437,7 @@ class Splitter(Analyzable):
         """Plot splits as rows with sets represented by distinct colors.
 
         Args:
-            split_group_by (AnyGroupByLike): Grouping to define splits.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
             set_group_by (AnyGroupByLike): Grouping specification for defining sets.
@@ -6542,7 +6542,7 @@ class Splitter(Analyzable):
 
         Args:
             stacked (bool): Plot using a stacked area plot if True; otherwise, use a line plot.
-            split_group_by (AnyGroupByLike): Grouping key for defining splits.
+            split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
             set_group_by (AnyGroupByLike): Grouping specification for defining sets.

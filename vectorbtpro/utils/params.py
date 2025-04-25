@@ -1199,7 +1199,7 @@ class Parameterizer(Configured):
         filter_results (Optional[bool]): Flag indicating whether to filter 
             `vectorbtpro.utils.execution.NoResult` results during execution.
         raise_no_results (Optional[bool]): Flag indicating whether to raise a 
-            `vectorbtpro.utils.execution.NoResultsException` exception when no results are produced.
+            `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         merge_func (MergeFuncLike): Merging function used to aggregate individual results.
         
             See `vectorbtpro.utils.merging.MergeFunc`.
@@ -1550,7 +1550,7 @@ class Parameterizer(Configured):
 
     @property
     def raise_no_results(self) -> bool:
-        """Flag indicating whether to raise a `vectorbtpro.utils.execution.NoResultsException` exception when no results are produced.
+        """Flag indicating whether to raise a `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
 
         Returns:
             bool: True if a `vectorbtpro.utils.execution.NoResultsException` should be raised
@@ -1615,7 +1615,7 @@ class Parameterizer(Configured):
 
         Args:
             obj (Any): The object to search for `Param` instances.
-            eval_id (Optional[Hashable]): Evaluation identifier to filter parameters.
+            eval_id (Optional[Hashable]): Evaluation identifier.
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.find_in_obj`.
 
         Returns:
@@ -1665,7 +1665,7 @@ class Parameterizer(Configured):
 
         Args:
             flat_ann_args (FlatAnnArgs): The dictionary of flattened annotated arguments.
-            eval_id (Optional[Hashable]): Evaluation identifier to filter parameters.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             FlatAnnArgs: A dictionary of flattened annotated arguments with injected `Param` instances.
@@ -1781,7 +1781,8 @@ class Parameterizer(Configured):
             selection (Selection): Selection criteria for choosing a parameter combination.
             single_comb (bool): Flag indicating whether to enforce a single combination.
             template_context (KwargsLike): Additional context for template substitution.
-            raise_no_results (bool): Flag to raise an exception if no matching result is found.
+            raise_no_results (bool): Flag indicating whether to raise a 
+                `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
 
         Returns:
             Tuple[List[Kwargs], Optional[Index], bool]: A tuple containing the selected configurations,
@@ -2055,7 +2056,7 @@ class Parameterizer(Configured):
             func (Callable): The target function to execute.
             *args: Positional arguments for `func`.
             param_configs (Optional[MaybeSequence[dict]]): Configuration(s) used to parameterize `func`'s arguments.
-            eval_id (Optional[Hashable]): Identifier for evaluation in the parameterization process.
+            eval_id (Optional[Hashable]): Evaluation identifier.
             **kwargs: Keyword arguments for `func`.
 
         Returns:

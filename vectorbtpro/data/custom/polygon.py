@@ -211,7 +211,7 @@ class PolygonData(RemoteData):
             params (DictLike): Additional query parameters.
             delay (Optional[float]): Seconds to wait after each API request.
             retries (Optional[int]): Number of retry attempts on fetch failures.
-            show_progress (Optional[bool]): Whether to display a progress bar.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (DictLike): Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 

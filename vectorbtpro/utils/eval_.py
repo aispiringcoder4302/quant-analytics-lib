@@ -103,7 +103,7 @@ class Evaluable(Base):
         """Return whether the instance's evaluation id matches the provided evaluation id.
 
         Args:
-            eval_id (Optional[Hashable]): The evaluation id to compare with.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             bool: True if the instance's evaluation id satisfies the given evaluation id, False otherwise.

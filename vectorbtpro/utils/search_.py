@@ -1117,7 +1117,7 @@ def find_exact(
     Args:
         target (str): The target string to match.
         string (str): The string to check for an exact match.
-        ignore_case (bool): If True, perform a case-insensitive comparison.
+        ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format. Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1158,7 +1158,7 @@ def find_start(
     Args:
         target (str): The substring expected at the beginning of the string.
         string (str): The string to check.
-        ignore_case (bool): If True, perform a case-insensitive comparison.
+        ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format. Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1199,7 +1199,7 @@ def find_end(
     Args:
         target (str): The substring expected at the end of the string.
         string (str): The string to check.
-        ignore_case (bool): If True, perform a case-insensitive comparison.
+        ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format. Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1240,7 +1240,7 @@ def find_substring(
     Args:
         target (str): The substring to search for.
         string (str): The string in which to search.
-        ignore_case (bool): If True, perform a case-insensitive search.
+        ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format. Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1291,7 +1291,7 @@ def find_regex(
     Args:
         pattern (str): The regular expression pattern to search for.
         string (str): The string in which to search.
-        ignore_case (bool): If True, perform a case-insensitive search.
+        ignore_case (bool): Whether to ignore case when matching.
         flags (int): Additional flags for compiling the regular expression.
         group (Union[int, str, None]): Specific regex group to extract.
         return_type (str): Return result format. Accepted values:
@@ -1354,7 +1354,7 @@ def find_fuzzy(
     Args:
         target (str): Target substring to search for.
         string (str): String in which to search.
-        ignore_case (bool): Whether to ignore case during matching.
+        ignore_case (bool): Whether to ignore case when matching.
         threshold (Optional[float]): Similarity threshold percentage.
         max_insertions (Optional[int]): Maximum number of allowed insertions.
         max_substitutions (Optional[int]): Maximum number of allowed substitutions.
@@ -1415,7 +1415,7 @@ def find_rapidfuzz(
     Args:
         target (str): Target substring to search for.
         string (str): String in which to search.
-        ignore_case (bool): Whether to perform case-insensitive matching.
+        ignore_case (bool): Whether to ignore case when matching.
         processor (Optional[Callable]): Function to preprocess strings before matching.
         threshold (float): Similarity threshold percentage.
         return_type (str): Return result format.
@@ -1464,7 +1464,7 @@ def find(
             * "regex": Use `find_regex`
             * "fuzzy": Use `find_fuzzy`
             * "rapidfuzz": Use `find_rapidfuzz`
-        ignore_case (bool): Whether to perform case-insensitive matching.
+        ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format. Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1505,7 +1505,7 @@ def replace_exact(
         target (str): Target string to match exactly.
         replacement (str): String to replace the target.
         string (str): Original string.
-        ignore_case (bool): Whether to perform case-insensitive comparison.
+        ignore_case (bool): Whether to ignore case when matching.
 
     Returns:
         str: Replacement string if the entire string matches the target, otherwise the original string.
@@ -1530,7 +1530,7 @@ def replace_start(
         target (str): Target substring expected at the beginning.
         replacement (str): String to replace the matching starting segment.
         string (str): Original string.
-        ignore_case (bool): Whether to perform case-insensitive matching.
+        ignore_case (bool): Whether to ignore case when matching.
 
     Returns:
         str: Modified string with the start replaced if a match is found, otherwise the original string.
@@ -1558,7 +1558,7 @@ def replace_end(
         target (str): Target substring expected at the end.
         replacement (str): String to replace the matching ending segment.
         string (str): Original string.
-        ignore_case (bool): Whether to perform case-insensitive matching.
+        ignore_case (bool): Whether to ignore case when matching.
 
     Returns:
         str: Modified string with the end replaced if a match is found, otherwise the original string.
@@ -1586,7 +1586,7 @@ def replace_substring(
         target (str): Substring to be replaced.
         replacement (str): Replacement string.
         string (str): Original string.
-        ignore_case (bool): Whether to perform case-insensitive matching.
+        ignore_case (bool): Whether to ignore case when matching.
 
     Returns:
         str: Modified string after replacing the target substring.
@@ -1611,7 +1611,7 @@ def replace_regex(
         target (str): Regular expression pattern to match.
         replacement (str): Replacement string.
         string (str): Original string.
-        ignore_case (bool): Whether to perform case-insensitive matching.
+        ignore_case (bool): Whether to ignore case when matching.
         flags (int): Additional flags for compiling the regular expression.
 
     Returns:
@@ -1640,7 +1640,7 @@ def replace_fuzzy(
         target (str): Target substring for fuzzy matching.
         replacement (str): Replacement string.
         string (str): Original string.
-        ignore_case (bool): Whether to perform case-insensitive matching.
+        ignore_case (bool): Whether to ignore case when matching.
         threshold (Optional[float]): Similarity threshold percentage for fuzzy matching.
         max_insertions (Optional[int]): Maximum number of allowed insertions.
         max_substitutions (Optional[int]): Maximum number of allowed substitutions.

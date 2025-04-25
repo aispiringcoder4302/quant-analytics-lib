@@ -177,7 +177,7 @@ class VBTAsset(KnowledgeAsset):
             
                 See `vectorbtpro.utils.path_.check_mkdir`.
             clear_cache (Optional[bool]): Remove the cache directory before downloading if True.
-            show_progress (Optional[bool]): Display a progress bar during asset download.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.
@@ -662,7 +662,7 @@ class VBTAsset(KnowledgeAsset):
                 See `vectorbtpro.utils.path_.check_mkdir`.
             clear_cache (Optional[bool]): Flag to clear any existing directory before saving new files.
             use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
-            show_progress (Optional[bool]): Flag to display a progress bar during file creation.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.
@@ -863,7 +863,7 @@ class VBTAsset(KnowledgeAsset):
                 See `vectorbtpro.utils.path_.check_mkdir`.
             clear_cache (Optional[bool]): Flag to clear any existing directory before saving.
             use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
-            show_progress (Optional[bool]): Flag to display a progress bar during the save process.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.

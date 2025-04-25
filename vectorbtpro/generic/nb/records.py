@@ -1464,7 +1464,7 @@ def bar_price_nb(records: tp.RecordArray, price: tp.Optional[tp.FlexArray2d]) ->
     If the price array is not provided, NaN is returned for the corresponding record.
 
     Args:
-        records (RecordArray): Record array containing indices and column references.
+        records (RecordArray): Array of records.
         price (Optional[FlexArray2d]): Two-dimensional array of bar prices to select
             from using record indices and columns.
 

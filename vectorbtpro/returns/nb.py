@@ -632,7 +632,7 @@ def annualized_return_1d_nb(
 
     Args:
         returns (Array1d): Array of daily returns.
-        ann_factor (float): Factor used for annualization.
+        ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for the return calculation.
 
@@ -1080,7 +1080,7 @@ def calmar_ratio_1d_nb(
 
     Args:
         returns (Array1d): A 1-dimensional array of returns.
-        ann_factor (float): The annualization factor.
+        ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for scaling the ratio;
             used in the annualized return computation.
@@ -1131,7 +1131,7 @@ def calmar_ratio_nb(
 
     Args:
         returns (Array2d): A 2-dimensional array of returns.
-        ann_factor (float): The annualization factor.
+        ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Array-like periods used for scaling, per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -1198,7 +1198,7 @@ def rolling_calmar_ratio_nb(
     Args:
         returns (Array2d): A 2-dimensional array of returns.
         window (int): Size of the rolling window.
-        ann_factor (float): The annualization factor.
+        ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -1240,7 +1240,7 @@ def deannualized_return_nb(ret: float, ann_factor: float) -> float:
 
     Args:
         ret (float): The annualized return.
-        ann_factor (float): The annualization factor.
+        ann_factor (float): Annualization factor.
 
     Returns:
         float: The deannualized return.
@@ -1642,7 +1642,7 @@ def rolling_sharpe_ratio_nb(
         window (int): Size of the rolling window.
 
             Determines the number of observations used in each rolling calculation.
-        ann_factor (float): Annualization factor applied to the returns.
+        ann_factor (float): Annualization factor.
         ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -1699,7 +1699,7 @@ def downside_risk_1d_nb(returns: tp.Array1d, ann_factor: float) -> float:
 
     Args:
         returns (Array1d): One-dimensional array of returns.
-        ann_factor (float): Annualization factor applied in the calculation.
+        ann_factor (float): Annualization factor.
 
     Returns:
         float: Downside deviation value.
@@ -1742,7 +1742,7 @@ def downside_risk_nb(
 
     Args:
         returns (Array2d): Two-dimensional array of returns.
-        ann_factor (float): Annualization factor applied in the calculation.
+        ann_factor (float): Annualization factor.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
@@ -1797,7 +1797,7 @@ def rolling_downside_risk_nb(
     Args:
         returns (Array2d): Two-dimensional array of returns.
         window (int): Size of the rolling window.
-        ann_factor (float): Annualization factor applied in the calculation.
+        ann_factor (float): Annualization factor.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
@@ -1841,7 +1841,7 @@ def sortino_ratio_1d_nb(returns: tp.Array1d, ann_factor: float) -> float:
 
     Args:
         returns (Array1d): One-dimensional array of returns.
-        ann_factor (float): Annualization factor applied to the returns.
+        ann_factor (float): Annualization factor.
 
     Returns:
         float: The Sortino ratio for the given strategy.
@@ -1878,7 +1878,7 @@ def sortino_ratio_nb(
 
     Args:
         returns (Array2d): Two-dimensional array of returns.
-        ann_factor (float): Annualization factor applied to the returns.
+        ann_factor (float): Annualization factor.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
@@ -3115,7 +3115,7 @@ def capture_ratio_1d_nb(
     Args:
         returns (Array1d): 1D array of asset returns.
         bm_returns (Array1d): 1D array of benchmark returns.
-        ann_factor (float): Annualization factor used in computing annualized returns.
+        ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods used for annualization.
 
@@ -3488,7 +3488,7 @@ def down_capture_ratio_1d_nb(
     Args:
         returns (Array1d): 1-dimensional array of asset returns.
         bm_returns (Array1d): 1-dimensional array of benchmark returns.
-        ann_factor (float): Annualization factor used for scaling the computed return.
+        ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for annualization.
 
@@ -3564,7 +3564,7 @@ def down_capture_ratio_nb(
     Args:
         returns (Array2d): 2-dimensional array of asset returns.
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
-        ann_factor (float): Annualization factor used for scaling the computed return.
+        ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Array-like specifying the number of periods for each column.
 
@@ -3643,7 +3643,7 @@ def rolling_down_capture_ratio_nb(
         returns (Array2d): 2-dimensional array of asset returns.
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
         window (int): Size of the rolling window.
-        ann_factor (float): Annualization factor used for scaling the computed return.
+        ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).

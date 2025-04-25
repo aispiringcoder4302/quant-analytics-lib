@@ -228,7 +228,7 @@ class SerialEngine(ExecutionEngine):
     """Class for executing functions sequentially.
 
     Args:
-        show_progress (Optional[bool]): Determines whether to display the progress bar.
+        show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
             See `vectorbtpro.utils.pbar.ProgressBar`.
@@ -1296,8 +1296,8 @@ class Executor(Configured):
             be invoked after sorting call indices.
         filter_results (Optional[bool]): Flag determining if results equal to `NoResult` should 
             be filtered out.
-        raise_no_results (Optional[bool]): Flag indicating if a `NoResultsException` should 
-            be raised when no results are obtained.
+        raise_no_results (Optional[bool]): Flag indicating whether to raise a 
+                `NoResultsException` exception if no results remain.
 
             This flag applies only when `filter_results` is True and is forwarded to the merging
             function if pre-configured.
@@ -1306,8 +1306,7 @@ class Executor(Configured):
             See `vectorbtpro.utils.merging.MergeFunc`.
         merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
         template_context (KwargsLike): Additional context for template substitution.
-        show_progress (Optional[bool]): Flag that determines whether to display a progress bar 
-            when iterating over chunks.
+        show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
 
             If `engine` accepts `show_progress` and the key is absent in `engine_config`,
             it is forwarded to the engine.
@@ -1938,7 +1937,7 @@ class Executor(Configured):
 
         Args:
             *args: Positional arguments for `Executor.get_settings`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `Executor.get_settings`.
 
         Returns:
@@ -1958,7 +1957,7 @@ class Executor(Configured):
 
         Args:
             *args: Positional arguments for `Executor.has_settings`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `Executor.has_settings`.
 
         Returns:
@@ -1978,7 +1977,7 @@ class Executor(Configured):
 
         Args:
             *args: Positional arguments for `Executor.get_setting`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `Executor.get_setting`.
 
         Returns:
@@ -1998,7 +1997,7 @@ class Executor(Configured):
 
         Args:
             *args: Positional arguments for `Executor.has_setting`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `Executor.has_setting`.
 
         Returns:
@@ -2018,7 +2017,7 @@ class Executor(Configured):
 
         Args:
             *args: Positional arguments for `Executor.resolve_setting`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `Executor.resolve_setting`.
 
         Returns:
@@ -2038,7 +2037,7 @@ class Executor(Configured):
 
         Args:
             *args: Positional arguments for `Executor.set_settings`.
-            engine_name (Optional[str]): Engine name used to determine the settings subpath.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `Executor.set_settings`.
 
         Returns:
@@ -2074,7 +2073,7 @@ class Executor(Configured):
         Args:
             engine (ExecutionEngineLike): Engine specification which can be a string,
                 subclass, instance, or callable.
-            show_progress (Optional[bool]): Flag to enable progress display.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.
@@ -2545,7 +2544,8 @@ class Executor(Configured):
             results (ExecResults): Execution results from tasks.
             keys (Optional[IndexLike]): Index or keys associated with the results.
             filter_results (bool): Indicates whether to filter out results with no output.
-            raise_no_results (bool): Specifies whether to raise an exception if no results remain after filtering.
+            raise_no_results (bool): Flag indicating whether to raise a 
+                `NoResultsException` exception if no results remain.
             merge_func (MergeFuncLike): Function to merge the results.
         
                 See `vectorbtpro.utils.merging.MergeFunc`.

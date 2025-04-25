@@ -222,7 +222,7 @@ class BinanceData(RemoteData):
                 See `binance.enums.HistoricalKlinesType` for supported types. Supports strings.
             limit (int): Maximum number of klines to retrieve per API call.
             delay (float): Delay in seconds after each request.
-            show_progress (bool): Display a progress bar during data fetching.
+            show_progress (bool): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.

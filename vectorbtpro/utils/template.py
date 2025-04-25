@@ -145,7 +145,7 @@ class CustomTemplate(Evaluable, DefineMixin):
         Args:
             context (KwargsLike): Additional context mapping for substitution.
             strict (Optional[bool]): Flag to indicate whether to raise an error on missing keys.
-            eval_id (Optional[Hashable]): Evaluation identifier for conditional substitution.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             Any: The result of the template substitution.
@@ -189,7 +189,7 @@ class Sub(CustomTemplate):
         Args:
             context (KwargsLike): Additional context for substitution.
             strict (Optional[bool]): Flag indicating whether to raise an error when a key is missing.
-            eval_id (Optional[Hashable]): Evaluation identifier for conditional substitution.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             Any: The resulting substituted string, or the original instance if substitution is not performed or fails.
@@ -241,7 +241,7 @@ class SafeSub(CustomTemplate):
         Args:
             context (KwargsLike): Additional context for substitution.
             strict (Optional[bool]): Flag indicating whether to raise an error when a key is missing.
-            eval_id (Optional[Hashable]): Evaluation identifier for conditional substitution.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             Any: The resulting substituted string, or the original instance if substitution is skipped or fails.
@@ -281,7 +281,7 @@ class Rep(CustomTemplate):
         Args:
             context (KwargsLike): Additional context mapping to retrieve the replacement.
             strict (Optional[bool]): Flag indicating whether to raise an error if the key is missing.
-            eval_id (Optional[Hashable]): Evaluation identifier for conditional replacement.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             Any: The value corresponding to `Rep.template`, or the original instance if replacement is not performed.
@@ -322,7 +322,7 @@ class RepEval(CustomTemplate):
         Args:
             context (KwargsLike): Additional context for evaluation.
             strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
-            eval_id (Optional[Hashable]): Evaluation identifier for conditional evaluation.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             Any: The result of the evaluated expression, or the original instance if evaluation is skipped or fails.
@@ -362,7 +362,7 @@ class RepFunc(CustomTemplate):
         Args:
             context (KwargsLike): Additional context containing function arguments.
             strict (Optional[bool]): Flag indicating whether to raise an error if the function call fails.
-            eval_id (Optional[Hashable]): Evaluation identifier for conditional function execution.
+            eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
             Any: The result of the function call, or the original instance if the call is skipped or fails.
@@ -442,7 +442,7 @@ def substitute_templates(
         obj (Any): The object to traverse for template substitution.
         context (KwargsLike): The context for replacing template placeholders.
         strict (Optional[bool]): Flag to determine whether to raise an error if substitution fails.
-        eval_id (Optional[Hashable]): An identifier used during template evaluation.
+        eval_id (Optional[Hashable]): Evaluation identifier.
         **kwargs: Additional parameters to override default search settings.
 
     Returns:

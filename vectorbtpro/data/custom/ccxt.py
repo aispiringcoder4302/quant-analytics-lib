@@ -412,7 +412,7 @@ class CCXTData(RemoteData):
                     Use only if `enableRateLimit` is not set.
             retries (Optional[int]): Number of retries on fetch failure.
             fetch_params (KwargsLike): Exchange-specific parameters for `fetch_ohlcv`.
-            show_progress (Optional[bool]): Flag to display the progress bar.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.

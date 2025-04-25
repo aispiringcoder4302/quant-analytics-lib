@@ -96,7 +96,7 @@ class SQLData(DBData):
 
         Args:
             *args: Positional arguments for `SQLData.get_custom_settings`.
-            engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `SQLData.get_custom_settings`.
 
         Returns:
@@ -114,7 +114,7 @@ class SQLData(DBData):
 
         Args:
             *args: Positional arguments for `SQLData.has_custom_settings`.
-            engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `SQLData.has_custom_settings`.
 
         Returns:
@@ -132,7 +132,7 @@ class SQLData(DBData):
 
         Args:
             *args: Positional arguments for `SQLData.get_custom_setting`.
-            engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `SQLData.get_custom_setting`.
 
         Returns:
@@ -150,7 +150,7 @@ class SQLData(DBData):
 
         Args:
             *args: Positional arguments for `SQLData.has_custom_setting`.
-            engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `SQLData.has_custom_setting`.
 
         Returns:
@@ -168,7 +168,7 @@ class SQLData(DBData):
 
         Args:
             *args: Positional arguments for `SQLData.resolve_custom_setting`.
-            engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `SQLData.resolve_custom_setting`.
 
         Returns:
@@ -186,7 +186,7 @@ class SQLData(DBData):
 
         Args:
             *args: Positional arguments for `SQLData.set_custom_settings`.
-            engine_name (Optional[str]): Name of the engine used to determine the settings sub-path.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             **kwargs: Keyword arguments for `SQLData.set_custom_settings`.
 
         Returns:
@@ -215,7 +215,7 @@ class SQLData(DBData):
                 * A URL (string) to create an engine using `sqlalchemy.engine.create.create_engine`.
                 * A sub-config name under `custom.sql.engines` in `vectorbtpro._settings.data`
                     to retrieve the engine.
-            engine_name (Optional[str]): Name of the engine for retrieving or merging additional settings.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             return_meta (bool): If True, return a metadata dictionary containing the engine,
                 engine name, and disposal flag.
             **engine_config: Keyword arguments for engine creation when `engine` is a URL.
@@ -288,7 +288,7 @@ class SQLData(DBData):
             use_regex (bool): Flag indicating whether to treat `pattern` as a regular expression.
             sort (bool): Flag indicating whether to sort the returned schema names.
             engine (Union[None, str, Engine]): The database engine instance, URL, or key for engine settings.
-            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
+            engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the database engine.
             dispose_engine (Optional[bool]): Indicates whether to dispose the engine after use.
 
@@ -369,7 +369,7 @@ class SQLData(DBData):
                 If None, all schemas are considered.
             incl_views (bool): Whether to include view names along with table names.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
-            engine_name (Optional[str]): Name assigned to the engine.
+            engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration parameters for engine setup.
             dispose_engine (Optional[bool]): If True, disposes the engine after the operation.
             **kwargs: Keyword arguments for SQLAlchemy's inspector methods.
@@ -458,7 +458,7 @@ class SQLData(DBData):
         Args:
             schema (str): The name of the schema.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
-            engine_name (Optional[str]): Name assigned to the engine.
+            engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration parameters for engine setup.
 
         Returns:
@@ -491,7 +491,7 @@ class SQLData(DBData):
         Args:
             schema (str): Name of the schema to create.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
-            engine_name (Optional[str]): Name assigned to the engine.
+            engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration parameters for engine setup.
 
         Returns:
@@ -529,7 +529,7 @@ class SQLData(DBData):
             table (str): The name of the table.
             schema (Optional[str]): The schema in which to search for the table.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
-            engine_name (Optional[str]): Name assigned to the engine.
+            engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration parameters for engine setup.
 
         Returns:
@@ -564,7 +564,7 @@ class SQLData(DBData):
             table (str): Name of the table.
             schema (Optional[str]): The schema where the table is located.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
-            engine_name (Optional[str]): Name assigned to the engine.
+            engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration parameters for engine setup.
 
         Returns:
@@ -606,7 +606,7 @@ class SQLData(DBData):
             schema (Optional[str]): The schema where the table is located.
             row_number_column (Optional[str]): Column name representing the row number.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
-            engine_name (Optional[str]): Name assigned to the engine.
+            engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration parameters for engine setup.
 
         Returns:
@@ -716,7 +716,7 @@ class SQLData(DBData):
             
                 See `SQLData.list_tables`.
             engine (Union[None, str, Engine]): Identifier or object for the database engine.
-            engine_name (Optional[str]): Name used to reference the database engine.
+            engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration parameters for the engine.
             dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
             share_engine (Optional[bool]): Flag indicating whether to share the engine among keys.
@@ -827,7 +827,7 @@ class SQLData(DBData):
             engine (Union[None, str, Engine]): Database engine information.
 
                 See `SQLData.resolve_engine`.
-            engine_name (Optional[str]): Identifier for the engine.
+            engine_name (Optional[str]): Name of the engine.
 
                 See `SQLData.resolve_engine`.
             engine_config (KwargsLike): Engine configuration.

@@ -36,8 +36,12 @@ class SplitterCV(BaseCrossValidator, Base):
         splitter_cls (Optional[Type[Splitter]]): The splitter class used as the factory.
 
             Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
-        split_group_by (AnyGroupByLike): Group labels for splitting.
-        set_group_by (AnyGroupByLike): Group labels for setting.
+        split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+        
+            See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+        set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+        
+            See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
         template_context (KwargsLike): Additional context for template substitution.
         **splitter_kwargs: Keyword arguments for the splitter factory method.
 

@@ -432,7 +432,7 @@ def past_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
     """Determine the timestamp of the past occurrence of a specified weekday relative to a given timestamp.
 
     Args:
-        ts (int): The reference timestamp.
+        ts (int): Timestamp in nanoseconds.
         weekday (int): The target weekday index.
         zero_start (bool): Use 0-based weekday indexing if True; otherwise use 1-based indexing.
 
@@ -449,7 +449,7 @@ def future_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
     """Determine the timestamp of the future occurrence of a specified weekday relative to a given timestamp.
 
     Args:
-        ts (int): The reference timestamp.
+        ts (int): Timestamp in nanoseconds.
         weekday (int): The target weekday index.
         zero_start (bool): Use 0-based weekday indexing if True; otherwise use 1-based indexing.
 
@@ -466,7 +466,7 @@ def day_of_year_nb(ts: int) -> int:
     """Calculate the day of the year from a given timestamp.
 
     Args:
-        ts (int): The timestamp to evaluate.
+        ts (int): Timestamp in nanoseconds.
 
     Returns:
         int: The day of the year, starting at 1.
@@ -481,7 +481,7 @@ def week_nb(ts: int) -> int:
     """Calculate the week number of the year based on the day of the year.
 
     Args:
-        ts (int): The timestamp to evaluate.
+        ts (int): Timestamp in nanoseconds.
 
     Returns:
         int: The week number of the year.
@@ -494,7 +494,7 @@ def month_nb(ts: int) -> int:
     """Determine the month from a given timestamp.
 
     Args:
-        ts (int): The timestamp to evaluate.
+        ts (int): Timestamp in nanoseconds.
 
     Returns:
         int: The month number.
@@ -508,7 +508,7 @@ def year_nb(ts: int) -> int:
     """Determine the year from a given timestamp.
 
     Args:
-        ts (int): The timestamp to evaluate.
+        ts (int): Timestamp in nanoseconds.
 
     Returns:
         int: The year.

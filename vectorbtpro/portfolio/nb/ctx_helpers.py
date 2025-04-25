@@ -1642,9 +1642,13 @@ def get_order_value_nb(
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Simulation context used to derive execution state.
-        size (float): The order size.
-        size_type (int): Indicator of the size type as defined in `vectorbtpro.portfolio.enums.SizeType`.
-        direction (int): Direction of the order, as defined in `vectorbtpro.portfolio.enums.Direction`.
+        size (float): Order size.
+        size_type (int): Size type.
+                
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (int): Order direction.
+        
+            See `vectorbtpro.portfolio.enums.Direction`.
         val_price (Optional[int]): Optional value price used for computing the order value.
 
     Returns:

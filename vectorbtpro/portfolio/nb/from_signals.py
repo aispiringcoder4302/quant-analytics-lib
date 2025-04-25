@@ -144,7 +144,7 @@ def resolve_signal_conflict_nb(
         position_now (float): Current position size.
         is_entry (bool): Flag indicating the presence of an entry signal.
         is_exit (bool): Flag indicating the presence of an exit signal.
-        direction (int): Direction indicator for the signal.
+        direction (int): Signal direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         conflict_mode (int): Mode used to resolve conflicts between entry and exit signals.
@@ -7308,7 +7308,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
 
     Args:
         c (SignalContext): The signal context holding trading information.
-        direction (int): An integer representing the signal direction.
+        direction (int): Signal direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         close_at_end (bool): Flag indicating whether to exit the position at the end of the period.
