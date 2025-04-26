@@ -154,7 +154,7 @@ class BinanceData(RemoteData):
 
         Args:
             pattern (Optional[str]): Pattern to filter symbols.
-            use_regex (bool): If True, interpret `pattern` as a regular expression.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
             client (Optional[Client]): A Binance client instance.
             client_config (KwargsLike): Keyword arguments for client configuration.

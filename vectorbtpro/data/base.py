@@ -182,7 +182,7 @@ class BaseDataMixin(Base):
         """Return the index of the specified feature.
 
         Args:
-            feature (Feature): The feature label to locate.
+            feature (Feature): Feature identifier.
             raise_error (bool): Whether to raise an error if the feature is not found.
 
         Returns:
@@ -215,7 +215,7 @@ class BaseDataMixin(Base):
         """Return the index of the specified symbol.
 
         Args:
-            symbol (Symbol): The symbol label to locate.
+            symbol (Symbol): Symbol identifier.
             raise_error (bool): Whether to raise an error if the symbol is not found.
 
         Returns:
@@ -326,7 +326,7 @@ class BaseDataMixin(Base):
         """Check whether the specified feature exists.
 
         Args:
-            feature (Feature): The feature to check.
+            feature (Feature): Feature identifier.
 
         Returns:
             bool: True if the feature exists, False otherwise.
@@ -338,7 +338,7 @@ class BaseDataMixin(Base):
         """Check whether the specified symbol exists.
 
         Args:
-            symbol (Symbol): The symbol to check.
+            symbol (Symbol): Symbol identifier.
 
         Returns:
             bool: True if the symbol exists, False otherwise.
@@ -350,7 +350,7 @@ class BaseDataMixin(Base):
         """Assert that the specified feature exists.
 
         Args:
-            feature (Feature): The feature that must exist.
+            feature (Feature): Feature identifier.
 
         Returns:
             None
@@ -361,7 +361,7 @@ class BaseDataMixin(Base):
         """Assert that the specified symbol exists.
 
         Args:
-            symbol (Symbol): The symbol that must exist.
+            symbol (Symbol): Symbol identifier.
 
         Returns:
             None
@@ -1940,7 +1940,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Return the feature from the instance that matches the provided feature.
 
         Args:
-            feature (Feature): The feature identifier to resolve.
+            feature (Feature): Feature identifier.
             raise_error (bool): Whether to raise an error if the feature is not found.
 
         Returns:
@@ -3069,7 +3069,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Selects the keyword arguments associated with a feature.
 
         Args:
-            feature (Feature): The feature whose keyword arguments are to be filtered.
+            feature (Feature): Feature identifier.
             kwargs (KwargsLike): A dictionary of keyword arguments.
             **kwargs_: Keyword arguments for `Data.select_key_kwargs`.
 
@@ -3083,7 +3083,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Selects the keyword arguments associated with a symbol.
 
         Args:
-            symbol (Symbol): The symbol whose keyword arguments are to be filtered.
+            symbol (Symbol): Symbol identifier.
             kwargs (KwargsLike): A dictionary of keyword arguments.
             **kwargs_: Keyword arguments for `Data.select_key_kwargs`.
 
@@ -3126,7 +3126,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Selects the value associated with a feature in the given dictionary.
 
         Args:
-            feature (Feature): The feature whose value is to be extracted.
+            feature (Feature): Feature identifier.
             dct (feature_dict): The dictionary containing feature values.
             **kwargs: Keyword arguments for `Data.select_key_kwargs`.
 
@@ -3140,7 +3140,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Selects the value associated with a symbol in the given dictionary.
 
         Args:
-            symbol (Symbol): The symbol whose value is to be extracted.
+            symbol (Symbol): Symbol identifier.
             dct (symbol_dict): The dictionary containing symbol values.
             **kwargs: Keyword arguments for `Data.select_key_kwargs`.
 
@@ -3299,7 +3299,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Create a new `Data` instance with a new feature added to this instance.
 
         Args:
-            feature (Feature): The feature identifier to add.
+            feature (Feature): Feature identifier.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the feature.
 
                 If None, data is retrieved using `Data.run` or, if `pull_feature` is True, via `Data.pull`.
@@ -3360,7 +3360,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Create a new `Data` instance with a new symbol added to this instance.
 
         Args:
-            symbol (Symbol): The symbol identifier to add.
+            symbol (Symbol): Symbol identifier.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the symbol.
 
                 If None, data is retrieved using `Data.pull`.
@@ -3849,7 +3849,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         will be used to override global settings.
 
         Args:
-            feature (Feature): The identifier of the feature to retrieve.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for fetching the feature.
 
         Returns:
@@ -3871,7 +3871,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Attempt to fetch a feature by calling `Data.fetch_feature`.
 
         Args:
-            feature (Feature): The feature to retrieve.
+            feature (Feature): Feature identifier.
             skip_on_error (bool): If True, exceptions during fetching are suppressed.
             silence_warnings (bool): Flag to suppress warning messages.
             fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_feature`.
@@ -3911,7 +3911,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         * `freq`
 
         Args:
-            symbol (Symbol): The symbol to retrieve.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for fetching the symbol.
 
         Returns:
@@ -3933,7 +3933,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Attempt to fetch a symbol by calling `Data.fetch_symbol`.
 
         Args:
-            symbol (Symbol): The symbol to retrieve.
+            symbol (Symbol): Symbol identifier.
             skip_on_error (bool): If True, exceptions during fetching are suppressed.
             silence_warnings (bool): Flag to suppress warning messages.
             fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_symbol`.
@@ -4337,7 +4337,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Update a feature.
 
         Args:
-            feature (Feature): The feature identifier to update.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments passed for feature update.
 
         Returns:
@@ -4358,7 +4358,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Try to update a feature using `Data.update_feature`.
 
         Args:
-            feature (Feature): The feature identifier to update.
+            feature (Feature): Feature identifier.
             skip_on_error (bool): If True, skip update when an error occurs.
             silence_warnings (bool): Flag to suppress warning messages.
             update_kwargs (KwargsLike): Keyword arguments for `Data.update_feature`.
@@ -4390,7 +4390,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Update a symbol.
 
         Args:
-            symbol (Symbol): The symbol identifier to update.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments passed for symbol update.
 
         Returns:
@@ -4411,7 +4411,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Try to update a symbol using `Data.update_symbol`.
 
         Args:
-            symbol (Symbol): The symbol to update.
+            symbol (Symbol): Symbol identifier.
             skip_on_error (bool): If True, skip symbol update on error.
             silence_warnings (bool): Flag to suppress warning messages.
             update_kwargs (KwargsLike): Keyword arguments for `Data.update_symbol`.
@@ -6163,7 +6163,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 The starting row number for numbering if a row number column is attached.
             row_number_column (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
                 The name of the column to use for row numbers.
-            engine_config (KwargsLike): Additional configuration parameters for engine creation.
+            engine_config (KwargsLike): Additional configuration for the engine.
             dispose_engine (Optional[bool]): Determines whether to dispose of the engine after saving.
             check_dict_type (bool): Validates that dictionary arguments match the expected type.
             template_context (KwargsLike): Additional context for template substitution.

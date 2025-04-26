@@ -1174,7 +1174,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Retrieve a field's setting.
 
         Args:
-            field (str): The name of the field.
+            field (str): Field identifier.
             setting (str): The key of the setting.
             default (Any): The default value to return if the setting is not present.
 
@@ -1187,7 +1187,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Retrieve the display name of a field.
 
         Args:
-            field (str): The identifier for the field.
+            field (str): Field identifier.
 
         Returns:
             str: The display name for the field as specified in the field configuration
@@ -1199,7 +1199,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Retrieve the title of a field.
 
         Args:
-            field (str): The field identifier.
+            field (str): Field identifier.
 
         Returns:
             str: The title of the field based on the field configuration,
@@ -1211,7 +1211,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Retrieve the mapping for a field.
 
         Args:
-            field (str): The field identifier.
+            field (str): Field identifier.
 
         Returns:
             Optional[MappingLike]: The mapping for the field as defined in the field configuration,
@@ -1223,7 +1223,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Retrieve the array for a given field.
 
         Args:
-            field (str): The field identifier.
+            field (str): Field identifier.
             copy (bool): Whether to return a copy of the array.
 
         Returns:
@@ -1238,7 +1238,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Retrieve the mapped array for a field.
 
         Args:
-            field (str): The field identifier.
+            field (str): Field identifier.
             **kwargs: Keyword arguments for `Records.map_field`.
 
         Returns:
@@ -1253,7 +1253,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Retrieve the mapped index for a field.
 
         Args:
-            field (str): The field identifier.
+            field (str): Field identifier.
             minus_one_to_zero (bool): Flag indicating whether to convert -1 values to 0.
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
@@ -1266,7 +1266,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Retrieve the mapped columns for a field.
 
         Args:
-            field (str): The field identifier.
+            field (str): Field identifier.
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
         Returns:
@@ -1278,7 +1278,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Retrieve the array for a field with applied mapping.
 
         Args:
-            field (str): The field identifier.
+            field (str): Field identifier.
             mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
             
                 See `vectorbtpro.records.base.MappedArray.apply_mapping`.
@@ -1298,7 +1298,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Retrieve a stringified array for a field with applied mapping.
 
         Args:
-            field (str): The field identifier.
+            field (str): Field identifier.
             mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
             
                 See `vectorbtpro.records.base.MappedArray.apply_mapping`.
@@ -1560,7 +1560,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Convert a field to a mapped array.
 
         Args:
-            field (str): Name of the field to be converted.
+            field (str): Field identifier.
             **kwargs: Keyword arguments for `Records.map_array`.
 
         Returns:

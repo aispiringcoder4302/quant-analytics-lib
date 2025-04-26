@@ -1089,8 +1089,7 @@ class MappedArray(Analyzable):
 
         Args:
             mask (Array1d): Boolean array indicating which elements to retain.
-            idx_arr (Array1d): Array of row indices;
-                if not provided, the instance's index array is used.
+            idx_arr (Array1d): Array of row indices.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.

@@ -1165,7 +1165,7 @@ def mapped_value_counts_per_row_nb(
     Args:
         mapped_arr (Array1d): Array of mapped values.
         n_uniques (int): Number of unique values.
-        idx_arr (Array1d): Array of row indices corresponding to values in `mapped_arr`.
+        idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
         n_rows (int): Total number of rows.
 
     Returns:

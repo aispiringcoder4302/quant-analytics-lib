@@ -487,10 +487,10 @@ def prepare_fs_records_nb(
 
     Args:
         target_shape (Shape): Base dimensions (rows, columns) for record arrays.
-        max_order_records (Optional[int]): Maximum number of order records.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
 
             Overrides the first dimension of target_shape if provided.
-        max_log_records (Optional[int]): Maximum number of log records.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
 
             Overrides the first dimension of target_shape if provided.
 
@@ -818,8 +818,8 @@ def from_basic_signals_nb(
         save_value (bool): Flag to record portfolio value.
         save_returns (bool): Flag to record portfolio returns.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
-        max_order_records (Optional[int]): Maximum number of records for orders.
-        max_log_records (Optional[int]): Maximum number of records for log entries.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
 
     Returns:
         SimulationOutput: The simulation output containing order records, log records, and portfolio results.
@@ -1935,8 +1935,8 @@ def from_signals_nb(
         save_value (bool): Flag to record portfolio value.
         save_returns (bool): Flag to record portfolio returns.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
-        max_order_records (Optional[int]): Maximum number of records for orders.
-        max_log_records (Optional[int]): Maximum number of records for log entries.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
 
     Returns:
         SimulationOutput: The simulation output containing order records, log records, and portfolio results.
@@ -4787,8 +4787,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         update_value (bool): Whether to update portfolio value during simulation.
         fill_pos_info (bool): Whether to update position information.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
-        max_order_records (Optional[int]): Maximum number of records for orders.
-        max_log_records (Optional[int]): Maximum number of records for log entries.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
         in_outputs (Optional[NamedTuple]): Additional outputs from the simulation.
 
     Returns:

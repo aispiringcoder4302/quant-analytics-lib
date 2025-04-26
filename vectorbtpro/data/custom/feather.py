@@ -143,7 +143,7 @@ class FeatherData(FileData):
         """Fetch a Feather file for a feature.
 
         Args:
-            feature (Feature): Identifier for the feature.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `FeatherData.fetch_key`.
 
         Returns:
@@ -156,7 +156,7 @@ class FeatherData(FileData):
         """Fetch a Feather file for a symbol.
 
         Args:
-            symbol (Symbol): Identifier for the symbol.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `FeatherData.fetch_key`.
 
         Returns:
@@ -185,7 +185,7 @@ class FeatherData(FileData):
         """Update data for a feature.
 
         Args:
-            feature (Feature): Identifier for the feature.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `FeatherData.update_key`.
 
         Returns:
@@ -199,7 +199,7 @@ class FeatherData(FileData):
         This method calls `FeatherData.update_key` with `key_is_feature=False`.
 
         Args:
-            symbol (Symbol): Identifier for the symbol.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `FeatherData.update_key`.
 
         Returns:

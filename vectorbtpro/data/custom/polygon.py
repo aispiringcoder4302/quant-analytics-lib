@@ -103,7 +103,7 @@ class PolygonData(RemoteData):
             pattern (Optional[str]): A pattern to filter symbols.
 
                 Symbols that do not match this pattern are excluded.
-            use_regex (bool): If True, treat `pattern` as a regular expression.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
             client (Optional[PolygonClient]): An existing client instance for API interaction.
             client_config (dict-like): Parameters for initializing a client if one is not provided.

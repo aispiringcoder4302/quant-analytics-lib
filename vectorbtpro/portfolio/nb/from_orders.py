@@ -274,8 +274,8 @@ def from_orders_nb(
         save_value (bool): Flag to record portfolio value.
         save_returns (bool): Flag to record portfolio returns.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
-        max_order_records (Optional[int]): Maximum number of records for orders.
-        max_log_records (Optional[int]): Maximum number of records for log entries.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
 
     Returns:
         SimulationOutput: Simulation output containing order and log records, cash deposits,

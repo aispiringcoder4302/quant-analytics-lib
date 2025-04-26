@@ -59,7 +59,7 @@ class SyntheticData(CustomData):
         Calls `SyntheticData.generate_key` with `key_is_feature=True`.
 
         Args:
-            feature (Feature): Identifier of the feature.
+            feature (Feature): Feature identifier.
             index (Index): Datetime index over which synthetic data is generated.
             **kwargs: Keyword arguments for `SyntheticData.generate_key`.
 
@@ -75,7 +75,7 @@ class SyntheticData(CustomData):
         Calls `SyntheticData.generate_key` with `key_is_feature=False`.
 
         Args:
-            symbol (Symbol): Identifier of the symbol.
+            symbol (Symbol): Symbol identifier.
             index (Index): Datetime index over which synthetic data is generated.
             **kwargs: Keyword arguments for `SyntheticData.generate_key`.
 
@@ -148,7 +148,7 @@ class SyntheticData(CustomData):
         Calls `SyntheticData.fetch_key` with `key_is_feature=True`.
 
         Args:
-            feature (Feature): Identifier of the feature.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `SyntheticData.fetch_key`.
 
         Returns:
@@ -163,7 +163,7 @@ class SyntheticData(CustomData):
         Calls `SyntheticData.fetch_key` with `key_is_feature=False`.
 
         Args:
-            symbol (Symbol): Identifier of the symbol.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `SyntheticData.fetch_key`.
 
         Returns:
@@ -198,7 +198,7 @@ class SyntheticData(CustomData):
         Calls `SyntheticData.update_key` with `key_is_feature=True`.
 
         Args:
-            feature (Feature): Identifier of the feature.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `SyntheticData.update_key`.
 
         Returns:
@@ -212,7 +212,7 @@ class SyntheticData(CustomData):
         Calls `SyntheticData.update_key` with `key_is_feature=False`.
 
         Args:
-            symbol (Symbol): Identifier of the symbol.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `SyntheticData.update_key`.
 
         Returns:

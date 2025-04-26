@@ -3812,7 +3812,7 @@ Returns:
 
                 If the pattern matches a location, all indicators from that location are returned.
             case_sensitive (bool): Whether to treat the pattern as case-sensitive.
-            use_regex (bool): If True, interpret the pattern as a regular expression.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             location (Optional[str]): A specific location from which to list indicators.
             prepend_location (Optional[bool]): When True, indicator names are prefixed with their location.
 

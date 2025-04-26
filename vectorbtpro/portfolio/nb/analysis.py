@@ -2030,7 +2030,7 @@ def returns_nb(
         
             Provided as a scalar, or per row, column, or element.
         cash_deposits_as_input (bool): Whether to add cash deposits to the input value.
-        log_returns (bool): Whether to compute logarithmic returns.
+        log_returns (bool): Flag to compute logarithmic returns.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.
@@ -2174,7 +2174,7 @@ def get_asset_return_nb(
         input_asset_value (float): Asset value at the beginning.
         output_asset_value (float): Asset value at the end.
         cash_flow (float): Cash flow during the period.
-        log_returns (bool): Whether to compute logarithmic returns.
+        log_returns (bool): Flag to compute logarithmic returns.
 
     Returns:
         float: Computed asset return.
@@ -2223,7 +2223,7 @@ def asset_returns_nb(
         init_position_value (FlexArray1dLike): Initial position value.
         
             Provided as a scalar or per column.
-        log_returns (bool): Whether to compute logarithmic returns.
+        log_returns (bool): Flag to compute logarithmic returns.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.

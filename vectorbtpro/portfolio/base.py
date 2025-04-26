@@ -164,7 +164,7 @@ def returns_resample_func(
         resampler (Union[Resampler, PandasResampler]): The resampler instance used for resampling.
         wrapper (ArrayWrapper): Array wrapper instance.
         fill_with_zero (bool): Whether to fill missing values with zero.
-        log_returns (bool): Whether to compute logarithmic returns.
+        log_returns (bool): Flag to compute logarithmic returns.
         **kwargs: Additional keyword arguments.
 
     Returns:
@@ -561,7 +561,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         exit_trades_cls (Optional[Type]): Class used for wrapping exit trade records.
         positions_cls (Optional[Type]): Class used for wrapping position records.
         drawdowns_cls (Optional[Type]): Class used for wrapping drawdown records.
-        weights (Union[None, bool, ArrayLike]): Asset weights.
+        weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
             Applied to initial positions, cash, deposits, earnings, and orders.
         **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
@@ -1649,7 +1649,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         * `_1d`: element per column or group (reduced time series).
 
         Args:
-            field (str): The original field name containing embedded option suffixes.
+            field (str): Field identifier.
 
         Returns:
             Kwargs: Dictionary with the following keys:
@@ -1926,7 +1926,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         The identified in-output object is then wrapped via `Portfolio.wrap_obj`.
 
         Args:
-            field (str): The name of the field to retrieve.
+            field (str): Field identifier.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
             
@@ -5987,7 +5987,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Get asset weights.
 
         Args:
-            weights (Union[None, bool, ArrayLike]): The asset weights data.
+            weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
                 Defaults to `Portfolio._weights` if not provided.
 
@@ -6263,9 +6263,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            weights (Union[None, bool, ArrayLike]): Asset weights; if False, weights are ignored.
+            weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
                 Defaults to `Portfolio.get_weights` if not provided.
+                
+                If False, weights are ignored.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -7047,7 +7049,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_position_raw (Optional[ArrayLike]): Raw initial position values.
 
                 Defaults to `Portfolio._init_position` if not provided.
-            weights (Union[None, bool, ArrayLike]): Weights applied to the initial positions.
+            weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
                 Defaults to `Portfolio.get_weights` if not provided.
 
@@ -7706,7 +7708,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            weights (Union[None, bool, ArrayLike]): Weights for scaling cash deposits.
+            weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
                 Defaults to `Portfolio.get_weights` if not provided.
 
@@ -7823,7 +7825,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            weights (Union[None, bool, ArrayLike]): Weights for scaling cash deposits.
+            weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
                 Defaults to `Portfolio.get_weights` if not provided.
 
@@ -7897,7 +7899,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            weights (Union[None, bool, ArrayLike]): Weights for scaling cash earnings.
+            weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
                 Defaults to `Portfolio.get_weights` if not provided.
 
@@ -7998,7 +8000,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            weights (Union[None, bool, ArrayLike]): Weights for scaling cash earnings.
+            weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
                 Defaults to `Portfolio.get_weights` if not provided.
 
@@ -8075,7 +8077,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            weights (Union[None, bool, ArrayLike]): Weights used for calculations.
+            weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
                 Defaults to `Portfolio.get_weights` if not provided.
 
@@ -8205,7 +8207,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            weights (Union[None, bool, ArrayLike]): Weighting factor; if set to False, weights are ignored.
+            weights (Union[None, bool, ArrayLike]): Asset weights to apply.
 
                 Defaults to `Portfolio.get_weights` if not provided.
 
@@ -9810,7 +9812,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_flow (Optional[SeriesFrame]): Cash flow series.
 
                 Defaults to `Portfolio.get_cash_flow` if not provided.
-            log_returns (bool): Compute logarithmic returns if True.
+            log_returns (bool): Flag to compute logarithmic returns.
             daily_returns (bool): Convert the computed returns to daily return rates if True.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -10080,7 +10082,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             market_value (Optional[SeriesFrame]): Market value series required for the return calculation.
 
                 Defaults to `Portfolio.get_market_value` if not provided.
-            log_returns (bool): Compute logarithmic returns if True.
+            log_returns (bool): Flag to compute logarithmic returns.
             daily_returns (bool): Convert the computed returns to daily frequency if True.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -10362,7 +10364,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             bm_value (Optional[SeriesFrame]): Benchmark value series or frame.
 
                 Defaults to `Portfolio.get_bm_value` if not provided.
-            log_returns (bool): Compute logarithmic returns if True.
+            log_returns (bool): Flag to compute logarithmic returns.
             daily_returns (bool): Convert the computed returns to daily frequency if True.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.

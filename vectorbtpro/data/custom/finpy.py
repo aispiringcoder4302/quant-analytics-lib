@@ -162,7 +162,7 @@ class FinPyData(RemoteData):
 
         Args:
             pattern (Optional[str]): A pattern to filter symbols.
-            use_regex (bool): Whether the pattern should be interpreted as a regular expression.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
             config_manager (Optional[ConfigManager]): An optional configuration manager instance.
             config_manager_config (KwargsLike): Keyword arguments for configuring the configuration manager.

@@ -234,7 +234,7 @@ class DuckDBData(DBData):
         Args:
             catalog_pattern (Optional[str]): Pattern to filter catalog names.
             schema_pattern (Optional[str]): Pattern to filter schema names.
-            use_regex (bool): Flag indicating whether to treat patterns as regular expressions.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Flag indicating whether to sort the resulting schema names.
             catalog (Optional[str]): Specific catalog to search for schemas.
 
@@ -349,7 +349,7 @@ class DuckDBData(DBData):
             catalog_pattern (Optional[str]): Pattern to filter catalogs.
             schema_pattern (Optional[str]): Pattern to filter schemas.
             table_pattern (Optional[str]): Pattern to filter table names.
-            use_regex (bool): Determines whether to use regular expressions for matching.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Indicates whether to sort the resulting list.
             catalog (Optional[str]): Filter results to the specified catalog.
             schema (Optional[str]): Filter results to the specified schema.

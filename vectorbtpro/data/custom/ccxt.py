@@ -203,7 +203,7 @@ class CCXTData(RemoteData):
 
         Args:
             pattern (Optional[str]): Pattern to filter symbols.
-            use_regex (bool): Whether to treat the pattern as a regular expression.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
             exchange (Union[None, str, Exchange]): Identifier or instance of the exchange.
             exchange_config (Optional[KwargsLike]): Additional configurations for the exchange.

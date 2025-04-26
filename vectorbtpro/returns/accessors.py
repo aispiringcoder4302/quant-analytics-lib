@@ -164,7 +164,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
             Represents the return series.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
-        log_returns (bool): Indicates whether the provided returns are in log format.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
         year_freq (Optional[FrequencyLike]): Frequency used for annualization.
         defaults (KwargsLike): Overrides for default settings in `vectorbtpro._settings.returns`.
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -226,7 +226,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             value (ArrayLike): Input data from which returns are computed.
             init_value (ArrayLike): Initial value to broadcast for each column.
-            log_returns (bool): Flag indicating if returns are provided as log returns.
+            log_returns (bool): Flag indicating whether returns are logarithmic.
             sim_start (Optional[Array1d]): Simulation start, which can be a scalar or array-like.
             sim_end (Optional[Array1d]): Simulation end, which can be a scalar or array-like.
             jitted (JittedOption): Option to control JIT compilation.
@@ -2698,7 +2698,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            noarr_mode (bool): Flag indicating whether to operate in no-array mode.
+            noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2752,7 +2752,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            noarr_mode (bool): Flag indicating whether to operate in no-array mode.
+            noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3002,7 +3002,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            noarr_mode (bool): Flag indicating whether to use non-array mode.
+            noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3063,7 +3063,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            noarr_mode (bool): Flag indicating whether to use non-array mode.
+            noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3120,7 +3120,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            noarr_mode (bool): Flag indicating whether to use non-array mode.
+            noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3181,7 +3181,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            noarr_mode (bool): Flag to enable no-array mode.
+            noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

@@ -121,7 +121,7 @@ class CustomData(Data):
         Args:
             key (str): The key to evaluate.
             pattern (str): The pattern to compare against.
-            use_regex (bool): Flag indicating whether to interpret the pattern as a regular expression.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
 
         Returns:
             Optional[re.Match]: A match object if the key matches the pattern; otherwise, None.

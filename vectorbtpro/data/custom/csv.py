@@ -291,7 +291,7 @@ class CSVData(FileData):
         """Update data of a feature.
 
         Args:
-            feature (Feature): The feature key to update.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `CSVData.update_key`.
 
         Returns:
@@ -308,7 +308,7 @@ class CSVData(FileData):
         Invokes `CSVData.update_key` with `key_is_feature=False`.
 
         Args:
-            symbol (Symbol): The symbol key whose data will be updated.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `CSVData.update_key`.
 
         Returns:

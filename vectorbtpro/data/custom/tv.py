@@ -758,7 +758,7 @@ class TVData(RemoteData):
         Args:
             exchange_pattern (Optional[str]): Pattern to match the exchange name.
             symbol_pattern (Optional[str]): Pattern to match the symbol name.
-            use_regex (bool): Whether to use regular expressions for matching exchange and symbol names.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to sort the final list of symbols.
             client (Optional[TVClient]): Client instance for API requests.
             client_config (DictLike): Configuration parameters for the client.

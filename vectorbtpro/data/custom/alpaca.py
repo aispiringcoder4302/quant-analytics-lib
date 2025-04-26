@@ -100,7 +100,7 @@ class AlpacaData(RemoteData):
 
         Args:
             pattern (Optional[str]): Pattern to filter symbols.
-            use_regex (bool): Determines whether to treat `pattern` as a regular expression.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Specifies whether to return the symbols in sorted order.
             status (Optional[str]): Filter for asset status.
 

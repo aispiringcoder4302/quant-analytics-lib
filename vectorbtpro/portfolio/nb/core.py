@@ -2102,10 +2102,10 @@ def prepare_records_nb(
 
     Args:
         target_shape (Shape): Target shape to determine array dimensions.
-        max_order_records (Optional[int]): Maximum number of order records.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
 
             If None, `target_shape[0]` is used.
-        max_log_records (Optional[int]): Maximum number of log records.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
 
             If None, `target_shape[0]` is used.
 
@@ -2813,7 +2813,7 @@ def resolve_limit_price_nb(
     Args:
         init_price (float): The initial reference price.
         limit_delta (float): The delta value used to adjust the limit price.
-        delta_format (int): The format of the delta.
+        delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Indicates whether the order should hit below the reference price.
@@ -2889,7 +2889,7 @@ def check_limit_hit_nb(
 
             See `vectorbtpro.portfolio.enums.Direction`.
         limit_delta (float): The delta adjustment for computing the limit price.
-        delta_format (int): The format of the delta.
+        delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         limit_reverse (bool): Flag to reverse the limit condition.
@@ -2998,7 +2998,7 @@ def resolve_stop_price_nb(
     Args:
         init_price (float): The initial reference price.
         stop (float): The stop adjustment value.
-        delta_format (int): The format of the stop adjustment.
+        delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Indicates whether the stop should be applied below the initial price.
@@ -3055,7 +3055,7 @@ def check_stop_hit_nb(
         is_position_long (bool): Indicates whether the position is long.
         init_price (float): Initial price used for stop price calculation.
         stop (float): Stop parameter value.
-        delta_format (int): Format for the stop delta.
+        delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Direction flag for stop hit determination.
@@ -3225,7 +3225,7 @@ def check_tsl_th_hit_nb(
         init_price (float): Initial price used for threshold computation.
         peak_price (float): Peak price reached (maximum for long, minimum for short).
         threshold (float): TSL threshold value.
-        delta_format (int): Format for computing the trailing stop threshold.
+        delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
 
@@ -3320,7 +3320,7 @@ def get_stop_ladder_exit_size_nb(
         ladder (int): Stop ladder mode; must be static.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
-        delta_format (int): Format for computing stop deltas.
+        delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Determines the direction for stop price resolution.
@@ -3553,7 +3553,7 @@ def set_limit_info_nb(
 
             See `vectorbtpro.portfolio.enums.StopType`.
         delta (float): Delta value associated with the order.
-        delta_format (int): Format for the delta value.
+        delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         tif (int): Time in force parameter.
@@ -3656,7 +3656,7 @@ def set_sl_info_nb(
 
             See `vectorbtpro.portfolio.enums.OrderType`.
         limit_delta (float): Delta value used for limit calculations.
-        delta_format (int): Format for the delta value.
+        delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         ladder (int): Stop ladder mode.

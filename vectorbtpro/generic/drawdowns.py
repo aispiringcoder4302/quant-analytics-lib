@@ -1134,7 +1134,7 @@ class Drawdowns(Ranges):
 
                 Specify 'OHLC', 'Candlestick', or a Plotly trace; use None for the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
-            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for close values.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
             peak_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for peak markers.
             valley_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for valley markers.
             recovery_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for recovery markers.

@@ -2660,7 +2660,7 @@ def expanding_mfe_nb(
     Args:
         trade_records (RecordArray): Array of trade records.
         expanding_best_price (Array2d): 2D array of expanding best prices for each trade.
-        use_returns (bool): Flag indicating whether to compute MFE using returns instead of absolute prices.
+        use_returns (bool): Flag indicating whether to compute using return-based values.
 
     Returns:
         Array2d: 2D array of expanding MFE values for each trade.
@@ -2701,7 +2701,7 @@ def expanding_mae_nb(
     Args:
         trade_records (RecordArray): Array of trade records.
         expanding_worst_price (Array2d): 2D array of expanding worst prices for each trade.
-        use_returns (bool): Flag indicating whether to compute MAE using returns instead of absolute prices.
+        use_returns (bool): Flag indicating whether to compute using return-based values.
 
     Returns:
         Array2d: 2D array of expanding MAE values for each trade.

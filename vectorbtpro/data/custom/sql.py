@@ -285,11 +285,11 @@ class SQLData(DBData):
             pattern (Optional[str]): Pattern to filter schema names.
 
                 Schema names are matched using `SQLData.key_match`.
-            use_regex (bool): Flag indicating whether to treat `pattern` as a regular expression.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Flag indicating whether to sort the returned schema names.
             engine (Union[None, str, Engine]): The database engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
-            engine_config (KwargsLike): Additional configuration for the database engine.
+            engine_config (KwargsLike): Additional configuration for the engine.
             dispose_engine (Optional[bool]): Indicates whether to dispose the engine after use.
 
                 If None, disposal is based on engine metadata.
@@ -362,7 +362,7 @@ class SQLData(DBData):
         Args:
             schema_pattern (Optional[str]): Pattern to filter schema names.
             table_pattern (Optional[str]): Pattern to filter table names.
-            use_regex (bool): Whether to interpret patterns as regular expressions.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the list of table names in sorted order.
             schema (Optional[str]): Specific schema for the search.
 
@@ -370,7 +370,7 @@ class SQLData(DBData):
             incl_views (bool): Whether to include view names along with table names.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
-            engine_config (KwargsLike): Additional configuration parameters for engine setup.
+            engine_config (KwargsLike): Additional configuration for the engine.
             dispose_engine (Optional[bool]): If True, disposes the engine after the operation.
             **kwargs: Keyword arguments for SQLAlchemy's inspector methods.
 
@@ -459,7 +459,7 @@ class SQLData(DBData):
             schema (str): The name of the schema.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
-            engine_config (KwargsLike): Additional configuration parameters for engine setup.
+            engine_config (KwargsLike): Additional configuration for the engine.
 
         Returns:
             bool: True if the schema exists, False otherwise.
@@ -492,7 +492,7 @@ class SQLData(DBData):
             schema (str): Name of the schema to create.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
-            engine_config (KwargsLike): Additional configuration parameters for engine setup.
+            engine_config (KwargsLike): Additional configuration for the engine.
 
         Returns:
             None
@@ -530,7 +530,7 @@ class SQLData(DBData):
             schema (Optional[str]): The schema in which to search for the table.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
-            engine_config (KwargsLike): Additional configuration parameters for engine setup.
+            engine_config (KwargsLike): Additional configuration for the engine.
 
         Returns:
             bool: True if the table exists, False otherwise.
@@ -565,7 +565,7 @@ class SQLData(DBData):
             schema (Optional[str]): The schema where the table is located.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
-            engine_config (KwargsLike): Additional configuration parameters for engine setup.
+            engine_config (KwargsLike): Additional configuration for the engine.
 
         Returns:
             Table: SQLAlchemy table object representing the table relation.
@@ -607,7 +607,7 @@ class SQLData(DBData):
             row_number_column (Optional[str]): Column name representing the row number.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
-            engine_config (KwargsLike): Additional configuration parameters for engine setup.
+            engine_config (KwargsLike): Additional configuration for the engine.
 
         Returns:
             Table: The last row number retrieved from the table.
@@ -717,7 +717,7 @@ class SQLData(DBData):
                 See `SQLData.list_tables`.
             engine (Union[None, str, Engine]): Identifier or object for the database engine.
             engine_name (Optional[str]): Name of the engine.
-            engine_config (KwargsLike): Additional configuration parameters for the engine.
+            engine_config (KwargsLike): Additional configuration for the engine.
             dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
             share_engine (Optional[bool]): Flag indicating whether to share the engine among keys.
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.db.DBData.pull`.
@@ -830,7 +830,7 @@ class SQLData(DBData):
             engine_name (Optional[str]): Name of the engine.
 
                 See `SQLData.resolve_engine`.
-            engine_config (KwargsLike): Engine configuration.
+            engine_config (KwargsLike): Additional configuration for the engine.
 
                 See `SQLData.resolve_engine`.
             dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.

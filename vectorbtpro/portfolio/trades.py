@@ -1226,7 +1226,7 @@ class Trades(Ranges):
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
-            use_returns (bool): If True, compute MFE as returns instead of absolute price differences.
+            use_returns (bool): Flag indicating whether to compute using return-based values.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1278,7 +1278,7 @@ class Trades(Ranges):
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
-            use_returns (bool): If True, compute MAE as returns instead of absolute price differences.
+            use_returns (bool): Flag indicating whether to compute using return-based values.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1330,7 +1330,7 @@ class Trades(Ranges):
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
-            use_returns (bool): If True, compute MFE as returns instead of absolute price differences.
+            use_returns (bool): Flag indicating whether to compute using return-based values.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1380,7 +1380,7 @@ class Trades(Ranges):
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
-            use_returns (bool): If True, compute MAE as returns instead of absolute price differences.
+            use_returns (bool): Flag indicating whether to compute using return-based values.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

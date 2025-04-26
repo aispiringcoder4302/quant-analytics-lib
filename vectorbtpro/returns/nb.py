@@ -59,7 +59,7 @@ def get_return_nb(
     Args:
         input_value (float): The initial value used for the return calculation.
         output_value (float): The final value used for the return calculation.
-        log_returns (bool): If True, compute logarithmic returns; otherwise, compute simple returns.
+        log_returns (bool): Flag to compute logarithmic returns.
         inf_to_nan (bool): If True, convert an infinite return to NaN.
         nan_to_zero (bool): If True, convert a NaN return to 0.
 
@@ -97,7 +97,7 @@ def returns_1d_nb(
         init_value (float): The initial value to use.
 
             If NaN, the first element of `arr` is used.
-        log_returns (bool): If True, compute logarithmic returns; otherwise, compute simple returns.
+        log_returns (bool): Flag to compute logarithmic returns.
 
     Returns:
         Array1d: An array of calculated return values.
@@ -142,7 +142,7 @@ def returns_nb(
             Provided as a scalar or per column.
 
             If NaN, the first element of each column is used.
-        log_returns (bool): If True, compute logarithmic returns; otherwise, compute simple returns.
+        log_returns (bool): Flag to compute logarithmic returns.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per column.
@@ -2566,7 +2566,7 @@ def tail_ratio_nb(
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per column.
-        noarr_mode (bool): Flag to use no-array version if True, otherwise the standard version.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
 
     Returns:
         Array1d: Array of tail ratio values for each column.
@@ -2627,7 +2627,7 @@ def rolling_tail_ratio_nb(
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per column.
-        noarr_mode (bool): Flag to use no-array version if True, otherwise the standard version.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
 
     Returns:
         Array2d: 2D array with rolling tail ratio values.
@@ -2987,7 +2987,7 @@ def value_at_risk_nb(
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per column.
-        noarr_mode (bool): Flag indicating whether to use the no-array allocation method.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
 
             If True, uses `value_at_risk_noarr_1d_nb`; otherwise, uses `value_at_risk_1d_nb`.
 
@@ -3055,7 +3055,7 @@ def rolling_value_at_risk_nb(
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per column.
-        noarr_mode (bool): If True, uses the implementation that avoids allocating arrays.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
 
     Returns:
         Array2d: 2D array containing the computed rolling value at risk values.
@@ -3156,7 +3156,7 @@ def cond_value_at_risk_nb(
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per column.
-        noarr_mode (bool): If True, uses the implementation that avoids array allocations.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
 
     Returns:
         Array1d: Array of computed CVaR values for each column.
@@ -3222,7 +3222,7 @@ def rolling_cond_value_at_risk_nb(
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per column.
-        noarr_mode (bool): If True, uses an implementation that avoids additional array allocations.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
 
     Returns:
         Array2d: 2D array containing the computed rolling CVaR values.
