@@ -70,7 +70,7 @@ class class_property(Base):
     """Class for defining properties accessible directly on the class.
 
     Args:
-        func (Callable): The function to be decorated as a class property.
+        func (Callable): Function to be decorated as a class property.
     """
 
     def __init__(self, func: tp.Callable) -> None:
@@ -100,7 +100,7 @@ class hybrid_property(Base):
     via the class, and to an instance when accessed via an instance.
 
     Args:
-        func (Callable): The function to be decorated as a hybrid property.
+        func (Callable): Function to be decorated as a hybrid property.
     """
 
     def __init__(self, func: tp.Callable) -> None:
@@ -146,7 +146,7 @@ class custom_property(property, Base):
     its configuration options as attributes.
 
     Args:
-        func (Callable): The function to be decorated as a property.
+        func (Callable): Function to be decorated as a property.
         **options: Configuration options for the property.
 
     !!! note
@@ -216,7 +216,7 @@ class cacheable_property(custom_property):
     """Class for defining a cacheable property extending `custom_property` to support caching of computed values.
 
     Args:
-        func (Callable): The function to be decorated as a cacheable property.
+        func (Callable): Function to be decorated as a cacheable property.
         use_cache (bool): Whether to use caching.
         whitelist (bool): Whether to whitelist the property.
         **options: Configuration options for the property.
@@ -265,7 +265,7 @@ class cacheable_property(custom_property):
         See `vectorbtpro.registries.ca_registry` for details on the caching procedure.
 
         Args:
-            instance (Optional[object]): The instance to retrieve the setup for.
+            instance (Optional[object]): Instance to retrieve the setup for.
 
         Returns:
             Optional[CARunSetup]: The caching setup instance, or None if not applicable.
@@ -290,7 +290,7 @@ class cached_property(cacheable_property):
     """Class for defining a cached property, equivalent to using `cacheable_property` with `use_cache=True`.
 
     Args:
-        func (Callable): The function to be decorated as a cacheable property.
+        func (Callable): Function to be decorated as a cacheable property.
         **options: Keyword arguments for `cacheable_property`.
     """
 
@@ -444,7 +444,7 @@ def cached(*args, **options) -> tp.Union[tp.Callable, cacheable_functionT]:
     """Decorate a function with caching enabled, equivalent to using `cacheable` with `use_cache=True`.
 
     Args:
-        func (Callable): The function to be decorated.
+        func (Callable): Function to be decorated.
         **options: Configuration options for the function.
 
     Returns:
@@ -559,7 +559,7 @@ def cacheable_method(
             See `vectorbtpro.registries.ca_registry` for details on the caching procedure.
 
             Args:
-                instance (Optional[object]): The instance to retrieve the setup for.
+                instance (Optional[object]): Instance to retrieve the setup for.
 
             Returns:
                 Optional[CARunSetup]: The caching run setup instance, or None if not applicable.
@@ -594,7 +594,7 @@ def cached_method(*args, **options) -> tp.Union[tp.Callable, cacheable_methodT]:
     `cacheable_method` with `use_cache=True`.
 
     Args:
-        func (Callable): The method to be decorated.
+        func (Callable): Method to be decorated.
         **options: Configuration options for the method.
 
     Returns:

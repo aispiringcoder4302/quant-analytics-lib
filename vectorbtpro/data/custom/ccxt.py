@@ -345,7 +345,7 @@ class CCXTData(RemoteData):
         then performs a binary search to determine the earliest available date.
 
         Args:
-            symbol (str): The symbol for which to find the earliest date.
+            symbol (str): Symbol for which to find the earliest date.
             for_internal_use (bool): Flag indicating whether the search is for internal processing.
             **kwargs: Keyword arguments for `CCXTData.fetch_symbol`.
 

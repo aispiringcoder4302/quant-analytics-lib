@@ -356,7 +356,7 @@ def future_max_nb(
     """Return a 2-dim array of future maximum values computed for each column of close prices.
 
     Args:
-        close (Array2d): A two-dimensional array containing close prices.
+        close (Array2d): Two-dimensional array containing close prices.
         window (FlexArray1dLike): Window size.
         
             Provided as a scalar or per column.
@@ -396,8 +396,8 @@ def fixed_labels_1d_nb(
     """Return the percentage change from the current value to the future value shifted by n periods.
 
     Args:
-        close (Array1d): A one-dimensional array of close prices.
-        n (int): The period offset used for shifting to compute the future value.
+        close (Array1d): One-dimensional array of close prices.
+        n (int): Period offset used for shifting to compute the future value.
 
     Returns:
         Array1d: An array of percentage changes.
@@ -587,8 +587,8 @@ def pivots_1d_nb(
     where 1 represents a peak, -1 represents a valley, and 0 denotes no pivot.
 
     Args:
-        high (Array1d): A one-dimensional array of high prices.
-        low (Array1d): A one-dimensional array of low prices.
+        high (Array1d): One-dimensional array of high prices.
+        low (Array1d): One-dimensional array of low prices.
         up_th (FlexArray1dLike): Upper threshold for detecting peaks.
         
             Provided as a scalar or per row.

@@ -539,7 +539,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
         """Return the actual size of the given object.
 
         Args:
-            obj (Any): The input object.
+            obj (Any): Input object.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -551,7 +551,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
         """Return a suggested global size derived from the given object.
 
         Args:
-            obj (Any): The input object.
+            obj (Any): Input object.
             **kwargs: Keyword arguments for `ChunkTaker.get_size`.
 
         Returns:
@@ -565,7 +565,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
         """Determine whether to extract a chunk from the given object based on the chunk metadata.
 
         Args:
-            obj (Any): The input object.
+            obj (Any): Input object.
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             **kwargs: Additional keyword arguments.
 
@@ -590,7 +590,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
         otherwise, extracts the chunk using `take`.
 
         Args:
-            obj (Any): The input object.
+            obj (Any): Input object.
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             **kwargs: Keyword arguments for `ChunkTaker.should_take` or `ChunkTaker.take`.
 
@@ -607,7 +607,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
         """Extract a subset of data from the given object using the provided chunk metadata.
 
         Args:
-            obj (Any): The input object from which to extract data.
+            obj (Any): Input object from which to extract data.
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             **kwargs: Additional keyword arguments.
 
@@ -856,7 +856,7 @@ class SequenceTaker(ContainerTaker):
         to match the sequence length.
 
         Args:
-            obj (Sequence): The sequence object.
+            obj (Sequence): Sequence object.
 
         Returns:
             ContainerTakeSpec: The adapted container take specification.
@@ -948,7 +948,7 @@ class MappingTaker(ContainerTaker):
         If an ellipsis key is present, assign its corresponding specification to any missing keys.
 
         Args:
-            obj (Mapping): The mapping object.
+            obj (Mapping): Mapping object.
 
         Returns:
             ContainerTakeSpec: The adapted container take specification.
@@ -1112,8 +1112,8 @@ class Chunked(Chunkable, DefineMixin):
     It accepts additional keyword arguments that configure the chunk-taking specification.
 
     Args:
-        value (Any): The value to be chunked.
-        take_spec (TakeSpec): The specification for taking chunks.
+        value (Any): Value to be chunked.
+        take_spec (TakeSpec): Specification for taking chunks.
         take_spec_kwargs (KwargsLike): Keyword arguments for the `ChunkTaker` subclass.
 
             If `take_spec` is an instance rather than a class, these arguments update its configuration.
@@ -1619,7 +1619,7 @@ class Chunker(Configured):
         """Resolve the chunk-taking specification.
 
         Args:
-            take_spec (TakeSpec): The specification for chunk-taking.
+            take_spec (TakeSpec): Specification for chunk-taking.
 
         Returns:
             TakeSpec: The resolved chunk-taking specification.
@@ -1644,8 +1644,8 @@ class Chunker(Configured):
         """Extract a chunk from the given argument based on the provided specification.
 
         Args:
-            arg (Any): The input argument.
-            take_spec (TakeSpec): The chunk-taking specification.
+            arg (Any): Input argument.
+            take_spec (TakeSpec): Chunk-taking specification.
 
                 If None or a `NotChunked` instance, the original argument is returned.
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
@@ -1677,10 +1677,10 @@ class Chunker(Configured):
         """Resolve the chunk-taking specification for a given argument.
 
         Args:
-            i (int): The index of the argument.
-            ann_arg_name (str): The name of the annotated argument.
+            i (int): Index of the argument.
+            ann_arg_name (str): Name of the annotated argument.
             ann_arg (Kwargs): Details of the annotated argument.
-            arg_take_spec (ArgTakeSpec): The specification mapping for chunk-taking.
+            arg_take_spec (ArgTakeSpec): Specification mapping for chunk-taking.
 
         Returns:
             TakeSpec: The resolved specification for the argument, or `MISSING` if not found.
@@ -1794,12 +1794,12 @@ class Chunker(Configured):
         """Split annotated arguments into chunks and yield each chunk as a task.
 
         Args:
-            func (Callable): The callable to execute as a task.
+            func (Callable): Callable to execute as a task.
             ann_args (AnnArgs): Annotated arguments.
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
-            chunk_meta (Iterable[ChunkMeta]): An iterable of chunk metadata.
-            arg_take_spec (Optional[tp.ArgTakeSpecLike]): The specification for chunk-taking.
+            chunk_meta (Iterable[ChunkMeta]): Iterable of chunk metadata.
+            arg_take_spec (Optional[tp.ArgTakeSpecLike]): Specification for chunk-taking.
 
                 It can be a mapping, a sequence (which will be converted into a mapping),
                 a callable, or a `CustomTemplate`.
@@ -1856,7 +1856,7 @@ class Chunker(Configured):
         """Parse and return the sizer extracted from a function's annotations.
 
         Args:
-            func (Callable): The function to parse for sizer annotations.
+            func (Callable): Function to parse for sizer annotations.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -1888,7 +1888,7 @@ class Chunker(Configured):
         """Parse and return the chunk-taking specification extracted from provided annotations.
 
         Args:
-            annotations (Annotations): A mapping of parameter names to their annotations.
+            annotations (Annotations): Mapping of parameter names to their annotations.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -1922,7 +1922,7 @@ class Chunker(Configured):
         including handling for variable arguments.
 
         Args:
-            func (Callable): The function to parse.
+            func (Callable): Function to parse.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -2030,7 +2030,7 @@ class Chunker(Configured):
         """Fill and return the chunk-taking specification with missing keys set to None to avoid warnings.
 
         Args:
-            arg_take_spec (ArgTakeSpec): The initial chunk-taking specification.
+            arg_take_spec (ArgTakeSpec): Initial chunk-taking specification.
             ann_args (AnnArgs): Annotated arguments.
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
@@ -2127,7 +2127,7 @@ class Chunker(Configured):
         """Chunk the arguments and execute the function.
 
         Args:
-            func (Callable): The function to execute.
+            func (Callable): Function to execute.
             *args: Positional arguments for `func`.
             eval_id (Optional[Hashable]): Evaluation identifier.
             **kwargs: Keyword arguments for `func`.
@@ -2701,7 +2701,7 @@ def specialize_chunked_option(option: tp.ChunkedOption = None, **kwargs) -> tp.K
     """Resolve the provided chunking option and merge it with additional keyword arguments.
 
     Args:
-        option (ChunkedOption): A chunking option to resolve.
+        option (ChunkedOption): Chunking option to resolve.
         **kwargs: Keyword arguments to be merged with the resolved chunking option.
 
     Returns:
@@ -2717,8 +2717,8 @@ def resolve_chunked(func: tp.Callable, option: tp.ChunkedOption = None, **kwargs
     """Decorate a function with chunked processing according to a given option.
 
     Args:
-        func (Callable): The function to decorate.
-        option (ChunkedOption): A chunking option determining whether to apply chunked processing.
+        func (Callable): Function to decorate.
+        option (ChunkedOption): Chunking option determining whether to apply chunked processing.
         **kwargs: Keyword arguments for `chunked`.
 
             These are merged with the default chunking settings.

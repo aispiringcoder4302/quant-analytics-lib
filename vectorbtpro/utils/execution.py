@@ -74,7 +74,7 @@ class Task(DefineMixin):
     """Class representing an executable task.
 
     Args:
-        func (Callable): The function to execute.
+        func (Callable): Function to execute.
         *args: Positional arguments for `func`.
         **kwargs: Keyword arguments for `func`.
     """
@@ -96,7 +96,7 @@ class Task(DefineMixin):
         """Construct a Task instance from a tuple representation.
 
         Args:
-            tuple_ (Tuple[Any, ...]): A tuple representing a task.
+            tuple_ (Tuple[Any, ...]): Tuple representing a task.
 
                 The tuple can be:
 
@@ -166,8 +166,8 @@ def filter_out_no_results(
     """Filter out `NoResult` sentinel values from a collection of objects and adjust associated keys.
 
     Args:
-        objs (Iterable[Any]): A sequence of objects to filter.
-        keys (Optional[Index]): A sequence of keys corresponding to the objects.
+        objs (Iterable[Any]): Sequence of objects to filter.
+        keys (Optional[Index]): Sequence of keys corresponding to the objects.
         raise_error (bool): If True, raise a `NoResultsException` when no valid objects remain after filtering.
 
     Returns:
@@ -214,8 +214,8 @@ class ExecutionEngine(Configured):
         """Execute a collection of tasks.
 
         Args:
-            tasks (TasksLike): An iterable of tasks to be executed.
-            size (Optional[int]): A hint for the number of tasks, useful if `tasks` is a generator.
+            tasks (TasksLike): Iterable of tasks to be executed.
+            size (Optional[int]): Hint for the number of tasks, useful if `tasks` is a generator.
             keys (Optional[IndexLike]): Keys associated with each task.
 
         Returns:
@@ -555,7 +555,7 @@ def pass_kwargs_as_args(func: tp.Callable, args: tp.Args, kwargs: tp.Kwargs) -> 
     Used for compatibility with `pathos.pools.ParallelPool`.
 
     Args:
-        func (Callable): The function to execute.
+        func (Callable): Function to execute.
         args (Args): Positional arguments for the function.
         kwargs (Kwargs): Keyword arguments for the function.
 
@@ -1054,7 +1054,7 @@ class RayEngine(ExecutionEngine):
         applying `ray.remote` on functions.
 
         Args:
-            tasks (TasksLike): A list of tasks, each as a tuple containing a function, positional arguments,
+            tasks (TasksLike): List of tasks, each as a tuple containing a function, positional arguments,
                 and keyword arguments.
             reuse_refs (bool): Flag indicating whether to reuse references for unique objects.
             remote_kwargs (KwargsLike): Keyword arguments for configuring `ray.remote`.
@@ -2472,7 +2472,7 @@ class Executor(Configured):
         and optionally post-processing overall execution results.
 
         Args:
-            results (ExecResults): The initial execution results.
+            results (ExecResults): Initial execution results.
             cache_chunks (bool): Flag indicating whether chunk caching is enabled.
             chunk_cache_dir (Optional[PathLike]): Directory for cached chunks; required if caching is enabled.
             chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading chunk cache.
@@ -2601,7 +2601,7 @@ class Executor(Configured):
         Execution may involve filtering of results and subsequent merging using a specified merge function.
 
         Args:
-            tasks (TasksLike): A collection of tasks to execute.
+            tasks (TasksLike): Collection of tasks to execute.
             size (Optional[int]): Total number of tasks if not inferable from the tasks collection.
             keys (Optional[IndexLike]): Index or keys associated with the tasks.
 
@@ -3180,10 +3180,10 @@ def execute(
     `Executor` instance by updating non-None parameters.
 
     Args:
-        tasks (TasksLike): The tasks or functions with their arguments to execute.
-        size (Optional[int]): The number of tasks to run concurrently.
+        tasks (TasksLike): Tasks or functions with their arguments to execute.
+        size (Optional[int]): Number of tasks to run concurrently.
         keys (Optional[IndexLike]): Identifiers corresponding to each task.
-        executor (Optional[MaybeType[Executor]]): An executor instance or executor type.
+        executor (Optional[MaybeType[Executor]]): Executor instance or executor type.
         replace_executor (Optional[bool]): Flag to create a new executor instance by replacing
             non-None arguments.
         merge_to_engine_config (Optional[bool]): Flag indicating whether extra keyword arguments
@@ -3248,10 +3248,10 @@ def parse_iterable_and_keys(
     to avoid unnecessary materialization.
 
     Args:
-        iterable_like (Union[int, Iterable]): An integer representing a total count or an iterable of values.
+        iterable_like (Union[int, Iterable]): Integer representing a total count or an iterable of values.
 
             If an integer is provided, it is interpreted as a range.
-        keys (Optional[IndexLike]): A keys-like object used to index the iterable.
+        keys (Optional[IndexLike]): Keys-like object used to index the iterable.
 
             If not provided and the iterable is a dictionary, Pandas Index, or Pandas Series,
             the keys are derived from the object.

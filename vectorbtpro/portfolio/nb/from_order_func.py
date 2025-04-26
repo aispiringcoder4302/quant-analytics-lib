@@ -285,8 +285,8 @@ def try_order_nb(c: OrderContext, order: Order) -> tp.Tuple[OrderResult, ExecSta
     """Execute an order without persistence.
 
     Args:
-        c (OrderContext): The order context.
-        order (Order): The order to execute.
+        c (OrderContext): Order context.
+        order (Order): Order to execute.
 
     Returns:
         Tuple[OrderResult, ExecState]: A tuple containing the order execution result and
@@ -315,7 +315,7 @@ def no_pre_func_nb(c: tp.NamedTuple, *args) -> tp.Args:
     """Forward received arguments for preprocessing.
 
     Args:
-        c (NamedTuple): The context (unused in this placeholder).
+        c (NamedTuple): Context (unused in this placeholder).
         *args: Additional positional arguments.
 
     Returns:
@@ -329,7 +329,7 @@ def no_order_func_nb(c: OrderContext, *args) -> Order:
     """Return a placeholder order indicating no order is placed.
 
     Args:
-        c (OrderContext): The order context (unused in this placeholder).
+        c (OrderContext): Order context (unused in this placeholder).
         *args: Additional positional arguments.
 
     Returns:
@@ -343,7 +343,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
     """Perform placeholder postprocessing with no effect.
 
     Args:
-        c (NamedTuple): The context (unused in this placeholder).
+        c (NamedTuple): Context (unused in this placeholder).
         *args: Additional positional arguments.
 
     Returns:
@@ -363,7 +363,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #     """Custom simulation pre-processing function.
 #
 #     Args:
-#         c (SimulationContext): The simulation context.
+#         c (SimulationContext): Simulation context.
 #         *args: Additional positional arguments.
 #
 #     Returns:
@@ -387,7 +387,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #     """Custom simulation post-processing function.
 #
 #     Args:
-#         c (SimulationContext): The simulation context.
+#         c (SimulationContext): Simulation context.
 #         *args: Additional positional arguments.
 #
 #     Returns:
@@ -411,7 +411,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #     """Custom group pre-processing function.
 #
 #     Args:
-#         c (GroupContext): The group context.
+#         c (GroupContext): Group context.
 #         *args: Additional positional arguments.
 #
 #     Returns:
@@ -435,7 +435,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #     """Custom group post-processing function.
 #
 #     Args:
-#         c (GroupContext): The group context.
+#         c (GroupContext): Group context.
 #         *args: Additional positional arguments.
 #
 #     Returns:
@@ -459,7 +459,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #     """Custom segment pre-processing function.
 #
 #     Args:
-#         c (SegmentContext): The segment context.
+#         c (SegmentContext): Segment context.
 #         *args: Additional positional arguments.
 #
 #     Returns:
@@ -483,7 +483,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #     """Custom segment post-processing function.
 #
 #     Args:
-#         c (SegmentContext): The segment context.
+#         c (SegmentContext): Segment context.
 #         *args: Additional positional arguments.
 #
 #     Returns:
@@ -507,7 +507,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #     """Custom order processing function.
 #
 #     Args:
-#         c (OrderContext): The order context.
+#         c (OrderContext): Order context.
 #         *args: Additional positional arguments.
 #
 #     Returns:
@@ -533,7 +533,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #     """Custom order post-processing function.
 #
 #     Args:
-#         c (PostOrderContext): The post-order context.
+#         c (PostOrderContext): Post-order context.
 #         *args: Additional positional arguments.
 #
 #     Returns:
@@ -1817,7 +1817,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 #     """Custom row pre-processing function.
 #
 #     Args:
-#         c (RowContext): The row context.
+#         c (RowContext): Row context.
 #         *args: Additional positional arguments.
 #
 #     Returns:
@@ -1841,7 +1841,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 #     """Custom row post-processing function.
 #
 #     Args:
-#         c (RowContext): The row context.
+#         c (RowContext): Row context.
 #         *args: Additional positional arguments.
 #
 #     Returns:

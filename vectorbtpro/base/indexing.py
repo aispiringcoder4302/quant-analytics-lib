@@ -75,7 +75,7 @@ class IndexingBase(Base):
         """Apply the given Pandas indexing function on all associated Pandas objects and return a new instance.
 
         Args:
-            pd_indexing_func (Callable): The Pandas indexing function to apply.
+            pd_indexing_func (Callable): Pandas indexing function to apply.
             **kwargs: Keyword arguments for the indexing function.
 
         Returns:
@@ -90,7 +90,7 @@ class IndexingBase(Base):
         """Apply the provided Pandas indexing setter function on all associated Pandas objects.
 
         Args:
-            pd_indexing_setter_func (Callable): The Pandas indexing setter function to apply.
+            pd_indexing_setter_func (Callable): Pandas indexing setter function to apply.
             **kwargs: Keyword arguments for the indexing setter function.
 
         Returns:
@@ -167,8 +167,8 @@ class pdLoc(LocBase):
         """Perform a Pandas-like indexing operation on a Series or DataFrame.
 
         Args:
-            obj (SeriesFrame): The Pandas Series or DataFrame to index.
-            key (Any): The key to use for indexing.
+            obj (SeriesFrame): Pandas Series or DataFrame to index.
+            key (Any): Key to use for indexing.
 
         Returns:
             MaybeSeriesFrame: The result of the indexing operation.
@@ -180,9 +180,9 @@ class pdLoc(LocBase):
         """Perform a Pandas-like indexing setter operation on a Series or DataFrame.
 
         Args:
-            obj (SeriesFrame): The Pandas Series or DataFrame to modify.
-            key (Any): The key identifying the location to set.
-            value (Any): The value to assign.
+            obj (SeriesFrame): Pandas Series or DataFrame to modify.
+            key (Any): Key identifying the location to set.
+            value (Any): Value to assign.
 
         Returns:
             None: The function modifies the Series or DataFrame in place.
@@ -392,7 +392,7 @@ class ParamLoc(LocBase):
     Uses the provided `mapper` to link columns with parameter values.
 
     Args:
-        mapper (Series): A series mapping column names to parameter values.
+        mapper (Series): Series mapping column names to parameter values.
         indexing_func (Callable): Function used to perform indexing.
         indexing_setter_func (Optional[Callable]): Function used for setting indexed values.
         level_name (Level): Name of the column level to adjust after selection.
@@ -442,7 +442,7 @@ class ParamLoc(LocBase):
         """Encode the provided key for consistent mapping.
 
         Args:
-            key (Any): The key to encode.
+            key (Any): Key to encode.
 
         Returns:
             str: The encoded key as a string.
@@ -457,7 +457,7 @@ class ParamLoc(LocBase):
         given key based on the mapper.
 
         Args:
-            key (Any): The key used for selecting columns.
+            key (Any): Key used for selecting columns.
 
         Returns:
             Array1d: An array of indices for the matched columns.
@@ -680,7 +680,7 @@ class hslice(DefineMixin):
         """Construct a hashable slice from a Python slice.
 
         Args:
-            slice_ (slice): A Python slice object.
+            slice_ (slice): Python slice object.
 
         Returns:
             hslice: A hashable slice instance.
@@ -722,7 +722,7 @@ class IdxrBase(Base):
         """Return a slice object computed from the given index and slice parameters.
 
         Args:
-            index (Index): The index from which to compute slice bounds.
+            index (Index): Index from which to compute slice bounds.
             slice_ (Slice): Slice object with start, stop, and step attributes.
             closed_start (bool): If True, treats the slice start as inclusive.
             closed_end (bool): If True, treats the slice end as inclusive.
@@ -752,7 +752,7 @@ class IdxrBase(Base):
         """Validate the resolved indices for correct type and value constraints.
 
         Args:
-            idxs (MaybeIndexArray): The indices to validate.
+            idxs (MaybeIndexArray): Indices to validate.
             check_minus_one (bool): Flag indicating whether to consider -1 as an unmatched index.
 
         Returns:
@@ -796,7 +796,7 @@ def normalize_idxs(idxs: tp.MaybeIndexArray, target_len: int) -> tp.Array1d:
 
     Args:
         idxs (MaybeIndexArray): Index representation, which may be a slice, an integer, or a NumPy array.
-        target_len (int): The size of the target domain used for normalization.
+        target_len (int): Size of the target domain used for normalization.
 
     Returns:
         Array1d: A one-dimensional NumPy array of integers representing normalized indices.
@@ -1150,7 +1150,7 @@ class DTCIdxr(UniIdxr, DefineMixin):
         """Convert a value to a `vectorbtpro.utils.datetime_.DTCNT` instance.
 
         Args:
-            value (Optional[DTCLike]): A datetime-like value to convert. If None, returns a named tuple
+            value (Optional[DTCLike]): Datetime-like value to convert. If None, returns a named tuple
                 representing a default DTC instance.
             **parse_kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.DTC.parse`.
 
@@ -2576,7 +2576,7 @@ def get_idxs(
     Keyword arguments are passed when constructing a new `Idxr`.
 
     Args:
-        idxr (object): The input indexer.
+        idxr (object): Input indexer.
         index (Optional[Index]): Optional row index.
         columns (Optional[Index]): Optional column index.
         freq (Optional[FrequencyLike]): Optional frequency for row indices.
@@ -2621,9 +2621,9 @@ class IdxSetter(DefineMixin):
         """Set values at specified row indices in an array.
 
         Args:
-            arr (Array): The array to modify.
-            idxs (MaybeIndexArray): The row indices or slice defining which rows to set.
-            v (Any): The value or array of values to assign, which is broadcast to match the target shape.
+            arr (Array): Array to modify.
+            idxs (MaybeIndexArray): Row indices or slice defining which rows to set.
+            v (Any): Value or array of values to assign, which is broadcast to match the target shape.
 
         Returns:
             None: The function modifies `arr` in place.
@@ -2659,9 +2659,9 @@ class IdxSetter(DefineMixin):
         """Set values at specified column indices in an array.
 
         Args:
-            arr (Array): The array to modify.
-            idxs (MaybeIndexArray): The column indices or slice defining which columns to set.
-            v (Any): The value or array of values to assign, which is broadcast to match the target shape.
+            arr (Array): Array to modify.
+            idxs (MaybeIndexArray): Column indices or slice defining which columns to set.
+            v (Any): Value or array of values to assign, which is broadcast to match the target shape.
 
         Returns:
             None: The function modifies `arr` in place.
@@ -2695,10 +2695,10 @@ class IdxSetter(DefineMixin):
         """Set values at specified row and column indices in an array.
 
         Args:
-            arr (Array): The array to modify.
-            row_idxs (MaybeIndexArray): The row indices or slice specifying which rows to set.
-            col_idxs (MaybeIndexArray): The column indices or slice specifying which columns to set.
-            v (Any): The value or array of values to assign, which is broadcast to match the target shape.
+            arr (Array): Array to modify.
+            row_idxs (MaybeIndexArray): Row indices or slice specifying which rows to set.
+            col_idxs (MaybeIndexArray): Column indices or slice specifying which columns to set.
+            v (Any): Value or array of values to assign, which is broadcast to match the target shape.
 
         Returns:
             None: The function modifies `arr` in place.
@@ -2772,10 +2772,10 @@ class IdxSetter(DefineMixin):
         """Compute meta information for setting operations in `IdxSetter.idx_items`.
 
         Args:
-            shape (ShapeLike): The shape of the target array.
-            index (Optional[Index]): The index labels of the array.
-            columns (Optional[Index]): The column labels of the array.
-            freq (Optional[FrequencyLike]): The frequency information used for generating indices.
+            shape (ShapeLike): Shape of the target array.
+            index (Optional[Index]): Index labels of the array.
+            columns (Optional[Index]): Column labels of the array.
+            freq (Optional[FrequencyLike]): Frequency information used for generating indices.
             template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
@@ -2914,7 +2914,7 @@ class IdxSetter(DefineMixin):
         then sets its values based on metadata.
 
         Args:
-            shape (ShapeLike): The shape of the new array.
+            shape (ShapeLike): Shape of the new array.
             keep_flex (bool): If True, returns an optimized array for flexible indexing.
             fill_value (Scalar): Initial fill value for the array.
 

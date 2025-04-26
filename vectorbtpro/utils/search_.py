@@ -80,7 +80,7 @@ def parse_path_str(path_str: str) -> tp.PathKey:
     """Parse a path string into a tuple of tokens.
 
     Args:
-        path_str (str): A string representing a path.
+        path_str (str): String representing a path.
 
             May include dot notation or brackets.
 
@@ -124,8 +124,8 @@ def combine_path_str(path_str1: str, path_str2: str) -> str:
     """Combine two path strings into a single path.
 
     Args:
-        path_str1 (str): The first path string.
-        path_str2 (str): The second path string.
+        path_str1 (str): First path string.
+        path_str2 (str): Second path string.
 
     Returns:
         str: The combined path string.
@@ -157,7 +157,7 @@ def minimize_pathlike_key(key: tp.PathLikeKey) -> tp.MaybePathKey:
     """Minimize a path-like key by reducing it when possible.
 
     Args:
-        key (PathLikeKey): A key represented as a sequence of tokens or other formats.
+        key (PathLikeKey): Key represented as a sequence of tokens or other formats.
 
     Returns:
         MaybePathKey: The minimized key, which may be a single token or None if empty.
@@ -174,7 +174,7 @@ def resolve_pathlike_key(key: tp.PathLikeKey, minimize: bool = False) -> tp.Path
     """Convert a path-like key into a tuple of tokens.
 
     Args:
-        key (PathLikeKey): A key in either string, Path, or sequence format.
+        key (PathLikeKey): Key in either string, Path, or sequence format.
         minimize (bool): Whether to minimize the key after conversion.
 
     Returns:
@@ -197,7 +197,7 @@ def stringify_pathlike_key(key: tp.PathLikeKey) -> str:
     """Convert a path-like key into its string representation.
 
     Args:
-        key (PathLikeKey): The key to convert.
+        key (PathLikeKey): Key to convert.
 
     Returns:
         str: A string representation of the path.
@@ -224,8 +224,8 @@ def combine_pathlike_keys(
     """Combine two path-like keys into one.
 
     Args:
-        key1 (PathLikeKey): The first key.
-        key2 (PathLikeKey): The second key.
+        key1 (PathLikeKey): First key.
+        key2 (PathLikeKey): Second key.
         resolve (bool): Whether to resolve the keys before combining.
         minimize (bool): Whether to minimize the resulting key.
 
@@ -258,8 +258,8 @@ def get_pathlike_key(obj: tp.Any, key: tp.PathLikeKey, keep_path: bool = False) 
     an index for a sequence, or an attribute name.
 
     Args:
-        obj (Any): The object to search.
-        key (PathLikeKey): The path-like key indicating the location of the desired value.
+        obj (Any): Object to search.
+        key (PathLikeKey): Path-like key indicating the location of the desired value.
         keep_path (bool): If True, returns a nested dictionary representing the path;
             otherwise, returns the value.
 
@@ -315,9 +315,9 @@ def set_pathlike_key(
     """Set the value at the specified path-like key in the provided object.
 
     Args:
-        obj (Any): The object to modify.
-        key (PathLikeKey): The path-like key defining where to set the value.
-        value (Any): The value to assign at the specified key.
+        obj (Any): Object to modify.
+        key (PathLikeKey): Path-like key defining where to set the value.
+        value (Any): Value to assign at the specified key.
         make_copy (bool): Flag to indicate whether to modify a copy of the object.
         prev_keys (Optional[PathLikeKeys]): Previously processed keys to optimize copying.
 
@@ -395,8 +395,8 @@ def remove_pathlike_key(
     """Remove the value at the specified path-like key in the provided object.
 
     Args:
-        obj (Any): The object to modify.
-        key (PathLikeKey): The path-like key defining the location of the value to remove.
+        obj (Any): Object to modify.
+        key (PathLikeKey): Path-like key defining the location of the value to remove.
         make_copy (bool): Flag to indicate whether to modify a copy of the object.
         prev_keys (Optional[PathLikeKeys]): Previously processed keys to optimize copying.
 
@@ -489,10 +489,10 @@ def contains_in_obj(
     """Return whether any element in the given object satisfies the match function using an iterative search.
 
     Args:
-        obj (Any): The object to search.
-        match_func (Callable): A function that accepts a key and a value and returns True
+        obj (Any): Object to search.
+        match_func (Callable): Function that accepts a key and a value and returns True
             if the element is a match and False otherwise.
-        traversal (Optional[str]): The search strategy.
+        traversal (Optional[str]): Search strategy.
 
             * "DFS" for depth-first search.
             * "BFS" for breadth-first search.
@@ -594,10 +594,10 @@ def find_in_obj(
     The search does not evaluate dictionary keys.
 
     Args:
-        obj (Any): The object to search within.
-        match_func (Callable): A function that accepts a key and a value and returns True
+        obj (Any): Object to search within.
+        match_func (Callable): Function that accepts a key and a value and returns True
             if the element is a match and False otherwise.
-        traversal (Optional[str]): The traversal strategy.
+        traversal (Optional[str]): Traversal strategy.
 
             * "DFS" for depth-first search.
             * "BFS" for breadth-first search.
@@ -697,8 +697,8 @@ def replace_in_obj(obj: tp.Any, path_dct: tp.PathDict, _key: tp.Optional[tp.Hash
     based on their path. Keys in `path_dct` may be path-like, representing nested structures.
 
     Args:
-        obj (Any): The object in which to perform replacements.
-        path_dct (PathDict): A mapping of path-like keys to replacement values.
+        obj (Any): Object in which to perform replacements.
+        path_dct (PathDict): Mapping of path-like keys to replacement values.
 
     Returns:
         Any: The updated object with replacements applied.
@@ -769,10 +769,10 @@ def find_and_replace_in_obj(
     """Recursively find and replace matching elements within an object.
 
     Args:
-        obj (Any): The object to search and replace within.
-        match_func (Callable): A function that accepts a key and a value and returns True
+        obj (Any): Object to search and replace within.
+        match_func (Callable): Function that accepts a key and a value and returns True
             if the element is a match and False otherwise.
-        replace_func (Callable): A function to replace the matched value.
+        replace_func (Callable): Function to replace the matched value.
         excl_types (Union[None, bool, MaybeSequence[type]]): Type(s) to exclude from traversal.
 
             If an element matches, it is not processed further unless overridden by `incl_types`.
@@ -927,8 +927,8 @@ def flatten_obj(
     """Recursively flatten a nested object into a dictionary mapping path keys to corresponding values.
 
     Args:
-        obj (Any): The object to search within.
-        traversal (Optional[str]): The traversal strategy.
+        obj (Any): Object to search within.
+        traversal (Optional[str]): Traversal strategy.
 
             * "DFS" for depth-first search.
             * "BFS" for breadth-first search.
@@ -1032,7 +1032,7 @@ def unflatten_obj(path_dct: tp.PathDict) -> tp.Any:
     """Recursively reconstruct an object from a path dictionary.
 
     Args:
-        path_dct (PathDict): A dictionary mapping path-like keys to corresponding values.
+        path_dct (PathDict): Dictionary mapping path-like keys to corresponding values.
 
     Returns:
         Any: The reconstructed object.
@@ -1115,8 +1115,8 @@ def find_exact(
     """Return information about an exact match between the target and the string.
 
     Args:
-        target (str): The target string to match.
-        string (str): The string to check for an exact match.
+        target (str): Target string to match.
+        string (str): String to check for an exact match.
         ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format. Accepted values:
 
@@ -1156,8 +1156,8 @@ def find_start(
     """Return match details when checking if a string starts with the target substring.
 
     Args:
-        target (str): The substring expected at the beginning of the string.
-        string (str): The string to check.
+        target (str): Substring expected at the beginning of the string.
+        string (str): String to check.
         ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format. Accepted values:
 
@@ -1197,8 +1197,8 @@ def find_end(
     """Return match details when checking if a string ends with the target substring.
 
     Args:
-        target (str): The substring expected at the end of the string.
-        string (str): The string to check.
+        target (str): Substring expected at the end of the string.
+        string (str): String to check.
         ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format. Accepted values:
 
@@ -1238,8 +1238,8 @@ def find_substring(
     """Return details about all occurrences of a target substring within a string.
 
     Args:
-        target (str): The substring to search for.
-        string (str): The string in which to search.
+        target (str): Substring to search for.
+        string (str): String in which to search.
         ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format. Accepted values:
 
@@ -1289,8 +1289,8 @@ def find_regex(
     """Return details about regex pattern matches within a string.
 
     Args:
-        pattern (str): The regular expression pattern to search for.
-        string (str): The string in which to search.
+        pattern (str): Regular expression pattern to search for.
+        string (str): String in which to search.
         ignore_case (bool): Whether to ignore case when matching.
         flags (int): Additional flags for compiling the regular expression.
         group (Union[int, str, None]): Specific regex group to extract.
@@ -1696,9 +1696,9 @@ def replace(
     """Replace occurrences of a target substring in a string using a specified matching mode.
 
     Args:
-        target (str): The substring to locate in the source string.
-        replacement (str): The string to substitute for the target.
-        string (str): The source string in which to perform the replacement.
+        target (str): Substring to locate in the source string.
+        replacement (str): String to substitute for the target.
+        string (str): Source string in which to perform the replacement.
         mode (str): Search and replacement mode. Accepted values:
 
             * "exact": Use `replace_exact`

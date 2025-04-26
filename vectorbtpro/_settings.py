@@ -2823,7 +2823,7 @@ class SettingsConfig(Config):
         """Register the template for the specified theme.
 
         Args:
-            theme (str): The name of the theme for which to register the template.
+            theme (str): Name of the theme for which to register the template.
 
         Returns:
             None
@@ -2857,7 +2857,7 @@ class SettingsConfig(Config):
         """Set the default theme and update plotting configuration.
 
         Args:
-            theme (str): The name of the theme to apply.
+            theme (str): Name of the theme to apply.
 
         Returns:
             None
@@ -2899,8 +2899,8 @@ class SettingsConfig(Config):
         """Get settings using a path-like key.
 
         Args:
-            key (PathLikeKey): The path-like key identifying the setting(s) to retrieve.
-            default (Any): The default value to return if the key is not found.
+            key (PathLikeKey): Path-like key identifying the setting(s) to retrieve.
+            default (Any): Default value to return if the key is not found.
 
         Returns:
             Any: The setting associated with the provided key.
@@ -2918,9 +2918,9 @@ class SettingsConfig(Config):
         """Set settings using a path-like key.
 
         Args:
-            key (PathLikeKey): The path-like key identifying where to set the setting.
-            value (Any): The value to assign at the specified key.
-            default_config_type (Type[Config]): The configuration type to use when creating intermediate settings.
+            key (PathLikeKey): Path-like key identifying where to set the setting.
+            value (Any): Value to assign at the specified key.
+            default_config_type (Type[Config]): Configuration type to use when creating intermediate settings.
 
         Returns:
             None

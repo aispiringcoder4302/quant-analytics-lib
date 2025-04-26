@@ -26,7 +26,7 @@ def order_not_filled_nb(status: int, status_info: int) -> OrderResult:
     """Return an `vectorbtpro.portfolio.enums.OrderResult` for an order that has not been filled.
 
     Args:
-        status (int): The order status code.
+        status (int): Order status code.
         status_info (int): Additional status information code.
 
     Returns:
@@ -46,7 +46,7 @@ def check_adj_price_nb(
     """Adjust the given price to ensure it falls within the specified price boundaries.
 
     Args:
-        adj_price (float): The initial adjusted price.
+        adj_price (float): Initial adjusted price.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
@@ -88,8 +88,8 @@ def approx_long_buy_value_nb(val_price: float, size: float) -> float:
     and returns it as a negative value to represent spending.
 
     Args:
-        val_price (float): The valuation price.
-        size (float): The order size.
+        val_price (float): Valuation price.
+        size (float): Order size.
 
     Returns:
         float: A negative value representing spending, or 0.0 if the order size is zero.
@@ -106,8 +106,8 @@ def should_apply_size_granularity_nb(size: float, size_granularity: float) -> bo
     """Determine whether size granularity should be applied to the given size.
 
     Args:
-        size (float): The original size value.
-        size_granularity (float): The granularity factor used to round the size.
+        size (float): Original size value.
+        size_granularity (float): Granularity factor used to round the size.
 
     Returns:
         bool: True if size granularity should be applied; otherwise, False.
@@ -125,8 +125,8 @@ def apply_size_granularity_nb(size: float, size_granularity: float) -> float:
     """Apply size granularity to the given size by rounding it down to the nearest multiple.
 
     Args:
-        size (float): The original size value.
-        size_granularity (float): The granularity factor used to adjust the size.
+        size (float): Original size value.
+        size_granularity (float): Granularity factor used to adjust the size.
 
     Returns:
         float: The size rounded down to a multiple of size_granularity.
@@ -139,7 +139,7 @@ def cast_account_state_nb(account_state: AccountState) -> AccountState:
     """Convert all numeric fields of the given `AccountState` to floats.
 
     Args:
-        account_state (AccountState): The original account state instance with numeric attributes.
+        account_state (AccountState): Original account state instance with numeric attributes.
 
     Returns:
         AccountState: A new account state instance with all numerical attributes cast to float.
@@ -511,7 +511,7 @@ def short_sell_nb(
     """Open or increase a short position by placing a sell order.
 
     Args:
-        account_state (AccountState): The current account state.
+        account_state (AccountState): Current account state.
         size (float): Intended order size to initiate or increase a short position.
         price (float): Market price used to compute the adjusted order price.
         fees (float): Proportional fee rate applied to the order.
@@ -638,7 +638,7 @@ def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, 
     against the order value. A positive return value indicates a spending requirement.
 
     Args:
-        position (float): The current short position size.
+        position (float): Current short position size.
         debt (float): Total debt associated with the short position.
         locked_cash (float): Cash currently locked as collateral.
         val_price (float): Valuation price used to compute the order's value.
@@ -1445,10 +1445,10 @@ def execute_order_nb(
     The order is rejected if any input violates a limit or restriction.
 
     Args:
-        exec_state (ExecState): The current execution state.
+        exec_state (ExecState): Current execution state.
 
             See `vectorbtpro.portfolio.enums.ExecState`.
-        order (Order): The order to execute.
+        order (Order): Order to execute.
 
             See `vectorbtpro.portfolio.enums.Order`.
         price_area (PriceArea): Price area constraint.
@@ -1712,19 +1712,19 @@ def fill_log_record_nb(
     """Fill a log record with order and execution state details.
 
     Args:
-        records (RecordArray2d): The array where log records are stored.
-        r (int): The index of the log record in the column.
-        group (int): The current group index.
-        col (int): The current column index.
-        i (int): The current row index.
+        records (RecordArray2d): Array where log records are stored.
+        r (int): Index of the log record in the column.
+        group (int): Current group index.
+        col (int): Current column index.
+        i (int): Current row index.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        exec_state (ExecState): The execution state before executing the order.
-        order (Order): The order details including size, price, fees, and other parameters.
-        order_result (OrderResult): The result of the order execution.
-        new_exec_state (ExecState): The execution state after executing the order.
-        order_id (int): The unique identifier of the order.
+        exec_state (ExecState): Execution state before executing the order.
+        order (Order): Order details including size, price, fees, and other parameters.
+        order_result (OrderResult): Result of the order execution.
+        new_exec_state (ExecState): Execution state after executing the order.
+        order_id (int): Unique identifier of the order.
 
     Returns:
         None: This function modifies `records` in place.
@@ -1783,11 +1783,11 @@ def fill_order_record_nb(records: tp.RecordArray2d, r: int, col: int, i: int, or
     """Fill an order record with executed order details.
 
     Args:
-        records (RecordArray2d): The array where order records are stored.
-        r (int): The index of the order record in the column.
-        col (int): The current column index.
-        i (int): The current row index.
-        order_result (OrderResult): The result of the order execution containing size, price, fees, and side.
+        records (RecordArray2d): Array where order records are stored.
+        r (int): Index of the order record in the column.
+        col (int): Current column index.
+        i (int): Current row index.
+        order_result (OrderResult): Result of the order execution containing size, price, fees, and side.
 
     Returns:
         None: This function modifies `records` in place.
@@ -1807,7 +1807,7 @@ def raise_rejected_order_nb(order_result: OrderResult) -> None:
     """Raise a `vectorbtpro.portfolio.enums.RejectedOrderError` based on the order result's status.
 
     Args:
-        order_result (OrderResult): The order result containing status information used to
+        order_result (OrderResult): Order result containing status information used to
             determine the rejection reason.
 
     Returns:
@@ -1860,18 +1860,18 @@ def process_order_nb(
     """Process an order by executing it, logging details, and returning the result with updated state.
 
     Args:
-        group (int): The current group index.
-        col (int): The current column index.
-        i (int): The current row index.
-        exec_state (ExecState): The current execution state before processing the order.
-        order (Order): The order details to be processed.
+        group (int): Current group index.
+        col (int): Current column index.
+        i (int): Current row index.
+        exec_state (ExecState): Current execution state before processing the order.
+        order (Order): Order details to be processed.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
         update_value (bool): Flag indicating whether to update the portfolio value.
-        order_records (Optional[RecordArray2d]): The array to store order record details.
+        order_records (Optional[RecordArray2d]): Array to store order record details.
         order_counts (Optional[Array1d]): Counters for order records per column.
-        log_records (Optional[RecordArray2d]): The array to store detailed log records.
+        log_records (Optional[RecordArray2d]): Array to store detailed log records.
         log_counts (Optional[Array1d]): Counters for log records per column.
 
     Returns:
@@ -2384,10 +2384,10 @@ def fill_init_pos_info_nb(record: tp.Record, col: int, position_now: float, pric
     """Fill a position record for an initial position.
 
     Args:
-        record (Record): The position record to populate.
+        record (Record): Position record to populate.
         col (int): Current column index.
         position_now (float): Current position size.
-        price (float): The initial price.
+        price (float): Initial price.
 
     Returns:
         None: This function modifies `record` in place.
@@ -2533,10 +2533,10 @@ def resolve_hl_nb(open: float, high: float, low: float, close: float) -> tp.Tupl
     """Resolve the current high and low prices based on OHLC data.
 
     Args:
-        open (float): The opening price.
-        high (float): The high price.
-        low (float): The low price.
-        close (float): The closing price.
+        open (float): Opening price.
+        high (float): High price.
+        low (float): Low price.
+        close (float): Closing price.
 
     Returns:
         Tuple[float, float]: The resolved high and low prices.
@@ -2573,11 +2573,11 @@ def check_price_hit_nb(
     """Determine whether the target price is hit and compute the effective price and hit flags.
 
     Args:
-        open (float): The opening price.
-        high (float): The high price.
-        low (float): The low price.
-        close (float): The closing price.
-        price (float): The target price to evaluate.
+        open (float): Opening price.
+        high (float): High price.
+        low (float): Low price.
+        close (float): Closing price.
+        price (float): Target price to evaluate.
         hit_below (bool): If True, check whether the target price is hit from above.
         can_use_ohlc (bool): Indicates if OHLC data should be used for the evaluation.
         check_open (bool): Determines whether the open price should be considered.
@@ -2622,8 +2622,8 @@ def resolve_stop_exit_price_nb(
     """Resolve the exit price for a stop order based on the specified stop exit option.
 
     Args:
-        stop_price (float): The computed stop price.
-        close (float): The closing price.
+        stop_price (float): Computed stop price.
+        close (float): Closing price.
         stop_exit_price (float): Option indicating how to determine the exit price.
 
             If equal to `StopExitPrice.Stop` or `StopExitPrice.HardStop`, the stop price is used;
@@ -2646,8 +2646,8 @@ def is_limit_active_nb(init_idx: int, init_price: float) -> bool:
     """Check whether a limit order is active.
 
     Args:
-        init_idx (int): The initial row index for the limit order; -1 indicates inactivity.
-        init_price (float): The initial price for the limit order; NaN implies inactivity.
+        init_idx (int): Initial row index for the limit order; -1 indicates inactivity.
+        init_price (float): Initial price for the limit order; NaN implies inactivity.
 
     Returns:
         bool: True if the limit order is active, otherwise False.
@@ -2660,8 +2660,8 @@ def is_stop_active_nb(init_idx: int, stop: float) -> bool:
     """Check whether a stop order is active.
 
     Args:
-        init_idx (int): The initial row index for the stop order; -1 indicates inactivity.
-        stop (float): The stop value; NaN indicates that the stop is inactive.
+        init_idx (int): Initial row index for the stop order; -1 indicates inactivity.
+        stop (float): Stop value; NaN indicates that the stop is inactive.
 
     Returns:
         bool: True if the stop order is active, otherwise False.
@@ -2674,8 +2674,8 @@ def is_time_stop_active_nb(init_idx: int, stop: int) -> bool:
     """Check whether a time stop order is active.
 
     Args:
-        init_idx (int): The initial row index for the time stop order; -1 indicates inactivity.
-        stop (int): The time stop value; -1 signifies that the stop is inactive.
+        init_idx (int): Initial row index for the time stop order; -1 indicates inactivity.
+        stop (int): Time stop value; -1 signifies that the stop is inactive.
 
     Returns:
         bool: True if the time stop order is active, otherwise False.
@@ -2688,8 +2688,8 @@ def should_update_stop_nb(new_stop: float, upon_stop_update: int) -> bool:
     """Determine whether the stop value should be updated based on the update mode.
 
     Args:
-        new_stop (float): The new candidate for the stop value.
-        upon_stop_update (int): The mode for updating the stop value, where `StopUpdateMode.Keep`
+        new_stop (float): New candidate for the stop value.
+        upon_stop_update (int): Mode for updating the stop value, where `StopUpdateMode.Keep`
             means no update, and `StopUpdateMode.Override` or `StopUpdateMode.OverrideNaN`
             may trigger an update.
 
@@ -2710,8 +2710,8 @@ def should_update_time_stop_nb(new_stop: int, upon_stop_update: int) -> bool:
     """Determine whether the time stop value should be updated based on the update mode.
 
     Args:
-        new_stop (int): The new candidate for the time stop value.
-        upon_stop_update (int): The mode for updating the time stop value.
+        new_stop (int): New candidate for the time stop value.
+        upon_stop_update (int): Mode for updating the time stop value.
 
             Mode `StopUpdateMode.Keep` indicates no update, while `StopUpdateMode.Override` or
             `StopUpdateMode.OverrideNaN` may trigger an update.
@@ -2741,11 +2741,11 @@ def check_limit_expired_nb(
     """Check whether the limit order is expired based on the current and creation indices.
 
     Args:
-        creation_idx (int): The row index at which the limit order was created.
-        i (int): The current row index.
-        tif (int): The time-in-force duration; use -1 if undefined.
-        expiry (int): The explicit expiry time; use -1 if undefined.
-        time_delta_format (int): The format for calculating time differences.
+        creation_idx (int): Row index at which the limit order was created.
+        i (int): Current row index.
+        tif (int): Time-in-force duration; use -1 if undefined.
+        expiry (int): Explicit expiry time; use -1 if undefined.
+        time_delta_format (int): Format for calculating time differences.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         index (Optional[Array1d]): Array of time indices, required when using index-based time deltas.
@@ -2811,8 +2811,8 @@ def resolve_limit_price_nb(
     """Resolve the limit price based on the initial price and adjustment delta.
 
     Args:
-        init_price (float): The initial reference price.
-        limit_delta (float): The delta value used to adjust the limit price.
+        init_price (float): Initial reference price.
+        limit_delta (float): Delta value used to adjust the limit price.
         delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
@@ -2879,16 +2879,16 @@ def check_limit_hit_nb(
     """Resolve the limit price using `resolve_limit_price_nb` and determine if the limit was hit.
 
     Args:
-        open (float): The opening price.
-        high (float): The highest price of the period.
-        low (float): The lowest price of the period.
-        close (float): The closing price.
-        price (float): The reference price used for calculating the limit.
-        size (float): The order size (must be non-zero).
-        direction (int): The order direction.
+        open (float): Opening price.
+        high (float): Highest price of the period.
+        low (float): Lowest price of the period.
+        close (float): Closing price.
+        price (float): Reference price used for calculating the limit.
+        size (float): Order size (must be non-zero).
+        direction (int): Order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        limit_delta (float): The delta adjustment for computing the limit price.
+        limit_delta (float): Delta adjustment for computing the limit price.
         delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
@@ -2962,9 +2962,9 @@ def resolve_limit_order_price_nb(
     """Determine the appropriate limit order price based on the specified option.
 
     Args:
-        limit_price (float): The computed limit price.
-        close (float): The closing price.
-        limit_order_price (float): An option to select the price from
+        limit_price (float): Computed limit price.
+        close (float): Closing price.
+        limit_order_price (float): Option to select the price from
             `vectorbtpro.portfolio.enums.LimitOrderPrice`:
 
             * If equal to `LimitOrderPrice.Limit` or `LimitOrderPrice.HardLimit`, returns `limit_price`.
@@ -2996,8 +2996,8 @@ def resolve_stop_price_nb(
     """Resolve the stop price based on the initial price and adjustment value.
 
     Args:
-        init_price (float): The initial reference price.
-        stop (float): The stop adjustment value.
+        init_price (float): Initial reference price.
+        stop (float): Stop adjustment value.
         delta_format (int): Delta format.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
@@ -3400,7 +3400,7 @@ def get_time_stop_ladder_exit_size_nb(
     """Get the exit size corresponding to the current step in the ladder.
 
     Args:
-        stop_ (FlexArray2d): A 2D array representing stop values.
+        stop_ (FlexArray2d): 2D array representing stop values.
         step (int): Current step index in the ladder.
         col (int): Current column index.
         init_idx (int): Initial row index in the ladder.

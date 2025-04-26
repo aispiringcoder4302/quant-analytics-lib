@@ -118,12 +118,12 @@ def prepare_params(
     Resolve references in the input parameters and perform broadcasting to match the input shape.
 
     Args:
-        params (MaybeParams): The input parameters, which may include references that need resolution.
+        params (MaybeParams): Input parameters, which may include references that need resolution.
 
             They are mapped based on `param_names`.
-        param_names (Sequence[str]): A list of parameter names.
-        param_settings (Sequence[KwargsLike]): A sequence of dictionaries providing settings for each parameter.
-        input_shape (Optional[Shape]): The target shape for broadcasting the parameters.
+        param_names (Sequence[str]): List of parameter names.
+        param_settings (Sequence[KwargsLike]): Sequence of dictionaries providing settings for each parameter.
+        input_shape (Optional[Shape]): Target shape for broadcasting the parameters.
         to_2d (bool): Flag indicating whether to convert array-like parameter values to
             2D arrays during broadcasting.
         context (KwargsLike): Additional context for template substitution.
@@ -222,8 +222,8 @@ def build_columns(
     and stack it on top of `input_columns`.
 
     Args:
-        params (Params): A collection of parameter values.
-        input_columns (IndexLike): The initial column index to which parameter levels are added.
+        params (Params): Collection of parameter values.
+        input_columns (IndexLike): Initial column index to which parameter levels are added.
         level_names (Optional[Sequence[str]]): List of names for each new parameter level.
         hide_levels (Optional[Sequence[Union[str, int]]): Levels to exclude from visibility.
         single_value (Optional[Sequence[bool]]): Flags indicating if each parameter is a single value.
@@ -340,11 +340,11 @@ def combine_objs(
     """Combine or compare `obj` with `other` to generate signals by applying a custom combine function.
 
     Args:
-        obj (SeriesFrame): The main series or frame to operate on.
-        other (MaybeTupleList[Union[ArrayLike, BaseAccessor]]): The object or objects to be combined with `obj`.
+        obj (SeriesFrame): Main series or frame to operate on.
+        other (MaybeTupleList[Union[ArrayLike, BaseAccessor]]): Object or objects to be combined with `obj`.
         combine_func (Callable): Function used to combine or compare elements of `obj` and `other`.
         *args: Positional arguments for `vectorbtpro.base.accessors.BaseAccessor.combine`.
-        level_name (Optional[str]): The name for the new column level when multiple values of `other` are provided.
+        level_name (Optional[str]): Name for the new column level when multiple values of `other` are provided.
         keys (Optional[IndexLike]): Keys to use when broadcasting multiple objects.
         allow_multiple (bool): If True, permits `other` to be provided as a tuple or list.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor.combine`.
@@ -369,10 +369,10 @@ def combine_indicator_with_other(
     """Combine `IndicatorBase` with another compatible object by applying a specified NumPy function.
 
     Args:
-        other (Union[IndicatorBase, ArrayLike]): The other indicator or array.
+        other (Union[IndicatorBase, ArrayLike]): Other indicator or array.
 
             If an instance of `IndicatorBase` is provided, its `main_output` is used.
-        np_func (Callable[[ArrayLike, ArrayLike], Array1d]): A function that combines
+        np_func (Callable[[ArrayLike, ArrayLike], Array1d]): Function that combines
             the arrays from `IndicatorBase.main_output` and `other`.
 
     Returns:
@@ -483,7 +483,7 @@ class IndicatorBase(Analyzable):
         it using the indicator's short name and output naming conventions.
 
         Args:
-            k (str): The attribute name to resolve.
+            k (str): Attribute name to resolve.
 
         Returns:
             Any: The value of the resolved attribute.
@@ -1594,7 +1594,7 @@ class IndicatorBase(Analyzable):
         """Return a time series output based on a key.
 
         Args:
-            key (Optional[Hashable]): The key corresponding to a specific output.
+            key (Optional[Hashable]): Key corresponding to a specific output.
 
                 If None, the main output is returned.
 
@@ -1625,7 +1625,7 @@ class IndicatorBase(Analyzable):
         """Replace the short name of the indicator.
 
         Args:
-            short_name (str): The new short name for the indicator.
+            short_name (str): New short name for the indicator.
 
         Returns:
             IndicatorBase: A new indicator instance with the updated short name.
@@ -1735,7 +1735,7 @@ class IndicatorBase(Analyzable):
         apply, cache, entry placement, and exit placement functions if they are not already present.
 
         Args:
-            __pdoc__ (dict): A dictionary mapping keys to their corresponding docstring descriptions.
+            __pdoc__ (dict): Dictionary mapping keys to their corresponding docstring descriptions.
 
         Returns:
             None
@@ -2154,7 +2154,7 @@ class IndicatorFactory(Configured):
                         Args:
                             other (MaybeTupleList[Union[IndicatorBase, ArrayLike, BaseAccessor]]): 
                                 The indicator, array, or accessor to compare.
-                            level_name (Optional[str]): The output level name. 
+                            level_name (Optional[str]): Output level name. 
                             
                                 If not provided, a name is auto-generated.
                             allow_multiple (bool): Flag indicating whether multiple comparisons are permitted.
@@ -2201,7 +2201,7 @@ class IndicatorFactory(Configured):
                         Args:
                             other (MaybeTupleList[Union[IndicatorBase, ArrayLike, BaseAccessor]]): 
                                 The indicator, array, or accessor to compare.
-                            level_name (Optional[str]): The output level name. 
+                            level_name (Optional[str]): Output level name. 
                             
                                 If not provided, a name is auto-generated.
                             allow_multiple (bool): Flag indicating whether multiple comparisons are permitted.
@@ -2470,7 +2470,7 @@ class IndicatorFactory(Configured):
         the number of input array columns multiplied by the number of parameter combinations.
 
         Args:
-            custom_func (Callable): A function that processes broadcast arrays corresponding to
+            custom_func (Callable): Function that processes broadcast arrays corresponding to
                 `input_names`, in-place output arrays corresponding to `in_output_names`, and
                 broadcast parameter arrays corresponding to `param_names`, along with additional
                 positional and keyword arguments.
@@ -2484,10 +2484,10 @@ class IndicatorFactory(Configured):
                     Each output's shape must match the input shape repeated n times (where n is
                     the number of parameter values) along the column axis.
             require_input_shape (bool): Indicates whether the input shape is required.
-            param_settings (KwargsLike): A dictionary of parameter settings keyed by name.
+            param_settings (KwargsLike): Dictionary of parameter settings keyed by name.
 
                 See `IndicatorBase.run_pipeline`.
-            in_output_settings (KwargsLike): A dictionary of in-place output settings keyed by name.
+            in_output_settings (KwargsLike): Dictionary of in-place output settings keyed by name.
 
                 See `IndicatorBase.run_pipeline`.
             hide_params (Union[None, bool, Sequence[str]]): Either a boolean to hide all parameter column
@@ -2940,7 +2940,7 @@ Returns:
         The computation and concatenation are executed using `vectorbtpro.base.combining.apply_and_concat_each`.
 
         Args:
-            apply_func (Callable): A function that receives inputs, a selection of parameters,
+            apply_func (Callable): Function that receives inputs, a selection of parameters,
                 and additional arguments, and performs calculations.
 
                 Arguments are passed in the following order:
@@ -2966,7 +2966,7 @@ Returns:
 
                 !!! note
                     The shape of each output must match the corresponding input.
-            cache_func (Optional[Callable]): A function to preprocess inputs via caching
+            cache_func (Optional[Callable]): Function to preprocess inputs via caching
                 before invoking `apply_func`.
 
                 It accepts the same arguments as `apply_func` and must return a single object or
@@ -3541,7 +3541,7 @@ Returns:
         """Return the matching location name for the provided input.
 
         Args:
-            location (str): The location name to match (case-insensitive).
+            location (str): Location name to match (case-insensitive).
 
         Returns:
             Optional[str]: The matching location if found; otherwise, None.
@@ -3556,7 +3556,7 @@ Returns:
         """Split an indicator name into its constituent location and indicator name.
 
         Args:
-            name (str): The indicator name, which may include location information separated
+            name (str): Indicator name, which may include location information separated
                 by a colon or underscore.
 
         Returns:
@@ -3598,11 +3598,11 @@ Returns:
         """Register a custom indicator under a custom location.
 
         Args:
-            indicator (Union[str, IndicatorBase]): The custom indicator to register,
+            indicator (Union[str, IndicatorBase]): Custom indicator to register,
                 specified as a string reference or a type.
-            name (Optional[str]): The name under which to register the indicator.
-            location (Optional[str]): The custom location where the indicator should be registered.
-            if_exists (str): The behavior if an indicator with the same name already exists;
+            name (Optional[str]): Name under which to register the indicator.
+            location (Optional[str]): Custom location where the indicator should be registered.
+            if_exists (str): Behavior if an indicator with the same name already exists;
                 must be "raise", "skip", or "override".
 
         Returns:
@@ -3649,8 +3649,8 @@ Returns:
         """Deregister a custom indicator based on its name and location.
 
         Args:
-            name (Optional[str]): The name of the indicator to remove.
-            location (Optional[str]): The location from which to remove the indicator.
+            name (Optional[str]): Name of the indicator to remove.
+            location (Optional[str]): Location from which to remove the indicator.
 
                 If None, all custom locations will be searched for the indicator.
             remove_location (bool): Whether to remove a location if it becomes empty
@@ -3696,8 +3696,8 @@ Returns:
         """Return a custom indicator based on its name and optional location.
 
         Args:
-            name (str): The name of the custom indicator.
-            location (Optional[str]): The location in which to search for the indicator.
+            name (str): Name of the custom indicator.
+            location (Optional[str]): Location in which to search for the indicator.
 
                 If None, the location will be inferred from the indicator name.
             return_first (bool): If multiple indicators match, return the first one when True.
@@ -3808,12 +3808,12 @@ Returns:
         For supported locations, see `IndicatorFactory.list_locations`.
 
         Args:
-            pattern (Optional[str]): A pattern to filter indicator names.
+            pattern (Optional[str]): Pattern to filter indicator names.
 
                 If the pattern matches a location, all indicators from that location are returned.
             case_sensitive (bool): Whether to treat the pattern as case-sensitive.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
-            location (Optional[str]): A specific location from which to list indicators.
+            location (Optional[str]): Specific location from which to list indicators.
             prepend_location (Optional[bool]): When True, indicator names are prefixed with their location.
 
                 If None, a default behavior is applied.
@@ -3911,8 +3911,8 @@ Returns:
         the indicator is searched across all available sources, including vectorbtpro indicators.
 
         Args:
-            name (str): The name of the indicator, optionally including a location prefix.
-            location (Optional[str]): The location to filter the search for the indicator.
+            name (str): Name of the indicator, optionally including a location prefix.
+            location (Optional[str]): Location to filter the search for the indicator.
 
         Returns:
             Type[IndicatorBase]: The indicator class matching the provided name.
@@ -3997,7 +3997,7 @@ Returns:
         [TA-Lib documentation](https://github.com/mrjbq7/ta-lib/blob/master/docs/index.md).
 
         Args:
-            func_name (str): The name of the TA-Lib function to wrap.
+            func_name (str): Name of the TA-Lib function to wrap.
             factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
@@ -4090,7 +4090,7 @@ Returns:
                 param_tuple (Tuple[ParamValue, ...]): Tuple of parameter values.
                 
                     May include the timeframe as the last element.
-                timeframe (Optional[FrequencyLike]): A timeframe value.
+                timeframe (Optional[FrequencyLike]): Timeframe value.
                 **kwargs_: Additional keyword arguments.
     
             Returns:
@@ -4150,7 +4150,7 @@ Returns:
                 add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
                 add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                     for example, `dict(row=1, col=1)`.
-                fig (Optional[BaseFigure]): A figure instance to update; if None, a new figure is created.
+                fig (Optional[BaseFigure]): Figure instance to update; if None, a new figure is created.
                 **kwargs: Keyword arguments for the plotting function.
     
             Returns:
@@ -4178,13 +4178,13 @@ Returns:
         dictionary encapsulates details required for further processing.
 
         Args:
-            func (Callable): The Pandas TA indicator function to parse.
+            func (Callable): Pandas TA indicator function to parse.
 
                 The function is inspected to detect input and parameter names.
-            test_input_names (Optional[Sequence[str]]): A collection of potential input parameter names.
+            test_input_names (Optional[Sequence[str]]): Collection of potential input parameter names.
 
                 Used to identify input columns if not explicitly annotated.
-            test_index_len (int): The number of rows in the generated test DataFrame.
+            test_index_len (int): Number of rows in the generated test DataFrame.
             silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for the indicator function.
 
@@ -4439,7 +4439,7 @@ Returns:
         whose name matches the provided value (case-insensitive).
 
         Args:
-            cls_name (str): The name of the indicator class to find.
+            cls_name (str): Name of the indicator class to find.
 
         Returns:
             IndicatorMixin: The corresponding TA indicator class.
@@ -4465,7 +4465,7 @@ Returns:
         input names, parameter names, default values, and output names.
 
         Args:
-            ind_cls (IndicatorMixin): The TA indicator class to parse.
+            ind_cls (IndicatorMixin): TA indicator class to parse.
 
         Returns:
             dict: A dictionary containing:
@@ -4517,7 +4517,7 @@ Returns:
         Requires [ta](https://github.com/bukosabino/ta) to be installed.
 
         Args:
-            cls_name (str): The name of the target TA class.
+            cls_name (str): Name of the target TA class.
             factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
@@ -4596,8 +4596,8 @@ Returns:
         and default parameter values.
 
         Args:
-            func (Callable): The technical indicator function to parse.
-            test_index_len (int): The number of rows for the test dataframe.
+            func (Callable): Technical indicator function to parse.
+            test_index_len (int): Number of rows for the test dataframe.
 
         Returns:
             dict: A configuration dictionary containing:
@@ -4735,7 +4735,7 @@ Returns:
         """Get the technical indicator function corresponding to the given name.
 
         Args:
-            func_name (str): The name of the technical indicator function.
+            func_name (str): Name of the technical indicator function.
 
         Returns:
             IndicatorMixin: The technical indicator function matching the given name.
@@ -4765,7 +4765,7 @@ Returns:
         This method requires the [technical](https://github.com/freqtrade/technical) package to be installed.
 
         Args:
-            func_name (str): The name of the technical indicator function to wrap.
+            func_name (str): Name of the technical indicator function to wrap.
             parse_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory.parse_technical_config`.
             factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
@@ -4853,7 +4853,7 @@ Returns:
         Requires the Technical library: https://github.com/freqtrade/technical
 
         Args:
-            consensus_cls (Type): A consensus class that subclasses `technical.consensus.consensus.Consensus`.
+            consensus_cls (Type): Consensus class that subclasses `technical.consensus.consensus.Consensus`.
             factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
@@ -5015,7 +5015,7 @@ Returns:
         """Create an indicator from a preset technical consensus.
 
         Args:
-            cls_name (str): The name of the technical consensus indicator.
+            cls_name (str): Name of the technical consensus indicator.
 
                 Supported values (case-insensitive) include:
 
@@ -5071,7 +5071,7 @@ Returns:
         """Get the Smart Money Concepts indicator class by its name.
 
         Args:
-            func_name (str): The name of the smart money concepts indicator.
+            func_name (str): Name of the smart money concepts indicator.
             raise_error (bool): Flag indicating whether to raise an error if the indicator is not found.
 
         Returns:
@@ -5098,7 +5098,7 @@ Returns:
         parameter names, output names, default values, and nested indicator configurations.
 
         Args:
-            func (Callable): The smartmoneyconcepts indicator function to parse.
+            func (Callable): Smartmoneyconcepts indicator function to parse.
             collapse (bool): Flag to collapse nested indicators' configurations into a single set.
             snake_case (bool): Flag to convert names to snake case.
 
@@ -5215,7 +5215,7 @@ Returns:
         to be installed.
 
         Args:
-            func_name (str): The name of the smartmoneyconcepts function to wrap.
+            func_name (str): Name of the smartmoneyconcepts function to wrap.
             collapse (bool): Flag to collapse all nested indicators into a single configuration.
             parse_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory.parse_smc_config`.
             factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
@@ -5832,7 +5832,7 @@ Returns:
         based on the expression configuration in `vectorbtpro.indicators.expr.wqa101_expr_config`.
 
         Args:
-            alpha_idx (Union[str, int]): The WorldQuant 101 alpha expression index.
+            alpha_idx (Union[str, int]): WorldQuant 101 alpha expression index.
 
                 If a string is provided, the prefix "WQA" is removed and the remaining value
                 is converted to an integer.

@@ -404,8 +404,8 @@ def weekday_diff_nb(weekday1: int, weekday2: int, zero_start: bool = True) -> in
     """Calculate the forward difference in days from one weekday index to another.
 
     Args:
-        weekday1 (int): The target weekday index.
-        weekday2 (int): The starting weekday index.
+        weekday1 (int): Target weekday index.
+        weekday2 (int): Starting weekday index.
         zero_start (bool): Use 0-based weekday indexing if True; otherwise use 1-based indexing.
 
     Returns:
@@ -433,7 +433,7 @@ def past_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
 
     Args:
         ts (int): Timestamp in nanoseconds.
-        weekday (int): The target weekday index.
+        weekday (int): Target weekday index.
         zero_start (bool): Use 0-based weekday indexing if True; otherwise use 1-based indexing.
 
     Returns:
@@ -450,7 +450,7 @@ def future_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
 
     Args:
         ts (int): Timestamp in nanoseconds.
-        weekday (int): The target weekday index.
+        weekday (int): Target weekday index.
         zero_start (bool): Use 0-based weekday indexing if True; otherwise use 1-based indexing.
 
     Returns:
@@ -522,7 +522,7 @@ def is_leap_year_nb(y: int) -> bool:
     """Determine if a given year is a leap year.
 
     Args:
-        y (int): The year to evaluate.
+        y (int): Year to evaluate.
 
     Returns:
         int: True if the year is a leap year, False otherwise.
@@ -535,8 +535,8 @@ def last_day_of_month_nb(y: int, m: int) -> int:
     """Determine the last day for a given month and year.
 
     Args:
-        y (int): The year.
-        m (int): The month number.
+        y (int): Year.
+        m (int): Month number.
 
     Returns:
         int: The last day of the month.
@@ -605,7 +605,7 @@ def index_matches_dtc_nb(index: tp.Array1d, other_dtc: DTCNT) -> tp.Array1d:
     """Apply `matches_dtc_nb` to each element in the index array and return a boolean mask.
 
     Args:
-        index (Array1d): An array of timestamps to compare.
+        index (Array1d): Array of timestamps to compare.
         other_dtc (DTCNT): Datetime components to match against.
 
     Returns:
@@ -1171,9 +1171,9 @@ def index_within_dtc_range_nb(
     range defined by `start_dtc` and `end_dtc`.
 
     Args:
-        index (Array1d): A one-dimensional array of date-time elements.
-        start_dtc (DTCNT): The starting date-time boundary.
-        end_dtc (DTCNT): The ending date-time boundary.
+        index (Array1d): One-dimensional array of date-time elements.
+        start_dtc (DTCNT): Starting date-time boundary.
+        end_dtc (DTCNT): Ending date-time boundary.
         closed_start (bool): Include the start boundary if True.
         closed_end (bool): Include the end boundary if True.
 

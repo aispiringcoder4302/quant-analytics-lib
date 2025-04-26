@@ -61,8 +61,8 @@ class GroupLensSizer(ArgSizer):
         """Get the size of the provided object based on group lengths.
 
         Args:
-            obj (Union[GroupLens, GroupMap]): An array of group lengths or a group map tuple.
-            single_type (Optional[type]): A type to check for a single element;
+            obj (Union[GroupLens, GroupMap]): Array of group lengths or a group map tuple.
+            single_type (Optional[type]): Type to check for a single element;
                 if the object is an instance of this type, returns 1.
 
         Returns:
@@ -264,9 +264,9 @@ class FlexArraySizer(ArraySizer):
         """Get the size of a flexible array along the specified axis.
 
         Args:
-            obj (AnyArray): The array-like object from which to calculate the size.
-            axis (int): The axis along which to determine the size.
-            single_type (Optional[type]): A type for single element check;
+            obj (AnyArray): Array-like object from which to calculate the size.
+            axis (int): Axis along which to determine the size.
+            single_type (Optional[type]): Type for single element check;
                 if the object is an instance of this type, returns 1.
 
         Returns:

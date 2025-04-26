@@ -509,7 +509,7 @@ class ProgressBar(Base):
         """Update the progress bar by the specified number of iterations.
 
         Args:
-            n (int): The number of iterations to update.
+            n (int): Number of iterations to update.
 
         Returns:
             None
@@ -525,7 +525,7 @@ class ProgressBar(Base):
         """Update the progress bar to the given iteration count.
 
         Args:
-            n (int): The target iteration count.
+            n (int): Target iteration count.
 
         Returns:
             None
@@ -548,7 +548,7 @@ class ProgressBar(Base):
         """Format the given number using up to three significant digits.
 
         Args:
-            n (float): The number to format.
+            n (float): Number to format.
 
         Returns:
             str: A formatted string representation of the number.
@@ -567,7 +567,7 @@ class ProgressBar(Base):
         If `desc` is None or missing, an empty string is returned.
 
         Args:
-            desc (Union[None, str, dict]): The description to prepare.
+            desc (Union[None, str, dict]): Description to prepare.
 
         Returns:
             str: A formatted description string.
@@ -605,7 +605,7 @@ class ProgressBar(Base):
         The description is prepared using `ProgressBar.prepare_desc` before being set.
 
         Args:
-            desc (Union[None, str, dict]): The description to set as prefix.
+            desc (Union[None, str, dict]): Description to set as prefix.
             refresh (Optional[bool]): Determines whether to refresh the bar after setting the prefix.
 
         Returns:
@@ -624,7 +624,7 @@ class ProgressBar(Base):
         """Set the progress bar's prefix without preparing the description.
 
         Args:
-            desc (str): The prefix string to set.
+            desc (str): Prefix string to set.
             refresh (Optional[bool]): Determines whether to refresh the bar after setting the prefix.
 
         Returns:
@@ -644,7 +644,7 @@ class ProgressBar(Base):
         The description is prepared using `ProgressBar.prepare_desc` before being set.
 
         Args:
-            desc (Union[None, str, dict]): The description to set as postfix.
+            desc (Union[None, str, dict]): Description to set as postfix.
             refresh (Optional[bool]): Determines whether to refresh the bar after setting the postfix.
 
         Returns:
@@ -663,7 +663,7 @@ class ProgressBar(Base):
         """Set the progress bar's postfix without preparing the description.
 
         Args:
-            desc (str): The postfix string to set.
+            desc (str): Postfix string to set.
             refresh (Optional[bool]): Determines whether to refresh the bar after setting the postfix.
 
         Returns:
@@ -689,7 +689,7 @@ class ProgressBar(Base):
         `ProgressBar.set_postfix` (if True) or `ProgressBar.set_prefix` (if False).
 
         Args:
-            desc (Union[None, str, dict]): The description to set.
+            desc (Union[None, str, dict]): Description to set.
             as_postfix (Optional[bool]): Determines whether to set the description as postfix.
             refresh (Optional[bool]): Determines whether to refresh the bar after setting the description.
 
@@ -717,7 +717,7 @@ class ProgressBar(Base):
         `ProgressBar.set_postfix_str` (if True) or `ProgressBar.set_prefix_str` (if False).
 
         Args:
-            desc (str): The description string to set.
+            desc (str): Description string to set.
             as_postfix (Optional[bool]): Determines whether to set the description as postfix.
             refresh (Optional[bool]): Determines whether to refresh the bar after setting the description.
 

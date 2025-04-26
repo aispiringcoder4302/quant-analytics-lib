@@ -32,7 +32,7 @@ def rolling_sum_acc_nb(in_state: RollSumAIS) -> RollSumAOS:
     """Accumulate the rolling sum state for one iteration of `rolling_sum_1d_nb`.
 
     Args:
-        in_state (RollSumAIS): The current rolling sum accumulator input state
+        in_state (RollSumAIS): Current rolling sum accumulator input state
             of type `vectorbtpro.generic.enums.RollSumAOS`.
 
     Returns:
@@ -143,7 +143,7 @@ def rolling_prod_acc_nb(in_state: RollProdAIS) -> RollProdAOS:
     """Accumulate the rolling product state for one iteration of `rolling_prod_1d_nb`.
 
     Args:
-        in_state (RollProdAIS): The current rolling product accumulator input state
+        in_state (RollProdAIS): Current rolling product accumulator input state
             of type `vectorbtpro.generic.enums.RollProdAIS`.
 
     Returns:
@@ -254,7 +254,7 @@ def rolling_mean_acc_nb(in_state: RollMeanAIS) -> RollMeanAOS:
     """Accumulate the rolling mean state for one iteration of `rolling_mean_1d_nb`.
 
     Args:
-        in_state (RollMeanAIS): The current rolling mean accumulator input state
+        in_state (RollMeanAIS): Current rolling mean accumulator input state
             of type `vectorbtpro.generic.enums.RollMeanAIS`.
 
     Returns:
@@ -609,7 +609,7 @@ def wm_mean_acc_nb(in_state: WMMeanAIS) -> WMMeanAOS:
     """Update the accumulator state for the weighted moving average computation.
 
     Args:
-        in_state (WMMeanAIS): A state object from `vectorbtpro.generic.enums.WMMeanAIS`
+        in_state (WMMeanAIS): State object from `vectorbtpro.generic.enums.WMMeanAIS`
             representing the current accumulator state.
 
     Returns:
@@ -773,7 +773,7 @@ def ewm_mean_acc_nb(in_state: EWMMeanAIS) -> EWMMeanAOS:
     """Update the accumulator state for the exponential weighted moving average computation.
 
     Args:
-        in_state (EWMMeanAIS): A state object from `vectorbtpro.generic.enums.EWMMeanAIS`
+        in_state (EWMMeanAIS): State object from `vectorbtpro.generic.enums.EWMMeanAIS`
             representing the current accumulator state.
 
     Returns:
@@ -1141,7 +1141,7 @@ def wwm_std_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, a
 
     Args:
         arr (Array1d): 1-dimensional input array.
-        period (int): The period used for computing the standard deviation.
+        period (int): Period used for computing the standard deviation.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -1164,7 +1164,7 @@ def wwm_std_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adju
 
     Args:
         arr (Array2d): 2-dimensional input array.
-        period (int): The period used for computing the standard deviation.
+        period (int): Period used for computing the standard deviation.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -2840,7 +2840,7 @@ def expanding_max_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
     Numba equivalent to `pd.Series(arr).expanding(min_periods=minp).max()`.
 
     Args:
-        arr (Array1d): The input one-dimensional array.
+        arr (Array1d): Input one-dimensional array.
         minp (int): Minimum number of valid (non-NaN) values required before computing the maximum.
 
     Returns:
@@ -2873,7 +2873,7 @@ def expanding_max_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
     Column-wise computation is parallelized using `prange` and leverages `expanding_max_1d_nb` for each column.
 
     Args:
-        arr (Array2d): The input two-dimensional array.
+        arr (Array2d): Input two-dimensional array.
         minp (int): Minimum number of valid (non-NaN) values required in each column
             before computing the maximum.
 

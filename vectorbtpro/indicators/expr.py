@@ -290,7 +290,7 @@ def adv(d: float, context: tp.KwargsLike = None) -> tp.Array2d:
 
     Args:
         d (float): Number of days.
-        context (KwargsLike): A context dictionary expected to contain volume data
+        context (KwargsLike): Context dictionary expected to contain volume data
             under the key "volume".
 
     Returns:
@@ -306,7 +306,7 @@ def returns(context: tp.KwargsLike = None) -> tp.Array2d:
     """Return the daily close-to-close returns.
 
     Args:
-        context (KwargsLike): A context dictionary expected to contain close prices
+        context (KwargsLike): Context dictionary expected to contain close prices
             under the key "close".
 
     Returns:
@@ -319,7 +319,7 @@ def vwap(context: tp.KwargsLike = None) -> tp.Array2d:
     """Return the Volume Weighted Average Price (VWAP).
 
     Args:
-        context (KwargsLike): A context dictionary expected to contain high, low, close,
+        context (KwargsLike): Context dictionary expected to contain high, low, close,
             volume, and wrapper data.
 
     Returns:
@@ -336,7 +336,7 @@ def cap(context: tp.KwargsLike = None) -> tp.Array2d:
     """Return the market capitalization calculated as the product of close price and volume.
 
     Args:
-        context (KwargsLike): A context dictionary expected to contain close prices
+        context (KwargsLike): Context dictionary expected to contain close prices
             under the key "close" and volume data under the key "volume".
 
     Returns:

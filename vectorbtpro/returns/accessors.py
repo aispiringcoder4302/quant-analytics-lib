@@ -160,7 +160,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): The Pandas object containing return data.
+        obj (Optional[ArrayLike]): Pandas object containing return data.
 
             Represents the return series.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
@@ -589,7 +589,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Determine whether the specified year frequency depends on the index.
 
         Args:
-            year_freq (FrequencyLike): The year frequency specification.
+            year_freq (FrequencyLike): Year frequency specification.
 
         Returns:
             bool: True if the frequency depends on the index; otherwise, False.
@@ -831,7 +831,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Deannualize a value based on the annualization factor.
 
         Args:
-            value (float): The annual return value.
+            value (float): Annual return value.
 
         Returns:
             float: The deannualized return value.
@@ -1009,7 +1009,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Resample returns to a custom frequency, date offset, or index.
 
         Args:
-            rule (AnyRuleLike): The resampling rule or date offset.
+            rule (AnyRuleLike): Resampling rule or date offset.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2084,7 +2084,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Computes the downside risk of the returns relative to a specified required return.
 
         Args:
-            required_return (Optional[float]): The minimum required return threshold for downside risk.
+            required_return (Optional[float]): Minimum required return threshold for downside risk.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -4035,7 +4035,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Will be broadcast per element.
-            start_value (float): The starting value for cumulative returns.
+            start_value (float): Starting value for cumulative returns.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
 
                 May be an int, datetime-like, or array-like.
@@ -4235,7 +4235,7 @@ class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): The underlying data for the Series.
+        obj (Optional[ArrayLike]): Underlying data for the Series.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
         year_freq (Optional[FrequencyLike]): Frequency identifier for annualization.
         defaults (KwargsLike): Default configuration parameters.
@@ -4280,7 +4280,7 @@ class ReturnsDFAccessor(ReturnsAccessor, GenericDFAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): The underlying data for the DataFrame.
+        obj (Optional[ArrayLike]): Underlying data for the DataFrame.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
         year_freq (Optional[FrequencyLike]): Frequency identifier for annualization.
         defaults (KwargsLike): Default configuration parameters.

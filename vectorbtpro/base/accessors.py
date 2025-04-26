@@ -62,7 +62,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
     Accessible via `pd.Index.vbt` and all child accessors.
 
     Args:
-        obj (Index): The Pandas Index object to be wrapped by the accessor.
+        obj (Index): Pandas Index object to be wrapped by the accessor.
         freq (Optional[FrequencyLike]): Optional frequency for the index.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
@@ -108,7 +108,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Convert the index to a PeriodIndex.
 
         Args:
-            freq (FrequencyLike): The frequency to convert the index.
+            freq (FrequencyLike): Frequency to convert the index.
             shift (bool): If True, shift the resulting period.
 
         Returns:
@@ -366,10 +366,10 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Determine the frequency of the index as a Pandas Timedelta or frequency.
 
         Args:
-            index (Optional[Index]): An index from which to infer the frequency.
+            index (Optional[Index]): Index from which to infer the frequency.
 
                 If None, the accessor's index is used.
-            freq (Optional[FrequencyLike]): A frequency to utilize if not already set.
+            freq (Optional[FrequencyLike]): Frequency to utilize if not already set.
             **kwargs: Keyword arguments for `dt.infer_index_freq`.
 
         Returns:
@@ -436,7 +436,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the number of periods in the index without considering datetime-like properties.
 
         Args:
-            index (Optional[Index]): The index for which to count periods. If None, the accessor's index is used.
+            index (Optional[Index]): Index for which to count periods. If None, the accessor's index is used.
 
         Returns:
             int: The number of periods in the index.
@@ -466,10 +466,10 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the number of periods in the index, accounting for its datetime-like properties.
 
         Args:
-            index (Optional[Index]): The index to process.
+            index (Optional[Index]): Index to process.
 
                 If omitted and invoked on an instance, the object's index is used.
-            freq (Optional[PandasFrequency]): A frequency specifier for the index.
+            freq (Optional[PandasFrequency]): Frequency specifier for the index.
 
         Returns:
             float: The calculated number of periods.
@@ -525,7 +525,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Convert an array of values to a duration based on the index frequency from `BaseIDXAccessor.freq`.
 
         Args:
-            a (MaybeArray): The input array containing numerical values.
+            a (MaybeArray): Input array containing numerical values.
             to_pd (bool): Determines whether to return a Pandas timedelta representation.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
@@ -564,7 +564,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return an index grouper of type `vectorbtpro.base.grouping.base.Grouper`.
 
         Args:
-            by (AnyGroupByLike): A grouper specifier which can be one of the following:
+            by (AnyGroupByLike): Grouper specifier which can be one of the following:
 
                 * A grouper instance.
                 * A Pandas `GroupBy` or `Resampler` instance.
@@ -611,8 +611,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return an index resampler of type `vectorbtpro.base.resampling.base.Resampler`.
 
         Args:
-            rule (AnyRuleLike): The resampling rule, which may be frequency-like or a resampler.
-            freq (Optional[FrequencyLike]): The target frequency for the resampler.
+            rule (AnyRuleLike): Resampling rule, which may be frequency-like or a resampler.
+            freq (Optional[FrequencyLike]): Target frequency for the resampler.
             resample_kwargs (KwargsLike): Keyword arguments for the Pandas resample method.
             return_pd_resampler (bool): Flag indicating whether to return a Pandas resampler.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
@@ -689,7 +689,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
-            splitter_cls (Optional[Type[Splitter]]): The splitter class to use.
+            splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
         Returns:
@@ -715,9 +715,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 
         Args:
-            apply_func (Callable): The function to apply to each split.
+            apply_func (Callable): Function to apply to each split.
             *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
-            splitter_cls (Optional[Type[Splitter]]): The splitter class to use.
+            splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 
         Returns:
@@ -1192,7 +1192,7 @@ class BaseAccessor(Wrapping):
         """Set indexed elements on the accessor instance using the provided Pandas indexing setter.
 
         Args:
-            pd_indexing_setter_func (Callable): The Pandas indexing setter function.
+            pd_indexing_setter_func (Callable): Pandas indexing setter function.
             **kwargs: Keyword arguments for the setter function.
 
         Returns:
@@ -1283,7 +1283,7 @@ class BaseAccessor(Wrapping):
         """Resolve the given shape to a two-dimensional format.
 
         Args:
-            shape (ShapeLike): The input shape.
+            shape (ShapeLike): Input shape.
 
         Returns:
             Shape: The resolved two-dimensional shape.
@@ -1303,8 +1303,8 @@ class BaseAccessor(Wrapping):
         """Generate an empty Pandas Series or DataFrame.
 
         Args:
-            shape (Shape): The desired shape.
-            fill_value (Scalar): The value to fill the object.
+            shape (Shape): Desired shape.
+            fill_value (Scalar): Value to fill the object.
             **kwargs: Keyword arguments for the Pandas constructor.
 
         Returns:
@@ -1319,8 +1319,8 @@ class BaseAccessor(Wrapping):
         """Generate an empty Pandas Series or DataFrame based on another object.
 
         Args:
-            other (SeriesFrame): A reference Pandas object to mimic.
-            fill_value (Scalar): The value to fill the new object.
+            other (SeriesFrame): Reference Pandas object to mimic.
+            fill_value (Scalar): Value to fill the new object.
             **kwargs: Keyword arguments for the Pandas constructor.
 
         Returns:
@@ -1382,7 +1382,7 @@ class BaseAccessor(Wrapping):
         and passed to the callable.
 
         Args:
-            value_or_func (Union[MaybeArray, Callable]): The value to assign or a function that
+            value_or_func (Union[MaybeArray, Callable]): Value to assign or a function that
                 computes the value based on context.
             *args: Positional arguments for `value_or_func` if it is callable.
             inplace (bool): If True, modify the data object in place.
@@ -1475,7 +1475,7 @@ class BaseAccessor(Wrapping):
         and passed to the callable.
 
         Args:
-            value_or_func (Union[MaybeArray, Callable]): The value to assign or a function that
+            value_or_func (Union[MaybeArray, Callable]): Value to assign or a function that
                 computes the value for each range.
             *args: Positional arguments for `value_or_func` if it is callable.
             inplace (bool): If True, modify the data object in place.
@@ -1945,7 +1945,7 @@ class BaseAccessor(Wrapping):
         """Convert the object to a `vectorbtpro.data.base.Data` instance.
 
         Args:
-            data_cls (Optional[Type[Data]]): The data class to use for conversion.
+            data_cls (Optional[Type[Data]]): Data class to use for conversion.
             columns_are_symbols (bool): Indicates whether columns represent symbols.
             **kwargs: Keyword arguments for `Data.from_data`.
 
@@ -1976,7 +1976,7 @@ class BaseAccessor(Wrapping):
         """Apply a function to the object with broadcasting and template substitution support.
 
         Args:
-            apply_func (Callable): The function to apply.
+            apply_func (Callable): Function to apply.
             *args: Positional arguments for `apply_func`.
             keep_pd (bool): If True, maintain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
             to_2d (bool): If True, reshape inputs to 2-dimensional arrays; otherwise, retain their original shape.
@@ -2119,8 +2119,8 @@ class BaseAccessor(Wrapping):
         See also `vectorbtpro.base.combining.apply_and_concat`.
 
         Args:
-            ntimes (int): The number of times to apply `apply_func`.
-            apply_func (Callable): The function to execute, with the iteration index as its first parameter.
+            ntimes (int): Number of times to apply `apply_func`.
+            apply_func (Callable): Function to execute, with the iteration index as its first parameter.
             *args: Positional arguments for `apply_func`.
             keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert inputs to arrays.
             to_2d (bool): If True, convert input arrays to a two-dimensional format.
@@ -2530,7 +2530,7 @@ class BaseSRAccessor(BaseAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): An optional array-like object.
+        obj (Optional[ArrayLike]): Optional array-like object.
         **kwargs: Keyword arguments for `BaseAccessor`.
     """
 
@@ -2571,7 +2571,7 @@ class BaseDFAccessor(BaseAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): An optional array-like object.
+        obj (Optional[ArrayLike]): Optional array-like object.
         **kwargs: Keyword arguments for `BaseAccessor`.
     """
 

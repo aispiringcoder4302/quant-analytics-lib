@@ -152,7 +152,7 @@ class Resampler(Configured):
         """Create a `Resampler` instance from a `pandas.core.resample.Resampler` object.
 
         Args:
-            pd_resampler (pandas.core.resample.Resampler): A Pandas resampler object.
+            pd_resampler (pandas.core.resample.Resampler): Pandas resampler object.
             source_freq (Optional[FrequencyLike]): Frequency for the source index.
             silence_warnings (bool): Flag to suppress warning messages.
 
@@ -301,8 +301,8 @@ class Resampler(Configured):
         """Return the right bound of a datetime index.
 
         Args:
-            index (Index): A datetime index.
-            freq (AnyPandasFrequency): A frequency used to shift the index.
+            index (Index): Datetime index.
+            freq (AnyPandasFrequency): Frequency used to shift the index.
 
                 If None, the rightmost bound is calculated.
 
@@ -478,11 +478,11 @@ class Resampler(Configured):
         Either `target_lbound_index` or `target_rbound_index` must be provided.
 
         Args:
-            source_index (Optional[IndexLike]): A source datetime index.
-            target_lbound_index (Optional[IndexLike]): The left bound of the target index.
+            source_index (Optional[IndexLike]): Source datetime index.
+            target_lbound_index (Optional[IndexLike]): Left bound of the target index.
 
                 Set to "pandas" to use `Resampler.get_lbound_index`.
-            target_rbound_index (Optional[IndexLike]): The right bound of the target index.
+            target_rbound_index (Optional[IndexLike]): Right bound of the target index.
 
                 Set to "pandas" to use `Resampler.get_rbound_index`.
             closed_lbound (bool): Specify whether the left bound is closed.
@@ -542,7 +542,7 @@ class Resampler(Configured):
         """Return a resampled mask for the source index.
 
         Args:
-            source_mask (ArrayLike): A boolean mask for the source index.
+            source_mask (ArrayLike): Boolean mask for the source index.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

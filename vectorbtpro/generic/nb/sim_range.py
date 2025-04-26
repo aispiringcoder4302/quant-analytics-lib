@@ -35,7 +35,7 @@ def resolve_sim_start_nb(
     """Resolve simulation start positions for simulation.
 
     Args:
-        sim_shape (Shape): A tuple representing the dimensions of the simulation.
+        sim_shape (Shape): Tuple representing the dimensions of the simulation.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.
@@ -82,7 +82,7 @@ def resolve_sim_end_nb(
     """Resolve simulation end positions for simulation.
 
     Args:
-        sim_shape (Shape): A tuple representing the dimensions of the simulation.
+        sim_shape (Shape): Tuple representing the dimensions of the simulation.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         
             Provided as a scalar or per column.
@@ -130,7 +130,7 @@ def resolve_sim_range_nb(
     """Resolve simulation start and end positions for simulation.
 
     Args:
-        sim_shape (Shape): A tuple representing the dimensions of the simulation.
+        sim_shape (Shape): Tuple representing the dimensions of the simulation.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.
@@ -169,7 +169,7 @@ def resolve_grouped_sim_start_nb(
     """Resolve grouped simulation start positions for simulation groups.
 
     Args:
-        target_shape (Shape): A tuple representing the dimensions of the target simulation.
+        target_shape (Shape): Tuple representing the dimensions of the target simulation.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
@@ -233,7 +233,7 @@ def resolve_grouped_sim_end_nb(
     """Resolve grouped simulation end positions for simulation groups.
 
     Args:
-        target_shape (Shape): A tuple representing the dimensions of the target simulation.
+        target_shape (Shape): Tuple representing the dimensions of the target simulation.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         
@@ -298,7 +298,7 @@ def resolve_grouped_sim_range_nb(
     """Resolve simulation start and end for grouped data.
 
     Args:
-        target_shape (Shape): The target simulation array shape.
+        target_shape (Shape): Target simulation array shape.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
@@ -341,7 +341,7 @@ def resolve_ungrouped_sim_start_nb(
     """Resolve simulation start for ungrouped data.
 
     Args:
-        target_shape (Shape): The target simulation array shape.
+        target_shape (Shape): Target simulation array shape.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
@@ -402,7 +402,7 @@ def resolve_ungrouped_sim_end_nb(
     """Resolve simulation end for ungrouped data.
 
     Args:
-        target_shape (Shape): The target simulation array shape.
+        target_shape (Shape): Target simulation array shape.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         
@@ -464,7 +464,7 @@ def resolve_ungrouped_sim_range_nb(
     """Resolve simulation start and end for ungrouped data.
 
     Args:
-        target_shape (Shape): The target simulation array shape.
+        target_shape (Shape): Target simulation array shape.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
@@ -505,7 +505,7 @@ def prepare_sim_start_nb(
     """Prepare the simulation start array based on provided parameters.
 
     Args:
-        sim_shape (Shape): The shape of the simulation array.
+        sim_shape (Shape): Shape of the simulation array.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.
@@ -543,7 +543,7 @@ def prepare_sim_end_nb(
     """Prepare the simulation end array based on provided parameters.
 
     Args:
-        sim_shape (Shape): The shape of the simulation array.
+        sim_shape (Shape): Shape of the simulation array.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         
             Provided as a scalar or per column.
@@ -582,7 +582,7 @@ def prepare_sim_range_nb(
     """Prepare both simulation start and end positions based on provided parameters.
 
     Args:
-        sim_shape (Shape): The shape of the simulation array.
+        sim_shape (Shape): Shape of the simulation array.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.
@@ -617,7 +617,7 @@ def prepare_grouped_sim_start_nb(
     """Prepare grouped simulation start positions for grouped data.
 
     Args:
-        target_shape (Shape): A tuple where the first element indicates the simulation step count.
+        target_shape (Shape): Tuple where the first element indicates the simulation step count.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
@@ -671,7 +671,7 @@ def prepare_grouped_sim_end_nb(
     """Prepare grouped simulation end positions for grouped data.
 
     Args:
-        target_shape (Shape): A tuple where the first element indicates the simulation step count.
+        target_shape (Shape): Tuple where the first element indicates the simulation step count.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         
@@ -726,7 +726,7 @@ def prepare_grouped_sim_range_nb(
     """Prepare grouped simulation start and end positions for grouped data.
 
     Args:
-        target_shape (Shape): A tuple where the first element indicates the simulation step count.
+        target_shape (Shape): Tuple where the first element indicates the simulation step count.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
@@ -764,7 +764,7 @@ def prepare_ungrouped_sim_start_nb(
     """Prepare ungrouped simulation start positions for ungrouped data.
 
     Args:
-        target_shape (Shape): A tuple where the first element indicates the simulation step count
+        target_shape (Shape): Tuple where the first element indicates the simulation step count
             and the second indicates the number of columns.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -816,7 +816,7 @@ def prepare_ungrouped_sim_end_nb(
     """Prepare ungrouped simulation end positions for ungrouped data.
 
     Args:
-        target_shape (Shape): A tuple where the first element indicates the simulation step
+        target_shape (Shape): Tuple where the first element indicates the simulation step
             count and the second indicates the number of columns.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
@@ -869,7 +869,7 @@ def prepare_ungrouped_sim_range_nb(
     """Prepare ungrouped simulation start and end positions for ungrouped data.
 
     Args:
-        target_shape (Shape): A tuple where the first element indicates the simulation step count
+        target_shape (Shape): Tuple where the first element indicates the simulation step count
             and the second indicates the number of columns.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).

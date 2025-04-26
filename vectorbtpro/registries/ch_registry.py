@@ -83,7 +83,7 @@ class ChunkableRegistry(Base):
         """Register a new chunkable setup.
 
         Args:
-            func (Callable): The function to register as chunkable.
+            func (Callable): Function to register as chunkable.
             setup_id (Optional[Hashable]): Unique identifier for the setup.
 
                 If omitted, it is derived from the function's module and name.
@@ -126,7 +126,7 @@ class ChunkableRegistry(Base):
         """Retrieve a chunkable setup by its identifier or function.
 
         Args:
-            setup_id_or_func (Union[Hashable, Callable]): The setup identifier or function.
+            setup_id_or_func (Union[Hashable, Callable]): Setup identifier or function.
 
                 If a function is provided, the identifier is constructed from its module and name.
 
@@ -159,8 +159,8 @@ class ChunkableRegistry(Base):
         with additional keyword arguments.
 
         Args:
-            setup_id_or_func (Union[Hashable, Callable]): The setup identifier or function.
-            target_func (Optional[Callable]): An alternative function to decorate.
+            setup_id_or_func (Union[Hashable, Callable]): Setup identifier or function.
+            target_func (Optional[Callable]): Alternative function to decorate.
 
                 If omitted, the function from the setup is used.
             **kwargs: Keyword arguments for `vectorbtpro.utils.chunking.chunked`.
@@ -194,9 +194,9 @@ class ChunkableRegistry(Base):
         Similar to `ChunkableRegistry.decorate`, but applies a specific chunking option.
 
         Args:
-            setup_id_or_func (Union[Hashable, Callable]): The setup identifier or function.
-            option (ChunkedOption): The chunking option to resolve.
-            target_func (Optional[Callable]): An alternative function to apply the setup on.
+            setup_id_or_func (Union[Hashable, Callable]): Setup identifier or function.
+            option (ChunkedOption): Chunking option to resolve.
+            target_func (Optional[Callable]): Alternative function to apply the setup on.
             **kwargs: Keyword arguments for `vectorbtpro.utils.chunking.resolve_chunked`.
 
                 These options override the setup's options.
@@ -245,13 +245,13 @@ def register_chunkable(
     * `override_setup_options.{setup_id}` from `vectorbtpro._settings.chunking`
 
     Args:
-        func (Optional[Callable]): The function to register.
+        func (Optional[Callable]): Function to register.
 
             If omitted, a decorator is returned.
         setup_id (Optional[Hashable]): Unique identifier for the setup.
 
             If omitted, it is derived from the function's module and name.
-        registry (ChunkableRegistry): The registry to register the function in.
+        registry (ChunkableRegistry): Registry to register the function in.
         tags (SetLike): Tags associated with the setup.
         return_wrapped (bool): Flag indicating whether to wrap the function using the `chunked` decorator.
         **options: Additional options for configuring the chunkable setup.

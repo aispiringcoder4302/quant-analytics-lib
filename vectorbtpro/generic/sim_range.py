@@ -315,7 +315,7 @@ class SimRangeMixin(Base):
         """Return the resolved simulation start position for the provided scalar value.
 
         Args:
-            value (Scalar): A scalar simulation start value to resolve.
+            value (Scalar): Scalar simulation start value to resolve.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
         Returns:
@@ -339,7 +339,7 @@ class SimRangeMixin(Base):
         """Return the resolved simulation end position for the provided scalar value.
 
         Args:
-            value (Scalar): A scalar simulation end value to resolve.
+            value (Scalar): Scalar simulation end value to resolve.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
         Returns:

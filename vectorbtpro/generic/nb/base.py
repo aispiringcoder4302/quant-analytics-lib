@@ -337,7 +337,7 @@ def first_valid_index_nb(arr: tp.Array2d, check_inf: bool = True) -> tp.Array1d:
     """Return an array of indices for the first valid elements from each column in a 2D array.
 
     Args:
-        arr (Array2d): A 2D array to search column-wise.
+        arr (Array2d): 2D array to search column-wise.
         check_inf (bool): Whether to treat infinity as an invalid value.
 
     Returns:
@@ -372,7 +372,7 @@ def last_valid_index_nb(arr: tp.Array2d, check_inf: bool = True) -> tp.Array1d:
     """Return an array of indices for the last valid elements from each column in a 2D array.
 
     Args:
-        arr (Array2d): A 2D array to search column-wise.
+        arr (Array2d): 2D array to search column-wise.
         check_inf (bool): Whether to treat infinity as an invalid value.
 
     Returns:
@@ -663,9 +663,9 @@ def fshift_nb(arr: tp.Array2d, n: int = 1, fill_value: tp.Scalar = np.nan) -> tp
     """Return a 2-dimensional shifted version of the input array.
 
     Args:
-        arr (Array2d): The input 2-dimensional array.
-        n (int): The number of positions to shift the array.
-        fill_value (Scalar): The value used to fill the newly created empty positions.
+        arr (Array2d): Input 2-dimensional array.
+        n (int): Number of positions to shift the array.
+        fill_value (Scalar): Value used to fill the newly created empty positions.
 
     Returns:
         Array2d: The shifted array.
@@ -683,8 +683,8 @@ def diff_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
     Numba-optimized equivalent of `pd.Series(arr).diff()`.
 
     Args:
-        arr (Array1d): The input array.
-        n (int): The interval over which to compute the difference.
+        arr (Array1d): Input array.
+        n (int): Interval over which to compute the difference.
 
     Returns:
         Array1d: An array of discrete differences.
@@ -708,8 +708,8 @@ def diff_nb(arr: tp.Array2d, n: int = 1) -> tp.Array2d:
     """Return a 2-dimensional array of discrete differences computed column-wise.
 
     Args:
-        arr (Array2d): The input 2-dimensional array.
-        n (int): The interval over which to compute the difference.
+        arr (Array2d): Input 2-dimensional array.
+        n (int): Interval over which to compute the difference.
 
     Returns:
         Array2d: A 2-dimensional array where each column represents the discrete differences
@@ -731,8 +731,8 @@ def pct_change_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
     Numba-optimized equivalent of `pd.Series(arr).pct_change()`.
 
     Args:
-        arr (Array1d): The input array.
-        n (int): The period over which to compute the percentage change.
+        arr (Array1d): Input array.
+        n (int): Period over which to compute the percentage change.
 
     Returns:
         Array1d: An array of percentage changes.
@@ -756,8 +756,8 @@ def pct_change_nb(arr: tp.Array2d, n: int = 1) -> tp.Array2d:
     """Return a 2-dimensional array of percentage changes computed column-wise.
 
     Args:
-        arr (Array2d): The input 2-dimensional array.
-        n (int): The period over which to compute the percentage change.
+        arr (Array2d): Input 2-dimensional array.
+        n (int): Period over which to compute the percentage change.
 
     Returns:
         Array2d: A 2-dimensional array where each column represents the percentage changes
@@ -779,7 +779,7 @@ def bfill_1d_nb(arr: tp.Array1d) -> tp.Array1d:
     Numba-optimized equivalent of `pd.Series(arr).fillna(method='bfill')`.
 
     Args:
-        arr (Array1d): The input array with potential NaN values.
+        arr (Array1d): Input array with potential NaN values.
 
     Returns:
         Array1d: An array with NaN values filled using backward propagation.
@@ -807,7 +807,7 @@ def bfill_nb(arr: tp.Array2d) -> tp.Array2d:
     """Return a 2-dimensional array with NaN values filled by backward propagation computed column-wise.
 
     Args:
-        arr (Array2d): The input 2-dimensional array with potential NaN values.
+        arr (Array2d): Input 2-dimensional array with potential NaN values.
 
     Returns:
         Array2d: A 2-dimensional array where each column has been filled using
@@ -829,7 +829,7 @@ def ffill_1d_nb(arr: tp.Array1d) -> tp.Array1d:
     Numba-optimized equivalent of `pd.Series(arr).fillna(method='ffill')`.
 
     Args:
-        arr (Array1d): The input array with potential NaN values.
+        arr (Array1d): Input array with potential NaN values.
 
     Returns:
         Array1d: An array with NaN values filled using forward propagation.
@@ -854,7 +854,7 @@ def ffill_nb(arr: tp.Array2d) -> tp.Array2d:
     """Return a 2-dimensional array with NaN values filled by forward propagation computed column-wise.
 
     Args:
-        arr (Array2d): The input 2-dimensional array with potential NaN values.
+        arr (Array2d): Input 2-dimensional array with potential NaN values.
 
     Returns:
         Array2d: A 2-dimensional array where each column has been filled using
@@ -903,7 +903,7 @@ def nanprod_nb(arr: tp.Array2d) -> tp.Array1d:
     using a Numba-optimized algorithm.
 
     Args:
-        arr (Array2d): The input 2-dimensional array.
+        arr (Array2d): Input 2-dimensional array.
 
     Returns:
         Array1d: An array containing the product for each column.
@@ -948,7 +948,7 @@ def nancumsum_nb(arr: tp.Array2d) -> tp.Array2d:
     with Numba optimization.
 
     Args:
-        arr (Array2d): The input 2-dimensional array.
+        arr (Array2d): Input 2-dimensional array.
 
     Returns:
         Array2d: A 2-dimensional array of cumulative sums computed column-wise.
@@ -993,7 +993,7 @@ def nancumprod_nb(arr: tp.Array2d) -> tp.Array2d:
     using a Numba-optimized approach.
 
     Args:
-        arr (Array2d): The input 2-dimensional array.
+        arr (Array2d): Input 2-dimensional array.
 
     Returns:
         Array2d: A 2-dimensional array of cumulative products computed column-wise.
@@ -1037,7 +1037,7 @@ def nansum_nb(arr: tp.Array2d) -> tp.Array1d:
     """Compute the sum of a 2D array along axis 0 while ignoring NaN values using Numba.
 
     Args:
-        arr (Array2d): A two-dimensional array containing numerical values with possible NaNs.
+        arr (Array2d): Two-dimensional array containing numerical values with possible NaNs.
 
     Returns:
         Array1d: A one-dimensional array with the column-wise sums, ignoring NaNs.
@@ -1053,7 +1053,7 @@ def nancnt_1d_nb(arr: tp.Array1d) -> int:
     """Count the non-NaN elements in a 1D array without allocating extra arrays.
 
     Args:
-        arr (Array1d): A one-dimensional array containing numerical values.
+        arr (Array1d): One-dimensional array containing numerical values.
 
     Returns:
         int: The count of non-NaN elements in the array.
@@ -1075,7 +1075,7 @@ def nancnt_nb(arr: tp.Array2d) -> tp.Array1d:
     """Count the non-NaN elements in each column of a 2D array without additional allocations.
 
     Args:
-        arr (Array2d): A two-dimensional array containing numerical values with possible NaNs.
+        arr (Array2d): Two-dimensional array containing numerical values with possible NaNs.
 
     Returns:
         Array1d: A one-dimensional array where each element is the count of non-NaN values
@@ -1100,7 +1100,7 @@ def nanmin_nb(arr: tp.Array2d) -> tp.Array1d:
     """Compute the minimum value of each column in a 2D array while ignoring NaNs using Numba.
 
     Args:
-        arr (Array2d): A two-dimensional array containing numerical values with potential NaNs.
+        arr (Array2d): Two-dimensional array containing numerical values with potential NaNs.
 
     Returns:
         Array1d: A one-dimensional array with the minimum value from each column.
@@ -1124,7 +1124,7 @@ def nanmax_nb(arr: tp.Array2d) -> tp.Array1d:
     """Compute the maximum value of each column in a 2D array while ignoring NaNs using Numba.
 
     Args:
-        arr (Array2d): A two-dimensional array containing numerical values with possible NaN entries.
+        arr (Array2d): Two-dimensional array containing numerical values with possible NaN entries.
 
     Returns:
         Array1d: A one-dimensional array with the maximum value from each column.
@@ -1148,7 +1148,7 @@ def nanmean_nb(arr: tp.Array2d) -> tp.Array1d:
     """Compute the mean of each column in a 2D array while ignoring NaN values using Numba.
 
     Args:
-        arr (Array2d): A two-dimensional array containing numerical values with potential NaNs.
+        arr (Array2d): Two-dimensional array containing numerical values with potential NaNs.
 
     Returns:
         Array1d: A one-dimensional array with the column-wise means.
@@ -1172,7 +1172,7 @@ def nanmedian_nb(arr: tp.Array2d) -> tp.Array1d:
     """Compute the median of each column in a 2D array while ignoring NaN values using Numba.
 
     Args:
-        arr (Array2d): A two-dimensional array containing numerical values with possible NaNs.
+        arr (Array2d): Two-dimensional array containing numerical values with possible NaNs.
 
     Returns:
         Array1d: A one-dimensional array with the median value from each column.
@@ -1191,8 +1191,8 @@ def nanpercentile_noarr_1d_nb(arr: tp.Array1d, q: float) -> float:
     """Compute the percentile of a 1D array while ignoring NaN values without allocating additional arrays.
 
     Args:
-        arr (Array1d): A one-dimensional array containing numerical values that may include NaNs.
-        q (float): The percentile to compute, where 0 represents the minimum and 100 represents the maximum.
+        arr (Array1d): One-dimensional array containing numerical values that may include NaNs.
+        q (float): Percentile to compute, where 0 represents the minimum and 100 represents the maximum.
 
     Returns:
         float: The computed percentile value.
@@ -1268,8 +1268,8 @@ def nanpartition_mean_noarr_1d_nb(arr: tp.Array1d, q: float) -> float:
     without additional allocations.
 
     Args:
-        arr (Array1d): A one-dimensional array containing numerical values that may include NaNs.
-        q (float): The percentile threshold guiding the partitioning, where 0 indicates the minimum value.
+        arr (Array1d): One-dimensional array containing numerical values that may include NaNs.
+        q (float): Percentile threshold guiding the partitioning, where 0 indicates the minimum value.
 
     Returns:
         float: The computed average of the partitioned elements.
@@ -1322,7 +1322,7 @@ def nanvar_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
     allocating extra arrays.
 
     Args:
-        arr (Array1d): A one-dimensional array containing numerical values that may include NaNs.
+        arr (Array1d): One-dimensional array containing numerical values that may include NaNs.
         ddof (int): Delta degrees of freedom.
 
     Returns:
@@ -1348,7 +1348,7 @@ def nanstd_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
     """Compute the standard deviation of a 1D array while ignoring NaN values using Numba.
 
     Args:
-        arr (Array1d): A one-dimensional array containing numerical values with possible NaNs.
+        arr (Array1d): One-dimensional array containing numerical values with possible NaNs.
         ddof (int): Delta degrees of freedom.
 
     Returns:
@@ -1367,7 +1367,7 @@ def nanstd_nb(arr: tp.Array2d, ddof: int = 0) -> tp.Array1d:
     """Compute the nan-standard deviation for each column in a 2-dimensional array, ignoring NaN values.
 
     Args:
-        arr (Array2d): A 2-dimensional array containing numerical data.
+        arr (Array2d): 2-dimensional array containing numerical data.
         ddof (int): Delta degrees of freedom.
 
     Returns:
@@ -1387,8 +1387,8 @@ def nancov_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, ddof: int = 0) -> float:
     """Compute the covariance for two 1-dimensional arrays while ignoring NaN values.
 
     Args:
-        arr1 (Array1d): The first 1-dimensional numerical array.
-        arr2 (Array1d): The second 1-dimensional numerical array.
+        arr1 (Array1d): First 1-dimensional numerical array.
+        arr2 (Array1d): Second 1-dimensional numerical array.
         ddof (int): Delta degrees of freedom.
 
     Returns:
@@ -1423,8 +1423,8 @@ def nancov_nb(arr1: tp.Array2d, arr2: tp.Array2d, ddof: int = 0) -> tp.Array1d:
     """Compute the covariance for corresponding columns of two 2-dimensional arrays while ignoring NaN values.
 
     Args:
-        arr1 (Array2d): The first 2-dimensional numerical array.
-        arr2 (Array2d): The second 2-dimensional numerical array.
+        arr1 (Array2d): First 2-dimensional numerical array.
+        arr2 (Array2d): Second 2-dimensional numerical array.
         ddof (int): Delta degrees of freedom.
 
     Returns:
@@ -1446,8 +1446,8 @@ def nancorr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d) -> float:
     using a numerically stable algorithm.
 
     Args:
-        arr1 (Array1d): The first 1-dimensional numerical array.
-        arr2 (Array1d): The second 1-dimensional numerical array.
+        arr1 (Array1d): First 1-dimensional numerical array.
+        arr2 (Array1d): Second 1-dimensional numerical array.
 
     Returns:
         float: The correlation coefficient between `arr1` and `arr2`,
@@ -1494,8 +1494,8 @@ def nancorr_nb(arr1: tp.Array2d, arr2: tp.Array2d) -> tp.Array1d:
     2-dimensional arrays while ignoring NaN values.
 
     Args:
-        arr1 (Array2d): The first 2-dimensional numerical array.
-        arr2 (Array2d): The second 2-dimensional numerical array.
+        arr1 (Array2d): First 2-dimensional numerical array.
+        arr2 (Array2d): Second 2-dimensional numerical array.
 
     Returns:
         Array1d: A 1-dimensional array containing the correlation coefficient for each column.
@@ -1517,11 +1517,11 @@ def rank_1d_nb(arr: tp.Array1d, argsorted: tp.Optional[tp.Array1d] = None, pct: 
     average ranks to tied values.
 
     Args:
-        arr (Array1d): A 1-dimensional array of numerical data.
-        argsorted (Optional[Array1d]): An array of indices representing the sorted order of `arr`.
+        arr (Array1d): 1-dimensional array of numerical data.
+        argsorted (Optional[Array1d]): Array of indices representing the sorted order of `arr`.
 
             If not provided, the sorting is computed internally.
-        pct (bool): A flag indicating whether to return the ranks as percentiles.
+        pct (bool): Flag indicating whether to return the ranks as percentiles.
 
     Returns:
         Array1d: A 1-dimensional array containing the computed ranks for each element.
@@ -1580,11 +1580,11 @@ def rank_nb(arr: tp.Array2d, argsorted: tp.Optional[tp.Array2d] = None, pct: boo
     """Compute the ranks for each column in a 2-dimensional array while ignoring NaN values.
 
     Args:
-        arr (Array2d): A 2-dimensional array of numerical data.
-        argsorted (Optional[Array2d]): An array of indices for each column representing the sorted order.
+        arr (Array2d): 2-dimensional array of numerical data.
+        argsorted (Optional[Array2d]): Array of indices for each column representing the sorted order.
 
             If not provided, the sorting is computed internally for each column.
-        pct (bool): A flag indicating whether to return the ranks as percentiles.
+        pct (bool): Flag indicating whether to return the ranks as percentiles.
 
     Returns:
         Array2d: A 2-dimensional array containing the computed ranks for each element.
@@ -1644,7 +1644,7 @@ def fir_filter_1d_nb(b: tp.Array1d, x: tp.Array1d) -> tp.Array1d:
 
     Args:
         b (Array1d): FIR filter coefficients.
-        x (Array1d): A one-dimensional signal to filter.
+        x (Array1d): One-dimensional signal to filter.
 
     Returns:
         Array1d: The filtered signal.
@@ -1676,7 +1676,7 @@ def value_counts_nb(codes: tp.Array2d, n_uniques: int, group_map: tp.GroupMap) -
     """Compute value counts per group.
 
     Args:
-        codes (Array2d): A 2-dimensional array of code values.
+        codes (Array2d): 2-dimensional array of code values.
         n_uniques (int): Number of unique values.
         group_map (GroupMap): Tuple of group indices and lengths.
 
@@ -1706,7 +1706,7 @@ def value_counts_1d_nb(codes: tp.Array1d, n_uniques: int) -> tp.Array1d:
     """Compute value counts.
 
     Args:
-        codes (Array1d): A one-dimensional array of integer codes.
+        codes (Array1d): One-dimensional array of integer codes.
         n_uniques (int): Total count of unique values.
 
     Returns:
@@ -1729,7 +1729,7 @@ def value_counts_per_row_nb(codes: tp.Array2d, n_uniques: int) -> tp.Array2d:
     """Compute value counts per row.
 
     Args:
-        codes (Array2d): A 2-dimensional array where each row contains code values.
+        codes (Array2d): 2-dimensional array where each row contains code values.
         n_uniques (int): Number of unique value categories.
 
     Returns:
@@ -1753,8 +1753,8 @@ def repartition_nb(arr: tp.Array2d, counts: tp.Array1d) -> tp.Array1d:
     """Repartition a 2-dimensional array into a 1-dimensional array by removing empty elements.
 
     Args:
-        arr (Array2d): The input 2-dimensional array.
-        counts (Array1d): An array of counts specifying the number of valid elements per column.
+        arr (Array2d): Input 2-dimensional array.
+        counts (Array1d): Array of counts specifying the number of valid elements per column.
 
     Returns:
         Array1d: A 1-dimensional array composed of the valid elements from `arr`.
@@ -1777,9 +1777,9 @@ def crossed_above_1d_nb(arr1: tp.Array1d, arr2: tp.FlexArray1dLike, wait: int = 
     """Return a boolean mask indicating where the first array crosses above the second array.
 
     Args:
-        arr1 (Array1d): A one-dimensional array of values.
-        arr2 (FlexArray1dLike): A one-dimensional array or scalar for comparison.
-        wait (int): The number of consecutive data points required above the threshold to confirm a crossover.
+        arr1 (Array1d): One-dimensional array of values.
+        arr2 (FlexArray1dLike): One-dimensional array or scalar for comparison.
+        wait (int): Number of consecutive data points required above the threshold to confirm a crossover.
         dropna (bool): If True, treat indices with NaN values as missing, mimicking the removal of rows with NaN.
 
     Returns:
@@ -1832,9 +1832,9 @@ def crossed_above_nb(arr1: tp.Array2d, arr2: tp.FlexArray2dLike, wait: int = 0, 
     above the corresponding elements in the second array column-wise.
 
     Args:
-        arr1 (Array2d): A 2-dimensional array of values.
-        arr2 (FlexArray2dLike): A 2-dimensional array or similar structure for comparison.
-        wait (int): The number of consecutive data points required above the threshold to confirm a crossover.
+        arr1 (Array2d): 2-dimensional array of values.
+        arr2 (FlexArray2dLike): 2-dimensional array or similar structure for comparison.
+        wait (int): Number of consecutive data points required above the threshold to confirm a crossover.
         dropna (bool): If True, treat rows with NaN values as missing in the crossover detection.
 
     Returns:
@@ -1856,9 +1856,9 @@ def crossed_below_1d_nb(arr1: tp.Array1d, arr2: tp.FlexArray1dLike, wait: int = 
     """Return a boolean mask indicating where the first array crosses below the second array.
 
     Args:
-        arr1 (Array1d): A one-dimensional array of values.
-        arr2 (FlexArray1dLike): A one-dimensional array or scalar for comparison.
-        wait (int): The number of consecutive data points required below the threshold to confirm a crossover.
+        arr1 (Array1d): One-dimensional array of values.
+        arr2 (FlexArray1dLike): One-dimensional array or scalar for comparison.
+        wait (int): Number of consecutive data points required below the threshold to confirm a crossover.
         dropna (bool): If True, treat indices with NaN values as missing, mimicking the removal of rows with NaN.
 
     Returns:
@@ -1911,9 +1911,9 @@ def crossed_below_nb(arr1: tp.Array2d, arr2: tp.FlexArray2dLike, wait: int = 0, 
     `arr2` using `crossed_below_1d_nb`.
 
     Args:
-        arr1 (Array2d): The primary 2-dimensional input array.
-        arr2 (FlexArray2dLike): The secondary array used for comparison.
-        wait (int): The waiting period before confirming a cross-below event.
+        arr1 (Array2d): Primary 2-dimensional input array.
+        arr2 (FlexArray2dLike): Secondary array used for comparison.
+        wait (int): Waiting period before confirming a cross-below event.
         dropna (bool): Whether to bypass NaN values during processing.
 
     Returns:
@@ -1946,7 +1946,7 @@ def demean_nb(arr: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
     """Subtract group means from each element in a 2-dimensional array.
 
     Args:
-        arr (Array2d): The input 2-dimensional array.
+        arr (Array2d): Input 2-dimensional array.
         group_map (GroupMap): Tuple of group indices and lengths.
 
     Returns:
@@ -1991,15 +1991,15 @@ def to_renko_1d_nb(
     """Convert a 1-dimensional array into its Renko brick representation.
 
     Args:
-        arr (Array1d): The input array of numerical values.
+        arr (Array1d): Input array of numerical values.
         brick_size (FlexArray1dLike): Brick size for each element.
         
             Provided as a scalar or per row.
         relative (FlexArray1dLike): Indicator determining if relative price changes should be used.
         
             Provided as a scalar or per row.
-        start_value (Optional[float]): The starting value for Renko calculation.
-        max_out_len (Optional[int]): The maximum number of output bricks allowed.
+        start_value (Optional[float]): Starting value for Renko calculation.
+        max_out_len (Optional[int]): Maximum number of output bricks allowed.
 
     Returns:
         Tuple[Array1d, Array1d, Array1d]: A tuple containing:
@@ -2082,15 +2082,15 @@ def to_renko_ohlc_1d_nb(
     """Convert a 1-dimensional array into its Renko OHLC (Open-High-Low-Close) representation.
 
     Args:
-        arr (Array1d): The input array of numerical values.
+        arr (Array1d): Input array of numerical values.
         brick_size (FlexArray1dLike): Brick size for each element.
         
             Provided as a scalar or per row.
         relative (FlexArray1dLike): Indicator determining if relative price changes should be used.
         
             Provided as a scalar or per row.
-        start_value (Optional[float]): The starting value for Renko OHLC calculation.
-        max_out_len (Optional[int]): The maximum number of output bars allowed.
+        start_value (Optional[float]): Starting value for Renko OHLC calculation.
+        max_out_len (Optional[int]): Maximum number of output bars allowed.
 
     Returns:
         Tuple[Array2d, Array1d]: A tuple containing:

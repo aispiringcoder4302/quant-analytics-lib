@@ -56,7 +56,7 @@ def apply_and_concat_none_nb(
     """Execute the JIT-compiled function multiple times for in-place operations.
 
     Args:
-        ntimes (int): The number of times to execute `apply_func_nb`.
+        ntimes (int): Number of times to execute `apply_func_nb`.
         apply_func_nb (Callable): Function invoked for each index that returns nothing.
         *args: Positional arguments for `apply_func_nb`.
 
@@ -74,7 +74,7 @@ def to_2d_one_nb(a: tp.Array) -> tp.Array2d:
     """Expand the input array to a 2D array along axis 1.
 
     Args:
-        a (Array): The input array.
+        a (Array): Input array.
 
     Returns:
         Array2d: The array expanded along axis 1 if it was originally one-dimensional;
@@ -124,7 +124,7 @@ def apply_and_concat_one_nb(
     and horizontally concatenate the results.
 
     Args:
-        ntimes (int): The number of times to execute `apply_func_nb`.
+        ntimes (int): Number of times to execute `apply_func_nb`.
         apply_func_nb (Callable): Function that returns an array when called with
             an index and additional arguments.
         *args: Positional arguments for `apply_func_nb`.
@@ -143,7 +143,7 @@ def to_2d_multiple_nb(a: tp.Iterable[tp.Array]) -> tp.List[tp.Array2d]:
     """Expand the dimensions of each array in the iterable along axis 1.
 
     Args:
-        a (Iterable[Array]): An iterable of arrays.
+        a (Iterable[Array]): Iterable of arrays.
 
     Returns:
         List[Array2d]: A list of arrays, each expanded along axis 1.
@@ -199,7 +199,7 @@ def apply_and_concat_multiple_nb(
     and horizontally concatenate the corresponding outputs.
 
     Args:
-        ntimes (int): The number of times to execute `apply_func_nb`.
+        ntimes (int): Number of times to execute `apply_func_nb`.
         apply_func_nb (Callable): Function that returns multiple arrays when provided with
             an index and additional arguments.
         *args: Positional arguments for `apply_func_nb`.
@@ -229,8 +229,8 @@ def apply_and_concat_each(
     * If multiple outputs are produced, returns a list of 2D arrays.
 
     Args:
-        tasks (TasksLike): A collection of tasks, each encapsulating a function and its arguments.
-        n_outputs (Optional[int]): The expected number of outputs produced by each task.
+        tasks (TasksLike): Collection of tasks, each encapsulating a function and its arguments.
+        n_outputs (Optional[int]): Expected number of outputs produced by each task.
         execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
             See `vectorbtpro.utils.execution.execute`.
@@ -281,10 +281,10 @@ def apply_and_concat(
     version of the iteration may be used.
 
     Args:
-        ntimes (int): The number of times to execute `apply_func`.
-        apply_func (Callable): The function to be executed for each iteration.
+        ntimes (int): Number of times to execute `apply_func`.
+        apply_func (Callable): Function to be executed for each iteration.
         *args: Positional arguments for `apply_func`.
-        n_outputs (Optional[int]): The number of arrays returned by each function call.
+        n_outputs (Optional[int]): Number of arrays returned by each function call.
         jitted_loop (bool): If True, use a JIT-compiled loop for execution.
         jitted_warmup (bool): If True, perform a warm-up call for the JIT-compiled function.
         execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
@@ -359,9 +359,9 @@ def select_and_combine_nb(
 
     Args:
         i (int): Index used to select an element from `others`.
-        obj (Any): The primary object to combine.
-        others (Sequence): A sequence of objects available for combination.
-        combine_func_nb (Callable): A JIT-compiled function to combine `obj` and the selected element.
+        obj (Any): Primary object to combine.
+        others (Sequence): Sequence of objects available for combination.
+        combine_func_nb (Callable): JIT-compiled function to combine `obj` and the selected element.
         *args: Positional arguments for `combine_func_nb`.
 
     Returns:
@@ -381,9 +381,9 @@ def combine_and_concat_nb(
     Numba-compiled combination function.
 
     Args:
-        obj (Any): The primary object to combine.
-        others (Sequence): A sequence of objects to combine with.
-        combine_func_nb (Callable): A Numba-compiled function that combines two objects.
+        obj (Any): Primary object to combine.
+        others (Sequence): Sequence of objects to combine with.
+        combine_func_nb (Callable): Numba-compiled function that combines two objects.
         *args: Positional arguments for `combine_func_nb`.
 
     Returns:
@@ -407,10 +407,10 @@ def select_and_combine(
     using a combination function.
 
     Args:
-        i (int): The index of the element in `others` to combine.
-        obj (Any): The primary object to combine.
-        others (Sequence): A sequence of objects.
-        combine_func (Callable): A function to combine two objects.
+        i (int): Index of the element in `others` to combine.
+        obj (Any): Primary object to combine.
+        others (Sequence): Sequence of objects.
+        combine_func (Callable): Function to combine two objects.
         *args: Positional arguments for `combine_func`.
         **kwargs: Keyword arguments for `combine_func`.
 
@@ -432,9 +432,9 @@ def combine_and_concat(
     combination function and concatenate the results.
 
     Args:
-        obj (Any): The primary object to combine.
-        others (Sequence): A sequence of objects to combine with.
-        combine_func (Callable): A function to combine two objects.
+        obj (Any): Primary object to combine.
+        others (Sequence): Sequence of objects to combine with.
+        combine_func (Callable): Function to combine two objects.
         *args: Positional arguments for `combine_func`.
         jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop.
         **kwargs: Keyword arguments for `combine_func`.
@@ -471,8 +471,8 @@ def combine_multiple_nb(
     """Combine a sequence of objects pairwise using a Numba-compiled combination function.
 
     Args:
-        objs (Sequence): A sequence of objects to combine.
-        combine_func_nb (Callable): A Numba-compiled function that combines two objects.
+        objs (Sequence): Sequence of objects to combine.
+        combine_func_nb (Callable): Numba-compiled function that combines two objects.
         *args: Positional arguments for `combine_func_nb`.
 
     Returns:
@@ -494,8 +494,8 @@ def combine_multiple(
     """Combine a sequence of objects pairwise into a single object using a provided combination function.
 
     Args:
-        objs (Sequence): A sequence of objects to combine.
-        combine_func (Callable): A function to combine two objects.
+        objs (Sequence): Sequence of objects to combine.
+        combine_func (Callable): Function to combine two objects.
         *args: Positional arguments for `combine_func`.
         jitted_loop (bool): Flag indicating whether to use the Numba JIT-compiled version.
         **kwargs: Keyword arguments for `combine_func`.

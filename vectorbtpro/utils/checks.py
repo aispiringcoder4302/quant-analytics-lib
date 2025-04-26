@@ -40,7 +40,7 @@ class Comparable(Base):
         """Return whether the current object is deeply equal to another object.
 
         Args:
-            other (Any): The object to compare against.
+            other (Any): Object to compare against.
             *args: Positional arguments for `is_deep_equal`.
             **kwargs: Keyword arguments for `is_deep_equal`.
 
@@ -63,7 +63,7 @@ def is_classic_func(obj: tp.Any) -> bool:
     """Return whether the object is a classic Python function.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a classic function, False otherwise.
@@ -75,7 +75,7 @@ def is_builtin_func(obj: tp.Any) -> bool:
     """Return whether the object is a built-in function.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a built-in function, False otherwise.
@@ -87,7 +87,7 @@ def is_method(obj: tp.Any) -> bool:
     """Return whether the object is a method.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a method, False otherwise.
@@ -108,7 +108,7 @@ def is_numba_func(obj: tp.Any) -> bool:
     """Return whether the object is identified as a Numba-compiled function based on configuration.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a Numba-compiled function, False otherwise.
@@ -135,7 +135,7 @@ def is_function(obj: tp.Any) -> bool:
     """Return whether the object is a lambda function, built-in function, method, or Numba-compiled function.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a function, False otherwise.
@@ -147,7 +147,7 @@ def is_bool(obj: tp.Any) -> bool:
     """Return whether the object is a boolean value.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a boolean, False otherwise.
@@ -159,7 +159,7 @@ def is_int(obj: tp.Any) -> bool:
     """Return whether the object is an integer (excluding booleans and timedelta values).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is an integer, False otherwise.
@@ -171,7 +171,7 @@ def is_float(obj: tp.Any) -> bool:
     """Return whether the object is a float.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a float, False otherwise.
@@ -183,7 +183,7 @@ def is_number(obj: tp.Any) -> bool:
     """Return whether the object is a number (integer or float).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a number, False otherwise.
@@ -195,7 +195,7 @@ def is_np_scalar(obj: tp.Any) -> bool:
     """Return whether the object is a NumPy scalar.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a NumPy scalar, False otherwise.
@@ -207,7 +207,7 @@ def is_td(obj: tp.Any) -> bool:
     """Return whether the object is a timedelta object (from Pandas, datetime, or NumPy).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a timedelta, False otherwise.
@@ -219,7 +219,7 @@ def is_td_like(obj: tp.Any) -> bool:
     """Return whether the object is timedelta-like (i.e., a timedelta object, a number, or a string).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is timedelta-like, False otherwise.
@@ -231,7 +231,7 @@ def is_frequency(obj: tp.Any) -> bool:
     """Return whether the object is a frequency object (a timedelta or a Pandas DateOffset).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a frequency object, False otherwise.
@@ -243,7 +243,7 @@ def is_frequency_like(obj: tp.Any) -> bool:
     """Return whether the object is frequency-like (i.e., a frequency object, a number, or a string).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is frequency-like, False otherwise.
@@ -255,7 +255,7 @@ def is_dt(obj: tp.Any) -> bool:
     """Return whether the object is a datetime object (from Pandas, datetime, or NumPy).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a datetime, False otherwise.
@@ -267,7 +267,7 @@ def is_dt_like(obj: tp.Any) -> bool:
     """Return whether the object is datetime-like (i.e., a datetime object, a number, or a string).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is datetime-like, False otherwise.
@@ -279,7 +279,7 @@ def is_time(obj: tp.Any) -> bool:
     """Return whether the object is a time object.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a time, False otherwise.
@@ -291,7 +291,7 @@ def is_time_like(obj: tp.Any) -> bool:
     """Return whether the object is time-like (i.e., a time object or a string).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is time-like, False otherwise.
@@ -303,7 +303,7 @@ def is_np_array(obj: tp.Any) -> bool:
     """Return whether the object is a NumPy array.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a NumPy array, False otherwise.
@@ -315,7 +315,7 @@ def is_record_array(obj: tp.Any) -> bool:
     """Return whether the object is a structured NumPy array.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a structured NumPy array, False otherwise.
@@ -327,7 +327,7 @@ def is_series(obj: tp.Any) -> bool:
     """Return whether the object is a Pandas Series.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a Pandas Series, False otherwise.
@@ -339,7 +339,7 @@ def is_index(obj: tp.Any) -> bool:
     """Return whether the object is a Pandas Index.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a Pandas Index, False otherwise.
@@ -351,7 +351,7 @@ def is_multi_index(obj: tp.Any) -> bool:
     """Return whether the object is a Pandas MultiIndex.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a Pandas MultiIndex, False otherwise.
@@ -363,7 +363,7 @@ def is_frame(obj: tp.Any) -> bool:
     """Return whether the object is a Pandas DataFrame.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a Pandas DataFrame, False otherwise.
@@ -375,7 +375,7 @@ def is_pandas(obj: tp.Any) -> bool:
     """Return whether the object is a Pandas object (Series, Index, or DataFrame).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a Pandas object, False otherwise.
@@ -387,7 +387,7 @@ def is_any_array(obj: tp.Any) -> bool:
     """Return whether the object is any array-like object (a NumPy array or a Pandas object).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is any array-like object, False otherwise.
@@ -401,7 +401,7 @@ def to_any_array(obj: tp.ArrayLike) -> tp.AnyArray:
     Pandas objects are kept as-is.
 
     Args:
-        obj (ArrayLike): The object to convert.
+        obj (ArrayLike): Object to convert.
 
     Returns:
         AnyArray: The converted array.
@@ -415,7 +415,7 @@ def is_collection(obj: tp.Any) -> bool:
     """Return whether the object is considered a collection.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a collection, False otherwise.
@@ -434,7 +434,7 @@ def is_complex_collection(obj: tp.Any) -> bool:
     (i.e., a collection that is not a string, bytes, or bytearray).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a complex collection, False otherwise.
@@ -448,7 +448,7 @@ def is_iterable(obj: tp.Any) -> bool:
     """Return whether the object is iterable.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is iterable, False otherwise.
@@ -467,7 +467,7 @@ def is_complex_iterable(obj: tp.Any) -> bool:
     (i.e., iterable but not a string, bytes, or bytearray).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a complex iterable, False otherwise.
@@ -481,7 +481,7 @@ def is_sequence(obj: tp.Any) -> bool:
     """Return whether the object is a sequence.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a sequence, False otherwise.
@@ -501,7 +501,7 @@ def is_complex_sequence(obj: tp.Any) -> bool:
     (i.e., a sequence that is not a string, bytes, or bytearray).
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a complex sequence, False otherwise.
@@ -515,7 +515,7 @@ def is_hashable(obj: tp.Any) -> bool:
     """Return whether the object can be hashed.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is hashable, False otherwise.
@@ -537,8 +537,8 @@ def is_index_equal(obj1: tp.Any, obj2: tp.Any, check_names: bool = True) -> bool
     """Return whether two indexes are equal.
 
     Args:
-        obj1 (Any): The first index to compare.
-        obj2 (Any): The second index to compare.
+        obj1 (Any): First index to compare.
+        obj2 (Any): Second index to compare.
         check_names (bool): If True, compare the index names in addition to the index values.
 
     Returns:
@@ -561,7 +561,7 @@ def is_default_index(obj: tp.Any, check_names: bool = True) -> bool:
     """Return whether the provided index is a basic range index.
 
     Args:
-        obj (Any): The index to check.
+        obj (Any): Index to check.
         check_names (bool): If True, compare the index names in addition to the index range.
 
     Returns:
@@ -574,7 +574,7 @@ def is_namedtuple(obj: tp.Any) -> bool:
     """Return whether the given object is an instance of a namedtuple.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a namedtuple, False otherwise.
@@ -594,7 +594,7 @@ def is_record(obj: tp.Any) -> bool:
     """Return whether the given object is a NumPy record.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a NumPy record, False otherwise.
@@ -606,9 +606,9 @@ def func_accepts_arg(func: tp.Callable, arg_name: str, arg_kind: tp.Optional[tp.
     """Return whether the function accepts an argument with the specified name.
 
     Args:
-        func (Callable): The function to inspect.
-        arg_name (str): The name of the argument to verify.
-        arg_kind (Optional[MaybeTuple[int]]): The kind or kinds of argument to check.
+        func (Callable): Function to inspect.
+        arg_name (str): Name of the argument to verify.
+        arg_kind (Optional[MaybeTuple[int]]): Kind or kinds of argument to check.
 
     Returns:
         bool: True if the function accepts the argument, False otherwise.
@@ -635,9 +635,9 @@ def is_equal(
     """Return whether two objects are equal using the provided equality function.
 
     Args:
-        obj1 (Any): The first object for comparison.
-        obj2 (Any): The second object for comparison.
-        equality_func (Callable[[Any, Any], bool]): A function to evaluate equality.
+        obj1 (Any): First object for comparison.
+        obj2 (Any): Second object for comparison.
+        equality_func (Callable[[Any, Any], bool]): Function to evaluate equality.
 
     Returns:
         bool: True if the objects are equal, False otherwise.
@@ -661,8 +661,8 @@ def is_deep_equal(
     """Return whether two objects are deeply equal by performing a recursive comparison.
 
     Args:
-        obj1 (Any): The first object for deep comparison.
-        obj2 (Any): The second object for deep comparison.
+        obj1 (Any): First object for deep comparison.
+        obj2 (Any): Second object for deep comparison.
         check_exact (bool): If True, enforce exact matching in comparisons.
         debug (bool): If True, output warning messages on mismatches.
         only_types (bool): If True, only compare the types of the objects.
@@ -792,8 +792,8 @@ def is_class(obj: type, types: tp.TypeLike) -> bool:
     """Return whether the given class matches the specified type descriptor.
 
     Args:
-        obj (type): The class to check.
-        types (TypeLike): A type, string, or `vectorbtpro.utils.parsing.Regex`
+        obj (type): Class to check.
+        types (TypeLike): Type, string, or `vectorbtpro.utils.parsing.Regex`
             pattern (or tuple of such) to compare against.
 
     Returns:
@@ -817,8 +817,8 @@ def is_subclass_of(obj: tp.Any, types: tp.TypeLike) -> bool:
     """Return whether the object is a subclass of the specified type descriptor.
 
     Args:
-        obj (Any): The class to verify for subclassing.
-        types (TypeLike): A type, string, or `vectorbtpro.utils.parsing.Regex` pattern
+        obj (Any): Class to verify for subclassing.
+        types (TypeLike): Type, string, or `vectorbtpro.utils.parsing.Regex` pattern
             (or tuple of such) representing the superclass.
 
     Returns:
@@ -853,8 +853,8 @@ def is_instance_of(obj: tp.Any, types: tp.TypeLike) -> bool:
     """Return True if the object is an instance of the specified type(s).
 
     Args:
-        obj (Any): The object to check.
-        types (TypeLike): A type, a tuple of types, or type name(s).
+        obj (Any): Object to check.
+        types (TypeLike): Type, a tuple of types, or type name(s).
 
     Returns:
         bool: True if the object is an instance of the specified type(s), False otherwise.
@@ -866,7 +866,7 @@ def is_attrs_class(obj: tp.Any) -> bool:
     """Return True if the object is an `attrs`-decorated class.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is an `attrs`-decorated class, False otherwise.
@@ -878,7 +878,7 @@ def is_attrs_subclass(obj: tp.Any) -> bool:
     """Return True if the object is a subclass of an `attrs`-decorated class.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a subclass of an `attrs`-decorated class, False otherwise.
@@ -890,7 +890,7 @@ def is_attrs_instance(obj: tp.Any) -> bool:
     """Return True if the object is an instance of an `attrs`-decorated class.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is an instance of an `attrs`-decorated class, False otherwise.
@@ -902,7 +902,7 @@ def is_mapping(obj: tp.Any) -> bool:
     """Return True if the object is a mapping.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a mapping, False otherwise.
@@ -916,7 +916,7 @@ def is_mapping_like(obj: tp.Any) -> bool:
     An object is considered mapping-like if it is a mapping, a Series, an Index, or a NamedTuple.
 
     Args:
-        obj (Any): The object to check.
+        obj (Any): Object to check.
 
     Returns:
         bool: True if the object is mapping-like, False otherwise.
@@ -928,7 +928,7 @@ def is_valid_variable_name(obj: str) -> bool:
     """Return True if the object is a valid variable name.
 
     Args:
-        obj (str): The string representing the variable name.
+        obj (str): String representing the variable name.
 
     Returns:
         bool: True if the string is a valid variable name, False otherwise.
@@ -965,8 +965,8 @@ def safe_assert(obj: bool, msg: tp.Optional[str] = None) -> None:
     """Assert that a condition is True.
 
     Args:
-        obj (bool): The condition to evaluate.
-        msg (Optional[str]): The error message to use if the assertion fails.
+        obj (bool): Condition to evaluate.
+        msg (Optional[str]): Error message to use if the assertion fails.
 
     Returns:
         None
@@ -982,9 +982,9 @@ def assert_in(obj1: tp.Any, obj2: tp.Sequence, arg_name: tp.Optional[str] = None
     """Assert that `obj1` is present in `obj2`.
 
     Args:
-        obj1 (Any): The element to search for.
-        obj2 (Sequence): The sequence in which to search.
-        arg_name (Optional[str]): The variable name for error messaging.
+        obj1 (Any): Element to search for.
+        obj2 (Sequence): Sequence in which to search.
+        arg_name (Optional[str]): Variable name for error messaging.
 
     Returns:
         None
@@ -1004,7 +1004,7 @@ def assert_numba_func(func: tp.Callable) -> None:
     """Assert that the function is Numba-compiled.
 
     Args:
-        func (Callable): The function to check for Numba compilation.
+        func (Callable): Function to check for Numba compilation.
 
     Returns:
         None
@@ -1020,8 +1020,8 @@ def assert_not_none(obj: tp.Any, arg_name: tp.Optional[str] = None) -> None:
     """Assert that the object is not None.
 
     Args:
-        obj (Any): The value to check.
-        arg_name (Optional[str]): The variable name for error messaging.
+        obj (Any): Value to check.
+        arg_name (Optional[str]): Variable name for error messaging.
 
     Returns:
         None
@@ -1041,9 +1041,9 @@ def assert_instance_of(obj: tp.Any, types: tp.TypeLike, arg_name: tp.Optional[st
     """Assert that object is an instance of the specified type(s).
 
     Args:
-        obj (Any): The object to validate.
-        types (TypeLike): A type, tuple of types, or type name(s) to check against.
-        arg_name (Optional[str]): The variable name for error messaging.
+        obj (Any): Object to validate.
+        types (TypeLike): Type, tuple of types, or type name(s) to check against.
+        arg_name (Optional[str]): Variable name for error messaging.
 
     Returns:
         None
@@ -1066,9 +1066,9 @@ def assert_not_instance_of(obj: tp.Any, types: tp.TypeLike, arg_name: tp.Optiona
     """Assert that object is not an instance of the specified type(s).
 
     Args:
-        obj (Any): The object to validate.
-        types (TypeLike): A type, tuple of types, or type name(s) that are disallowed.
-        arg_name (Optional[str]): The variable name for error messaging.
+        obj (Any): Object to validate.
+        types (TypeLike): Type, tuple of types, or type name(s) that are disallowed.
+        arg_name (Optional[str]): Variable name for error messaging.
 
     Returns:
         None
@@ -1091,9 +1091,9 @@ def assert_subclass_of(obj: tp.Type, classes: tp.TypeLike, arg_name: tp.Optional
     """Assert that object is a subclass of the specified class(es).
 
     Args:
-        obj (Type): The type to check.
-        classes (TypeLike): A class or tuple of classes for validation.
-        arg_name (Optional[str]): The variable name for error messaging.
+        obj (Type): Type to check.
+        classes (TypeLike): Class or tuple of classes for validation.
+        arg_name (Optional[str]): Variable name for error messaging.
 
     Returns:
         None
@@ -1116,9 +1116,9 @@ def assert_not_subclass_of(obj: tp.Type, classes: tp.TypeLike, arg_name: tp.Opti
     """Assert that object is not a subclass of the specified class(es).
 
     Args:
-        obj (Type): The type to check.
-        classes (TypeLike): A class or tuple of classes that are disallowed.
-        arg_name (Optional[str]): The variable name for error messaging.
+        obj (Type): Type to check.
+        classes (TypeLike): Class or tuple of classes that are disallowed.
+        arg_name (Optional[str]): Variable name for error messaging.
 
     Returns:
         None
@@ -1141,8 +1141,8 @@ def assert_type_equal(obj1: tp.Any, obj2: tp.Any) -> None:
     """Assert that `obj1` and `obj2` have the same type.
 
     Args:
-        obj1 (Any): The first object to compare.
-        obj2 (Any): The second object to compare.
+        obj1 (Any): First object to compare.
+        obj2 (Any): Second object to compare.
 
     Returns:
         None
@@ -1160,9 +1160,9 @@ def assert_dtype(obj: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_name
     For a DataFrame, each column's data type is validated.
 
     Args:
-        obj (ArrayLike): The array or DataFrame to validate.
-        dtype (MaybeTuple[DTypeLike]): The expected data type or a tuple of possible data types.
-        arg_name (Optional[str]): The variable name for error messaging.
+        obj (ArrayLike): Array or DataFrame to validate.
+        dtype (MaybeTuple[DTypeLike]): Expected data type or a tuple of possible data types.
+        arg_name (Optional[str]): Variable name for error messaging.
 
     Returns:
         None
@@ -1199,9 +1199,9 @@ def assert_subdtype(obj: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_n
     For a DataFrame, each column's data type is validated.
 
     Args:
-        obj (ArrayLike): The array or DataFrame to validate.
-        dtype (MaybeTuple[DTypeLike]): The expected data type or a tuple of data types.
-        arg_name (Optional[str]): The variable name for error messaging.
+        obj (ArrayLike): Array or DataFrame to validate.
+        dtype (MaybeTuple[DTypeLike]): Expected data type or a tuple of data types.
+        arg_name (Optional[str]): Variable name for error messaging.
 
     Returns:
         None
@@ -1236,8 +1236,8 @@ def assert_dtype_equal(obj1: tp.ArrayLike, obj2: tp.ArrayLike) -> None:
     """Assert that the data types of `obj1` and `obj2` are equal.
 
     Args:
-        obj1 (ArrayLike): The first array or DataFrame to compare.
-        obj2 (ArrayLike): The second array or DataFrame to compare.
+        obj1 (ArrayLike): First array or DataFrame to compare.
+        obj2 (ArrayLike): Second array or DataFrame to compare.
 
     Returns:
         None
@@ -1290,8 +1290,8 @@ def assert_len_equal(obj1: tp.Sized, obj2: tp.Sized) -> None:
     """Assert that the lengths of `obj1` and `obj2` are equal.
 
     Args:
-        obj1 (Sized): The first object whose length is compared.
-        obj2 (Sized): The second object whose length is compared.
+        obj1 (Sized): First object whose length is compared.
+        obj2 (Sized): Second object whose length is compared.
 
     Returns:
         None
@@ -1318,9 +1318,9 @@ def assert_shape_equal(
     If `axis` is an integer, that axis index is compared for both arrays.
 
     Args:
-        obj1 (ArrayLike): The first array-like object.
-        obj2 (ArrayLike): The second array-like object.
-        axis (Optional[Union[int, Tuple[int, int]]): The axis or axes along which to compare shapes.
+        obj1 (ArrayLike): First array-like object.
+        obj2 (ArrayLike): Second array-like object.
+        axis (Optional[Union[int, Tuple[int, int]]): Axis or axes along which to compare shapes.
 
     Returns:
         None
@@ -1350,8 +1350,8 @@ def assert_index_equal(obj1: tp.Index, obj2: tp.Index, check_names: bool = True)
     """Assert that the indexes of `obj1` and `obj2` are equal.
 
     Args:
-        obj1 (Index): The first index to compare.
-        obj2 (Index): The second index to compare.
+        obj1 (Index): First index to compare.
+        obj2 (Index): Second index to compare.
         check_names (bool): Whether to check the names of the indexes.
 
     Returns:
@@ -1368,8 +1368,8 @@ def assert_columns_equal(obj1: tp.Index, obj2: tp.Index, check_names: bool = Tru
     """Assert that the columns of `obj1` and `obj2` are equal.
 
     Args:
-        obj1 (Index): The first columns index to compare.
-        obj2 (Index): The second columns index to compare.
+        obj1 (Index): First columns index to compare.
+        obj2 (Index): Second columns index to compare.
         check_names (bool): Whether to check the names of the columns.
 
     Returns:
@@ -1389,8 +1389,8 @@ def assert_meta_equal(obj1: tp.ArrayLike, obj2: tp.ArrayLike, axis: tp.Optional[
     indexes and, when applicable, columns or series names.
 
     Args:
-        obj1 (ArrayLike): The first array-like object.
-        obj2 (ArrayLike): The second array-like object.
+        obj1 (ArrayLike): First array-like object.
+        obj2 (ArrayLike): Second array-like object.
         axis (Optional[int]): Axis along which to compare metadata.
 
     Returns:
@@ -1425,8 +1425,8 @@ def assert_array_equal(obj1: tp.ArrayLike, obj2: tp.ArrayLike) -> None:
     * A NumPy array equality check otherwise.
 
     Args:
-        obj1 (ArrayLike): The first array-like object.
-        obj2 (ArrayLike): The second array-like object.
+        obj1 (ArrayLike): First array-like object.
+        obj2 (ArrayLike): Second array-like object.
 
     Returns:
         None
@@ -1450,8 +1450,8 @@ def assert_level_not_exists(obj: tp.Index, level_name: str) -> None:
     """Assert that the specified level name does not exist in the index.
 
     Args:
-        obj (Index): The index to check.
-        level_name (str): The name of the level that must not exist.
+        obj (Index): Index to check.
+        level_name (str): Name of the level that must not exist.
 
     Returns:
         None
@@ -1473,8 +1473,8 @@ def assert_equal(obj1: tp.Any, obj2: tp.Any, deep: bool = False) -> None:
     If `deep` is True, a deep equality check is performed.
 
     Args:
-        obj1 (Any): The first object to compare.
-        obj2 (Any): The second object to compare.
+        obj1 (Any): First object to compare.
+        obj2 (Any): Second object to compare.
         deep (bool): If True, perform a deep equality check.
 
     Returns:
@@ -1498,8 +1498,8 @@ def assert_dict_valid(obj: tp.DictLike, lvl_keys: tp.Sequence[tp.MaybeSequence[s
     for a level of the dictionary.
 
     Args:
-        obj (DictLike): The dictionary to validate.
-        lvl_keys (Sequence[MaybeSequence[str]]): A sequence of valid key sequences for each level.
+        obj (DictLike): Dictionary to validate.
+        lvl_keys (Sequence[MaybeSequence[str]]): Sequence of valid key sequences for each level.
 
     Returns:
         None
@@ -1526,8 +1526,8 @@ def assert_dict_sequence_valid(obj: tp.DictLikeSequence, lvl_keys: tp.Sequence[t
     """Assert that the dictionary and any dictionary within a sequence contains keys present in `lvl_keys`.
 
     Args:
-        obj (DictLikeSequence): A dictionary or a sequence of dictionaries to validate.
-        lvl_keys (Sequence[MaybeSequence[str]]): A sequence of valid key sequences for each level.
+        obj (DictLikeSequence): Dictionary or a sequence of dictionaries to validate.
+        lvl_keys (Sequence[MaybeSequence[str]]): Sequence of valid key sequences for each level.
 
     Returns:
         None

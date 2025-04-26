@@ -125,7 +125,7 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
     to the decorated class if they accept a `returns` argument.
 
     Args:
-        cls (Type[T]): The class to which QuantStats methods will be attached.
+        cls (Type[T]): Class to which QuantStats methods will be attached.
         replace_signature (bool): Whether to replace the method signature with that of the
             corresponding QuantStats function.
 
@@ -251,7 +251,7 @@ class QSAdapter(Configured):
     """Adapter class for quantstats.
 
     Args:
-        returns_acc (ReturnsAccessor): The returns accessor instance.
+        returns_acc (ReturnsAccessor): Returns accessor instance.
         defaults (KwargsLike): Default parameters.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """

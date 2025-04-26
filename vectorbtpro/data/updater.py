@@ -121,7 +121,7 @@ class DataUpdater(Configured):
 
         Args:
             *args: Positional arguments for `vectorbtpro.utils.schedule_.ScheduleManager.every`.
-            to (int): The upper time boundary for scheduling updates.
+            to (int): Upper time boundary for scheduling updates.
             tags (Optional[Iterable[Hashable]]): Tags used to identify the scheduled job.
             in_background (bool): If True, the job runs as an asyncio task and
                 can be stopped using `vectorbtpro.utils.schedule_.ScheduleManager.stop`

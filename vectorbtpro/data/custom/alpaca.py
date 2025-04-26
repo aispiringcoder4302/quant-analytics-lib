@@ -111,7 +111,7 @@ class AlpacaData(RemoteData):
             exchange (Optional[str]): Filter for the exchange.
 
                 For possible values, refer to `alpaca.trading.enums`.
-            trading_client (Optional[RESTClient]): An existing trading client instance.
+            trading_client (Optional[RESTClient]): Existing trading client instance.
             client_config (KwargsLike): Configuration parameters for initializing the trading client.
 
         Returns:
@@ -177,7 +177,7 @@ class AlpacaData(RemoteData):
         If no client is provided, a new instance is created using the supplied `client_config`.
 
         Args:
-            client (Optional[RESTClient]): An existing client instance to use.
+            client (Optional[RESTClient]): Existing client instance to use.
             client_type (Optional[str]): Specifies the type of client to create;
                 expected values are "crypto" or "stocks".
             **client_config: Keyword arguments for client initialization.
@@ -229,7 +229,7 @@ class AlpacaData(RemoteData):
         """Fetch a symbol from Alpaca via overriding `vectorbtpro.data.base.Data.fetch_symbol`.
 
         Args:
-            symbol (str): The symbol to fetch.
+            symbol (str): Symbol to fetch.
             client (Optional[RESTClient]): Alpaca REST client instance.
 
                 See `AlpacaData.resolve_client`.

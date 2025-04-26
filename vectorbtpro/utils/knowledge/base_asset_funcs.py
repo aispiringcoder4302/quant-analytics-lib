@@ -798,9 +798,9 @@ class FindAssetFunc(AssetFunc):
         `vectorbtpro.utils.search_.Not` to indicate negation.
 
         Args:
-            k (Optional[Hashable]): An identifier key (unused in matching).
-            d (Any): The data item to test.
-            target (MaybeList[Any]): The matching criterion, either a function or a
+            k (Optional[Hashable]): Identifier key (unused in matching).
+            d (Any): Data item to test.
+            target (MaybeList[Any]): Matching criterion, either a function or a
                 `vectorbtpro.utils.search_.Not` instance.
             find_all (bool): Flag specifying if all targets should be evaluated.
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.find`.
@@ -1194,10 +1194,10 @@ class FindReplaceAssetFunc(FindAssetFunc):
         returns a boolean indicating a match and `replacement` computes the new value.
 
         Args:
-            k (Optional[Hashable]): The key associated with the current element.
-            d (Any): The original value to evaluate for a match.
-            target (MaybeList[Any]): The target value or callable to determine if a match occurs.
-            replacement (MaybeList[Any]): The replacement value or callable to apply when a match is found.
+            k (Optional[Hashable]): Key associated with the current element.
+            d (Any): Original value to evaluate for a match.
+            target (MaybeList[Any]): Target value or callable to determine if a match occurs.
+            replacement (MaybeList[Any]): Replacement value or callable to apply when a match is found.
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.replace`.
 
         Returns:
@@ -1392,7 +1392,7 @@ class FindRemoveAssetFunc(FindAssetFunc):
         """Return whether the given object is empty.
 
         Args:
-            d (Any): The data item to check for emptiness.
+            d (Any): Data item to check for emptiness.
 
         Returns:
             bool: True if the data item is empty, False otherwise.
@@ -1616,8 +1616,8 @@ class DumpAssetFunc(AssetFunc):
         settings and the provided dump engine.
 
         Args:
-            dump_engine (Optional[str]): The name of the dump engine to use.
-            asset_cls (Optional[Type[KnowledgeAsset]]): The asset class to use for resolving settings.
+            dump_engine (Optional[str]): Name of the dump engine to use.
+            asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
             **kwargs: Additional keyword arguments to merge with the resolved settings.
 
         Returns:
@@ -1876,7 +1876,7 @@ class CollectAssetFunc(ReduceAssetFunc):
         """Return a tuple used as a sorting key.
 
         Args:
-            k (Any): The key to be sorted.
+            k (Any): Key to be sorted.
 
         Returns:
             tuple: A tuple used for sorting, where the first element is 0 if `k` is a string,

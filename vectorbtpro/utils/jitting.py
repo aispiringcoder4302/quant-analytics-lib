@@ -54,7 +54,7 @@ class Jitter(Configured):
         """Apply jitting decoration to a Python function.
 
         Args:
-            py_func (Callable): The Python function to decorate.
+            py_func (Callable): Python function to decorate.
             tags (Optional[set]): Additional tags affecting the decoration process.
 
         Returns:
@@ -211,7 +211,7 @@ def get_func_suffix(py_func: tp.Callable) -> tp.Optional[str]:
     """Retrieve the suffix from a function's name if it corresponds to a registered jitter configuration.
 
     Args:
-        py_func (Callable): The function to inspect.
+        py_func (Callable): Function to inspect.
 
     Returns:
         Optional[str]: The suffix in lowercase if recognized; otherwise, None.
@@ -239,7 +239,7 @@ def resolve_jitter_type(
     """Resolve the jitter type based on the provided parameter.
 
     Args:
-        jitter (Optional[JitterLike]): The jitter.
+        jitter (Optional[JitterLike]): Jitter.
 
             * If `jitter` is None and a Python function is provided, infer the jitter type from
                 the function's name via `get_func_suffix`.
@@ -247,7 +247,7 @@ def resolve_jitter_type(
                 `vectorbtpro._settings.jitting`.
             * If `jitter` is a subclass of `Jitter` or an instance thereof, return the appropriate class.
             * Otherwise, an error is raised.
-        py_func (Optional[Callable]): A function used to infer the jitter type when `jitter` is None.
+        py_func (Optional[Callable]): Function used to infer the jitter type when `jitter` is None.
 
     Returns:
         Type[Jitter]: The resolved jitter class.
@@ -295,7 +295,7 @@ def get_id_of_jitter_type(jitter_type: tp.Type[Jitter]) -> tp.Optional[tp.Hashab
     """Retrieve the identifier of a jitter type from the configuration in `vectorbtpro._settings.jitting`.
 
     Args:
-        jitter_type (Type[Jitter]): The jitter class to look up.
+        jitter_type (Type[Jitter]): Jitter class to look up.
 
     Returns:
         Optional[Hashable]: The identifier if found; otherwise, None.
@@ -331,7 +331,7 @@ def resolve_jitted_option(option: tp.JittedOption = None) -> tp.KwargsLike:
     * dict: Interpret the option as a dictionary of keyword arguments for jitting.
 
     Args:
-        option (JittedOption): The jitting option to resolve.
+        option (JittedOption): Jitting option to resolve.
 
     Returns:
         KwargsLike: A dictionary of keyword arguments for jitting, or None if jitting is disabled.
@@ -361,7 +361,7 @@ def specialize_jitted_option(option: tp.JittedOption = None, **kwargs) -> tp.Kwa
     """Resolve a jitted option by merging its resolved keyword arguments with additional keyword arguments.
 
     Args:
-        option (JittedOption): A jitted option to resolve.
+        option (JittedOption): Jitted option to resolve.
         **kwargs: Keyword arguments to merge.
 
     Returns:
@@ -378,7 +378,7 @@ def resolve_jitted_kwargs(option: tp.JittedOption = None, **kwargs) -> tp.Kwargs
     additional keyword arguments.
 
     Args:
-        option (JittedOption): The jitted option to resolve.
+        option (JittedOption): Jitted option to resolve.
         **kwargs: Keyword arguments to merge.
 
     Returns:
@@ -412,8 +412,8 @@ def resolve_jitter(
     """Resolve a jitter instance.
 
     Args:
-        jitter (Optional[JitterLike]): A jitter configuration or instance.
-        py_func (Optional[Callable]): A Python function used to determine the jitter type.
+        jitter (Optional[JitterLike]): Jitter configuration or instance.
+        py_func (Optional[Callable]): Python function used to determine the jitter type.
         **jitter_kwargs: Keyword arguments for jitter instantiation.
 
     Returns:
@@ -436,7 +436,7 @@ def jitted(*args, tags: tp.Optional[set] = None, **jitted_kwargs) -> tp.Callable
 
     Args:
         *args: Positional arguments for the decorator.
-        tags (Optional[set]): A set of tags to pass to the jitter decorator.
+        tags (Optional[set]): Set of tags to pass to the jitter decorator.
         **jitted_kwargs: Keyword arguments to resolve `jitter`.
 
     Returns:

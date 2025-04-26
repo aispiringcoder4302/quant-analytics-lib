@@ -209,7 +209,7 @@ class SQLData(DBData):
         """Resolve and return the database engine.
 
         Args:
-            engine (Union[None, str, Engine]): An engine instance, URL, or key for engine settings.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
 
                 * An instance of `sqlalchemy.engine.base.Engine`.
                 * A URL (string) to create an engine using `sqlalchemy.engine.create.create_engine`.
@@ -287,7 +287,7 @@ class SQLData(DBData):
                 Schema names are matched using `SQLData.key_match`.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Flag indicating whether to sort the returned schema names.
-            engine (Union[None, str, Engine]): The database engine instance, URL, or key for engine settings.
+            engine (Union[None, str, Engine]): Database engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
             dispose_engine (Optional[bool]): Indicates whether to dispose the engine after use.
@@ -456,7 +456,7 @@ class SQLData(DBData):
         """Check whether the database contains the specified schema.
 
         Args:
-            schema (str): The name of the schema.
+            schema (str): Name of the schema.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
@@ -526,8 +526,8 @@ class SQLData(DBData):
         """Check if the specified table exists in the database.
 
         Args:
-            table (str): The name of the table.
-            schema (Optional[str]): The schema in which to search for the table.
+            table (str): Name of the table.
+            schema (Optional[str]): Schema in which to search for the table.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
@@ -562,7 +562,7 @@ class SQLData(DBData):
 
         Args:
             table (str): Name of the table.
-            schema (Optional[str]): The schema where the table is located.
+            schema (Optional[str]): Schema where the table is located.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
@@ -602,8 +602,8 @@ class SQLData(DBData):
         """Get the last row number from the specified table.
 
         Args:
-            table (str): The name of the table.
-            schema (Optional[str]): The schema where the table is located.
+            table (str): Name of the table.
+            schema (Optional[str]): Schema where the table is located.
             row_number_column (Optional[str]): Column name representing the row number.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.

@@ -33,9 +33,9 @@ def date_range_nb(
     Inspired by `pd.date_range`.
 
     Args:
-        start (np.datetime64): The starting datetime value.
-        end (np.datetime64): The ending datetime value.
-        freq (np.timedelta64): The frequency interval for datetime increments.
+        start (np.datetime64): Starting datetime value.
+        end (np.datetime64): Ending datetime value.
+        freq (np.timedelta64): Frequency interval for datetime increments.
         incl_left (bool): Include the start datetime if True.
         incl_right (bool): Include the end datetime if True.
 

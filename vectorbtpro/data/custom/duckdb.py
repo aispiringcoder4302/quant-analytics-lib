@@ -113,7 +113,7 @@ class DuckDBData(DBData):
         """Resolve and return a DuckDB connection based on provided parameters.
 
         Args:
-            connection (Union[None, str, PathLike, DuckDBPyConnection]): A connection instance,
+            connection (Union[None, str, PathLike, DuckDBPyConnection]): Connection instance,
                 file path, or connection string.
 
                 If None, a default connection is used.
@@ -183,7 +183,7 @@ class DuckDBData(DBData):
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Flag indicating whether to sort the resulting catalog names.
             incl_system (bool): Flag indicating whether to include system catalogs.
-            connection (Union[None, str, DuckDBPyConnection]): A connection instance,
+            connection (Union[None, str, DuckDBPyConnection]): Connection instance,
                 file path, or connection string.
             connection_config (KwargsLike): Keyword arguments for connection configuration.
 
@@ -240,7 +240,7 @@ class DuckDBData(DBData):
 
                 If provided, schemas are not prefixed.
             incl_system (bool): Flag indicating whether to include system schemas.
-            connection (Union[None, str, DuckDBPyConnection]): A connection instance,
+            connection (Union[None, str, DuckDBPyConnection]): Connection instance,
                 file path, or connection string.
             connection_config (KwargsLike): Keyword arguments for connection configuration.
 
@@ -299,7 +299,7 @@ class DuckDBData(DBData):
         """Return the current schema in use by the DuckDB connection.
 
         Args:
-            connection (Union[None, str, DuckDBPyConnection]): A connection instance,
+            connection (Union[None, str, DuckDBPyConnection]): Connection instance,
                 file path, or connection string.
             connection_config (KwargsLike): Keyword arguments for connection configuration.
 
@@ -633,7 +633,7 @@ class DuckDBData(DBData):
         """Format the given write option into a string representation.
 
         Args:
-            option (Any): The write option to format.
+            option (Any): Write option to format.
 
         Returns:
             str: The formatted write option.
@@ -651,7 +651,7 @@ class DuckDBData(DBData):
         """Format the given write options into a single string.
 
         Args:
-            options (Union[str, dict]): The write options to format.
+            options (Union[str, dict]): Write options to format.
 
         Returns:
             str: A comma-separated string of formatted write options.
@@ -668,7 +668,7 @@ class DuckDBData(DBData):
         """Format the given read option into a string representation.
 
         Args:
-            option (Any): The read option to format.
+            option (Any): Read option to format.
 
         Returns:
             str: The formatted read option.
@@ -686,7 +686,7 @@ class DuckDBData(DBData):
         """Format the given read options into a single string.
 
         Args:
-            options (Union[str, dict]): The read options to format.
+            options (Union[str, dict]): Read options to format.
 
         Returns:
             str: A comma-separated string of formatted read options.
@@ -1004,7 +1004,7 @@ class DuckDBData(DBData):
         """Fetch the data table for a feature using the underlying `DuckDBData.fetch_key` method.
 
         Args:
-            feature (str): The identifier for the feature whose data table is to be fetched.
+            feature (str): Identifier for the feature whose data table is to be fetched.
             **kwargs: Keyword arguments for `DuckDBData.fetch_key`.
 
         Returns:
@@ -1017,7 +1017,7 @@ class DuckDBData(DBData):
         """Fetch the data table for a symbol using the underlying `DuckDBData.fetch_key` method.
 
         Args:
-            symbol (str): The identifier for the symbol whose data table is to be fetched.
+            symbol (str): Identifier for the symbol whose data table is to be fetched.
             **kwargs: Keyword arguments for `DuckDBData.fetch_key`.
 
         Returns:
@@ -1034,7 +1034,7 @@ class DuckDBData(DBData):
         invoking either `fetch_feature` or `fetch_symbol` depending on the object's orientation.
 
         Args:
-            key (str): The identifier for the feature or symbol to update.
+            key (str): Identifier for the feature or symbol to update.
             from_last_index (Optional[bool]): Flag indicating whether to update data starting from the last index.
 
                 If not provided, it is inferred from the presence of a "query" in the merged keyword arguments.
@@ -1061,7 +1061,7 @@ class DuckDBData(DBData):
         """Update the data table for a feature using the underlying `DuckDBData.update_key` method.
 
         Args:
-            feature (str): The identifier for the feature to update.
+            feature (str): Identifier for the feature to update.
             **kwargs: Keyword arguments for `DuckDBData.update_key`.
 
         Returns:
@@ -1073,7 +1073,7 @@ class DuckDBData(DBData):
         """Update the data table for a symbol using the underlying `DuckDBData.update_key` method.
 
         Args:
-            symbol (str): The identifier for the symbol to update.
+            symbol (str): Identifier for the symbol to update.
             **kwargs: Keyword arguments for `DuckDBData.update_key`.
 
         Returns:

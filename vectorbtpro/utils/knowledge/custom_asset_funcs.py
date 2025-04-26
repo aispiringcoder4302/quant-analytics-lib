@@ -747,7 +747,7 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
         """Return the channel link extracted from a message link.
 
         Args:
-            link (str): A message link to process.
+            link (str): Message link to process.
 
         Returns:
             str: The extracted channel link.

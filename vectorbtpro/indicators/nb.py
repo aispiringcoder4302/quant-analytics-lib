@@ -2359,8 +2359,8 @@ def iter_med_price_nb(high: float, low: float) -> float:
     """Return the median price for one iteration.
 
     Args:
-        high (float): The high price value.
-        low (float): The low price value.
+        high (float): High price value.
+        low (float): Low price value.
 
     Returns:
         float: The computed median price.
@@ -2373,10 +2373,10 @@ def iter_basic_bands_nb(high: float, low: float, atr: float, multiplier: float) 
     """Return the upper and lower basic band values for one iteration.
 
     Args:
-        high (float): The high price value.
-        low (float): The low price value.
-        atr (float): The average true range.
-        multiplier (float): The multiplier applied to the ATR.
+        high (float): High price value.
+        low (float): Low price value.
+        atr (float): Average true range.
+        multiplier (float): Multiplier applied to the ATR.
 
     Returns:
         Tuple[float, float]: The computed upper and lower band values.
@@ -2400,12 +2400,12 @@ def final_basic_bands_nb(
     """Return final basic band values along with trend details for one iteration.
 
     Args:
-        close (float): The current closing price.
-        upper (float): The upper band value before adjustments.
-        lower (float): The lower band value before adjustments.
-        prev_upper (float): The previous upper band value.
-        prev_lower (float): The previous lower band value.
-        prev_direction (int): The previous direction.
+        close (float): Current closing price.
+        upper (float): Upper band value before adjustments.
+        lower (float): Lower band value before adjustments.
+        prev_upper (float): Previous upper band value.
+        prev_lower (float): Previous lower band value.
+        prev_direction (int): Previous direction.
 
     Returns:
         Tuple[float, float, float, int, float, float]: A tuple containing the adjusted
@@ -2436,7 +2436,7 @@ def supertrend_acc_nb(in_state: SuperTrendAIS) -> SuperTrendAOS:
     """Return an updated state for the supertrend indicator based on the provided input state.
 
     Args:
-        in_state (SuperTrendAIS): The input state of type `vectorbtpro.indicators.enums.SuperTrendAIS`
+        in_state (SuperTrendAIS): Input state of type `vectorbtpro.indicators.enums.SuperTrendAIS`
             containing price, band, and trend information.
 
     Returns:
@@ -2510,8 +2510,8 @@ def supertrend_1d_nb(
         high (Array1d): Array of high price values.
         low (Array1d): Array of low price values.
         close (Array1d): Array of closing price values.
-        period (int): The period for the supertrend calculation.
-        multiplier (float): The multiplier applied to the average true range.
+        period (int): Period for the supertrend calculation.
+        multiplier (float): Multiplier applied to the average true range.
 
     Returns:
         Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing

@@ -81,7 +81,7 @@ class FeatherData(FileData):
 
         Args:
             key (hashable): Identifier for a feature or symbol.
-            path (str): A file path for the Feather file.
+            path (str): File path for the Feather file.
 
                 If None, `key` is used as the file path.
             tz (TimezoneLike): Target timezone.

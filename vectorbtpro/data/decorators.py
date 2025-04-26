@@ -23,7 +23,7 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
     """Attach methods for selecting and updating symbol dictionaries to a subclass of `Data`.
 
     Args:
-        cls (Type[T]): The class to decorate.
+        cls (Type[T]): Class to decorate.
 
             Must be a subclass of `Data` that defines `_key_dict_attrs` and `_updatable_attrs`.
 
@@ -59,7 +59,7 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
             Select a feature or symbol from the attribute `{cls.__name__}.{target_name}`.
             
             Args:
-                key (Key): The key used to select the feature or symbol.
+                key (Key): Key used to select the feature or symbol.
                 **kwargs: Keyword arguments for selection.
                 
             Returns:

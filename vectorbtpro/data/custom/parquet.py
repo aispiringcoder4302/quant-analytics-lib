@@ -144,7 +144,7 @@ class ParquetData(FileData):
         partition column, otherwise False.
 
         Args:
-            level (str): The partition column name.
+            level (str): Partition column name.
 
         Returns:
             bool: True if the partition column name is a default partition column, False otherwise.
@@ -246,7 +246,7 @@ class ParquetData(FileData):
         """Fetch the Parquet file corresponding to the given feature.
 
         Args:
-            feature (hashable): The feature identifier.
+            feature (hashable): Feature identifier.
             **kwargs: Keyword arguments for `ParquetData.fetch_key`.
 
         Returns:
@@ -259,7 +259,7 @@ class ParquetData(FileData):
         """Fetch the Parquet file corresponding to the given symbol.
 
         Args:
-            symbol (hashable): The symbol identifier.
+            symbol (hashable): Symbol identifier.
             **kwargs: Keyword arguments for `ParquetData.fetch_key`.
 
         Returns:
@@ -271,7 +271,7 @@ class ParquetData(FileData):
         """Update and return the data for a given feature or symbol.
 
         Args:
-            key (hashable): The feature or symbol identifier.
+            key (hashable): Feature or symbol identifier.
             key_is_feature (bool): Indicator whether the key represents a feature.
             **kwargs: Keyword arguments for `ParquetData.fetch_feature` or `ParquetData.fetch_symbol`.
 
@@ -288,7 +288,7 @@ class ParquetData(FileData):
         """Update and return the data for the specified feature.
 
         Args:
-            feature (hashable): The feature identifier.
+            feature (hashable): Feature identifier.
             **kwargs: Keyword arguments for `ParquetData.update_key`.
 
         Returns:
@@ -300,7 +300,7 @@ class ParquetData(FileData):
         """Update and return the data for the specified symbol.
 
         Args:
-            symbol (hashable): The symbol identifier.
+            symbol (hashable): Symbol identifier.
             **kwargs: Keyword arguments for `ParquetData.update_key`.
 
         Returns:

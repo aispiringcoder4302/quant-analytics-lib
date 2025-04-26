@@ -397,7 +397,7 @@ class VBTAsset(KnowledgeAsset):
         """Return asset item(s) matching the provided link(s).
 
         Args:
-            link (MaybeList[str]): A single link or a list of links to search for.
+            link (MaybeList[str]): Single link or a list of links to search for.
             mode (str): Matching mode for link matching ("exact" or "end").
             per_path (bool): Whether to match links based on individual path segments.
             single_item (bool): Indicates if only a single matching item is expected.
@@ -452,8 +452,8 @@ class VBTAsset(KnowledgeAsset):
         """Return a minimized version of the given link by applying regex replacement rules.
 
         Args:
-            link (str): The link to minimize.
-            rules (Optional[Dict[str, str]]): A dictionary of regex replacement rules.
+            link (str): Link to minimize.
+            rules (Optional[Dict[str, str]]): Dictionary of regex replacement rules.
 
         Returns:
             str: The minimized link.
@@ -468,7 +468,7 @@ class VBTAsset(KnowledgeAsset):
         """Return asset with minimized links by applying regex replacement rules.
 
         Args:
-            rules (Optional[Dict[str, str]]): A dictionary of regex replacement rules.
+            rules (Optional[Dict[str, str]]): Dictionary of regex replacement rules.
 
         Returns:
             MaybeVBTAsset: A new VBT asset with minimized links.
@@ -505,7 +505,7 @@ class VBTAsset(KnowledgeAsset):
         """Return the asset item immediately preceding the item matching the specified link.
 
         Args:
-            link (str): The link identifying the reference item.
+            link (str): Link identifying the reference item.
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
@@ -522,7 +522,7 @@ class VBTAsset(KnowledgeAsset):
         """Return the asset item immediately following the item matching the specified link.
 
         Args:
-            link (str): The link identifying the reference item.
+            link (str): Link identifying the reference item.
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
@@ -548,7 +548,7 @@ class VBTAsset(KnowledgeAsset):
         Uses `VBTAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`.
 
         Args:
-            root_metadata_key (Optional[Key]): The root key for organizing metadata in the Markdown output.
+            root_metadata_key (Optional[Key]): Root key for organizing metadata in the Markdown output.
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
@@ -744,7 +744,7 @@ class VBTAsset(KnowledgeAsset):
         Uses `VBTAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
 
         Args:
-            root_metadata_key (Optional[Key]): The root key for organizing metadata in the Markdown output.
+            root_metadata_key (Optional[Key]): Root key for organizing metadata in the Markdown output.
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
@@ -779,7 +779,7 @@ class VBTAsset(KnowledgeAsset):
         """Return links of top-level parent entries.
 
         Args:
-            data (List): A list of dictionaries representing asset data; each dictionary should
+            data (List): List of dictionaries representing asset data; each dictionary should
                 contain a "link" key and may include a "parent" key.
 
         Returns:
@@ -807,7 +807,7 @@ class VBTAsset(KnowledgeAsset):
         """Replace URLs in HTML anchor tags based on a provided mapping.
 
         Args:
-            html (str): The HTML content containing `<a href="...">` attributes.
+            html (str): HTML content containing `<a href="...">` attributes.
             url_map (dict): Mapping from original URLs to replacement URLs.
 
         Returns:
@@ -963,7 +963,7 @@ class VBTAsset(KnowledgeAsset):
         path where HTML files are stored.
 
         Args:
-            entry_link (Optional[str]): The link of the page to display first.
+            entry_link (Optional[str]): Link of the page to display first.
 
                 If None and there are multiple top-level parents, displays them as an index.
                 If not None, will be matched using `VBTAsset.find_link`.
@@ -1018,7 +1018,7 @@ class VBTAsset(KnowledgeAsset):
         browser and returns the file path of the generated HTML page.
 
         Args:
-            link (Optional[str]): The link identifier of the page to display.
+            link (Optional[str]): Link identifier of the page to display.
 
                 If provided, it is used to locate a target page.
             find_kwargs (KwargsLike): Keyword arguments for `VBTAsset.find_link` when locating the page.
@@ -1100,7 +1100,7 @@ class VBTAsset(KnowledgeAsset):
         `allow_suffix` flags. Returns the original target if `as_regex` is False.
 
         Args:
-            target (str): The target string to process.
+            target (str): Target string to process.
             as_code (bool): Indicates if the target represents code.
             as_regex (bool): Indicates whether to prepare the target as a regex pattern.
             allow_prefix (bool): If True, do not prepend a non-word boundary.
@@ -1127,7 +1127,7 @@ class VBTAsset(KnowledgeAsset):
         """Split a CamelCase class name into its constituent parts.
 
         Args:
-            name (str): The class name in CamelCase.
+            name (str): Class name in CamelCase.
 
         Returns:
             List[str]: A list of substrings representing the parts of the class name.
@@ -1142,7 +1142,7 @@ class VBTAsset(KnowledgeAsset):
         including abbreviations based on a predefined configuration.
 
         Args:
-            name (str): The class name.
+            name (str): Class name.
 
         Returns:
             List[str]: A list of snake_case and abbreviated class name variants.
@@ -1191,7 +1191,7 @@ class VBTAsset(KnowledgeAsset):
         Each target is formatted using `VBTAsset.prepare_mention_target`.
 
         Args:
-            refname (str): The base reference name.
+            refname (str): Base reference name.
             resolve (bool): Whether to resolve annotated reference name parts.
             incl_shortcuts (Optional[bool]): Include shortcuts from `vectorbtpro as vbt`.
             incl_shortcut_access (Optional[bool]): Include attribute access forms.
@@ -1324,9 +1324,9 @@ class VBTAsset(KnowledgeAsset):
         Final targets are produced via `VBTAsset.generate_refname_targets`.
 
         Args:
-            obj (MaybeList): The object or list of objects to generate mention targets for.
-            attr (Optional[str]): An attribute name to target on the object.
-            module (Union[None, str, ModuleType]): The module context for reference resolution.
+            obj (MaybeList): Object or list of objects to generate mention targets for.
+            attr (Optional[str]): Attribute name to target on the object.
+            module (Union[None, str, ModuleType]): Module context for reference resolution.
             resolve (bool): Whether to resolve the object's reference.
             incl_base_attr (Optional[bool]): Include targets for base class attributes if applicable.
             incl_shortcuts (Optional[bool]): Include shortcut forms from vectorbtpro.
@@ -1403,7 +1403,7 @@ class VBTAsset(KnowledgeAsset):
         """Merge a list of mention target strings into a single regular expression pattern.
 
         Args:
-            targets (List[str]): A list of mention target strings.
+            targets (List[str]): List of mention target strings.
             as_regex (bool): If True, construct the pattern using regular expressions;
                 otherwise, escape the targets.
 
@@ -1465,9 +1465,9 @@ class VBTAsset(KnowledgeAsset):
         mention targets are consolidated using `VBTAsset.merge_mention_targets`.
 
         Args:
-            obj (MaybeList): The object or list of objects to search for mentions.
-            attr (Optional[str]): An attribute to consider when generating mention targets.
-            module (Union[None, str, ModuleType]): The module context for the object.
+            obj (MaybeList): Object or list of objects to search for mentions.
+            attr (Optional[str]): Attribute to consider when generating mention targets.
+            module (Union[None, str, ModuleType]): Module context for the object.
             resolve (bool): Whether to resolve the object references.
             incl_shortcuts (Optional[bool]): Include shortcut mentions.
             incl_shortcut_access (Optional[bool]): Include shortcut access mentions.
@@ -1484,7 +1484,7 @@ class VBTAsset(KnowledgeAsset):
             merge_targets (Optional[bool]): Merge mention targets to simplify the search.
             per_path (bool): Whether to perform the search per specified path.
             path (Optional[MaybeList[PathLikeKey]]): One or more paths to search within.
-            return_type (Optional[str]): The type of result to return.
+            return_type (Optional[str]): Type of result to return.
             **kwargs: Keyword arguments for `VBTAsset.find` or `VBTAsset.find_code`.
 
         Returns:
@@ -1655,7 +1655,7 @@ class PagesAsset(VBTAsset):
         Processes the provided list of links and removes links that appear as descendant headings.
 
         Args:
-            links (List[str]): A list of link strings to process.
+            links (List[str]): List of link strings to process.
             **kwargs: Keyword arguments for `replace`.
 
         Returns:
@@ -1687,7 +1687,7 @@ class PagesAsset(VBTAsset):
         Processes the list of links by aggregating descendant headings and eliminating redundant links.
 
         Args:
-            links (List[str]): A list of link strings to aggregate.
+            links (List[str]): List of link strings to aggregate.
             aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
             **kwargs: Keyword arguments for `replace`.
 
@@ -1727,7 +1727,7 @@ class PagesAsset(VBTAsset):
         Keyword arguments are passed to `VBTAsset.find_link`.
 
         Args:
-            link (MaybeList[str]): A link or list of links to search for.
+            link (MaybeList[str]): Link or list of links to search for.
             aggregate (bool): Whether to aggregate redundant links.
             aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
             incl_descendants (bool): Whether to include descendant headings.
@@ -1763,7 +1763,7 @@ class PagesAsset(VBTAsset):
         Transforms the reference name(s) into a link format and searches for the matching page asset.
 
         Args:
-            refname (MaybeList[str]): A reference name or list of reference names.
+            refname (MaybeList[str]): Reference name or list of reference names.
             **kwargs: Keyword arguments for `VBTAsset.find_page`.
 
         Returns:
@@ -1790,7 +1790,7 @@ class PagesAsset(VBTAsset):
         The object reference is prepared using `vectorbtpro.utils.module_.prepare_refname`.
 
         Args:
-            obj (Any): The object to find.
+            obj (Any): Object to find.
             attr (Optional[str]): Attribute name to append to the object reference.
             module (Union[None, str, ModuleType]): Module information for reference resolution.
             resolve (bool): Whether to resolve the object reference.
@@ -1815,7 +1815,7 @@ class PagesAsset(VBTAsset):
         Parses Markdown-style links from the content and returns the URL components.
 
         Args:
-            content (str): The content string to parse.
+            content (str): Content string to parse.
 
         Returns:
             List[str]: A list of extracted link URLs.
@@ -1831,7 +1831,7 @@ class PagesAsset(VBTAsset):
         returns the fragment as the reference name. Otherwise, constructs a reference name from the link.
 
         Args:
-            link (str): The URL to parse.
+            link (str): URL to parse.
 
         Returns:
             Optional[str]: The extracted reference name or None.
@@ -1852,7 +1852,7 @@ class PagesAsset(VBTAsset):
         Determines if the link is structured as a module reference based on its URL format.
 
         Args:
-            link (str): The URL to evaluate.
+            link (str): URL to evaluate.
 
         Returns:
             bool: True if the link is a module reference, otherwise False.
@@ -1897,9 +1897,9 @@ class PagesAsset(VBTAsset):
         ancestors, reference descendants, and aggregation of links.
 
         Args:
-            obj (MaybeList): The object or list of objects to search for.
-            attr (Optional[str]): An attribute name to append to the object reference.
-            module (Union[None, str, ModuleType]): A module for resolving the object reference.
+            obj (MaybeList): Object or list of objects to search for.
+            attr (Optional[str]): Attribute name to append to the object reference.
+            module (Union[None, str, ModuleType]): Module for resolving the object reference.
             resolve (bool): Whether to resolve the object reference.
             use_parent (Optional[bool]): Include the object's parent page.
             use_base_parents (Optional[bool]): Include base classes/attributes of the parent.
@@ -2307,9 +2307,9 @@ class PagesAsset(VBTAsset):
         and all base classes/attributes using `PagesAsset.aggregate_links`.
 
         Args:
-            obj (MaybeList): The object or list of objects to process.
-            attr (Optional[str]): The attribute name to query documentation for.
-            module (Union[None, str, ModuleType]): The module associated with the object.
+            obj (MaybeList): Object or list of objects to process.
+            attr (Optional[str]): Attribute name to query documentation for.
+            module (Union[None, str, ModuleType]): Module associated with the object.
             resolve (bool): Whether to resolve references in the documentation.
             incl_pages (Optional[MaybeIterable[str]]): Iterable of page identifiers or parts to include.
             excl_pages (Optional[MaybeIterable[str]]): Iterable of page identifiers or parts to exclude.
@@ -2534,7 +2534,7 @@ class PagesAsset(VBTAsset):
         returns a new pages asset. If `incl_link` is True, the original page is also included.
 
         Args:
-            link (str): The link of the page.
+            link (str): Link of the page.
             incl_link (bool): If True, include the page specified by `link` in the result.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
@@ -2558,7 +2558,7 @@ class PagesAsset(VBTAsset):
         returns them as a new pages asset. If `incl_link` is True, the original page is also included.
 
         Args:
-            link (str): The link of the page.
+            link (str): Link of the page.
             incl_link (bool): If True, include the page specified by `link` in the result.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
@@ -2580,7 +2580,7 @@ class PagesAsset(VBTAsset):
         """Return the sibling pages for the specified page link.
 
         Args:
-            link (str): The unique identifier of the page.
+            link (str): Unique identifier of the page.
             incl_link (bool): Include the specified page in the results.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
@@ -2606,7 +2606,7 @@ class PagesAsset(VBTAsset):
         """Return all descendant pages of the specified page link.
 
         Args:
-            link (str): The link identifying the starting page.
+            link (str): Link identifying the starting page.
             incl_link (bool): Include the starting page in the results.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
@@ -2635,7 +2635,7 @@ class PagesAsset(VBTAsset):
         and all its descendants.
 
         Args:
-            link (str): The link identifying the starting page.
+            link (str): Link identifying the starting page.
             **kwargs: Keyword arguments for `PagesAsset.select_descendants`.
 
         Returns:
@@ -2647,7 +2647,7 @@ class PagesAsset(VBTAsset):
         """Return all ancestor pages of the specified page link.
 
         Args:
-            link (str): The link identifying the target page.
+            link (str): Link identifying the target page.
             incl_link (bool): Include the target page in the results.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
@@ -2674,7 +2674,7 @@ class PagesAsset(VBTAsset):
         of type 'page' is encountered.
 
         Args:
-            link (str): The link identifying the target page.
+            link (str): Link identifying the target page.
             incl_link (bool): Include the target page in the results.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
@@ -2702,7 +2702,7 @@ class PagesAsset(VBTAsset):
         """Return descendant heading pages for the specified link.
 
         Args:
-            link (str): The link identifying the base page.
+            link (str): Link identifying the base page.
             incl_link (bool): Include the base page in the results if it is a heading.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
@@ -2834,7 +2834,7 @@ class MessagesAsset(VBTAsset):
         replies (List[str]): URLs of messages that reference this message.
         channel (str): Name of the message channel, e.g. "support".
         timestamp (str): Timestamp of the message, e.g. "2024-01-01 00:00:00".
-        author (str): The message author, e.g. "@polakowo".
+        author (str): Message author, e.g. "@polakowo".
         content (str): Text content of the message.
         mentions (List[str]): Discord usernames mentioned in the message, e.g. ["@polakowo"].
         attachments (List[dict]): Attachments with fields "file_name" (e.g. "some_image.png") and
@@ -3165,7 +3165,7 @@ class MessagesAsset(VBTAsset):
         The level name is then pluralized and used to call the appropriate aggregation method.
 
         Args:
-            by (str): The aggregation level or a special keyword ("lowest" or "highest").
+            by (str): Aggregation level or a special keyword ("lowest" or "highest").
             **kwargs: Keyword arguments for the aggregation method.
 
         Returns:
@@ -3188,7 +3188,7 @@ class MessagesAsset(VBTAsset):
         the first message matching that reference from the asset data.
 
         Args:
-            link (str): The link used to identify the base message.
+            link (str): Link used to identify the base message.
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
@@ -3211,7 +3211,7 @@ class MessagesAsset(VBTAsset):
         The method then collects the reply messages from the asset data and returns them as a new asset.
 
         Args:
-            link (str): The link used to find the base message.
+            link (str): Link used to find the base message.
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
@@ -3240,7 +3240,7 @@ class MessagesAsset(VBTAsset):
         is included if `incl_link` is True.
 
         Args:
-            link (str): The link used to determine the target block.
+            link (str): Link used to determine the target block.
             incl_link (bool): Indicates whether to include the message corresponding to `link`.
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
@@ -3262,7 +3262,7 @@ class MessagesAsset(VBTAsset):
         The originating message is excluded if `incl_link` is False.
 
         Args:
-            link (str): The link used to determine the target thread.
+            link (str): Link used to determine the target thread.
             incl_link (bool): Indicates whether to include the message corresponding to `link`.
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
@@ -3284,7 +3284,7 @@ class MessagesAsset(VBTAsset):
         is included based on the `incl_link` flag.
 
         Args:
-            link (str): The link used to determine the target channel.
+            link (str): Link used to determine the target channel.
             incl_link (bool): Indicates whether to include the message corresponding to `link`.
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
@@ -3313,9 +3313,9 @@ class MessagesAsset(VBTAsset):
         with the provided object(s). Any additional keyword arguments are forwarded to the method.
 
         Args:
-            obj (MaybeList): An object or list of objects to find messages for.
-            attr (Optional[str]): An attribute to refine the search.
-            module (Optional[Union[str, ModuleType]]): The module context to constrain the search.
+            obj (MaybeList): Object or list of objects to find messages for.
+            attr (Optional[str]): Attribute to refine the search.
+            module (Optional[Union[str, ModuleType]]): Module context to constrain the search.
             resolve (bool): Whether to resolve object references.
             **kwargs: Keyword arguments for `MessagesAsset.find_obj_mentions`.
 
@@ -3332,7 +3332,7 @@ def is_obj_or_query_ref(obj_or_query: tp.MaybeList) -> bool:
     For non-string inputs, returns True.
 
     Args:
-        obj_or_query (MaybeList): The object or query to evaluate.
+        obj_or_query (MaybeList): Object or query to evaluate.
 
     Returns:
         bool: True if the input is a valid object reference; otherwise, False.
@@ -3362,12 +3362,12 @@ def find_api(
     `PagesAsset.rank` to rank pages based on the query.
 
     Args:
-        obj_or_query (Optional[MaybeList]): An object reference or query for API lookup.
+        obj_or_query (Optional[MaybeList]): Object reference or query for API lookup.
         as_query (Optional[bool]): Indicates whether to treat `obj_or_query` as a query.
-        attr (Optional[str]): An attribute to narrow the search.
-        module (Optional[Union[str, ModuleType]]): The module to constrain the search.
+        attr (Optional[str]): Attribute to narrow the search.
+        module (Optional[Union[str, ModuleType]]): Module to constrain the search.
         resolve (bool): Whether to resolve object references.
-        pages_asset (Optional[MaybeType[PagesAsset]]): An asset for API page lookup.
+        pages_asset (Optional[MaybeType[PagesAsset]]): Asset for API page lookup.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
         aggregate (bool): Whether to aggregate the pages.
         aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
@@ -3420,12 +3420,12 @@ def find_docs(
     `PagesAsset.rank` to assess page relevance.
 
     Args:
-        obj_or_query (Optional[MaybeList]): An object reference or query for documentation.
+        obj_or_query (Optional[MaybeList]): Object reference or query for documentation.
         as_query (Optional[bool]): Indicates whether to treat `obj_or_query` as a query.
-        attr (Optional[str]): An attribute to narrow the search.
-        module (Optional[Union[str, ModuleType]]): The module to constrain the documentation search.
+        attr (Optional[str]): Attribute to narrow the search.
+        module (Optional[Union[str, ModuleType]]): Module to constrain the documentation search.
         resolve (bool): Whether to resolve object references.
-        pages_asset (Optional[MaybeType[PagesAsset]]): An asset for documentation page lookup.
+        pages_asset (Optional[MaybeType[PagesAsset]]): Asset for documentation page lookup.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
         aggregate (bool): Whether to aggregate the pages.
         aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
@@ -3476,14 +3476,14 @@ def find_messages(
     """Find messages associated with an object or query.
 
     Args:
-        obj_or_query (Optional[MaybeList]): An object reference or query used to filter messages.
+        obj_or_query (Optional[MaybeList]): Object reference or query used to filter messages.
 
             If None, all messages are returned.
         as_query (Optional[bool]): Treats `obj_or_query` as a query if True.
         attr (Optional[str]): Attribute name to filter messages linked to an object.
         module (Union[str, ModuleType, None]): Module context to constrain the message lookup.
         resolve (bool): Whether to resolve object references in messages.
-        messages_asset (Optional[MaybeType[MessagesAsset]]): The source asset to retrieve messages from.
+        messages_asset (Optional[MaybeType[MessagesAsset]]): Source asset to retrieve messages from.
         pull_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.pull`.
         aggregate (Union[bool, str]): Option to aggregate messages; if a string, it specifies the aggregation key.
         aggregate_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
@@ -3551,7 +3551,7 @@ def find_examples(
     """Find code examples relevant to an object or query.
 
     Args:
-        obj_or_query (Optional[MaybeList]): An object reference or query used to filter code examples.
+        obj_or_query (Optional[MaybeList]): Object reference or query used to filter code examples.
 
             If None, all examples are returned.
         as_query (Optional[bool]): Treats `obj_or_query` as a query if True.
@@ -3560,8 +3560,8 @@ def find_examples(
         resolve (bool): Whether to resolve object references within examples.
         as_code (bool): Determines if examples are returned as code including textual content.
         return_type (Optional[str]): Specifies the format of returned content; e.g., "field", "match", or "item".
-        pages_asset (Optional[MaybeType[PagesAsset]]): The asset for retrieving page-based content.
-        messages_asset (Optional[MaybeType[MessagesAsset]]): The asset for retrieving message-based content.
+        pages_asset (Optional[MaybeType[PagesAsset]]): Asset for retrieving page-based content.
+        messages_asset (Optional[MaybeType[MessagesAsset]]): Asset for retrieving message-based content.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull` and `MessagesAsset.pull`.
         aggregate_pages (bool): Indicates whether to aggregate the pages asset.
         aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
@@ -3951,9 +3951,9 @@ def chat_about(
     and `shuffle_messages=True`). If `shuffle` is False, shuffles neither messages nor combined asset.
 
     Args:
-        obj (MaybeList): An object or list of objects to chat about.
-        message (str): The initial message to start the chat.
-        chat_history (ChatHistory): The history of the chat session.
+        obj (MaybeList): Object or list of objects to chat about.
+        message (str): Initial message to start the chat.
+        chat_history (ChatHistory): History of the chat session.
         asset_names (Optional[MaybeIterable[str]]): List specifying the order and selection of assets.
 
             May include ellipsis (`...`) to adjust ordering. Allowed asset names are:
@@ -4034,7 +4034,7 @@ def search(
     Metadata when aggregating messages will be minimized by default.
 
     Args:
-        query (str): The search query string.
+        query (str): Search query string.
         cache_documents (bool): If True, will use an asset cache manager to store the generated
             text documents in a local and/or disk cache after conversion.
 
@@ -4170,8 +4170,8 @@ def chat(
     `cache_documents` is enabled, the generated text documents are cached locally for reuse.
 
     Args:
-        query (str): The query string to process.
-        chat_history (ChatHistory): The current chat history.
+        query (str): Query string to process.
+        chat_history (ChatHistory): Current chat history.
         cache_documents (bool): Enable caching of generated text documents.
         cache_key (Optional[str]): Identifier for cached documents.
         asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of 

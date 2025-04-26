@@ -42,7 +42,7 @@ class FileData(LocalData):
         """Determine whether the given directory matches the criteria.
 
         Args:
-            path (PathLike): The directory path to evaluate.
+            path (PathLike): Directory path to evaluate.
 
         Returns:
             bool: True if the directory matches the criteria, False otherwise.
@@ -54,7 +54,7 @@ class FileData(LocalData):
         """Determine whether the given file matches the criteria.
 
         Args:
-            path (PathLike): The file path to evaluate.
+            path (PathLike): File path to evaluate.
 
         Returns:
             bool: True if the file matches the criteria, False otherwise.
@@ -79,8 +79,8 @@ class FileData(LocalData):
         `match_regex`, only paths matching the pattern are included.
 
         Args:
-            path (PathLike): The starting path to search for files.
-            match_regex (Optional[str]): A regular expression for filtering paths.
+            path (PathLike): Starting path to search for files.
+            match_regex (Optional[str]): Regular expression for filtering paths.
             sort_paths (bool): Determines if the resulting list should be sorted.
             recursive (bool): Enables recursive search in directories.
             extension (Optional[str]): Specifies a file extension to filter by (without the dot).
@@ -115,7 +115,7 @@ class FileData(LocalData):
         """List all feature or symbol paths under the specified directory.
 
         Args:
-            path (PathLike): The path in which to search for feature or symbol data.
+            path (PathLike): Path in which to search for feature or symbol data.
             **match_path_kwargs: Keyword arguments for `FileData.match_path`.
 
         Returns:
@@ -128,7 +128,7 @@ class FileData(LocalData):
         """Convert the given file path to a key by extracting its stem.
 
         Args:
-            path (PathLike): The file path to convert.
+            path (PathLike): File path to convert.
             **kwargs: Additional keyword arguments.
 
         Returns:

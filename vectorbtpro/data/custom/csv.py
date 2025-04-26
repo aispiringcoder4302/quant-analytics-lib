@@ -111,21 +111,21 @@ class CSVData(FileData):
         For additional parameters, refer to `pd.read_csv` documentation.
 
         Args:
-            key (hashable): The identifier for a feature or symbol.
+            key (hashable): Identifier for a feature or symbol.
             path (Any): File path to the CSV file.
 
                 If not provided, `key` is used as the file path.
-            start (Optional[DatetimeLike]): The starting datetime for filtering data.
+            start (Optional[DatetimeLike]): Starting datetime for filtering data.
 
                 The object's timezone will be used. See `vectorbtpro.utils.datetime_.to_timestamp`.
-            end (Optional[DatetimeLike]): The ending datetime for filtering data.
+            end (Optional[DatetimeLike]): Ending datetime for filtering data.
 
                 The object's timezone will be used. See `vectorbtpro.utils.datetime_.to_timestamp`.
-            tz (TimezoneLike): The target timezone for conversion.
+            tz (TimezoneLike): Target timezone for conversion.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            start_row (Optional[int]): The starting row index (inclusive), excluding header rows.
-            end_row (Optional[int]): The ending row index (exclusive), excluding header rows.
+            start_row (Optional[int]): Starting row index (inclusive), excluding header rows.
+            end_row (Optional[int]): Ending row index (exclusive), excluding header rows.
             header (Optional[Union[int, Sequence[int]]]): Row number(s) to use as the header.
 
                 See `pd.read_csv` for details on this argument.
@@ -247,7 +247,7 @@ class CSVData(FileData):
         """Fetch the CSV file for a feature.
 
         Args:
-            feature (hashable): The feature identifier.
+            feature (hashable): Feature identifier.
             **kwargs: Keyword arguments for `CSVData.fetch_key`.
 
         Returns:
@@ -260,7 +260,7 @@ class CSVData(FileData):
         """Fetch the CSV file for a symbol.
 
         Args:
-            symbol (hashable): The symbol identifier.
+            symbol (hashable): Symbol identifier.
             **kwargs: Keyword arguments for `CSVData.fetch_key`.
 
         Returns:
@@ -272,7 +272,7 @@ class CSVData(FileData):
         """Update the CSV data for a feature or symbol.
 
         Args:
-            key (hashable): The identifier for the feature or symbol.
+            key (hashable): Identifier for the feature or symbol.
             key_is_feature (bool): Indicates whether `key` represents a feature.
             **kwargs: Keyword arguments for `CSVData.fetch_feature` or `CSVData.fetch_symbol`.
 

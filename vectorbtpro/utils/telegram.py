@@ -66,7 +66,7 @@ def self_decorator(self, func: tp.Callable) -> tp.Callable:
 
     Args:
         self: The bot instance to pass to the command.
-        func (Callable): The command function to wrap.
+        func (Callable): Command function to wrap.
 
     Returns:
         Callable: The decorated command function with the bot instance provided.
@@ -358,8 +358,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Send a message of a specified kind to a target chat ID.
 
             Args:
-                kind (str): The type of message to send.
-                chat_id (int): The target chat ID.
+                kind (str): Type of message to send.
+                chat_id (int): Target chat ID.
                 *args: Positional arguments for `TelegramBot.send`.
                 log_msg (Optional[str]): Message description for logging; if not provided,
                     defaults to the value of `kind`.
@@ -386,7 +386,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Send a message of a specified kind to all chat IDs in `TelegramBot.chat_ids`.
 
             Args:
-                kind (str): The type of message to send.
+                kind (str): Type of message to send.
                 *args: Positional arguments for `TelegramBot.send`.
                 **kwargs: Keyword arguments for `TelegramBot.send`.
 
@@ -400,8 +400,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Send a text message to the specified chat.
 
             Args:
-                chat_id (int): The unique identifier of the target chat.
-                text (str): The content of the message to send.
+                chat_id (int): Unique identifier of the target chat.
+                text (str): Content of the message to send.
                 *args: Positional arguments for `TelegramBot.send`.
                 **kwargs: Keyword arguments for `TelegramBot.send`.
 
@@ -415,7 +415,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Send a text message to all chats in `TelegramBot.chat_ids`.
 
             Args:
-                text (str): The content of the message to send.
+                text (str): Content of the message to send.
                 *args: Positional arguments for `TelegramBot.send_to_all`.
                 **kwargs: Keyword arguments for `TelegramBot.send_to_all`.
 
@@ -429,8 +429,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Send a GIPHY animation generated from the provided text to the specified chat.
 
             Args:
-                chat_id (int): The unique identifier of the target chat.
-                text (str): The text from which to generate a GIPHY URL.
+                chat_id (int): Unique identifier of the target chat.
+                text (str): Text from which to generate a GIPHY URL.
                 *args: Positional arguments for `TelegramBot.send`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
                 
@@ -451,7 +451,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Send a GIPHY animation generated from the provided text to all chats in `TelegramBot.chat_ids`.
 
             Args:
-                text (str): The text from which to generate a GIPHY URL.
+                text (str): Text from which to generate a GIPHY URL.
                 *args: Positional arguments for `TelegramBot.send_to_all`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
                 
@@ -483,8 +483,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Handle the `/start` command callback.
 
             Args:
-                update (object): The incoming update.
-                context (CallbackContext): The callback context containing additional data.
+                update (object): Incoming update.
+                context (CallbackContext): Callback context containing additional data.
 
             Returns:
                 None
@@ -510,8 +510,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Handle the `/help` command callback.
 
             Args:
-                update (object): The incoming update.
-                context (CallbackContext): The callback context containing additional data.
+                update (object): Incoming update.
+                context (CallbackContext): Callback context containing additional data.
 
             Returns:
                 None
@@ -524,8 +524,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Handle chat migration events by updating the internal chat IDs.
 
             Args:
-                update (object): The incoming update.
-                context (CallbackContext): The callback context containing additional data.
+                update (object): Incoming update.
+                context (CallbackContext): Callback context containing additional data.
 
             Returns:
                 None
@@ -542,8 +542,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Handle unknown commands by notifying the user.
 
             Args:
-                update (object): The incoming update.
-                context (CallbackContext): The callback context containing additional data.
+                update (object): Incoming update.
+                context (CallbackContext): Callback context containing additional data.
 
             Returns:
                 None
@@ -557,8 +557,8 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Handle errors that occur during update processing.
 
             Args:
-                update (object): The update that triggered the error.
-                context (CallbackContext): The callback context containing error information.
+                update (object): Update that triggered the error.
+                context (CallbackContext): Callback context containing error information.
                 *args: Additional positional arguments.
 
             Returns:
@@ -860,8 +860,8 @@ else:
             """Send a message of a specified kind to a chat.
 
             Args:
-                kind (str): The type of message to send (e.g., "message", "animation").
-                chat_id (int): The target chat ID.
+                kind (str): Type of message to send (e.g., "message", "animation").
+                chat_id (int): Target chat ID.
                 *args: Positional arguments for sending the message.
                 log_msg (Optional[str]): Log message for tracking the message.
 
@@ -889,7 +889,7 @@ else:
             """Send a message of a specified kind to all chats.
 
             Args:
-                kind (str): The type of message to send (e.g., "message", "animation").
+                kind (str): Type of message to send (e.g., "message", "animation").
                 *args: Positional arguments for `TelegramBot.send`.
                 **kwargs: Keyword arguments for `TelegramBot.send`.
 
@@ -903,8 +903,8 @@ else:
             """Send a text message to a chat.
 
             Args:
-                chat_id (int): The target chat ID.
-                text (str): The text message to send.
+                chat_id (int): Target chat ID.
+                text (str): Text message to send.
                 *args: Positional arguments for `TelegramBot.send`.
                 **kwargs: Keyword arguments for `TelegramBot.send`.
 
@@ -918,7 +918,7 @@ else:
             """Send a text message to all chats.
 
             Args:
-                text (str): The text message to send.
+                text (str): Text message to send.
                 *args: Positional arguments for `TelegramBot.send_to_all`.
                 **kwargs: Keyword arguments for `TelegramBot.send_to_all`.
 
@@ -934,7 +934,7 @@ else:
             """Send a GIPHY animation generated from text to a chat.
 
             Args:
-                chat_id (int): The target chat ID.
+                chat_id (int): Target chat ID.
                 text (str): Text to convert into a GIPHY URL.
                 *args: Positional arguments for `TelegramBot.send`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
@@ -1010,8 +1010,8 @@ else:
             Adds the chat ID to the chat IDs set and sends the start message.
 
             Args:
-                update (Update): The update triggered by the `/start` command.
-                context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+                update (Update): Update triggered by the `/start` command.
+                context (ContextTypes.DEFAULT_TYPE): Context associated with the update.
 
             Returns:
                 None
@@ -1039,8 +1039,8 @@ else:
             Sends the help message to the chat.
 
             Args:
-                update (Update): The update triggered by the `/help` command.
-                context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+                update (Update): Update triggered by the `/help` command.
+                context (ContextTypes.DEFAULT_TYPE): Context associated with the update.
 
             Returns:
                 None
@@ -1055,8 +1055,8 @@ else:
             Updates the chat IDs set when a chat migrates and logs the migration event.
 
             Args:
-                update (Update): The update containing migration information.
-                context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+                update (Update): Update containing migration information.
+                context (ContextTypes.DEFAULT_TYPE): Context associated with the update.
 
             Returns:
                 None
@@ -1075,8 +1075,8 @@ else:
             Logs an unknown command event and informs the user that the command was not understood.
 
             Args:
-                update (Update): The update containing the unknown command.
-                context (ContextTypes.DEFAULT_TYPE): The context associated with the update.
+                update (Update): Update containing the unknown command.
+                context (ContextTypes.DEFAULT_TYPE): Context associated with the update.
 
             Returns:
                 None
@@ -1092,8 +1092,8 @@ else:
             Logs the error and sends an error message to the user.
 
             Args:
-                update (Update): The update that caused the error.
-                context (ContextTypes.DEFAULT_TYPE): The context associated with the error.
+                update (Update): Update that caused the error.
+                context (ContextTypes.DEFAULT_TYPE): Context associated with the error.
                 *args: Additional positional arguments.
                 **kwargs: Additional keyword arguments.
 

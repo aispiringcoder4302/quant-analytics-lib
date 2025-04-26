@@ -236,7 +236,7 @@ class AssetCacheManager(Configured):
         Caches the asset in memory and, if persistence is enabled, writes it to disk.
 
         Args:
-            asset (MaybeKnowledgeAsset): The knowledge asset to cache.
+            asset (MaybeKnowledgeAsset): Knowledge asset to cache.
             cache_key (str): Unique identifier under which to store the asset.
 
         Returns:
@@ -568,7 +568,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             index (Union[int, slice, Iterable[Union[bool, int]]]): Index specifying which data items to update.
-            value (Any): The new value or iterable of values to assign.
+            value (Any): New value or iterable of values to assign.
             inplace (bool): If True, modify the asset in place.
 
         Returns:
@@ -663,7 +663,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Append a new data item to the asset.
 
         Args:
-            d (Any): The data item to append.
+            d (Any): Data item to append.
             inplace (bool): If True, modify the asset in place.
 
         Returns:
@@ -684,7 +684,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Extend the asset with additional data items.
 
         Args:
-            data (Iterable[Any]): An iterable of data items to append.
+            data (Iterable[Any]): Iterable of data items to append.
             inplace (bool): If True, modify the asset in place.
 
         Returns:
@@ -1076,12 +1076,12 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         It applies `vectorbtpro.utils.knowledge.base_asset_funcs.GetAssetFunc` via `KnowledgeAsset.apply`.
 
         Args:
-            path (Optional[MaybeList[PathLikeKey]]): A string or list of strings indicating the nested
+            path (Optional[MaybeList[PathLikeKey]]): String or list of strings indicating the nested
                 keys (e.g. "x.y[0].z") to extract from the data item.
             keep_path (Optional[bool]): If True, returns results structured as nested dictionaries
                 mirroring the specified path.
             skip_missing (Optional[bool]): If True, omits data items where the target path is absent.
-            source (Optional[CustomTemplateLike]): A template, function, or string for preprocessing;
+            source (Optional[CustomTemplateLike]): Template, function, or string for preprocessing;
                 in the template, "i" denotes the index, "d" the full data item, and "x" the extracted part.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
@@ -1167,10 +1167,10 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         via `KnowledgeAsset.apply`.
 
         Args:
-            value (Any): The value, function, or template to set.
+            value (Any): Value, function, or template to set.
 
                 In templates, "i" represents the index, "d" the full data item, and "x" the targeted part.
-            path (Optional[MaybeList[PathLikeKey]]): A string or list of strings indicating the nested keys
+            path (Optional[MaybeList[PathLikeKey]]): String or list of strings indicating the nested keys
                 (e.g. "x.y[0].z") identifying the part to modify.
             skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
             make_copy (Optional[bool]): If True, operates on a copy to preserve the original data.
@@ -1230,7 +1230,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         (e.g., "x.y[0].z").
 
         Args:
-            path (MaybeList[PathLikeKey]): A path or list of paths indicating the element(s) to remove. If an
+            path (MaybeList[PathLikeKey]): Path or list of paths indicating the element(s) to remove. If an
                 integer is provided, the entire data item at that index is removed.
             skip_missing (Optional[bool]): If True, skips data items that do not contain the specified path.
             make_copy (Optional[bool]): If True, operates on a copy so that the original data remains unchanged.
@@ -1284,11 +1284,11 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         paths to new tokens.
 
         Args:
-            path (Union[PathMoveDict, MaybeList[PathLikeKey]]): A mapping or list of paths indicating
+            path (Union[PathMoveDict, MaybeList[PathLikeKey]]): Mapping or list of paths indicating
                 the element(s) to move.
 
                 When provided as a dictionary, keys are source paths and values are the corresponding new tokens.
-            new_path (Optional[MaybeList[PathLikeKey]]): The new token or list of tokens for the moved element(s)
+            new_path (Optional[MaybeList[PathLikeKey]]): New token or list of tokens for the moved element(s)
                 when `path` is not a dictionary.
             skip_missing (Optional[bool]): If True, skips data items that do not contain the specified path.
             make_copy (Optional[bool]): If True, operates on a copy so that the original data remains unchanged.
@@ -1342,11 +1342,11 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         data items. This function is similar to `move` but uses `new_token` to specify the new name.
 
         Args:
-            path (Union[PathRenameDict, MaybeList[PathLikeKey]]): A mapping or list of paths indicating
+            path (Union[PathRenameDict, MaybeList[PathLikeKey]]): Mapping or list of paths indicating
                 the element(s) to rename.
 
                 When provided as a dictionary, the keys define the source paths.
-            new_token (Optional[MaybeList[PathKeyToken]]): The new token or list of tokens for
+            new_token (Optional[MaybeList[PathKeyToken]]): New token or list of tokens for
                 renaming the element(s).
             skip_missing (Optional[bool]): If True, skips data items that do not contain the specified path.
             make_copy (Optional[bool]): If True, operates on a copy so that the original data remains unchanged.
@@ -1777,7 +1777,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             in_blocks (Optional[bool]): If True, search within code blocks rather than inline code.
             escape_target (bool): If True, escape regex special characters in the target.
             escape_language (bool): If True, escape regex special characters in the language.
-            return_type (Optional[str]): The type of result to return.
+            return_type (Optional[str]): Type of result to return.
             flags (int): Additional regular expression flags.
             **kwargs: Keyword arguments for `KnowledgeAsset.find`.
 
@@ -1983,7 +1983,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
 
         Args:
-            target (Union[dict, MaybeList[Any]]): The value or mapping used to identify occurrences for removal.
+            target (Union[dict, MaybeList[Any]]): Value or mapping used to identify occurrences for removal.
             path (Optional[Union[PathLikeKey, List[PathLikeKey]]]): Specific key or keys in the asset data to search.
             per_path (Optional[bool]): Whether to apply the removal for each specified key.
             find_all (Optional[bool]): Whether to remove all matching occurrences.
@@ -2043,7 +2043,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         If `skip_missing` is True and a specified path is missing, the data item will be skipped.
 
         Args:
-            path (Optional[Union[PathLikeKey, List[PathLikeKey]]]): The key or keys indicating the
+            path (Optional[Union[PathLikeKey, List[PathLikeKey]]]): Key or keys indicating the
                 nested portion to flatten.
             skip_missing (Optional[bool]): Whether to skip data items that lack the specified key.
             make_copy (Optional[bool]): Whether to operate on a copy of the asset.
@@ -2095,7 +2095,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         is True and a specified path is missing, the data item will be skipped.
 
         Args:
-            path (Optional[Union[PathLikeKey, List[PathLikeKey]]]): The key or keys for the portion to unflatten.
+            path (Optional[Union[PathLikeKey, List[PathLikeKey]]]): Key or keys for the portion to unflatten.
             skip_missing (Optional[bool]): Whether to skip data items that lack the specified key.
             make_copy (Optional[bool]): Whether to operate on a copy of the asset.
             changed_only (Optional[bool]): Whether to return only data items that were modified.
@@ -2333,7 +2333,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         If `wrap` is True, the result is returned as a new `KnowledgeAsset` instance.
 
         Args:
-            func (CustomTemplateLike): The reduction function, expression, or template.
+            func (CustomTemplateLike): Reduction function, expression, or template.
             *args: Positional arguments for `KnowledgeAsset.groupby_reduce` or the reduction function.
             initializer (Optional[Any]): Initial value for the reduction.
             by (Optional[PathLikeKey]): Key to group data items for reduction.
@@ -2725,7 +2725,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         If the resulting string starts with '{' and ends with '}', it is converted to use square brackets.
 
         Args:
-            separator (Optional[str]): The separator to insert between data items.
+            separator (Optional[str]): Separator to insert between data items.
 
         Returns:
             str: The resulting concatenated string.
@@ -2827,7 +2827,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         stored or loaded via an asset cache manager.
 
         Args:
-            query (str): The query string to rank document relevance.
+            query (str): Query string to rank document relevance.
             to_documents_kwargs (KwargsLike): Keyword arguments for `KnowledgeAsset.to_documents`.
             wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
             cache_documents (bool): Whether to cache converted text documents.

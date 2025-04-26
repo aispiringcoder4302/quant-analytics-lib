@@ -51,11 +51,11 @@ def custom_formatwarning(
     """Format warning messages using a custom structure.
 
     Args:
-        message (Any): The warning message.
-        category (Type[Warning]): The warning category.
-        filename (str): The filename where the warning occurred.
-        lineno (int): The line number in the file.
-        line (Optional[str]): The source code line triggering the warning.
+        message (Any): Warning message.
+        category (Type[Warning]): Warning category.
+        filename (str): Filename where the warning occurred.
+        lineno (int): Line number in the file.
+        line (Optional[str]): Source code line triggering the warning.
 
     Returns:
         str: A formatted warning message.
@@ -71,9 +71,9 @@ def warn(message: tp.Any, category: type = VBTWarning, stacklevel: int = 2) -> N
     """Emit a warning using a custom formatter.
 
     Args:
-        message (Any): The warning message to emit.
-        category (type): The warning category to use.
-        stacklevel (int): The stack level for the warning; defaults to 2.
+        message (Any): Warning message to emit.
+        category (type): Warning category to use.
+        stacklevel (int): Stack level for the warning; defaults to 2.
 
     Returns:
         None
@@ -86,7 +86,7 @@ def warn_stdout(func: tp.Callable) -> tp.Callable:
     """Suppress standard output from the decorated function and emit it as a warning.
 
     Args:
-        func (Callable): The function whose standard output is to be captured.
+        func (Callable): Function whose standard output is to be captured.
 
     Returns:
         Callable: The decorated function that emits captured output as a warning.

@@ -56,7 +56,7 @@ def clean_labels(labels: tp.Labels) -> tp.Labels:
     """Clean labels for Plotly compatibility.
 
     Args:
-        labels (Labels): A sequence of labels, which may be a Pandas MultiIndex, PeriodIndex, or list.
+        labels (Labels): Sequence of labels, which may be a Pandas MultiIndex, PeriodIndex, or list.
 
     Returns:
         Labels: A list of labels formatted for Plotly.
@@ -99,8 +99,8 @@ class TraceUpdater(Base):
     """Class for updating Plotly traces.
 
     Args:
-        fig (BaseFigure): The figure containing the traces to update.
-        traces (Tuple[BaseTraceType, ...]): A tuple of Plotly trace objects to update.
+        fig (BaseFigure): Figure containing the traces to update.
+        traces (Tuple[BaseTraceType, ...]): Tuple of Plotly trace objects to update.
     """
 
     def __init__(self, fig: tp.BaseFigure, traces: tp.Tuple[BaseTraceType, ...]) -> None:
@@ -130,7 +130,7 @@ class TraceUpdater(Base):
         """Update a single Plotly trace with new data.
 
         Args:
-            trace (BaseTraceType): The Plotly trace to update.
+            trace (BaseTraceType): Plotly trace to update.
             data (ArrayLike): New data for the trace.
             *args: Additional positional arguments.
             **kwargs: Additional keyword arguments.
@@ -157,10 +157,10 @@ class Gauge(TraceType, TraceUpdater):
     """Class for creating a gauge plot.
 
     Args:
-        value (Optional[float]): The value to display on the gauge.
-        label (Optional[str]): The label shown on the gauge.
-        value_range (Optional[Tuple[float, float]]): The range of values for the gauge.
-        cmap_name (str): A matplotlib-compatible colormap name.
+        value (Optional[float]): Value to display on the gauge.
+        label (Optional[str]): Label shown on the gauge.
+        value_range (Optional[Tuple[float, float]]): Range of values for the gauge.
+        cmap_name (str): Matplotlib-compatible colormap name.
 
             See the [list of available colormaps](https://matplotlib.org/tutorials/colors/colormaps.html).
         trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Indicator`.

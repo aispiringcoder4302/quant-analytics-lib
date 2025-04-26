@@ -429,20 +429,20 @@ def map_ranges_to_projections_nb(
     """Map each specified range to a projection.
 
     Args:
-        close (Array2d): A 2D array of close prices.
-        col_arr (Array1d): A 1D array of column indices for selecting data from `close`.
-        start_idx_arr (Array1d): A 1D array of starting row indices for each range.
-        end_idx_arr (Array1d): A 1D array of ending row indices for each range.
-        status_arr (Array1d): A 1D array indicating the status of each range.
-        index (Optional[Array1d]): An optional 1D array representing timestamps or indices.
-        proj_start (int): The offset from the start index to begin the projection.
+        close (Array2d): 2D array of close prices.
+        col_arr (Array1d): 1D array of column indices for selecting data from `close`.
+        start_idx_arr (Array1d): 1D array of starting row indices for each range.
+        end_idx_arr (Array1d): 1D array of ending row indices for each range.
+        status_arr (Array1d): 1D array indicating the status of each range.
+        index (Optional[Array1d]): Optional 1D array representing timestamps or indices.
+        proj_start (int): Offset from the start index to begin the projection.
         proj_start_use_index (bool): Whether to compute the projection start using the `index` array.
-        proj_period (Optional[int]): The period or duration for the projection.
+        proj_period (Optional[int]): Period or duration for the projection.
         proj_period_use_index (bool): Whether to determine the projection period based on the `index` array.
         incl_end_idx (bool): Whether the end index of a range is inclusive.
         extend (bool): Whether to extend the projection to a fixed length.
         rebase (bool): Whether to rebase the projection series using a specified start value.
-        start_value (FlexArray1dLike): The initial value used for rebasing projections.
+        start_value (FlexArray1dLike): Initial value used for rebasing projections.
         
             Provided as a scalar or per column.
         ffill (bool): Whether to forward-fill missing projection values.

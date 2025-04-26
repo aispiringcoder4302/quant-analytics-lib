@@ -165,7 +165,7 @@ def timeit(func: tp.Callable, readable: bool = True, **kwargs) -> tp.Union[str, 
     over a suitable number of iterations.
 
     Args:
-        func (Callable): The function to be timed.
+        func (Callable): Function to be timed.
         readable (bool): Whether to format the elapsed time as a human-readable string.
         **kwargs: Keyword arguments for `humanize.precisedelta`.
 

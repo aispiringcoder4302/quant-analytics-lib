@@ -25,7 +25,7 @@ def reverse_mapping(mapping: tp.Mapping) -> dict:
     """Return a mapping with keys and values swapped.
 
     Args:
-        mapping (Mapping): The mapping to reverse.
+        mapping (Mapping): Mapping to reverse.
 
     Returns:
         dict: A dictionary with reversed key-value pairs.
@@ -37,7 +37,7 @@ def to_field_mapping(mapping_like: tp.MappingLike) -> dict:
     """Return a field mapping dictionary from a mapping-like object.
 
     Args:
-        mapping_like (MappingLike): An object convertible to a mapping.
+        mapping_like (MappingLike): Object convertible to a mapping.
 
     Returns:
         dict: A dictionary representing the field mapping.
@@ -61,7 +61,7 @@ def to_value_mapping(mapping_like: tp.MappingLike, reverse: bool = False, enum_u
     If `reverse` is True, applies `reverse_mapping` to swap keys and values.
 
     Args:
-        mapping_like (MappingLike): An object convertible to a mapping.
+        mapping_like (MappingLike): Object convertible to a mapping.
         reverse (bool): Whether to reverse the mapping's keys and values.
         enum_unkval (Any): Value for unknown enumeration items.
 
@@ -110,10 +110,10 @@ def apply_mapping(
     input object based on defined rules for key matching and conversion.
 
     Args:
-        obj (Any): The input object to transform.
+        obj (Any): Input object to transform.
 
             Can be a scalar, tuple, list, set, frozenset, NumPy array, Index, Series, or DataFrame.
-        mapping_like (Optional[MappingLike]): An object convertible to a mapping.
+        mapping_like (Optional[MappingLike]): Object convertible to a mapping.
 
             See `to_value_mapping`.
         enum_unkval (Any): Value for unknown enumeration items.

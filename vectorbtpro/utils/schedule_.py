@@ -47,8 +47,8 @@ class CustomJob(Job, Base):
     """Class for custom job scheduling.
 
     Args:
-        interval (int): The interval between job executions.
-        scheduler (Optional[Scheduler]): The scheduler instance managing the job.
+        interval (int): Interval between job executions.
+        scheduler (Optional[Scheduler]): Scheduler instance managing the job.
     """
 
     def __init__(self, interval: int, scheduler: tp.Optional[Scheduler] = None) -> None:
@@ -157,7 +157,7 @@ class AsyncScheduler(CustomScheduler):
         """Asynchronously execute all scheduled jobs with an optional delay between jobs.
 
         Args:
-            delay_seconds (int): The delay in seconds between consecutive job executions.
+            delay_seconds (int): Delay in seconds between consecutive job executions.
 
         Returns:
             None
@@ -186,7 +186,7 @@ class AsyncScheduler(CustomScheduler):
         """Schedule a new periodic asynchronous job.
 
         Args:
-            interval (int): The interval between job executions.
+            interval (int): Interval between job executions.
 
         Returns:
             AsyncJob: The newly scheduled asynchronous job.
@@ -199,7 +199,7 @@ class ScheduleManager(Base):
     """Class for managing `CustomScheduler` jobs.
 
     Args:
-        scheduler (Optional[AsyncScheduler]): The scheduler instance to be used.
+        scheduler (Optional[AsyncScheduler]): Scheduler instance to be used.
 
             If not provided, an `AsyncScheduler` instance is created.
     """
@@ -470,7 +470,7 @@ class ScheduleManager(Base):
         """Handle completion of an asynchronous task.
 
         Args:
-            async_task (Task): The asynchronous task that has completed.
+            async_task (Task): Asynchronous task that has completed.
 
         Returns:
             None

@@ -307,8 +307,8 @@ class PurgedWalkForwardCV(BasePurgedCV):
         """Compute the indices of training samples for a given fold.
 
         Args:
-            fold_bound (int): The boundary index of the current fold.
-            count_folds (int): The number of folds processed so far.
+            fold_bound (int): Boundary index of the current fold.
+            count_folds (int): Number of folds processed so far.
 
         Returns:
             Array1d: Array of indices representing the training samples after purging.
@@ -325,8 +325,8 @@ class PurgedWalkForwardCV(BasePurgedCV):
         """Compute the indices of test samples for a given fold.
 
         Args:
-            fold_bound (int): The boundary index of the current fold.
-            count_folds (int): The number of folds processed so far.
+            fold_bound (int): Boundary index of the current fold.
+            count_folds (int): Number of folds processed so far.
 
         Returns:
             Array1d: Array of indices representing the test samples.

@@ -64,7 +64,7 @@ class _FSTD(FSTD):
         """Plot the `FSTD.fstd` indicator.
 
         Args:
-            column (Optional[Label]): The name of the column to plot.
+            column (Optional[Label]): Name of the column to plot.
             fstd_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FSTD.fstd`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.

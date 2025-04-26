@@ -243,7 +243,7 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
     * `docstring`: Docstring for the generated method.
 
     Args:
-        config (Config): A configuration mapping containing target property names
+        config (Config): Configuration mapping containing target property names
             and their corresponding settings.
 
     Returns:

@@ -46,7 +46,7 @@ class Grouper(Configured):
     that are useful for grouping reduction operations.
 
     Args:
-        index (Index): The original Pandas Index to group.
+        index (Index): Original Pandas Index to group.
         group_by (GroupByLike): Grouping specification.
 
             Accepts:
@@ -164,7 +164,7 @@ class Grouper(Configured):
         """Convert the provided `group_by` specification into a Pandas Index.
 
         Args:
-            index (Index): The original Pandas Index.
+            index (Index): Original Pandas Index.
             group_by (GroupByLike): Grouping specification.
             def_lvl_name (Hashable): Default level name for groups if a new group index is generated.
 
@@ -226,7 +226,7 @@ class Grouper(Configured):
         """Return an array of group indices corresponding to the original index and the grouped index.
 
         Args:
-            index (Index): The original Pandas Index.
+            index (Index): Original Pandas Index.
             group_by (GroupByLike): Grouping specification.
             def_lvl_name (Hashable): Default level name for groups.
 
@@ -297,7 +297,7 @@ class Grouper(Configured):
 
         Args:
             cls (Type[Grouper]): The `Grouper` class.
-            pd_group_by (PandasGroupByLike): A Pandas `GroupBy` or
+            pd_group_by (PandasGroupByLike): Pandas `GroupBy` or
                 `vectorbtpro.base.resampling.base.Resampler` object.
             **kwargs: Keyword arguments for `Grouper`.
 

@@ -396,7 +396,7 @@ def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
     that merge with `search_kwargs` from `vectorbtpro._settings.template`.
 
     Args:
-        obj (Any): The object to search for template instances.
+        obj (Any): Object to search for template instances.
         **kwargs: Additional parameters to override default search settings.
 
     Returns:
@@ -439,8 +439,8 @@ def substitute_templates(
     that merge with `search_kwargs` from `vectorbtpro._settings.template`.
 
     Args:
-        obj (Any): The object to traverse for template substitution.
-        context (KwargsLike): The context for replacing template placeholders.
+        obj (Any): Object to traverse for template substitution.
+        context (KwargsLike): Context for replacing template placeholders.
         strict (Optional[bool]): Flag to determine whether to raise an error if substitution fails.
         eval_id (Optional[Hashable]): Evaluation identifier.
         **kwargs: Additional parameters to override default search settings.

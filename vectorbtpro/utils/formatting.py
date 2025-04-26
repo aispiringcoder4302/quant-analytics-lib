@@ -36,7 +36,7 @@ def camel_to_snake_case(camel_str: str) -> str:
     """Convert a camel case string to a snake case string.
 
     Args:
-        camel_str (str): A string formatted in camel case.
+        camel_str (str): String formatted in camel case.
 
     Returns:
         str: The string converted to snake case.
@@ -106,15 +106,15 @@ def prettify_inited(
     """Prettify an instance initialized with keyword arguments.
 
     Args:
-        cls (type): The class of the instance.
-        kwargs (Any): A dictionary of keyword arguments used for initialization.
-        replace (DictLike): A mapping for value replacement.
-        path (str): The current path in the object hierarchy.
-        htchar (str): The string used for horizontal indentation.
-        lfchar (str): The line feed character.
-        indent (int): The current indentation level.
+        cls (type): Class of the instance.
+        kwargs (Any): Dictionary of keyword arguments used for initialization.
+        replace (DictLike): Mapping for value replacement.
+        path (str): Current path in the object hierarchy.
+        htchar (str): String used for horizontal indentation.
+        lfchar (str): Line feed character.
+        indent (int): Current indentation level.
         indent_head (bool): Whether to indent the head line.
-        repr_ (Optional[Callable]): A function to get the representation of an object.
+        repr_ (Optional[Callable]): Function to get the representation of an object.
 
             Defaults to `repr`.
 
@@ -176,14 +176,14 @@ def prettify_dict(
     """Prettify a dictionary.
 
     Args:
-        obj (dict): The dictionary to prettify.
-        replace (DictLike): A mapping for value replacement.
-        path (str): The current path in the object hierarchy.
-        htchar (str): The string used for horizontal indentation.
-        lfchar (str): The line feed character.
-        indent (int): The current indentation level.
+        obj (dict): Dictionary to prettify.
+        replace (DictLike): Mapping for value replacement.
+        path (str): Current path in the object hierarchy.
+        htchar (str): String used for horizontal indentation.
+        lfchar (str): Line feed character.
+        indent (int): Current indentation level.
         indent_head (bool): Whether to indent the head line.
-        repr_ (Optional[Callable]): A function to get the representation of an object.
+        repr_ (Optional[Callable]): Function to get the representation of an object.
 
             Defaults to `repr`.
 
@@ -263,14 +263,14 @@ def prettify(
     If `obj` is an instance of `Prettified`, calls its `prettify` method.
 
     Args:
-        obj (Any): The object to prettify.
-        replace (DictLike): A mapping for value replacement.
-        path (str): The current path in the object hierarchy.
-        htchar (str): The string used for horizontal indentation.
-        lfchar (str): The line feed character.
-        indent (int): The current indentation level.
+        obj (Any): Object to prettify.
+        replace (DictLike): Mapping for value replacement.
+        path (str): Current path in the object hierarchy.
+        htchar (str): String used for horizontal indentation.
+        lfchar (str): Line feed character.
+        indent (int): Current indentation level.
         indent_head (bool): Whether to indent the head line.
-        repr_ (Optional[Callable]): A function to get the representation of an object.
+        repr_ (Optional[Callable]): Function to get the representation of an object.
 
             Defaults to `repr`.
 
@@ -435,7 +435,7 @@ def format_array(array: tp.ArrayLike, tabulate: tp.Optional[bool] = None, html: 
     """Format an array for display.
 
     Args:
-        array (ArrayLike): An array-like object to be formatted.
+        array (ArrayLike): Array-like object to be formatted.
         tabulate (Optional[bool]): If True, use `tabulate.tabulate` for formatting;
             if False, use Pandas formatting functions (`DataFrame.to_string` or `DataFrame.to_html`).
 
@@ -500,7 +500,7 @@ def format_parameter(param: inspect.Parameter, annotate: bool = False) -> str:
     """Format a function parameter into a string representation.
 
     Args:
-        param (inspect.Parameter): The parameter to format.
+        param (inspect.Parameter): Parameter to format.
         annotate (bool): Include type annotation in the formatted string if True.
 
     Returns:
@@ -536,7 +536,7 @@ def format_signature(
     """Format a function signature.
 
     Args:
-        signature (Signature): The function signature to format.
+        signature (Signature): Function signature to format.
         annotate (bool): Include type annotations if True.
         start (str): String inserted at the beginning of the parameter list.
         separator (str): String used to separate parameters.
@@ -587,7 +587,7 @@ def format_func(func: tp.Callable, incl_doc: bool = True, **kwargs) -> str:
     """Format a function or class constructor.
 
     Args:
-        func (Callable): The function or class to format. If a class, its `__init__` method is used.
+        func (Callable): Function or class to format. If a class, its `__init__` method is used.
         incl_doc (bool): If True, include the function's docstring in the output if available.
         **kwargs: Keyword arguments for `format_signature`.
 
@@ -669,8 +669,8 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
     """Dump an object to a string using the specified dump engine.
 
     Args:
-        obj (Any): The object to dump.
-        dump_engine (str): The dump engine to use.
+        obj (Any): Object to dump.
+        dump_engine (str): Dump engine to use.
 
             Options include:
 
@@ -781,7 +781,7 @@ def get_dump_language(dump_engine: str) -> str:
     """Return the language corresponding to the provided dump engine.
 
     Args:
-        dump_engine (str): The name of the dump engine.
+        dump_engine (str): Name of the dump engine.
 
     Returns:
         str: The corresponding language name, or an empty string if the dump engine is unknown.

@@ -116,7 +116,7 @@ class BinanceData(RemoteData):
         Otherwise, a new client is created using `client_config`.
 
         Args:
-            client (Optional[Client]): An existing Binance client instance.
+            client (Optional[Client]): Existing Binance client instance.
             client_config (KwargsLike): Keyword arguments for client configuration.
 
         Returns:
@@ -156,7 +156,7 @@ class BinanceData(RemoteData):
             pattern (Optional[str]): Pattern to filter symbols.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
-            client (Optional[Client]): A Binance client instance.
+            client (Optional[Client]): Binance client instance.
             client_config (KwargsLike): Keyword arguments for client configuration.
 
         Returns:

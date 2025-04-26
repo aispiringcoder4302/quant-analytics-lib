@@ -2276,11 +2276,11 @@ class Trades(Ranges):
         """Plot projections of an expanding field.
 
         Args:
-            field (Union[str, Array1d, MappedArray]): The field to be plotted.
+            field (Union[str, Array1d, MappedArray]): Field to be plotted.
 
                 Can also be provided as a two-dimensional array.
-            field_label (Optional[str]): The label for the field.
-            column (Optional[Label]): The column name to plot.
+            field_label (Optional[str]): Label for the field.
+            column (Optional[Label]): Column name to plot.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2433,7 +2433,7 @@ class Trades(Ranges):
         """Plot the running edge ratio for a specified column or group.
 
         Args:
-            column (Optional[Label]): The column name to plot.
+            column (Optional[Label]): Column name to plot.
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -3509,7 +3509,7 @@ class Positions(Trades):
         when necessary and processing the data with optionally JIT-compiled and chunked functions.
 
         Args:
-            trades (Trades): The source trades instance from which positions are derived.
+            trades (Trades): Source trades instance from which positions are derived.
             open (Optional[ArrayLike]): Open prices.
 
                 If None, uses `trades._open`.

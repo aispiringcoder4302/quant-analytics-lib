@@ -79,8 +79,8 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         """Resolve and return a configuration setting for `StatsBuilderMixin.stats`.
 
         Args:
-            value (Optional[Any]): The provided value for the setting.
-            key (str): The key identifying the stats setting.
+            value (Optional[Any]): Provided value for the setting.
+            key (str): Key identifying the stats setting.
             merge (bool): Indicates whether to merge the provided value with defaults.
 
         Returns:

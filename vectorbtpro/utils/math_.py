@@ -214,9 +214,9 @@ def round_nb(a: float, use_round: bool = _use_round, decimals: int = _decimals) 
     """Round a float value to a specified number of decimals.
 
     Args:
-        a (float): The float value to round.
+        a (float): Float value to round.
         use_round (bool): Flag that specifies whether rounding should be applied.
-        decimals (int): The number of decimals to round to.
+        decimals (int): Number of decimals to round to.
 
     Returns:
         float: The rounded float value if rounding is enabled; otherwise, the original value.

@@ -325,7 +325,7 @@ class TVClient(Configured):
         """Extract message components from a raw message string.
 
         Args:
-            text (str): The raw message text.
+            text (str): Raw message text.
 
         Returns:
             Tuple[str, str]: A tuple containing the message type and the parameter string.
@@ -339,7 +339,7 @@ class TVClient(Configured):
         """Add a header prefix to a message string.
 
         Args:
-            st (str): The message string.
+            st (str): Message string.
 
         Returns:
             str: The message string prefixed with its header.
@@ -351,8 +351,8 @@ class TVClient(Configured):
         """Construct a JSON-formatted message.
 
         Args:
-            func (str): The function name associated with the message.
-            param_list (List[str]): A list of parameter strings.
+            func (str): Function name associated with the message.
+            param_list (List[str]): List of parameter strings.
 
         Returns:
             str: A JSON string representing the constructed message.
@@ -363,8 +363,8 @@ class TVClient(Configured):
         """Generate a complete message by constructing the JSON message and adding a header.
 
         Args:
-            func (str): The function name for the message.
-            param_list (List[str]): A list of parameter strings.
+            func (str): Function name for the message.
+            param_list (List[str]): List of parameter strings.
 
         Returns:
             str: The fully formatted message string.
@@ -375,8 +375,8 @@ class TVClient(Configured):
         """Send a message through the WebSocket connection using `ws.send`.
 
         Args:
-            func (str): The function name for the message.
-            param_list (List[str]): A list of parameter strings.
+            func (str): Function name for the message.
+            param_list (List[str]): List of parameter strings.
 
         Returns:
             None
@@ -389,8 +389,8 @@ class TVClient(Configured):
         """Convert a raw data string into a Pandas DataFrame containing historical trading data.
 
         Args:
-            raw_data (str): The raw data string returned by TradingView.
-            symbol (str): The trading symbol.
+            raw_data (str): Raw data string returned by TradingView.
+            symbol (str): Trading symbol.
 
         Returns:
             Frame: A DataFrame with columns ['datetime', 'open', 'high', 'low', 'close', 'volume']
@@ -428,8 +428,8 @@ class TVClient(Configured):
         """Format a trading symbol based on the exchange and future contract details.
 
         Args:
-            symbol (str): The base trading symbol.
-            exchange (str): The exchange code.
+            symbol (str): Base trading symbol.
+            exchange (str): Exchange code.
             fut_contract (Optional[int]): Future contract number.
 
         Returns:
@@ -460,14 +460,14 @@ class TVClient(Configured):
         """Retrieve historical trading data for a specified symbol.
 
         Args:
-            symbol (str): The trading symbol.
-            exchange (str): The exchange code.
-            interval (str): The time interval for historical data.
+            symbol (str): Trading symbol.
+            exchange (str): Exchange code.
+            interval (str): Time interval for historical data.
             fut_contract (Optional[int]): Future contract number.
-            adjustment (str): The price adjustment type.
+            adjustment (str): Price adjustment type.
             extended_session (bool): If True, retrieves extended session data.
             pro_data (bool): If True, uses the professional data WebSocket connection.
-            limit (int): The maximum number of data points to retrieve.
+            limit (int): Maximum number of data points to retrieve.
             return_raw (bool): If True, returns the raw data string instead of a processed DataFrame.
 
         Returns:
@@ -991,7 +991,7 @@ class TVData(RemoteData):
         """Resolve and return a `TVClient` instance.
 
         Args:
-            client (Optional[TVClient]): An instance of `TVClient`.
+            client (Optional[TVClient]): Instance of `TVClient`.
 
                 If provided, it is used directly.
             **client_config: Additional configuration parameters for creating a new client.
@@ -1035,24 +1035,24 @@ class TVData(RemoteData):
         Overrides `vectorbtpro.data.base.Data.fetch_symbol`.
 
         Args:
-            symbol (str): The symbol identifier. Must be in the `EXCHANGE:SYMBOL`
+            symbol (str): Symbol identifier. Must be in the `EXCHANGE:SYMBOL`
                 format if `exchange` is not provided.
-            client (Optional[TVClient]): A client instance.
+            client (Optional[TVClient]): Client instance.
 
                 See `TVData.resolve_client`.
             client_config (KwargsLike): Configuration parameters for creating a client.
 
                 See `TVData.resolve_client`.
-            exchange (Optional[str]): The market exchange.
+            exchange (Optional[str]): Market exchange.
 
                 Can be omitted if specified within `symbol`.
-            timeframe (Optional[str]): The timeframe, allowing human-readable values such as "15 minutes".
-            tz (TimezoneLike): The timezone setting.
+            timeframe (Optional[str]): Timeframe, allowing human-readable values such as "15 minutes".
+            tz (TimezoneLike): Timezone setting.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             fut_contract (Optional[int]): Futures contract type: None for cash,
                 1 for the current continuous contract front, or 2 for the following contract.
-            adjustment (Optional[str]): The adjustment type, either "splits" or "dividends".
+            adjustment (Optional[str]): Adjustment type, either "splits" or "dividends".
             extended_session (Optional[bool]): Whether to fetch extended session data.
 
                 False indicates a regular session.

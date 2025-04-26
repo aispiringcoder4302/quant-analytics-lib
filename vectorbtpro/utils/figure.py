@@ -82,7 +82,7 @@ def get_domain(ref: str, fig: tp.BaseFigure) -> tp.Tuple[int, int]:
     """Retrieve the domain boundaries of a coordinate axis from the given figure.
 
     Args:
-        ref (str): The axis reference (e.g., 'x', 'x2', 'y', 'y2').
+        ref (str): Axis reference (e.g., 'x', 'x2', 'y', 'y2').
         fig (BaseFigure): Plotly figure containing the axis.
 
     Returns:
@@ -123,8 +123,8 @@ class FigureMixin(Base):
         """Select a range of data in the figure.
 
         Args:
-            start (Union[None, int, DatetimeLike]): The starting index or datetime for the range.
-            end (Union[None, int, DatetimeLike]): The ending index or datetime for the range.
+            start (Union[None, int, DatetimeLike]): Starting index or datetime for the range.
+            end (Union[None, int, DatetimeLike]): Ending index or datetime for the range.
             inplace (bool): Whether to modify the figure in place.
 
         Returns:
@@ -266,7 +266,7 @@ class FigureMixin(Base):
         """Skip specified index values in the figure's x-axis.
 
         Args:
-            skip_index (IndexLike): The index values to skip.
+            skip_index (IndexLike): Index values to skip.
             inplace (bool): Whether to update the figure in place.
 
         Returns:
@@ -398,7 +398,7 @@ class FigureMixin(Base):
         """Save the figure as both light and dark themed SVG files for documentation.
 
         Args:
-            figure_name (str): The base name for the saved SVG files (without extension).
+            figure_name (str): Base name for the saved SVG files (without extension).
             dir_path (PathLike): Directory where SVG files will be saved.
             mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             

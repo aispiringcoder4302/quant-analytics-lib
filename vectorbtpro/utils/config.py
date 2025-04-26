@@ -56,7 +56,7 @@ def resolve_dict(dct: tp.DictLikeSequence, i: tp.Optional[int] = None) -> dict:
     """Resolve and return a dictionary from a dictionary-like input.
 
     Args:
-        dct (Union[dict, Sequence[dict]]): A dictionary or sequence of dictionaries.
+        dct (Union[dict, Sequence[dict]]): Dictionary or sequence of dictionaries.
         i (Optional[int]): Index to select a dictionary from the sequence, if applicable.
 
     Returns:
@@ -84,7 +84,7 @@ def convert_to_dict(dct: tp.DictLike, nested: bool = True) -> dict:
     """Convert a configuration object to a dictionary.
 
     Args:
-        dct (DictLike): A configuration input to convert.
+        dct (DictLike): Configuration input to convert.
         nested (bool): If True, recursively convert nested dictionaries.
 
     Returns:
@@ -116,8 +116,8 @@ def get_dict_item(dct: dict, k: tp.PathLikeKey, populate: bool = False) -> tp.An
     """Retrieve an item from a dictionary using a nested key.
 
     Args:
-        dct (dict): The dictionary from which to retrieve the item.
-        k (PathLikeKey): A key that may use dot notation, a `pathlib.Path`, or a tuple for nested access.
+        dct (dict): Dictionary from which to retrieve the item.
+        k (PathLikeKey): Key that may use dot notation, a `pathlib.Path`, or a tuple for nested access.
         populate (bool): If True, create an empty dictionary for missing keys.
 
     Returns:
@@ -141,9 +141,9 @@ def set_dict_item(dct: dict, k: tp.Any, v: tp.Any, force: bool = False) -> None:
     """Set an item in a dictionary with an optional force flag.
 
     Args:
-        dct (dict): The dictionary to update.
-        k (Any): The key to set.
-        v (Any): The value to assign.
+        dct (dict): Dictionary to update.
+        k (Any): Key to set.
+        v (Any): Value to assign.
         force (bool): If True, and if `dct` is an instance of `Config`, override blocking flags.
 
     Returns:
@@ -159,8 +159,8 @@ def del_dict_item(dct: dict, k: tp.Any, force: bool = False) -> None:
     """Delete an item from a dictionary with an optional force flag.
 
     Args:
-        dct (dict): The dictionary from which to delete the item.
-        k (Any): The key of the item to delete.
+        dct (dict): Dictionary from which to delete the item.
+        k (Any): Key of the item to delete.
         force (bool): If True, and if `dct` is an instance of `Config`, override blocking flags.
 
     Returns:
@@ -176,7 +176,7 @@ def copy_dict(dct: tp.DictLike, copy_mode: str = "shallow", nested: bool = True)
     """Copy a dictionary based on the specified copy mode.
 
     Args:
-        dct (DictLike): The input configuration dictionary.
+        dct (DictLike): Input configuration dictionary.
         copy_mode (str): Copying mode. Supported modes are:
 
             * 'none': No copy is performed.
@@ -223,8 +223,8 @@ def update_dict(
     """Update a dictionary with keys and values from another dictionary.
 
     Args:
-        x (DictLike): The target dictionary to update.
-        y (DictLike): The source dictionary with values to update.
+        x (DictLike): Target dictionary to update.
+        y (DictLike): Source dictionary with values to update.
         nested (bool): If True, recursively update nested dictionaries.
         force (bool): If True, override blocking flags when updating.
         same_keys (bool): If True, only update keys that already exist in the target dictionary.
@@ -266,7 +266,7 @@ def reorder_dict(dct: dict, keys: tp.Iterable[tp.Union[tp.Hashable, type(...)]],
     """Reorder a dictionary based on a list of keys.
 
     Args:
-        dct (dict): The dictionary to reorder.
+        dct (dict): Dictionary to reorder.
         keys (Iterable[Union[Hashable, Ellipsis]]): List of keys specifying the new order.
 
             A single Ellipsis (`...`) can be used to indicate remaining keys.
@@ -307,7 +307,7 @@ def reorder_list(lst: list, keys: tp.Iterable[tp.Union[int, type(...)]], skip_mi
     """Reorder a list based on a list of integer indices.
 
     Args:
-        lst (list): The list to reorder.
+        lst (list): List to reorder.
         keys (Iterable[Union[int, Ellipsis]]): List of indices specifying the new order.
 
             A single Ellipsis (`...`) can be used to indicate positions for any remaining elements.
@@ -385,7 +385,7 @@ def unset_keys(
     """Unset keys in a dictionary that have the value `unsetkey`.
 
     Args:
-        dct (DictLike): The dictionary in which keys may be unset.
+        dct (DictLike): Dictionary in which keys may be unset.
         nested (bool): If True, unset keys in nested dictionaries recursively.
         force (bool): If True, force the removal of keys.
 
@@ -418,7 +418,7 @@ def merge_dicts(
     Args:
         *dicts (DictLike): Dictionaries to merge.
         to_dict (bool): Whether to convert each dictionary using `convert_to_dict` before merging.
-        copy_mode (str): The copy mode used by `copy_dict` to duplicate each dictionary.
+        copy_mode (str): Copy mode used by `copy_dict` to duplicate each dictionary.
         nested (Optional[bool]): Whether to recursively merge nested dictionaries.
 
             If None, the function determines automatically if any dictionary is nested.
@@ -721,7 +721,7 @@ class Config(pdict):
         """Return the configuration option associated with the provided key.
 
         Args:
-            k (str): The key of the option.
+            k (str): Key of the option.
 
         Returns:
             Any: The value of the configuration option.
@@ -732,8 +732,8 @@ class Config(pdict):
         """Set the configuration option associated with the provided key.
 
         Args:
-            k (str): The key of the option.
-            v (Any): The value to set for the option.
+            k (str): Key of the option.
+            v (Any): Value to set for the option.
 
         Returns:
             None: The option is set in place.
@@ -791,7 +791,7 @@ class Config(pdict):
         """Remove and return the key-value pair associated with a specified key.
 
         Args:
-            k (str): The key of the item to remove.
+            k (str): Key of the item to remove.
             v (Any): Default value if the key is not found.
             force (bool): Bypass configuration restrictions if True.
 
@@ -879,7 +879,7 @@ class Config(pdict):
         This copy does not incorporate custom copy settings.
 
         Args:
-            memo (DictLike): A memo dictionary for tracking copied objects.
+            memo (DictLike): Memo dictionary for tracking copied objects.
 
         Returns:
             Config: The deep copied config instance.
@@ -908,7 +908,7 @@ class Config(pdict):
 
         Args:
             reset_dct_copy_kwargs (KwargsLike): Additional parameters for copying the reset dictionary.
-            copy_mode (Optional[str]): The copy mode to use.
+            copy_mode (Optional[str]): Copy mode to use.
             nested (Optional[bool]): Whether to perform a nested copy.
 
         Returns:
@@ -953,8 +953,8 @@ class Config(pdict):
         """Merge the current config with another dictionary, combining entries into one dictionary.
 
         Args:
-            other (DictLike): A dictionary to merge.
-            copy_mode (Optional[str]): The copy mode for merging.
+            other (DictLike): Dictionary to merge.
+            copy_mode (Optional[str]): Copy mode for merging.
             nested (Optional[bool]): Whether to perform a nested merge.
             **kwargs: Keyword arguments for `merge_dicts`.
 
@@ -1023,7 +1023,7 @@ class Config(pdict):
         """Load configuration data from a file and update the instance in-place.
 
         Args:
-            path (Optional[PathLike]): The file path to load the configuration.
+            path (Optional[PathLike]): File path to load the configuration.
             clear (bool): Clear the current config before updating if True.
             update_options (bool): Update configuration options if True.
             nested (Optional[bool]): Whether to apply a nested update.
@@ -1347,8 +1347,8 @@ class HasSettings(Base):
         """Return the settings dictionary located under a specified path.
 
         Args:
-            path (PathLikeKey): The primary settings path.
-            sub_path (Optional[PathLikeKey]): A sub-path to combine with the primary path.
+            path (PathLikeKey): Primary settings path.
+            sub_path (Optional[PathLikeKey]): Sub-path to combine with the primary path.
             sub_path_only (bool): If True, enforce that the settings exist only under the combined sub-path.
 
         Returns:
@@ -1386,7 +1386,7 @@ class HasSettings(Base):
         class and its superclasses.
 
         Args:
-            path_id (Optional[Hashable]): A unique identifier to select a specific settings path from a dictionary.
+            path_id (Optional[Hashable]): Unique identifier to select a specific settings path from a dictionary.
             inherit (bool): Whether to include settings paths from superclasses.
             super_first (bool): If True, resolve superclass settings first.
             unique_only (bool): Whether to return only unique settings paths.
@@ -1472,9 +1472,9 @@ class HasSettings(Base):
         """Return the merged settings dictionary associated with this class and its superclasses.
 
         Args:
-            path_id (Optional[Hashable]): A unique identifier to select a settings path from a dictionary.
+            path_id (Optional[Hashable]): Unique identifier to select a settings path from a dictionary.
             inherit (bool): Whether to include settings from superclasses.
-            sub_path (Optional[PathLikeKey]): A sub-path to combine with the main settings path.
+            sub_path (Optional[PathLikeKey]): Sub-path to combine with the main settings path.
             sub_path_only (bool): If True, enforce that the settings exist only under the combined sub-path.
 
         Returns:
@@ -1516,8 +1516,8 @@ class HasSettings(Base):
         """Return True if the settings exist under the specified path; otherwise, False.
 
         Args:
-            path (PathLikeKey): The primary settings path.
-            sub_path (Optional[PathLikeKey]): A sub-path to combine with the primary path.
+            path (PathLikeKey): Primary settings path.
+            sub_path (Optional[PathLikeKey]): Sub-path to combine with the primary path.
             sub_path_only (bool): If True, enforce lookup solely in the combined sub-path.
 
         Returns:
@@ -1540,9 +1540,9 @@ class HasSettings(Base):
         """Return True if settings exist for this class and its superclasses; otherwise, False.
 
         Args:
-            path_id (Optional[Hashable]): A unique identifier to select a settings path from a dictionary.
+            path_id (Optional[Hashable]): Unique identifier to select a settings path from a dictionary.
             inherit (bool): Whether to include settings from superclasses.
-            sub_path (Optional[PathLikeKey]): A sub-path to combine with the main settings path.
+            sub_path (Optional[PathLikeKey]): Sub-path to combine with the main settings path.
             sub_path_only (bool): If True, enforce lookup solely in the combined sub-path.
 
         Returns:
@@ -1571,10 +1571,10 @@ class HasSettings(Base):
         """Return the value associated with a specified key from the settings located at a given path.
 
         Args:
-            path (PathLikeKey): The primary settings path.
-            key (PathLikeKey): The key for which to retrieve the setting value.
-            default (Any): The default value to return if the key is not found.
-            sub_path (Optional[PathLikeKey]): A sub-path to combine with the primary path.
+            path (PathLikeKey): Primary settings path.
+            key (PathLikeKey): Key for which to retrieve the setting value.
+            default (Any): Default value to return if the key is not found.
+            sub_path (Optional[PathLikeKey]): Sub-path to combine with the primary path.
             sub_path_only (bool): If True, enforce retrieval only from the combined sub-path.
 
         Returns:
@@ -1627,11 +1627,11 @@ class HasSettings(Base):
         its superclasses (if `inherit` is True).
 
         Args:
-            key (PathLikeKey): The key identifying the setting.
-            default (Any): The value to return if the setting is not found.
+            key (PathLikeKey): Key identifying the setting.
+            default (Any): Value to return if the setting is not found.
             path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include superclasses in the lookup.
-            sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+            sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
             sub_path_only (bool): Whether to consider only the sub-path.
             merge (bool): Whether to merge settings from multiple sources.
 
@@ -1698,9 +1698,9 @@ class HasSettings(Base):
         """Return whether a setting exists under the specified path.
 
         Args:
-            path (PathLikeKey): The path to check for a setting.
-            key (PathLikeKey): The key identifying the setting.
-            sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+            path (PathLikeKey): Path to check for a setting.
+            key (PathLikeKey): Key identifying the setting.
+            sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
             sub_path_only (bool): Whether to consider only the sub-path.
 
         Returns:
@@ -1725,10 +1725,10 @@ class HasSettings(Base):
         its superclasses (if `inherit` is True).
 
         Args:
-            key (PathLikeKey): The key identifying the setting.
+            key (PathLikeKey): Key identifying the setting.
             path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include superclasses in the lookup.
-            sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+            sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
             sub_path_only (bool): Whether to consider only the sub-path.
 
         Returns:
@@ -1762,14 +1762,14 @@ class HasSettings(Base):
         `vectorbtpro._settings` associated with this class.
 
         Args:
-            value (Any): The input value to resolve or override the setting.
+            value (Any): Input value to resolve or override the setting.
 
                 If the provided value is None, fetch the setting.
-            key (PathLikeKey): The key identifying the setting.
-            default (Any): The value to return if the setting is not found.
+            key (PathLikeKey): Key identifying the setting.
+            default (Any): Value to return if the setting is not found.
             path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include settings from superclasses.
-            sub_path (Optional[PathLikeKey]): A sub-key to extend the settings path.
+            sub_path (Optional[PathLikeKey]): Sub-key to extend the settings path.
 
                 The sub-key is appended to the resolved path to give it higher priority.
             sub_path_only (bool): Whether to consider only the sub-path.
@@ -1815,7 +1815,7 @@ class HasSettings(Base):
 
         Args:
             path_id (Optional[Hashable]): Identifier for the settings path.
-            sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+            sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
             populate_ (bool): Indicates if the settings should be populated.
 
                 If the settings do not exist, pass `populate_=True` to initialize them.
@@ -1864,7 +1864,7 @@ class HasSettings(Base):
 
         Args:
             path_id (Optional[Hashable]): Identifier for the settings path.
-            sub_path (Optional[PathLikeKey]): A sub-key for nested settings.
+            sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
 
         Returns:
             None: The settings are reset in place.
@@ -1901,9 +1901,9 @@ class MetaConfigured(type):
     parameters.
 
     Args:
-        name (str): The name of the class being created.
-        bases (Tuple[Type, ...]): The base classes of the class being created.
-        attrs (dict): The attribute dictionary defined in the class body.
+        name (str): Name of the class being created.
+        bases (Tuple[Type, ...]): Base classes of the class being created.
+        attrs (dict): Attribute dictionary defined in the class body.
     """
 
     def __init__(cls, name: str, bases: tp.Tuple[tp.Type, ...], attrs: dict) -> None:

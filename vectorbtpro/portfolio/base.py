@@ -81,7 +81,7 @@ def fix_wrapper_for_records(pf: "Portfolio") -> ArrayWrapper:
     """Adjust wrapper flags for records based on the portfolio's cash sharing setting.
 
     Args:
-        pf (Portfolio): The portfolio instance.
+        pf (Portfolio): Portfolio instance.
 
     Returns:
         ArrayWrapper: The adjusted array wrapper with updated flags.
@@ -102,9 +102,9 @@ def records_indexing_func(
     """Apply the indexing function to a record array.
 
     Args:
-        obj (RecordArray): The record array to be indexed.
+        obj (RecordArray): Record array to be indexed.
         wrapper_meta (dict): Metadata for the array wrapper configuration.
-        cls (Union[type, str]): The record class or its attribute name.
+        cls (Union[type, str]): Record class or its attribute name.
         groups_only (bool): Whether to apply indexing only for groups.
         **kwargs: Additional keyword arguments.
 
@@ -134,10 +134,10 @@ def records_resample_func(
     """Apply the resampling function to a record array.
 
     Args:
-        obj (ArrayLike): The record data array.
-        resampler (Union[Resampler, PandasResampler]): The resampler instance used for resampling.
+        obj (ArrayLike): Record data array.
+        resampler (Union[Resampler, PandasResampler]): Resampler instance used for resampling.
         wrapper (ArrayWrapper): Array wrapper instance.
-        cls (Union[type, str]): The record class or its attribute name.
+        cls (Union[type, str]): Record class or its attribute name.
         **kwargs: Additional keyword arguments.
 
     Returns:
@@ -160,8 +160,8 @@ def returns_resample_func(
     """Apply the resampling function to returns data.
 
     Args:
-        obj (ArrayLike): The returns data array.
-        resampler (Union[Resampler, PandasResampler]): The resampler instance used for resampling.
+        obj (ArrayLike): Returns data array.
+        resampler (Union[Resampler, PandasResampler]): Resampler instance used for resampling.
         wrapper (ArrayWrapper): Array wrapper instance.
         fill_with_zero (bool): Whether to fill missing values with zero.
         log_returns (bool): Flag to compute logarithmic returns.
@@ -1767,12 +1767,12 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         the object, and all other arguments. If the object is None or a boolean, it is returned unchanged.
 
         Args:
-            obj (Any): The object to be wrapped.
-            obj_name (Optional[str]): An optional identifier for the object.
-            grouping (str): The grouping strategy.
+            obj (Any): Object to be wrapped.
+            obj_name (Optional[str]): Optional identifier for the object.
+            grouping (str): Grouping strategy.
 
                 Supported options include "columns_or_groups", "columns", "groups", and "cash_sharing".
-            obj_type (Optional[str]): The type of the object.
+            obj_type (Optional[str]): Type of the object.
 
                 Supported options include "records", "array", and "red_array".
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
@@ -1781,7 +1781,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            wrap_func (Optional[Callable]): A custom wrapping function that takes the portfolio,
+            wrap_func (Optional[Callable]): Custom wrapping function that takes the portfolio,
                 object, and additional parameters.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
@@ -2030,7 +2030,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         If the object is None, a boolean, or an empty array, it is returned as-is.
 
         Args:
-            obj (Any): The object to index.
+            obj (Any): Object to index.
             wrapper_meta (dict): Metadata dictionary used to compute index positions.
             obj_name (Optional[str]): Name of the object for identification in warnings.
             grouping (str): Specifies the grouping scheme for indexing.
@@ -2416,8 +2416,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         If the object is None, a boolean, or an empty array, it is returned unchanged.
 
         Args:
-            obj (Any): The object to be resampled.
-            resampler (Union[Resampler, PandasResampler]): The resampler instance or configuration.
+            obj (Any): Object to be resampled.
+            resampler (Union[Resampler, PandasResampler]): Resampler instance or configuration.
             obj_name (str): Name of the object for reference.
             obj_type (str): Identifier specifying the type of the object.
             wrapper (ArrayWrapper): Array wrapper instance.
@@ -2721,7 +2721,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         to construct the resulting portfolio.
 
         Args:
-            close (Union[ArrayLike, OHLCDataMixin, FOPreparer, PFPrepResult]): The close prices or
+            close (Union[ArrayLike, OHLCDataMixin, FOPreparer, PFPrepResult]): Close prices or
                 OHLC data used for portfolio simulation.
 
                 Broadcasts.
@@ -3276,7 +3276,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Prepared using `vectorbtpro.portfolio.preparing.FSPreparer`.
 
         Args:
-            close (Union[ArrayLike, OHLCDataMixin, FSPreparer, PFPrepResult]): The close prices or
+            close (Union[ArrayLike, OHLCDataMixin, FSPreparer, PFPrepResult]): Close prices or
                 OHLC data used for portfolio simulation.
 
                 Broadcasts.
@@ -4202,7 +4202,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         If `close_at_end` is True, an opposite signal is placed at the very end.
 
         Args:
-            close (Union[ArrayLike, OHLCDataMixin]): The close prices or OHLC data used for portfolio simulation.
+            close (Union[ArrayLike, OHLCDataMixin]): Close prices or OHLC data used for portfolio simulation.
             direction (Optional[int]): Holding direction.
 
                 If None, the default hold direction from portfolio settings is used.
@@ -4304,7 +4304,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Based on `Portfolio.from_signals`.
 
         Args:
-            close (Union[ArrayLike, OHLCDataMixin]): The close prices or OHLC data used for portfolio simulation.
+            close (Union[ArrayLike, OHLCDataMixin]): Close prices or OHLC data used for portfolio simulation.
             n (Optional[ArrayLike]): Number of signals to generate.
 
                 Mutually exclusive with `entry_prob` and `exit_prob`.
@@ -4468,7 +4468,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         if `group_by` is None, it defaults to the optimizer's grouper.
 
         Args:
-            close (Union[ArrayLike, OHLCDataMixin]): The close prices or OHLC data used for portfolio simulation.
+            close (Union[ArrayLike, OHLCDataMixin]): Close prices or OHLC data used for portfolio simulation.
             optimizer (PortfolioOptimizer): Optimizer instance that provides allocation weights.
             pf_method (str): Portfolio simulation method, either "from_orders" or "from_signals".
             squeeze_groups (bool): Whether to squeeze groups in the optimizer's allocation output.
@@ -4646,7 +4646,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Prepared by `vectorbtpro.portfolio.preparing.FOFPreparer`.
 
         Args:
-            close (Union[ArrayLike, OHLCDataMixin, FOFPreparer, PFPrepResult]): The close prices or
+            close (Union[ArrayLike, OHLCDataMixin, FOFPreparer, PFPrepResult]): Close prices or
                 OHLC data used for portfolio simulation.
 
                 Broadcasts.
@@ -5310,7 +5310,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Prepared by `vectorbtpro.portfolio.preparing.FDOFPreparer`.
 
         Args:
-            close (Union[ArrayLike, OHLCDataMixin, FDOFPreparer, PFPrepResult]): The close prices or
+            close (Union[ArrayLike, OHLCDataMixin, FDOFPreparer, PFPrepResult]): Close prices or
                 OHLC data used for portfolio simulation.
 
                 Broadcasts.
@@ -6682,7 +6682,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return trade or position records based on the portfolio's trades type.
 
         Args:
-            trades_type (Optional[Union[str, int]]): The type of trades to retrieve.
+            trades_type (Optional[Union[str, int]]): Type of trades to retrieve.
 
                 Defaults to `Portfolio.trades_type` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -8577,10 +8577,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Combines initial cash with the value of the initial position.
 
         Args:
-            init_position_value (Optional[MaybeSeries]): The initial position value per column.
+            init_position_value (Optional[MaybeSeries]): Initial position value per column.
 
                 Defaults to `Portfolio.get_init_position` if not provided.
-            init_cash (Optional[MaybeSeries]): The initial cash per column.
+            init_cash (Optional[MaybeSeries]): Initial cash per column.
 
                 Defaults to `Portfolio.get_init_cash` if not provided.
             split_shared (bool): Indicates whether to split shared cash among columns.
@@ -8663,7 +8663,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             total_cash_deposits (Optional[ArrayLike]): Cash deposits over time.
 
                 Defaults to `Portfolio.get_total_cash_deposits` or 0 if not provided.
-            init_value (Optional[MaybeSeries]): The initial portfolio value.
+            init_value (Optional[MaybeSeries]): Initial portfolio value.
 
                 Defaults to `Portfolio.get_init_value` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -10664,7 +10664,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         "exit_trades", or "positions" based on the trade type.
 
         Args:
-            attr (str): The attribute name to be processed.
+            attr (str): Attribute name to be processed.
             final_kwargs (KwargsLike): Keyword arguments that may influence attribute resolution.
 
         Returns:
@@ -10693,8 +10693,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         `vectorbtpro.portfolio.trades.Trades`, only closed trades are returned.
 
         Args:
-            attr (str): The attribute name being processed.
-            out (Any): The resolved attribute value.
+            attr (str): Attribute name being processed.
+            out (Any): Resolved attribute value.
             final_kwargs (KwargsLike): Keyword arguments that may include `incl_open`
                 to control the inclusion of open trades.
 
@@ -10715,7 +10715,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         by selecting an alternative cached property.
 
         Args:
-            attr_name (str): The name of the attribute to resolve.
+            attr_name (str): Name of the attribute to resolve.
             *args: Positional arguments for the attribute.
             **kwargs: Keyword arguments for the attribute.
 

@@ -309,13 +309,13 @@ class SignalsAccessor(GenericAccessor):
         Arguments to `place_func_nb` can be passed either as `*args` or using `place_args` (but not both).
 
         Args:
-            shape (Union[ShapeLike, ArrayWrapper]): A shape-like tuple representing dimensions
+            shape (Union[ShapeLike, ArrayWrapper]): Shape-like tuple representing dimensions
                 or an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
-            place_func_nb (PlaceFunc): A Numba function for placing signals.
+            place_func_nb (PlaceFunc): Numba function for placing signals.
             *args: Positional arguments for `place_func_nb`.
             place_args (ArgsLike): Arguments for `place_func_nb` (either positional or named, but not both).
             only_once (bool): Indicates whether signals should be placed only once.
-            wait (int): The waiting period before signal placement.
+            wait (int): Waiting period before signal placement.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -433,7 +433,7 @@ class SignalsAccessor(GenericAccessor):
         They should not be provided for both functions simultaneously.
 
         Args:
-            shape (Union[ShapeLike, ArrayWrapper]): A shape-like tuple or
+            shape (Union[ShapeLike, ArrayWrapper]): Shape-like tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance defining the target shape.
             entry_place_func_nb (PlaceFunc): Numba-jitted function for placing entry signals.
             exit_place_func_nb (PlaceFunc): Numba-jitted function for placing exit signals.
@@ -614,7 +614,7 @@ class SignalsAccessor(GenericAccessor):
         It uses either positional or keyword arguments for exit placement.
 
         Args:
-            exit_place_func_nb (PlaceFunc): A Numba-jitted function for placing exit signals.
+            exit_place_func_nb (PlaceFunc): Numba-jitted function for placing exit signals.
             *args: Positional arguments for `exit_place_args`.
             exit_place_args (ArgsLike): Additional arguments for the exit placement function.
 
@@ -948,7 +948,7 @@ class SignalsAccessor(GenericAccessor):
         the provided shape-like tuple is used to determine signal dimensions.
 
         Args:
-            shape (Union[ShapeLike, ArrayWrapper]): The shape of the signals as a tuple or
+            shape (Union[ShapeLike, ArrayWrapper]): Shape of the signals as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance used for wrapping.
             n (Optional[ArrayLike]): Number of signals per column.
 
@@ -2214,7 +2214,7 @@ class SignalsAccessor(GenericAccessor):
         """Select signals that satisfy the condition `pos_rank == n`.
 
         Args:
-            n (int): The specific position rank that signals must equal.
+            n (int): Specific position rank that signals must equal.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -2236,7 +2236,7 @@ class SignalsAccessor(GenericAccessor):
         """Select signals that satisfy the condition `pos_rank == n`.
 
         Args:
-            n (int): The specific position rank value.
+            n (int): Specific position rank value.
             reset_by (ArrayLike): Array used to reset the position ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
@@ -2258,7 +2258,7 @@ class SignalsAccessor(GenericAccessor):
         """Select signals that satisfy the condition `pos_rank >= n`.
 
         Args:
-            n (int): The lower bound for the position rank.
+            n (int): Lower bound for the position rank.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -2280,7 +2280,7 @@ class SignalsAccessor(GenericAccessor):
         """Select signals that satisfy the condition `pos_rank >= n`.
 
         Args:
-            n (int): The lower bound for the position rank.
+            n (int): Lower bound for the position rank.
             reset_by (ArrayLike): Array used to reset the position ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
@@ -2302,7 +2302,7 @@ class SignalsAccessor(GenericAccessor):
         """Select signals that satisfy the condition `pos_rank < n`.
 
         Args:
-            n (int): The upper bound for the position rank (exclusive).
+            n (int): Upper bound for the position rank (exclusive).
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -2324,7 +2324,7 @@ class SignalsAccessor(GenericAccessor):
         """Select signals that satisfy the condition `pos_rank < n`.
 
         Args:
-            n (int): The upper bound for the position rank (exclusive).
+            n (int): Upper bound for the position rank (exclusive).
             reset_by (ArrayLike): Array used to reset the position ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
@@ -2377,7 +2377,7 @@ class SignalsAccessor(GenericAccessor):
         """Calculate the distance from the last signal occurrence.
 
         Args:
-            nth (int): The nth signal from the end to compute the distance for.
+            nth (int): Nth signal from the end to compute the distance for.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2465,7 +2465,7 @@ class SignalsAccessor(GenericAccessor):
         """Get the direction string corresponding to a signal relation.
 
         Args:
-            relation (Union[int, str]): The signal relation represented as an integer or string.
+            relation (Union[int, str]): Signal relation represented as an integer or string.
 
                 If provided as a string, it is mapped using `vectorbtpro.signals.enums.SignalRelation`.
 
@@ -2498,7 +2498,7 @@ class SignalsAccessor(GenericAccessor):
         applied after each signal (or before if the delta is negative).
 
         Args:
-            delta (Union[str, int, FrequencyLike]): A delta value applied relative to each signal.
+            delta (Union[str, int, FrequencyLike]): Delta value applied relative to each signal.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2524,7 +2524,7 @@ class SignalsAccessor(GenericAccessor):
         """Build a record array of ranges between signals.
 
         Args:
-            target (Optional[ArrayLike]): An array-like target used for a two-range operation.
+            target (Optional[ArrayLike]): Array-like target used for a two-range operation.
             relation (Union[int, str]): Relation type between ranges.
 
                 See `vectorbtpro.signals.enums.SignalRelation`.
@@ -3138,7 +3138,7 @@ class SignalsAccessor(GenericAccessor):
         Calls `vectorbtpro.signals.nb.nth_index_nb` to compute the desired index.
 
         Args:
-            n (int): The index offset to select the nth signal.
+            n (int): Index offset to select the nth signal.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.

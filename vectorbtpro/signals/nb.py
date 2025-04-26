@@ -354,7 +354,7 @@ def rand_place_nb(c: tp.Union[GenEnContext, GenExContext, GenEnExContext], n: tp
 
     Args:
         c (Union[GenEnContext, GenExContext, GenEnExContext]): Signal generation context.
-        n (FlexArray1d): A flexible array indicating the number of signals to place.
+        n (FlexArray1d): Flexible array indicating the number of signals to place.
 
     Returns:
         int: The index of the last placed signal.
@@ -382,7 +382,7 @@ def rand_by_prob_place_nb(
 
     Args:
         c (Union[GenEnContext, GenExContext, GenEnExContext]): Signal generation context.
-        prob (FlexArray2d): A flexible 2D array of probabilities used for signal placement.
+        prob (FlexArray2d): Flexible 2D array of probabilities used for signal placement.
         pick_first (bool): If True, stop after placing the first signal.
 
     Returns:
@@ -426,7 +426,7 @@ def generate_rand_enex_nb(
     randomizing the position of the first entry, the last exit, and all signals in between.
 
     Args:
-        target_shape (Shape): The shape of the output arrays indicating signal positions.
+        target_shape (Shape): Shape of the output arrays indicating signal positions.
         n (FlexArray1d): Flexible array specifying the number of entry-exit pairs per column.
         entry_wait (int): Minimum periods to wait after an entry before an exit can be placed.
         exit_wait (int): Minimum periods to wait before placing an exit following an entry.
@@ -525,7 +525,7 @@ def rand_enex_apply_nb(
     """Call `generate_rand_enex_nb` using `apply_func_nb`.
 
     Args:
-        target_shape (Shape): The shape of the output arrays.
+        target_shape (Shape): Shape of the output arrays.
         n (FlexArray1d): Flexible array specifying the number of entry-exit pairs per column.
         entry_wait (int): Minimum periods to wait after an entry before placing an exit.
         exit_wait (int): Minimum periods to wait before placing an exit after an entry.
@@ -915,10 +915,10 @@ def rank_nb(
     or a non-negative integer for a valid rank.
 
     Args:
-        mask (Array2d): A boolean mask array indicating positions of signals.
+        mask (Array2d): Boolean mask array indicating positions of signals.
         rank_func_nb (RankFunc): Function that computes the rank for a signal using a rank context.
         rank_args (Args): Additional arguments for `rank_func_nb`.
-        reset_by (Optional[Array2d]): A boolean array indicating reset positions.
+        reset_by (Optional[Array2d]): Boolean array indicating reset positions.
         after_false (bool): If True, disregards the first True partition with no preceding False.
         after_reset (bool): If True, disregards the first True partition before a reset signal.
         reset_wait (int): Offset to treat reset signals; 0 treats the signal at reset as the first in the next
@@ -1013,7 +1013,7 @@ def sig_pos_rank_nb(c: RankContext, allow_gaps: bool) -> int:
     the current partition. Resets occur at each reset signal.
 
     Args:
-        c (RankContext): A rank context containing signal and partition information.
+        c (RankContext): Rank context containing signal and partition information.
         allow_gaps (bool): Flag to determine whether to allow gaps in ranking.
 
     Returns:
@@ -1031,7 +1031,7 @@ def part_pos_rank_nb(c: RankContext) -> int:
     Computes the rank for a partition based on its order in the series. Resets occur at each reset signal.
 
     Args:
-        c (RankContext): A rank context containing partition information.
+        c (RankContext): Rank context containing partition information.
 
     Returns:
         int: The computed partition rank.
@@ -1049,8 +1049,8 @@ def distance_from_last_1d_nb(mask: tp.Array1d, nth: int = 1) -> tp.Array1d:
     Unless `nth` is zero, the current True value is not considered among the last True values.
 
     Args:
-        mask (Array1d): A 1D boolean array indicating signal positions.
-        nth (int): The index of the last True value to measure the distance from.
+        mask (Array1d): 1D boolean array indicating signal positions.
+        nth (int): Index of the last True value to measure the distance from.
 
     Returns:
         Array1d: An array of distances.
@@ -1100,8 +1100,8 @@ def distance_from_last_nb(mask: tp.Array2d, nth: int = 1) -> tp.Array2d:
     Applies `distance_from_last_1d_nb` for each column in the 2D boolean array.
 
     Args:
-        mask (Array2d): A 2D boolean array indicating signal positions.
-        nth (int): The index of the last True value to measure the distance from.
+        mask (Array2d): 2D boolean array indicating signal positions.
+        nth (int): Index of the last True value to measure the distance from.
 
     Returns:
         Array2d: A 2D array with computed distances.
@@ -1135,8 +1135,8 @@ def clean_enex_1d_nb(
     * `reverse_order`: If True, the order of signals is reversed.
 
     Args:
-        entries (Array1d): A 1D boolean array indicating entry signals.
-        exits (Array1d): A 1D boolean array indicating exit signals.
+        entries (Array1d): 1D boolean array indicating entry signals.
+        exits (Array1d): 1D boolean array indicating exit signals.
         force_first (bool): Determines whether the first signal is forced to precede its counterpart.
         keep_conflicts (bool): Determines if simultaneous signals are processed sequentially.
         reverse_order (bool): Determines whether to reverse the order of signals.

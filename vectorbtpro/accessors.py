@@ -83,8 +83,8 @@ class Accessor(Base):
     """Class representing a custom accessor.
 
     Args:
-        name (str): The name under which the accessor is registered.
-        accessor (Type[Accessor]): The accessor type for instantiation.
+        name (str): Name under which the accessor is registered.
+        accessor (Type[Accessor]): Accessor type for instantiation.
     """
 
     def __init__(self, name: str, accessor: tp.Type[AccessorT]) -> None:
@@ -107,8 +107,8 @@ class CachedAccessor(Base):
     """Class representing a cached accessor.
 
     Args:
-        name (str): The name under which the accessor is registered.
-        accessor (Type[Accessor]): The accessor type for instantiation.
+        name (str): Name under which the accessor is registered.
+        accessor (Type[Accessor]): Accessor type for instantiation.
     """
 
     def __init__(self, name: str, accessor: tp.Type[AccessorT]) -> None:
@@ -132,8 +132,8 @@ def register_accessor(name: str, cls: tp.Type[DirNamesMixin]) -> tp.Callable:
     """Register a custom accessor.
 
     Args:
-        name (str): The name to register the accessor under.
-        cls (Type[DirNamesMixin]): A class extending `DirNamesMixin`.
+        name (str): Name to register the accessor under.
+        cls (Type[DirNamesMixin]): Class extending `DirNamesMixin`.
 
     Returns:
         Callable: A decorator function to register the custom accessor.
@@ -167,7 +167,7 @@ def register_index_accessor(name: str) -> tp.Callable:
     """Decorator to register a custom `pd.Index` accessor.
 
     Args:
-        name (str): The name to register the accessor under.
+        name (str): Name to register the accessor under.
 
     Returns:
         Callable: A decorator for registering the custom accessor.
@@ -179,7 +179,7 @@ def register_series_accessor(name: str) -> tp.Callable:
     """Decorator to register a custom `pd.Series` accessor.
 
     Args:
-        name (str): The name to register the accessor under.
+        name (str): Name to register the accessor under.
 
     Returns:
         Callable: A decorator for registering the custom accessor.
@@ -191,7 +191,7 @@ def register_dataframe_accessor(name: str) -> tp.Callable:
     """Decorator to register a custom `pd.DataFrame` accessor.
 
     Args:
-        name (str): The name to register the accessor under.
+        name (str): Name to register the accessor under.
 
     Returns:
         Callable: A decorator for registering the custom accessor.
@@ -204,7 +204,7 @@ class Vbt_IDXAccessor(DirNamesMixin, BaseIDXAccessor):
     """Class representing the main vectorbtpro accessor for `pd.Index`.
 
     Args:
-        obj (Index): The Pandas Index object.
+        obj (Index): Pandas Index object.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor`.
     """
 
@@ -226,7 +226,7 @@ class Vbt_Accessor(DirNamesMixin, GenericAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): An optional object for initialization.
+        obj (Optional[ArrayLike]): Optional object for initialization.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor`.
     """
 
@@ -252,7 +252,7 @@ class Vbt_SRAccessor(DirNamesMixin, GenericSRAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): An optional object for initialization.
+        obj (Optional[ArrayLike]): Optional object for initialization.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor`.
     """
 

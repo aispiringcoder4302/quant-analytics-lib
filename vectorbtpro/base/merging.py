@@ -127,7 +127,7 @@ def concat_merge(
         *objs (MaybeSequence[MaybeTuple[Any]]): Array-like objects to merge.
 
             May also be provided as a sequence of tuples.
-        keys (Optional[Index]): An index or sequence of index objects to assign to the merged result.
+        keys (Optional[Index]): Index or sequence of index objects to assign to the merged result.
         filter_results (bool): Whether to filter out no-result objects.
         raise_no_results (bool): Flag indicating whether to raise a 
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
@@ -767,9 +767,9 @@ def mixed_merge(
 
             Each tuple should have the same length, and merging is performed
             element-wise across these tuples.
-        merge_funcs (Optional[MergeFuncLike]): A merging function or a sequence of merging functions
+        merge_funcs (Optional[MergeFuncLike]): Merging function or a sequence of merging functions
             (or their names) to apply to each group of objects.
-        mixed_kwargs (Optional[Sequence[KwargsLike]]): A sequence of keyword argument dictionaries
+        mixed_kwargs (Optional[Sequence[KwargsLike]]): Sequence of keyword argument dictionaries
             for each merging function.
         **kwargs: Keyword arguments for the merging functions if not overridden by `mixed_kwargs`.
 
@@ -832,7 +832,7 @@ def resolve_merge_func(merge_func: tp.MergeFuncLike) -> tp.Optional[tp.Callable]
     """Resolve a merging function into a callable.
 
     Args:
-        merge_func (MergeFuncLike): A merging function to resolve. 
+        merge_func (MergeFuncLike): Merging function to resolve. 
         
             * If provided as a string, it is looked up in `merge_func_config`.
             *If provided as a sequence, a partial application of `mixed_merge` with
@@ -860,7 +860,7 @@ def is_merge_func_from_config(merge_func: tp.MergeFuncLike) -> bool:
     """Determine if the provided merging function is defined in `merge_func_config`.
 
     Args:
-        merge_func (MergeFuncLike): The merging function (or its representation) to check.
+        merge_func (MergeFuncLike): Merging function (or its representation) to check.
 
     Returns:
         bool: True if `merge_func` is found in `merge_func_config`, False otherwise.

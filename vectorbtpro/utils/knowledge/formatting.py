@@ -112,7 +112,7 @@ class ToMarkdown(Configured):
         """Return the given text converted to Markdown format.
 
         Args:
-            text (str): The text to convert to Markdown.
+            text (str): Text to convert to Markdown.
 
         Returns:
             str: The converted Markdown text.
@@ -154,7 +154,7 @@ def to_markdown(text: str, **kwargs) -> str:
     """Return the Markdown conversion of the given text using `ToMarkdown`.
 
     Args:
-        text (str): The text to convert to Markdown.
+        text (str): Text to convert to Markdown.
         **kwargs: Keyword arguments for `ToMarkdown`.
 
     Returns:
@@ -233,7 +233,7 @@ class ToHTML(Configured):
         """Return the HTML conversion of the given Markdown text.
 
         Args:
-            markdown (str): The Markdown text to convert to HTML.
+            markdown (str): Markdown text to convert to HTML.
 
         Returns:
             str: The converted HTML text.
@@ -288,7 +288,7 @@ def to_html(text: str, **kwargs) -> str:
     """Return the HTML conversion of the given Markdown text using `ToHTML`.
 
     Args:
-        text (str): The Markdown text to convert to HTML.
+        text (str): Markdown text to convert to HTML.
         **kwargs: Keyword arguments for `ToHTML`.
 
     Returns:
@@ -733,7 +733,7 @@ class ContentFormatter(Configured):
         """Format the provided line to process code block markers.
 
         Args:
-            line (str): The line to format.
+            line (str): Line to format.
 
         Returns:
             str: The processed line with updated code block state.
@@ -827,7 +827,7 @@ class ContentFormatter(Configured):
         """Append new content to the buffer and perform an update if necessary.
 
         Args:
-            new_content (str): The string content to append.
+            new_content (str): String content to append.
             final (bool): Whether this append operation finalizes the content.
 
         Returns:
@@ -848,7 +848,7 @@ class ContentFormatter(Configured):
         """Append final content to the buffer and finalize the formatting process.
 
         Args:
-            content (str): The final content to append.
+            content (str): Final content to append.
 
         Returns:
             None
@@ -1433,7 +1433,7 @@ def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[Conten
     """Resolve a subclass or instance of `ContentFormatter`.
 
     Args:
-        formatter (ContentFormatterLike): An option, subclass, or instance of `ContentFormatter`.
+        formatter (ContentFormatterLike): Option, subclass, or instance of `ContentFormatter`.
 
             Supported options:
 

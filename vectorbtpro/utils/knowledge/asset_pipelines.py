@@ -49,7 +49,7 @@ class AssetPipeline(Base):
         """Return a `vectorbtpro.utils.execution.Task` by resolving the provided asset function and its arguments.
 
         Args:
-            func (AssetFuncLike): An asset function identifier, which may be a tuple,
+            func (AssetFuncLike): Asset function identifier, which may be a tuple,
                 `vectorbtpro.utils.execution.Task`, string, or subclass of
                 `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc`.
             *args: Positional arguments for `vectorbtpro.utils.execution.Task`.
@@ -131,7 +131,7 @@ class AssetPipeline(Base):
         """Execute the asset pipeline on the provided data by applying all tasks sequentially.
 
         Args:
-            d (Any): The data item to be processed.
+            d (Any): Data item to be processed.
 
         Returns:
             Any: The result of executing the pipeline on the data item.
@@ -189,7 +189,7 @@ class BasicAssetPipeline(AssetPipeline):
         """Append a task to the pipeline using the provided asset function and arguments.
 
         Args:
-            func (AssetFuncLike): An asset function identifier, which may be a tuple,
+            func (AssetFuncLike): Asset function identifier, which may be a tuple,
                 `vectorbtpro.utils.execution.Task`, string, or subclass of
                 `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc`.
             *args: Positional arguments for `BasicAssetPipeline.resolve_task`.
@@ -205,7 +205,7 @@ class BasicAssetPipeline(AssetPipeline):
         """Compose multiple tasks into a single callable that applies them sequentially.
 
         Args:
-            tasks (List[Task]): A list of tasks to be composed.
+            tasks (List[Task]): List of tasks to be composed.
 
         Returns:
             Callable: A callable that takes a data item and applies the tasks sequentially.
@@ -231,8 +231,8 @@ class ComplexAssetPipeline(AssetPipeline):
     using `vectorbtpro.utils.eval_.evaluate`.
 
     Args:
-        expression (str): The expression string to evaluate.
-        context (KwargsLike): A mapping of variables for expression evaluation.
+        expression (str): Expression string to evaluate.
+        context (KwargsLike): Mapping of variables for expression evaluation.
         prepare_once (bool): Flag to indicate when functions should be prepared once.
         **resolve_task_kwargs: Keyword arguments for task resolution.
 
@@ -274,8 +274,8 @@ class ComplexAssetPipeline(AssetPipeline):
         It also builds a new context by merging resolved functions with the existing context.
 
         Args:
-            expression (str): The expression string to process.
-            context (KwargsLike): A mapping of context variables.
+            expression (str): Expression string to process.
+            context (KwargsLike): Mapping of context variables.
             prepare (bool): Flag to indicate whether to prepare function calls.
             prepare_once (bool): Flag to indicate if functions should be prepared once.
             **resolve_task_kwargs: Keyword arguments for resolving tasks.
@@ -459,7 +459,7 @@ class ComplexAssetPipeline(AssetPipeline):
         """Run the pipeline on a data item.
 
         Args:
-            d (Any): The data item to be processed.
+            d (Any): Data item to be processed.
 
         Returns:
             Any: The result of evaluating the expression with the given data.

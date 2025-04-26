@@ -212,7 +212,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         """Select one column or group from a Pandas object.
 
         Args:
-            obj (Optional[SeriesFrame]): The Pandas object from which to select a column or group.
+            obj (Optional[SeriesFrame]): Pandas object from which to select a column or group.
             column (Any): Column identifier, which can be a label-based position or an integer position.
             obj_ungrouped (bool): Flag indicating whether the Pandas object is ungrouped.
             group_by (GroupByLike): Grouping specification.
@@ -304,7 +304,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Args:
             *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
-            splitter_cls (Optional[Type[Splitter]]): The splitter class to use.
+            splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
             wrap (Optional[bool]): Flag indicating whether the instance should be wrapped.
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
@@ -333,7 +333,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         Args:
             apply_func (Union[str, Callable]): Function or attribute name to apply to each split.
             *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
-            splitter_cls (Optional[Type[Splitter]]): The splitter class to use.
+            splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
             wrap (Optional[bool]): Flag indicating whether the instance should be wrapped.
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 
@@ -587,11 +587,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     Extra keyword arguments are passed to `vectorbtpro.base.grouping.base.Grouper`.
 
     Args:
-        index (IndexLike): The index to be associated with the array.
+        index (IndexLike): Index to be associated with the array.
 
             It is processed using `vectorbtpro.utils.datetime_.prepare_dt_index`.
-        columns (Optional[IndexLike]): The set of column labels.
-        ndim (Optional[int]): The number of dimensions of the array.
+        columns (Optional[IndexLike]): Set of column labels.
+        ndim (Optional[int]): Number of dimensions of the array.
 
             Deduced from the columns if not provided.
         freq (Optional[FrequencyLike]): Frequency metadata.
@@ -599,7 +599,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         column_only_select (Optional[bool]): Flag indicating whether column-only selection is enabled.
         range_only_select (Optional[bool]): Flag indicating whether range-only selection is enabled.
         group_select (Optional[bool]): Flag indicating whether group selection is enabled.
-        grouped_ndim (Optional[int]): The number of dimensions after grouping columns.
+        grouped_ndim (Optional[int]): Number of dimensions after grouping columns.
         grouper (Optional[Grouper]): A `vectorbtpro.base.grouping.base.Grouper` instance for grouping columns.
         **kwargs: Keyword arguments for `vectorbtpro.base.grouping.base.Grouper`
             and `vectorbtpro.utils.config.Configured`.
@@ -681,7 +681,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Derive array wrapper metadata from the given object.
 
         Args:
-            obj (ArrayLike): The input object from which to derive metadata.
+            obj (ArrayLike): Input object from which to derive metadata.
 
                 This may be an instance of `Data`, `Wrapping`, or `ArrayWrapper`.
             **kwargs: Keyword arguments for `ArrayWrapper`.
@@ -721,10 +721,10 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Derive array wrapper metadata based on the given shape.
 
         Args:
-            shape (ShapeLike): The shape representing the array dimensions.
-            index (Optional[IndexLike]): The index labels.
-            columns (Optional[IndexLike]): The column labels.
-            ndim (Optional[int]): The number of dimensions.
+            shape (ShapeLike): Shape representing the array dimensions.
+            index (Optional[IndexLike]): Index labels.
+            columns (Optional[IndexLike]): Column labels.
+            ndim (Optional[int]): Number of dimensions.
             *args: Positional arguments for `ArrayWrapper`.
             **kwargs: Keyword arguments for `ArrayWrapper`.
 
@@ -1471,7 +1471,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Select specific rows and columns from a flexible array after converting it to a 2-dim array.
 
         Args:
-            arr (ArrayLike): The input array to be indexed.
+            arr (ArrayLike): Input array to be indexed.
             row_idxs (Union[int, Array1d, slice]): Row indices or a slice specifying rows to select.
             col_idxs (Union[int, Array1d, slice]): Column indices or a slice specifying columns to select.
             rows_changed (bool): Whether to apply row selection.
@@ -1980,7 +1980,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         * Optionally convert data to timedelta using `ArrayWrapper.arr_to_timedelta`.
 
         Args:
-            arr (ArrayLike): The array to be wrapped.
+            arr (ArrayLike): Array to be wrapped.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2115,7 +2115,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Wrap the result of a reduction operation.
 
         Args:
-            arr (ArrayLike): The input array to be wrapped.
+            arr (ArrayLike): Input array to be wrapped.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2374,7 +2374,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Fill a Series or DataFrame with a specified value.
 
         Args:
-            fill_value (Scalar): The value used to fill the Series or DataFrame.
+            fill_value (Scalar): Value used to fill the Series or DataFrame.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2390,7 +2390,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Fill a reduced Series or DataFrame with a specified value.
 
         Args:
-            fill_value (Scalar): The value used to fill the reduced output.
+            fill_value (Scalar): Value used to fill the reduced output.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2457,7 +2457,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         The method `vectorbtpro.base.indexing.IdxSetter.fill_and_set` is then called to update the array.
 
         Args:
-            idx_setter (Union[index_dict, IdxSetter, IdxSetterFactory]): An index object indicating
+            idx_setter (Union[index_dict, IdxSetter, IdxSetterFactory]): Index object indicating
                 the positions and values to fill.
 
                 If provided as a factory, it generates an `vectorbtpro.base.indexing.IdxSetter`.
@@ -2986,10 +2986,10 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         """Resolve attributes of the instance based on condition keyword arguments.
 
         Args:
-            cond_kwargs (KwargsLike): A dictionary containing condition parameters,
+            cond_kwargs (KwargsLike): Dictionary containing condition parameters,
                 potentially including a different frequency.
-            custom_arg_names (Optional[Set[str]]): A set of custom argument names.
-            impacts_caching (bool): A flag indicating whether the changes affect caching.
+            custom_arg_names (Optional[Set[str]]): Set of custom argument names.
+            impacts_caching (bool): Flag indicating whether the changes affect caching.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:

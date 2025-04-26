@@ -37,7 +37,7 @@ def records_within_sim_range_nb(
     """Return records within the specified simulation range.
 
     Args:
-        target_shape (Shape): The target shape specification for the simulation.
+        target_shape (Shape): Target shape specification for the simulation.
         records (RecordArray): Array of records.
         col_arr (Array1d): Array of column indices corresponding to each element in `records`.
         idx_arr (Array1d): Array of row indices corresponding to each element in `records`.
@@ -1388,7 +1388,7 @@ def get_short_view_orders_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
-        close (Array2d): A 2D array of closing prices.
+        close (Array2d): 2D array of closing prices.
         col_map (GroupMap): Tuple of column indices and lengths.
         init_position (FlexArray1dLike): Initial position.
 

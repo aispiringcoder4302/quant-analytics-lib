@@ -254,20 +254,20 @@ class SignalFactory(IndicatorFactory):
         for more details.
 
         Args:
-            entry_place_func_nb (Optional[PlaceFunc]): A function for placing entry signals.
+            entry_place_func_nb (Optional[PlaceFunc]): Function for placing entry signals.
 
                 Defaults to `vectorbtpro.signals.nb.first_place_nb` when used with `FactoryMode.Chain`.
-            exit_place_func_nb (Optional[PlaceFunc]): A function for placing exit signals.
-            generate_func_nb (Optional[Callable]): The entry generation function.
+            exit_place_func_nb (Optional[PlaceFunc]): Function for placing exit signals.
+            generate_func_nb (Optional[Callable]): Entry generation function.
 
                 Defaults to `vectorbtpro.signals.nb.generate_nb`.
-            generate_ex_func_nb (Optional[Callable]): The exit generation function.
+            generate_ex_func_nb (Optional[Callable]): Exit generation function.
 
                 Defaults to `vectorbtpro.signals.nb.generate_ex_nb`.
-            generate_enex_func_nb (Optional[Callable]): The generation function for both entry and exit signals.
+            generate_enex_func_nb (Optional[Callable]): Generation function for both entry and exit signals.
 
                 Defaults to `vectorbtpro.signals.nb.generate_enex_nb`.
-            cache_func (Callable): A caching function to preprocess data.
+            cache_func (Callable): Caching function to preprocess data.
 
                 Its outputs are appended as the last arguments to placement functions.
             entry_settings (KwargsLike): Settings dictionary for the entry placement function.

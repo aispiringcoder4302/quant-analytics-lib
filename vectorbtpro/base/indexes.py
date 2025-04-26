@@ -48,7 +48,7 @@ def to_any_index(index_like: tp.IndexLike) -> tp.Index:
     """Convert any index-like object to a Pandas Index.
 
     Args:
-        index_like (IndexLike): An object convertible to a Pandas Index.
+        index_like (IndexLike): Object convertible to a Pandas Index.
 
     Returns:
         Index: The resulting Pandas Index instance. Index objects are returned unchanged.
@@ -64,8 +64,8 @@ def get_index(obj: tp.SeriesFrame, axis: int) -> tp.Index:
     """Return the index or columns of a Series or DataFrame based on the specified axis.
 
     Args:
-        obj (Union[pd.Series, pd.DataFrame]): A Pandas Series or DataFrame.
-        axis (int): The axis number (0 for row index, 1 for columns).
+        obj (Union[pd.Series, pd.DataFrame]): Pandas Series or DataFrame.
+        axis (int): Axis number (0 for row index, 1 for columns).
 
     Returns:
         Index: The row index if axis is 0, or the columns if axis is 1.
@@ -98,10 +98,10 @@ def index_from_values(
     When the `single_value` flag is True, only the first value is used and repeated for all entries.
 
     Args:
-        values (Sequence): An iterable of values to generate index entries.
+        values (Sequence): Iterable of values to generate index entries.
         single_value (bool): If True, uses only the first value from `values` for index creation,
             repeating it for all entries.
-        name (Optional[Hashable]): The name to assign to the index.
+        name (Optional[Hashable]): Name to assign to the index.
 
     Returns:
         Index: A Pandas Index with labels generated from the provided values.
@@ -157,8 +157,8 @@ def repeat_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] =
     """Repeat each element in the provided index n times.
 
     Args:
-        index (IndexLike): The input index to be repeated.
-        n (int): The number of repetitions for each element.
+        index (IndexLike): Input index to be repeated.
+        n (int): Number of repetitions for each element.
         ignore_ranges (Optional[bool]): If True, ignore indexes of type RangeIndex.
 
     Returns:
@@ -186,8 +186,8 @@ def tile_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] = N
     """Tile the entire index by repeating its sequence n times.
 
     Args:
-        index (IndexLike): The input index to be tiled.
-        n (int): The number of times to tile the index.
+        index (IndexLike): Input index to be tiled.
+        n (int): Number of times to tile the index.
         ignore_ranges (Optional[bool]): If True, ignore indexes of type RangeIndex.
 
     Returns:
@@ -224,7 +224,7 @@ def clean_index(
     """Clean the provided index by removing duplicate or redundant levels based on configuration.
 
     Args:
-        index (IndexLike): The index to be cleaned.
+        index (IndexLike): Index to be cleaned.
         drop_duplicates (Optional[bool]): If True, remove duplicate levels.
         keep (Optional[str]): Determines which duplicate levels to retain.
         drop_redundant (Optional[bool]): If True, remove redundant levels.
@@ -314,7 +314,7 @@ def combine_index_with_keys(index: tp.IndexLike, keys: tp.IndexLike, lens: tp.Se
     """Build a composite index by combining index segments with repeated keys.
 
     Args:
-        index (IndexLike): The original index to segment.
+        index (IndexLike): Original index to segment.
         keys (IndexLike): Keys to repeat for each index segment.
         lens (Sequence[int]): Sequence of lengths for each corresponding segment.
         **kwargs: Keyword arguments for `stack_indexes`.
@@ -542,7 +542,7 @@ def drop_levels(
     If `levels` is provided as an instance of `ExceptLevel`, drop all levels except those specified.
 
     Args:
-        index (Index): The MultiIndex from which levels will be dropped.
+        index (Index): MultiIndex from which levels will be dropped.
         levels (Union[ExceptLevel, MaybeLevelSequence]): Level names or positions to drop,
             or an `ExceptLevel` indicating the levels to retain.
         strict (bool): Whether to raise exceptions for invalid level specifications.
@@ -601,8 +601,8 @@ def rename_levels(index: tp.Index, mapper: tp.MaybeMappingSequence[tp.Level], st
     The mapper can be a single value, a sequence of values, or a dictionary mapping old level names to new ones.
 
     Args:
-        index (Index): The index whose levels will be renamed.
-        mapper (MaybeMappingSequence[Level]): A new name, sequence of names, or mapping for the levels.
+        index (Index): Index whose levels will be renamed.
+        mapper (MaybeMappingSequence[Level]): New name, sequence of names, or mapping for the levels.
         strict (bool): Whether to raise exceptions for invalid level specifications.
 
     Returns:
@@ -656,7 +656,7 @@ def select_levels(
     If the input index is not a MultiIndex, it is converted into one for consistent processing.
 
     Args:
-        index (Index): The index from which levels are selected.
+        index (Index): Index from which levels are selected.
         levels (Union[ExceptLevel, MaybeLevelSequence]): Level names or positions to select,
             or an `ExceptLevel` indicating the levels to exclude.
         strict (bool): Whether to raise exceptions for invalid level specifications.
@@ -718,7 +718,7 @@ def drop_redundant_levels(index: tp.Index) -> tp.Index:
     Removes levels that contain a single unnamed value or that represent a default integer range.
 
     Args:
-        index (Index): The MultiIndex from which redundant levels will be removed.
+        index (Index): MultiIndex from which redundant levels will be removed.
 
     Returns:
         Index: A new index with redundant levels dropped.
@@ -743,7 +743,7 @@ def drop_duplicate_levels(index: tp.Index, keep: tp.Optional[str] = None) -> tp.
     If level names are identical, the duplicate level is removed based on the specified retention strategy.
 
     Args:
-        index (Index): The index from which duplicate levels are removed.
+        index (Index): Index from which duplicate levels are removed.
         keep (Optional[str]): Specifies which duplicate to retain, either 'first' or 'last'.
 
             If None, the default is used.
@@ -813,8 +813,8 @@ def align_index_to(index1: tp.Index, index2: tp.Index, jitted: tp.JittedOption =
     """Align `index1` to the shape of `index2` based on common index levels.
 
     Args:
-        index1 (Index): The index to be aligned.
-        index2 (Index): The reference index providing the desired shape.
+        index1 (Index): Index to be aligned.
+        index2 (Index): Reference index providing the desired shape.
         jitted (JittedOption): Option to control JIT compilation.
 
             See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -931,8 +931,8 @@ def block_index_product_nb(
     """Compute block-wise Cartesian product indices from two factorized indexes.
 
     Args:
-        block_group_map1 (GroupMap): A tuple with group indices and group lengths for the first factorized index.
-        block_group_map2 (GroupMap): A tuple with group indices and group lengths for the second factorized index.
+        block_group_map1 (GroupMap): Tuple with group indices and group lengths for the first factorized index.
+        block_group_map2 (GroupMap): Tuple with group indices and group lengths for the second factorized index.
         factorized1 (Array1d): Factorized values of the first index.
         factorized2 (Array1d): Factorized values of the second index.
 
@@ -986,8 +986,8 @@ def cross_index_with(
     """Build a Cartesian product of two indexes, accounting for shared levels.
 
     Args:
-        index1 (Index): The first index to cross.
-        index2 (Index): The second index to cross.
+        index1 (Index): First index to cross.
+        index2 (Index): Second index to cross.
         return_new_index (bool): If True, also return a combined index formed by stacking the two indexes.
 
     Returns:
@@ -1130,7 +1130,7 @@ def pick_levels(
     An exception is raised if the index's number of levels does not match the expected configuration.
 
     Args:
-        index (Index): The MultiIndex from which to select levels.
+        index (Index): MultiIndex from which to select levels.
         required_levels (Optional[Sequence[Union[None, Level]]]): Sequence specifying
             required levels by name or position.
         optional_levels (Optional[Sequence[Union[None, Level]]]): Sequence specifying
@@ -1196,8 +1196,8 @@ def find_first_occurrence(index_value: tp.Any, index: tp.Index) -> int:
     """Return the index position of the first occurrence of a value in an index.
 
     Args:
-        index_value (Any): The value to locate in the index.
-        index (Index): The index to search.
+        index_value (Any): Value to locate in the index.
+        index (Index): Index to search.
 
     Returns:
         int: The position of the first occurrence of the specified value.
@@ -1222,7 +1222,7 @@ class IndexApplier(Base):
         """Apply the specified function to the instance's index and return a new instance.
 
         Args:
-            apply_func (Callable): A callable to apply to the instance's index.
+            apply_func (Callable): Callable to apply to the instance's index.
             *args: Positional arguments for `apply_func`.
             **kwargs: Keyword arguments for `apply_func`.
 
@@ -1280,7 +1280,7 @@ class IndexApplier(Base):
         """Drop specified levels from the index using `drop_levels`.
 
         Args:
-            levels (Union[ExceptLevel, MaybeLevelSequence]): The level or levels to be dropped from the index.
+            levels (Union[ExceptLevel, MaybeLevelSequence]): Level or levels to be dropped from the index.
             strict (bool): Enforces strict matching of the specified levels.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 
@@ -1302,7 +1302,7 @@ class IndexApplier(Base):
         """Rename levels in the index using `rename_levels`.
 
         Args:
-            mapper (MaybeMappingSequence[Level]): A mapping or sequence indicating new names for the levels.
+            mapper (MaybeMappingSequence[Level]): Mapping or sequence indicating new names for the levels.
             strict (bool): Enforces strict renaming; only exact matches will be renamed.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 
@@ -1324,7 +1324,7 @@ class IndexApplier(Base):
         """Select specific levels from the index using `select_levels`.
 
         Args:
-            level_names (Union[ExceptLevel, MaybeLevelSequence]): The level or levels to select from the index.
+            level_names (Union[ExceptLevel, MaybeLevelSequence]): Level or levels to select from the index.
             strict (bool): Enforces strict matching for the selection.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 
@@ -1356,7 +1356,7 @@ class IndexApplier(Base):
         """Remove duplicate levels from the index using `drop_duplicate_levels`.
 
         Args:
-            keep (Optional[str]): A strategy to determine which duplicate level to retain.
+            keep (Optional[str]): Strategy to determine which duplicate level to retain.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 
         Returns:

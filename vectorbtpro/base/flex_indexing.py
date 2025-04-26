@@ -38,7 +38,7 @@ def flex_choose_i_1d_nb(arr: tp.FlexArray1d, i: int) -> int:
     """Choose a position in a flexible 1-dimensional array as if it were broadcast against rows or columns.
 
     Args:
-        arr (FlexArray1d): The flexible 1-dimensional array.
+        arr (FlexArray1d): Flexible 1-dimensional array.
         i (int): Index used for position selection.
 
     Returns:
@@ -59,7 +59,7 @@ def flex_select_1d_nb(arr: tp.FlexArray1d, i: int) -> tp.Scalar:
     """Select an element from a flexible 1-dimensional array as if it were broadcast against rows or columns.
 
     Args:
-        arr (FlexArray1d): The flexible 1-dimensional array.
+        arr (FlexArray1d): Flexible 1-dimensional array.
         i (int): Index used for selecting the element.
 
     Returns:
@@ -77,7 +77,7 @@ def flex_choose_i_pr_1d_nb(arr: tp.FlexArray1d, i: int, rotate_rows: bool = _rot
     """Choose a position in a flexible 1-dimensional array as if it were broadcast along rows.
 
     Args:
-        arr (FlexArray1d): The flexible 1-dimensional array.
+        arr (FlexArray1d): Flexible 1-dimensional array.
         i (int): Index used for row selection.
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
 
@@ -101,7 +101,7 @@ def flex_choose_i_pr_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate
     """Choose a position in a flexible 2-dimensional array as if it were broadcast along rows.
 
     Args:
-        arr (FlexArray2d): The flexible 2-dimensional array.
+        arr (FlexArray2d): Flexible 2-dimensional array.
         i (int): Index used for row selection.
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
 
@@ -125,7 +125,7 @@ def flex_select_1d_pr_nb(arr: tp.FlexArray1d, i: int, rotate_rows: bool = _rotat
     """Select an element from a flexible 1-dimensional array as if it were broadcast along rows.
 
     Args:
-        arr (FlexArray1d): The flexible 1-dimensional array.
+        arr (FlexArray1d): Flexible 1-dimensional array.
         i (int): Index used for selecting the element.
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
 
@@ -144,7 +144,7 @@ def flex_choose_i_pc_1d_nb(arr: tp.FlexArray1d, col: int, rotate_cols: bool = _r
     """Choose a position in a flexible 1-dimensional array as if it were broadcast along columns.
 
     Args:
-        arr (FlexArray1d): The flexible 1-dimensional array.
+        arr (FlexArray1d): Flexible 1-dimensional array.
         col (int): Index used for column selection.
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
@@ -168,7 +168,7 @@ def flex_choose_i_pc_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rota
     """Choose a position in a flexible 2-dimensional array as if it were broadcast along columns.
 
     Args:
-        arr (FlexArray2d): The flexible 2-dimensional array.
+        arr (FlexArray2d): Flexible 2-dimensional array.
         col (int): Index used for column selection.
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
@@ -192,7 +192,7 @@ def flex_select_1d_pc_nb(arr: tp.FlexArray1d, col: int, rotate_cols: bool = _rot
     """Select an element from a flexible 1-dimensional array as if it were broadcast along columns.
 
     Args:
-        arr (FlexArray1d): The flexible 1-dimensional array.
+        arr (FlexArray1d): Flexible 1-dimensional array.
         col (int): Index used for selecting the element.
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
@@ -217,7 +217,7 @@ def flex_choose_i_and_col_nb(
     """Choose positions in a flexible 2-dimensional array as if it were broadcast along rows and columns.
 
     Args:
-        arr (FlexArray2d): The flexible 2-dimensional array.
+        arr (FlexArray2d): Flexible 2-dimensional array.
         i (int): Index used for row selection.
         col (int): Index used for column selection.
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
@@ -257,7 +257,7 @@ def flex_select_nb(
     """Select an element from a flexible 2-dimensional array as if it were broadcast along rows and columns.
 
     Args:
-        arr (FlexArray2d): The flexible 2-dimensional array.
+        arr (FlexArray2d): Flexible 2-dimensional array.
         i (int): Index used for row selection.
         col (int): Index used for column selection.
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
@@ -284,7 +284,7 @@ def flex_select_row_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate_
     """Select a row from a flexible 2-dimensional array, returning a 1-dimensional array.
 
     Args:
-        arr (FlexArray2d): The flexible 2-dimensional array.
+        arr (FlexArray2d): Flexible 2-dimensional array.
         i (int): Index used for row selection.
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
 
@@ -303,7 +303,7 @@ def flex_select_col_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rotat
     """Select a column from a flexible 2-dimensional array, returning a 1-dimensional array.
 
     Args:
-        arr (FlexArray2d): The flexible 2-dimensional array.
+        arr (FlexArray2d): Flexible 2-dimensional array.
         col (int): Index used for column selection.
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
@@ -322,7 +322,7 @@ def flex_select_2d_row_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rota
     """Select a row from a flexible 2-dimensional array, returning a 2-dimensional array.
 
     Args:
-        arr (FlexArray2d): The flexible 2-dimensional array.
+        arr (FlexArray2d): Flexible 2-dimensional array.
         i (int): Index used for row selection.
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
 
@@ -341,7 +341,7 @@ def flex_select_2d_col_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _ro
     """Select a column from a flexible 2-dimensional array, returning a 2-dimensional array.
 
     Args:
-        arr (FlexArray2d): The flexible 2-dimensional array.
+        arr (FlexArray2d): Flexible 2-dimensional array.
         col (int): Index used for column selection.
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 

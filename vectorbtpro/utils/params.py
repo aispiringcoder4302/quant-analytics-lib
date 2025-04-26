@@ -57,7 +57,7 @@ def to_typed_list(lst: list) -> List:
     Refer to https://github.com/numba/numba/issues/6651 for further details.
 
     Args:
-        lst (list): The Python list to cast.
+        lst (list): Python list to cast.
 
     Returns:
         List: A Numba-typed List containing the elements of the input list.
@@ -72,7 +72,7 @@ def flatten_param_tuples(param_tuples: tp.Sequence) -> tp.Params:
     """Flatten a nested sequence of parameter tuples using unzipping.
 
     Args:
-        param_tuples (Sequence): A nested sequence of parameter tuples to be flattened.
+        param_tuples (Sequence): Nested sequence of parameter tuples to be flattened.
 
     Returns:
         Params: A flattened sequence of parameter values.
@@ -96,7 +96,7 @@ def generate_param_combs(op_tree: tp.Tuple, depth: int = 0) -> tp.Params:
     Any element that is itself a tuple with a callable as its first item is recursively unpacked in the same way.
 
     Args:
-        op_tree (Tuple): A tuple that defines nested instructions for generating parameters.
+        op_tree (Tuple): Tuple that defines nested instructions for generating parameters.
         depth (int): Internal recursion depth indicator.
 
     Returns:
@@ -142,8 +142,8 @@ def broadcast_params(params_or_dict: tp.ParamsOrDict, to_n: tp.Optional[int] = N
     among lists if `to_n` is not provided). A single-value parameter is repeated to match the target length.
 
     Args:
-        params_or_dict (ParamsOrDict): A dictionary or sequence of parameter lists.
-        to_n (Optional[int]): The target length for each parameter list. If not provided,
+        params_or_dict (ParamsOrDict): Dictionary or sequence of parameter lists.
+        to_n (Optional[int]): Target length for each parameter list. If not provided,
             the maximum length among the lists is used.
 
     Returns:
@@ -179,7 +179,7 @@ def create_param_product(params_or_dict: tp.ParamsOrDict) -> tp.ParamsOrDict:
     by computing their Cartesian product, then restructure the result to mirror the input format.
 
     Args:
-        params_or_dict (ParamsOrDict): A dictionary or sequence containing parameter lists.
+        params_or_dict (ParamsOrDict): Dictionary or sequence containing parameter lists.
 
     Returns:
         ParamsOrDict: The Cartesian product of the input parameters.
@@ -208,7 +208,7 @@ def is_single_param_value(
     Ranges are also considered non-single.
 
     Args:
-        param_values (MaybeParamValues): The value or iterable to evaluate.
+        param_values (MaybeParamValues): Value or iterable to evaluate.
         is_tuple (bool): If True, treat tuples as single values.
         is_array_like (bool): If True, treat array-like objects as single values.
 
@@ -238,7 +238,7 @@ def params_to_list(
     Otherwise, it is converted directly into a list.
 
     Args:
-        param_values (MaybeParamValues): The parameter value or iterable.
+        param_values (MaybeParamValues): Parameter value or iterable.
         is_tuple (bool): If True, treat tuples as single values.
         is_array_like (bool): If True, treat array-like objects as single values.
 
@@ -258,7 +258,7 @@ def get_param_grid_len(param_grid: tp.ParamGrid) -> int:
     of each parameter to determine the total number of combinations.
 
     Args:
-        param_grid (ParamGrid): A dictionary or sequence representing the parameter grid.
+        param_grid (ParamGrid): Dictionary or sequence representing the parameter grid.
 
     Returns:
         int: The total number of parameter combinations.
@@ -287,10 +287,10 @@ def pick_from_param_grid(
     Parameter values can be specified either as a collection or as an integer representing the number of values.
 
     Args:
-        param_grid (ParamGrid): The parameter grid from which to select combinations.
+        param_grid (ParamGrid): Parameter grid from which to select combinations.
 
             Each parameter value can be a sequence or an integer indicating the count of values.
-        i (Union[None, int, Array1d]): An index for selecting a specific combination.
+        i (Union[None, int, Array1d]): Index for selecting a specific combination.
 
             If None, a random index is chosen.
 
@@ -408,7 +408,7 @@ class Param(Evaluable, Annotatable, DefineMixin):
         """Apply a function to each element of `Param.value` and return a new `Param` instance.
 
         Args:
-            func (Callable): The function to apply to each value in `Param.value`.
+            func (Callable): Function to apply to each value in `Param.value`.
             old_as_keys (bool): Indicates whether to use the original values as keys if `keys` is not provided.
 
         Returns:
@@ -526,11 +526,11 @@ def combine_params(
     Args:
         param_dct (Dict[Hashable, Param]): Dictionary mapping keys to `Param` objects.
         build_grid (Optional[bool]): If True, materialize the full parameter grid before filtering.
-        grid_indices (Union[None, slice, Sequence[int]]): A slice (for example, `slice(None, None, 2)`
+        grid_indices (Union[None, slice, Sequence[int]]): Slice (for example, `slice(None, None, 2)`
             for `::2`) or sequence of indices to skip certain combinations.
 
             It can be used to skip a some combinations before a random subset is drawn.
-        random_subset (Union[None, int, float]): An integer count or a float fraction specifying
+        random_subset (Union[None, int, float]): Integer count or a float fraction specifying
             how many combinations to select randomly.
 
             If parameters have conditions, `random_subset` is drawn from the subset of
@@ -1614,7 +1614,7 @@ class Parameterizer(Configured):
         Only parameters meeting the specified evaluation identifier are included.
 
         Args:
-            obj (Any): The object to search for `Param` instances.
+            obj (Any): Object to search for `Param` instances.
             eval_id (Optional[Hashable]): Evaluation identifier.
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.find_in_obj`.
 
@@ -1634,8 +1634,8 @@ class Parameterizer(Configured):
         Iterates over each combination of parameter values to generate a new object.
 
         Args:
-            obj (Any): The original object containing parameter templates.
-            param_product (dict): A dictionary of parameter combinations.
+            obj (Any): Original object containing parameter templates.
+            param_product (dict): Dictionary of parameter combinations.
 
         Returns:
             List[Any]: A list of objects with parameter values replaced in the original object.
@@ -1664,7 +1664,7 @@ class Parameterizer(Configured):
         Processes function annotations to correctly parse and inject parameter values.
 
         Args:
-            flat_ann_args (FlatAnnArgs): The dictionary of flattened annotated arguments.
+            flat_ann_args (FlatAnnArgs): Dictionary of flattened annotated arguments.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -1856,7 +1856,7 @@ class Parameterizer(Configured):
         """Yield tasks for execution by pairing a function with its arguments.
 
         Args:
-            func (Callable): The function to be executed.
+            func (Callable): Function to be executed.
             ann_args (AnnArgs): Annotated arguments.
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
@@ -2053,7 +2053,7 @@ class Parameterizer(Configured):
         """Parameterize the function's arguments and execute the function.
 
         Args:
-            func (Callable): The target function to execute.
+            func (Callable): Target function to execute.
             *args: Positional arguments for `func`.
             param_configs (Optional[MaybeSequence[dict]]): Configuration(s) used to parameterize `func`'s arguments.
             eval_id (Optional[Hashable]): Evaluation identifier.

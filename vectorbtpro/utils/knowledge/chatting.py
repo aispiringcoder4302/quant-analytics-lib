@@ -153,7 +153,7 @@ class Tokenizer(Configured):
         """Return a list of tokens corresponding to the given text.
 
         Args:
-            text (str): The text to encode.
+            text (str): Text to encode.
 
         Returns:
             list: List of tokens representing the input text.
@@ -164,7 +164,7 @@ class Tokenizer(Configured):
         """Return the text obtained by decoding the given list of tokens.
 
         Args:
-            tokens (list): The list of tokens to decode.
+            tokens (list): List of tokens to decode.
 
         Returns:
             str: The decoded text.
@@ -176,7 +176,7 @@ class Tokenizer(Configured):
         """Return a single token encoded from the given text.
 
         Args:
-            text (str): The text to encode.
+            text (str): Text to encode.
 
         Returns:
             Token: The single token representing the input text.
@@ -205,7 +205,7 @@ class Tokenizer(Configured):
         """Return the total number of tokens in the provided text.
 
         Args:
-            text (str): The text for token counting.
+            text (str): Text for token counting.
 
         Returns:
             int: The number of tokens.
@@ -216,7 +216,7 @@ class Tokenizer(Configured):
         """Return the total number of tokens across the provided messages.
 
         Args:
-            messages (ChatMessages): The collection of chat messages.
+            messages (ChatMessages): Collection of chat messages.
 
         Returns:
             int: The total token count.
@@ -232,7 +232,7 @@ class TikTokenizer(Tokenizer):
     Args:
         encoding (Union[None, str, Encoding]): Encoding specification as a model name,
             encoding name, or encoding object.
-        model (Optional[str]): The model identifier used to determine the encoding.
+        model (Optional[str]): Model identifier used to determine the encoding.
         tokens_per_message (Optional[int]): Number of tokens charged per message.
         tokens_per_name (Optional[int]): Additional token count for message names.
         **kwargs: Keyword arguments for `Tokenizer`.
@@ -378,7 +378,7 @@ def tokenize(text: str, tokenizer: tp.TokenizerLike = None, **kwargs) -> tp.Toke
     """Tokenize text using a resolved `Tokenizer`.
 
     Args:
-        text (str): The text to tokenize.
+        text (str): Text to tokenize.
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
         
             Resolved using `resolve_tokenizer`.
@@ -399,7 +399,7 @@ def detokenize(tokens: tp.Tokens, tokenizer: tp.TokenizerLike = None, **kwargs) 
     """Detokenize tokens into text using a resolved `Tokenizer`.
 
     Args:
-        tokens (Tokens): A list of tokens to decode.
+        tokens (Tokens): List of tokens to decode.
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
         
             Resolved using `resolve_tokenizer`.
@@ -519,7 +519,7 @@ class Embeddings(Configured):
         """Return the embedding vector for the given query.
 
         Args:
-            query (str): The query text.
+            query (str): Query text.
 
         Returns:
             List[float]: The embedding vector.
@@ -530,7 +530,7 @@ class Embeddings(Configured):
         """Return a batch of embedding vectors for a list of queries.
 
         Args:
-            batch (List[str]): A list of query texts.
+            batch (List[str]): List of query texts.
 
         Returns:
             List[List[float]]: A list containing an embedding vector for each query.
@@ -541,7 +541,7 @@ class Embeddings(Configured):
         """Return an iterator over batches of embeddings.
 
         Args:
-            queries (List[str]): A list of query texts.
+            queries (List[str]): List of query texts.
 
         Returns:
             Iterator[List[List[float]]]: An iterator yielding batches of embedding vectors.
@@ -562,7 +562,7 @@ class Embeddings(Configured):
         """Return embeddings for multiple queries.
 
         Args:
-            queries (List[str]): A list of query texts.
+            queries (List[str]): List of query texts.
 
         Returns:
             List[List[float]]: A list containing an embedding vector for each query.
@@ -759,7 +759,7 @@ class LlamaIndexEmbeddings(Embeddings):
     It combines configuration from `vectorbtpro._settings.knowledge` with provided parameters.
 
     Args:
-        embedding (Union[None, str, BaseEmbedding]): An embedding identifier or instance.
+        embedding (Union[None, str, BaseEmbedding]): Embedding identifier or instance.
 
             If None, a default from settings is used.
         embedding_kwargs (KwargsLike): Keyword arguments for embedding initialization.
@@ -939,7 +939,7 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
     """Return embedding(s) for one or more queries.
 
     Args:
-        query (MaybeList[str]): A query string or a list of query strings to embed.
+        query (MaybeList[str]): Query string or a list of query strings to embed.
         embeddings (EmbeddingsLike): Identifier, subclass, or instance of `Embeddings`.
             
             Resolved using `resolve_embeddings`.
@@ -1266,7 +1266,7 @@ class Completions(Configured):
         """Return a chat response based on the provided messages
 
         Args:
-            messages (ChatMessages): A list of dictionaries representing the conversation history.
+            messages (ChatMessages): List of dictionaries representing the conversation history.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -1278,7 +1278,7 @@ class Completions(Configured):
         """Return the content extracted from a chat response.
 
         Args:
-            response (Any): The chat response object.
+            response (Any): Chat response object.
 
         Returns:
             Optional[str]: The content extracted from the chat response.
@@ -1289,7 +1289,7 @@ class Completions(Configured):
         """Return a streaming response generated from the provided messages.
 
         Args:
-            messages (ChatMessages): A list of dictionaries representing the conversation history.
+            messages (ChatMessages): List of dictionaries representing the conversation history.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -1301,7 +1301,7 @@ class Completions(Configured):
         """Return the content extracted from a streaming response chunk.
 
         Args:
-            response (Any): The streaming response object.
+            response (Any): Streaming response object.
 
         Returns:
             Optional[str]: The content extracted from the streaming response chunk.
@@ -1312,7 +1312,7 @@ class Completions(Configured):
         """Return a list of chat messages formatted for a completion request.
 
         Args:
-            message (str): The user message to process.
+            message (str): User message to process.
 
         Returns:
             ChatMessages: A list of dictionaries representing the conversation history.
@@ -1391,7 +1391,7 @@ class Completions(Configured):
         """Return the formatted completion output for a provided message.
 
         Args:
-            message (str): The user message to generate a completion for.
+            message (str): User message to generate a completion for.
             return_response (bool): Flag to return the raw response along with the file path.
 
         Returns:
@@ -1466,7 +1466,7 @@ class Completions(Configured):
         """Return the text content of a completion for a given message.
 
         Args:
-            message (str): The user message to complete.
+            message (str): User message to complete.
 
         Returns:
             str: The generated completion text.
@@ -1890,7 +1890,7 @@ def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> 
     """Get and return the chat completion for a provided message.
 
     Args:
-        message (str): The input message for which to generate a completion.
+        message (str): Input message for which to generate a completion.
         completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
         
             Resolved using `resolve_completions`.
@@ -1911,7 +1911,7 @@ def completed(message: str, completions: tp.CompletionsLike = None, **kwargs) ->
     """Return completion content for a given message using the provided completions configuration.
 
     Args:
-        message (str): The input message.
+        message (str): Input message.
         completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
         
             Resolved using `resolve_completions`.
@@ -1994,7 +1994,7 @@ class TextSplitter(Configured):
         """Yield the start and end character indices for each text chunk in the given text.
 
         Args:
-            text (str): The input text to split.
+            text (str): Input text to split.
 
         Yields:
             Tuple[int, int]: A tuple representing the start and end indices of a text chunk.
@@ -2007,7 +2007,7 @@ class TextSplitter(Configured):
         The method substitutes the chunk template with context derived from each chunk's position and text.
 
         Args:
-            text (str): The text to split.
+            text (str): Text to split.
 
         Yields:
             str: A formatted text chunk.
@@ -2134,7 +2134,7 @@ class TokenSplitter(TextSplitter):
         The method encodes the text into tokens and decodes each token to determine its character span.
 
         Args:
-            text (str): The text to tokenize.
+            text (str): Text to tokenize.
 
         Yields:
             Tuple[int, int]: The start and end indices of each token.
@@ -2266,8 +2266,8 @@ class SegmentSplitter(TokenSplitter):
         split the text at each occurrence of `separator`.
 
         Args:
-            text (str): The text to be split.
-            separator (Optional[str]): The separator used to divide the text.
+            text (str): Text to be split.
+            separator (Optional[str]): Separator used to divide the text.
 
         Yields:
             Tuple[int, int, bool]: A tuple containing the segment's start index, end index, and
@@ -2482,7 +2482,7 @@ class LlamaIndexSplitter(TextSplitter):
     """Splitter class based on a node parser from LlamaIndex that divides text into chunks using nodes.
 
     Args:
-        node_parser (Union[None, str, NodeParser]): The node parser to use,
+        node_parser (Union[None, str, NodeParser]): Node parser to use,
             specified as a string key, class, or instance.
         node_parser_kwargs (KwargsLike): Keyword arguments to node parser initialization.
         **kwargs: Keyword arguments for `TextSplitter` or used as `node_parser_kwargs`.
@@ -2648,7 +2648,7 @@ def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -
     """Split text into chunks using a specified text splitter.
 
     Args:
-        text (str): The input text to be split.
+        text (str): Input text to be split.
         text_splitter (TextSplitterLike): Identifier, subclass, or instance of `TextSplitter`.
         
             Resolved using `resolve_text_splitter`.
@@ -2701,7 +2701,7 @@ class StoreData(StoreObject, DefineMixin):
         """Return a unique identifier computed from the given data.
 
         Args:
-            data (Any): The data from which to generate the identifier.
+            data (Any): Data from which to generate the identifier.
 
         Returns:
             str: The MD5 hash of the serialized data.
@@ -2720,8 +2720,8 @@ class StoreData(StoreObject, DefineMixin):
         """Return a new instance of `StoreData` derived from the provided data.
 
         Args:
-            data (Any): The data to store.
-            id_ (Optional[str]): An optional identifier; if not provided, one is generated.
+            data (Any): Data to store.
+            id_ (Optional[str]): Optional identifier; if not provided, one is generated.
             **kwargs: Keyword arguments for `StoreData`.
 
         Returns:
@@ -2774,7 +2774,7 @@ def def_metadata_template(metadata_content: str) -> str:
     """Return a formatted metadata template string.
 
     Args:
-        metadata_content (str): The metadata content to include.
+        metadata_content (str): Metadata content to include.
 
     Returns:
         str: The formatted metadata template string with front matter delimiters.
@@ -3768,7 +3768,7 @@ class LMDBStore(ObjectStore):
         """Encode the given object to a bytes representation using the configured serialization settings.
 
         Args:
-            obj (StoreObject): The object to encode.
+            obj (StoreObject): Object to encode.
 
         Returns:
             bytes: The serialized bytes of the object.
@@ -3781,7 +3781,7 @@ class LMDBStore(ObjectStore):
         """Decode the given bytes into an object using the configured deserialization settings.
 
         Args:
-            bytes_ (bytes): The bytes representation of the object.
+            bytes_ (bytes): Bytes representation of the object.
 
         Returns:
             StoreObject: The deserialized object.
@@ -3815,7 +3815,7 @@ class CachedStore(DictStore):
     """Store class acting as a temporary cache for another store.
 
     Args:
-        obj_store (ObjectStore): The underlying object store to cache.
+        obj_store (ObjectStore): Underlying object store to cache.
         lazy_open (Optional[bool]): Flag indicating whether to open the store lazily.
         mirror (Optional[bool]): Flag indicating whether to mirror the store in `memory_store`.
         **kwargs: Keyword arguments for `DictStore`.
@@ -4432,7 +4432,7 @@ class DocumentRanker(Configured):
         tokenization keyword arguments.
 
         Args:
-            bm25_tokenizer (Optional[BM25Tokenizer]): A BM25 tokenizer instance or type.
+            bm25_tokenizer (Optional[BM25Tokenizer]): BM25 tokenizer instance or type.
             **kwargs: Keyword arguments for initializing `bm25_tokenizer` and tokenization.
 
         Returns:
@@ -4481,7 +4481,7 @@ class DocumentRanker(Configured):
         """Return a tuple containing a resolved instance of `bm25s.BM25` and retrieval keyword arguments.
 
         Args:
-            bm25_retriever (Optional[BM25]): A BM25 retriever instance or type.
+            bm25_retriever (Optional[BM25]): BM25 retriever instance or type.
             **kwargs: Keyword arguments for initializing `bm25_retriever` and retrieval.
 
         Returns:
@@ -4528,7 +4528,7 @@ class DocumentRanker(Configured):
         Without refreshing, persisted objects from the respective stores are used.
 
         Args:
-            documents (Iterable[StoreDocument]): An iterable of documents to embed.
+            documents (Iterable[StoreDocument]): Iterable of documents to embed.
             refresh (bool): Flag to refresh both documents and embeddings unless overridden.
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to the value of
                 `refresh` if not specified.
@@ -4658,8 +4658,8 @@ class DocumentRanker(Configured):
         metric can be supplied that accepts two arrays and returns a 2-dimensional ndarray.
 
         Args:
-            emb1 (Union[MaybeIterable[List[float]], ndarray]): The first embedding or collection of embeddings.
-            emb2 (Union[MaybeIterable[List[float]], ndarray]): The second embedding or collection of embeddings.
+            emb1 (Union[MaybeIterable[List[float]], ndarray]): First embedding or collection of embeddings.
+            emb2 (Union[MaybeIterable[List[float]], ndarray]): Second embedding or collection of embeddings.
 
         Returns:
             Union[float, ndarray]: The computed score or score matrix between the embeddings.
@@ -4715,8 +4715,8 @@ class DocumentRanker(Configured):
         against document embeddings to compute relevance scores.
 
         Args:
-            query (str): The query string for scoring relevance.
-            documents (Optional[Iterable[StoreDocument]]): An iterable of documents to score. If None,
+            query (str): Query string for scoring relevance.
+            documents (Optional[Iterable[StoreDocument]]): Iterable of documents to score. If None,
                 documents from the document store are used.
             refresh (bool): Flag to refresh both documents and embeddings.
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to the value of
@@ -4828,7 +4828,7 @@ class DocumentRanker(Configured):
         """Return a list of lowercase tokens extracted from the input text using BM25 tokenization.
 
         Args:
-            text (str): The text to tokenize.
+            text (str): Text to tokenize.
 
         Returns:
             list[str]: Lowercase tokens extracted from the input text.
@@ -4849,7 +4849,7 @@ class DocumentRanker(Configured):
         """Return BM25 relevance scores for documents matching a query.
 
         Args:
-            query (str): The query string for relevance scoring.
+            query (str): Query string for relevance scoring.
             documents (Optional[Iterable[StoreDocument]]): Collection of documents to score.
 
                 If None, uses documents from the store.
@@ -5008,7 +5008,7 @@ class DocumentRanker(Configured):
         """Resolve the top_k value from sorted scores.
 
         Args:
-            scores (Iterable[float]): The sorted document scores.
+            scores (Iterable[float]): Sorted document scores.
             top_k (TopKLike): Parameter specifying the top_k selection method, which can be an integer,
                 a float percentage, a string ('elbow' or 'kmeans'), or a callable.
 
@@ -5046,8 +5046,8 @@ class DocumentRanker(Configured):
         """Determine the number of top documents based on a cutoff threshold from sorted scores.
 
         Args:
-            scores (Iterable[float]): The sorted document scores.
-            cutoff (Optional[float]): The score threshold for top documents.
+            scores (Iterable[float]): Sorted document scores.
+            cutoff (Optional[float]): Score threshold for top documents.
 
         Returns:
             Optional[int]: The count of scores greater than or equal to the cutoff, or None if cutoff is None.
@@ -5063,7 +5063,7 @@ class DocumentRanker(Configured):
         """Recursively extract scores from a list of scored documents.
 
         Args:
-            scored_documents (List[ScoredDocument]): A list of documents containing scores.
+            scored_documents (List[ScoredDocument]): List of documents containing scores.
 
         Returns:
             List[float]: Scores extracted from each document and its child documents.
@@ -5080,7 +5080,7 @@ class DocumentRanker(Configured):
         """Normalize a collection of scores using min-max scaling.
 
         Args:
-            scores (Iterable[float]): An iterable of scores to normalize.
+            scores (Iterable[float]): Iterable of scores to normalize.
 
         Returns:
             ndarray: An array of normalized scores.
@@ -5245,9 +5245,9 @@ class DocumentRanker(Configured):
         `DocumentRanker.top_k_from_cutoff`.
 
         Args:
-            query (str): The query string to evaluate document relevance.
+            query (str): Query string to evaluate document relevance.
             documents (Optional[Iterable[StoreDocument]]): Documents to rank.
-            top_k (TopKLike): The number of top documents to return.
+            top_k (TopKLike): Number of top documents to return.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.
@@ -5337,7 +5337,7 @@ def embed_documents(
     """Embed the provided documents using a `DocumentRanker`.
 
     Args:
-        documents (Iterable[StoreDocument]): A collection of documents to embed.
+        documents (Iterable[StoreDocument]): Collection of documents to embed.
         refresh (bool): Flag indicating whether to refresh embeddings.
         refresh_documents (Optional[bool]): Flag to refresh documents.
         refresh_embeddings (Optional[bool]): Flag to refresh embeddings.
@@ -5386,9 +5386,9 @@ def rank_documents(
     """Rank documents based on their relevance to a query using a `DocumentRanker`.
 
     Args:
-        query (str): The query string for ranking.
-        documents (Optional[Iterable[StoreDocument]]): A collection of documents to rank.
-        top_k (TopKLike): The number of top documents to return.
+        query (str): Query string for ranking.
+        documents (Optional[Iterable[StoreDocument]]): Collection of documents to rank.
+        top_k (TopKLike): Number of top documents to return.
         min_top_k (TopKLike): Minimum limit for determining top documents.
         max_top_k (TopKLike): Maximum limit for determining top documents.
         cutoff (Optional[float]): Score threshold to filter documents.
@@ -5480,8 +5480,8 @@ class Rankable(HasSettings):
         """Rank documents based on their relevance to a provided query.
 
         Args:
-            query (str): The query string to evaluate document relevance.
-            top_k (TopKLike): The number of top documents to return.
+            query (str): Query string to evaluate document relevance.
+            top_k (TopKLike): Number of top documents to return.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.
@@ -5602,8 +5602,8 @@ class Contextable(HasSettings):
         """Chat with a language model using the instance as context.
 
         Args:
-            message (str): The message to send to the language model.
-            chat_history (Optional[ChatHistory]): The conversation history.
+            message (str): Message to send to the language model.
+            chat_history (Optional[ChatHistory]): Conversation history.
             return_chat (bool): Flag indicating whether to return both the completion and the chat instance.
             **kwargs: Keyword arguments for `Contextable.create_chat`.
 
@@ -5667,11 +5667,11 @@ class RankContextable(Rankable, Contextable):
         `Rankable.rank` before delegating to `Contextable.chat`.
 
         Args:
-            message (str): The message to send to the language model.
-            chat_history (Optional[ChatHistory]): The conversation history.
+            message (str): Message to send to the language model.
+            chat_history (Optional[ChatHistory]): Conversation history.
             incl_past_queries (Optional[bool]): Whether to include past queries in the ranking process.
             rank (Optional[bool]): Flag indicating whether to apply ranking.
-            top_k (TopKLike): The number of top documents to return.
+            top_k (TopKLike): Number of top documents to return.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.

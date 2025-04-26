@@ -157,8 +157,8 @@ def pick_idx_allocate_func_nb(i: int, index_point: int, allocations: tp.Array2d)
     """Pick the allocation at an absolute index.
 
     Args:
-        i (int): The absolute index in the allocation array.
-        index_point (int): The index point (not used in computation).
+        i (int): Absolute index in the allocation array.
+        index_point (int): Index point (not used in computation).
         allocations (Array2d): 2D array of allocation values.
 
     Returns:
@@ -172,8 +172,8 @@ def pick_point_allocate_func_nb(i: int, index_point: int, allocations: tp.Array2
     """Pick the allocation at the given index point.
 
     Args:
-        i (int): The allocation counter (not used in the current implementation).
-        index_point (int): The index from which to pick the allocation.
+        i (int): Allocation counter (not used in the current implementation).
+        index_point (int): Index from which to pick the allocation.
         allocations (Array2d): 2D array of allocation values.
 
     Returns:
@@ -200,8 +200,8 @@ def random_allocate_func_nb(
     Any unassigned weights are set to 0.
 
     Args:
-        i (int): The iteration index.
-        index_point (int): A reference index point (unused in allocation computation).
+        i (int): Iteration index.
+        index_point (int): Reference index point (unused in allocation computation).
         n_cols (int): Number of columns for the allocation.
         direction (int): Direction for weight assignment.
 

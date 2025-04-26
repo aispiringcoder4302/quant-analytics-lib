@@ -68,7 +68,7 @@ class _MSD(MSD):
         """Plot the `MSD.msd` indicator.
 
         Args:
-            column (Optional[Label]): The name of the column to plot.
+            column (Optional[Label]): Name of the column to plot.
             msd_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MSD.msd`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.

@@ -131,7 +131,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): The underlying data object.
+        obj (Optional[ArrayLike]): Underlying data object.
         feature_map (KwargsLike): Mapping for OHLCV features.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor`.
 
@@ -458,7 +458,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         """Plot OHLC data.
 
         Args:
-            ohlc_type (Union[None, str, BaseTraceType]): The type of OHLC plot to render.
+            ohlc_type (Union[None, str, BaseTraceType]): Type of OHLC plot to render.
 
                 Must be either a case-insensitive string
                 `'ohlc'` or `'candlestick'`, or a Plotly trace class.
@@ -613,7 +613,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         """Plot OHLC(V) data using Plotly.
 
         Args:
-            ohlc_type (Union[None, str, BaseTraceType]): The type of OHLC plot to render.
+            ohlc_type (Union[None, str, BaseTraceType]): Type of OHLC plot to render.
 
                 Must be either a case-insensitive string
                 `'ohlc'` or `'candlestick'`, or a Plotly trace class.

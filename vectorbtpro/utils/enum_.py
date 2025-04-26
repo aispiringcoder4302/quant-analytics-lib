@@ -32,8 +32,8 @@ def map_enum_fields(
     """Map enum fields to corresponding values.
 
     Args:
-        field (Any): The field to be mapped.
-        enum (Union[NamedTuple, EnumMeta]): The enum type used for mapping.
+        field (Any): Field to be mapped.
+        enum (Union[NamedTuple, EnumMeta]): Enum type used for mapping.
         enum_unkval (Any): Indicator for an unknown enum value.
         ignore_type (type): Type to ignore during mapping.
         **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
@@ -56,8 +56,8 @@ def map_enum_values(
     """Map enum values to corresponding fields.
 
     Args:
-        value (Any): The value to be mapped.
-        enum (Union[NamedTuple, EnumMeta]): The enum type used for mapping.
+        value (Any): Value to be mapped.
+        enum (Union[NamedTuple, EnumMeta]): Enum type used for mapping.
         enum_unkval (Any): Indicator for an unknown enum field.
         ignore_type (type): Type to ignore during mapping.
         **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.

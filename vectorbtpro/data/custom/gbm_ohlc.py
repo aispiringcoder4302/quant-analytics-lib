@@ -60,17 +60,17 @@ class GBMOHLCData(SyntheticData):
         """Generate synthetic OHLC data for a given symbol using geometric Brownian motion.
 
         Args:
-            symbol (hashable): The symbol identifier.
-            index (Index): The Pandas index representing time periods.
-            n_ticks (Optional[ArrayLike]): The number of ticks per bar.
+            symbol (hashable): Symbol identifier.
+            index (Index): Pandas index representing time periods.
+            n_ticks (Optional[ArrayLike]): Number of ticks per bar.
 
                 Can be substituted using a template with a context containing `symbol` and `index`.
-            start_value (float): The initial value at time 0.
+            start_value (float): Initial value at time 0.
 
                 Note that this value does not appear as the first value in the resulting data.
-            mean (float): The drift representing the mean percentage change.
-            std (float): The standard deviation of the percentage change.
-            dt (float): The time increment per period.
+            mean (float): Drift representing the mean percentage change.
+            std (float): Standard deviation of the percentage change.
+            dt (float): Time increment per period.
             seed (Optional[int]): Random seed for deterministic output.
             jitted (any): Jitting option; refer to `vectorbtpro.utils.jitting.resolve_jitted_option`.
             template_context (KwargsLike): Additional context for template substitution.

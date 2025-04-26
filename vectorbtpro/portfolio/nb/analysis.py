@@ -36,7 +36,7 @@ def get_long_size_nb(position_before: float, position_now: float) -> float:
     otherwise, computes the adjustment for a transition into or out of a long position.
 
     Args:
-        position_before (float): The asset position before the trade.
+        position_before (float): Asset position before the trade.
         position_now (float): Current position size.
 
     Returns:
@@ -60,7 +60,7 @@ def get_short_size_nb(position_before: float, position_now: float) -> float:
     otherwise, computes the adjustment for a transition into or out of a short position.
 
     Args:
-        position_before (float): The asset position before the trade.
+        position_before (float): Asset position before the trade.
         position_now (float): Current position size.
 
     Returns:
@@ -780,7 +780,7 @@ def cash_earnings_nb(
     """Calculate cash earning series per column by applying weight adjustments and simulation range filters.
 
     Args:
-        target_shape (Shape): The shape of the target output array.
+        target_shape (Shape): Shape of the target output array.
         cash_earnings_raw (FlexArray2dLike): Raw cash earnings.
         
             Provided as a scalar, or per row, column, or element.
@@ -853,7 +853,7 @@ def cash_earnings_grouped_nb(
     """Calculate aggregated cash earning series per group by summing weighted cash earnings of grouped columns.
 
     Args:
-        target_shape (Shape): The shape of the target output array.
+        target_shape (Shape): Shape of the target output array.
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_earnings_raw (FlexArray2dLike): Raw cash earnings.
         
@@ -922,11 +922,11 @@ def get_free_cash_diff_nb(
     """Calculate updated debt and free cash difference after a position change.
 
     Args:
-        position_before (float): The position amount before the transaction.
+        position_before (float): Position amount before the transaction.
         position_now (float): Current position size.
-        debt_now (float): The current debt amount.
-        price (float): The asset price used for computing the transaction value.
-        fees (float): The fees incurred during the transaction.
+        debt_now (float): Current debt amount.
+        price (float): Asset price used for computing the transaction value.
+        fees (float): Fees incurred during the transaction.
 
     Returns:
         Tuple[float, float]: A tuple containing the updated debt and the free cash difference.

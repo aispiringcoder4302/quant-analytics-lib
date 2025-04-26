@@ -26,7 +26,7 @@ def attach_returns_acc_methods(config: Config) -> tp.ClassWrapper:
     The decorated class must be a subclass of `vectorbtpro.portfolio.base.Portfolio`.
 
     Args:
-        config (Config): A dictionary mapping target method names to their corresponding settings.
+        config (Config): Dictionary mapping target method names to their corresponding settings.
 
             Each settings dictionary must include:
 
@@ -103,7 +103,7 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
     The decorated class must be a subclass of `vectorbtpro.portfolio.base.Portfolio`.
 
     Args:
-        config (Config): A dictionary mapping target property names to their corresponding settings.
+        config (Config): Dictionary mapping target property names to their corresponding settings.
 
             Each settings dictionary may include:
 

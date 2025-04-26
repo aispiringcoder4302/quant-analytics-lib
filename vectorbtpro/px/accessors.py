@@ -42,7 +42,7 @@ class PXAccessor(BaseAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): The object to be wrapped.
+        obj (Optional[ArrayLike]): Object to be wrapped.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
 
     Examples:
@@ -73,7 +73,7 @@ class PXSRAccessor(PXAccessor, BaseSRAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): The object to be wrapped.
+        obj (Optional[ArrayLike]): Object to be wrapped.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
     """
 
@@ -98,7 +98,7 @@ class PXDFAccessor(PXAccessor, BaseDFAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): The object to be wrapped.
+        obj (Optional[ArrayLike]): Object to be wrapped.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
     """
 

@@ -23,7 +23,7 @@ def is_sorted(arr: tp.Array1d) -> bool:
     """Return whether the given array is sorted in non-decreasing order.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         bool: True if the array is sorted, False otherwise.
@@ -36,7 +36,7 @@ def is_sorted_nb(arr: tp.Array1d) -> bool:
     """Return whether the given array is sorted in non-decreasing order using a Numba-compiled implementation.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         bool: True if the array is sorted, False otherwise.
@@ -51,7 +51,7 @@ def is_range(arr: tp.Array1d) -> bool:
     """Return whether the given array represents a consecutive integer sequence.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         bool: True if the array is a consecutive integer sequence, False otherwise.
@@ -64,7 +64,7 @@ def is_range_nb(arr: tp.Array1d) -> bool:
     """Return whether the given array represents a consecutive integer sequence using a Numba-compiled implementation.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         bool: True if the array is a consecutive integer sequence, False otherwise.
@@ -157,8 +157,8 @@ def rescale(
 
     Args:
         arr (MaybeArray): Array to rescale.
-        from_range (Tuple[float, float]): The original value range.
-        to_range (Tuple[float, float]): The target value range.
+        from_range (Tuple[float, float]): Original value range.
+        to_range (Tuple[float, float]): Target value range.
 
     Returns:
         MaybeArray: The rescaled array.
@@ -181,8 +181,8 @@ def rescale_nb(
 
     Args:
         arr (MaybeArray): Array to rescale.
-        from_range (Tuple[float, float]): The original value range.
-        to_range (Tuple[float, float]): The target value range.
+        from_range (Tuple[float, float]): Original value range.
+        to_range (Tuple[float, float]): Target value range.
 
     Returns:
         MaybeArray: The rescaled array.
@@ -201,7 +201,7 @@ def min_rel_rescale(arr: tp.Array, to_range: tp.Tuple[float, float]) -> tp.Array
 
     Args:
         arr (Array): Input array.
-        to_range (Tuple[float, float]): The target range for rescaling.
+        to_range (Tuple[float, float]): Target range for rescaling.
 
     Returns:
         Array: The rescaled array with values adjusted relative to the minimum.
@@ -229,7 +229,7 @@ def max_rel_rescale(arr: tp.Array, to_range: tp.Tuple[float, float]) -> tp.Array
 
     Args:
         arr (Array): Input array.
-        to_range (Tuple[float, float]): The target range for rescaling.
+        to_range (Tuple[float, float]): Target range for rescaling.
 
     Returns:
         Array: The rescaled array with values adjusted relative to the maximum.
@@ -259,8 +259,8 @@ def rescale_float_to_int_nb(floats: tp.Array, int_range: tp.Tuple[float, float],
 
     Args:
         floats (Array): Input array of floats.
-        int_range (Tuple[float, float]): The target integer range.
-        total (float): The desired total sum for the integer array.
+        int_range (Tuple[float, float]): Target integer range.
+        total (float): Desired total sum for the integer array.
 
     Returns:
         Array: The integer array after rescaling.
@@ -277,7 +277,7 @@ def int_digit_count_nb(number: int) -> int:
     """Return the number of digits in the given integer.
 
     Args:
-        number (int): The integer to evaluate.
+        number (int): Integer to evaluate.
 
     Returns:
         int: The count of digits in the integer.

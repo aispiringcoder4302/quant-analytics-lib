@@ -56,7 +56,7 @@ class PBarRegistry(Base):
         """Register a progress bar instance.
 
         Args:
-            instance (ProgressBar): The progress bar instance to be registered.
+            instance (ProgressBar): Progress bar instance to be registered.
 
         Returns:
             None
@@ -67,7 +67,7 @@ class PBarRegistry(Base):
         """Deregister a progress bar instance.
 
         Args:
-            instance (ProgressBar): The progress bar instance to be deregistered.
+            instance (ProgressBar): Progress bar instance to be deregistered.
 
         Returns:
             None
@@ -79,7 +79,7 @@ class PBarRegistry(Base):
         """Check for an active progress bar instance conflict.
 
         Args:
-            instance (ProgressBar): The progress bar instance to check for conflicts.
+            instance (ProgressBar): Progress bar instance to check for conflicts.
 
         Returns:
             bool: True if another active progress bar with the same bar id exists, otherwise False.
@@ -133,7 +133,7 @@ class PBarRegistry(Base):
         bar instance that was opened after the last active instance.
 
         Args:
-            instance (ProgressBar): The progress bar instance to search a pending instance for.
+            instance (ProgressBar): Progress bar instance to search a pending instance for.
 
         Returns:
             Optional[ProgressBar]: The matching pending progress bar instance if found, otherwise None.
@@ -160,7 +160,7 @@ class PBarRegistry(Base):
         """Return active parent progress bar instances of the given instance.
 
         Args:
-            instance (ProgressBar): The progress bar instance whose parent instances are to be retrieved.
+            instance (ProgressBar): Progress bar instance whose parent instances are to be retrieved.
 
         Returns:
             List[ProgressBar]: A list of active parent progress bar instances.
@@ -176,7 +176,7 @@ class PBarRegistry(Base):
         """Return the most recent active parent progress bar instance of the given instance.
 
         Args:
-            instance (ProgressBar): The progress bar instance for which to find the parent instance.
+            instance (ProgressBar): Progress bar instance for which to find the parent instance.
 
         Returns:
             Optional[ProgressBar]: The active parent progress bar instance with the latest open time,
@@ -194,7 +194,7 @@ class PBarRegistry(Base):
         """Return active or pending child progress bar instances of the given instance.
 
         Args:
-            instance (ProgressBar): The progress bar instance whose child instances are to be retrieved.
+            instance (ProgressBar): Progress bar instance whose child instances are to be retrieved.
 
         Returns:
             List[ProgressBar]: A list of child progress bar instances.

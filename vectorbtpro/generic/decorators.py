@@ -26,7 +26,7 @@ def attach_nb_methods(config: Config) -> tp.ClassWrapper:
     """Class decorator to attach Numba methods to a class.
 
     Args:
-        config (Config): A dictionary mapping target method names (str) to
+        config (Config): Dictionary mapping target method names (str) to
             configuration dictionaries with the following keys:
 
             * `func` (Callable): Function to be wrapped, where the first argument accepts a 2-dim array.
@@ -118,10 +118,10 @@ def attach_transform_methods(config: Config) -> tp.ClassWrapper:
     """Class decorator to add transformation methods to a class.
 
     Args:
-        config (Config): A dictionary mapping target method names (str) to
+        config (Config): Dictionary mapping target method names (str) to
             configuration dictionaries with the following keys:
 
-            * `transformer` (MaybeType[Transformer]): A transformer class or instance.
+            * `transformer` (MaybeType[Transformer]): Transformer class or instance.
             * `docstring` (str): Docstring assigned to the generated method.
             * `replace_signature` (bool): Replaces the target method signature with that of the transformer.
 

@@ -82,7 +82,7 @@ class FinPyData(RemoteData):
         """Resolve and return a Market instance.
 
         Args:
-            market (Optional[Market]): An optional market instance.
+            market (Optional[Market]): Optional market instance.
             **market_config: Additional configuration options for the market.
 
         Returns:
@@ -115,7 +115,7 @@ class FinPyData(RemoteData):
         """Resolve and return a ConfigManager instance.
 
         Args:
-            config_manager (Optional[ConfigManager]): An optional configuration manager instance.
+            config_manager (Optional[ConfigManager]): Optional configuration manager instance.
             **config_manager_config: Additional configuration options for the configuration manager.
 
         Returns:
@@ -161,17 +161,17 @@ class FinPyData(RemoteData):
         and uses `vectorbtpro.data.custom.custom.CustomData.key_match` to filter symbols based on `pattern`.
 
         Args:
-            pattern (Optional[str]): A pattern to filter symbols.
+            pattern (Optional[str]): Pattern to filter symbols.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
-            config_manager (Optional[ConfigManager]): An optional configuration manager instance.
+            config_manager (Optional[ConfigManager]): Optional configuration manager instance.
             config_manager_config (KwargsLike): Keyword arguments for configuring the configuration manager.
-            category (Optional[MaybeList[str]]): A filter for the symbol category.
-            data_source (Optional[MaybeList[str]]): A filter for the data source.
-            freq (Optional[MaybeList[str]]): A filter for the frequency.
-            cut (Optional[MaybeList[str]]): A filter for cut information.
-            tickers (Optional[MaybeList[str]]): A filter for tickers.
-            dict_filter (DictLike): A dictionary of additional filters.
+            category (Optional[MaybeList[str]]): Filter for the symbol category.
+            data_source (Optional[MaybeList[str]]): Filter for the data source.
+            freq (Optional[MaybeList[str]]): Filter for the frequency.
+            cut (Optional[MaybeList[str]]): Filter for cut information.
+            tickers (Optional[MaybeList[str]]): Filter for tickers.
+            dict_filter (DictLike): Dictionary of additional filters.
             smart_group (bool): Whether to apply smart grouping to symbols.
             return_fields (Optional[MaybeList[str]]): Fields to include in the query output.
             combine_parts (bool): Whether to combine parts of symbol components into a single string.
@@ -253,27 +253,27 @@ class FinPyData(RemoteData):
         from findatapy.
 
         Args:
-            symbol (str): The symbol identifier.
+            symbol (str): Symbol identifier.
 
                 Accepts formats such as "fx.bloomberg.daily.NYC.EURUSD.close".
 
                 The fields `freq`, `cut`, `tickers`, and `fields` are optional.
-            market (Market): The market instance.
+            market (Market): Market instance.
 
                 See `FinPyData.resolve_market`.
-            market_config (KwargsLike): The client configuration.
+            market_config (KwargsLike): Client configuration.
 
                 See `FinPyData.resolve_market`.
-            start (DatetimeLike): The start datetime.
+            start (DatetimeLike): Start datetime.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (DatetimeLike): The end datetime.
+            end (DatetimeLike): End datetime.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str): The timeframe string.
+            timeframe (str): Timeframe string.
 
                 Accepts human-readable formats such as "15 minutes".
-            tz (TimezoneLike): The timezone.
+            tz (TimezoneLike): Timezone.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             **request_kwargs: Keyword arguments for `findatapy.market.marketdatarequest.MarketDataRequest`.

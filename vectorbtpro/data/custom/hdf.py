@@ -62,7 +62,7 @@ class HDFData(FileData):
         """Return whether the provided path is an HDF file.
 
         Args:
-            path (PathLike): The file path to validate.
+            path (PathLike): File path to validate.
 
         Returns:
             bool: True if the path is an HDF file, False otherwise.
@@ -98,8 +98,8 @@ class HDFData(FileData):
         and constructs the key from intermediate path segments.
 
         Args:
-            path (PathLike): The path to the HDF object.
-            key (Optional[str]): The key to identify the object within the HDF file.
+            path (PathLike): Path to the HDF object.
+            key (Optional[str]): Key to identify the object within the HDF file.
 
                 Defaults to None. When provided, it is combined with portions of the path during recursion.
 
@@ -134,8 +134,8 @@ class HDFData(FileData):
         Overrides `vectorbtpro.data.custom.file.FileData.match_path` to locate HDF files and extract HDF keys.
 
         Args:
-            path (PathLike): The base path to search for HDF files.
-            match_regex (Optional[str]): A regular expression to filter matching paths.
+            path (PathLike): Base path to search for HDF files.
+            match_regex (Optional[str]): Regular expression to filter matching paths.
             sort_paths (bool): Flag indicating whether to sort the resulting paths.
             recursive (bool): Flag indicating whether to search directories recursively.
             **kwargs: Keyword arguments for `HDFData.match_path`.

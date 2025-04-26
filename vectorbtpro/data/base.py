@@ -148,7 +148,7 @@ class BaseDataMixin(Base):
         """Check whether the provided keys represent multiple keys.
 
         Args:
-            keys (MaybeKeys): A single key or a sequence of keys to evaluate.
+            keys (MaybeKeys): Single key or a sequence of keys to evaluate.
 
         Returns:
             bool: True if the keys are a sequence, False if they are hashable.
@@ -167,7 +167,7 @@ class BaseDataMixin(Base):
         Tuples are processed recursively.
 
         Args:
-            key (Key): The key to normalize.
+            key (Key): Key to normalize.
 
         Returns:
             Key: The normalized key.
@@ -248,7 +248,7 @@ class BaseDataMixin(Base):
         """Select one or more features by their index positions.
 
         Args:
-            idxs (MaybeSequence[int]): The index or indices of the features to select.
+            idxs (MaybeSequence[int]): Index or indices of the features to select.
             **kwargs: Keyword arguments for feature selection.
 
         Returns:
@@ -260,7 +260,7 @@ class BaseDataMixin(Base):
         """Select one or more symbols by their index positions.
 
         Args:
-            idxs (MaybeSequence[int]): The index or indices of the symbols to select.
+            idxs (MaybeSequence[int]): Index or indices of the symbols to select.
             **kwargs: Keyword arguments for symbol selection.
 
         Returns:
@@ -272,7 +272,7 @@ class BaseDataMixin(Base):
         """Select one or more features using label(s).
 
         Args:
-            features (MaybeFeatures): The feature or features to select.
+            features (MaybeFeatures): Feature or features to select.
             **kwargs: Keyword arguments for `BaseDataMixin.select_feature_idxs`.
 
         Returns:
@@ -288,7 +288,7 @@ class BaseDataMixin(Base):
         """Select one or more symbols using label(s).
 
         Args:
-            symbols (MaybeSymbols): The symbol or symbols to select.
+            symbols (MaybeSymbols): Symbol or symbols to select.
             **kwargs: Keyword arguments for `BaseDataMixin.select_symbol_idxs`.
 
         Returns:
@@ -313,8 +313,8 @@ class BaseDataMixin(Base):
         Args:
             features (Optional[MaybeFeatures]): Feature(s) to retrieve.
             symbols (Optional[MaybeSymbols]): Symbol(s) to retrieve.
-            feature (Optional[Feature]): A single feature to retrieve.
-            symbol (Optional[Symbol]): A single symbol to retrieve.
+            feature (Optional[Feature]): Single feature to retrieve.
+            symbol (Optional[Symbol]): Single symbol to retrieve.
             **kwargs: Keyword arguments for data retrieval.
 
         Returns:
@@ -376,7 +376,7 @@ class BaseDataMixin(Base):
         """Retrieve data for a feature by its index or label.
 
         Args:
-            feature (Union[int, Feature]): The index or label of the feature.
+            feature (Union[int, Feature]): Index or label of the feature.
             raise_error (bool): Whether to raise an error if the feature is not found.
 
         Returns:
@@ -397,7 +397,7 @@ class BaseDataMixin(Base):
         """Retrieve data for a symbol by its index or label.
 
         Args:
-            symbol (Union[int, Symbol]): The index or label of the symbol.
+            symbol (Union[int, Symbol]): Index or label of the symbol.
             raise_error (bool): Whether to raise an error if the symbol is not found.
 
         Returns:
@@ -1300,7 +1300,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Copy the feature configuration from another `Data` class.
 
         Args:
-            cls (Type[Data]): The class from which to copy the feature configuration.
+            cls (Type[Data]): Class from which to copy the feature configuration.
 
         Returns:
             None
@@ -1657,7 +1657,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         * If `over` is "keys", it iterates over keys with optional grouping.
 
         Args:
-            over (str): The iteration mode.
+            over (str): Iteration mode.
 
                 Allowed values include "columns", "symbols", "features", or "keys".
             group_by (GroupByLike): Grouping specification.
@@ -1955,7 +1955,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Return the symbol from the instance that matches the provided symbol.
 
         Args:
-            symbol (Feature): The symbol identifier to resolve.
+            symbol (Feature): Symbol identifier to resolve.
             raise_error (bool): Whether to raise an error if the symbol is not found.
 
         Returns:
@@ -1973,7 +1973,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         otherwise, it is resolved as a symbol.
 
         Args:
-            key (Key): The key identifier to resolve.
+            key (Key): Key identifier to resolve.
             raise_error (bool): Whether to raise an error if the key is not found.
 
         Returns:
@@ -1990,7 +1990,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         otherwise, it is resolved as a feature.
 
         Args:
-            column (Column): The column identifier to resolve.
+            column (Column): Column identifier to resolve.
             raise_error (bool): Whether to raise an error if the column is not found.
 
         Returns:
@@ -2156,10 +2156,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             symbols (Optional[MaybeSymbols]): Symbols to retrieve.
 
                 If not provided, uses `Data.symbols`.
-            feature (Optional[Feature]): A single feature to retrieve.
+            feature (Optional[Feature]): Single feature to retrieve.
 
                 Cannot be used with `features`.
-            symbol (Optional[Symbol]): A single symbol to retrieve.
+            symbol (Optional[Symbol]): Single symbol to retrieve.
 
                 Cannot be used with `symbols`.
             squeeze_features (bool): Whether to squeeze the features when only one element is present.
@@ -2284,7 +2284,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Prepare a datetime index.
 
         Args:
-            index (Index): The index to be processed.
+            index (Index): Index to be processed.
             parse_dates (bool): If True, convert an object-typed index to a datetime index
                 using `vectorbtpro.utils.datetime_.prepare_dt_index`.
             tz_localize (TimezoneLike): If provided, localize a datetime-naive index to the specified timezone.
@@ -2321,7 +2321,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Prepare a datetime column.
 
         Args:
-            sr (Series): The series to be processed.
+            sr (Series): Series to be processed.
             parse_dates (bool): If True, convert the series' index to a datetime index
                 using `Data.prepare_dt_index`.
             tz_localize (TimezoneLike): Timezone for localizing a datetime-naive index.
@@ -2357,7 +2357,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Prepare datetime index and columns.
 
         Args:
-            obj (SeriesFrame): A Pandas Series or DataFrame.
+            obj (SeriesFrame): Pandas Series or DataFrame.
             parse_dates (Union[None, bool, Sequence[str]]): Determines whether to parse dates.
 
                 If True, converts any index or column with an object data type to datetime.
@@ -2448,9 +2448,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Prepare a timezone-aware index for a Pandas object.
 
         Args:
-            obj (SeriesFrame): A Pandas Series or DataFrame.
-            tz_localize (Union[None, bool, TimezoneLike]): The timezone to localize the index.
-            tz_convert (Union[None, bool, TimezoneLike]): The timezone to convert the index.
+            obj (SeriesFrame): Pandas Series or DataFrame.
+            tz_localize (Union[None, bool, TimezoneLike]): Timezone to localize the index.
+            tz_convert (Union[None, bool, TimezoneLike]): Timezone to convert the index.
 
         Returns:
             SeriesFrame: The object with a timezone-aware index.
@@ -2490,7 +2490,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Align data to share a common index.
 
         Args:
-            data (dict): A dictionary of Pandas objects.
+            data (dict): Dictionary of Pandas objects.
             missing (Optional[str]): Specifies how to handle missing indices when aligning data.
 
                 * 'nan': Set missing data points to NaN.
@@ -2544,7 +2544,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Align data to share a common set of columns.
 
         Args:
-            data (dict): A dictionary of Pandas objects.
+            data (dict): Dictionary of Pandas objects.
             missing (Optional[str]): Specifies how to handle missing columns when aligning data.
 
                 * 'nan': Set missing data points to NaN.
@@ -2976,8 +2976,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Check if the provided argument contains any data dictionary.
 
         Args:
-            arg (Any): The argument to check for a data dictionary.
-            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): A type to check against.
+            arg (Any): Argument to check for a data dictionary.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Type to check against.
 
                 Defaults to `key_dict` if not specified.
 
@@ -3004,9 +3004,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Check if the provided argument conforms to a data dictionary type.
 
         Args:
-            arg (Any): The argument to be validated.
-            arg_name (Optional[str]): The name of the argument for error messages.
-            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): A dictionary type to validate against.
+            arg (Any): Argument to be validated.
+            arg_name (Optional[str]): Name of the argument for error messages.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
 
         Returns:
             None
@@ -3032,10 +3032,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Selects the keyword arguments corresponding to a given key from a collection.
 
         Args:
-            key (Key): The key to filter keyword arguments.
-            kwargs (KwargsLike): A dictionary of keyword arguments.
-            kwargs_name (str): The name of the keyword arguments dictionary.
-            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): The expected type for sub-dictionaries.
+            key (Key): Key to filter keyword arguments.
+            kwargs (KwargsLike): Dictionary of keyword arguments.
+            kwargs_name (str): Name of the keyword arguments dictionary.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Expected type for sub-dictionaries.
             check_dict_type (bool): Flag to validate the type of dictionaries.
 
         Returns:
@@ -3070,7 +3070,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             feature (Feature): Feature identifier.
-            kwargs (KwargsLike): A dictionary of keyword arguments.
+            kwargs (KwargsLike): Dictionary of keyword arguments.
             **kwargs_: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
@@ -3084,7 +3084,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             symbol (Symbol): Symbol identifier.
-            kwargs (KwargsLike): A dictionary of keyword arguments.
+            kwargs (KwargsLike): Dictionary of keyword arguments.
             **kwargs_: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
@@ -3104,10 +3104,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Selects the value corresponding to a specified key in a dictionary.
 
         Args:
-            key (Key): The key whose value is to be selected.
-            dct (key_dict): The dictionary to search for the key.
-            dct_name (str): The name of the dictionary.
-            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): The expected type for sub-dictionaries.
+            key (Key): Key whose value is to be selected.
+            dct (key_dict): Dictionary to search for the key.
+            dct_name (str): Name of the dictionary.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Expected type for sub-dictionaries.
             check_dict_type (bool): Flag to validate the type of the dictionary.
 
         Returns:
@@ -3127,7 +3127,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             feature (Feature): Feature identifier.
-            dct (feature_dict): The dictionary containing feature values.
+            dct (feature_dict): Dictionary containing feature values.
             **kwargs: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
@@ -3141,7 +3141,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             symbol (Symbol): Symbol identifier.
-            dct (symbol_dict): The dictionary containing symbol values.
+            dct (symbol_dict): Dictionary containing symbol values.
             **kwargs: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
@@ -3154,8 +3154,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Creates a new dictionary by selecting specified keys from the given dictionary.
 
         Args:
-            dct (dict): The source dictionary.
-            keys (Keys): A collection of keys to select.
+            dct (dict): Source dictionary.
+            keys (Keys): Collection of keys to select.
             raise_error (bool): If True, raises an error when a key is missing.
 
         Returns:
@@ -3170,7 +3170,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Retrieves a dictionary of sub-keys and values that are common and identical across all entries.
 
         Args:
-            dct (dict): The source dictionary containing nested dictionaries as values.
+            dct (dict): Source dictionary containing nested dictionaries as values.
 
         Returns:
             dict: A dictionary of sub-keys with uniform corresponding values across all nested dictionaries.
@@ -3409,7 +3409,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.add_feature` or `Data.add_symbol`.
 
         Args:
-            key (Key): The key identifier to add.
+            key (Key): Key identifier to add.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the key.
             **kwargs: Keyword arguments for the delegated function.
 
@@ -3431,7 +3431,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.add_symbol` or `Data.add_feature`.
 
         Args:
-            column (Column): The column identifier to add.
+            column (Column): Column identifier to add.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the column.
             **kwargs: Keyword arguments for the delegated function.
 
@@ -3454,7 +3454,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         The orientation is automatically determined by comparing data columns with existing features and symbols.
 
         Args:
-            key (Key): The identifier corresponding to the feature or symbol.
+            key (Key): Identifier corresponding to the feature or symbol.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the key.
             **kwargs: Keyword arguments for the delegated function.
 
@@ -3486,8 +3486,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Rename keys in the given dictionary using a provided mapping.
 
         Args:
-            dct (dict): The dictionary whose keys will be renamed.
-            rename (Dict[Key, Key]): A mapping from old keys to new keys.
+            dct (dict): Dictionary whose keys will be renamed.
+            rename (Dict[Key, Key]): Mapping from old keys to new keys.
 
         Returns:
             dict: A new dictionary with keys renamed according to the mapping.
@@ -3505,8 +3505,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         If a value for `to` is provided, a one-to-one mapping is constructed.
 
         Args:
-            rename (Union[MaybeKeys, Dict[Key, Key]]): The key or mapping of keys to be renamed.
-            to (Optional[MaybeKeys]): The new key or keys for the provided key(s).
+            rename (Union[MaybeKeys, Dict[Key, Key]]): Key or mapping of keys to be renamed.
+            to (Optional[MaybeKeys]): New key or keys for the provided key(s).
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
@@ -3536,8 +3536,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         If a value for `to` is provided, a one-to-one mapping is constructed.
 
         Args:
-            rename (Union[MaybeColumns, Dict[Column, Column]]): The column or mapping of columns to be renamed.
-            to (Optional[MaybeColumns]): The new column name or names corresponding to the old one(s).
+            rename (Union[MaybeColumns, Dict[Column, Column]]): Column or mapping of columns to be renamed.
+            to (Optional[MaybeColumns]): New column name or names corresponding to the old one(s).
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
@@ -3568,8 +3568,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.rename_keys` or `Data.rename_columns`.
 
         Args:
-            rename (Union[MaybeFeatures, Dict[Feature, Feature]]): The feature or mapping of features to be renamed.
-            to (Optional[MaybeFeatures]): The new feature name or names corresponding to the old one(s).
+            rename (Union[MaybeFeatures, Dict[Feature, Feature]]): Feature or mapping of features to be renamed.
+            to (Optional[MaybeFeatures]): New feature name or names corresponding to the old one(s).
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3590,7 +3590,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.rename_columns` or `Data.rename_keys`.
 
         Args:
-            rename (Union[MaybeSymbols, Dict[Symbol, Symbol]]): A symbol or mapping of symbols to their new names.
+            rename (Union[MaybeSymbols, Dict[Symbol, Symbol]]): Symbol or mapping of symbols to their new names.
             to (Optional[MaybeSymbols]): New symbol name if `rename` is a single symbol.
             **kwargs: Keyword arguments for the delegated function.
 
@@ -3613,7 +3613,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         The orientation is automatically determined by comparing data columns with existing features and symbols.
 
         Args:
-            rename (Union[MaybeKeys, Dict[Key, Key]]): A key or mapping for renaming features or symbols.
+            rename (Union[MaybeKeys, Dict[Key, Key]]): Key or mapping for renaming features or symbols.
             to (Optional[MaybeKeys]): New key name if a single key is provided.
             **kwargs: Keyword arguments for the delegated function.
 
@@ -3639,7 +3639,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Create a new `Data` instance with the specified feature(s) removed.
 
         Args:
-            features (MaybeFeatures): A feature or list of features to remove.
+            features (MaybeFeatures): Feature or list of features to remove.
             **kwargs: Keyword arguments for `Data.select_feature_idxs`.
 
         Returns:
@@ -3658,7 +3658,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Create a new `Data` instance with the specified symbol(s) removed.
 
         Args:
-            symbols (MaybeFeatures): A symbol or list of symbols to remove.
+            symbols (MaybeFeatures): Symbol or list of symbols to remove.
             **kwargs: Keyword arguments for `Data.select_symbol_idxs`.
 
         Returns:
@@ -3679,7 +3679,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.remove_features` or `Data.remove_symbols`.
 
         Args:
-            keys (MaybeKeys): A key or collection of keys to remove.
+            keys (MaybeKeys): Key or collection of keys to remove.
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3695,7 +3695,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.remove_symbols` or `Data.remove_features`.
 
         Args:
-            columns (MaybeColumns): A column or list of columns to remove.
+            columns (MaybeColumns): Column or list of columns to remove.
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3712,7 +3712,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         The orientation is automatically determined by comparing data columns with existing features and symbols.
 
         Args:
-            keys (MaybeKeys): A key or collection of keys to remove.
+            keys (MaybeKeys): Key or collection of keys to remove.
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3973,10 +3973,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         determined dictionary type.
 
         Args:
-            keys (Union[None, dict, MaybeKeys]): A mapping of keys to use, or None.
+            keys (Union[None, dict, MaybeKeys]): Mapping of keys to use, or None.
             keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
-            features (Union[None, dict, MaybeFeatures]): A mapping of features.
-            symbols (Union[None, dict, MaybeSymbols]): A mapping of symbols.
+            features (Union[None, dict, MaybeFeatures]): Mapping of features.
+            symbols (Union[None, dict, MaybeSymbols]): Mapping of symbols.
 
         Returns:
             Kwargs: Dictionary with metadata:
@@ -4311,7 +4311,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Parse a `Data` instance from a string.
 
         Args:
-            data_str (str): A string representing the data instance, formatted as either
+            data_str (str): String representing the data instance, formatted as either
                 "Class:Symbol" (e.g. "YFData:BTC-USD") or "Symbol". In the latter case, the default
                 class `vectorbtpro.data.custom.yf.YFData` is used.
 
@@ -4696,7 +4696,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         the original data using `broadcast_kwargs`.
 
         Args:
-            transform_func (Callable): The function to apply to the data.
+            transform_func (Callable): Function to apply to the data.
             *args: Positional arguments for `transform_func`.
             per_feature (bool): Process each feature separately.
             per_symbol (bool): Process each symbol separately.
@@ -4891,7 +4891,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             start_value (ArrayLike): Initial value for the transformation.
-            ref_feature (ArrayLike): The reference feature used for mirroring.
+            ref_feature (ArrayLike): Reference feature used for mirroring.
 
                 If provided as a string, it is mapped using `map_enum_fields` with `PriceFeature`.
 
@@ -5103,8 +5103,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         `silence_warnings` flags.
 
         Args:
-            data (Data): The data instance on which to execute the function.
-            func_name (str): The name identifying the function to run.
+            data (Data): Data instance on which to execute the function.
+            func_name (str): Name identifying the function to run.
             *args: Positional arguments for `Data.run`.
             raise_errors (bool): If True, exceptions encountered during execution are raised.
             silence_warnings (bool): Flag to suppress warning messages.
@@ -5133,9 +5133,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         is found. Items that are not instances of `run_func_dict` are returned unchanged.
 
         Args:
-            i (int): The index used to look up an argument.
-            func_name (str): The name used to look up an argument.
-            args (Args): A tuple of positional arguments to search through.
+            i (int): Index used to look up an argument.
+            func_name (str): Name used to look up an argument.
+            args (Args): Tuple of positional arguments to search through.
 
         Returns:
             tuple: A tuple containing the selected arguments corresponding to the given function index or name.
@@ -5158,9 +5158,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Select keyword arguments corresponding to a runnable function based on its index or name.
 
         Args:
-            i (int): The index used to select the matching function arguments.
-            func_name (str): The name of the function to match during argument selection.
-            kwargs (Kwargs): A dictionary where each value can be:
+            i (int): Index used to select the matching function arguments.
+            func_name (str): Name of the function to match during argument selection.
+            kwargs (Kwargs): Dictionary where each value can be:
 
                 * A `run_func_dict` mapping function names or indices to specific argument values.
                 * A `run_arg_dict` that updates arguments if its key matches the provided function name or index.
@@ -5236,7 +5236,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         methods: `vectorbtpro.indicators.factory.IndicatorBase.unpack`, `to_dict`, or `to_frame`.
 
         Args:
-            func (MaybeIterable[Union[Hashable, Callable]]): The function, location, indicator name,
+            func (MaybeIterable[Union[Hashable, Callable]]): Function, location, indicator name,
                 or simulation method to run, or an iterable of such.
             *args: Positional arguments for the function.
             on_features (Optional[MaybeFeatures]): Features used to select specific parts of the data.
@@ -5543,9 +5543,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Resolve an argument based on its type and key.
 
         Args:
-            arg (Any): The input argument to process.
-            k (Key): The key used for lookup when the argument is a key dictionary.
-            arg_name (str): The name of the argument for validation and template evaluation.
+            arg (Any): Input argument to process.
+            k (Key): Key used for lookup when the argument is a key dictionary.
+            arg_name (str): Name of the argument for validation and template evaluation.
             check_dict_type (bool): Indicates whether to validate that the argument is of
                 the expected dictionary type.
             template_context (KwargsLike): Additional context for template substitution.
@@ -5712,7 +5712,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Keyword arguments for directory creation.
             
                 See `vectorbtpro.utils.path_.check_mkdir`.
-            format (str): The file format for HDF storage.
+            format (str): File format for HDF storage.
             check_dict_type (bool): Indicates whether to validate that dictionary-type
                 arguments match expected types.
             template_context (KwargsLike): Additional context for template substitution.
@@ -5932,7 +5932,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         wrap the paths using `key_dict`.
 
         Args:
-            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): A file path or buffer.
+            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): File path or buffer.
 
                 If a directory is provided, each feature or symbol is saved in a separate file.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
@@ -6709,7 +6709,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             query (str): SQL query to execute.
-            dbcon (Optional[DuckDBPyConnection]): A DuckDB connection to use; if not provided,
+            dbcon (Optional[DuckDBPyConnection]): DuckDB connection to use; if not provided,
                 a new connection is established.
             database (str): Identifier or path of the target database.
             db_config (KwargsLike): Configuration parameters for establishing the DuckDB connection.

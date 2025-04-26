@@ -45,7 +45,7 @@ except ImportError:
         See https://github.com/python/cpython/blob/main/Lib/inspect.py
 
         Args:
-            obj (Any): A module, class, or callable to retrieve annotations from.
+            obj (Any): Module, class, or callable to retrieve annotations from.
             globals (Optional[dict]): Global namespace for evaluation.
             locals (Optional[dict]): Local namespace for evaluation.
             eval_str (bool): Whether to evaluate string annotations.
@@ -210,8 +210,8 @@ def has_annotatables(func: tp.Callable, target_cls: tp.Type[Annotatable] = Annot
     """Determine if a function's signature contains any subclass or instance of `Annotatable`.
 
     Args:
-        func (Callable): The function to inspect.
-        target_cls (Type[Annotatable]): The class to check against.
+        func (Callable): Function to inspect.
+        target_cls (Type[Annotatable]): Class to check against.
 
     Returns:
         bool: True if any argument or return type is an instance of `Annotatable`, False otherwise.

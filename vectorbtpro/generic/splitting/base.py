@@ -370,7 +370,7 @@ class Splitter(Analyzable):
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
         index (Index): Index used for splitting.
-        splits_arr (SplitsArray): A two-dimensional array representing splits.
+        splits_arr (SplitsArray): Two-dimensional array representing splits.
 
             The first axis represents splits and the second axis represents sets.
             Each element is a range defined as a slice, a sequence of indices, a mask,
@@ -448,8 +448,8 @@ class Splitter(Analyzable):
         """Create a `Splitter` instance from an iterable of splits.
 
         Args:
-            index (IndexLike): The index used to align the splits.
-            splits (Splits): An iterable of splits supporting both absolute and relative ranges.
+            index (IndexLike): Index used to align the splits.
+            splits (Splits): Iterable of splits supporting both absolute and relative ranges.
             
                 Enable `fix_ranges` to convert relative ranges to absolute ranges.
             squeeze (bool): Squeeze the splits array if its second dimension has length 1.
@@ -581,7 +581,7 @@ class Splitter(Analyzable):
         """Create a `Splitter` instance from a single split.
 
         Args:
-            index (IndexLike): The index used for the split.
+            index (IndexLike): Index used for the split.
             split (Optional[SplitLike]): Specification for further splitting of each range.
 
                 If None, the entire range is treated as a single split;
@@ -826,9 +826,9 @@ class Splitter(Analyzable):
         """Create a Splitter instance from a fixed number of rolling ranges with equal length.
 
         Args:
-            index (IndexLike): The index used to generate rolling ranges.
-            n (int): The number of rolling ranges to generate.
-            length (Union[None, str, int, float, TimedeltaLike]): The length of each range.
+            index (IndexLike): Index used to generate rolling ranges.
+            n (int): Number of rolling ranges to generate.
+            length (Union[None, str, int, float, TimedeltaLike]): Length of each range.
 
                 * If None, splits the index evenly into n non-overlapping ranges using `Splitter.from_rolling`.
                 * If a numeric value, it defines either a fraction of the index length or an absolute length.
@@ -998,10 +998,10 @@ class Splitter(Analyzable):
         slice begins after an offset from the previous slice's right boundary.
 
         Args:
-            index (IndexLike): The index to split.
-            min_length (Union[int, float, TimedeltaLike]): The minimum length for the first expanding range.
+            index (IndexLike): Index to split.
+            min_length (Union[int, float, TimedeltaLike]): Minimum length for the first expanding range.
                 If specified as a float between 0 and 1, it is interpreted relative to the length of the index.
-            offset (Union[int, float, TimedeltaLike]): The offset after the previous range's
+            offset (Union[int, float, TimedeltaLike]): Offset after the previous range's
                 right boundary to determine the start of the next range.
 
                 It may also be provided as a float relative to the index length.
@@ -1016,7 +1016,7 @@ class Splitter(Analyzable):
             
                 See `Splitter.get_range_bounds`.
             template_context (KwargsLike): Additional context for template substitution.
-            freq (Optional[FrequencyLike]): The frequency for date/time arithmetic with the index.
+            freq (Optional[FrequencyLike]): Frequency for date/time arithmetic with the index.
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
@@ -1128,9 +1128,9 @@ class Splitter(Analyzable):
         An optional split configuration can be applied to transform each range.
 
         Args:
-            index (IndexLike): The index to split.
-            n (int): The number of expanding ranges to select.
-            min_length (Union[None, int, float, TimedeltaLike]): The minimum length for each expanding range.
+            index (IndexLike): Index to split.
+            n (int): Number of expanding ranges to select.
+            min_length (Union[None, int, float, TimedeltaLike]): Minimum length for each expanding range.
 
                 If specified as a float between 0 and 1, it is interpreted relative to the length of the index.
                 If None, it is determined based on the index length and the specified number of ranges.
@@ -1142,7 +1142,7 @@ class Splitter(Analyzable):
             
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
-            freq (Optional[FrequencyLike]): The frequency for date/time calculations with the index.
+            freq (Optional[FrequencyLike]): Frequency for date/time calculations with the index.
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
@@ -1239,7 +1239,7 @@ class Splitter(Analyzable):
         extracted from `**kwargs`, while the remaining ones are passed to `Splitter.from_splits`.
 
         Args:
-            index (IndexLike): The index to be divided into ranges.
+            index (IndexLike): Index to be divided into ranges.
             split (Optional[SplitLike]): Specification for further splitting of each range.
 
                 If None, the entire range is treated as a single split;
@@ -1339,7 +1339,7 @@ class Splitter(Analyzable):
         `Splitter.from_splits` to build the instance.
 
         Args:
-            index (IndexLike): The index to be grouped and split.
+            index (IndexLike): Index to be grouped and split.
             by (AnyGroupByLike): Parameter for grouping the index.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
@@ -1692,8 +1692,8 @@ class Splitter(Analyzable):
         """Create a `Splitter` instance using a scikit-learn cross-validator.
 
         Args:
-            index (IndexLike): The index representing the dataset.
-            skl_splitter (BaseCrossValidator): A scikit-learn splitter instance.
+            index (IndexLike): Index representing the dataset.
+            skl_splitter (BaseCrossValidator): Scikit-learn splitter instance.
             groups (Optional[ArrayLike]): Group labels for the splitting process.
             split_labels (Optional[IndexLike]): Labels for the splits.
             set_labels (Optional[IndexLike]): Labels for the training and testing sets.
@@ -1732,8 +1732,8 @@ class Splitter(Analyzable):
         """Create a `Splitter` instance using a purged cross-validator.
 
         Args:
-            index (IndexLike): The index representing the dataset.
-            purged_splitter (BasePurgedCV): A purged cross-validation splitter instance
+            index (IndexLike): Index representing the dataset.
+            purged_splitter (BasePurgedCV): Purged cross-validation splitter instance
                 from `vectorbtpro.generic.splitting.purged`.
             pred_times (Union[None, Index, Series]): Indices for prediction times.
             eval_times (Union[None, Index, Series]): Indices for evaluation times.
@@ -1779,7 +1779,7 @@ class Splitter(Analyzable):
         """Create a `Splitter` instance using a purged walk-forward cross-validator.
 
         Args:
-            index (IndexLike): The index representing the dataset.
+            index (IndexLike): Index representing the dataset.
             n_folds (int): Total number of folds.
             n_test_folds (int): Number of folds allocated for testing.
             min_train_folds (int): Minimum number of folds required for training.
@@ -1825,7 +1825,7 @@ class Splitter(Analyzable):
         """Create a `Splitter` instance using a purged K-fold cross-validator.
 
         Args:
-            index (IndexLike): The index representing the dataset.
+            index (IndexLike): Index representing the dataset.
             n_folds (int): Total number of folds.
             n_test_folds (int): Number of folds allocated for testing.
             purge_td (TimedeltaLike): Time delta used for purging between splits.
@@ -1885,8 +1885,8 @@ class Splitter(Analyzable):
         * All arguments for `Splitter.from_split_func`.
 
         Args:
-            index (IndexLike): The index used for splitting.
-            split_func (Callable): A function that returns a new split based on substituted arguments.
+            index (IndexLike): Index used for splitting.
+            split_func (Callable): Function that returns a new split based on substituted arguments.
             split_args (ArgsLike): Positional arguments for `split_func`.
             split_kwargs (KwargsLike): Keyword arguments for `split_func`.
             fix_ranges (bool): Whether to convert splits into fixed ranges.
@@ -2098,9 +2098,9 @@ class Splitter(Analyzable):
         """Split an index and take values from an object.
 
         Args:
-            index (IndexLike): The index to be split.
-            obj (Any): The object from which values are extracted.
-            splitter (Union[None, str, Splitter, Callable]): A splitter instance,
+            index (IndexLike): Index to be split.
+            obj (Any): Object from which values are extracted.
+            splitter (Union[None, str, Splitter, Callable]): Splitter instance,
                 a factory method name, or a factory method.
 
                 If None, the appropriate splitter is determined using `Splitter.guess_method`.
@@ -2195,10 +2195,10 @@ class Splitter(Analyzable):
         """Split an index and apply a function to each segment.
 
         Args:
-            index (IndexLike): The index to be split.
-            apply_func (Callable): The function to apply to each split segment.
+            index (IndexLike): Index to be split.
+            apply_func (Callable): Function to apply to each split segment.
             *apply_args: Positional arguments for `Splitter.apply`.
-            splitter (Union[None, str, Splitter, Callable]): A splitter instance,
+            splitter (Union[None, str, Splitter, Callable]): Splitter instance,
                 a factory method name, or a factory method.
 
                 If None, the appropriate splitter is determined using `Splitter.guess_method`.
@@ -2720,7 +2720,7 @@ class Splitter(Analyzable):
         A range is considered relative if it is a number, a time delta-like object, or an instance of `RelRange`.
 
         Args:
-            range_ (RangeLike): The range object to evaluate.
+            range_ (RangeLike): Range object to evaluate.
 
         Returns:
             bool: True if the range is relative, otherwise False.
@@ -2746,7 +2746,7 @@ class Splitter(Analyzable):
         or a 1D boolean mask matching the length of the index.
 
         Args:
-            range_ (FixRangeLike): The initial range specification.
+            range_ (FixRangeLike): Initial range specification.
 
                 This may be a callable, slice, fixed range, or array.
             allow_relative (bool): Allow relative ranges.
@@ -2765,7 +2765,7 @@ class Splitter(Analyzable):
                 * "slice_or_mask": Return a slice, or a mask if slice conversion fails.
                 * "slice_or_any": Return a slice, or any available format if slice conversion fails.
             template_context (KwargsLike): Additional context for template substitution.
-            index (Optional[IndexLike]): The index used for aligning and validating the range.
+            index (Optional[IndexLike]): Index used for aligning and validating the range.
 
                 If not provided, the index is taken from `Splitter.index`.
             return_meta (bool): Return a metadata dictionary (which includes the converted range) if True.
@@ -3198,7 +3198,7 @@ class Splitter(Analyzable):
         returned when possible; otherwise, integer indices are returned.
 
         Args:
-            split (FixSplit): A collection of fixed ranges to merge.
+            split (FixSplit): Collection of fixed ranges to merge.
             range_format (Optional[str]): Format specifier for the resulting fixed range.
 
                 See `Splitter.get_ready_range`.
@@ -3475,16 +3475,16 @@ class Splitter(Analyzable):
         In such cases, both `freq` and `target_freq` must be provided.
 
         Args:
-            range_ (FixRangeLike): The input range to be remapped.
-            target_index (IndexLike): The target index to which the range is mapped.
-            target_freq (Optional[FrequencyLike]): The frequency for the target index.
+            range_ (FixRangeLike): Input range to be remapped.
+            target_index (IndexLike): Target index to which the range is mapped.
+            target_freq (Optional[FrequencyLike]): Frequency for the target index.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             silence_warnings (bool): Flag to suppress warning messages.
-            index (Optional[IndexLike]): The source index associated with the range.
-            freq (Optional[FrequencyLike]): The frequency corresponding to the source index.
+            index (Optional[IndexLike]): Source index associated with the range.
+            freq (Optional[FrequencyLike]): Frequency corresponding to the source index.
 
         Returns:
             FixRangeLike: The remapped range corresponding to the target index.
@@ -3519,7 +3519,7 @@ class Splitter(Analyzable):
         an `index` or `wrapper.index` attribute.
 
         Args:
-            obj (Any): An object with an associated index.
+            obj (Any): Object with an associated index.
 
         Returns:
             Index: The extracted index.
@@ -3556,18 +3556,18 @@ class Splitter(Analyzable):
         into a form suitable for direct indexing using `Splitter.get_ready_range`.
 
         Args:
-            obj (Any): The array-like object to be indexed.
-            range_ (FixRangeLike): The input range to be processed.
+            obj (Any): Array-like object to be indexed.
+            range_ (FixRangeLike): Input range to be processed.
             remap_to_obj (bool): Whether to remap the range to the object's index.
-            obj_index (Optional[IndexLike]): The target index for remapping, if available.
-            obj_freq (Optional[FrequencyLike]): The frequency corresponding to the target index.
+            obj_index (Optional[IndexLike]): Target index for remapping, if available.
+            obj_freq (Optional[FrequencyLike]): Frequency corresponding to the target index.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             silence_warnings (bool): Flag to suppress warning messages.
-            index (Optional[IndexLike]): The source index associated with the range.
-            freq (Optional[FrequencyLike]): The frequency corresponding to the source index.
+            index (Optional[IndexLike]): Source index associated with the range.
+            freq (Optional[FrequencyLike]): Frequency corresponding to the source index.
             return_obj_meta (bool): Whether to return metadata for the object.
             **ready_range_kwargs: Keyword arguments for `Splitter.get_ready_range`.
 
@@ -3618,8 +3618,8 @@ class Splitter(Analyzable):
         If `point_wise` is True, select one range point at a time and return a tuple.
 
         Args:
-            obj (Any): The array-like object to index.
-            ready_range (ReadyRangeLike): The preprocessed range used for indexing.
+            obj (Any): Array-like object to index.
+            ready_range (ReadyRangeLike): Preprocessed range used for indexing.
             point_wise (bool): Whether to extract elements one point at a time.
 
         Returns:
@@ -3655,11 +3655,11 @@ class Splitter(Analyzable):
         substitute templates using a merged context; otherwise, extract the slice using `take_range`.
 
         Args:
-            takeable (Takeable): The takeable object containing the data and configuration for range extraction.
-            range_ (FixRangeLike): The original range to be processed.
+            takeable (Takeable): Takeable object containing the data and configuration for range extraction.
+            range_ (FixRangeLike): Original range to be processed.
             remap_to_obj (bool): Whether to remap the range to the object's index.
-            obj_index (Optional[IndexLike]): The object's index to use for remapping, if provided.
-            obj_freq (Optional[FrequencyLike]): The frequency corresponding to the object's index.
+            obj_index (Optional[IndexLike]): Object's index to use for remapping, if provided.
+            obj_freq (Optional[FrequencyLike]): Frequency corresponding to the object's index.
             point_wise (bool): Whether to extract the range point by point.
             template_context (KwargsLike): Additional context for template substitution.
             return_obj_meta (bool): Whether to return metadata about the object.
@@ -3768,7 +3768,7 @@ class Splitter(Analyzable):
         to reset the index from the start or end.
 
         Args:
-            obj (Any): The array-like object from which to extract ranges.
+            obj (Any): Array-like object from which to extract ranges.
             split (Optional[Selection]): Selection of splits.
             set_ (Optional[Selection]): Selection of sets.
             split_group_by (AnyGroupByLike): Grouping specification for defining splits.
@@ -3784,7 +3784,7 @@ class Splitter(Analyzable):
                 Options include "stacked", "stacked_by_split", "stacked_by_set",
                 "split_major_meta", "set_major_meta", etc.
             remap_to_obj (bool): Whether to remap the range to the object's index.
-            obj_index (Optional[IndexLike]): The target object's index.
+            obj_index (Optional[IndexLike]): Target object's index.
             obj_freq (Optional[FrequencyLike]): Frequency of the target object's index.
             range_format (str): Format specifier for resolving the range.
             point_wise (bool): Whether to perform point-wise range extraction.
@@ -4157,7 +4157,7 @@ class Splitter(Analyzable):
         into flattened annotated arguments.
 
         Args:
-            flat_ann_args (FlatAnnArgs): A dictionary mapping keys to dictionaries that may
+            flat_ann_args (FlatAnnArgs): Dictionary mapping keys to dictionaries that may
                 include an `annotation` and a `value`.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
@@ -5346,8 +5346,8 @@ class Splitter(Analyzable):
         """Map bounds to corresponding index values.
 
         Args:
-            start (int): The starting index for the bound.
-            stop (int): The stopping index for the bound.
+            start (int): Starting index for the bound.
+            stop (int): Stopping index for the bound.
             right_inclusive (bool): Whether the right bound is inclusive.
             index (Optional[IndexLike]): Index to use for mapping bounds.
 
@@ -5386,7 +5386,7 @@ class Splitter(Analyzable):
         """Get the inclusive left and exclusive right bounds of a range.
 
         Args:
-            range_ (FixRangeLike): The range specification to process.
+            range_ (FixRangeLike): Range specification to process.
             index_bounds (bool): If True, map the bounds to the provided index.
             right_inclusive (bool): If True, treat the right bound as inclusive before adjustment.
             check_constant (bool): If True, verify that the range is constant.
@@ -5629,9 +5629,9 @@ class Splitter(Analyzable):
         """Return a boolean mask array for the specified range.
 
         Args:
-            range_ (FixRangeLike): The range specification to generate the mask.
+            range_ (FixRangeLike): Range specification to generate the mask.
             template_context (KwargsLike): Additional context for template substitution.
-            index (Optional[IndexLike]): The index to apply the range on.
+            index (Optional[IndexLike]): Index to apply the range on.
 
                 If not provided, uses `Splitter.index`.
 

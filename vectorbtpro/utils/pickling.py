@@ -305,8 +305,8 @@ def dumps(
     Compression is applied using `compress`.
 
     Args:
-        obj (Any): The object to serialize.
-        compression (CompressionLike): The compression algorithm to use.
+        obj (Any): Object to serialize.
+        compression (CompressionLike): Compression algorithm to use.
         compress_kwargs (KwargsLike): Keyword arguments for compression.
         **kwargs: Keyword arguments for the pickling library's `dumps` method.
 
@@ -338,8 +338,8 @@ def loads(
     Decompression is applied using `decompress`.
 
     Args:
-        bytes_ (bytes): The byte stream containing the serialized object.
-        compression (CompressionLike): The compression algorithm used.
+        bytes_ (bytes): Byte stream containing the serialized object.
+        compression (CompressionLike): Compression algorithm used.
         decompress_kwargs (KwargsLike): Keyword arguments for decompression.
         **kwargs: Keyword arguments for the pickling library's `loads` method.
 
@@ -363,7 +363,7 @@ def suggest_compression(file_name: str) -> tp.Optional[str]:
     """Suggest a compression algorithm based on the file name extension.
 
     Args:
-        file_name (str): The name of the file.
+        file_name (str): Name of the file.
 
     Returns:
         Optional[str]: The suggested compression algorithm if recognized; otherwise, None.
@@ -389,12 +389,12 @@ def save_bytes(
     either explicitly or based on the file's extension.
 
     Args:
-        bytes_ (bytes): The byte stream to write.
-        path (PathLike): The destination file path.
+        bytes_ (bytes): Byte stream to write.
+        path (PathLike): Destination file path.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             
             See `vectorbtpro.utils.path_.check_mkdir`.
-        compression (CompressionLike): The compression algorithm to use.
+        compression (CompressionLike): Compression algorithm to use.
         compress_kwargs (KwargsLike): Keyword arguments for compression.
 
     Returns:
@@ -434,8 +434,8 @@ def load_bytes(
     compression algorithm is determined, either explicitly or based on the file's extension.
 
     Args:
-        path (PathLike): The file path to read.
-        compression (CompressionLike): The compression algorithm used.
+        path (PathLike): File path to read.
+        compression (CompressionLike): Compression algorithm used.
         decompress_kwargs (KwargsLike): Keyword arguments for decompression.
 
     Returns:
@@ -465,14 +465,14 @@ def save(
     to a file via `save_bytes`.
 
     Args:
-        obj (Any): The object to serialize.
-        path (Optional[PathLike]): The file path where the object will be saved.
+        obj (Any): Object to serialize.
+        path (Optional[PathLike]): File path where the object will be saved.
 
             If a directory is provided, the file name is derived from the object's class name.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             
             See `vectorbtpro.utils.path_.check_mkdir`.
-        compression (CompressionLike): The compression algorithm to use.
+        compression (CompressionLike): Compression algorithm to use.
         compress_kwargs (KwargsLike): Keyword arguments for compression.
         **kwargs: Keyword arguments for `dumps`.
 
@@ -506,8 +506,8 @@ def load(
     then deserializes the object using `loads`.
 
     Args:
-        path (PathLike): The file path from which to load the object.
-        compression (CompressionLike): The compression algorithm used.
+        path (PathLike): File path from which to load the object.
+        compression (CompressionLike): Compression algorithm used.
         decompress_kwargs (KwargsLike): Keyword arguments for decompression.
         **kwargs: Keyword arguments for `loads`.
 
@@ -572,7 +572,7 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
     Otherwise, returns the fully qualified class path derived using `vectorbtpro.utils.module_.find_class`.
 
     Args:
-        obj (Any): The class or instance to evaluate.
+        obj (Any): Class or instance to evaluate.
 
     Returns:
         Optional[str]: The reconstruction identifier or class path, or None if not found.
@@ -598,7 +598,7 @@ def get_class_from_id(class_id: str) -> tp.Optional[tp.Type]:
     """Retrieve a class object from its reconstruction identifier.
 
     Args:
-        class_id (str): The reconstruction identifier of the class.
+        class_id (str): Reconstruction identifier of the class.
 
     Returns:
         Type: The class associated with the provided identifier.
@@ -621,8 +621,8 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
     resolve the class using `rec_info_registry` or `vectorbtpro.utils.module_.find_class`.
 
     Args:
-        cls (Union[Hashable, Type]): The class or its reconstruction identifier.
-        rec_state (RecState): The state used for reconstruction, including initialization
+        cls (Union[Hashable, Type]): Class or its reconstruction identifier.
+        rec_state (RecState): State used for reconstruction, including initialization
             arguments and attribute values.
 
     Returns:
@@ -700,7 +700,7 @@ class Pickleable(Base):
         If the unpickled object is an instance of `RecState`, it is transformed via `reconstruct`.
 
         Args:
-            bytes_ (bytes): The byte stream containing the pickled data.
+            bytes_ (bytes): Byte stream containing the pickled data.
             check_type (bool): If True, validates that the unpickled object is an instance of the class.
             **kwargs: Keyword arguments for `loads`.
 
@@ -718,8 +718,8 @@ class Pickleable(Base):
         """Encode a configuration node.
 
         Args:
-            key (str): The key for the configuration node.
-            value (Any): The value to encode.
+            key (str): Key for the configuration node.
+            value (Any): Value to encode.
             **kwargs: Keyword arguments for encoding.
 
         Returns:
@@ -732,8 +732,8 @@ class Pickleable(Base):
         """Decode a configuration node.
 
         Args:
-            key (str): The key for the configuration node.
-            value (Any): The value to decode.
+            key (str): Key for the configuration node.
+            value (Any): Value to decode.
             **kwargs: Keyword arguments for decoding.
 
         Returns:
@@ -760,7 +760,7 @@ class Pickleable(Base):
         represented as a string, it is serialized using `dumps`.
 
         Args:
-            top_name (Optional[str]): The top-level section name.
+            top_name (Optional[str]): Top-level section name.
             unpack_objects (bool): Flag to store a `Pickleable` object's reconstruction state in a separate section.
 
                 Appends `@` and class name to the section name.
@@ -940,8 +940,8 @@ class Pickleable(Base):
         Sections containing only a single pair (`_ = _`) are treated as empty dictionaries.
 
         Args:
-            cls (Type[Pickleable]): The class to use for decoding the configuration.
-            str_ (str): The configuration string to decode.
+            cls (Type[Pickleable]): Class to use for decoding the configuration.
+            str_ (str): Configuration string to decode.
             parse_literals (bool): Detect Python literals and container types (e.g., `True`, `[]`),
                 including special values like `np.nan`, `np.inf`, and `-np.inf`.
             run_code (bool): Execute Python code prefixed with `!`.
@@ -955,7 +955,7 @@ class Pickleable(Base):
             use_refs (bool): Substitute reference strings prefixed with `&` with actual objects
                 using a DAG constructed with `graphlib`.
             use_class_ids (bool): Replace class identifiers prefixed with `@` with corresponding classes.
-            code_context (KwargsLike): A context dictionary used during execution of Python code.
+            code_context (KwargsLike): Context dictionary used during execution of Python code.
             parser_kwargs (KwargsLike): Keyword arguments for `configparser.RawConfigParser`.
             check_type (bool): Check types during decoding.
             **kwargs: Keyword arguments for `Pickleable.decode_config_node`.
@@ -1229,13 +1229,13 @@ class Pickleable(Base):
         or via the argument `file_format` and `compression` respectively.
 
         Args:
-            path (Optional[PathLike]): A file path, directory, or None.
+            path (Optional[PathLike]): File path, directory, or None.
 
                 If None or a directory, the file name defaults to the class name.
-            file_format (Optional[str]): The file format extension.
+            file_format (Optional[str]): File format extension.
 
                 For options, see `pickle_extensions` and `config_extensions`.
-            compression (CompressionLike): The compression extension.
+            compression (CompressionLike): Compression extension.
 
                 For options, see `compression_extensions`.
             for_save (bool): Resolve the file path for saving if True; otherwise, for loading.
@@ -1452,7 +1452,7 @@ class Pickleable(Base):
         File path resolution is performed using `Pickleable.resolve_file_path`.
 
         Args:
-            cls (Type[Pickleable]): The class of the instance.
+            cls (Type[Pickleable]): Class of the instance.
             path (Optional[PathLike]): Path of the file to load.
             file_format (Optional[str]): Format specifier for determining the file extension.
             compression (CompressionLike): Compression method if applicable.
@@ -1511,7 +1511,7 @@ class Pickleable(Base):
         """Modify the reconstruction state prior to object reconstruction.
 
         Args:
-            rec_state (RecState): The original reconstruction state.
+            rec_state (RecState): Original reconstruction state.
 
         Returns:
             RecState: The modified reconstruction state.
@@ -1578,7 +1578,7 @@ class pdict(Comparable, Pickleable, Prettified, dict):
         """Perform a deep equality check between this dictionary and another object.
 
         Args:
-            other (Any): The object to compare against.
+            other (Any): Object to compare against.
             check_types (bool): Whether to verify types during comparison.
             **kwargs: Keyword arguments for `vectorbtpro.utils.checks.is_deep_equal`.
 

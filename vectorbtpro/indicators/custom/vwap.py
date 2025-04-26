@@ -35,7 +35,7 @@ def substitute_anchor(wrapper: ArrayWrapper, anchor: tp.Optional[tp.FrequencyLik
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
-        anchor (Optional[FrequencyLike]): The reset frequency for grouping.
+        anchor (Optional[FrequencyLike]): Reset frequency for grouping.
 
     Returns:
         Array1d: An array containing the group lengths.
@@ -87,7 +87,7 @@ class _VWAP(VWAP):
         """Plot `VWAP.vwap` against `VWAP.close` values.
 
         Args:
-            column (Optional[Label]): The name of the column to plot.
+            column (Optional[Label]): Name of the column to plot.
             plot_close (bool): Whether to include the `VWAP.close` values in the plot.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `VWAP.close`.
             vwap_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `VWAP.vwap`.

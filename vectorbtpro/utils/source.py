@@ -93,11 +93,11 @@ def cut_from_source(
     * `Iterable[str]`: Insert multiple lines into the output.
 
     Args:
-        source (str): The source code to process.
-        section_name (str): The name of the section to extract.
+        source (str): Source code to process.
+        section_name (str): Name of the section to extract.
         prepend_lines (Optional[Iterable[str]]): Lines to prepend to the extracted section.
         append_lines (Optional[Iterable[str]]): Lines to append to the extracted section.
-        out_lines_callback (Union[None, Callable, CustomTemplate]): A callback or template
+        out_lines_callback (Union[None, Callable, CustomTemplate]): Callback or template
             to process the output lines.
         return_lines (bool): If True, return the output as a list of lines.
         **kwargs: Additional context variables for expression evaluation.
@@ -228,8 +228,8 @@ def suggest_module_path(
     with a `.py` extension. This function also ensures that the target directory exists.
 
     Args:
-        section_name (str): The name of the section.
-        path (Optional[PathLike]): A base directory or file path.
+        section_name (str): Name of the section.
+        path (Optional[PathLike]): Base directory or file path.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             
             See `vectorbtpro.utils.path_.check_mkdir`.
@@ -262,8 +262,8 @@ def cut_and_save(
     and saves it to a file determined by `suggest_module_path`.
 
     Args:
-        source (str): The source code containing the annotated section.
-        section_name (str): The name of the section to extract.
+        source (str): Source code containing the annotated section.
+        section_name (str): Name of the section to extract.
         path (Optional[PathLike]): File path or directory in which to save the extracted section.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             
@@ -288,7 +288,7 @@ def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> P
     is extracted and saved using `cut_and_save`.
 
     Args:
-        module (Union[str, ModuleType]): The target module or its import path.
+        module (Union[str, ModuleType]): Target module or its import path.
         *args: Positional arguments for `cut_and_save`.
         **kwargs: Keyword arguments for `cut_and_save`.
 
@@ -309,7 +309,7 @@ def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Pat
     using `cut_and_save`.
 
     Args:
-        func (Union[str, FunctionType]): A function or its fully qualified name.
+        func (Union[str, FunctionType]): Function or its fully qualified name.
 
             If provided as a string, the module will be imported and the function will be retrieved.
         *args: Positional arguments for `cut_and_save`.
@@ -339,8 +339,8 @@ def split_source(
     of the chunks reconstructs the original source code exactly, with no lines duplicated or lost.
 
     Args:
-        source (str): The source code to split.
-        should_split (Optional[Callable]): A callback `should_split(node, start: int, end: int, level: int) -> bool`
+        source (str): Source code to split.
+        should_split (Optional[Callable]): Callback `should_split(node, start: int, end: int, level: int) -> bool`
             to determine whether a node should be split into a header (with docstring) and body.
 
             By default, nodes are not split.
@@ -481,7 +481,7 @@ def get_source_indent(source: str) -> int:
     Tabs are treated as 4 spaces.
 
     Args:
-        source (str): The source code to analyze.
+        source (str): Source code to analyze.
 
     Returns:
         int: The minimum indentation in spaces.
@@ -503,8 +503,8 @@ def remove_source_indent(source: str, indent: int) -> str:
     Tabs are treated as 4 spaces.
 
     Args:
-        source (str): The source code to process.
-        indent (int): The number of leading spaces to remove from each non-empty line.
+        source (str): Source code to process.
+        indent (int): Number of leading spaces to remove from each non-empty line.
 
     Returns:
         str: The source code with the specified indentation removed.
@@ -523,8 +523,8 @@ def add_source_indent(source: str, indent: int) -> str:
     """Add spaces to each non-empty line in a source string.
 
     Args:
-        source (str): The source code to modify.
-        indent (int): The number of spaces to add as indentation to each non-empty line.
+        source (str): Source code to modify.
+        indent (int): Number of spaces to add as indentation to each non-empty line.
 
     Returns:
         str: The resulting source code with added indentation.
@@ -543,7 +543,7 @@ def get_source_imports(source: str, global_only: bool = False) -> str:
     """Extract, normalize, deduplicate, and sort import statements from the source code.
 
     Args:
-        source (str): The Python source code as a string.
+        source (str): Python source code as a string.
         global_only (bool): If True, only extract top-level (global) import statements.
 
     Returns:
@@ -1178,6 +1178,7 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
         type: Description of the return value.
     ```
     - If a docstring lacks one of these sections, you must add it in the correct format.
+- **Avoid using articles** like "the" or "a" at the **beginning of descriptions**.
 - If the description of an argument has multiple sentences, **separate them by an empty line**.
 - **Preserve type hints** as argument types are meant to be parsed.
     - For instance, `tp.Union[None, int, tp.DatetimeLike, tp.MaybeList[RangeT]]` becomes `Union[None, int, DatetimeLike, MaybeList[Range]]`.
@@ -1268,10 +1269,10 @@ class Chatable(Configured):
         Generates a formatted response to the message using `Completions`.
     
         Args:
-            message (str): The message to send to the language model.
+            message (str): Message to send to the language model.
             
                 Will be appended to `chat_history` with the role "user".
-            chat_history (Optional[ChatHistory]): The conversation history.
+            chat_history (Optional[ChatHistory]): Conversation history.
             
                 Will be modified in place.
             formatter (str): Formatter.
@@ -1324,7 +1325,7 @@ def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
     docstrings in the given source code.
 
     Args:
-        source (Any): The source code to be refined.
+        source (Any): Source code to be refined.
         **kwargs: Keyword arguments for `refine_source`.
 
     Returns:

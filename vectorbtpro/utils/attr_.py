@@ -103,7 +103,7 @@ class DefineMixin(Hashable):
         """Return the attribute field corresponding to the specified field name.
 
         Args:
-            field_name (str): The name of the attribute field.
+            field_name (str): Name of the attribute field.
 
         Returns:
             Attribute: The attribute field object.
@@ -115,7 +115,7 @@ class DefineMixin(Hashable):
         """Determine if the specified field is required.
 
         Args:
-            field_or_name (Union[str, Attribute]): The name or object of the attribute field.
+            field_or_name (Union[str, Attribute]): Name or object of the attribute field.
 
         Returns:
             bool: True if the field is required, False otherwise.
@@ -131,7 +131,7 @@ class DefineMixin(Hashable):
         """Determine if the specified field is optional.
 
         Args:
-            field_or_name (Union[str, Attribute]): The name or object of the attribute field.
+            field_or_name (Union[str, Attribute]): Name or object of the attribute field.
 
         Returns:
             bool: True if the field is optional, False otherwise.
@@ -149,7 +149,7 @@ class DefineMixin(Hashable):
         returns the field's default value or the default specified in metadata if available.
 
         Args:
-            field_or_name (Union[str, Attribute]): The name or object of the attribute field.
+            field_or_name (Union[str, Attribute]): Name or object of the attribute field.
 
         Returns:
             Any: The resolved value of the field, or `MISSING` if no value is available.
@@ -170,7 +170,7 @@ class DefineMixin(Hashable):
         """Determine if the specified field is missing.
 
         Args:
-            field_or_name (Union[str, Attribute]): The name or object of the attribute field.
+            field_or_name (Union[str, Attribute]): Name or object of the attribute field.
 
         Returns:
             bool: True if the field is missing, False otherwise.
@@ -183,7 +183,7 @@ class DefineMixin(Hashable):
         If the field is missing, raises a ValueError indicating whether it is required or optional.
 
         Args:
-            field_or_name (Union[str, Attribute]): The name or object of the attribute field.
+            field_or_name (Union[str, Attribute]): Name or object of the attribute field.
 
         Returns:
             None
@@ -258,7 +258,7 @@ class DefineMixin(Hashable):
         In cases of overlapping fields, values from this instance and provided changes take precedence.
 
         Args:
-            other (DefineMixin): The other instance to merge with.
+            other (DefineMixin): Other instance to merge with.
             **changes: Keyword arguments specifying field updates.
 
         Returns:
@@ -275,7 +275,7 @@ class DefineMixin(Hashable):
         those from the other instance.
 
         Args:
-            other (DefineMixin): The other instance to merge over.
+            other (DefineMixin): Other instance to merge over.
             **changes: Keyword arguments specifying field updates.
 
         Returns:
@@ -342,7 +342,7 @@ class define(Base):
         with the provided default stored in metadata.
 
         Args:
-            default (Any): The default value stored in metadata.
+            default (Any): Default value stored in metadata.
             metadata (Optional[Mapping]): Additional metadata for the field.
             **kwargs: Keyword arguments for `attr.field`.
 
@@ -373,8 +373,8 @@ def get_dict_attr(obj: tp.Union[object, type], attr: str) -> tp.Any:
     """Retrieve an attribute directly from an object's dictionary without triggering dynamic attribute lookup.
 
     Args:
-        obj (Union[object, type]): The object or class to inspect.
-        attr (str): The name of the attribute to retrieve.
+        obj (Union[object, type]): Object or class to inspect.
+        attr (str): Name of the attribute to retrieve.
 
     Returns:
         Any: The attribute value if present.
@@ -399,8 +399,8 @@ def default_getattr_func(
     """Retrieve an attribute from an object using default behavior.
 
     Args:
-        obj (Any): The object from which to retrieve the attribute.
-        attr (str): The attribute name to access.
+        obj (Any): Object from which to retrieve the attribute.
+        attr (str): Attribute name to access.
         args (Args): Positional arguments passed for calling a callable attribute.
         kwargs (KwargsLike): Keyword arguments passed for calling a callable attribute.
         call_attr (bool): Indicates whether to call the attribute if it is callable.
@@ -427,8 +427,8 @@ def deep_getattr(
     """Retrieve attributes from an object following a specified chain.
 
     Args:
-        obj (Any): The root object from which to retrieve attributes.
-        attr_chain (Union[str, tuple, Iterable]): The chain of attributes to access.
+        obj (Any): Root object from which to retrieve attributes.
+        attr_chain (Union[str, tuple, Iterable]): Chain of attributes to access.
 
             It can be specified as one of the following forms:
 
@@ -539,7 +539,7 @@ class AttrResolverMixin(Base):
         """Pre-process an attribute before resolution.
 
         Args:
-            attr (str): The name of the attribute to process.
+            attr (str): Name of the attribute to process.
             final_kwargs (KwargsLike): Dictionary of keyword arguments for resolution.
 
         Returns:
@@ -551,8 +551,8 @@ class AttrResolverMixin(Base):
         """Post-process a resolved attribute output.
 
         Args:
-            attr (str): The original attribute name.
-            out (Any): The value obtained from attribute resolution.
+            attr (str): Original attribute name.
+            out (Any): Value obtained from attribute resolution.
             final_kwargs (KwargsLike): Dictionary of keyword arguments used during resolution.
 
         Returns:
@@ -573,7 +573,7 @@ class AttrResolverMixin(Base):
         """Resolve an attribute using potential shortcut properties.
 
         Args:
-            attr (str): The attribute name to resolve.
+            attr (str): Attribute name to resolve.
             *args: Positional arguments passed for resolution.
             **kwargs: Keyword arguments passed for resolution.
 
@@ -617,7 +617,7 @@ class AttrResolverMixin(Base):
         Use `passed_kwargs_out` to capture the keyword arguments that were passed during resolution.
 
         Args:
-            attr (str): The attribute name to resolve.
+            attr (str): Attribute name to resolve.
             args (ArgsLike): Positional arguments for the attribute.
             cond_kwargs (KwargsLike): Keyword arguments for conditional resolution.
             kwargs (KwargsLike): Keyword arguments for invoking the attribute.
@@ -699,7 +699,7 @@ def parse_attrs(obj: tp.Any = None, own_only: bool = False, sort_by: tp.Optional
     """Parse attributes of a class, object, or module and return a DataFrame of types and paths.
 
     Args:
-        obj (Any): The object, class, or module whose attributes are to be parsed.
+        obj (Any): Object, class, or module whose attributes are to be parsed.
 
             Defaults to `vbt` if None.
         own_only (bool): If True, only include attributes defined on the object's class.

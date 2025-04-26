@@ -28,7 +28,7 @@ def evaluate(expr: str, context: tp.KwargsLike = None) -> tp.Any:
     """Evaluate one or multiple lines of Python code and return the result of the final expression.
 
     Args:
-        expr (str): A string containing one or more lines of Python code.
+        expr (str): String containing one or more lines of Python code.
         context (KwargsLike): Dictionary representing the execution context.
 
     Returns:
@@ -50,7 +50,7 @@ def get_symbols(table: symtable.SymbolTable) -> tp.List[symtable.Symbol]:
     """Recursively retrieve all symbols from a symbol table.
 
     Args:
-        table (symtable.SymbolTable): The symbol table to traverse.
+        table (symtable.SymbolTable): Symbol table to traverse.
 
     Returns:
         List[symtable.Symbol]: A list of symbols found in the table and its child tables.
@@ -69,7 +69,7 @@ def get_free_vars(expr: str) -> tp.List[str]:
     """Parse the provided code and return free variable names, excluding built-in names.
 
     Args:
-        expr (str): A string of Python code to parse.
+        expr (str): String of Python code to parse.
 
     Returns:
         List[str]: A list of free variable names found in the code.

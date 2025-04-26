@@ -168,7 +168,7 @@ class _OLS(OLS):
 
         Args:
             column (Optional[Label]): Name of the column to plot.
-            alpha (float): The alpha level for the confidence interval.
+            alpha (float): Alpha level for the confidence interval.
 
                 The default alpha value of 0.05 returns a 95% confidence interval.
             zscore_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `OLS.zscore`.

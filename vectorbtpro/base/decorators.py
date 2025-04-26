@@ -52,7 +52,7 @@ def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
     of a subclass of `vectorbtpro.base.preparing.BasePreparer`.
 
     Args:
-        cls (Type[T]): A subclass of `vectorbtpro.base.preparing.BasePreparer` for which
+        cls (Type[T]): Subclass of `vectorbtpro.base.preparing.BasePreparer` for which
             argument properties will be attached.
 
     Returns:

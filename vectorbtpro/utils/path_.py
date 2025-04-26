@@ -45,7 +45,7 @@ def list_any_files(path: tp.Optional[tp.PathLike] = None, recursive: bool = Fals
     """Return a list of files and directories matching a given path.
 
     Args:
-        path (Optional[PathLike]): The path or directory to search.
+        path (Optional[PathLike]): Path or directory to search.
 
             If omitted, the current working directory is used.
         recursive (bool): Whether to search subdirectories recursively.
@@ -69,7 +69,7 @@ def list_files(path: tp.Optional[tp.PathLike] = None, recursive: bool = False) -
     """Return a list of file paths matching a given pattern by filtering results from `list_any_files`.
 
     Args:
-        path (Optional[PathLike]): The path or directory to search.
+        path (Optional[PathLike]): Path or directory to search.
 
             If omitted, the current working directory is used.
         recursive (bool): Whether to search subdirectories recursively.
@@ -84,7 +84,7 @@ def list_dirs(path: tp.Optional[tp.PathLike] = None, recursive: bool = False) ->
     """Return a list of directory paths matching a given pattern by filtering results from `list_any_files`.
 
     Args:
-        path (Optional[PathLike]): The path or directory to search.
+        path (Optional[PathLike]): Path or directory to search.
 
             If omitted, the current working directory is used.
         recursive (bool): Whether to search subdirectories recursively.
@@ -99,7 +99,7 @@ def file_exists(file_path: tp.PathLike) -> bool:
     """Check if the specified file exists.
 
     Args:
-        file_path (PathLike): The path of the file to check.
+        file_path (PathLike): Path of the file to check.
 
     Returns:
         bool: True if the file exists, False otherwise.
@@ -114,7 +114,7 @@ def dir_exists(dir_path: tp.PathLike) -> bool:
     """Check if the specified directory exists.
 
     Args:
-        dir_path (PathLike): The path of the directory to check.
+        dir_path (PathLike): Path of the directory to check.
 
     Returns:
         bool: True if the directory exists, False otherwise.
@@ -129,7 +129,7 @@ def file_size(file_path: tp.PathLike, readable: bool = True, **kwargs) -> tp.Uni
     """Return the size of the specified file, either as a human-readable string or as a number of bytes.
 
     Args:
-        file_path (PathLike): The path of the file.
+        file_path (PathLike): Path of the file.
         readable (bool): Whether to return a human-readable size.
         **kwargs: Keyword arguments for `humanize.naturalsize`.
 
@@ -150,7 +150,7 @@ def dir_size(dir_path: tp.PathLike, readable: bool = True, **kwargs) -> tp.Union
     either as a human-readable string or as a number of bytes.
 
     Args:
-        dir_path (PathLike): The path of the directory.
+        dir_path (PathLike): Path of the directory.
         readable (bool): Whether to return a human-readable size.
         **kwargs: Keyword arguments for `humanize.naturalsize`.
 
@@ -176,11 +176,11 @@ def check_mkdir(
     """Ensure that the specified directory exists or create it if necessary.
 
     Args:
-        dir_path (PathLike): The directory path to check.
+        dir_path (PathLike): Directory path to check.
         mkdir (Optional[bool]): Whether to create the directory if it does not exist.
 
             If None, the default setting is used.
-        mode (Optional[int]): The mode for the directory if created.
+        mode (Optional[int]): Mode for the directory if created.
 
             If None, the default setting is used.
         parents (Optional[bool]): Whether to create parent directories if needed.
@@ -221,8 +221,8 @@ def make_file(file_path: tp.PathLike, mode: int = 0o666, exist_ok: bool = True, 
     """Create an empty file at the specified path.
 
     Args:
-        file_path (PathLike): The path of the file to create.
-        mode (int): The permission mode for the file.
+        file_path (PathLike): Path of the file to create.
+        mode (int): Permission mode for the file.
         exist_ok (bool): Whether to do nothing if the file already exists.
         **kwargs: Keyword arguments for `check_mkdir`.
 
@@ -239,7 +239,7 @@ def make_dir(dir_path: tp.PathLike, **kwargs) -> Path:
     """Create a directory at the specified path.
 
     Args:
-        dir_path (PathLike): The path of the directory to create.
+        dir_path (PathLike): Path of the directory to create.
         **kwargs: Keyword arguments for `check_mkdir`.
 
     Returns:
@@ -253,7 +253,7 @@ def remove_file(file_path: tp.PathLike, missing_ok: bool = False) -> None:
     """Delete the specified file.
 
     Args:
-        file_path (PathLike): The path of the file to delete.
+        file_path (PathLike): Path of the file to delete.
         missing_ok (bool): If True, do not raise an error if the file is not found.
 
     Returns:
@@ -270,7 +270,7 @@ def remove_dir(dir_path: tp.PathLike, missing_ok: bool = False, with_contents: b
     """Delete the specified directory.
 
     Args:
-        dir_path (PathLike): The path of the directory to delete.
+        dir_path (PathLike): Path of the directory to delete.
         missing_ok (bool): If True, do not raise an error if the directory is not found.
         with_contents (bool): If True, delete directories that contain files;
             otherwise, raise an error if the directory is not empty.
@@ -291,7 +291,7 @@ def get_common_prefix(paths: tp.Iterable[tp.PathLike]) -> str:
     """Return the common prefix shared by a list of URLs or file paths.
 
     Args:
-        paths (Iterable[PathLike]): An iterable of URLs or file paths.
+        paths (Iterable[PathLike]): Iterable of URLs or file paths.
 
     Returns:
         str: The common prefix as a URL or file path string, or an empty string if no common prefix exists.
@@ -357,20 +357,20 @@ def dir_tree_from_paths(
     The tree is constructed relative to a given root.
 
     Args:
-        paths (Iterable[PathLike]): An iterable of file system paths.
-        root (Optional[PathLike]): The root path to which the tree structure should be relative.
-        path_names (Optional[Iterable[str]]): A list of display names corresponding to each path.
-        root_name (Optional[str]): A custom name for the root of the tree.
-        level (int): The maximum depth level to display.
+        paths (Iterable[PathLike]): Iterable of file system paths.
+        root (Optional[PathLike]): Root path to which the tree structure should be relative.
+        path_names (Optional[Iterable[str]]): List of display names corresponding to each path.
+        root_name (Optional[str]): Custom name for the root of the tree.
+        level (int): Maximum depth level to display.
 
             A negative value indicates no limit.
         limit_to_dirs (bool): If True, the tree only includes directories.
         length_limit (Optional[int]): Limits the total number of lines in the generated tree.
         sort (bool): If True, sorts tree entries alphabetically.
-        space (str): The indentation string used for spacing.
-        branch (str): The string representing a branch segment.
-        tee (str): The string for an intermediate node in the tree.
-        last (str): The string for the last node in a branch.
+        space (str): Indentation string used for spacing.
+        branch (str): String representing a branch segment.
+        tee (str): String for an intermediate node in the tree.
+        last (str): String for the last node in a branch.
 
     Returns:
         str: A string representing the visual tree structure.
@@ -472,7 +472,7 @@ def dir_tree(dir_path: Path, **kwargs) -> str:
     Internally, it calls `dir_tree_from_paths`.
 
     Args:
-        dir_path (Path): The directory path for which to generate the tree.
+        dir_path (Path): Directory path for which to generate the tree.
         **kwargs: Keyword arguments for `dir_tree_from_paths`.
 
     Returns:

@@ -57,7 +57,7 @@ def text_to_giphy_url(text: str, api_key: tp.Optional[str] = None, weirdness: tp
     """Return the URL for a GIF corresponding to the provided text using the Giphy translate API.
 
     Args:
-        text (str): The text to translate into a GIF search query.
+        text (str): Text to translate into a GIF search query.
         api_key (Optional[str]): API key for accessing the Giphy service.
         weirdness (Optional[int]): Parameter influencing the uniqueness of the GIF selection.
 

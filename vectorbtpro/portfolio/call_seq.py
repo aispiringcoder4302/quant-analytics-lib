@@ -76,7 +76,7 @@ def require_call_seq(call_seq: tp.Array2d) -> tp.Array2d:
     """Ensure the call sequence array meets required conditions.
 
     Args:
-        call_seq (Array2d): The call sequence array to validate.
+        call_seq (Array2d): Call sequence array to validate.
 
     Returns:
         Array2d: The validated call sequence array.

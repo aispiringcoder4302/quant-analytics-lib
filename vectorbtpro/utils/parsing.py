@@ -43,7 +43,7 @@ class Regex(DefineMixin):
         """Return whether the given string matches the regular expression pattern.
 
         Args:
-            string (str): The string to test.
+            string (str): String to test.
 
         Returns:
             bool: True if the string matches the pattern, otherwise False.
@@ -493,7 +493,7 @@ def match_flat_ann_arg(
 
     Args:
         flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
-        query (AnnArgQuery): An integer index, string name, or regular expression to match an argument.
+        query (AnnArgQuery): Integer index, string name, or regular expression to match an argument.
         return_name (bool): If True, return the argument's name.
         return_index (bool): If True, return the argument's positional index.
 
@@ -621,10 +621,10 @@ def hash_args(
     """Compute a hash based on the annotated arguments of `func`.
 
     Args:
-        func (Callable): The function whose arguments are processed.
+        func (Callable): Function whose arguments are processed.
         args (Args): Positional arguments for `func`.
         kwargs (Kwargs): Keyword arguments for `func`.
-        ignore_args (Optional[Iterable[AnnArgQuery]]): A sequence of queries for arguments to ignore.
+        ignore_args (Optional[Iterable[AnnArgQuery]]): Sequence of queries for arguments to ignore.
 
     Returns:
         int: The computed hash value.
@@ -645,7 +645,7 @@ def get_expr_var_names(expression: str) -> tp.List[str]:
     """Extract variable names from a Python expression.
 
     Args:
-        expression (str): A Python expression as a string.
+        expression (str): Python expression as a string.
 
     Returns:
         List[str]: A list of variable names found in the expression.
@@ -662,12 +662,12 @@ def get_context_vars(
     """Retrieve variables from the calling context.
 
     Args:
-        var_names (Iterable[str]): An iterable of variable names to retrieve.
+        var_names (Iterable[str]): Iterable of variable names to retrieve.
         frames_back (int): Number of frames to go back from the current frame.
-        local_dict (Optional[Mapping]): A dictionary of local variables.
+        local_dict (Optional[Mapping]): Dictionary of local variables.
 
             If not provided, uses the calling frame's local variables.
-        global_dict (Optional[Mapping]): A dictionary of global variables.
+        global_dict (Optional[Mapping]): Dictionary of global variables.
 
             If not provided, uses the calling frame's global variables.
 
@@ -702,7 +702,7 @@ def suppress_stdout(func: tp.Callable) -> tp.Callable:
     """Suppress stdout output when executing the decorated function.
 
     Args:
-        func (Callable): The function whose printed output will be suppressed.
+        func (Callable): Function whose printed output will be suppressed.
 
     Returns:
         Callable: The decorated function with stdout redirection.

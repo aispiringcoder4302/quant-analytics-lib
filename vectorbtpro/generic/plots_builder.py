@@ -77,8 +77,8 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         """Resolve a setting for `PlotsBuilderMixin.plots` by combining defaults and user-provided values.
 
         Args:
-            value (Optional[Any]): The user-provided setting value.
-            key (str): The key identifying the specific setting.
+            value (Optional[Any]): User-provided setting value.
+            key (str): Key identifying the specific setting.
             merge (bool): Flag indicating whether to merge the default and provided values.
 
         Returns:
@@ -158,7 +158,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 The settings dictionary may include:
 
                 * `title`: The subplot title; defaults to the subplot name.
-                * `plot_func` (required): The plotting function for custom subplots.
+                * `plot_func` (required): Plotting function for custom subplots.
                     It must modify the provided figure `fig` in-place.
                 * `xaxis_kwargs`: Layout keyword arguments for the x-axis;
                     defaults to `{'title': 'Index'}`.

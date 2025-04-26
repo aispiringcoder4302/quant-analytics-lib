@@ -60,7 +60,7 @@ def to_tuple_shape(shape: tp.ShapeLike) -> tp.Shape:
     """Convert a shape-like object to a tuple.
 
     Args:
-        shape (ShapeLike): A shape-like object that can be an integer or iterable.
+        shape (ShapeLike): Shape-like object that can be an integer or iterable.
 
     Returns:
         Shape: A tuple representation of the input shape.
@@ -74,7 +74,7 @@ def to_1d_shape(shape: tp.ShapeLike) -> tp.Shape:
     """Convert a shape-like object to a one-dimensional shape tuple.
 
     Args:
-        shape (ShapeLike): A shape-like object; can be an integer or iterable.
+        shape (ShapeLike): Shape-like object; can be an integer or iterable.
 
     Returns:
         Shape: A one-dimensional shape tuple.
@@ -93,8 +93,8 @@ def to_2d_shape(shape: tp.ShapeLike, expand_axis: int = 1) -> tp.Shape:
     """Convert a shape-like object to a two-dimensional shape tuple.
 
     Args:
-        shape (ShapeLike): A shape-like object to convert.
-        expand_axis (int): The axis along which a one-dimensional shape is expanded into two dimensions.
+        shape (ShapeLike): Shape-like object to convert.
+        expand_axis (int): Axis along which a one-dimensional shape is expanded into two dimensions.
 
     Returns:
         Shape: A two-dimensional shape tuple.
@@ -116,9 +116,9 @@ def repeat_shape(shape: tp.ShapeLike, n: int, axis: int = 1) -> tp.Shape:
     """Repeat a shape along a specified axis.
 
     Args:
-        shape (ShapeLike): A shape-like object representing the original shape.
-        n (int): The number of repetitions along the specified axis.
-        axis (int): The axis along which the shape is repeated.
+        shape (ShapeLike): Shape-like object representing the original shape.
+        n (int): Number of repetitions along the specified axis.
+        axis (int): Axis along which the shape is repeated.
 
     Returns:
         Shape: The resulting shape after repetition.
@@ -135,9 +135,9 @@ def tile_shape(shape: tp.ShapeLike, n: int, axis: int = 1) -> tp.Shape:
     This function is identical to `repeat_shape` and exists solely for naming consistency.
 
     Args:
-        shape (ShapeLike): A shape-like object representing the original shape.
-        n (int): The number of tiles along the specified axis.
-        axis (int): The axis along which the shape is tiled.
+        shape (ShapeLike): Shape-like object representing the original shape.
+        n (int): Number of tiles along the specified axis.
+        axis (int): Axis along which the shape is tiled.
 
     Returns:
         Shape: The resulting tiled shape.
@@ -149,7 +149,7 @@ def index_to_series(obj: tp.Index, reset_index: bool = False) -> tp.Series:
     """Convert an Index to a Series.
 
     Args:
-        obj (Index): The index to convert.
+        obj (Index): Index to convert.
         reset_index (bool): Whether to reset the index in the resulting Series.
 
     Returns:
@@ -164,7 +164,7 @@ def index_to_frame(obj: tp.Index, reset_index: bool = False) -> tp.Frame:
     """Convert an Index to a DataFrame.
 
     Args:
-        obj (Index): The index to convert.
+        obj (Index): Index to convert.
         reset_index (bool): Determines whether to reset the index when converting non-MultiIndex objects.
 
     Returns:
@@ -181,7 +181,7 @@ def mapping_to_series(obj: tp.MappingLike) -> tp.Series:
     If the input is a namedtuple, it is first converted to a dictionary.
 
     Args:
-        obj (MappingLike): A mapping-like object to convert.
+        obj (MappingLike): Mapping-like object to convert.
 
     Returns:
         Series: A Pandas Series constructed from the mapping.
@@ -199,7 +199,7 @@ def to_any_array(obj: tp.ArrayLike, raw: bool = False, convert_index: bool = Tru
     if `convert_index` is True.
 
     Args:
-        obj (ArrayLike): The array-like object to convert.
+        obj (ArrayLike): Array-like object to convert.
         raw (bool): If True, return a raw NumPy array.
         convert_index (bool): If True, convert index objects to a Series.
 
@@ -228,7 +228,7 @@ def to_pd_array(obj: tp.ArrayLike, convert_index: bool = True) -> tp.PandasArray
     converted to a Series or DataFrame based on its dimensions.
 
     Args:
-        obj (ArrayLike): The array-like object to convert.
+        obj (ArrayLike): Array-like object to convert.
         convert_index (bool): If True, convert index objects to a Series.
 
     Returns:
@@ -262,8 +262,8 @@ def soft_to_ndim(obj: tp.ArrayLike, ndim: int, raw: bool = False) -> tp.AnyArray
     to one dimension. If `ndim` is 2 and the object is one-dimensional, it is expanded to two dimensions.
 
     Args:
-        obj (ArrayLike): The array-like object to reshape.
-        ndim (int): The target number of dimensions (maximum 2).
+        obj (ArrayLike): Array-like object to reshape.
+        ndim (int): Target number of dimensions (maximum 2).
         raw (bool): If True, convert to a raw NumPy array before reshaping.
 
     Returns:
@@ -291,7 +291,7 @@ def to_1d(obj: tp.ArrayLike, raw: bool = False) -> tp.AnyArray1d:
     the column is collapsed into a one-dimensional array.
 
     Args:
-        obj (ArrayLike): The array-like object to reshape.
+        obj (ArrayLike): Array-like object to reshape.
         raw (bool): If True, return a raw NumPy array.
 
     Returns:
@@ -321,9 +321,9 @@ def to_2d(obj: tp.ArrayLike, raw: bool = False, expand_axis: int = 1) -> tp.AnyA
     the array is expanded along the specified axis.
 
     Args:
-        obj (ArrayLike): The array-like object to reshape.
+        obj (ArrayLike): Array-like object to reshape.
         raw (bool): If True, return a raw NumPy array.
-        expand_axis (int): The axis along which to expand one-dimensional input.
+        expand_axis (int): Axis along which to expand one-dimensional input.
 
     Returns:
         AnyArray2d: The reshaped two-dimensional array.
@@ -358,7 +358,7 @@ def to_1d_array_nb(obj: tp.Array) -> tp.Array1d:
     """Resize an array to one dimension.
 
     Args:
-        obj (Array): The input array to reshape.
+        obj (Array): Input array to reshape.
 
     Returns:
         Array1d: A one-dimensional array.
@@ -380,8 +380,8 @@ def to_2d_array_nb(obj: tp.Array, expand_axis: int = 1) -> tp.Array2d:
     according to the specified axis.
 
     Args:
-        obj (Array): The input array.
-        expand_axis (int): The axis along which to expand the array if necessary.
+        obj (Array): Input array.
+        expand_axis (int): Axis along which to expand the array if necessary.
 
     Returns:
         Array2d: A two-dimensional array.
@@ -400,7 +400,7 @@ def to_2d_pr_array_nb(obj: tp.Array) -> tp.Array2d:
     """Return a two-dimensional array by applying `to_2d_array_nb` with `expand_axis` set to 1.
 
     Args:
-        obj (Array): The input array.
+        obj (Array): Input array.
 
     Returns:
         Array2d: A two-dimensional array.
@@ -413,7 +413,7 @@ def to_2d_pc_array_nb(obj: tp.Array) -> tp.Array2d:
     """Return a two-dimensional array by applying `to_2d_array_nb` with `expand_axis` set to 0.
 
     Args:
-        obj (Array): The input array.
+        obj (Array): Input array.
 
     Returns:
         Array2d: A two-dimensional array.
@@ -425,7 +425,7 @@ def to_dict(obj: tp.ArrayLike, orient: str = "dict") -> dict:
     """Convert an array-like object to a dictionary.
 
     Args:
-        obj (ArrayLike): An array-like object.
+        obj (ArrayLike): Array-like object.
         orient (str): Orientation for conversion.
 
             Use "index_series" to create a dictionary mapping index to series.
@@ -449,9 +449,9 @@ def repeat(
     """Repeat an array-like object multiple times along a specified axis.
 
     Args:
-        obj (ArrayLike): The input array-like object.
-        n (int): The number of repetitions.
-        axis (int): The axis along which to repeat.
+        obj (ArrayLike): Input array-like object.
+        n (int): Number of repetitions.
+        axis (int): Axis along which to repeat.
         raw (bool): Whether to treat the input as raw array data.
         ignore_ranges (Optional[bool]): Whether to ignore range constraints.
 
@@ -484,9 +484,9 @@ def tile(
     """Tile an array-like object by repeating its elements along a specified axis.
 
     Args:
-        obj (ArrayLike): The input array-like object.
-        n (int): The number of times to tile the array.
-        axis (int): The axis along which to tile.
+        obj (ArrayLike): Input array-like object.
+        n (int): Number of times to tile the array.
+        axis (int): Axis along which to tile.
         raw (bool): Whether to treat the input as raw array data.
         ignore_ranges (Optional[bool]): Whether to ignore range constraints.
 
@@ -589,10 +589,10 @@ def broadcast_array_to(
     vectorbtpro's broadcasting rules.
 
     Args:
-        arr (ArrayLike): The input array-like object.
-        target_shape (ShapeLike): The desired target shape, which must have one or two dimensions.
-        axis (Optional[int]): An axis index for adjusting the target shape.
-        expand_axis (Optional[int]): The axis used for array expansion.
+        arr (ArrayLike): Input array-like object.
+        target_shape (ShapeLike): Desired target shape, which must have one or two dimensions.
+        axis (Optional[int]): Axis index for adjusting the target shape.
+        expand_axis (Optional[int]): Axis used for array expansion.
 
     Returns:
         Array: The broadcasted array.
@@ -638,7 +638,7 @@ def broadcast_arrays(
 
     Args:
         *arrs (ArrayLike): Array-like objects to broadcast.
-        target_shape (Optional[ShapeLike]): The target shape to which arrays should be broadcasted.
+        target_shape (Optional[ShapeLike]): Target shape to which arrays should be broadcasted.
         axis (Optional[MaybeSequence[int]]): Axis specification for broadcasting.
         expand_axis (Optional[MaybeSequence[int]]): Axis used for expanding dimensions if necessary.
 
@@ -810,13 +810,13 @@ def wrap_broadcasted(
     originated from a Pandas object.
 
     Args:
-        new_obj (AnyArray): The broadcasted array.
-        old_obj (Optional[AnyArray]): The original object from which broadcasting
+        new_obj (AnyArray): Broadcasted array.
+        old_obj (Optional[AnyArray]): Original object from which broadcasting
             parameters may be inferred.
-        axis (Optional[int]): The axis along which broadcasting was performed.
+        axis (Optional[int]): Axis along which broadcasting was performed.
         is_pd (bool): Indicates whether the original object was a Pandas object.
-        new_index (Optional[Index]): The new index derived from broadcasting.
-        new_columns (Optional[Index]): The new columns derived from broadcasting.
+        new_index (Optional[Index]): New index derived from broadcasting.
+        new_columns (Optional[Index]): New columns derived from broadcasting.
         ignore_ranges (Optional[bool]): Whether to ignore RangeIndex types during index repetition.
 
     Returns:
@@ -2089,8 +2089,8 @@ def broadcast_to_array_of(arg1: tp.ArrayLike, arg2: tp.ArrayLike) -> tp.Array:
     """Broadcast `arg1` to an array with shape `(1, *arg2.shape)`.
 
     Args:
-        arg1 (ArrayLike): A scalar, 1-dimensional array, or an array with one extra dimension compared to `arg2`.
-        arg2 (ArrayLike): An array whose shape is used as the base for broadcasting.
+        arg1 (ArrayLike): Scalar, 1-dimensional array, or an array with one extra dimension compared to `arg2`.
+        arg2 (ArrayLike): Array whose shape is used as the base for broadcasting.
 
     Returns:
         Array: Broadcasted array with shape `(1, *arg2.shape)`.
@@ -2242,7 +2242,7 @@ def get_multiindex_series(obj: tp.SeriesFrame) -> tp.Series:
     """Return a Series with a MultiIndex.
 
     Args:
-        obj (SeriesFrame): A Pandas Series or DataFrame.
+        obj (SeriesFrame): Pandas Series or DataFrame.
 
             If a DataFrame is provided, it must have at most one row or one column.
 
@@ -2273,8 +2273,8 @@ def unstack_to_array(
     """Reshape a multi-indexed Series or DataFrame into a multi-dimensional NumPy array.
 
     Args:
-        obj (SeriesFrame): A Series or DataFrame with a MultiIndex.
-        levels (Optional[MaybeLevelSequence]): The index level(s) to unstack and their desired order.
+        obj (SeriesFrame): Series or DataFrame with a MultiIndex.
+        levels (Optional[MaybeLevelSequence]): Index level(s) to unstack and their desired order.
         sort (bool): Whether to sort the new index values.
         return_indexes (bool): If True, also return the list of new index values corresponding to each level.
 
@@ -2341,7 +2341,7 @@ def make_symmetric(obj: tp.SeriesFrame, sort: bool = True) -> tp.Frame:
     This operation requires that the index and columns have the same number of levels.
 
     Args:
-        obj (SeriesFrame): A Series or DataFrame.
+        obj (SeriesFrame): Series or DataFrame.
         sort (bool): Whether to sort the combined index and columns.
 
             If False, the indexes are concatenated in their original order with duplicates removed.
@@ -2417,9 +2417,9 @@ def unstack_to_df(
     """Reshape a multi-indexed Series or DataFrame into a DataFrame by unstacking specified levels.
 
     Args:
-        obj (SeriesFrame): A Series or DataFrame with a MultiIndex.
-        index_levels (Optional[MaybeLevelSequence]): The index level(s) to unstack for the new DataFrame's index.
-        column_levels (Optional[MaybeLevelSequence]): The index level(s) to unstack for the new DataFrame's columns.
+        obj (SeriesFrame): Series or DataFrame with a MultiIndex.
+        index_levels (Optional[MaybeLevelSequence]): Index level(s) to unstack for the new DataFrame's index.
+        column_levels (Optional[MaybeLevelSequence]): Index level(s) to unstack for the new DataFrame's columns.
         symmetric (bool): If True, return a symmetric DataFrame with identical index and columns.
         sort (bool): Whether to sort the level values before reshaping.
 

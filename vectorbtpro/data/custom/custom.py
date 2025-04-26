@@ -119,8 +119,8 @@ class CustomData(Data):
         Otherwise, a glob-style pattern is used.
 
         Args:
-            key (str): The key to evaluate.
-            pattern (str): The pattern to compare against.
+            key (str): Key to evaluate.
+            pattern (str): Pattern to compare against.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
 
         Returns:

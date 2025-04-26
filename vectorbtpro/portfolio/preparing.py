@@ -55,7 +55,7 @@ def valid_price_from_ago_1d_nb(price: tp.Array1d) -> tp.Array1d:
     """Compute the `from_ago` values for a price array.
 
     Args:
-        price (Array1d): A 1D array of prices.
+        price (Array1d): 1D array of prices.
 
     Returns:
         Array1d: An array where each element represents the number of steps since the last non-NaN price.
@@ -79,7 +79,7 @@ class PFPrepResult(Configured):
     """Class representing the result of portfolio preparation.
 
     Args:
-        target_func (Optional[Callable]): The target function.
+        target_func (Optional[Callable]): Target function.
         target_args (KwargsLike): Dictionary of arguments for the target function.
         pf_args (KwargsLike): Dictionary of portfolio configuration arguments.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
@@ -250,7 +250,7 @@ class BasePFPreparer(BasePreparer):
         """Parse a data input into an OHLC data instance.
 
         Args:
-            data (Union[None, OHLCDataMixin, str, ArrayLike]): The input data to parse.
+            data (Union[None, OHLCDataMixin, str, ArrayLike]): Input data to parse.
 
                 Can be an OHLC data instance, a string identifier, or an array-like object.
             all_ohlc (bool): Flag indicating whether to require all OHLC attributes.
@@ -476,7 +476,7 @@ class BasePFPreparer(BasePreparer):
         """Align an array to match the portfolio's column structure.
 
         Args:
-            arr (ArrayLike): The input array to align.
+            arr (ArrayLike): Input array to align.
             group_lens (Optional[GroupLens]): Array of group lengths for alignment.
             check_dtype (Optional[DTypeLike]): Data type to validate the array elements.
             cast_to_dtype (Optional[DTypeLike]): Target data type for casting.

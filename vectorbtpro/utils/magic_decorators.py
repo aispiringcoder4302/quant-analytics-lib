@@ -71,9 +71,9 @@ def attach_binary_magic_methods(
     """Attach binary magic methods to a class.
 
     Args:
-        translate_func (BinaryTranslateFunc): A function that takes the instance,
+        translate_func (BinaryTranslateFunc): Function that takes the instance,
             another operand, and a binary operator function, performs the operation, and returns the result.
-        config (Optional[Config]): A configuration mapping of magic method names to settings.
+        config (Optional[Config]): Configuration mapping of magic method names to settings.
 
             If not provided, defaults to `binary_magic_config`.
 
@@ -131,9 +131,9 @@ def attach_unary_magic_methods(
     """Attach unary magic methods to a class.
 
     Args:
-        translate_func (UnaryTranslateFunc): A function that takes the instance and a unary
+        translate_func (UnaryTranslateFunc): Function that takes the instance and a unary
             operator function, performs the operation, and returns the result.
-        config (Optional[Config]): A configuration mapping of magic method names to settings.
+        config (Optional[Config]): Configuration mapping of magic method names to settings.
 
             If not provided, defaults to `unary_magic_config`.
 

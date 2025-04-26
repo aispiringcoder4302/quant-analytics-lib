@@ -30,8 +30,8 @@ def map_1d_nb(arr: tp.Array1d, map_func_nb: tp.MapFunc, *args) -> tp.Array1d:
     """Map each element of a 1-dimensional array using `map_func_nb`.
 
     Args:
-        arr (Array1d): A 1D array of input elements.
-        map_func_nb (MapFunc): A Numba-compiled function that accepts an element and
+        arr (Array1d): 1D array of input elements.
+        map_func_nb (MapFunc): Numba-compiled function that accepts an element and
             additional arguments, and returns a mapped value.
         *args: Positional arguments for `map_func_nb`.
 
@@ -60,8 +60,8 @@ def map_nb(arr: tp.Array2d, map_func_nb: tp.MapFunc, *args) -> tp.Array2d:
     """Map each element of a 2-dimensional array column-wise using `map_func_nb`.
 
     Args:
-        arr (Array2d): A 2D array of input elements where each column is processed independently.
-        map_func_nb (MapFunc): A Numba-compiled function that accepts an element and
+        arr (Array2d): 2D array of input elements where each column is processed independently.
+        map_func_nb (MapFunc): Numba-compiled function that accepts an element and
             additional arguments, and returns a mapped value.
         *args: Positional arguments for `map_func_nb`.
 
@@ -84,9 +84,9 @@ def map_1d_meta_nb(n: int, col: int, map_func_nb: tp.MapMetaFunc, *args) -> tp.A
     """Map a 1-dimensional sequence using metadata with `map_func_nb`.
 
     Args:
-        n (int): The length of the output array.
-        col (int): The column index used in the mapping.
-        map_func_nb (MapMetaFunc): A Numba-compiled function that accepts a row index,
+        n (int): Length of the output array.
+        col (int): Column index used in the mapping.
+        map_func_nb (MapMetaFunc): Numba-compiled function that accepts a row index,
             column index, and additional arguments.
         *args: Positional arguments for `map_func_nb`.
 
@@ -115,8 +115,8 @@ def map_meta_nb(target_shape: tp.Shape, map_func_nb: tp.MapMetaFunc, *args) -> t
     """Map a 2-dimensional array using metadata with `map_func_nb`.
 
     Args:
-        target_shape (Shape): The shape of the output array.
-        map_func_nb (MapMetaFunc): A Numba-compiled function that accepts a row index,
+        target_shape (Shape): Shape of the output array.
+        map_func_nb (MapMetaFunc): Numba-compiled function that accepts a row index,
             column index, and additional arguments.
         *args: Positional arguments for `map_func_nb`.
 
@@ -148,8 +148,8 @@ def apply_nb(arr: tp.Array2d, apply_func_nb: tp.ApplyFunc, *args) -> tp.Array2d:
     """Apply a Numba-compiled function to each column of a 2-dimensional array.
 
     Args:
-        arr (Array2d): A 2D array of input elements where each column is processed independently.
-        apply_func_nb (ApplyFunc): A Numba-compiled function that accepts a 1D array (column)
+        arr (Array2d): 2D array of input elements where each column is processed independently.
+        apply_func_nb (ApplyFunc): Numba-compiled function that accepts a 1D array (column)
             and additional arguments, and returns a computed result.
         *args: Positional arguments for `apply_func_nb`.
 
@@ -181,8 +181,8 @@ def apply_meta_nb(target_shape: tp.Shape, apply_func_nb: tp.ApplyMetaFunc, *args
     """Apply a meta function to each column of a 2-dimensional array, passing the column index as the first argument.
 
     Args:
-        target_shape (Shape): The shape of the output array.
-        apply_func_nb (ApplyMetaFunc): A Numba-compiled function that expects a column index as
+        target_shape (Shape): Shape of the output array.
+        apply_func_nb (ApplyMetaFunc): Numba-compiled function that expects a column index as
             its first argument, followed by additional arguments.
         *args: Positional arguments for `apply_func_nb`.
 
@@ -214,8 +214,8 @@ def row_apply_nb(arr: tp.Array2d, apply_func_nb: tp.ApplyFunc, *args) -> tp.Arra
     """Apply a Numba-compiled function to each row of a 2-dimensional array.
 
     Args:
-        arr (Array2d): A 2D array of input elements where each row is processed independently.
-        apply_func_nb (ApplyFunc): A Numba-compiled function that accepts a 1D array (row) and
+        arr (Array2d): 2D array of input elements where each row is processed independently.
+        apply_func_nb (ApplyFunc): Numba-compiled function that accepts a 1D array (row) and
             additional arguments, and returns a computed result.
         *args: Positional arguments for `apply_func_nb`.
 
@@ -247,8 +247,8 @@ def row_apply_meta_nb(target_shape: tp.Shape, apply_func_nb: tp.ApplyMetaFunc, *
     """Apply a meta function to each row of a 2-dimensional array, passing the row index as the first argument.
 
     Args:
-        target_shape (Shape): The shape of the output array.
-        apply_func_nb (ApplyMetaFunc): A Numba-compiled function that expects a row index as its
+        target_shape (Shape): Shape of the output array.
+        apply_func_nb (ApplyMetaFunc): Numba-compiled function that expects a row index as its
             first argument, followed by additional arguments.
         *args: Positional arguments for `apply_func_nb`.
 
@@ -600,9 +600,9 @@ def rolling_freq_reduce_1d_meta_nb(
     """Meta version of `rolling_freq_reduce_1d_nb`.
 
     Args:
-        col (int): The column index to process.
-        index (Array1d): A one-dimensional array representing the time index.
-        freq (np.timedelta64): The time frequency defining the rolling window.
+        col (int): Column index to process.
+        index (Array1d): One-dimensional array representing the time index.
+        freq (np.timedelta64): Time frequency defining the rolling window.
         reduce_func_nb (RangeReduceMetaFunc): Function that accepts the start row index, end row index,
         column index, and additional arguments, returning a single value.
         *args: Positional arguments for `reduce_func_nb`.
@@ -645,9 +645,9 @@ def rolling_freq_reduce_meta_nb(
     """2-dimensional version of `rolling_freq_reduce_1d_meta_nb`.
 
     Args:
-        n_cols (int): The number of columns.
-        index (Array1d): A one-dimensional array representing the time index.
-        freq (np.timedelta64): The time frequency defining the rolling window.
+        n_cols (int): Number of columns.
+        index (Array1d): One-dimensional array representing the time index.
+        freq (np.timedelta64): Time frequency defining the rolling window.
         reduce_func_nb (RangeReduceMetaFunc): Function that reduces values over the specified window.
         *args: Positional arguments for `reduce_func_nb`.
 
@@ -668,7 +668,7 @@ def groupby_reduce_1d_nb(arr: tp.Array1d, group_map: tp.GroupMap, reduce_func_nb
     """Perform group-by reduction on a one-dimensional array.
 
     Args:
-        arr (Array1d): The input array to reduce.
+        arr (Array1d): Input array to reduce.
         group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (ReduceFunc): Function that accepts a subset of the array and
             additional arguments to compute a single reduced value.
@@ -707,7 +707,7 @@ def groupby_reduce_nb(arr: tp.Array2d, group_map: tp.GroupMap, reduce_func_nb: t
     """Perform group-by reduction on a two-dimensional array.
 
     Args:
-        arr (Array2d): The input 2D array to reduce.
+        arr (Array2d): Input 2D array to reduce.
         group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (ReduceFunc): Function that accepts a subset of an array column and
             additional arguments to compute a single reduced value.
@@ -737,7 +737,7 @@ def groupby_reduce_1d_meta_nb(
     """Meta version of `groupby_reduce_1d_nb`.
 
     Args:
-        col (int): The column index for which to compute the reduction.
+        col (int): Column index for which to compute the reduction.
         group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (GroupByReduceMetaFunc): Function that accepts the array of group indices,
             the group index, the column index, and additional arguments, returning a single value.
@@ -781,7 +781,7 @@ def groupby_reduce_meta_nb(
     """2-dimensional version of `groupby_reduce_1d_meta_nb`.
 
     Args:
-        n_cols (int): The number of columns to process.
+        n_cols (int): Number of columns to process.
         group_map (GroupMap): Tuple of group indices and lengths.
         reduce_func_nb (GroupByReduceMetaFunc): Function that accepts the array of group indices,
             the group index, the column index, and additional arguments, returning a single value.
@@ -811,7 +811,7 @@ def groupby_transform_nb(
     """Perform group-by transformation on a two-dimensional array.
 
     Args:
-        arr (Array2d): The input 2D array to transform.
+        arr (Array2d): Input 2D array to transform.
         group_map (GroupMap): Tuple of group indices and lengths.
         transform_func_nb (GroupByTransformFunc): Function that receives a 2D subarray
             corresponding to a group and additional arguments, returning a scalar or an
@@ -849,7 +849,7 @@ def groupby_transform_meta_nb(
     """Meta version of `groupby_transform_nb`.
 
     Args:
-        target_shape (Shape): The desired shape of the output array.
+        target_shape (Shape): Desired shape of the output array.
         group_map (GroupMap): Tuple of group indices and lengths.
         transform_func_nb (GroupByTransformMetaFunc): Function that accepts an array of
             group indices, the group index, and additional arguments, returning a scalar or
@@ -1510,9 +1510,9 @@ def reduce_grouped_to_array_nb(
     applies the reduction function to each group, and stacks the resulting arrays column-wise.
 
     Args:
-        arr (Array2d): The 2D input array.
+        arr (Array2d): 2D input array.
         group_map (GroupMap): Tuple of group indices and lengths.
-        reduce_func_nb (ReduceGroupedToArrayFunc): A reduction function that returns
+        reduce_func_nb (ReduceGroupedToArrayFunc): Reduction function that returns
             an array for each group.
         *args: Positional arguments for `reduce_func_nb`.
 
@@ -1560,7 +1560,7 @@ def reduce_grouped_to_array_meta_nb(
 
     Args:
         group_map (GroupMap): Tuple of group indices and lengths.
-        reduce_func_nb (ReduceGroupedToArrayMetaFunc): A reduction function that returns
+        reduce_func_nb (ReduceGroupedToArrayMetaFunc): Reduction function that returns
             an array for each group.
         *args: Positional arguments for `reduce_func_nb`.
 
@@ -1611,10 +1611,10 @@ def reduce_flat_grouped_to_array_nb(
     C order or Fortran order before applying the reduction.
 
     Args:
-        arr (Array2d): The 2D input array.
+        arr (Array2d): 2D input array.
         group_map (GroupMap): Tuple of group indices and lengths.
         in_c_order (bool): Indicates whether the array should be flattened in C order.
-        reduce_func_nb (ReduceToArrayFunc): A reduction function that returns an array
+        reduce_func_nb (ReduceToArrayFunc): Reduction function that returns an array
             for a flattened group.
         *args: Positional arguments for `reduce_func_nb`.
 
@@ -1664,9 +1664,9 @@ def squeeze_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, squeeze_func_nb:
     function to the corresponding group slice.
 
     Args:
-        arr (Array2d): The 2D input array.
+        arr (Array2d): 2D input array.
         group_map (GroupMap): Tuple of group indices and lengths.
-        squeeze_func_nb (ReduceFunc): A function that compresses a group of values into a single value.
+        squeeze_func_nb (ReduceFunc): Function that compresses a group of values into a single value.
         *args: Positional arguments for `squeeze_func_nb`.
 
     Returns:
@@ -1717,9 +1717,9 @@ def squeeze_grouped_meta_nb(
     produce a single value for each element.
 
     Args:
-        n_rows (int): The number of rows in the output array.
+        n_rows (int): Number of rows in the output array.
         group_map (GroupMap): Tuple of group indices and lengths.
-        squeeze_func_nb (GroupSqueezeMetaFunc): A function that accepts a row index,
+        squeeze_func_nb (GroupSqueezeMetaFunc): Function that accepts a row index,
             group column indices, and a group index and returns a single value.
         *args: Positional arguments for `squeeze_func_nb`.
 
@@ -1755,7 +1755,7 @@ def flatten_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, in_c_order: bool
     """Flatten groups of columns in the given 2D array.
 
     Args:
-        arr (Array2d): The input 2D array.
+        arr (Array2d): Input 2D array.
         group_map (GroupMap): Tuple of group indices and lengths.
         in_c_order (bool): If True, flatten columns in C order; otherwise, use an alternate order.
 
@@ -1785,7 +1785,7 @@ def flatten_uniform_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, in_c_ord
     """Flatten groups of uniformly sized columns in the given 2D array.
 
     Args:
-        arr (Array2d): The input 2D array.
+        arr (Array2d): Input 2D array.
         group_map (GroupMap): Tuple of group indices and lengths.
         in_c_order (bool): If True, flatten columns in C order; otherwise, use an alternate order.
 
@@ -1823,7 +1823,7 @@ def proximity_reduce_nb(
     """Reduce each element by applying a reduction function to its surrounding window.
 
     Args:
-        arr (Array2d): The input 2D array.
+        arr (Array2d): Input 2D array.
         window (int): Window size.
         reduce_func_nb (ProximityReduceMetaFunc): Function that accepts the flattened
             window array and additional arguments, and returns a single value.
@@ -1857,7 +1857,7 @@ def proximity_reduce_meta_nb(
     """Perform a meta reduction by applying a function over window index boundaries.
 
     Args:
-        target_shape (Shape): The shape (rows, columns) of the target output array.
+        target_shape (Shape): Shape (rows, columns) of the target output array.
         window (int): Window size.
         reduce_func_nb (ReduceFunc): Function that accepts start/end indices for rows and
             columns along with additional arguments, and returns a single value.
@@ -1888,8 +1888,8 @@ def nth_reduce_nb(arr: tp.Array1d, n: int) -> float:
     """Return the nth element from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
-        n (int): The index of the element to retrieve.
+        arr (Array1d): Input array.
+        n (int): Index of the element to retrieve.
 
     Returns:
         float: The element at the specified index.
@@ -1904,7 +1904,7 @@ def first_reduce_nb(arr: tp.Array1d) -> float:
     """Return the first non-NA element from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         float: The first non-NA element, or NaN if no such element exists.
@@ -1922,7 +1922,7 @@ def last_reduce_nb(arr: tp.Array1d) -> float:
     """Return the last non-NA element from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         float: The last non-NA element, or NaN if no such element exists.
@@ -1940,7 +1940,7 @@ def first_index_reduce_nb(arr: tp.Array1d) -> int:
     """Return the index of the first non-NA element in a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         int: The index of the first non-NA element, or -1 if none exists.
@@ -1958,7 +1958,7 @@ def last_index_reduce_nb(arr: tp.Array1d) -> int:
     """Return the index of the last non-NA element in a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         int: The index of the last non-NA element, or -1 if none exists.
@@ -1976,8 +1976,8 @@ def nth_index_reduce_nb(arr: tp.Array1d, n: int) -> int:
     """Return the index of the nth element in a 1D array, counting NA elements.
 
     Args:
-        arr (Array1d): The input array.
-        n (int): The index offset; negative values count from the end.
+        arr (Array1d): Input array.
+        n (int): Index offset; negative values count from the end.
 
     Returns:
         int: The calculated index corresponding to the nth element.
@@ -1994,7 +1994,7 @@ def any_reduce_nb(arr: tp.Array1d) -> bool:
     """Return True if any element in the 1D array is True.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         bool: True if at least one element is True, otherwise False.
@@ -2007,7 +2007,7 @@ def all_reduce_nb(arr: tp.Array1d) -> bool:
     """Return True if all elements in the 1D array are True.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         bool: True if every element is True, otherwise False.
@@ -2020,7 +2020,7 @@ def min_reduce_nb(arr: tp.Array1d) -> float:
     """Return the minimum non-NA value from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         float: The smallest value among the non-NA entries.
@@ -2033,7 +2033,7 @@ def max_reduce_nb(arr: tp.Array1d) -> float:
     """Return the maximum non-NA value from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         float: The largest value among the non-NA entries.
@@ -2046,7 +2046,7 @@ def mean_reduce_nb(arr: tp.Array1d) -> float:
     """Return the mean of non-NA values from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         float: The average of the non-NA values.
@@ -2059,7 +2059,7 @@ def median_reduce_nb(arr: tp.Array1d) -> float:
     """Return the median of non-NA values from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         float: The median value among the non-NA entries.
@@ -2072,7 +2072,7 @@ def std_reduce_nb(arr: tp.Array1d, ddof) -> float:
     """Return the standard deviation of non-NA values from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
         ddof (int): Delta degrees of freedom.
 
     Returns:
@@ -2086,7 +2086,7 @@ def sum_reduce_nb(arr: tp.Array1d) -> float:
     """Return the sum of non-NA values from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         float: The total sum of the non-NA entries.
@@ -2099,7 +2099,7 @@ def prod_reduce_nb(arr: tp.Array1d) -> float:
     """Return the product of non-NA values from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         float: The product computed from the non-NA entries.
@@ -2112,7 +2112,7 @@ def nonzero_prod_reduce_nb(arr: tp.Array1d) -> float:
     """Return the product of non-zero and non-NA values from a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         float: The product of non-zero and non-NA values; returns zero if no such product is computed.
@@ -2131,7 +2131,7 @@ def count_reduce_nb(arr: tp.Array1d) -> int:
     """Return the count of non-NA values in a 1D array.
 
     Args:
-        arr (Array1d): The input array.
+        arr (Array1d): Input array.
 
     Returns:
         int: The number of non-NA entries in the array.

@@ -131,7 +131,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Map enumerated value(s) from the input.
 
         Args:
-            value (ArrayLike): The input value or container of values to map.
+            value (ArrayLike): Input value or container of values to map.
             look_for_type (Optional[type]): Type to search for within value to apply mapping.
             **kwargs: Keyword arguments for `vectorbtpro.utils.enum_.map_enum_fields` or
                 `BasePreparer.map_enum_value`.
@@ -167,7 +167,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Prepare a timedelta-like object for broadcasting.
 
         Args:
-            td_obj (object): The input timedelta-like object, which can be a string,
+            td_obj (object): Input timedelta-like object, which can be a string,
                 timedelta, DateOffset, or Timedelta.
             old_as_keys (bool): Flag indicating whether old keys should be preserved.
 
@@ -193,7 +193,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Prepare a datetime-like object for broadcasting.
 
         Args:
-            dt_obj (object): The input datetime-like object, which can be a string, time,
+            dt_obj (object): Input datetime-like object, which can be a string, time,
                 timedelta, DateOffset, or Timedelta.
             old_as_keys (bool): Flag indicating whether old keys should be preserved during processing.
             last_before (Optional[bool]): Flag indicating if the last valid index before the target should be used.
@@ -271,7 +271,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Get the raw default value of an argument from settings.
 
         Args:
-            arg_name (str): The name of the argument.
+            arg_name (str): Name of the argument.
             is_dict (bool): Flag indicating if the default value should be treated as a dictionary.
 
         Returns:
@@ -291,7 +291,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Retrieve the raw value of an argument from the configuration.
 
         Args:
-            arg_name (str): The name of the argument.
+            arg_name (str): Name of the argument.
             is_dict (bool): Flag indicating if the argument is expected to be a dictionary.
             has_default (bool): Flag indicating if a default value should be used when the argument is not present.
 
@@ -343,7 +343,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Return the default value for the specified argument based on its configuration.
 
         Args:
-            arg_name (str): The name of the argument.
+            arg_name (str): Name of the argument.
 
         Returns:
             Any: The processed default value for the argument.
@@ -373,7 +373,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Return the mapped argument value based on its configuration.
 
         Args:
-            arg_name (str): The name of the argument.
+            arg_name (str): Name of the argument.
             use_idx_setter (bool): Whether to use the index setter if available.
             use_default (bool): Whether to use the default value from the configuration
                 if the argument is missing.
@@ -410,7 +410,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Return a prepared timedelta array.
 
         Args:
-            td_arr (ArrayLike): An input array of timedelta-like elements.
+            td_arr (ArrayLike): Input array of timedelta-like elements.
 
         Returns:
             ArrayLike: The processed timedelta array.
@@ -435,7 +435,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Return a prepared datetime array.
 
         Args:
-            dt_arr (ArrayLike): An input array of datetime-like elements.
+            dt_arr (ArrayLike): Input array of datetime-like elements.
 
         Returns:
             ArrayLike: The processed datetime array.
@@ -460,7 +460,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Convert a prepared timedelta array to its nanoseconds representation.
 
         Args:
-            td_arr (ArrayLike): An input timedelta array.
+            td_arr (ArrayLike): Input timedelta array.
 
         Returns:
             ArrayLike: The array of nanoseconds.
@@ -472,7 +472,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Convert a prepared datetime array to its nanoseconds representation.
 
         Args:
-            dt_arr (ArrayLike): An input datetime array.
+            dt_arr (ArrayLike): Input datetime array.
 
         Returns:
             ArrayLike: The array of nanoseconds.
@@ -483,8 +483,8 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Return the processed argument after broadcasting and template substitution.
 
         Args:
-            arg_name (str): The name of the argument.
-            value (Optional[ArrayLike]): The raw value to prepare; if None,
+            arg_name (str): Name of the argument.
+            value (Optional[ArrayLike]): Raw value to prepare; if None,
                 the default post-argument is used.
 
         Returns:
@@ -518,9 +518,9 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Adapt a staticized dictionary to a user-defined function (UDF) by updating its import lines.
 
         Args:
-            staticized (Kwargs): A dictionary containing function configuration.
-            func (Union[str, Callable]): A function reference, name, or path.
-            func_name (str): The target function name.
+            staticized (Kwargs): Dictionary containing function configuration.
+            func (Union[str, Callable]): Function reference, name, or path.
+            func_name (str): Target function name.
 
         Returns:
             None
@@ -565,7 +565,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Find the target function by its name.
 
         Args:
-            target_func_name (str): The name of the target function.
+            target_func_name (str): Name of the target function.
 
         Returns:
             Callable: The found target function.
@@ -577,8 +577,8 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Return the dynamic target function based on the provided configuration.
 
         Args:
-            target_func_name (str): The name of the target function.
-            staticized (KwargsLike): A dictionary with function configuration or a function reference.
+            target_func_name (str): Name of the target function.
+            staticized (KwargsLike): Dictionary with function configuration or a function reference.
 
         Returns:
             Callable: The resolved target function.

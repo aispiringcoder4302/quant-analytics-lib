@@ -375,7 +375,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         If `mapping` is set to False, mapping is disabled and the function returns None.
 
         Args:
-            mapping (Union[None, bool, MappingLike]): The mapping configuration to resolve.
+            mapping (Union[None, bool, MappingLike]): Mapping configuration to resolve.
 
         Returns:
             Optional[Mapping]: The resolved mapping configuration.
@@ -400,7 +400,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Apply the resolved mapping configuration to the data.
 
         Args:
-            mapping (Union[None, bool, MappingLike]): The mapping configuration to apply.
+            mapping (Union[None, bool, MappingLike]): Mapping configuration to apply.
             **kwargs: Keyword arguments for `GenericAccessor.apply_mapping`.
 
         Returns:
@@ -421,8 +421,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Return a copy of the data with each value replaced by the value from `n` periods ago.
 
         Args:
-            n (Union[int, FrequencyLike]): The number of periods to shift the data.
-            fill_value (Scalar): The value to fill in for missing data.
+            n (Union[int, FrequencyLike]): Number of periods to shift the data.
+            fill_value (Scalar): Value to fill in for missing data.
             get_indexer_kwargs (KwargsLike): Keyword arguments for `pd.Index.get_indexer`.
             **kwargs: Keyword arguments for `GenericAccessor.fshift`.
 
@@ -445,7 +445,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         `n` previous periods is True.
 
         Args:
-            n (Union[int, FrequencyLike]): The number of periods to check for True values.
+            n (Union[int, FrequencyLike]): Number of periods to check for True values.
             **kwargs: Keyword arguments for `GenericAccessor.rolling_any`.
 
         Returns:
@@ -462,7 +462,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         `n` previous periods are True.
 
         Args:
-            n (Union[int, FrequencyLike]): The number of periods to check for True values.
+            n (Union[int, FrequencyLike]): Number of periods to check for True values.
             **kwargs: Keyword arguments for `GenericAccessor.rolling_all`.
 
         Returns:
@@ -1432,7 +1432,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         it performs broadcasting and template substitution and utilizes the meta mapping version.
 
         Args:
-            map_func_nb (Union[str, MapFunc, MapMetaFunc]): The mapping function to apply.
+            map_func_nb (Union[str, MapFunc, MapMetaFunc]): Mapping function to apply.
 
                 If provided as a string, selects the corresponding Numba function
                 from `nb` with the suffix "_map_nb".
@@ -2257,7 +2257,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Resample the underlying data using a specified rule and reduction function.
 
         Args:
-            rule (AnyRuleLike): A frequency-like rule that can be an instance of
+            rule (AnyRuleLike): Frequency-like rule that can be an instance of
                 `vectorbtpro.base.resampling.base.Resampler`, `pandas.core.resample.Resampler`,
                 or any object accepted by `pd.DataFrame.resample` when combined with `resample_kwargs`.
             reduce_func_nb (Union[str, ReduceFunc, GroupByReduceMetaFunc, RangeReduceMetaFunc]):
@@ -2268,7 +2268,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             use_groupby_apply (bool): If True, apply the reduction function using
                 `GenericAccessor.groupby_apply` with post-processing; otherwise, use
                 `GenericAccessor.resample_to_index`.
-            freq (Optional[FrequencyLike]): An optional frequency parameter that can override the default rule.
+            freq (Optional[FrequencyLike]): Optional frequency parameter that can override the default rule.
             resample_kwargs (KwargsLike): Keyword arguments for the `pd.DataFrame.resample` method.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -2617,7 +2617,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             flatten (bool): True to flatten grouped data before applying the reducing function.
         
                 When operating on grouped data, a flattened array is passed to `reduce_func_nb`.
-            order (str): The order in which to flatten the array ("C" for row-major or "F" for column-major).
+            order (str): Order in which to flatten the array ("C" for row-major or "F" for column-major).
             to_index (bool): True to convert positions to index labels when `returns_idx` is True.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -3290,7 +3290,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         `df.resample(closed='right', label='right').last().ffill()` on the target index.
 
         Args:
-            index (AnyRuleLike): A resampler instance or index-like object that defines the new index.
+            index (AnyRuleLike): Resampler instance or index-like object that defines the new index.
             freq (Union[None, bool, FrequencyLike]): Resampling frequency override.
             nan_value (Optional[Scalar]): Value used for missing data.
 
@@ -5008,7 +5008,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         otherwise, `transform` is applied.
 
         Args:
-            transformer (Transformer): An instance with `transform` and `fit_transform` methods.
+            transformer (Transformer): Instance with `transform` and `fit_transform` methods.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -5074,7 +5074,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         NaN values are filled using forward and backward fill.
 
         Args:
-            base (float): The base value to rebase the series.
+            base (float): Base value to rebase the series.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -5855,7 +5855,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Plot a Series as a line against another line.
 
         Args:
-            other (ArrayLike): The second array to compare, which will be broadcast to match the primary data.
+            other (ArrayLike): Second array to compare, which will be broadcast to match the primary data.
             column (Optional[Label]): Column identifier to select from inputs.
             trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the main series.
             other_trace_kwargs (Union[str, KwargsLike]): Keyword arguments for `plotly.graph_objects.Scatter` for the second series.
@@ -6010,7 +6010,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Plot a Series as a line and overlay it with a heatmap.
 
         Args:
-            other (ArrayLike): The second array to compare, which will be broadcast
+            other (ArrayLike): Second array to compare, which will be broadcast
                 to match the primary data.
             column (Optional[Label]): Column identifier to select from inputs.
             trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the line.
@@ -6970,8 +6970,8 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): The underlying data array.
-        mapping (Optional[MappingLike]): An optional mapping for metadata.
+        obj (Optional[ArrayLike]): Underlying data array.
+        mapping (Optional[MappingLike]): Optional mapping for metadata.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseSRAccessor` and `GenericAccessor`.
     """
 
@@ -7075,9 +7075,9 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
         `vectorbtpro.generic.nb.base.to_renko_1d_nb`.
 
         Args:
-            brick_size (ArrayLike): The brick size for constructing the Renko chart.
+            brick_size (ArrayLike): Brick size for constructing the Renko chart.
             relative (ArrayLike): Indicator specifying if the brick size is relative.
-            start_value (Optional[float]): The starting value for the Renko chart.
+            start_value (Optional[float]): Starting value for the Renko chart.
             max_out_len (Optional[int]): Maximum length of the output.
             reset_index (bool): Whether to reset the index of the resulting series.
             return_uptrend (bool): Whether to return the uptrend series along with the Renko series.
@@ -7128,9 +7128,9 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
         `vectorbtpro.generic.nb.base.to_renko_ohlc_1d_nb`.
 
         Args:
-            brick_size (ArrayLike): The brick size for constructing the OHLC Renko chart.
+            brick_size (ArrayLike): Brick size for constructing the OHLC Renko chart.
             relative (ArrayLike): Indicator specifying if the brick size is relative.
-            start_value (Optional[float]): The starting value for the Renko chart.
+            start_value (Optional[float]): Starting value for the Renko chart.
             max_out_len (Optional[int]): Maximum length of the output.
             reset_index (bool): Whether to reset the index of the resulting DataFrame.
             jitted (JittedOption): Option to control JIT compilation.
@@ -7170,8 +7170,8 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
 
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
-        obj (Optional[ArrayLike]): The underlying data object.
-        mapping (Optional[MappingLike]): A mapping for additional configuration.
+        obj (Optional[ArrayLike]): Underlying data object.
+        mapping (Optional[MappingLike]): Mapping for additional configuration.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseDFAccessor` and `GenericAccessor`.
     """
 
@@ -7192,7 +7192,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
         """Calculate the band value based on the given band name.
 
         Args:
-            band_name (str): The band name determining the calculation.
+            band_name (str): Band name determining the calculation.
 
                 Possible values include:
 

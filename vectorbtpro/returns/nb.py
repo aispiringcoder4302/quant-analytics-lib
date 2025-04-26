@@ -57,8 +57,8 @@ def get_return_nb(
     """Calculate return from given input and output values.
 
     Args:
-        input_value (float): The initial value used for the return calculation.
-        output_value (float): The final value used for the return calculation.
+        input_value (float): Initial value used for the return calculation.
+        output_value (float): Final value used for the return calculation.
         log_returns (bool): Flag to compute logarithmic returns.
         inf_to_nan (bool): If True, convert an infinite return to NaN.
         nan_to_zero (bool): If True, convert a NaN return to 0.
@@ -93,8 +93,8 @@ def returns_1d_nb(
     """Calculate returns from a 1-dimensional array.
 
     Args:
-        arr (Array1d): A 1-dimensional array of asset prices or values.
-        init_value (float): The initial value to use.
+        arr (Array1d): 1-dimensional array of asset prices or values.
+        init_value (float): Initial value to use.
 
             If NaN, the first element of `arr` is used.
         log_returns (bool): Flag to compute logarithmic returns.
@@ -136,7 +136,7 @@ def returns_nb(
     """Calculate returns for a 2-dimensional array.
 
     Args:
-        arr (Array2d): A 2-dimensional array of asset prices or values.
+        arr (Array2d): 2-dimensional array of asset prices or values.
         init_value (FlexArray1dLike): Initial value.
 
             Provided as a scalar or per column.
@@ -188,7 +188,7 @@ def mirror_returns_1d_nb(returns: tp.Array1d, log_returns: bool = False) -> tp.A
     For simple returns, the mirrored return is calculated as `(1 / (1 + R_t)) - 1`.
 
     Args:
-        returns (Array1d): An array of return values.
+        returns (Array1d): Array of return values.
         log_returns (bool): Flag indicating whether returns are logarithmic.
 
     Returns:
@@ -226,7 +226,7 @@ def mirror_returns_nb(
     """Calculate mirrored returns for a 2-dimensional array.
 
     Args:
-        returns (Array2d): A 2-dimensional array of return values.
+        returns (Array2d): 2-dimensional array of return values.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
@@ -270,8 +270,8 @@ def cumulative_returns_1d_nb(
     """Calculate cumulative returns from a 1-dimensional array of returns.
 
     Args:
-        returns (Array1d): An array of individual return values.
-        start_value (float): The initial value used to scale the cumulative returns.
+        returns (Array1d): Array of individual return values.
+        start_value (float): Initial value used to scale the cumulative returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
 
     Returns:
@@ -1029,7 +1029,7 @@ def max_drawdown_nb(
     """Return the maximum drawdown values for each column using a 1-dimensional drawdown computation.
 
     Args:
-        returns (Array2d): A 2-dimensional array of returns.
+        returns (Array2d): 2-dimensional array of returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
@@ -1085,7 +1085,7 @@ def rolling_max_drawdown_nb(
     """Return the rolling maximum drawdown values over a specified window for each column.
 
     Args:
-        returns (Array2d): A 2-dimensional array of returns.
+        returns (Array2d): 2-dimensional array of returns.
         window (int): Window size.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
@@ -1135,7 +1135,7 @@ def calmar_ratio_1d_nb(
     """Return the Calmar ratio (drawdown ratio) of a strategy based on 1-dimensional returns.
 
     Args:
-        returns (Array1d): A 1-dimensional array of returns.
+        returns (Array1d): 1-dimensional array of returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for scaling the ratio;
@@ -1186,7 +1186,7 @@ def calmar_ratio_nb(
     """Return the Calmar ratio for each column of a 2-dimensional returns array.
 
     Args:
-        returns (Array2d): A 2-dimensional array of returns.
+        returns (Array2d): 2-dimensional array of returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[FlexArray1dLike]): Number of periods.
@@ -1258,7 +1258,7 @@ def rolling_calmar_ratio_nb(
     """Return the rolling Calmar ratio values over a specified window for each column.
 
     Args:
-        returns (Array2d): A 2-dimensional array of returns.
+        returns (Array2d): 2-dimensional array of returns.
         window (int): Window size.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
@@ -1305,7 +1305,7 @@ def deannualized_return_nb(ret: float, ann_factor: float) -> float:
     """Return the deannualized return based on the annualized return and annualization factor.
 
     Args:
-        ret (float): The annualized return.
+        ret (float): Annualized return.
         ann_factor (float): Annualization factor.
 
     Returns:
@@ -1323,7 +1323,7 @@ def omega_ratio_1d_nb(returns: tp.Array1d) -> float:
     """Return the Omega ratio of a strategy based on 1-dimensional returns.
 
     Args:
-        returns (Array1d): A 1-dimensional array of returns.
+        returns (Array1d): 1-dimensional array of returns.
 
     Returns:
         float: The Omega ratio, calculated as the sum of positive returns divided by

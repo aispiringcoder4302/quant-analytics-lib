@@ -37,8 +37,8 @@ def ohlc_every_1d_nb(price: tp.Array1d, n: tp.FlexArray1dLike) -> tp.Array2d:
     """Aggregate every n price points into an OHLC bar.
 
     Args:
-        price (Array1d): A one-dimensional array of price data.
-        n (FlexArray1dLike): The number of consecutive price points to aggregate.
+        price (Array1d): One-dimensional array of price data.
+        n (FlexArray1dLike): Number of consecutive price points to aggregate.
         
             Provided as a scalar or per bar.
 

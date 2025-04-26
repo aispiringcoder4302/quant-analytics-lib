@@ -84,7 +84,7 @@ def generate_stop_signal_nb(
         stop_exit_type (int): Stop exit type determining how to process the stop condition.
 
             See `vectorbtpro.portfolio.enums.StopExitType`.
-        accumulate (int): The current accumulation mode flag.
+        accumulate (int): Current accumulation mode flag.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
 
@@ -274,7 +274,7 @@ def resolve_opposite_entry_nb(
         upon_opposite_entry (int): Mode for resolving opposite entry signals.
 
             See `vectorbtpro.portfolio.enums.OppositeEntryMode`.
-        accumulate (int): The current accumulation mode flag.
+        accumulate (int): Current accumulation mode flag.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
 
@@ -340,13 +340,13 @@ def signal_to_size_nb(
 
     Args:
         position_now (float): Current position size.
-        val_price_now (float): The current asset price used for value-based calculations.
-        value_now (float): The current total portfolio value.
+        val_price_now (float): Current asset price used for value-based calculations.
+        value_now (float): Current total portfolio value.
         is_long_entry (bool): True to indicate a long entry signal.
         is_long_exit (bool): True to indicate a long exit signal.
         is_short_entry (bool): True to indicate a short entry signal.
         is_short_exit (bool): True to indicate a short exit signal.
-        size (float): The magnitude of the trading signal.
+        size (float): Magnitude of the trading signal.
         size_type (int): Identifier for the type of size specification.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
@@ -7206,10 +7206,10 @@ def dir_to_ls_signals_nb(
     otherwise, they are allocated as a long entry and a short exit.
 
     Args:
-        target_shape (Shape): The shape of the output arrays.
-        entries (FlexArray2d): A 2D array of boolean entry signals.
-        exits (FlexArray2d): A 2D array of boolean exit signals.
-        direction (FlexArray2d): A 2D array specifying the trade direction.
+        target_shape (Shape): Shape of the output arrays.
+        entries (FlexArray2d): 2D array of boolean entry signals.
+        exits (FlexArray2d): 2D array of boolean exit signals.
+        direction (FlexArray2d): 2D array specifying the trade direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
 
@@ -7256,7 +7256,7 @@ def no_adjust_func_nb(c: SignalContext, *args) -> None:
     """Placeholder function that performs no adjustments.
 
     Args:
-        c (SignalContext): The signal context for the current computation.
+        c (SignalContext): Signal context for the current computation.
         *args: Additional positional arguments.
 
     Returns:
@@ -7307,7 +7307,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
     it returns an exit signal accordingly.
 
     Args:
-        c (SignalContext): The signal context holding trading information.
+        c (SignalContext): Signal context holding trading information.
         direction (int): Signal direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
@@ -7365,11 +7365,11 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
     Before computing the signals, the function calls the adjustment function to update the signal context.
 
     Args:
-        c (SignalContext): The signal context with trading state.
-        entries (FlexArray2d): A 2D array of boolean entry signals.
-        exits (FlexArray2d): A 2D array of boolean exit signals.
-        direction (FlexArray2d): A 2D array specifying the trade direction.
-        from_ago (FlexArray2d): A 2D array used to adjust the time index for signal lookup.
+        c (SignalContext): Signal context with trading state.
+        entries (FlexArray2d): 2D array of boolean entry signals.
+        exits (FlexArray2d): 2D array of boolean exit signals.
+        direction (FlexArray2d): 2D array specifying the trade direction.
+        from_ago (FlexArray2d): 2D array used to adjust the time index for signal lookup.
         adjust_func_nb (AdjustFunc): Function to adjust the context before signal generation.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
@@ -7420,12 +7420,12 @@ def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
     prior to retrieving the signal.
 
     Args:
-        c (SignalContext): The trading signal context.
-        long_entries (FlexArray2d): A 2D array of boolean long entry signals.
-        long_exits (FlexArray2d): A 2D array of boolean long exit signals.
-        short_entries (FlexArray2d): A 2D array of boolean short entry signals.
-        short_exits (FlexArray2d): A 2D array of boolean short exit signals.
-        from_ago (FlexArray2d): A 2D array used as a time offset for signal selection.
+        c (SignalContext): Trading signal context.
+        long_entries (FlexArray2d): 2D array of boolean long entry signals.
+        long_exits (FlexArray2d): 2D array of boolean long exit signals.
+        short_entries (FlexArray2d): 2D array of boolean short entry signals.
+        short_exits (FlexArray2d): 2D array of boolean short exit signals.
+        from_ago (FlexArray2d): 2D array used as a time offset for signal selection.
         adjust_func_nb (AdjustFunc): Function to adjust the context before signal generation.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
 

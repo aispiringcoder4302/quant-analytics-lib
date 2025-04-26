@@ -466,7 +466,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         wrapper (ArrayWrapper): Array wrapper instance.
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
-        records_arr (array_like): A structured NumPy array of records.
+        records_arr (array_like): Structured NumPy array of records.
 
             Must contain the fields `id` (record index) and `col` (column index).
         col_mapper (ColumnMapper): Column mapper if already known.
@@ -1175,8 +1175,8 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             field (str): Field identifier.
-            setting (str): The key of the setting.
-            default (Any): The default value to return if the setting is not present.
+            setting (str): Key of the setting.
+            default (Any): Default value to return if the setting is not present.
 
         Returns:
             Any: The value of the specified setting or the default value.
@@ -1936,7 +1936,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         class and substituting class-specific values.
 
         Args:
-            source_cls (Optional[type]): The source class from which to extract field
+            source_cls (Optional[type]): Source class from which to extract field
                 configuration documentation.
 
                 Defaults to `Records` if not provided.
@@ -1961,7 +1961,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             __pdoc__ (dict): Dictionary in which the documentation for the field
                 configuration will be updated.
-            source_cls (Optional[type]): The source class from which to extract
+            source_cls (Optional[type]): Source class from which to extract
                 field configuration documentation.
 
         Returns:

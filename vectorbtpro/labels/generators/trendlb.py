@@ -53,7 +53,7 @@ class _TRENDLB(TRENDLB):
         """Plot the median of `TRENDLB.high` and `TRENDLB.low` and overlay it with a heatmap of `TRENDLB.labels`.
 
         Args:
-            column (Optional[Label]): The column from the indicator data to plot.
+            column (Optional[Label]): Column from the indicator data to plot.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:

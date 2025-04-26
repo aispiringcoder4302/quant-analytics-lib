@@ -460,7 +460,7 @@ def is_cacheable_function(cacheable: tp.Any) -> bool:
     """Determine whether the provided object is a cacheable function.
 
     Args:
-        cacheable (Any): The object to evaluate for cacheable function behavior.
+        cacheable (Any): Object to evaluate for cacheable function behavior.
 
     Returns:
         bool: True if the object is a cacheable function, False otherwise.
@@ -478,7 +478,7 @@ def is_cacheable_property(cacheable: tp.Any) -> bool:
     """Determine whether the provided object is a cacheable property.
 
     Args:
-        cacheable (Any): The object to evaluate for cacheable property behavior.
+        cacheable (Any): Object to evaluate for cacheable property behavior.
 
     Returns:
         bool: True if the object is a cacheable property, False otherwise.
@@ -490,7 +490,7 @@ def is_cacheable_method(cacheable: tp.Any) -> bool:
     """Determine whether the provided object is a cacheable method.
 
     Args:
-        cacheable (Any): The object to evaluate for cacheable method behavior.
+        cacheable (Any): Object to evaluate for cacheable method behavior.
 
     Returns:
         bool: True if the object is a cacheable method, False otherwise.
@@ -508,7 +508,7 @@ def is_bindable_cacheable(cacheable: tp.Any) -> bool:
     """Determine whether the provided object is a bindable cacheable suitable for instance binding.
 
     Args:
-        cacheable (Any): The object to evaluate for bindable cacheable behavior.
+        cacheable (Any): Object to evaluate for bindable cacheable behavior.
 
     Returns:
         bool: True if the object is bindable, False otherwise.
@@ -520,7 +520,7 @@ def is_cacheable(cacheable: tp.Any) -> bool:
     """Determine whether the provided object is cacheable.
 
     Args:
-        cacheable (Any): The object to evaluate for cacheable behavior.
+        cacheable (Any): Object to evaluate for cacheable behavior.
 
     Returns:
         bool: True if the object is cacheable, False otherwise.
@@ -532,7 +532,7 @@ def get_obj_id(instance: object) -> tp.Tuple[type, int]:
     """Retrieve the type and unique identifier of the given instance.
 
     Args:
-        instance (object): The instance whose identity is being retrieved.
+        instance (object): Instance whose identity is being retrieved.
 
     Returns:
         Tuple[type, int]: A tuple containing the instance's type and its id.
@@ -546,7 +546,7 @@ def instance_converter(
     """Convert the provided instance to a weak reference if applicable.
 
     Args:
-        instance (Optional[Union[Cacheable, ReferenceType]]): The instance to convert.
+        instance (Optional[Union[Cacheable, ReferenceType]]): Instance to convert.
 
     Returns:
         Optional[Union[Cacheable, ReferenceType]]: A weak reference to the instance
@@ -842,7 +842,7 @@ class CARule(DefineMixin):
         """Return whether the specified setup satisfies the rule criteria.
 
         Args:
-            setup (CABaseSetup): The setup instance to evaluate.
+            setup (CABaseSetup): Setup instance to evaluate.
 
         Returns:
             bool: True if the setup meets the rule conditions, otherwise False.
@@ -884,7 +884,7 @@ class CARule(DefineMixin):
         """Execute the enforce function on the setup if it satisfies the rule criteria.
 
         Args:
-            setup (CABaseSetup): The setup instance to process.
+            setup (CABaseSetup): Setup instance to process.
 
         Returns:
             None
@@ -975,7 +975,7 @@ class CacheableRegistry(Base):
         """Return the setup corresponding to the specified hash.
 
         Args:
-            hash_ (int): The hash of the setup.
+            hash_ (int): Hash of the setup.
 
         Returns:
             Optional[CABaseSetup]: The setup instance if found; otherwise, None.
@@ -994,7 +994,7 @@ class CacheableRegistry(Base):
         """Return whether the specified setup is registered.
 
         Args:
-            setup (CABaseSetup): The setup instance to check.
+            setup (CABaseSetup): Setup instance to check.
 
         Returns:
             bool: True if the setup is registered; otherwise, False.
@@ -1005,7 +1005,7 @@ class CacheableRegistry(Base):
         """Register a new setup.
 
         Args:
-            setup (CABaseSetup): The setup instance to register.
+            setup (CABaseSetup): Setup instance to register.
 
         Returns:
             None
@@ -1029,7 +1029,7 @@ class CacheableRegistry(Base):
         To also deregister its children, call `CASetupDelegatorMixin.deregister`.
 
         Args:
-            setup (CABaseSetup): The setup instance to deregister.
+            setup (CABaseSetup): Setup instance to deregister.
 
         Returns:
             None
@@ -1051,7 +1051,7 @@ class CacheableRegistry(Base):
         """Register a new caching rule.
 
         Args:
-            rule (CARule): The rule instance to register.
+            rule (CARule): Rule instance to register.
 
         Returns:
             None
@@ -1062,7 +1062,7 @@ class CacheableRegistry(Base):
         """Deregister the specified caching rule.
 
         Args:
-            rule (CARule): The rule instance to deregister.
+            rule (CARule): Rule instance to deregister.
 
         Returns:
             None
@@ -1077,8 +1077,8 @@ class CacheableRegistry(Base):
         """Return the run setup for the specified cacheable and instance.
 
         Args:
-            cacheable (cacheable): The cacheable object.
-            instance (Optional[Cacheable]): The related instance.
+            cacheable (cacheable): Cacheable object.
+            instance (Optional[Cacheable]): Related instance.
 
         Returns:
             Optional[CARunSetup]: The run setup if available and valid; otherwise, None.
@@ -1093,7 +1093,7 @@ class CacheableRegistry(Base):
         """Return the unbound setup for the specified cacheable.
 
         Args:
-            cacheable (cacheable): The cacheable object.
+            cacheable (cacheable): Cacheable object.
 
         Returns:
             Optional[CAUnboundSetup]: The unbound setup if available; otherwise, None.
@@ -1104,7 +1104,7 @@ class CacheableRegistry(Base):
         """Return the instance setup for the specified cacheable instance.
 
         Args:
-            instance (Cacheable): The cacheable instance.
+            instance (Cacheable): Cacheable instance.
 
         Returns:
             Optional[CAInstanceSetup]: The instance setup if available and valid; otherwise, None.
@@ -1119,7 +1119,7 @@ class CacheableRegistry(Base):
         """Return the class setup for the specified cacheable class.
 
         Args:
-            cls (Type[Cacheable]): The cacheable class.
+            cls (Type[Cacheable]): Cacheable class.
 
         Returns:
             Optional[CAClassSetup]: The class setup if available; otherwise, None.
@@ -1146,7 +1146,7 @@ class CacheableRegistry(Base):
 
                 They are parsed with `CAQuery.parse`.
             collapse (bool): If True, remove child setups belonging to any matched parent setup.
-            kind (Optional[MaybeIterable[str]]): A string or a collection of strings specifying
+            kind (Optional[MaybeIterable[str]]): String or a collection of strings specifying
                 the types of setups to match. Supported values:
 
                 * "class": Matches class setups (instances of `CAClassSetup`).
@@ -1835,8 +1835,8 @@ class CASetupDelegatorMixin(CAMetrics):
         If a setup is an instance of `CASetupDelegatorMixin`, it should also accept an `exclude` keyword argument.
 
         Args:
-            func (Callable): A function to apply to each child setup.
-            exclude (Optional[MaybeIterable[CABaseSetup]]): An iterable of child setups to exclude from delegation.
+            func (Callable): Function to apply to each child setup.
+            exclude (Optional[MaybeIterable[CABaseSetup]]): Iterable of child setups to exclude from delegation.
             **kwargs: Keyword arguments for `func`.
 
         Returns:
@@ -2028,9 +2028,9 @@ class CASetupDelegatorMixin(CAMetrics):
             readable (bool): If True, use the readable string representation for setups.
             short_str (bool): If True, use the short string representation when `readable` is False.
             index_by_hash (bool): If True, set the DataFrame index to the setup hash.
-            filter_func (Callable): A function to filter child setups.
-            include (Sequence[str]): A list of column names to include in the DataFrame.
-            exclude (Sequence[str]): A list of column names to exclude from the DataFrame.
+            filter_func (Callable): Function to filter child setups.
+            include (Sequence[str]): List of column names to include in the DataFrame.
+            exclude (Sequence[str]): List of column names to exclude from the DataFrame.
 
         Returns:
             Optional[pd.DataFrame]: A DataFrame containing the stats of child setups,
@@ -2161,9 +2161,9 @@ def assert_value_not_none(instance: object, attribute: attr.Attribute, value: tp
     """Assert that the provided value is not None.
 
     Args:
-        instance (object): The instance on which the attribute is being set.
-        attribute (Attribute): The attribute for which the value is being validated.
-        value (Any): The value to check.
+        instance (object): Instance on which the attribute is being set.
+        attribute (Attribute): Attribute for which the value is being validated.
+        value (Any): Value to check.
 
     Returns:
         None
@@ -2205,7 +2205,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         """Return an ordered list of cacheable superclasses.
 
         Args:
-            cls (Type[Cacheable]): A cacheable class whose superclasses are retrieved.
+            cls (Type[Cacheable]): Cacheable class whose superclasses are retrieved.
 
         Returns:
             List[Type[Cacheable]]: An ordered list of cacheable superclasses, excluding the class itself.
@@ -2223,7 +2223,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
         Args:
             registry (CacheableRegistry): Registry to retrieve class setups.
-            cls (Type[Cacheable]): The cacheable class to analyze.
+            cls (Type[Cacheable]): Cacheable class to analyze.
 
         Returns:
             List[CAClassSetup]: A list of setups corresponding to each cacheable superclass.
@@ -2239,7 +2239,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         """Return an ordered list of cacheable subclasses.
 
         Args:
-            cls (Type[Cacheable]): The cacheable class to examine.
+            cls (Type[Cacheable]): Cacheable class to examine.
 
         Returns:
             List[Type[Cacheable]]: An ordered list of all cacheable subclasses, excluding the class itself.
@@ -2258,7 +2258,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
         Args:
             registry (CacheableRegistry): Registry used to retrieve class setups.
-            cls (Type[Cacheable]): The cacheable class to examine.
+            cls (Type[Cacheable]): Cacheable class to examine.
 
         Returns:
             List[CAClassSetup]: A list of setups corresponding to each cacheable subclass.
@@ -2274,7 +2274,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         """Return a set of unbound cacheable members.
 
         Args:
-            cls (Type[Cacheable]): A cacheable class.
+            cls (Type[Cacheable]): Cacheable class.
 
         Returns:
             Set[cacheableT]: A set containing unbound cacheable members.
@@ -2288,7 +2288,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
         Args:
             registry (CacheableRegistry): Registry used to retrieve unbound setups.
-            cls (Type[Cacheable]): A cacheable class to inspect for unbound cacheable members.
+            cls (Type[Cacheable]): Cacheable class to inspect for unbound cacheable members.
 
         Returns:
             Set[CAUnboundSetup]: A set of setups corresponding to each unbound cacheable member.
@@ -2309,7 +2309,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         """Retrieve or create a cacheable class setup.
 
         Args:
-            cls_ (Type[Cacheable]): The cacheable class to retrieve or register.
+            cls_ (Type[Cacheable]): Cacheable class to retrieve or register.
             registry (CacheableRegistry): Registry to use for retrieving the setup.
             **kwargs: Keyword arguments for `CAClassSetup`.
 
@@ -2485,8 +2485,8 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
         """Get or register a new instance setup from a `CacheableRegistry`.
 
         Args:
-            instance (Cacheable): The cacheable instance for which to retrieve or create a setup.
-            registry (CacheableRegistry): The registry to query for an existing setup.
+            instance (Cacheable): Cacheable instance for which to retrieve or create a setup.
+            registry (CacheableRegistry): Registry to query for an existing setup.
             **kwargs: Keyword arguments for `CAInstanceSetup`.
 
         Returns:
@@ -2663,8 +2663,8 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
         """Get or register a new unbound setup from a `CacheableRegistry`.
 
         Args:
-            cacheable (cacheable): The cacheable property or method for which to retrieve or create a setup.
-            registry (CacheableRegistry): The registry to query for an existing setup.
+            cacheable (cacheable): Cacheable property or method for which to retrieve or create a setup.
+            registry (CacheableRegistry): Registry to query for an existing setup.
             **kwargs: Keyword arguments for `CAUnboundSetup`.
 
         Returns:
@@ -3262,7 +3262,7 @@ class CAQueryDelegator(CASetupDelegatorMixin):
 
     Args:
         *args: Positional arguments for querying setups.
-        registry (CacheableRegistry): The registry used to match setups.
+        registry (CacheableRegistry): Registry used to match setups.
         collapse (bool): Flag indicating whether to collapse matching setups.
         **kwargs: Keyword arguments for querying setups.
     """
@@ -3427,12 +3427,12 @@ class CachingDisabled(Base):
     """Context manager to temporarily disable caching based on a query.
 
     Args:
-        query_like (Optional[Any]): A value used for parsing the query via `CAQuery.parse`.
+        query_like (Optional[Any]): Value used for parsing the query via `CAQuery.parse`.
         use_base_cls (bool): Determines whether the base class is used during query parsing.
         kind (Optional[MaybeIterable[str]]): Specifies the kinds of setups to filter.
         exclude (Optional[MaybeIterable[CABaseSetup]]): Setups to exclude from caching.
         filter_func (Optional[Callable]): Function used to filter setups.
-        registry (CacheableRegistry): The registry instance for caching setups.
+        registry (CacheableRegistry): Registry instance for caching setups.
         disable_whitelist (bool): Whether to disable the whitelist.
         disable_machinery (bool): Whether to disable caching machinery.
         clear_cache (bool): Whether to clear the cache when disabling caching.

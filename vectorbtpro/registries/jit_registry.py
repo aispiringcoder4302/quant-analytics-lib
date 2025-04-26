@@ -377,7 +377,7 @@ def get_func_full_name(func: tp.Callable) -> str:
     Concatenates the function's module and name.
 
     Args:
-        func (Callable): The function for which to retrieve the full name.
+        func (Callable): Function for which to retrieve the full name.
 
     Returns:
         str: The full name of the function.
@@ -516,9 +516,9 @@ class JITRegistry(Base):
         """Register a jitted setup.
 
         Args:
-            jitable_setup (JitableSetup): The associated jitable setup instance.
+            jitable_setup (JitableSetup): Associated jitable setup instance.
             jitter (Jitter): Jitter instance used for decoration.
-            jitted_func (Callable): The jitted (decorated) version of the function.
+            jitted_func (Callable): Jitted (decorated) version of the function.
 
         Returns:
             JittedSetup: The registered `JittedSetup` instance.
@@ -573,7 +573,7 @@ class JITRegistry(Base):
         """Match jitable setups against an expression evaluated within each setup's context.
 
         Args:
-            expression (str): An expression to evaluate against each setup's context.
+            expression (str): Expression to evaluate against each setup's context.
             context (KwargsLike): Additional context for template substitution.
 
         Returns:
@@ -601,8 +601,8 @@ class JITRegistry(Base):
         """Match jitted setups for a given jitable setup using an expression evaluated within each setup's context.
 
         Args:
-            jitable_setup (JitableSetup): The jitable setup for which to match jitted setups.
-            expression (str): An expression to evaluate against each setup's context.
+            jitable_setup (JitableSetup): Jitable setup for which to match jitted setups.
+            expression (str): Expression to evaluate against each setup's context.
             context (KwargsLike): Additional context for template substitution.
 
         Returns:
@@ -652,14 +652,14 @@ class JITRegistry(Base):
         `task_id_or_func` is returned when the task id is not found in `JITRegistry.jitable_setups`.
 
         Args:
-            task_id_or_func (Union[Hashable, Callable]): A task identifier or a function.
+            task_id_or_func (Union[Hashable, Callable]): Task identifier or a function.
 
                 For details on valid formats, see `register_jitted`.
-            jitter (Optional[Union[JitterLike, CustomTemplate]]): A jitter identifier or template.
-            disable (Optional[Union[bool, CustomTemplate]]): A flag or template to disable decoration.
-            disable_resolution (Optional[bool]): A flag to disable the resolution process.
-            allow_new (Optional[bool]): A flag to allow creating a new jitted setup if none is found.
-            register_new (Optional[bool]): A flag to register a new jitted setup.
+            jitter (Optional[Union[JitterLike, CustomTemplate]]): Jitter identifier or template.
+            disable (Optional[Union[bool, CustomTemplate]]): Flag or template to disable decoration.
+            disable_resolution (Optional[bool]): Flag to disable the resolution process.
+            allow_new (Optional[bool]): Flag to allow creating a new jitted setup if none is found.
+            register_new (Optional[bool]): Flag to register a new jitted setup.
             return_missing_task (bool): If True, returns `task_id_or_func` when the task is not registered.
             template_context (KwargsLike): Additional context for template substitution.
             tags (Optional[set]): Additional tags for the jitted setup.
@@ -804,10 +804,10 @@ class JITRegistry(Base):
         corresponding jitted function.
 
         Args:
-            task_id (Union[Hashable, Callable]): A task identifier or a function.
+            task_id (Union[Hashable, Callable]): Task identifier or a function.
 
                 Specifies the task for which the option is applied.
-            option (JittedOption): The option used to configure jitting.
+            option (JittedOption): Option used to configure jitting.
             **kwargs: Keyword arguments for `vectorbtpro.utils.jitting.resolve_jitted_kwargs`.
 
         Returns:
@@ -847,13 +847,13 @@ def register_jitted(
     in `vectorbtpro._settings.jitting`.
 
     Args:
-        py_func (Optional[Callable]): The function to be decorated.
+        py_func (Optional[Callable]): Function to be decorated.
 
             If None, returns the decorator.
-        task_id_or_func (Optional[Union[Hashable, Callable]]): A task identifier or a callable
+        task_id_or_func (Optional[Union[Hashable, Callable]]): Task identifier or a callable
             from which the task identifier is derived.
-        registry (JITRegistry): The registry used to register the decorated function.
-        tags (Optional[set]): A set of tags associated with the function.
+        registry (JITRegistry): Registry used to register the decorated function.
+        tags (Optional[set]): Set of tags associated with the function.
         **options: Keyword arguments for configuration.
 
     Returns:

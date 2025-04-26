@@ -43,7 +43,7 @@ class _FIXLB(FIXLB):
         """Plot `FIXLB.close` and overlay it with a heatmap of `FIXLB.labels`.
 
         Args:
-            column (Optional[Label]): The column to plot.
+            column (Optional[Label]): Column to plot.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:

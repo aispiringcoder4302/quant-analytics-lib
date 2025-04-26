@@ -1119,7 +1119,7 @@ class MappedArray(Analyzable):
         """Compute a boolean mask that identifies the top N elements within each column or group.
 
         Args:
-            n (int): The number of top elements to select.
+            n (int): Number of top elements to select.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -1151,7 +1151,7 @@ class MappedArray(Analyzable):
         """Compute a boolean mask that identifies the bottom N elements within each column or group.
 
         Args:
-            n (int): The number of bottom elements to select.
+            n (int): Number of bottom elements to select.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -1184,7 +1184,7 @@ class MappedArray(Analyzable):
         """Filter the mapped array to include only the top N elements within each column or group.
 
         Args:
-            n (int): The number of top elements to select.
+            n (int): Number of top elements to select.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -1212,7 +1212,7 @@ class MappedArray(Analyzable):
         """Filter the mapped array to include only the bottom N elements within each column or group.
 
         Args:
-            n (int): The number of bottom elements to select.
+            n (int): Number of bottom elements to select.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -1622,7 +1622,7 @@ class MappedArray(Analyzable):
         """Return the n-th element for each column or group.
 
         Args:
-            n (int): The index of the element to return.
+            n (int): Index of the element to return.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -1677,7 +1677,7 @@ class MappedArray(Analyzable):
         """Return the index of the n-th element for each column or group.
 
         Args:
-            n (int): The index of the element whose position is to be returned.
+            n (int): Index of the element whose position is to be returned.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.

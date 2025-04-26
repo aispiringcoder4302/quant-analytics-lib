@@ -29,11 +29,11 @@ class SplitterCV(BaseCrossValidator, Base):
     `vectorbtpro.generic.splitting.base.Splitter`.
 
     Args:
-        splitter (Union[None, str, Splitter, Callable]): The splitter instance, factory name,
+        splitter (Union[None, str, Splitter, Callable]): Splitter instance, factory name,
             or factory function.
 
             If None, it is determined automatically using the guess method of the splitter class.
-        splitter_cls (Optional[Type[Splitter]]): The splitter class used as the factory.
+        splitter_cls (Optional[Type[Splitter]]): Splitter class used as the factory.
 
             Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
         split_group_by (AnyGroupByLike): Grouping specification for defining splits.

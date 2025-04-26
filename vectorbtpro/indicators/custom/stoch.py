@@ -99,7 +99,7 @@ class _STOCH(STOCH):
         """Plot `STOCH.slow_k` and `STOCH.slow_d`.
 
         Args:
-            column (Optional[Label]): The name of the column to select for plotting.
+            column (Optional[Label]): Name of the column to select for plotting.
             limits (Tuple[float, float]): Lower and upper y-axis limits for the filled range.
             fast_k_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `STOCH.fast_k`.
             slow_k_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `STOCH.slow_k`.

@@ -424,7 +424,7 @@ class Ranges(PriceRecords):
         """Filter out ranges shorter than a specified minimum duration.
 
         Args:
-            min_duration (Union[str, int, FrequencyLike]): The minimum allowed duration.
+            min_duration (Union[str, int, FrequencyLike]): Minimum allowed duration.
             real (bool): Whether to use real duration for filtering.
             **kwargs: Keyword arguments for `Ranges.apply_mask`.
 
@@ -447,7 +447,7 @@ class Ranges(PriceRecords):
         """Filter out ranges longer than a specified maximum duration.
 
         Args:
-            max_duration (Union[str, int, FrequencyLike]): The maximum allowed duration.
+            max_duration (Union[str, int, FrequencyLike]): Maximum allowed duration.
             real (bool): Whether to use real duration for filtering.
             **kwargs: Keyword arguments for `Ranges.apply_mask`.
 

@@ -100,12 +100,12 @@ class PolygonData(RemoteData):
         `vectorbtpro.data.custom.custom.CustomData.key_match`.
 
         Args:
-            pattern (Optional[str]): A pattern to filter symbols.
+            pattern (Optional[str]): Pattern to filter symbols.
 
                 Symbols that do not match this pattern are excluded.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
-            client (Optional[PolygonClient]): An existing client instance for API interaction.
+            client (Optional[PolygonClient]): Existing client instance for API interaction.
             client_config (dict-like): Parameters for initializing a client if one is not provided.
             **list_tickers_kwargs: Keyword arguments for `polygon.RESTClient.list_tickers`.
 
@@ -135,7 +135,7 @@ class PolygonData(RemoteData):
         Otherwise, a new client is instantiated using the supplied `client_config`.
 
         Args:
-            client (Optional[PolygonClient]): An existing client instance.
+            client (Optional[PolygonClient]): Existing client instance.
             **client_config: Keyword arguments for initializing the client.
 
         Returns:
@@ -179,27 +179,27 @@ class PolygonData(RemoteData):
         """Overrides `vectorbtpro.data.base.Data.fetch_symbol` to fetch data for a given symbol from Polygon.
 
         Args:
-            symbol (str): The symbol identifier to fetch data for.
+            symbol (str): Symbol identifier to fetch data for.
 
                 Supports the following APIs:
 
                 * Stocks and equities
                 * Currencies — symbol must be prefixed with `C:`
                 * Crypto — symbol must be prefixed with `X:`
-            client (Optional[PolygonClient]): A Polygon API client instance.
+            client (Optional[PolygonClient]): Polygon API client instance.
 
                 See `PolygonData.resolve_client`.
             client_config (DictLike): Configuration for the Polygon client.
 
                 See `PolygonData.resolve_client`.
-            start (Optional[DatetimeLike]): The starting datetime for the aggregate data window.
+            start (Optional[DatetimeLike]): Starting datetime for the aggregate data window.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (Optional[DatetimeLike]): The ending datetime for the aggregate data window.
+            end (Optional[DatetimeLike]): Ending datetime for the aggregate data window.
 
                 See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (Optional[str]): A human-readable time interval (e.g., "15 minutes").
-            tz (Optional[TimezoneLike]): The timezone to apply.
+            timeframe (Optional[str]): Human-readable time interval (e.g., "15 minutes").
+            tz (Optional[TimezoneLike]): Timezone to apply.
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             adjusted (Optional[bool]): Whether to adjust data for splits.

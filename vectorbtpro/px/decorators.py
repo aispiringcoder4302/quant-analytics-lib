@@ -34,7 +34,7 @@ def attach_px_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
     that accept a `data_frame` parameter or are named `imshow` as methods to the given class.
 
     Args:
-        cls (Type): The class to decorate by adding Plotly Express methods.
+        cls (Type): Class to decorate by adding Plotly Express methods.
 
     Returns:
         Type: The decorated class with Plotly Express methods attached.

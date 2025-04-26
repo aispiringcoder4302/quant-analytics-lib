@@ -26,7 +26,7 @@ def set_seed_nb(seed: int) -> None:
     """Set the seed for numba jitted functions.
 
     Args:
-        seed (int): The seed value for random number generation.
+        seed (int): Seed value for random number generation.
 
     Returns:
         None
@@ -38,7 +38,7 @@ def set_seed(seed: int) -> None:
     """Set seeds across random, NumPy, and numba contexts.
 
     Args:
-        seed (int): The seed value for random number generation.
+        seed (int): Seed value for random number generation.
 
     Returns:
         None
