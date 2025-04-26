@@ -129,17 +129,17 @@ def from_orders_nb(
             !!! note
                 Should be grouped only if cash sharing is enabled.
         open (FlexArray2dLike): Opening price.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
         high (FlexArray2dLike): High price.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
         low (FlexArray2dLike): Low price.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
         close (FlexArray2dLike): Closing price.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
         init_cash (FlexArray1dLike): Initial cash amount.
 
             Provided as a scalar or per group.
@@ -150,105 +150,105 @@ def from_orders_nb(
 
             Provided as a scalar or per column.
         cash_deposits (FlexArray2dLike): Cash deposits.
-
-            Provided as a scalar, or per row and/or group.
+        
+            Provided as a scalar, or per row, group, or element.
 
             Applied at the beginning of each timestamp.
         cash_earnings (FlexArray2dLike): Cash earnings.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             Applied at the end of each timestamp.
         cash_dividends (FlexArray2dLike): Cash dividends.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             Applied at the end of each timestamp.
         size (FlexArray2dLike): Order size.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size`.
         price (FlexArray2dLike): Order price.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.price`.
         size_type (FlexArray2dLike): Order size type.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_type`.
         fees (FlexArray2dLike): Transaction fee rate.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.fees`.
         fixed_fees (FlexArray2dLike): Fixed fee amount.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
         slippage (FlexArray2dLike): Slippage amount.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.slippage`.
         min_size (FlexArray2dLike): Minimum allowable order size.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.min_size`.
         max_size (FlexArray2dLike): Maximum allowable order size.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.max_size`.
         size_granularity (FlexArray2dLike): Granularity for order size.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity`.
         leverage (FlexArray2dLike): Leverage factor.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.leverage`.
         leverage_mode (FlexArray2dLike): Mode for leverage calculation.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.leverage_mode`.
         reject_prob (FlexArray2dLike): Probability of order rejection.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.reject_prob`.
         price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
         allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.allow_partial`.
 
             Does not apply when the order size is `np.inf`.
         raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.raise_reject`.
         log (FlexArray2dLike): Logging flag.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.log`.
         val_price (FlexArray2dLike): Valuation price.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.ValPriceType`.
 
@@ -256,8 +256,8 @@ def from_orders_nb(
                 (using `open` or a previously known value if `ffill_val_price` is True).
             * Any `np.inf` element is replaced by the current order price.
         from_ago (FlexArray2dLike): Lookback offset for price selection.
-
-            Provided as a scalar, or per row and/or column.
+        
+            Provided as a scalar, or per row, column, or element.
 
             Negative values are converted to positive to avoid look-ahead bias.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).

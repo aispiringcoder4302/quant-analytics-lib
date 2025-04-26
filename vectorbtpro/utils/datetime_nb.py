@@ -641,7 +641,9 @@ DTCS = DTCST()
 
 __pdoc__[
     "DTCS"
-] = f"""Status codes returned by `within_fixed_dtc_nb` and `within_periodic_dtc_nb`.
+] = f"""Datetime component status enumeration.
+
+Status codes returned by `within_fixed_dtc_nb` and `within_periodic_dtc_nb`.
 
 ```python
 {prettify_doc(DTCS)}

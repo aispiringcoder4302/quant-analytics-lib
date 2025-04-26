@@ -278,7 +278,7 @@ def rolling_reduce_1d_nb(
 
     Args:
         arr (Array1d): Input 1D array for computation.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         reduce_func_nb (ReduceFunc): Reduction function that accepts the array and additional arguments.
         *args: Positional arguments for `reduce_func_nb`.
@@ -332,7 +332,7 @@ def rolling_reduce_nb(
 
     Args:
         arr (Array2d): Input 2D array for computation.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         reduce_func_nb (ReduceFunc): Reduction function that accepts a 1D array and additional arguments.
         *args: Positional arguments for `reduce_func_nb`.
@@ -363,7 +363,7 @@ def rolling_reduce_two_1d_nb(
     Args:
         arr1 (Array1d): First input 1D array.
         arr2 (Array1d): Second input 1D array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         reduce_func_nb (ReduceFunc): Reduction function that accepts two arrays and additional arguments.
         *args: Positional arguments for `reduce_func_nb`.
@@ -420,7 +420,7 @@ def rolling_reduce_two_nb(
     Args:
         arr1 (Array2d): First input 2D array.
         arr2 (Array2d): Second input 2D array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         reduce_func_nb (ReduceFunc): Reduction function that accepts two 1D arrays and additional arguments.
         *args: Positional arguments for `reduce_func_nb`.
@@ -451,7 +451,7 @@ def rolling_reduce_1d_meta_nb(
     Args:
         n (int): Total number of rows.
         col (int): Column index for which the reduction is computed.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         reduce_func_nb (RangeReduceMetaFunc): Reduction function that accepts the start row index,
             end row index, column, and additional arguments.
@@ -497,7 +497,7 @@ def rolling_reduce_meta_nb(
 
     Args:
         target_shape (Shape): Shape of the target output array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         reduce_func_nb (RangeReduceMetaFunc): Reduction function that accepts the start row index,
             end row index, column, and additional arguments.
@@ -1824,7 +1824,7 @@ def proximity_reduce_nb(
 
     Args:
         arr (Array2d): The input 2D array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         reduce_func_nb (ProximityReduceMetaFunc): Function that accepts the flattened
             window array and additional arguments, and returns a single value.
         *args: Positional arguments for `reduce_func_nb`.
@@ -1858,7 +1858,7 @@ def proximity_reduce_meta_nb(
 
     Args:
         target_shape (Shape): The shape (rows, columns) of the target output array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         reduce_func_nb (ReduceFunc): Function that accepts start/end indices for rows and
             columns along with additional arguments, and returns a single value.
         *args: Positional arguments for `reduce_func_nb`.

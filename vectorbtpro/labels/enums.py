@@ -31,7 +31,7 @@ TrendLabelMode = TrendLabelModeT()
 
 __pdoc__[
     "TrendLabelMode"
-] = f"""Trend label mode.
+] = f"""Trend label mode enumeration.
 
 ```python
 {prettify_doc(TrendLabelMode)}

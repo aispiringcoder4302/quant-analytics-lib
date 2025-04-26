@@ -137,12 +137,18 @@ def returns_nb(
 
     Args:
         arr (Array2d): A 2-dimensional array of asset prices or values.
-        init_value (FlexArray1dLike): Initial values for each column.
+        init_value (FlexArray1dLike): Initial value.
+
+            Provided as a scalar or per column.
 
             If NaN, the first element of each column is used.
         log_returns (bool): If True, compute logarithmic returns; otherwise, compute simple returns.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: A 2-dimensional array containing calculated return values for each column.
@@ -223,7 +229,11 @@ def mirror_returns_nb(
         returns (Array2d): A 2-dimensional array of return values.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: A 2-dimensional array of mirrored return values.
@@ -315,7 +325,11 @@ def cumulative_returns_nb(
         start_value (float): Initial portfolio value.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Array of cumulative returns computed column-wise.
@@ -404,7 +418,11 @@ def final_value_nb(
         start_value (float): Initial portfolio value.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Array of final portfolio values computed for each column.
@@ -460,12 +478,16 @@ def rolling_final_value_nb(
 
     Args:
         returns (Array2d): 2D array of periodic returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         start_value (float): Initial portfolio value.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: 2D array containing rolling final portfolio values computed column-wise.
@@ -534,7 +556,11 @@ def total_return_nb(
         returns (Array2d): 2D array of periodic returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Array of total returns computed for each column.
@@ -584,11 +610,15 @@ def rolling_total_return_nb(
 
     Args:
         returns (Array2d): 2D array of periodic returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: 2D array containing rolling total returns computed for each column.
@@ -676,11 +706,17 @@ def annualized_return_nb(
         returns (Array2d): Two-dimensional array of returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[FlexArray1dLike]): Array-like specifying the number of periods for each column.
+        periods (Optional[FlexArray1dLike]): Number of periods.
+
+            Provided as a scalar or per column.
 
             If None, periods are determined from the simulation range.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Annualized returns for each column.
@@ -742,12 +778,16 @@ def rolling_annualized_return_nb(
 
     Args:
         returns (Array2d): Two-dimensional array of returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Rolling annualized returns computed over the specified window.
@@ -829,7 +869,11 @@ def annualized_volatility_nb(
         levy_alpha (float): Levy alpha parameter.
         ddof (int): Delta degrees of freedom.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Annualized volatility for each column.
@@ -888,13 +932,17 @@ def rolling_annualized_volatility_nb(
 
     Args:
         returns (Array2d): Two-dimensional array of returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         levy_alpha (float): Levy alpha parameter.
         ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Rolling annualized volatility computed over the window.
@@ -984,7 +1032,11 @@ def max_drawdown_nb(
         returns (Array2d): A 2-dimensional array of returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: An array containing the maximum drawdown for each column.
@@ -1034,11 +1086,15 @@ def rolling_max_drawdown_nb(
 
     Args:
         returns (Array2d): A 2-dimensional array of returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: A 2-dimensional array of rolling maximum drawdown values.
@@ -1133,9 +1189,15 @@ def calmar_ratio_nb(
         returns (Array2d): A 2-dimensional array of returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[FlexArray1dLike]): Array-like periods used for scaling, per column.
+        periods (Optional[FlexArray1dLike]): Number of periods.
+
+            Provided as a scalar or per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: An array containing the Calmar ratio for each column.
@@ -1197,12 +1259,16 @@ def rolling_calmar_ratio_nb(
 
     Args:
         returns (Array2d): A 2-dimensional array of returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: A 2-dimensional array containing the rolling Calmar ratios for each column.
@@ -1303,7 +1369,11 @@ def omega_ratio_nb(
     Args:
         returns (Array2d): 2D array of returns.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Computed omega ratio for each column.
@@ -1353,10 +1423,14 @@ def rolling_omega_ratio_nb(
 
     Args:
         returns (Array2d): 2D array of returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Array of rolling omega ratio values.
@@ -1442,7 +1516,11 @@ def sharpe_ratio_nb(
         ann_factor (float): Annualization factor.
         ddof (int): Delta degrees of freedom.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Sharpe ratio for each column.
@@ -1550,12 +1628,16 @@ def rolling_sharpe_ratio_stream_nb(
 
     Args:
         returns (Array2d): 2D array of strategy returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Array of rolling Sharpe ratio values for each asset.
@@ -1639,14 +1721,16 @@ def rolling_sharpe_ratio_nb(
 
     Args:
         returns (Array2d): Two-dimensional array of returns.
-        window (int): Size of the rolling window.
-
-            Determines the number of observations used in each rolling calculation.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
         stream_mode (bool): Flag indicating whether to use stream mode.
 
     Returns:
@@ -1744,7 +1828,11 @@ def downside_risk_nb(
         returns (Array2d): Two-dimensional array of returns.
         ann_factor (float): Annualization factor.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: One-dimensional array of downside risk values for each column.
@@ -1796,11 +1884,15 @@ def rolling_downside_risk_nb(
 
     Args:
         returns (Array2d): Two-dimensional array of returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Array of rolling downside risk values computed column-wise.
@@ -1880,7 +1972,11 @@ def sortino_ratio_nb(
         returns (Array2d): Two-dimensional array of returns.
         ann_factor (float): Annualization factor.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: One-dimensional array of Sortino ratios for each column.
@@ -1930,11 +2026,15 @@ def rolling_sortino_ratio_nb(
 
     Args:
         returns (Array2d): Array of returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Array with rolling sortino ratios.
@@ -2008,7 +2108,11 @@ def information_ratio_nb(
         returns (Array2d): 2D array of strategy returns.
         ddof (int): Delta degrees of freedom.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Array of information ratios for each column.
@@ -2058,11 +2162,15 @@ def rolling_information_ratio_nb(
 
     Args:
         returns (Array2d): 2D array of strategy returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: 2D array with rolling information ratios.
@@ -2144,7 +2252,11 @@ def beta_nb(
         bm_returns (Array2d): 2D array of benchmark returns.
         ddof (int): Delta degrees of freedom.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Array of beta coefficients for each column.
@@ -2201,11 +2313,15 @@ def rolling_beta_nb(
     Args:
         returns (Array2d): 2D array of strategy returns.
         bm_returns (Array2d): 2D array of benchmark returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ddof (int): Delta degrees of freedom.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: 2D array with rolling beta coefficients.
@@ -2283,7 +2399,11 @@ def alpha_nb(
         bm_returns (Array2d): 2D array of benchmark returns.
         ann_factor (float): Annualization factor.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Array containing annualized alpha values for each column.
@@ -2340,11 +2460,15 @@ def rolling_alpha_nb(
     Args:
         returns (Array2d): 2D array of returns.
         bm_returns (Array2d): 2D array of benchmark returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Array with the rolling annualized alpha values.
@@ -2437,7 +2561,11 @@ def tail_ratio_nb(
     Args:
         returns (Array2d): 2D array of returns.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
         noarr_mode (bool): Flag to use no-array version if True, otherwise the standard version.
 
     Returns:
@@ -2491,10 +2619,14 @@ def rolling_tail_ratio_nb(
 
     Args:
         returns (Array2d): 2D array of returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
         noarr_mode (bool): Flag to use no-array version if True, otherwise the standard version.
 
     Returns:
@@ -2579,7 +2711,11 @@ def profit_factor_nb(
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: 1D array containing the profit factor for each column.
@@ -2627,10 +2763,14 @@ def rolling_profit_factor_nb(
 
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: 2D array containing the rolling profit factor values for each column.
@@ -2697,7 +2837,11 @@ def common_sense_ratio_nb(
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: 1D array containing the common sense ratio for each column.
@@ -2745,10 +2889,14 @@ def rolling_common_sense_ratio_nb(
 
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: 2D array containing the rolling common sense ratio for each column.
@@ -2834,7 +2982,11 @@ def value_at_risk_nb(
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         cutoff (float): Cutoff probability for VaR calculation expressed as a percentile (e.g., 0.05).
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
         noarr_mode (bool): Flag indicating whether to use the no-array allocation method.
 
             If True, uses `value_at_risk_noarr_1d_nb`; otherwise, uses `value_at_risk_1d_nb`.
@@ -2894,11 +3046,15 @@ def rolling_value_at_risk_nb(
 
     Args:
         returns (Array2d): 2D array of returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         cutoff (float): Fractional cutoff level for value at risk calculation.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
         noarr_mode (bool): If True, uses the implementation that avoids allocating arrays.
 
     Returns:
@@ -2995,7 +3151,11 @@ def cond_value_at_risk_nb(
         returns (Array2d): 2D array of returns.
         cutoff (float): Fractional cutoff level for CVaR calculation.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
         noarr_mode (bool): If True, uses the implementation that avoids array allocations.
 
     Returns:
@@ -3053,11 +3213,15 @@ def rolling_cond_value_at_risk_nb(
 
     Args:
         returns (Array2d): 2D array of returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         cutoff (float): Fractional cutoff quantile level for CVaR computation.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
         noarr_mode (bool): If True, uses an implementation that avoids additional array allocations.
 
     Returns:
@@ -3171,11 +3335,17 @@ def capture_ratio_nb(
         bm_returns (Array2d): Benchmark returns array with matching dimensions.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[FlexArray1dLike]): Periods used for adjustment.
+        periods (Optional[FlexArray1dLike]): Number of periods.
+
+            Provided as a scalar or per column.
 
             If None, computed as the difference between simulation end and simulation start.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Capture ratios computed for each column.
@@ -3241,12 +3411,16 @@ def rolling_capture_ratio_nb(
     Args:
         returns (Array2d): Array of returns with shape (n_periods, n_assets).
         bm_returns (Array2d): Array of benchmark returns with matching dimensions.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Rolling capture ratios with the same shape as `returns`.
@@ -3363,11 +3537,17 @@ def up_capture_ratio_nb(
         bm_returns (Array2d): 2-d array of benchmark returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[FlexArray1dLike]): Periods used for adjustment.
+        periods (Optional[FlexArray1dLike]): Number of periods.
+
+            Provided as a scalar or per column.
 
             If None, computed as the difference between simulation end and simulation start.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Up capture ratios computed for each series.
@@ -3433,12 +3613,16 @@ def rolling_up_capture_ratio_nb(
     Args:
         returns (Array2d): 2-d array of returns.
         bm_returns (Array2d): 2-d array of benchmark returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Rolling up capture ratios with the same shape as `returns`.
@@ -3566,11 +3750,17 @@ def down_capture_ratio_nb(
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[FlexArray1dLike]): Array-like specifying the number of periods for each column.
+        periods (Optional[FlexArray1dLike]): Number of periods.
+
+            Provided as a scalar or per column.
 
             If None, periods are computed as `sim_end` minus `sim_start`.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Array of down capture ratios for each column.
@@ -3642,12 +3832,16 @@ def rolling_down_capture_ratio_nb(
     Args:
         returns (Array2d): 2-dimensional array of asset returns.
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: 2-dimensional array of rolling down capture ratios for each column,

@@ -488,7 +488,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the index of the minimum value within each rolling window.
 
         Args:
-            window (Optional[int]): Size of the rolling window.
+            window (Optional[int]): Window size.
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
@@ -545,7 +545,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the index of the maximum value within each rolling window.
 
         Args:
-            window (Optional[int]): Size of the rolling window.
+            window (Optional[int]): Window size.
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
@@ -601,7 +601,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the rolling mean over a moving window.
 
         Args:
-            window (Optional[int]): Size of the rolling window.
+            window (Optional[int]): Window size.
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
@@ -653,7 +653,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the rolling standard deviation over a moving window.
 
         Args:
-            window (Optional[int]): Size of the rolling window.
+            window (Optional[int]): Window size.
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
@@ -706,7 +706,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the rolling z-score for the instance's data using a specified window.
 
         Args:
-            window (Optional[int]): Size of the rolling window.
+            window (Optional[int]): Window size.
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
@@ -938,7 +938,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         using a specified window.
 
         Args:
-            window (int): Size of the rolling window.
+            window (int): Window size.
             minp (Optional[int]): Minimum number of observations required.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -974,10 +974,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the moving average for the instance's data using a specified window and weighting type.
 
         Args:
-            window (int): Size of the rolling window.
-            wtype (Union[int, str]): Type of weighting to use for the moving average.
+            window (int): Window size.
+            wtype (Union[int, str]): Weighting type.
 
-                See `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType`.
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1018,10 +1018,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
         window and weighting type.
 
         Args:
-            window (int): Size of the rolling window.
-            wtype (Union[int, str]): Type of weighting to use for the moving standard deviation.
+            window (int): Window size.
+            wtype (Union[int, str]): Weighting type.
 
-                See `vectorbtpro.generic.enums.WType`.
+            See `vectorbtpro.generic.enums.WType`.
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             ddof (int): Delta degrees of freedom.
@@ -1064,9 +1064,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             other (SeriesFrame): Another data series to compute covariance with.
-            window (Optional[int]): Size of the rolling window.
+            window (Optional[int]): Window size.
 
-                If None, uses the full series length.
+                If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
             ddof (int): Delta degrees of freedom.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -1124,9 +1124,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             other (SeriesFrame): Second series or frame for computing correlation.
-            window (Optional[int]): Size of the rolling window.
+            window (Optional[int]): Window size.
 
-                If None, uses the full data length.
+                If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -1182,9 +1182,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             other (SeriesFrame): Second series or frame to perform regression against.
-            window (Optional[int]): Size of the rolling window.
+            window (Optional[int]): Window size.
 
-                If None, uses the full series length.
+                If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -1251,9 +1251,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute rolling rank.
 
         Args:
-            window (Optional[int]): Size of the rolling window.
+            window (Optional[int]): Window size.
 
-                If None, uses the full series length.
+                If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
             pct (bool): If True, compute percentile rank; otherwise, compute ordinal rank.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1323,7 +1323,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             pattern (ArrayLike): Reference pattern array for similarity comparison.
-            window (Optional[int]): Size of the rolling window.
+            window (Optional[int]): Window size.
 
                 Defaults to the length of `pattern`.
             max_window (Optional[int]): Maximum length of the rolling window.
@@ -2893,7 +2893,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         The method supports broadcasting and template substitution to flexibly process input data.
 
         Args:
-            window (int): Size of the rolling window.
+            window (int): Window size.
             reduce_func_nb (Union[str, ReduceFunc, ProximityReduceMetaFunc]):
                 The reduction function or its string identifier.
             *args: Positional arguments for `reduce_func_nb`.

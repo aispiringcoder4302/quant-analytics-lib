@@ -43,7 +43,7 @@ StopType = StopTypeT()
 
 __pdoc__[
     "StopType"
-] = f"""Enumeration of stop types.
+] = f"""Stop type enumeration.
 
 ```python
 {prettify_doc(StopType)}
@@ -65,7 +65,7 @@ SignalRelation = SignalRelationT()
 
 __pdoc__[
     "SignalRelation"
-] = f"""Enumeration representing the relation between source and target signals.
+] = f"""Signal relation enumeration.
 
 ```python
 {prettify_doc(SignalRelation)}
@@ -93,7 +93,7 @@ FactoryMode = FactoryModeT()
 
 __pdoc__[
     "FactoryMode"
-] = f"""Enumeration representing the factory mode.
+] = f"""Factory mode enumeration.
 
 ```python
 {prettify_doc(FactoryMode)}

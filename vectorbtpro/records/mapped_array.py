@@ -479,10 +479,10 @@ class MappedArray(Analyzable):
         col_arr (ArrayLike): One-dimensional column array.
 
             Must be the same size as `mapped_arr`.
-        id_arr (Optional[ArrayLike]): One-dimensional id array.
+        id_arr (Optional[ArrayLike]): One-dimensional ID array.
 
             Must be the same size as `mapped_arr` and defaults to a simple range.
-        idx_arr (Optional[ArrayLike]): One-dimensional index array.
+        idx_arr (Optional[ArrayLike]): One-dimensional row array.
 
             Must be the same size as `mapped_arr`.
         mapping (Optional[MappingLike]): Mapping.
@@ -1051,7 +1051,7 @@ class MappedArray(Analyzable):
 
         Args:
             incl_id (bool): If True, sort by both the column and id arrays.
-            idx_arr (Array1d): Array of indices; if not provided, the instance's index array is used.
+            idx_arr (Array1d): Array of row indices.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -1089,7 +1089,7 @@ class MappedArray(Analyzable):
 
         Args:
             mask (Array1d): Boolean array indicating which elements to retain.
-            idx_arr (Array1d): Array of indices for filtering;
+            idx_arr (Array1d): Array of row indices;
                 if not provided, the instance's index array is used.
             group_by (GroupByLike): Grouping specification.
 
@@ -1417,7 +1417,7 @@ class MappedArray(Analyzable):
                 If a string is provided, it represents the suffix of a function
                 from `vectorbtpro.generic.nb` (e.g., "sum" for `sum_reduce_nb`).
             *args: Positional arguments for `reduce_func_nb`.
-            idx_arr (Optional[Array1d]): Index array to use.
+            idx_arr (Optional[Array1d]): Array of row indices.
 
                 If not provided, the instance's `idx_arr` must be set.
             group_by (GroupByLike): Grouping specification.
@@ -1507,7 +1507,7 @@ class MappedArray(Analyzable):
             reduce_func_nb (Union[ReduceFunc, MappedReduceMetaFunc, ReduceToArrayFunc, MappedReduceToArrayMetaFunc]):
                 Reduction function to apply.
             *args: Positional arguments for `reduce_func_nb`.
-            idx_arr (Optional[Array1d]): Row index array used when `returns_idx` is True.
+            idx_arr (Optional[Array1d]): Array of row indices used when `returns_idx` is True.
             returns_array (bool): Flag indicating that `reduce_func_nb` returns an array.
             returns_idx (bool): Flag indicating that `reduce_func_nb` returns row indices.
 
@@ -2213,7 +2213,7 @@ class MappedArray(Analyzable):
             axis (int): Axis along which to count unique values.
 
                 When 0, computes counts per row; when 1, per column; other values count over all data.
-            idx_arr (Optional[Array1d]): Array of indices used when axis is 0.
+            idx_arr (Optional[Array1d]): Array of row indices.
 
                 Uses `MappedArray.idx_arr` if not provided.
             normalize (bool): Normalize the counts by dividing by the total sum.
@@ -2337,7 +2337,9 @@ class MappedArray(Analyzable):
         The detection is based on the column array and index array provided.
 
         Args:
-            idx_arr (Optional[Array1d]): Array of indices to check. Uses `MappedArray.idx_arr` if not provided.
+            idx_arr (Optional[Array1d]): Array of row indices.
+            
+                Uses `MappedArray.idx_arr` if not provided.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2373,7 +2375,7 @@ class MappedArray(Analyzable):
         The resulting map is wrapped and returned as a Series or DataFrame.
 
         Args:
-            idx_arr (Optional[Array1d]): Array of indices to use for the mapping.
+            idx_arr (Optional[Array1d]): Array of row indices.
 
                 Uses `MappedArray.idx_arr` if not provided.
             group_by (GroupByLike): Grouping specification.
@@ -2427,7 +2429,7 @@ class MappedArray(Analyzable):
         conflicting index segments are reduced using `MappedArray.reduce_segments`.
 
         Args:
-            idx_arr (Optional[Array1d]): Row index array.
+            idx_arr (Optional[Array1d]): Array of row indices.
 
                 If None, uses `MappedArray.idx_arr`.
             reduce_func_nb (Union[None, str, ReduceFunc]): Function or name used to reduce
@@ -2550,7 +2552,7 @@ class MappedArray(Analyzable):
         """Get mask as a Series or DataFrame from row and column indices.
 
         Args:
-            idx_arr (Optional[Array1d]): Row index array.
+            idx_arr (Optional[Array1d]): Array of row indices.
 
                 If None, uses `MappedArray.idx_arr`.
             group_by (GroupByLike): Grouping specification.

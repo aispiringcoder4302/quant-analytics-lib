@@ -2159,7 +2159,7 @@ def prepare_last_position_nb(target_shape: tp.Shape, init_position: tp.FlexArray
 
     Args:
         target_shape (Shape): Target shape for determining the number of columns.
-        init_position (FlexArray1d): Array of initial position values.
+        init_position (FlexArray1d): Array of initial positions.
 
     Returns:
         Array1d: Array containing the last positions for each column.
@@ -2186,8 +2186,8 @@ def prepare_last_value_nb(
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         init_cash (FlexArray1d): Array of initial cash values.
-        init_position (FlexArray1d): Array of initial position values.
-        init_price (FlexArray1d): Array of initial prices corresponding to positions.
+        init_position (FlexArray1d): Array of initial positions.
+        init_price (FlexArray1d): Array of initial position prices.
 
     Returns:
         Array1d: Array with computed last values calculated as cash plus position times price.
@@ -2229,8 +2229,8 @@ def prepare_last_pos_info_nb(
 
     Args:
         target_shape (Shape): Target shape for the position info array.
-        init_position (FlexArray1d): Array containing initial positions.
-        init_price (FlexArray1d): Array containing initial prices.
+        init_position (FlexArray1d): Array of initial positions.
+        init_price (FlexArray1d): Array of initial position prices.
         fill_pos_info (bool): If True, fill the position info with initial data.
 
     Returns:
@@ -3740,7 +3740,7 @@ def set_tsl_info_nb(
         tsl_info (Record): Record to store trailing stop (TSL) or trailing take profit (TTP) order data.
         init_idx (int): Initialization row index.
         init_price (float): Initial price.
-        init_position (float): Initial position.
+        init_position (float): Initial position size.
         peak_idx (Optional[int]): Peak row index.
 
             Defaults to `init_idx` if not provided.
@@ -3850,7 +3850,7 @@ def set_tp_info_nb(
         tp_info (Record): Record to store take profit (TP) order data.
         init_idx (int): Initialization row index.
         init_price (float): Initial price.
-        init_position (float): Initial position.
+        init_position (float): Initial position size.
         stop (float): Stop loss value.
         exit_price (float): Exit price mode.
 
@@ -3946,7 +3946,7 @@ def set_time_info_nb(
     Args:
         time_info (Record): Record to store time-based order information.
         init_idx (int): Initialization row index.
-        init_position (float): Initial position.
+        init_position (float): Initial position size.
         stop (int): Stop indicator or time.
         exit_price (float): Exit price mode.
 

@@ -78,11 +78,19 @@ def generate_random_data_nb(
 
     Args:
         shape (Shape): Tuple specifying the dimensions of the output array.
-        start_value (FlexArray1dLike): Initial value(s) for each column.
-        mean (FlexArray1dLike): Mean value(s) of the Gaussian distribution for each column.
-        std (FlexArray1dLike): Standard deviation(s) of the Gaussian distribution for each column.
-        symmetric (FlexArray1dLike): Boolean flag(s) indicating whether to adjust negative returns to be symmetric
-            to positive returns for each column.
+        start_value (FlexArray1dLike): Initial value.
+        
+            Provided as a scalar or per column.
+        mean (FlexArray1dLike): Mean value of the Gaussian distribution.
+        
+            Provided as a scalar or per column.
+        std (FlexArray1dLike): Standard deviation of the Gaussian distribution.
+        
+            Provided as a scalar or per column.
+        symmetric (FlexArray1dLike): Boolean flag indicating whether to adjust negative returns to be symmetric
+            to positive returns.
+            
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: A two-dimensional array of generated data.
@@ -151,10 +159,18 @@ def generate_gbm_data_nb(
 
     Args:
         shape (Shape): Tuple specifying the dimensions of the output array.
-        start_value (FlexArray1dLike): Initial value(s) for each column.
-        mean (FlexArray1dLike): Drift factor(s) for the GBM process in each column.
-        std (FlexArray1dLike): Volatility factor(s) for the GBM process in each column.
-        dt (FlexArray1dLike): Time increment(s) used for the simulation in each column.
+        start_value (FlexArray1dLike): Initial value.
+        
+            Provided as a scalar or per column.
+        mean (FlexArray1dLike): Drift factor for the GBM process.
+        
+            Provided as a scalar or per column.
+        std (FlexArray1dLike): Volatility factor for the GBM process.
+        
+            Provided as a scalar or per column.
+        dt (FlexArray1dLike): Time increment used for the simulation.
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: A two-dimensional array containing the simulated GBM data.

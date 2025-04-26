@@ -157,8 +157,8 @@ def get_ranges_from_delta_nb(
 
     Args:
         n_rows (int): Total number of rows in the dataset.
-        idx_arr (Array1d): Array of record positions.
-        id_arr (Array1d): Array of record identifiers.
+        idx_arr (Array1d): Array of row indices.
+        id_arr (Array1d): Array of IDs.
         col_map (GroupMap): Tuple of column indices and lengths.
         index (Optional[Array1d]): Array of index values used for delta-based calculations.
         delta (int): Delta offset to compute range boundaries.
@@ -254,8 +254,8 @@ def range_duration_nb(
     """Calculate the duration of each range record.
 
     Args:
-        start_idx_arr (Array1d): Array of starting indices for each range record.
-        end_idx_arr (Array1d): Array of ending indices for each range record.
+        start_idx_arr (Array1d): Array of starting row indices for each range record.
+        end_idx_arr (Array1d): Array of ending row indices for each range record.
         status_arr (Array2d): Array indicating the status of each range record.
 
             If a record is open, the duration is adjusted.
@@ -302,8 +302,8 @@ def range_coverage_nb(
     """Calculate the coverage of range records for each group.
 
     Args:
-        start_idx_arr (Array1d): Array of starting indices for each range record.
-        end_idx_arr (Array1d): Array of ending indices for each range record.
+        start_idx_arr (Array1d): Array of starting row indices for each range record.
+        end_idx_arr (Array1d): Array of ending row indices for each range record.
         status_arr (Array2d): Array indicating the status of each range record.
         col_map (GroupMap): Tuple of column indices and lengths.
         index_lens (Array1d): Array of index lengths for each group.
@@ -376,8 +376,8 @@ def ranges_to_mask_nb(
     """Convert range records into a 2-dimensional mask.
 
     Args:
-        start_idx_arr (Array1d): Array of starting indices for each range record.
-        end_idx_arr (Array1d): Array of ending indices for each range record.
+        start_idx_arr (Array1d): Array of starting row indices for each range record.
+        end_idx_arr (Array1d): Array of ending row indices for each range record.
         status_arr (Array2d): Array indicating the status of each range record.
         col_map (GroupMap): Tuple of column indices and lengths.
         index_len (int): Length of the index for the resulting mask.
@@ -431,8 +431,8 @@ def map_ranges_to_projections_nb(
     Args:
         close (Array2d): A 2D array of close prices.
         col_arr (Array1d): A 1D array of column indices for selecting data from `close`.
-        start_idx_arr (Array1d): A 1D array of starting indices for each range.
-        end_idx_arr (Array1d): A 1D array of ending indices for each range.
+        start_idx_arr (Array1d): A 1D array of starting row indices for each range.
+        end_idx_arr (Array1d): A 1D array of ending row indices for each range.
         status_arr (Array1d): A 1D array indicating the status of each range.
         index (Optional[Array1d]): An optional 1D array representing timestamps or indices.
         proj_start (int): The offset from the start index to begin the projection.
@@ -442,7 +442,9 @@ def map_ranges_to_projections_nb(
         incl_end_idx (bool): Whether the end index of a range is inclusive.
         extend (bool): Whether to extend the projection to a fixed length.
         rebase (bool): Whether to rebase the projection series using a specified start value.
-        start_value (FlexArray1dLike): The initial value(s) used for rebasing projections.
+        start_value (FlexArray1dLike): The initial value used for rebasing projections.
+        
+            Provided as a scalar or per column.
         ffill (bool): Whether to forward-fill missing projection values.
         remove_empty (bool): Whether to exclude projections with no computed changes.
 
@@ -597,7 +599,7 @@ def find_pattern_1d_nb(
 
             Can be smaller or larger than the source array. In such cases,
             the smaller array is stretched using the interpolation mode specified by `interp_mode`.
-        window (Optional[int]): Size of the rolling window.
+        window (Optional[int]): Window size.
 
             If None, defaults to the length of `pattern`.
         max_window (Optional[int]): Maximum length of the rolling window for matching.
@@ -645,7 +647,7 @@ def find_pattern_1d_nb(
             See `vectorbtpro.generic.enums.DistanceMeasure`.
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
 
-            If provided as an array, it must match the size of the pattern and be on the same scale.
+            Provided as a scalar or per element in the pattern.
         max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
 
             If None, defaults to `interp_mode`.
@@ -888,7 +890,7 @@ def find_pattern_nb(
 
             Can be smaller or larger than the source array. In such cases,
             the smaller array is stretched using the interpolation mode specified by `interp_mode`.
-        window (Optional[int]): Size of the rolling window.
+        window (Optional[int]): Window size.
 
             If None, defaults to the length of `pattern`.
         max_window (Optional[int]): Maximum length of the rolling window for matching.
@@ -936,7 +938,7 @@ def find_pattern_nb(
             See `vectorbtpro.generic.enums.DistanceMeasure`.
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
 
-            If provided as an array, it must match the size of the pattern and be on the same scale.
+            Provided as a scalar or per element in the pattern.
         max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
 
             If None, defaults to `interp_mode`.
@@ -1143,7 +1145,11 @@ def get_drawdowns_nb(
         low (Optional[Array2d]): Lowest price time series for each asset column.
         close (Array2d): Closing price time series for each asset column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         RecordArray: Array of computed drawdown records.
@@ -1342,8 +1348,8 @@ def dd_decline_duration_nb(start_idx_arr: tp.Array1d, valley_idx_arr: tp.Array1d
     """Compute the duration of the drawdown decline phase.
 
     Args:
-        start_idx_arr (Array1d): Array of start indices marking the peak of each drawdown.
-        valley_idx_arr (Array1d): Array of valley indices where each drawdown reaches its minimum.
+        start_idx_arr (Array1d): Array of start row indices marking the peak of each drawdown.
+        valley_idx_arr (Array1d): Array of valley row indices where each drawdown reaches its minimum.
 
     Returns:
         Array1d: Array of durations representing the time from peak to valley in each record.
@@ -1367,8 +1373,8 @@ def dd_recovery_duration_nb(valley_idx_arr: tp.Array1d, end_idx_arr: tp.Array1d)
     """Compute the duration of the drawdown recovery phase.
 
     Args:
-        valley_idx_arr (Array1d): Array of valley indices for each drawdown record.
-        end_idx_arr (Array1d): Array of recovery indices marking the end of each drawdown.
+        valley_idx_arr (Array1d): Array of valley row indices for each drawdown record.
+        end_idx_arr (Array1d): Array of recovery row indices marking the end of each drawdown.
 
     Returns:
         Array1d: Array of durations representing the time from the drawdown valley to recovery.
@@ -1402,9 +1408,9 @@ def dd_recovery_duration_ratio_nb(
     This function computes the ratio between the recovery duration and the decline duration.
 
     Args:
-        start_idx_arr (Array1d): Array of starting indices for the decline period.
-        valley_idx_arr (Array1d): Array of indices where the drawdown reaches its lowest point.
-        end_idx_arr (Array1d): Array of ending indices for the recovery period.
+        start_idx_arr (Array1d): Array of starting row indices for the decline period.
+        valley_idx_arr (Array1d): Array of row indices where the drawdown reaches its lowest point.
+        end_idx_arr (Array1d): Array of ending row indices for the recovery period.
 
     Returns:
         Array1d: An array of recovery duration ratios calculated as (recovery duration)

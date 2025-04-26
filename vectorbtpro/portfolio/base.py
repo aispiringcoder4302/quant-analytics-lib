@@ -502,13 +502,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         close (ArrayLike): Last asset price at each bar.
 
             Provided in a format that supports flexible indexing.
-        open (Optional[ArrayLike]): Opening price of each bar.
+        open (Optional[ArrayLike]): Opening price at each bar.
 
             Provided in a format that supports flexible indexing.
-        high (Optional[ArrayLike]): Highest price of each bar.
+        high (Optional[ArrayLike]): Highest price at each bar.
 
             Provided in a format that supports flexible indexing.
-        low (Optional[ArrayLike]): Lowest price of each bar.
+        low (Optional[ArrayLike]): Lowest price at each bar.
 
             Provided in a format that supports flexible indexing.
         log_records (Optional[RecordArray]): Structured NumPy array of log records.
@@ -522,10 +522,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             !!! note
                 When using `InitCashMode.AutoAlign`, initial cash values are synchronized
                 across columns/groups after initialization.
-        init_position (ArrayLike): Initial asset positions.
+        init_position (ArrayLike): Initial position at each bar.
 
             Provided in a format that supports flexible indexing.
-        init_price (ArrayLike): Initial position prices.
+        init_price (ArrayLike): Initial position price at each bar.
 
             Provided in a format that supports flexible indexing.
         cash_deposits (ArrayLike): Cash deposited or withdrawn at each timestamp.
@@ -6092,10 +6092,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders (Optional[Orders]): Orders to generate the long view.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            init_position (Optional[ArrayLike]): Initial positions.
+            init_position (Optional[ArrayLike]): Initial position.
 
                 Defaults to `Portfolio._init_position` if not provided.
-            init_price (Optional[ArrayLike]): Initial prices.
+            init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio._init_price` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -6160,10 +6160,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders (Optional[Orders]): Orders to generate the short view.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            init_position (Optional[ArrayLike]): Initial positions.
+            init_position (Optional[ArrayLike]): Initial position.
 
                 Defaults to `Portfolio._init_position` if not provided.
-            init_price (Optional[ArrayLike]): Initial prices.
+            init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio._init_price` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -6465,10 +6465,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders (Optional[Orders]): Order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            init_position (Optional[ArrayLike]): Initial position data.
+            init_position (Optional[ArrayLike]): Initial position.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
-            init_price (Optional[ArrayLike]): Initial price data.
+            init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
             entry_trades_cls (Optional[type]): Class used to generate entry trades.
@@ -6550,10 +6550,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders (Optional[Orders]): Order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            init_position (Optional[ArrayLike]): Initial position data.
+            init_position (Optional[ArrayLike]): Initial position.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
-            init_price (Optional[ArrayLike]): Initial price data.
+            init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
             exit_trades_cls (Optional[type]): Class used to generate exit trades.
@@ -6875,7 +6875,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             exit_trades (Optional[ExitTrades]): Exit trade records used to determine signals.
 
                 Defaults to `Portfolio.get_exit_trades` if not provided.
-            idx_arr (Union[None, str, Array1d]): Key or index array used to map order indices.
+            idx_arr (Union[None, str, Array1d]): Array of row indices or field name for retrieving row indices.
 
                 If a string, it is used with `vectorbtpro.records.base.Records.map_field`;
                 otherwise, with `vectorbtpro.records.base.Records.map_array`.
@@ -7114,7 +7114,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders (Optional[Orders]): Orders instance containing order data.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            init_position (Optional[ArrayLike]): Initial position used at the start of the simulation.
+            init_position (Optional[ArrayLike]): Initial position.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -7205,7 +7205,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             asset_flow (Optional[SeriesFrame]): Asset flow series.
 
                 Defaults to `Portfolio.get_asset_flow` with `direction="both"` if not provided.
-            init_position (Optional[ArrayLike]): Initial position used at the start of the simulation.
+            init_position (Optional[ArrayLike]): Initial position.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -7482,10 +7482,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders (Optional[Orders]): Order data used for computing entry prices.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            init_position (Optional[ArrayLike]): Initial position prior to processing orders.
+            init_position (Optional[ArrayLike]): Initial position.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
-            init_price (Optional[ArrayLike]): Initial price prior to processing orders.
+            init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
             fill_closed_position (bool): If True, forward-fill missing values using
@@ -7587,10 +7587,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders (Optional[Orders]): Order data used for computing entry prices.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            init_position (Optional[ArrayLike]): Initial position prior to processing orders.
+            init_position (Optional[ArrayLike]): Initial position.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
-            init_price (Optional[ArrayLike]): Initial price prior to processing orders.
+            init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
             fill_closed_position (bool): If True, forward-fill missing values using
@@ -8489,10 +8489,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return the initial position value per column.
 
         Args:
-            init_position (Optional[ArrayLike]): Initial positions per column.
+            init_position (Optional[ArrayLike]): Initial position.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
-            init_price (Optional[ArrayLike]): Prices corresponding to the initial positions.
+            init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
             jitted (JittedOption): Option to control JIT compilation.
@@ -9274,10 +9274,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders (Optional[Orders]): Orders object containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            init_position (Optional[ArrayLike]): Initial portfolio position.
+            init_position (Optional[ArrayLike]): Initial position.
 
                 Defaults to `Portfolio.get_init_position` with `keep_flex=True` or 0 if not provided.
-            init_price (Optional[ArrayLike]): Initial price used for profit calculation.
+            init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
             cash_earnings (Optional[ArrayLike]): Cash earnings component included in the profit computation.

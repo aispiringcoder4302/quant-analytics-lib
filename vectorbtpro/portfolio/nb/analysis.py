@@ -111,9 +111,15 @@ def asset_flow_nb(
         direction (int): Position direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        init_position (FlexArray1dLike): Initial position for each column.
+        init_position (FlexArray1dLike): Initial position.
+        
+            Provided as a scalar or per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Array representing asset flow at each bar per column.
@@ -200,9 +206,15 @@ def assets_nb(
         direction (int): Position direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        init_position (FlexArray1dLike): Initial position for each column.
+        init_position (FlexArray1dLike): Initial position.
+        
+            Provided as a scalar or per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Array containing the updated asset position at each bar per column.
@@ -263,7 +275,11 @@ def position_mask_nb(
     Args:
         assets (Array2d): Array of asset positions.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Boolean array indicating the presence of an asset position per column at each bar.
@@ -313,7 +329,11 @@ def position_mask_grouped_nb(
         assets (Array2d): Array of asset values.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Boolean array of shape (number of bars, number of groups) where True indicates
@@ -367,7 +387,11 @@ def position_coverage_nb(
     Args:
         assets (Array2d): Array of asset values.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Array containing the coverage ratio (fraction of non-zero positions) for each asset column.
@@ -423,7 +447,11 @@ def position_coverage_grouped_nb(
         group_lens (GroupLens): Array defining the number of columns in each group.
         granular_groups (bool): Flag to determine if coverage is computed per individual column within a group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Array of coverage ratios for each group.
@@ -527,11 +555,19 @@ def cash_deposits_nb(
         target_shape (Shape): Target shape of the output cash deposit array.
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
-        cash_deposits_raw (FlexArray2dLike): Raw cash deposit values.
+        cash_deposits_raw (FlexArray2dLike): Raw cash deposits.
+        
+            Provided as a scalar, or per row, column, or element.
         split_shared (bool): If cash is shared, determines whether to split the deposits evenly across columns.
-        weights (Optional[FlexArray1dLike]): Weights applied to cash deposits per column.
+        weights (Optional[FlexArray1dLike]): Weights applied to cash deposits.
+        
+            Provided as a scalar or per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: 2D array containing the cash deposit series per column.
@@ -629,10 +665,18 @@ def cash_deposits_grouped_nb(
         target_shape (Shape): Target shape of the simulation period.
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
-        cash_deposits_raw (FlexArray2dLike): Raw cash deposit values.
-        weights (Optional[FlexArray1dLike]): Weights applied to cash deposits for each column.
+        cash_deposits_raw (FlexArray2dLike): Raw cash deposits.
+        
+            Provided as a scalar, or per row, column, or element.
+        weights (Optional[FlexArray1dLike]): Weights applied to cash deposits.
+        
+            Provided as a scalar or per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column or group with cash sharing.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column or group with cash sharing.
 
     Returns:
         Array2d: 2D array containing the grouped cash deposit series.
@@ -737,10 +781,18 @@ def cash_earnings_nb(
 
     Args:
         target_shape (Shape): The shape of the target output array.
-        cash_earnings_raw (FlexArray2dLike): Raw cash earnings data, converted internally to a 2D array.
-        weights (FlexArray1dLike): Weight factors for scaling cash earnings per column.
+        cash_earnings_raw (FlexArray2dLike): Raw cash earnings.
+        
+            Provided as a scalar, or per row, column, or element.
+        weights (FlexArray1dLike): Weight factors for scaling cash earnings.
+        
+            Provided as a scalar or per column.
         sim_start (FlexArray1dLike): Start indices of the simulation range for each column.
+        
+            Provided as a scalar or per column.
         sim_end (FlexArray1dLike): End indices of the simulation range for each column.
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: A 2D array with calculated cash earnings per column.
@@ -803,10 +855,18 @@ def cash_earnings_grouped_nb(
     Args:
         target_shape (Shape): The shape of the target output array.
         group_lens (GroupLens): Array defining the number of columns in each group.
-        cash_earnings_raw (FlexArray2dLike): Raw cash earnings data, converted internally to a 2D array.
-        weights (FlexArray1dLike): Weight factors applied to cash earnings per column.
+        cash_earnings_raw (FlexArray2dLike): Raw cash earnings.
+        
+            Provided as a scalar, or per row, column, or element.
+        weights (FlexArray1dLike): Weight factors applied to cash earnings.
+        
+            Provided as a scalar or per column.
         sim_start (FlexArray1dLike): Start indices of the simulation range for each column.
+        
+            Provided as a scalar or per column.
         sim_end (FlexArray1dLike): End indices of the simulation range for each column.
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: A 2D array with aggregated cash earnings per group.
@@ -938,9 +998,15 @@ def cash_flow_nb(
         order_records (RecordArray): Array of order records.
         col_map (GroupMap): Tuple of column indices and lengths.
         free (bool): Flag indicating whether to compute free cash flow differences.
-        cash_earnings (FlexArray2dLike): Array of cash earnings.
+        cash_earnings (FlexArray2dLike): Cash earnings.
+        
+            Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Array representing the cash flow series.
@@ -1039,7 +1105,11 @@ def cash_flow_grouped_nb(
         cash_flow (Array2d): Array of cash flow values.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Aggregated cash flow series for each group.
@@ -1103,9 +1173,15 @@ def align_init_cash_nb(
     Args:
         init_cash_raw (int): Raw initial cash value or mode indicator for auto alignment.
         free_cash_flow (Array2d): Array of free cash flow values.
-        cash_deposits (FlexArray2dLike): Array representing cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits.
+        
+            Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Aligned initial cash values for each column.
@@ -1162,6 +1238,8 @@ def init_cash_nb(
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         split_shared (bool): If True, split shared cash equally among columns in a group.
         weights (Optional[FlexArray1dLike]): Optional weights to adjust the initial cash.
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Computed initial cash values per column.
@@ -1216,6 +1294,8 @@ def init_cash_grouped_nb(
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         weights (Optional[FlexArray1dLike]): Optional weights to adjust the initial cash.
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Computed initial cash values per group.
@@ -1287,9 +1367,15 @@ def cash_nb(
     Args:
         cash_flow (Array2d): 2D array of cash flow values.
         init_cash (FlexArray1d): Initial cash amounts per column.
-        cash_deposits (FlexArray2dLike): Cash deposit values over time for each column.
+        cash_deposits (FlexArray2dLike): Cash deposits.
+        
+            Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: 2D array of computed cash series.
@@ -1333,8 +1419,12 @@ def init_position_value_nb(
 
     Args:
         n_cols (int): Number of columns.
-        init_position (FlexArray1dLike): Initial position for each column.
-        init_price (FlexArray1dLike): Initial prices for each column.
+        init_position (FlexArray1dLike): Initial position.
+        
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): Initial position price.
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Computed initial position values per column.
@@ -1364,8 +1454,12 @@ def init_position_value_grouped_nb(
 
     Args:
         group_lens (GroupLens): Array defining the number of columns in each group.
-        init_position (FlexArray1dLike): Initial position for each column.
-        init_price (FlexArray1dLike): Initial prices for each column.
+        init_position (FlexArray1dLike): Initial position.
+        
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): Initial position price.
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Computed initial position values per group.
@@ -1431,7 +1525,11 @@ def asset_value_nb(
         close (Array2d): Price series per column.
         assets (Array2d): Asset quantity series per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Asset value series computed as the product of price and asset quantity
@@ -1484,7 +1582,11 @@ def asset_value_grouped_nb(
         asset_value (Array2d): Asset value series per column.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Grouped asset value series computed by summing column values within each group.
@@ -1542,7 +1644,11 @@ def value_nb(
         cash (Array2d): Cash series per column.
         asset_value (Array2d): Asset value series per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Value series computed as the sum of cash and asset value for each column.
@@ -1591,7 +1697,11 @@ def gross_exposure_nb(
         asset_value (Array2d): Asset value series per column.
         value (Array2d): Total value series per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Gross exposure series calculated as the absolute ratio of
@@ -1644,7 +1754,11 @@ def net_exposure_nb(
         long_exposure (Array2d): Long exposure series per column.
         short_exposure (Array2d): Short exposure series per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Net exposure series calculated as the difference between
@@ -1698,7 +1812,11 @@ def allocations_nb(
         value (Array2d): Matrix of group total values used for normalization.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Matrix of calculated allocations per column.
@@ -1768,11 +1886,21 @@ def total_profit_nb(
         close (Array2d): Matrix of closing prices.
         order_records (RecordArray): Array of order records.
         col_map (GroupMap): Tuple of column indices and lengths.
-        init_position (FlexArray1dLike): Initial position for each column.
-        init_price (FlexArray1dLike): Initial asset prices for each column.
-        cash_earnings (FlexArray2dLike): Matrix of cash earnings.
+        init_position (FlexArray1dLike): Initial position.
+        
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): Initial position price.
+        
+            Provided as a scalar or per column.
+        cash_earnings (FlexArray2dLike): Cash earnings.
+        
+            Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Array containing the computed total profit for each column.
@@ -1898,11 +2026,17 @@ def returns_nb(
     Args:
         value (Array2d): Array of asset values.
         init_value (FlexArray1d): Initial asset value per column.
-        cash_deposits (FlexArray2dLike): Array of cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits.
+        
+            Provided as a scalar, or per row, column, or element.
         cash_deposits_as_input (bool): Whether to add cash deposits to the input value.
         log_returns (bool): Whether to compute logarithmic returns.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Computed return series for each column.
@@ -1982,9 +2116,15 @@ def asset_pnl_nb(
     Args:
         asset_value (Array2d): Array of asset values.
         cash_flow (Array2d): Array of cash flows.
-        init_position_value (FlexArray1dLike): Initial asset position value for each column.
+        init_position_value (FlexArray1dLike): Initial position value.
+        
+            Provided as a scalar or per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Calculated asset profit and loss series for each column.
@@ -2080,10 +2220,16 @@ def asset_returns_nb(
     Args:
         asset_value (Array2d): Array of asset values.
         cash_flow (Array2d): Array of cash flows corresponding to asset values.
-        init_position_value (FlexArray1dLike): Initial asset position value for each column.
+        init_position_value (FlexArray1dLike): Initial position value.
+        
+            Provided as a scalar or per column.
         log_returns (bool): Whether to compute logarithmic returns.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Computed asset return series for each column.
@@ -2145,9 +2291,15 @@ def market_value_nb(
     Args:
         close (Array2d): Asset prices with rows as bars and columns as assets.
         init_value (FlexArray1d): Initial market values for each asset.
-        cash_deposits (FlexArray2dLike): Cash deposits applied at each bar.
+        cash_deposits (FlexArray2dLike): Cash deposits.
+        
+            Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Computed market values for each asset over the simulation period.
@@ -2207,9 +2359,15 @@ def market_value_grouped_nb(
         close (Array2d): Asset prices with rows as bars and columns as individual assets.
         group_lens (GroupLens): Array defining the number of columns in each group.
         init_value (FlexArray1d): Initial market values for each asset.
-        cash_deposits (FlexArray2dLike): Cash deposits applied at each bar for each asset.
+        cash_deposits (FlexArray2dLike): Cash deposits.
+        
+            Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Aggregated market values per group over time.
@@ -2272,7 +2430,11 @@ def total_market_return_nb(
         market_value (Array2d): Market values over time per column or group.
         input_value (FlexArray1d): Initial input values for each column or group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+        
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+        
+            Provided as a scalar or per column.
 
     Returns:
         Array1d: Total market return for each column or group.

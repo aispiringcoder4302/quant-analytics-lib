@@ -124,7 +124,7 @@ PriceType = PriceTypeT()
 
 __pdoc__[
     "PriceType"
-] = f"""Price type.
+] = f"""Price type enumeration.
 
 ```python
 {prettify_doc(PriceType)}
@@ -162,7 +162,7 @@ ValPriceType = ValPriceTypeT()
 
 __pdoc__[
     "ValPriceType"
-] = f"""Asset valuation price type.
+] = f"""Asset valuation price type enumeration.
 
 ```python
 {prettify_doc(ValPriceType)}
@@ -188,7 +188,7 @@ InitCashMode = InitCashModeT()
 
 __pdoc__[
     "InitCashMode"
-] = f"""Initial cash mode.
+] = f"""Initial cash mode enumeration.
 
 ```python
 {prettify_doc(InitCashMode)}
@@ -212,7 +212,7 @@ CallSeqType = CallSeqTypeT()
 
 __pdoc__[
     "CallSeqType"
-] = f"""Call sequence type.
+] = f"""Call sequence type enumeration.
 
 ```python
 {prettify_doc(CallSeqType)}
@@ -238,7 +238,7 @@ PendingConflictMode = PendingConflictModeT()
 
 __pdoc__[
     "PendingConflictMode"
-] = f"""Conflict mode for pending signals.
+] = f"""Conflict mode enumeration for pending signals.
 
 This setting determines the action when an executable signal occurs during the pending phase.
 
@@ -266,7 +266,7 @@ AccumulationMode = AccumulationModeT()
 
 __pdoc__[
     "AccumulationMode"
-] = f"""Accumulation mode.
+] = f"""Accumulation mode enumeration.
 
 ```python
 {prettify_doc(AccumulationMode)}
@@ -303,7 +303,7 @@ ConflictMode = ConflictModeT()
 
 __pdoc__[
     "ConflictMode"
-] = f"""Conflict mode.
+] = f"""Conflict mode enumeration.
 
 ```python
 {prettify_doc(ConflictMode)}
@@ -335,7 +335,7 @@ DirectionConflictMode = DirectionConflictModeT()
 
 __pdoc__[
     "DirectionConflictMode"
-] = f"""Direction conflict mode.
+] = f"""Direction conflict mode enumeration.
 
 ```python
 {prettify_doc(DirectionConflictMode)}
@@ -369,7 +369,7 @@ OppositeEntryMode = OppositeEntryModeT()
 
 __pdoc__[
     "OppositeEntryMode"
-] = f"""Opposite entry mode.
+] = f"""Opposite entry mode enumeration.
 
 ```python
 {prettify_doc(OppositeEntryMode)}
@@ -398,7 +398,7 @@ DeltaFormat = DeltaFormatT()
 
 __pdoc__[
     "DeltaFormat"
-] = f"""Delta format.
+] = f"""Delta format enumeration.
 
 ```python
 {prettify_doc(DeltaFormat)}
@@ -424,7 +424,7 @@ TimeDeltaFormat = TimeDeltaFormatT()
 
 __pdoc__[
     "TimeDeltaFormat"
-] = f"""Time delta format.
+] = f"""Time delta format enumeration.
 
 ```python
 {prettify_doc(TimeDeltaFormat)}
@@ -456,7 +456,7 @@ StopLadderMode = StopLadderModeT()
 
 __pdoc__[
     "StopLadderMode"
-] = f"""Stop ladder mode.
+] = f"""Stop ladder mode enumeration.
 
 ```python
 {prettify_doc(StopLadderMode)}
@@ -491,7 +491,7 @@ StopEntryPrice = StopEntryPriceT()
 
 __pdoc__[
     "StopEntryPrice"
-] = f"""Stop entry price.
+] = f"""Stop entry price enumeration.
 
 ```python
 {prettify_doc(StopEntryPrice)}
@@ -522,7 +522,7 @@ StopExitPrice = StopExitPriceT()
 
 __pdoc__[
     "StopExitPrice"
-] = f"""Stop exit price.
+] = f"""Stop exit price enumeration.
 
 ```python
 {prettify_doc(StopExitPrice)}
@@ -555,7 +555,7 @@ StopExitType = StopExitTypeT()
 
 __pdoc__[
     "StopExitType"
-] = f"""Stop exit type.
+] = f"""Stop exit type enumeration.
 
 ```python
 {prettify_doc(StopExitType)}
@@ -582,7 +582,7 @@ StopUpdateMode = StopUpdateModeT()
 
 __pdoc__[
     "StopUpdateMode"
-] = f"""Stop update mode.
+] = f"""Stop update mode enumeration.
 
 ```python
 {prettify_doc(StopUpdateMode)}
@@ -615,7 +615,7 @@ SizeType = SizeTypeT()
 
 __pdoc__[
     "SizeType"
-] = f"""Size type for trading operations.
+] = f"""Size type for trading operations enumeration.
 
 ```python
 {prettify_doc(SizeType)}
@@ -662,7 +662,7 @@ Direction = DirectionT()
 
 __pdoc__[
     "Direction"
-] = f"""Position direction.
+] = f"""Position direction enumeration.
 
 ```python
 {prettify_doc(Direction)}
@@ -685,7 +685,7 @@ LeverageMode = LeverageModeT()
 
 __pdoc__[
     "LeverageMode"
-] = f"""Leverage mode.
+] = f"""Leverage mode enumeration.
 
 ```python
 {prettify_doc(LeverageMode)}
@@ -708,7 +708,7 @@ PriceAreaVioMode = PriceAreaVioModeT()
 
 __pdoc__[
     "PriceAreaVioMode"
-] = f"""Price area violation mode.
+] = f"""Price area violation mode enumeration.
 
 ```python
 {prettify_doc(PriceAreaVioMode)}
@@ -732,7 +732,7 @@ OrderStatus = OrderStatusT()
 
 __pdoc__[
     "OrderStatus"
-] = f"""Order status.
+] = f"""Order status enumeration.
 
 ```python
 {prettify_doc(OrderStatus)}
@@ -766,7 +766,7 @@ OrderStatusInfo = OrderStatusInfoT()
 
 __pdoc__[
     "OrderStatusInfo"
-] = f"""Order status information.
+] = f"""Order status information enumeration.
 
 ```python
 {prettify_doc(OrderStatusInfo)}
@@ -825,7 +825,7 @@ OrderSide = OrderSideT()
 
 __pdoc__[
     "OrderSide"
-] = f"""Order side.
+] = f"""Order side enumeration.
 
 ```python
 {prettify_doc(OrderSide)}
@@ -847,7 +847,7 @@ OrderType = OrderTypeT()
 
 __pdoc__[
     "OrderType"
-] = f"""Order type.
+] = f"""Order type enumeration.
 
 ```python
 {prettify_doc(OrderType)}
@@ -870,7 +870,7 @@ LimitOrderPrice = LimitOrderPriceT()
 
 __pdoc__[
     "LimitOrderPrice"
-] = f"""Limit order price.
+] = f"""Limit order price enumeration.
 
 ```python
 {prettify_doc(LimitOrderPrice)}
@@ -900,7 +900,7 @@ TradeDirection = TradeDirectionT()
 
 __pdoc__[
     "TradeDirection"
-] = f"""Trade direction.
+] = f"""Trade direction enumeration.
 
 ```python
 {prettify_doc(TradeDirection)}
@@ -922,7 +922,7 @@ TradeStatus = TradeStatusT()
 
 __pdoc__[
     "TradeStatus"
-] = f"""Trade status.
+] = f"""Trade status enumeration.
 
 ```python
 {prettify_doc(TradeStatus)}
@@ -946,7 +946,7 @@ TradesType = TradesTypeT()
 
 __pdoc__[
     "TradesType"
-] = f"""Trades type.
+] = f"""Trades type enumeration.
 
 ```python
 {prettify_doc(TradesType)}
@@ -972,7 +972,7 @@ OrderPriceStatus = OrderPriceStatusT()
 
 __pdoc__[
     "OrderPriceStatus"
-] = f"""Order price status.
+] = f"""Order price status enumeration.
 
 ```python
 {prettify_doc(OrderPriceStatus)}
@@ -996,7 +996,7 @@ PositionFeature = PositionFeatureT()
 
 __pdoc__[
     "PositionFeature"
-] = f"""Position feature.
+] = f"""Position feature enumeration.
 
 ```python
 {prettify_doc(PositionFeature)}

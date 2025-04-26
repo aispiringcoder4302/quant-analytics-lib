@@ -955,7 +955,7 @@ class FOPreparer(BasePFPreparer):
         """Argument `from_ago` before broadcasting.
 
         Returns:
-            ArrayLike: The from-ago value(s) before broadcasting.
+            ArrayLike: The from-ago value before broadcasting.
         """
         from_ago = self["from_ago"]
         if from_ago is not None:

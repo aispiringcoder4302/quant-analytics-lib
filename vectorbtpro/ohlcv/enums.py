@@ -35,7 +35,7 @@ PriceFeature = PriceFeatureT()
 
 __pdoc__[
     "PriceFeature"
-] = f"""Price feature named tuple.
+] = f"""Price feature enumeration.
 
 Fields:
     Open: Index for the open price.

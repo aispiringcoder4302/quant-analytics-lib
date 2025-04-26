@@ -39,10 +39,14 @@ def records_within_sim_range_nb(
     Args:
         target_shape (Shape): The target shape specification for the simulation.
         records (RecordArray): Array of records.
-        col_arr (Array1d): Array of column indices corresponding to each record.
-        idx_arr (Array1d): Array of row indices corresponding to each record.
+        col_arr (Array1d): Array of column indices corresponding to each element in `records`.
+        idx_arr (Array1d): Array of row indices corresponding to each element in `records`.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         RecordArray: An array of records filtered to lie within the simulation range.
@@ -76,7 +80,7 @@ def apply_weights_to_orders_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
-        col_arr (Array1d): Array of column indices for the order records.
+        col_arr (Array1d): Array of column indices.
         weights (Array1d): Array of weights used to scale order sizes and fees per column.
 
     Returns:
@@ -352,14 +356,24 @@ def get_entry_trades_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
-        close (FlexArray2dLike): 2D array of closing prices.
+        close (FlexArray2dLike): Closing prices.
+        
+            Provided as a scalar, or per row, column, or element.
         col_map (GroupMap): Tuple of column indices and lengths.
-        init_position (FlexArray1dLike): Initial position for each column.
-        init_price (FlexArray1dLike): 1D array of initial prices.
+        init_position (FlexArray1dLike): Initial position.
+
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): Initial position price.
+
+            Provided as a scalar or per column.
 
             Used to calculate the entry price when an initial position exists.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         RecordArray: Array of entry trade records aggregated from order records.
@@ -689,16 +703,24 @@ def get_exit_trades_nb(
         order_records (RecordArray): Array of order records.
             
             Contains structured order data from simulation outputs.
-        close (FlexArray2dLike): 2D array of closing prices.
-            
-            Each element represents the closing price at a specific index for each column.
+        close (FlexArray2dLike): Closing prices.
+        
+            Provided as a scalar, or per row, column, or element.
         col_map (GroupMap): Tuple of column indices and lengths.
-        init_position (FlexArray1dLike): Initial position for each column.
-        init_price (FlexArray1dLike): Initial prices for each column.
+        init_position (FlexArray1dLike): Initial position.
+
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): Initial position price.
+
+            Provided as a scalar or per column.
             
             Represented as a 1D array-like structure.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         RecordArray: Array of aggregated exit trade records.
@@ -1188,10 +1210,18 @@ def get_long_view_orders_nb(
         order_records (RecordArray): Array of order records.
         close (Array2d): Array of closing prices.
         col_map (GroupMap): Tuple of column indices and lengths.
-        init_position (FlexArray1dLike): Initial position for each column.
-        init_price (FlexArray1dLike): Initial price for each column.
+        init_position (FlexArray1dLike): Initial position.
+
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): Initial position price.
+
+            Provided as a scalar or per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         RecordArray: Filtered order records containing only long position entries.
@@ -1360,10 +1390,18 @@ def get_short_view_orders_nb(
         order_records (RecordArray): Array of order records.
         close (Array2d): A 2D array of closing prices.
         col_map (GroupMap): Tuple of column indices and lengths.
-        init_position (FlexArray1dLike): Initial position for each column.
-        init_price (FlexArray1dLike): Initial price for each column.
+        init_position (FlexArray1dLike): Initial position.
+
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): Initial position price.
+
+            Provided as a scalar or per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         RecordArray: Filtered order records corresponding to short positions.
@@ -1541,14 +1579,22 @@ def get_position_feature_nb(
         feature (int): Position feature to compute.
 
             See `vectorbtpro.portfolio.enums.PositionFeature`.
-        init_position (FlexArray1dLike): Initial position for each column.
-        init_price (FlexArray1dLike): Initial prices for each column.
+        init_position (FlexArray1dLike): Initial position.
+
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): Initial position price.
+
+            Provided as a scalar or per column.
         fill_closed_position (bool): If True, forward-fill missing values using
             prices from a previously closed position.
         fill_exit_price (bool): If True, fill exit prices for open positions using
             the current close price.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
 
     Returns:
         Array2d: Array of computed feature values matching the shape of `close`.

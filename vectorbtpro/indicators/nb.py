@@ -47,7 +47,7 @@ def ma_1d_nb(
 
     Args:
         close (Array1d): 1D array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -85,8 +85,12 @@ def ma_nb(
 
     Args:
         close (Array2d): 2D array where each column represents a data series.
-        window (FlexArray1dLike): Window length(s).
-        wtype (FlexArray1dLike): Weight type(s).
+        window (FlexArray1dLike): Window size.
+        
+            Provided as a scalar or per column.
+        wtype (FlexArray1dLike): Weighting type.
+        
+            Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required.
@@ -131,7 +135,7 @@ def msd_1d_nb(
 
     Args:
         close (Array1d): 1D array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -172,8 +176,12 @@ def msd_nb(
 
     Args:
         close (Array2d): 2D array where each column represents a data series.
-        window (FlexArray1dLike): Window length(s).
-        wtype (FlexArray1dLike): Weight type(s).
+        window (FlexArray1dLike): Window size.
+        
+            Provided as a scalar or per column.
+        wtype (FlexArray1dLike): Weighting type.
+        
+            Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required.
@@ -221,7 +229,7 @@ def bbands_1d_nb(
 
     Args:
         close (Array1d): 1D array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -270,11 +278,17 @@ def bbands_nb(
 
     Args:
         close (Array2d): 2D array where each column is a data series.
-        window (FlexArray1dLike): Window length(s).
-        wtype (FlexArray1dLike): Weight type(s).
+        window (FlexArray1dLike): Window size.
+        
+            Provided as a scalar or per column.
+        wtype (FlexArray1dLike): Weighting type.
+        
+            Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
-        alpha (FlexArray1dLike): Multiplier(s) for the standard deviation.
+        alpha (FlexArray1dLike): Multiplier for the standard deviation.
+        
+            Provided as a scalar or per column.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
         ddof (int): Delta degrees of freedom.
@@ -419,7 +433,7 @@ def avg_gain_1d_nb(
 
     Args:
         close (Array1d): 1-dimensional array of closing prices.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -469,8 +483,14 @@ def avg_gain_nb(
 
     Args:
         close (Array2d): 2-dimensional array of closing prices.
-        window (FlexArray1dLike): Window size(s) for the moving average.
-        wtype (FlexArray1dLike): Weighting type(s); refer to `vectorbtpro.generic.enums.WType`.
+        window (FlexArray1dLike): Window size.
+        
+            Provided as a scalar or per column.
+        wtype (FlexArray1dLike): Weighting type.
+        
+            Provided as a scalar or per column.
+
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -510,7 +530,7 @@ def avg_loss_1d_nb(
 
     Args:
         close (Array1d): 1-dimensional array of closing prices.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -560,8 +580,14 @@ def avg_loss_nb(
 
     Args:
         close (Array2d): 2-dimensional array of closing prices.
-        window (FlexArray1dLike): Window size(s) for the moving average.
-        wtype (FlexArray1dLike): Weighting type(s); refer to `vectorbtpro.generic.enums.WType`.
+        window (FlexArray1dLike): Window size.
+        
+            Provided as a scalar or per column.
+        wtype (FlexArray1dLike): Weighting type.
+        
+            Provided as a scalar or per column.
+
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -600,7 +626,7 @@ def rsi_1d_nb(
 
     Args:
         close (Array1d): 1-dimensional array of closing prices.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -640,8 +666,14 @@ def rsi_nb(
 
     Args:
         close (Array2d): 2-dimensional array of closing prices.
-        window (FlexArray1dLike): Window size(s) for RSI calculation.
-        wtype (FlexArray1dLike): Weighting type(s); see `vectorbtpro.generic.enums.WType` for available options.
+        window (FlexArray1dLike): Window size.
+        
+            Provided as a scalar or per column.
+        wtype (FlexArray1dLike): Weighting type.
+        
+            Provided as a scalar or per column.
+
+            See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -683,7 +715,7 @@ def stoch_k_1d_nb(
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
         close (Array1d): Array of closing prices.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -720,7 +752,9 @@ def stoch_k_nb(
         high (Array2d): Two-dimensional array of high prices.
         low (Array2d): Two-dimensional array of low prices.
         close (Array2d): Two-dimensional array of closing prices.
-        window (FlexArray1dLike): Period(s) for computing the rolling minimum and maximum.
+        window (FlexArray1dLike): Window size.
+        
+            Provided as a scalar or per column.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -770,18 +804,18 @@ def stoch_1d_nb(
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
         close (Array1d): Array of closing prices.
-        fast_k_window (int): Lookback window for fast %K calculation.
-        slow_k_window (int): Window for the slow %K moving average.
-        slow_d_window (int): Window for the slow %D moving average.
+        fast_k_window (int): Window size for fast %K calculation.
+        slow_k_window (int): Window size for the slow %K moving average.
+        slow_d_window (int): Window size for the slow %D moving average.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
-        slow_k_wtype (Optional[int]): Weight type for the slow %K moving average.
+        slow_k_wtype (Optional[int]): Weighting type for the slow %K moving average.
 
-            Defaults to `wtype` if not provided.
-        slow_d_wtype (Optional[int]): Weight type for the slow %D moving average.
+            See `vectorbtpro.generic.enums.WType`. Defaults to `wtype` if not provided.
+        slow_d_wtype (Optional[int]): Weighting type for the slow %D moving average.
 
-            Defaults to `wtype` if not provided.
+            See `vectorbtpro.generic.enums.WType`. Defaults to `wtype` if not provided.
         minp (Optional[int]): Minimum number of observations required.
         fast_k_minp (Optional[int]): Minimum periods for fast %K calculation.
 
@@ -886,18 +920,30 @@ def stoch_nb(
         high (Array2d): Two-dimensional array of high prices.
         low (Array2d): Two-dimensional array of low prices.
         close (Array2d): Two-dimensional array of closing prices.
-        fast_k_window (FlexArray1dLike): Lookback window(s) for fast %K calculation.
-        slow_k_window (FlexArray1dLike): Window(s) for the slow %K moving average.
-        slow_d_window (FlexArray1dLike): Window(s) for the slow %D moving average.
-        wtype (FlexArray1dLike): Weight type(s) for moving average calculations.
+        fast_k_window (FlexArray1dLike): Window size for fast %K calculation.
+        
+            Provided as a scalar or per column.
+        slow_k_window (FlexArray1dLike): Window size for the slow %K moving average.
+        
+            Provided as a scalar or per column.
+        slow_d_window (FlexArray1dLike): Window size for the slow %D moving average.
+        
+            Provided as a scalar or per column.
+        wtype (FlexArray1dLike): Weighting type.
+        
+            Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
-        slow_k_wtype (Optional[FlexArray1dLike]): Weight type for the slow %K moving average.
+        slow_k_wtype (Optional[FlexArray1dLike]): Weighting type for the slow %K moving average.
+        
+            Provided as a scalar or per column.
 
-            Uses `wtype` if not provided.
-        slow_d_wtype (Optional[FlexArray1dLike]): Weight type for the slow %D moving average.
+            See `vectorbtpro.generic.enums.WType`. Uses `wtype` if not provided.
+        slow_d_wtype (Optional[FlexArray1dLike]): Weighting type for the slow %D moving average.
+        
+            Provided as a scalar or per column.
 
-            Uses `wtype` if not provided.
+            See `vectorbtpro.generic.enums.WType`. Uses `wtype` if not provided.
         minp (Optional[int]): Minimum number of observations required.
         fast_k_minp (Optional[int]): Minimum periods for fast %K calculation.
 
@@ -992,12 +1038,12 @@ def macd_1d_nb(
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
-        macd_wtype (Optional[int]): Alternative weighting type for MACD computation.
+        macd_wtype (Optional[int]): Weighting type for MACD computation.
 
-            Uses `wtype` if not provided.
-        signal_wtype (Optional[int]): Alternative weighting type for signal computation.
+            See `vectorbtpro.generic.enums.WType`. Uses `wtype` if not provided.
+        signal_wtype (Optional[int]): Weighting type for signal computation.
 
-            Uses `wtype` if not provided.
+            See `vectorbtpro.generic.enums.WType`. Uses `wtype` if not provided.
         minp (Optional[int]): Minimum number of observations required.
         macd_minp (Optional[int]): Minimum period for the MACD moving average.
 
@@ -1090,18 +1136,30 @@ def macd_nb(
 
     Args:
         close (Array2d): 2-D array of closing prices.
-        fast_window (FlexArray1dLike): Array or scalar specifying the fast moving average window.
-        slow_window (FlexArray1dLike): Array or scalar specifying the slow moving average window.
-        signal_window (FlexArray1dLike): Array or scalar specifying the signal moving average window.
-        wtype (FlexArray1dLike): Array or scalar for the weighting type.
+        fast_window (FlexArray1dLike): Window size for computing the fast moving average.
+        
+            Provided as a scalar or per column.
+        slow_window (FlexArray1dLike): Window size for computing the slow moving average.
+        
+            Provided as a scalar or per column.
+        signal_window (FlexArray1dLike): Window size for computing the signal moving average.
+        
+            Provided as a scalar or per column.
+        wtype (FlexArray1dLike): Weighting type.
+        
+            Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
-        macd_wtype (Optional[FlexArray1dLike]): Alternative weighting type for MACD computation.
+        macd_wtype (Optional[FlexArray1dLike]): Weighting type for MACD computation.
+        
+            Provided as a scalar or per column.
 
-            Uses `wtype` if not provided.
-        signal_wtype (Optional[FlexArray1dLike]): Alternative weighting type for signal computation.
+            See `vectorbtpro.generic.enums.WType`. Uses `wtype` if not provided.
+        signal_wtype (Optional[FlexArray1dLike]): Weighting type for signal computation.
+        
+            Provided as a scalar or per column.
 
-            Uses `wtype` if not provided.
+            See `vectorbtpro.generic.enums.WType`. Uses `wtype` if not provided.
         minp (Optional[int]): Minimum number of observations required.
         macd_minp (Optional[int]): Minimum period for the MACD moving average.
 
@@ -1300,7 +1358,7 @@ def atr_1d_nb(
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
         close (Array1d): Array of close prices.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -1346,8 +1404,12 @@ def atr_nb(
         high (Array2d): 2-dimensional array of high prices.
         low (Array2d): 2-dimensional array of low prices.
         close (Array2d): 2-dimensional array of close prices.
-        window (FlexArray1dLike): Window size(s) for moving average calculation.
-        wtype (FlexArray1dLike): Weight type(s) for moving average computation.
+        window (FlexArray1dLike): Window size.
+        
+            Provided as a scalar or per column.
+        wtype (FlexArray1dLike): Weighting type.
+        
+            Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required.
@@ -1399,7 +1461,7 @@ def adx_1d_nb(
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
         close (Array1d): Array of close prices.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -1472,8 +1534,12 @@ def adx_nb(
         high (Array2d): 2-dimensional array of high prices.
         low (Array2d): 2-dimensional array of low prices.
         close (Array2d): 2-dimensional array of close prices.
-        window (FlexArray1dLike): Window size(s) for calculation.
-        wtype (FlexArray1dLike): Weight type(s) for moving average computation.
+        window (FlexArray1dLike): Window size.
+        
+            Provided as a scalar or per column.
+        wtype (FlexArray1dLike): Weighting type.
+        
+            Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         minp (Optional[int]): Minimum number of observations required.
@@ -1583,8 +1649,8 @@ def ols_1d_nb(
     Args:
         x (Array1d): 1-dimensional array of independent variable values.
         y (Array1d): 1-dimensional array of dependent variable values.
-        window (int): Size of the rolling window.
-        norm_window (Optional[int]): Window length for error normalization.
+        window (int): Window size.
+        norm_window (Optional[int]): Window size for error normalization.
 
             Defaults to `window` if None.
         minp (Optional[int]): Minimum number of observations required.
@@ -1640,8 +1706,12 @@ def ols_nb(
     Args:
         x (Array2d): 2-dimensional array of independent variable values.
         y (Array2d): 2-dimensional array of dependent variable values.
-        window (FlexArray1dLike): Rolling window length(s).
-        norm_window (Optional[FlexArray1dLike]): Rolling window length for error normalization.
+        window (FlexArray1dLike): Window size.
+        
+            Provided as a scalar or per column.
+        norm_window (Optional[FlexArray1dLike]): Window size for error normalization.
+        
+            Provided as a scalar or per column.
 
             Defaults to `window` if None.
         minp (Optional[int]): Minimum number of observations required.
@@ -1962,8 +2032,12 @@ def pivot_info_1d_nb(
     Args:
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
-        up_th (FlexArray1dLike): Upper threshold(s).
-        down_th (FlexArray1dLike): Lower threshold(s).
+        up_th (FlexArray1dLike): Upper threshold for detecting peaks.
+        
+            Provided as a scalar or per row.
+        down_th (FlexArray1dLike): Lower threshold for detecting valleys.
+        
+            Provided as a scalar or per row.
 
     Returns:
         Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
@@ -2082,8 +2156,12 @@ def pivot_info_nb(
     Args:
         high (Array2d): Array of high prices.
         low (Array2d): Array of low prices.
-        up_th (FlexArray2dLike): Upper threshold(s).
-        down_th (FlexArray2dLike): Lower threshold(s).
+        up_th (FlexArray2dLike): Upper threshold for detecting peaks.
+        
+            Provided as a scalar, or per row, column, or element.
+        down_th (FlexArray2dLike): Lower threshold for detecting valleys.
+        
+            Provided as a scalar, or per row, column, or element.
 
     Returns:
         Tuple[Array2d, Array2d, Array2d, Array2d]: A tuple containing:
@@ -2513,8 +2591,12 @@ def supertrend_nb(
         high (Array2d): Array of high prices.
         low (Array2d): Array of low prices.
         close (Array2d): Array of close prices.
-        period (FlexArray1dLike): Period(s) for the indicator calculation.
-        multiplier (FlexArray1dLike): Multiplier(s) used to determine the volatility threshold.
+        period (FlexArray1dLike): Period for the indicator calculation.
+        
+            Provided as a scalar or per column.
+        multiplier (FlexArray1dLike): Multiplier used to determine the volatility threshold.
+        
+            Provided as a scalar or per column.
 
     Returns:
         Tuple[Array2d, Array2d, Array2d, Array2d]: A tuple containing
@@ -2565,20 +2647,30 @@ def signal_detection_1d_nb(
         close (Array1d): Array of close prices.
 
         lag (int): Window size for computing moving averages and standard deviations.
-        factor (FlexArray1dLike): Factor(s) to determine the threshold for signal detection.
-        influence (FlexArray1dLike): Influence factor(s) for updating the filtering process.
+        factor (FlexArray1dLike): Factor to determine the threshold for signal detection.
+        
+            Provided as a scalar or per row.
+        influence (FlexArray1dLike): Influence factor for updating the filtering process.
+        
+            Provided as a scalar or per row.
         up_factor (Optional[FlexArray1dLike]): Factor for the upward threshold.
+        
+            Provided as a scalar or per row.
 
             If None, uses `factor`.
         down_factor (Optional[FlexArray1dLike]): Factor for the downward threshold.
+        
+            Provided as a scalar or per row.
 
             If None, uses `factor`.
-        mean_influence (Optional[FlexArray1dLike]): Influence factor for updating
-        the moving average filter.
+        mean_influence (Optional[FlexArray1dLike]): Influence factor for updating the moving average filter.
+        
+            Provided as a scalar or per column.
 
             If None, uses `influence`.
-        std_influence (Optional[FlexArray1dLike]): Influence factor for updating
-        the standard deviation filter.
+        std_influence (Optional[FlexArray1dLike]): Influence factor for updating the standard deviation filter.
+        
+            Provided as a scalar or per column.
 
             If None, uses `influence`.
 
@@ -2681,21 +2773,33 @@ def signal_detection_nb(
 
     Args:
         close (Array2d): Array of close prices.
-        lag (FlexArray1dLike): Window size(s) for computing moving averages and standard deviations.
+        lag (FlexArray1dLike): Window size for computing moving averages and standard deviations.
+        
+            Provided as a scalar or per column.
         factor (FlexArray2dLike): Factor to determine the threshold for signal detection.
+        
+            Provided as a scalar, or per row, column, or element.
         influence (FlexArray2dLike): Influence factor for updating the filtering process.
+        
+            Provided as a scalar, or per row, column, or element.
         up_factor (Optional[FlexArray2dLike]): Factor for the upward threshold.
+        
+            Provided as a scalar, or per row, column, or element.
 
             If None, uses `factor`.
         down_factor (Optional[FlexArray2dLike]): Factor for the downward threshold.
+        
+            Provided as a scalar, or per row, column, or element.
 
             If None, uses `factor`.
-        mean_influence (Optional[FlexArray2dLike]): Influence factor for updating
-            the moving average filter.
+        mean_influence (Optional[FlexArray2dLike]): Influence factor for updating the moving average filter.
+        
+            Provided as a scalar, or per row, column, or element.
 
             If None, uses `influence`.
-        std_influence (Optional[FlexArray2dLike]): Influence factor for updating
-            the standard deviation filter.
+        std_influence (Optional[FlexArray2dLike]): Influence factor for updating the standard deviation filter.
+        
+            Provided as a scalar, or per row, column, or element.
 
             If None, uses `influence`.
 
@@ -3034,7 +3138,7 @@ def rolling_hurst_1d_nb(
 
     Args:
         close (Array1d): One-dimensional array of price data.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         method (int): Hurst exponent computation method.
 
             See `vectorbtpro.indicators.enums.HurstMethod`.
@@ -3124,7 +3228,7 @@ def rolling_hurst_nb(
 
     Args:
         close (Array2d): Two-dimensional array of price data where each column represents a series.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         method (int): Hurst exponent computation method.
 
             See `vectorbtpro.indicators.enums.HurstMethod`.

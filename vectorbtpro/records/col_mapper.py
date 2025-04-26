@@ -36,7 +36,7 @@ class ColumnMapper(Wrapping):
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
-        col_arr (Array1d): The column array.
+        col_arr (Array1d): Array of column indices.
         **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping`.
     """
 

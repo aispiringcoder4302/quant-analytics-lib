@@ -1527,7 +1527,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             a (ArrayLike): Array to be converted into a mapped array.
-            idx_arr (Union[None, str, Array1d]): Row indices as an array,
+            idx_arr (Union[None, str, Array1d]): Array of row indices or field name for retrieving row indices.
                 a field name, or None to use the default index array.
             mapping (Optional[MappingLike]): Mapping to apply for re-labeling records.
             group_by (GroupByLike): Grouping specification.
@@ -1688,7 +1688,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Return a mask as a Series or DataFrame based on row and column indices.
 
         Args:
-            idx_arr (Union[None, str, Array1d]): Index array or field name for retrieving row indices.
+            idx_arr (Union[None, str, Array1d]): Array of row indices or field name for retrieving row indices.
 
                 If None, `Records.idx_arr` is used.
             group_by (GroupByLike): Grouping specification.

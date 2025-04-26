@@ -37,7 +37,7 @@ Pivot = PivotT()
 
 __pdoc__[
     "Pivot"
-] = f"""Pivot named tuple representing indicator pivot values.
+] = f"""Pivot enumeration.
 
 Fields:
     Valley: Valley point.
@@ -59,7 +59,7 @@ TrendMode = TrendModeT()
 
 __pdoc__[
     "TrendMode"
-] = f"""Trend mode named tuple representing indicator trend directions.
+] = f"""Trend mode enumeration.
 
 Fields:
     Downtrend: Downtrend direction.
@@ -84,7 +84,7 @@ HurstMethod = HurstMethodT()
 
 __pdoc__[
     "HurstMethod"
-] = f"""Hurst method named tuple representing available methods for computing the Hurst exponent.
+] = f"""Hurst method enumeration.
 
 Fields:
     Standard: Standard method.

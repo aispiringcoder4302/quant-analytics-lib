@@ -221,8 +221,8 @@ class Orders(PriceRecords):
         """Return a long view of order records.
 
         Args:
-            init_position (ArrayLike): Initial position(s).
-            init_price (ArrayLike): Initial price(s).
+            init_position (ArrayLike): Initial position.
+            init_price (ArrayLike): Initial position price.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -257,8 +257,8 @@ class Orders(PriceRecords):
         """Return a short view of order records.
 
         Args:
-            init_position (ArrayLike): Initial position(s).
-            init_price (ArrayLike): Initial price(s).
+            init_position (ArrayLike): Initial position.
+            init_price (ArrayLike): Initial position price.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

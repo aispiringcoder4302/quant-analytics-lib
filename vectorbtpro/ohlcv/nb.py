@@ -38,7 +38,9 @@ def ohlc_every_1d_nb(price: tp.Array1d, n: tp.FlexArray1dLike) -> tp.Array2d:
 
     Args:
         price (Array1d): A one-dimensional array of price data.
-        n (FlexArray1dLike): The number(s) of consecutive price points to aggregate.
+        n (FlexArray1dLike): The number of consecutive price points to aggregate.
+        
+            Provided as a scalar or per bar.
 
     Returns:
         Array2d: A two-dimensional array where each row represents an OHLC bar.
@@ -234,10 +236,14 @@ def mirror_ohlc_nb(
         high (Optional[Array2d]): 2D array of high prices.
         low (Optional[Array2d]): 2D array of low prices.
         close (Optional[Array2d]): 2D array of close prices.
-        start_value (FlexArray1dLike): Scalar or 1D array specifying the starting value.
+        start_value (FlexArray1dLike): Starting value.
+        
+            Provided as a scalar or per column.
 
             If provided and not NaN, it replaces the first valid reference price.
-        ref_feature (FlexArray1dLike): Scalar or 1D array specifying the reference price feature.
+        ref_feature (FlexArray1dLike): Reference price feature.
+        
+            Provided as a scalar or per column.
 
             See `vectorbtpro.ohlcv.enums.PriceFeature`.
             A value of -1 enables auto-detection of the first non-NaN price.

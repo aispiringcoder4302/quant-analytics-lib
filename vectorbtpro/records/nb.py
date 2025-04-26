@@ -63,7 +63,7 @@ def col_lens_nb(col_arr: tp.Array1d, n_cols: int) -> tp.GroupLens:
     """Get lengths for each column in a sorted column index array.
 
     Args:
-        col_arr (Array1d): Sorted array of column indices.
+        col_arr (Array1d): Array of column indices.
         n_cols (int): Total number of columns.
 
     Returns:
@@ -213,7 +213,7 @@ def is_col_id_sorted_nb(col_arr: tp.Array1d, id_arr: tp.Array1d) -> bool:
 
     Args:
         col_arr (Array1d): Array of column indices.
-        id_arr (Array1d): Array of IDs corresponding to the records.
+        id_arr (Array1d): Array of IDs.
 
     Returns:
         bool: True if the arrays are sorted in ascending order by column and
@@ -352,7 +352,7 @@ def top_n_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, n: int) -> tp.
     """Return the boolean mask selecting the top n elements from each group based on the mapped values.
 
     Args:
-        mapped_arr (Array1d): Array containing numerical values used for ranking.
+        mapped_arr (Array1d): Array of mapped values.
         col_map (GroupMap): Tuple of column indices and lengths.
         n (int): Number of top elements to select from each group.
 
@@ -390,7 +390,7 @@ def bottom_n_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, n: int) -> 
     """Return the boolean mask selecting the bottom n elements from each group based on the mapped values.
 
     Args:
-        mapped_arr (Array1d): Array containing numerical values used for ranking.
+        mapped_arr (Array1d): Array of mapped values.
         col_map (GroupMap): Tuple of column indices and lengths.
         n (int): Number of bottom elements to select from each group.
 
@@ -589,8 +589,8 @@ def reduce_mapped_segments_nb(
 
     Args:
         mapped_arr (Array1d): Array of mapped values.
-        idx_arr (Array1d): Array of indices corresponding to each value in `mapped_arr`.
-        id_arr (Array1d): Array of identifier values corresponding to each value in `mapped_arr`.
+        idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
+        id_arr (Array1d): Array of IDs corresponding to each value in `mapped_arr`.
         col_map (GroupMap): Tuple of column indices and lengths.
         segment_arr (Array1d): Array indicating segment boundaries for mapped values.
         reduce_func_nb (ReduceFunc): Function to reduce a segment of values.
@@ -788,7 +788,7 @@ def reduce_mapped_to_idx_nb(
     Args:
         mapped_arr (Array1d): Array of mapped values.
         col_map (GroupMap): Tuple of column indices and lengths.
-        idx_arr (Array1d): Array of indices corresponding to mapped values.
+        idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
         fill_value (float): Fill value used to initialize the output array.
         reduce_func_nb (ReduceFunc): Reduction function that computes an index from a slice of `mapped_arr`.
         *args: Positional arguments for `reduce_func_nb`.
@@ -840,7 +840,7 @@ def reduce_mapped_to_idx_meta_nb(
 
     Args:
         col_map (GroupMap): Tuple of column indices and lengths.
-        idx_arr (Array1d): Array of indices corresponding to the groups.
+        idx_arr (Array1d): Array of row indices.
         fill_value (float): Value to fill in the output for groups without data.
         reduce_func_nb (MappedReduceMetaFunc): Reduction function used for meta reduction.
         *args: Positional arguments for `reduce_func_nb`.
@@ -888,7 +888,7 @@ def reduce_mapped_to_array_nb(
     """Reduce mapped array by column to an array.
 
     Args:
-        mapped_arr (Array1d): Array containing mapped values to reduce.
+        mapped_arr (Array1d): Array of mapped values.
         col_map (GroupMap): Tuple of column indices and lengths.
         fill_value (float): Value used to initialize the output array.
         reduce_func_nb (ReduceToArrayFunc): Function to reduce the mapped array to an array.
@@ -1007,9 +1007,9 @@ def reduce_mapped_to_idx_array_nb(
     """Reduce mapped array by column to an index array.
 
     Args:
-        mapped_arr (Array1d): Array containing mapped values to reduce.
+        mapped_arr (Array1d): Array of mapped values.
         col_map (GroupMap): Tuple of column indices and lengths.
-        idx_arr (Array1d): Array of indices used to map reduced values to final indices.
+        idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
         fill_value (float): Value used to initialize the output array.
         reduce_func_nb (ReduceToArrayFunc): Function to reduce the mapped array to an index array.
         *args: Positional arguments for `reduce_func_nb`.
@@ -1074,7 +1074,7 @@ def reduce_mapped_to_idx_array_meta_nb(
 
     Args:
         col_map (GroupMap): Tuple of column indices and lengths.
-        idx_arr (Array1d): Array of indices used for reduction.
+        idx_arr (Array1d): Array of row indices.
         fill_value (float): Fill value used to initialize the output array.
         reduce_func_nb (MappedReduceToArrayMetaFunc): Reduction function applied on sub-arrays.
         *args: Positional arguments for `reduce_func_nb`.
@@ -1163,7 +1163,7 @@ def mapped_value_counts_per_row_nb(
     Counts the occurrences of each unique factor across rows using the provided index mapping.
 
     Args:
-        mapped_arr (Array1d): Factorized array of mapped values.
+        mapped_arr (Array1d): Array of mapped values.
         n_uniques (int): Number of unique values.
         idx_arr (Array1d): Array of row indices corresponding to values in `mapped_arr`.
         n_rows (int): Total number of rows.
@@ -1185,7 +1185,7 @@ def mapped_value_counts_nb(mapped_arr: tp.Array1d, n_uniques: int) -> tp.Array2d
     Counts the occurrences of each unique factor in the entire array.
 
     Args:
-        mapped_arr (Array1d): Factorized array of values.
+        mapped_arr (Array1d): Array of mapped values.
         n_uniques (int): Number of unique values.
 
     Returns:
@@ -1289,9 +1289,9 @@ def unstack_mapped_nb(
     Rearranges a mapped 1D array into a 2D array based on provided column and row indices.
 
     Args:
-        mapped_arr (Array1d): Mapped array of values.
-        col_arr (Array1d): Column indices for positioning values.
-        idx_arr (Array1d): Row indices for positioning values.
+        mapped_arr (Array1d): Array of mapped values.
+        col_arr (Array1d): Array of column indices corresponding to each element in `mapped_arr`.
+        idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
         target_shape (Shape): Shape of the unstacked 2D array.
         fill_value (float): Fill value for positions with no data.
 
@@ -1343,7 +1343,7 @@ def ignore_unstack_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, fill_
     without using explicit row indices.
 
     Args:
-        mapped_arr (Array1d): Mapped array of values.
+        mapped_arr (Array1d): Array of mapped values.
         col_map (GroupMap): Tuple of column indices and lengths.
         fill_value (float): Fill value for positions with no data.
 
@@ -1422,9 +1422,9 @@ def repeat_unstack_mapped_nb(
     """Return an unstacked 2D array from a mapped array using repeated index data.
 
     Args:
-        mapped_arr (Array1d): Mapped array containing values to be unstacked.
+        mapped_arr (Array1d): Array of mapped values.
         col_arr (Array1d): Array of column indices corresponding to each element in `mapped_arr`.
-        idx_arr (Array1d): Array of indices determining the row positions for unstacking.
+        idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
         repeat_cnt_arr (Array1d): Array of repetition counts used to compute starting indices.
         n_cols (int): Total number of columns in the output array.
         fill_value (float): Value used to initialize the output array.

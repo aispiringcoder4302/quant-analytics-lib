@@ -2952,7 +2952,7 @@ class EntryTrades(Trades):
 
                 If None, uses `orders._close`.
             init_position (ArrayLike): Initial position.
-            init_price (ArrayLike): Initial price.
+            init_price (ArrayLike): Initial position price.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
@@ -3239,7 +3239,7 @@ class ExitTrades(Trades):
 
                 If None, uses `orders._close`.
             init_position (ArrayLike): Initial position.
-            init_price (ArrayLike): Initial price.
+            init_price (ArrayLike): Initial position price.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
@@ -3523,7 +3523,7 @@ class Positions(Trades):
 
                 If None, uses `trades._close`.
             init_position (ArrayLike): Initial position.
-            init_price (ArrayLike): Initial price.
+            init_price (ArrayLike): Initial position price.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.

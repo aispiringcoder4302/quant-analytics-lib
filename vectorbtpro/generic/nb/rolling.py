@@ -78,7 +78,7 @@ def rolling_sum_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 
     Args:
         arr (Array1d): Array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -123,7 +123,7 @@ def rolling_sum_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
 
     Args:
         arr (Array2d): Two-dimensional array of numerical values, with each column processed independently.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -189,7 +189,7 @@ def rolling_prod_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
 
     Args:
         arr (Array1d): Array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -234,7 +234,7 @@ def rolling_prod_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None)
 
     Args:
         arr (Array2d): Two-dimensional array of numerical values, with each column processed separately.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -301,7 +301,7 @@ def rolling_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
 
     Args:
         arr (Array1d): One-dimensional array of numeric data.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -346,7 +346,7 @@ def rolling_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None)
 
     Args:
         arr (Array2d): Two-dimensional array of numeric data.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -417,7 +417,7 @@ def rolling_std_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 
     Args:
         arr (Array1d): One-dimensional array of numeric data.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         ddof (int): Delta degrees of freedom.
 
@@ -467,7 +467,7 @@ def rolling_std_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, 
 
     Args:
         arr (Array2d): Two-dimensional array of numeric data.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         ddof (int): Delta degrees of freedom.
 
@@ -540,7 +540,7 @@ def rolling_zscore_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = 
 
     Args:
         arr (Array1d): One-dimensional array of numeric data.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         ddof (int): Delta degrees of freedom.
 
@@ -588,7 +588,7 @@ def rolling_zscore_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = Non
 
     Args:
         arr (Array2d): Input 2D array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         ddof (int): Delta degrees of freedom.
 
@@ -654,7 +654,7 @@ def wm_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -
 
     Args:
         arr (Array1d): Input 1D array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -700,7 +700,7 @@ def wm_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> t
 
     Args:
         arr (Array2d): Input 2D array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -1264,7 +1264,7 @@ def vidya_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> 
 
     Args:
         arr (Array1d): 1-dimensional input array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -1313,7 +1313,7 @@ def vidya_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.
 
     Args:
         arr (Array2d): 2-dimensional input array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -1340,7 +1340,7 @@ def ma_1d_nb(
 
     Args:
         arr (Array1d): 1-dimensional input array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -1380,7 +1380,7 @@ def ma_nb(
 
     Args:
         arr (Array2d): 2-dimensional input array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -1412,7 +1412,7 @@ def msd_1d_nb(
 
     Args:
         arr (Array1d): Input array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -1452,7 +1452,7 @@ def msd_nb(
 
     Args:
         arr (Array2d): 2-dimensional input array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         wtype (int): Weighting type.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -1547,7 +1547,7 @@ def rolling_cov_1d_nb(
     Args:
         arr1 (Array1d): First input array.
         arr2 (Array1d): Second input array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         ddof (int): Delta degrees of freedom.
 
@@ -1607,7 +1607,7 @@ def rolling_cov_nb(
     Args:
         arr1 (Array2d): First 2-dimensional input array.
         arr2 (Array2d): Second 2-dimensional input array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         ddof (int): Delta degrees of freedom.
 
@@ -1702,7 +1702,7 @@ def rolling_corr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, window: int, minp: tp
     Args:
         arr1 (Array1d): First input array.
         arr2 (Array1d): Second input array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -1760,7 +1760,7 @@ def rolling_corr_nb(arr1: tp.Array2d, arr2: tp.Array2d, window: int, minp: tp.Op
     Args:
         arr1 (Array2d): First input two-dimensional array.
         arr2 (Array2d): Second input two-dimensional array.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -1861,7 +1861,7 @@ def rolling_ols_1d_nb(
     Args:
         arr1 (Array1d): 1-dimensional array of independent variable values.
         arr2 (Array1d): 1-dimensional array of dependent variable values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -1926,7 +1926,7 @@ def rolling_ols_nb(
     Args:
         arr1 (Array2d): 2-dimensional array of independent variable values.
         arr2 (Array2d): 2-dimensional array of dependent variable values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -1948,7 +1948,7 @@ def rolling_rank_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
 
     Args:
         arr (Array1d): 1-dimensional array of values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         pct (bool): If True, compute the rank as a percentile.
 
@@ -1991,7 +1991,7 @@ def rolling_rank_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None,
 
     Args:
         arr (Array2d): 2-dimensional array of values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         pct (bool): If True, compute the rank as a percentile.
 
@@ -2015,7 +2015,7 @@ def rolling_min_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 
     Args:
         arr (Array1d): 1-dimensional array of values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -2055,7 +2055,7 @@ def rolling_min_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
 
     Args:
         arr (Array2d): 2-dimensional array of values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -2078,7 +2078,7 @@ def rolling_max_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 
     Args:
         arr (Array1d): 1-dimensional array of values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -2118,7 +2118,7 @@ def rolling_max_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
 
     Args:
         arr (Array2d): 2-dimensional array of values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
@@ -2144,7 +2144,7 @@ def rolling_argmin_1d_nb(
 
     Args:
         arr (Array1d): 1D array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         local (bool): If True, return the index relative to the window;
             otherwise, return the index in the original array.
@@ -2197,7 +2197,7 @@ def rolling_argmin_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = Non
 
     Args:
         arr (Array2d): 2D array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         local (bool): If True, return the index relative to the window;
             otherwise, return the index in the original array.
@@ -2228,7 +2228,7 @@ def rolling_argmax_1d_nb(
 
     Args:
         arr (Array1d): 1D array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         local (bool): If True, return the index relative to the window;
             otherwise, return the index in the original array.
@@ -2281,7 +2281,7 @@ def rolling_argmax_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = Non
 
     Args:
         arr (Array2d): 2D array of numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         local (bool): If True, return the index relative to the window;
             otherwise, return the index in the original array.
@@ -2307,7 +2307,7 @@ def rolling_any_1d_nb(arr: tp.Array1d, window: int) -> tp.Array1d:
 
     Args:
         arr (Array1d): 1D array of boolean or numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
 
     Returns:
         Array1d: Boolean array where each element is True if at least one True value is
@@ -2338,7 +2338,7 @@ def rolling_any_nb(arr: tp.Array2d, window: int) -> tp.Array2d:
 
     Args:
         arr (Array2d): 2D array of boolean or numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
 
     Returns:
         Array2d: 2D boolean array where each column contains True if any True value is
@@ -2359,7 +2359,7 @@ def rolling_all_1d_nb(arr: tp.Array1d, window: int) -> tp.Array1d:
 
     Args:
         arr (Array1d): 1D array of boolean or numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
 
     Returns:
         Array1d: Boolean array where each element is True if all values in
@@ -2390,7 +2390,7 @@ def rolling_all_nb(arr: tp.Array2d, window: int) -> tp.Array2d:
 
     Args:
         arr (Array2d): 2D array of boolean or numerical values.
-        window (int): Size of the rolling window.
+        window (int): Window size.
 
     Returns:
         Array2d: 2D boolean array where each column contains True if all values in
@@ -2441,7 +2441,7 @@ def rolling_pattern_similarity_1d_nb(
 
             Can be smaller or larger than the source array. In such cases,
             the smaller array is stretched using the interpolation mode specified by `interp_mode`.
-        window (Optional[int]): Size of the rolling window.
+        window (Optional[int]): Window size.
 
             If None, defaults to the length of `pattern`.
         max_window (Optional[int]): Maximum length of the rolling window for matching.
@@ -2488,7 +2488,7 @@ def rolling_pattern_similarity_1d_nb(
             See `vectorbtpro.generic.enums.DistanceMeasure`.
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
 
-            If provided as an array, it must match the size of the pattern and be on the same scale.
+            Provided as a scalar or per element in the pattern.
         max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
 
             If None, defaults to `interp_mode`.
@@ -2663,7 +2663,7 @@ def rolling_pattern_similarity_nb(
 
             Can be smaller or larger than the source array. In such cases,
             the smaller array is stretched using the interpolation mode specified by `interp_mode`.
-        window (Optional[int]): Size of the rolling window.
+        window (Optional[int]): Window size.
 
             If None, defaults to the length of `pattern`.
         max_window (Optional[int]): Maximum length of the rolling window for matching.
@@ -2710,7 +2710,7 @@ def rolling_pattern_similarity_nb(
             See `vectorbtpro.generic.enums.DistanceMeasure`.
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
 
-            If provided as an array, it must match the size of the pattern and be on the same scale.
+            Provided as a scalar or per element in the pattern.
         max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
 
             If None, defaults to `interp_mode`.

@@ -1992,8 +1992,12 @@ def to_renko_1d_nb(
 
     Args:
         arr (Array1d): The input array of numerical values.
-        brick_size (FlexArray1dLike): An array-like value specifying the brick size for each element.
-        relative (FlexArray1dLike): An array-like indicator determining if relative price changes should be used.
+        brick_size (FlexArray1dLike): Brick size for each element.
+        
+            Provided as a scalar or per row.
+        relative (FlexArray1dLike): Indicator determining if relative price changes should be used.
+        
+            Provided as a scalar or per row.
         start_value (Optional[float]): The starting value for Renko calculation.
         max_out_len (Optional[int]): The maximum number of output bricks allowed.
 
@@ -2079,8 +2083,12 @@ def to_renko_ohlc_1d_nb(
 
     Args:
         arr (Array1d): The input array of numerical values.
-        brick_size (FlexArray1dLike): An array-like value specifying the brick size for each element.
-        relative (FlexArray1dLike): An array-like indicator determining if relative price changes should be used.
+        brick_size (FlexArray1dLike): Brick size for each element.
+        
+            Provided as a scalar or per row.
+        relative (FlexArray1dLike): Indicator determining if relative price changes should be used.
+        
+            Provided as a scalar or per row.
         start_value (Optional[float]): The starting value for Renko OHLC calculation.
         max_out_len (Optional[int]): The maximum number of output bars allowed.
 
