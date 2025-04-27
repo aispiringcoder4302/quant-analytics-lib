@@ -810,7 +810,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         """Generate and return the metrics documentation string based on a source class.
 
         Args:
-            source_cls (Optional[type]): Class used to obtain the baseline metrics documentation.
+            source_cls (Optional[type]): Source class providing the original configuration.
 
         Returns:
             str: The generated metrics documentation string with substituted values.
@@ -832,7 +832,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
         Args:
             __pdoc__ (dict): Dictionary mapping fully qualified names to their documentation strings.
-            source_cls (Optional[type]): Class used to obtain the baseline metrics documentation.
+            source_cls (Optional[type]): Source class providing the original configuration.
 
         Returns:
             None

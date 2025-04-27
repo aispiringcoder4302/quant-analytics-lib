@@ -1208,7 +1208,7 @@ def mapped_has_conflicts_nb(col_arr: tp.Array1d, idx_arr: tp.Array1d, target_sha
     Args:
         col_arr (Array1d): Array of column indices.
         idx_arr (Array1d): Array of row indices.
-        target_shape (Shape): Shape of the target array.
+        target_shape (Shape): Base dimensions (rows, columns).
 
     Returns:
         bool: True if any positional conflict exists, False otherwise.
@@ -1232,7 +1232,7 @@ def mapped_coverage_map_nb(col_arr: tp.Array1d, idx_arr: tp.Array1d, target_shap
     Args:
         col_arr (Array1d): Array of column indices.
         idx_arr (Array1d): Array of row indices.
-        target_shape (Shape): Shape of the output coverage map.
+        target_shape (Shape): Base dimensions (rows, columns).
 
     Returns:
         Array2d: 2D integer array representing the coverage map.
@@ -1292,7 +1292,7 @@ def unstack_mapped_nb(
         mapped_arr (Array1d): Array of mapped values.
         col_arr (Array1d): Array of column indices corresponding to each element in `mapped_arr`.
         idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
-        target_shape (Shape): Shape of the unstacked 2D array.
+        target_shape (Shape): Base dimensions (rows, columns).
         fill_value (float): Fill value for positions with no data.
 
     Returns:

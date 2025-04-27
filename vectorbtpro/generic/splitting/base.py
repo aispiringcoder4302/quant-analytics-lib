@@ -177,7 +177,9 @@ class RelRange(DefineMixin):
             prev_start (int): Start index of the previous range.
             prev_end (int): End index of the previous range.
             index (Optional[IndexLike]): Index from which to derive datetime information.
-            freq (Optional[FrequencyLike]): Frequency for datetime-based calculations.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
             slice: A slice object computed based on the relative range parameters.
@@ -667,9 +669,9 @@ class Splitter(Analyzable):
             
                 See `Splitter.get_range_bounds`.
             template_context (KwargsLike): Additional context for template substitution.
-            freq (Optional[FrequencyLike]): Frequency of the index if it cannot be inferred.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
-                If None, frequency is determined via `vectorbtpro.base.accessors.BaseIDXAccessor.get_freq`.
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
@@ -842,7 +844,9 @@ class Splitter(Analyzable):
             
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
-            freq (Optional[FrequencyLike]): Frequency specification for date/time indices.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             **kwargs: Keyword arguments for `Splitter.from_rolling` if `length` is None or "optimize",
                 or `Splitter.from_splits`.
 
@@ -1016,7 +1020,9 @@ class Splitter(Analyzable):
             
                 See `Splitter.get_range_bounds`.
             template_context (KwargsLike): Additional context for template substitution.
-            freq (Optional[FrequencyLike]): Frequency for date/time arithmetic with the index.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
@@ -1142,7 +1148,9 @@ class Splitter(Analyzable):
             
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
-            freq (Optional[FrequencyLike]): Frequency for date/time calculations with the index.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
@@ -1354,7 +1362,9 @@ class Splitter(Analyzable):
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
             split_labels (Optional[IndexLike]): Labels to assign to the generated splits.
-            freq (Optional[FrequencyLike]): Frequency used to determine the grouping.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
@@ -1491,7 +1501,9 @@ class Splitter(Analyzable):
             
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
-            freq (Optional[FrequencyLike]): Frequency used for aligning and generating date/time indices.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
@@ -1901,7 +1913,9 @@ class Splitter(Analyzable):
             
                 See `Splitter.get_range_bounds`.
             template_context (KwargsLike): Additional context for template substitution.
-            freq (Optional[FrequencyLike]): Frequency information for the provided index.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
@@ -2424,7 +2438,7 @@ class Splitter(Analyzable):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
-            wrapper_meta (DictLike): Metadata for the wrapper indexing.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
@@ -3030,7 +3044,9 @@ class Splitter(Analyzable):
             index (Optional[IndexLike]): Index onto which `range_` is mapped.
 
                 Must be provided when called on a class instance.
-            freq (Optional[FrequencyLike]): Frequency used for converting time durations and relative ranges.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
             FixSplit: A tuple of fixed ranges resulting from splitting `range_` relative to the provided index.
@@ -3477,14 +3493,19 @@ class Splitter(Analyzable):
         Args:
             range_ (FixRangeLike): Input range to be remapped.
             target_index (IndexLike): Target index to which the range is mapped.
-            target_freq (Optional[FrequencyLike]): Frequency for the target index.
+            target_freq (Optional[FrequencyLike]): Frequency of the target index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             silence_warnings (bool): Flag to suppress warning messages.
             index (Optional[IndexLike]): Source index associated with the range.
-            freq (Optional[FrequencyLike]): Frequency corresponding to the source index.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
             FixRangeLike: The remapped range corresponding to the target index.
@@ -3560,14 +3581,20 @@ class Splitter(Analyzable):
             range_ (FixRangeLike): Input range to be processed.
             remap_to_obj (bool): Whether to remap the range to the object's index.
             obj_index (Optional[IndexLike]): Target index for remapping, if available.
-            obj_freq (Optional[FrequencyLike]): Frequency corresponding to the target index.
+            obj_freq (Optional[FrequencyLike]): Frequency of the target index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             template_context (KwargsLike): Additional context for template substitution.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             silence_warnings (bool): Flag to suppress warning messages.
             index (Optional[IndexLike]): Source index associated with the range.
-            freq (Optional[FrequencyLike]): Frequency corresponding to the source index.
+            freq (Optional[FrequencyLike]): Frequency of the source index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             return_obj_meta (bool): Whether to return metadata for the object.
             **ready_range_kwargs: Keyword arguments for `Splitter.get_ready_range`.
 
@@ -3658,8 +3685,11 @@ class Splitter(Analyzable):
             takeable (Takeable): Takeable object containing the data and configuration for range extraction.
             range_ (FixRangeLike): Original range to be processed.
             remap_to_obj (bool): Whether to remap the range to the object's index.
-            obj_index (Optional[IndexLike]): Object's index to use for remapping, if provided.
-            obj_freq (Optional[FrequencyLike]): Frequency corresponding to the object's index.
+            obj_index (Optional[IndexLike]): Target index for remapping, if available.
+            obj_freq (Optional[FrequencyLike]): Frequency of the target index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             point_wise (bool): Whether to extract the range point by point.
             template_context (KwargsLike): Additional context for template substitution.
             return_obj_meta (bool): Whether to return metadata about the object.
@@ -3784,8 +3814,11 @@ class Splitter(Analyzable):
                 Options include "stacked", "stacked_by_split", "stacked_by_set",
                 "split_major_meta", "set_major_meta", etc.
             remap_to_obj (bool): Whether to remap the range to the object's index.
-            obj_index (Optional[IndexLike]): Target object's index.
-            obj_freq (Optional[FrequencyLike]): Frequency of the target object's index.
+            obj_index (Optional[IndexLike]): Target index for remapping, if available.
+            obj_freq (Optional[FrequencyLike]): Frequency of the target index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             range_format (str): Format specifier for resolving the range.
             point_wise (bool): Whether to perform point-wise range extraction.
             attach_bounds (Union[bool, str]): Controls attaching bounds.
@@ -3799,7 +3832,9 @@ class Splitter(Analyzable):
                 See `vectorbtpro.base.indexes.combine_indexes`.
             stack_axis (int): Axis along which to stack slices (0 for rows, 1 for columns).
             stack_kwargs (KwargsLike): Keyword arguments for the stacking merge function.
-            freq (Optional[FrequencyLike]): Frequency used for bound mapping.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
             Any: The extracted range, which may be a single slice, a merged object,
@@ -4260,8 +4295,11 @@ class Splitter(Analyzable):
             squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
             squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             remap_to_obj (bool): Whether to remap the range to the object's index for takeable arguments.
-            obj_index (Optional[IndexLike]): Index for remapping ranges for takeable arguments.
-            obj_freq (Optional[FrequencyLike]): Frequency for remapping to the object's index.
+            obj_index (Optional[IndexLike]): Target index for remapping, if available.
+            obj_freq (Optional[FrequencyLike]): Frequency of the target index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             range_format (str): Format for the range to be applied (e.g., "slice_or_any").
             point_wise (bool): Whether to apply `apply_func` in a point-wise manner.
             attach_bounds (Union[bool, str]): Specifies if and how to attach bounds to the result.
@@ -4273,7 +4311,9 @@ class Splitter(Analyzable):
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
             
                 See `vectorbtpro.base.indexes.combine_indexes`.
-            freq (Optional[FrequencyLike]): Frequency for mapping bounds to the index.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             iteration (str): Iteration mode over ranges.
 
                 Options: "split_major", "set_major", "split_wise", "set_wise".
@@ -5352,7 +5392,9 @@ class Splitter(Analyzable):
             index (Optional[IndexLike]): Index to use for mapping bounds.
 
                 If not provided, the instance index is used.
-            freq (Optional[FrequencyLike]): Frequency for date arithmetic when adjusting bounds.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
             Tuple[Any, Any]: A tuple with the mapped left and right bounds.
@@ -5394,8 +5436,10 @@ class Splitter(Analyzable):
             index (Optional[IndexLike]): Index used for mapping bounds.
 
                 Required if called on a class.
-            freq (Optional[FrequencyLike]): Frequency used for adjusting the right bound.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+                
         Returns:
             Tuple[Any, Any]: A tuple with the calculated left and right bounds.
 

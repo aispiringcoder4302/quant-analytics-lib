@@ -35,10 +35,16 @@ class Resampler(Configured):
     Args:
         source_index (index_like): Source index to be resampled.
         target_index (index_like): Target index produced by resampling.
-        source_freq (Union[None, bool, FrequencyLike]): Source index frequency or date offset.
+        source_freq (Union[None, bool, FrequencyLike]): Frequency of the source index 
+            (e.g., "daily", "15 min", "index_mean").
+
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
             Set to False to disable automatic frequency inference.
-        target_freq (Union[None, bool, FrequencyLike]): Target index frequency or date offset.
+        target_freq (Union[None, bool, FrequencyLike]): Frequency of the target index 
+            (e.g., "daily", "15 min", "index_mean").
+
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
             Set to False to disable automatic frequency inference.
         silence_warnings (bool): Flag to suppress warning messages.
@@ -153,7 +159,10 @@ class Resampler(Configured):
 
         Args:
             pd_resampler (pandas.core.resample.Resampler): Pandas resampler object.
-            source_freq (Optional[FrequencyLike]): Frequency for the source index.
+            source_freq (Optional[FrequencyLike]): Frequency for the source index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
@@ -182,7 +191,10 @@ class Resampler(Configured):
         Args:
             source_index (index_like): Source index for resampling.
             *args: Positional arguments for `pd.Series.resample`.
-            source_freq (Optional[FrequencyLike]): Frequency for the source index.
+            source_freq (Optional[FrequencyLike]): Frequency of the source index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `pd.Series.resample`.
 
@@ -206,7 +218,10 @@ class Resampler(Configured):
         Args:
             source_index (index_like): Source index for resampling.
             *args: Positional arguments for `vectorbtpro.utils.datetime_.date_range`.
-            source_freq (Optional[FrequencyLike]): Frequency for the source index.
+            source_freq (Optional[FrequencyLike]): Frequency of the source index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.date_range`.
 
@@ -280,11 +295,11 @@ class Resampler(Configured):
 
     @classmethod
     def get_lbound_index(cls, index: tp.Index, freq: tp.AnyPandasFrequency = None) -> tp.Index:
-        """Calculate the left bound of a datetime index.
+        """Return the left bound of a datetime index.
 
         Args:
-            index (Index): Datetime index for which to calculate the left bound.
-            freq (AnyPandasFrequency): Frequency for adjusting the index.
+            index (Index): Datetime index.
+            freq (AnyPandasFrequency): Pandas-friendly frequency used to shift the index.
 
         Returns:
             Index: Datetime index representing the calculated left bound.
@@ -302,12 +317,10 @@ class Resampler(Configured):
 
         Args:
             index (Index): Datetime index.
-            freq (AnyPandasFrequency): Frequency used to shift the index.
-
-                If None, the rightmost bound is calculated.
+            freq (AnyPandasFrequency): Pandas-friendly frequency used to shift the index.
 
         Returns:
-            Index: A datetime index representing the computed right bound.
+            Index: Datetime index representing the calculated right bound.
         """
         index = dt.prepare_dt_index(index)
         checks.assert_instance_of(index, pd.DatetimeIndex)

@@ -179,7 +179,7 @@ class PolygonData(RemoteData):
         """Overrides `vectorbtpro.data.base.Data.fetch_symbol` to fetch data for a given symbol from Polygon.
 
         Args:
-            symbol (str): Symbol identifier to fetch data for.
+            symbol (str): Symbol identifier.
 
                 Supports the following APIs:
 
@@ -192,14 +192,16 @@ class PolygonData(RemoteData):
             client_config (DictLike): Configuration for the Polygon client.
 
                 See `PolygonData.resolve_client`.
-            start (Optional[DatetimeLike]): Starting datetime for the aggregate data window.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (Optional[DatetimeLike]): Ending datetime for the aggregate data window.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (Optional[str]): Human-readable time interval (e.g., "15 minutes").
-            tz (Optional[TimezoneLike]): Timezone to apply.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
+
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             adjusted (Optional[bool]): Whether to adjust data for splits.

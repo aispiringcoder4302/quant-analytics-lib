@@ -25,7 +25,7 @@ def get_col_position_nb(c: tp.NamedTuple, col: int) -> float:
     """Return the position of a specified column from the context.
 
     Args:
-        c (NamedTuple): Context object containing the position array `last_position`.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -47,7 +47,7 @@ def get_position_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object containing the current column index and position array.
+            Relevant context.
 
     Returns:
         float: The position value of the current column.
@@ -60,7 +60,7 @@ def col_in_position_nb(c: tp.NamedTuple, col: int) -> bool:
     """Return whether a specified column is currently in a position.
 
     Args:
-        c (NamedTuple): Context object containing the position data in `last_position`.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -83,7 +83,7 @@ def in_position_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with the current column and its position index.
+            Relevant context.
 
     Returns:
         bool: True if the current column's position is non-zero, otherwise False.
@@ -96,7 +96,7 @@ def col_in_long_position_nb(c: tp.NamedTuple, col: int) -> bool:
     """Return whether a specified column is in a long position.
 
     Args:
-        c (NamedTuple): Context object containing the position data in `last_position`.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -119,7 +119,7 @@ def in_long_position_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with the current column and its position information.
+            Relevant context.
 
     Returns:
         bool: True if the current column's position is positive, otherwise False.
@@ -132,7 +132,7 @@ def col_in_short_position_nb(c: tp.NamedTuple, col: int) -> bool:
     """Return whether a specified column is in a short position.
 
     Args:
-        c (NamedTuple): Context object containing the position data in `last_position`.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -155,7 +155,7 @@ def in_short_position_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with the current column index and position data.
+            Relevant context.
 
     Returns:
         bool: True if the current column's position is negative, otherwise False.
@@ -181,7 +181,7 @@ def get_n_active_positions_nb(
 
     Args:
         c (Union[GroupContext, SegmentContext, OrderContext, PostOrderContext, FlexOrderContext, SignalSegmentContext, SignalContext, PostSignalContext]):
-            Context object containing position and grouping information.
+            Relevant context.
         all_groups (bool): Flag indicating whether to count active positions across all groups.
 
     Returns:
@@ -207,7 +207,7 @@ def get_col_cash_nb(c: tp.NamedTuple, col: int) -> float:
     """Return the cash for a specified column.
 
     Args:
-        c (NamedTuple): Context object containing the cash array `last_cash` and a `cash_sharing` flag.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -226,8 +226,7 @@ def get_group_cash_nb(c: tp.NamedTuple, group: int) -> float:
     """Return the cash for a specified group.
 
     Args:
-        c (NamedTuple): Context object containing the cash array `last_cash` and
-            grouping information in `group_lens`.
+        c (NamedTuple): Context.
         group (int): Index of the group.
 
     Returns:
@@ -260,7 +259,7 @@ def get_cash_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with current column, group, and cash sharing attributes.
+            Relevant context.
 
     Returns:
         float: The cash value of the current column if cash sharing is disabled;
@@ -279,7 +278,7 @@ def get_col_debt_nb(c: tp.NamedTuple, col: int) -> float:
     """Return the debt for a specified column.
 
     Args:
-        c (NamedTuple): Context object containing the debt array `last_debt`.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -301,7 +300,7 @@ def get_debt_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with the current column index and debt array.
+            Relevant context.
 
     Returns:
         float: The debt value of the current column.
@@ -317,7 +316,7 @@ def get_col_locked_cash_nb(c: tp.NamedTuple, col: int) -> float:
     """Return the locked cash for a specified column.
 
     Args:
-        c (NamedTuple): Context object containing the locked cash array `last_locked_cash`.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -339,7 +338,7 @@ def get_locked_cash_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with the current column index and locked cash data.
+            Relevant context.
 
     Returns:
         float: The locked cash value of the current column.
@@ -355,7 +354,7 @@ def get_col_free_cash_nb(c: tp.NamedTuple, col: int) -> float:
     """Return the free cash for a specified column.
 
     Args:
-        c (NamedTuple): Context object containing `last_free_cash` and a `cash_sharing` flag.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -377,7 +376,7 @@ def get_group_free_cash_nb(c: tp.NamedTuple, group: int) -> float:
     """Return the free cash for a specified group.
 
     Args:
-        c (NamedTuple): Context object with `last_free_cash` and grouping data in `group_lens`.
+        c (NamedTuple): Context.
         group (int): Index of the group.
 
     Returns:
@@ -410,7 +409,7 @@ def get_free_cash_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with the current column index and cash sharing attributes.
+            Relevant context.
 
     Returns:
         float: The free cash value of the current column if cash sharing is disabled;
@@ -426,7 +425,7 @@ def col_has_free_cash_nb(c: tp.NamedTuple, col: int) -> float:
     """Return whether a specified column has free cash available.
 
     Args:
-        c (NamedTuple): Context object containing free cash data in `last_free_cash`.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -440,7 +439,7 @@ def group_has_free_cash_nb(c: tp.NamedTuple, group: int) -> float:
     """Return whether a specified group has free cash available.
 
     Args:
-        c (NamedTuple): Context object with free cash array `last_free_cash` and grouping details.
+        c (NamedTuple): Context.
         group (int): Index of the group.
 
     Returns:
@@ -462,7 +461,7 @@ def has_free_cash_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object containing the current column index, group index, and cash sharing attribute.
+            Relevant context.
 
     Returns:
         bool: True if free cash is available, otherwise False.
@@ -480,7 +479,7 @@ def get_col_val_price_nb(c: tp.NamedTuple, col: int) -> float:
     """Return the valuation price for a specified column.
 
     Args:
-        c (NamedTuple): Context object containing the valuation price array `last_val_price`.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -502,7 +501,7 @@ def get_val_price_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with the current column index and valuation price data.
+            Relevant context.
 
     Returns:
         float: The valuation price of the current column.
@@ -518,7 +517,7 @@ def get_col_value_nb(c: tp.NamedTuple, col: int) -> float:
     """Retrieve the value of a specified column from the context.
 
     Args:
-        c (NamedTuple): Context object with a `cash_sharing` flag and a `last_value` attribute.
+        c (NamedTuple): Context.
         col (int): Index of the column to retrieve the value from.
 
     Returns:
@@ -540,7 +539,7 @@ def get_group_value_nb(c: tp.NamedTuple, group: int) -> float:
     """Retrieve the aggregated value of a specified group from the context.
 
     Args:
-        c (NamedTuple): Context object with `cash_sharing`, `last_value`, and `group_lens` attributes.
+        c (NamedTuple): Context.
         group (int): Index of the group to retrieve the value for.
 
     Returns:
@@ -573,7 +572,7 @@ def get_value_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with attributes for column, group, and cash sharing.
+            Relevant context.
 
     Returns:
         float: The value of the current column, or if cash sharing is enabled, the aggregated group value.
@@ -591,7 +590,7 @@ def get_col_leverage_nb(c: tp.NamedTuple, col: int) -> float:
     """Calculate the leverage of a specified column based on its financial metrics.
 
     Args:
-        c (NamedTuple): Context object containing financial data such as debt and locked cash.
+        c (NamedTuple): Context.
         col (int): Index of the column for which to calculate leverage.
 
     Returns:
@@ -622,7 +621,7 @@ def get_leverage_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with current column financial data.
+            Relevant context.
 
     Returns:
         float: The leverage of the current column.
@@ -638,7 +637,7 @@ def get_col_position_value_nb(c: tp.NamedTuple, col: int) -> float:
     """Calculate the position value for a specified column.
 
     Args:
-        c (NamedTuple): Context object containing the column's position and valuation price.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -656,7 +655,7 @@ def get_group_position_value_nb(c: tp.NamedTuple, group: int) -> float:
     """Aggregate the position value for a specified group by summing the values of its constituent columns.
 
     Args:
-        c (NamedTuple): Context object with group definitions stored in `group_lens` and financial data.
+        c (NamedTuple): Context.
         group (int): Index of the group to calculate the total position value for.
 
     Returns:
@@ -687,7 +686,7 @@ def get_position_value_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with column position data.
+            Relevant context.
 
     Returns:
         float: The position value of the current column.
@@ -700,7 +699,7 @@ def get_col_allocation_nb(c: tp.NamedTuple, col: int, group: tp.Optional[int] = 
     """Calculate the allocation of a specified column within its group.
 
     Args:
-        c (NamedTuple): Context object containing financial data and group definitions.
+        c (NamedTuple): Context.
         col (int): Index of the column.
         group (Optional[int]): Index of the group.
 
@@ -746,7 +745,7 @@ def get_allocation_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with attributes indicating the current column and group.
+            Relevant context.
 
     Returns:
         float: The allocation ratio for the current column.
@@ -762,7 +761,7 @@ def get_col_order_count_nb(c: tp.NamedTuple, col: int) -> int:
     """Retrieve the number of order records for a specified column.
 
     Args:
-        c (NamedTuple): Context object with an `order_counts` attribute.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -784,7 +783,7 @@ def get_order_count_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object containing order record information.
+            Relevant context.
 
     Returns:
         int: The count of order records for the current column.
@@ -797,7 +796,7 @@ def get_col_order_records_nb(c: tp.NamedTuple, col: int) -> tp.RecordArray:
     """Retrieve the order records for a specified column.
 
     Args:
-        c (NamedTuple): Context object containing order records and their counts.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -820,7 +819,7 @@ def get_order_records_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with order record data.
+            Relevant context.
 
     Returns:
         RecordArray: The order records for the current column.
@@ -833,7 +832,7 @@ def col_has_orders_nb(c: tp.NamedTuple, col: int) -> bool:
     """Determine whether any order records exist for a specified column.
 
     Args:
-        c (NamedTuple): Context object with order count data.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -855,7 +854,7 @@ def has_orders_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object containing order information.
+            Relevant context.
 
     Returns:
         bool: True if there is at least one order record for the current column, otherwise False.
@@ -868,7 +867,7 @@ def get_col_last_order_nb(c: tp.NamedTuple, col: int) -> tp.Record:
     """Retrieve the last order record for a specified column.
 
     Args:
-        c (NamedTuple): Context object with order records.
+        c (NamedTuple): Context.
         col (int): Index of the column.
 
     Returns:
@@ -895,7 +894,7 @@ def get_last_order_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Context object with order record data.
+            Relevant context.
 
     Returns:
         Record: The last order record for the current column.
@@ -916,7 +915,8 @@ def order_filled_nb(
     """Determine if the order has been filled.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]): Context object containing the order result.
+        c (Union[PostOrderContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         bool: True if the order status is filled, otherwise False.
@@ -934,8 +934,8 @@ def order_opened_position_nb(
     """Determine if the order has opened a new position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]): Context object containing
-            previous and current position data.
+        c (Union[PostOrderContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         bool: True if the order either reversed a position or changed the position from
@@ -955,8 +955,8 @@ def order_increased_position_nb(
     """Determine if the order has opened a new position or increased an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]): Context object with previous and
-            current position values.
+        c (Union[PostOrderContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         bool: True if the order resulted in a new position or increased the absolute size of
@@ -978,8 +978,8 @@ def order_decreased_position_nb(
     """Determine if the order has decreased or closed an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]): Context object containing previous and
-            current position values.
+        c (Union[PostOrderContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         bool: True if the order reduced the position size, closed the position, or
@@ -1003,8 +1003,8 @@ def order_closed_position_nb(
     """Determine if the order has completely closed an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]): Context object with previous and
-            current position data.
+        c (Union[PostOrderContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         bool: True if there was an existing position and the current position is zero,
@@ -1024,8 +1024,8 @@ def order_reversed_position_nb(
     """Check whether the order has reversed an existing position.
 
     Args:
-        c (Union[PostOrderContext, PostSignalContext]): Context object containing order data and
-            the previous position.
+        c (Union[PostOrderContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         bool: True if the order reverses an existing position, otherwise False.
@@ -1042,7 +1042,7 @@ def get_col_limit_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
     """Get limit order information for the specified column.
 
     Args:
-        c (NamedTuple): Context object containing limit order details.
+        c (NamedTuple): Context.
         col (int): Column index from which to retrieve the limit order information.
 
     Returns:
@@ -1061,7 +1061,8 @@ def get_limit_info_nb(
     """Get limit order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]): Context object with current column data.
+        c (Union[SignalContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         Record: Limit order information for the current column.
@@ -1074,7 +1075,7 @@ def get_col_limit_target_price_nb(c: tp.NamedTuple, col: int) -> float:
     """Get target price of the limit order for the specified column.
 
     Args:
-        c (NamedTuple): Context object containing order and position data.
+        c (NamedTuple): Context.
         col (int): Column index for retrieving the limit order target price.
 
     Returns:
@@ -1096,7 +1097,8 @@ def get_limit_target_price_nb(
     """Get target price of the limit order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]): Context object with current column data.
+        c (Union[SignalContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         float: The target price of the limit order or NaN if no active position.
@@ -1112,7 +1114,7 @@ def get_col_sl_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
     """Get stop-loss (SL) order information for the specified column.
 
     Args:
-        c (NamedTuple): Context object containing stop-loss order details.
+        c (NamedTuple): Context.
         col (int): Column index from which to retrieve the SL order information.
 
     Returns:
@@ -1131,7 +1133,8 @@ def get_sl_info_nb(
     """Get stop-loss (SL) order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]): Context object with current column data.
+        c (Union[SignalContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         Record: Stop-loss order information for the current column.
@@ -1144,7 +1147,7 @@ def get_col_sl_target_price_nb(c: tp.NamedTuple, col: int) -> float:
     """Get target price of the stop-loss (SL) order for the specified column.
 
     Args:
-        c (NamedTuple): Context object containing order and position details.
+        c (NamedTuple): Context.
         col (int): Column index for retrieving the SL target price.
 
     Returns:
@@ -1167,7 +1170,8 @@ def get_sl_target_price_nb(
     """Get target price of the stop-loss (SL) order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]): Context object with current column data.
+        c (Union[SignalContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         float: The target price of the SL order or NaN if no active position.
@@ -1180,7 +1184,7 @@ def get_col_tsl_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
     """Get trailing stop-loss (TSL/TTP) order information for the specified column.
 
     Args:
-        c (NamedTuple): Context object containing trailing stop-loss order details.
+        c (NamedTuple): Context.
         col (int): Column index from which to retrieve the TSL/TTP order information.
 
     Returns:
@@ -1199,7 +1203,8 @@ def get_tsl_info_nb(
     """Get trailing stop-loss (TSL/TTP) order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]): Context object with current column TSL/TTP order data.
+        c (Union[SignalContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         Record: Trailing stop-loss order information for the current column.
@@ -1212,7 +1217,7 @@ def get_col_tsl_target_price_nb(c: tp.NamedTuple, col: int) -> float:
     """Get target price of the trailing stop-loss (TSL/TTP) order for the specified column.
 
     Args:
-        c (NamedTuple): Context object containing order and position information.
+        c (NamedTuple): Context.
         col (int): Column index for retrieving the TSL/TTP target price.
 
     Returns:
@@ -1235,7 +1240,8 @@ def get_tsl_target_price_nb(
     """Get target price of the trailing stop-loss (TSL/TTP) order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]): Context object with current column TSL/TTP order details.
+        c (Union[SignalContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         float: The target price of the TSL/TTP order or NaN if no active position.
@@ -1248,7 +1254,7 @@ def get_col_tp_info_nb(c: tp.NamedTuple, col: int) -> tp.Record:
     """Get take-profit (TP) order information for the specified column.
 
     Args:
-        c (NamedTuple): Context object containing take-profit order details.
+        c (NamedTuple): Context.
         col (int): Column index from which to retrieve the TP order information.
 
     Returns:
@@ -1267,7 +1273,8 @@ def get_tp_info_nb(
     """Get take-profit (TP) order information for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]): Context object with current column TP order data.
+        c (Union[SignalContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         Record: Take-profit order information for the current column.
@@ -1280,7 +1287,7 @@ def get_col_tp_target_price_nb(c: tp.NamedTuple, col: int) -> float:
     """Get target price of the take-profit (TP) order for the specified column.
 
     Args:
-        c (NamedTuple): Context object containing order and position details.
+        c (NamedTuple): Context.
         col (int): Column index for retrieving the TP target price.
 
     Returns:
@@ -1303,7 +1310,8 @@ def get_tp_target_price_nb(
     """Get target price of the take-profit (TP) order for the current column.
 
     Args:
-        c (Union[SignalContext, PostSignalContext]): Context object with current column TP order details.
+        c (Union[SignalContext, PostSignalContext]):
+            Relevant context.
 
     Returns:
         float: The target price of the TP order or NaN if no active position.
@@ -1324,7 +1332,7 @@ def get_col_entry_trade_records_nb(
     """Get entry trade records for the specified column up to the current point.
 
     Args:
-        c (NamedTuple): Context object containing order records and related market data.
+        c (NamedTuple): Context.
         col (int): Column index for which to retrieve entry trade records.
         init_position (FlexArray1dLike): Initial position.
         
@@ -1364,7 +1372,7 @@ def get_entry_trade_records_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            A context object with order records.
+            Relevant context.
         init_position (FlexArray1dLike): Initial position.
         
             Provided as a scalar or per column.
@@ -1388,7 +1396,7 @@ def get_col_exit_trade_records_nb(
     """Get exit trade records for the specified column up to the current point.
 
     Args:
-        c (NamedTuple): Context object containing order records and market data.
+        c (NamedTuple): Context.
         col (int): Column index for which to retrieve exit trade records.
         init_position (FlexArray1dLike): Initial position.
         
@@ -1428,7 +1436,7 @@ def get_exit_trade_records_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            A context object with order records.
+            Relevant context.
         init_position (FlexArray1dLike): Initial position.
         
             Provided as a scalar or per column.
@@ -1452,7 +1460,7 @@ def get_col_position_records_nb(
     """Get position records for the specified column up to the current point.
 
     Args:
-        c (NamedTuple): Context object containing order records and target shape information.
+        c (NamedTuple): Context.
         col (int): Column index for which to retrieve position records.
         init_position (FlexArray1dLike): Initial position.
         
@@ -1485,7 +1493,7 @@ def get_position_records_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            A context object with order records.
+            Relevant context.
         init_position (FlexArray1dLike): Initial position.
         
             Provided as a scalar or per column.
@@ -1506,8 +1514,7 @@ def stop_group_sim_nb(c: tp.NamedTuple, group: int) -> None:
     This function sets the simulation end index for the specified group to the next row.
 
     Args:
-        c (NamedTuple): Simulation context containing the simulation state,
-            including the current row index (`i`) and end row (`sim_end`).
+        c (NamedTuple): Context.
         group (int): Index of the group for which the simulation is to be stopped.
 
     Returns:
@@ -1532,7 +1539,7 @@ def stop_sim_nb(
 
     Args:
         c (Union[SegmentContext, OrderContext, PostOrderContext, FlexOrderContext, SignalSegmentContext, SignalContext, PostSignalContext]):
-            Simulation context from which the current group is derived.
+            Relevant context.
 
     Returns:
         None: This function modifies the context in place.
@@ -1556,7 +1563,8 @@ def get_exec_state_nb(
     """Compute the execution state from the simulation context.
 
     Args:
-        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]): Simulation or order context.
+        c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
+            Relevant context.
         val_price (Optional[int]): Optional overriding value price for the execution state computation.
 
     Returns:
@@ -1595,8 +1603,7 @@ def get_price_area_nb(c: tp.NamedTuple) -> PriceArea:
     """Retrieve price area values from the simulation context.
 
     Args:
-        c (NamedTuple): Simulation context containing price arrays (`open`, `high`, `low`, `close`)
-            and the current row index (`i`).
+        c (NamedTuple): Context.
 
     Returns:
         PriceArea: The selected price area with open, high, low, and
@@ -1626,7 +1633,7 @@ def get_order_size_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Simulation context providing current position and value.
+            Relevant context.
         size (float): Base size value used for order size calculation.
         size_type (int): Indicator of the size type from `vectorbtpro.portfolio.enums.SizeType`.
 
@@ -1665,7 +1672,7 @@ def get_order_value_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Simulation context used to derive execution state.
+            Relevant context.
         size (float): Order size.
         size_type (int): Size type.
                 
@@ -1703,7 +1710,7 @@ def get_order_result_nb(
 
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
-            Simulation context for order execution.
+            Relevant context.
         order (Order): Order to be executed.
         val_price (Optional[float]): Optional value price to be used in order execution.
         update_value (bool): Flag indicating whether to update the computed value during order execution.

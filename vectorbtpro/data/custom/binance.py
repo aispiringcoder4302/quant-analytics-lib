@@ -198,35 +198,35 @@ class BinanceData(RemoteData):
         """Fetch symbol data from Binance.
 
         Args:
-            symbol (str): Trading symbol.
-            client (binance.client.Client): Binance client instance.
+            symbol (str): Symbol identifier.
+            client (Optional[Client]): Binance client instance.
 
                 See `BinanceData.resolve_client`.
             client_config (KwargsLike): Dictionary of client configuration options.
 
                 See `BinanceData.resolve_client`.
-            start (any): Starting datetime for fetching data.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): Ending datetime for fetching data.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str): Timeframe for candlestick data.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
-                Allows human-readable strings, e.g., "15 minutes".
-            tz (any): Timezone for datetime conversion.
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             klines_type (Union[None, int, str]): Type of klines to fetch.
 
                 See `binance.enums.HistoricalKlinesType` for supported types. Supports strings.
-            limit (int): Maximum number of klines to retrieve per API call.
-            delay (float): Delay in seconds after each request.
-            show_progress (bool): Flag indicating whether to display the progress bar.
+            limit (Optional[int]): Maximum number of klines to retrieve per API call.
+            delay (Optional[float]): Delay in seconds after each request.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.
-            silence_warnings (bool): Flag to suppress warning messages.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
             **get_klines_kwargs: Keyword arguments for `binance.client.Client.get_klines`.
 
         Returns:

@@ -88,18 +88,18 @@ class NDLData(RemoteData):
         """Fetch a symbol's data from Nasdaq Data Link.
 
         Args:
-            symbol (str): Symbol for the dataset.
+            symbol (str): Symbol identifier.
             api_key (Optional[str]): API key.
             data_format (Optional[str]): Data format.
 
                 Supported formats: "dataset" and "datatable".
-            start (Optional[DatetimeLike]): Starting date to retrieve data from this date onwards.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (Optional[DatetimeLike]): Ending date to retrieve data up to and including this date.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            tz (TimezoneLike): Timezone for date conversion.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             column_indices (Optional[MaybeIterable[int]]): Specific column(s) to retrieve.

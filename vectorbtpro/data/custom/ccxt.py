@@ -285,9 +285,15 @@ class CCXTData(RemoteData):
 
         Args:
             fetch_func (Callable): Function to fetch data.
-            start (DatetimeLike): Starting datetime for fetching data.
-            end (DatetimeLike): Ending datetime for fetching data.
-            tz (TimezoneLike): Timezone for conversion.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
+
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
+
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
+
+                See `vectorbtpro.utils.datetime_.to_timezone`.
             for_internal_use (bool): Flag indicating whether the search is for internal processing.
 
         Returns:
@@ -345,7 +351,7 @@ class CCXTData(RemoteData):
         then performs a binary search to determine the earliest available date.
 
         Args:
-            symbol (str): Symbol for which to find the earliest date.
+            symbol (str): Symbol identifier.
             for_internal_use (bool): Flag indicating whether the search is for internal processing.
             **kwargs: Keyword arguments for `CCXTData.fetch_symbol`.
 
@@ -380,7 +386,7 @@ class CCXTData(RemoteData):
         """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch symbol data from a CCXT exchange.
 
         Args:
-            symbol (str): Symbol to fetch.
+            symbol (str): Symbol identifier.
 
                 Symbol may be provided in the `EXCHANGE:SYMBOL` format.
                 In this case, the `exchange` parameter is ignored.
@@ -390,16 +396,16 @@ class CCXTData(RemoteData):
             exchange_config (KwargsLike): Exchange configuration.
 
                 See `CCXTData.resolve_exchange`.
-            start (Optional[DatetimeLike]): Starting datetime for fetching data.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (Optional[DatetimeLike]): Ending datetime for fetching data.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (Optional[str]): Timeframe specification.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
-                Accepts human-readable strings such as "15 minutes".
-            tz (TimezoneLike): Timezone for conversion.
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             find_earliest_date (Optional[bool]): Flag to determine the earliest available date.

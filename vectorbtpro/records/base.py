@@ -913,7 +913,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
-            wrapper_meta (DictLike): Optional metadata from the wrapper's indexing function.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
@@ -1006,9 +1006,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
-            wrapper_meta (DictLike): Metadata for the resampling wrapper.
-
-                If None, metadata is obtained from `Records.wrapper.resample_meta`.
+            wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
@@ -1936,8 +1934,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         class and substituting class-specific values.
 
         Args:
-            source_cls (Optional[type]): Source class from which to extract field
-                configuration documentation.
+            source_cls (Optional[type]): Source class providing the original configuration.
 
                 Defaults to `Records` if not provided.
 
@@ -1961,8 +1958,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             __pdoc__ (dict): Dictionary in which the documentation for the field
                 configuration will be updated.
-            source_cls (Optional[type]): Source class from which to extract
-                field configuration documentation.
+            source_cls (Optional[type]): Source class providing the original configuration.
 
         Returns:
             None

@@ -390,7 +390,7 @@ class TVClient(Configured):
 
         Args:
             raw_data (str): Raw data string returned by TradingView.
-            symbol (str): Trading symbol.
+            symbol (str): Symbol identifier.
 
         Returns:
             Frame: A DataFrame with columns ['datetime', 'open', 'high', 'low', 'close', 'volume']
@@ -428,7 +428,7 @@ class TVClient(Configured):
         """Format a trading symbol based on the exchange and future contract details.
 
         Args:
-            symbol (str): Base trading symbol.
+            symbol (str): Symbol identifier.
             exchange (str): Exchange code.
             fut_contract (Optional[int]): Future contract number.
 
@@ -460,7 +460,7 @@ class TVClient(Configured):
         """Retrieve historical trading data for a specified symbol.
 
         Args:
-            symbol (str): Trading symbol.
+            symbol (str): Symbol identifier.
             exchange (str): Exchange code.
             interval (str): Time interval for historical data.
             fut_contract (Optional[int]): Future contract number.
@@ -1035,8 +1035,9 @@ class TVData(RemoteData):
         Overrides `vectorbtpro.data.base.Data.fetch_symbol`.
 
         Args:
-            symbol (str): Symbol identifier. Must be in the `EXCHANGE:SYMBOL`
-                format if `exchange` is not provided.
+            symbol (str): Symbol identifier.
+            
+                Must be in the `EXCHANGE:SYMBOL` format if `exchange` is not provided.
             client (Optional[TVClient]): Client instance.
 
                 See `TVData.resolve_client`.
@@ -1046,8 +1047,10 @@ class TVData(RemoteData):
             exchange (Optional[str]): Market exchange.
 
                 Can be omitted if specified within `symbol`.
-            timeframe (Optional[str]): Timeframe, allowing human-readable values such as "15 minutes".
-            tz (TimezoneLike): Timezone setting.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
+
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             fut_contract (Optional[int]): Futures contract type: None for cash,

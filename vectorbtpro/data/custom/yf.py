@@ -92,16 +92,18 @@ class YFData(RemoteData):
         """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Yahoo Finance.
 
         Args:
-            symbol (str): Financial symbol identifier.
+            symbol (str): Symbol identifier.
             period (Optional[str]): Period string.
-            start (Optional[DatetimeLike]): Start datetime.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (Optional[DatetimeLike]): End datetime.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (Optional[str]): Human-readable timeframe (e.g., "15 minutes").
-            tz (TimezoneLike): Time zone for datetime conversion.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
+
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             **history_kwargs: Keyword arguments for `yfinance.base.TickerBase.history`.

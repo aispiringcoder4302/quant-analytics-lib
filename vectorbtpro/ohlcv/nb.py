@@ -231,7 +231,7 @@ def mirror_ohlc_nb(
     """Generate mirrored OHLC arrays for two-dimensional inputs by applying the 1D operation column-wise.
 
     Args:
-        target_shape (Shape): Shape of the output arrays (rows, columns).
+        target_shape (Shape): Base dimensions (rows, columns).
         open (Optional[Array2d]): 2D array of open prices.
         high (Optional[Array2d]): 2D array of high prices.
         low (Optional[Array2d]): 2D array of low prices.

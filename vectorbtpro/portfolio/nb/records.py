@@ -37,7 +37,7 @@ def records_within_sim_range_nb(
     """Return records within the specified simulation range.
 
     Args:
-        target_shape (Shape): Target shape specification for the simulation.
+        target_shape (Shape): Base dimensions (rows, columns).
         records (RecordArray): Array of records.
         col_arr (Array1d): Array of column indices corresponding to each element in `records`.
         idx_arr (Array1d): Array of row indices corresponding to each element in `records`.

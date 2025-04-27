@@ -84,7 +84,7 @@ class FeatherData(FileData):
             path (str): File path for the Feather file.
 
                 If None, `key` is used as the file path.
-            tz (TimezoneLike): Target timezone.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             index_col (Optional[MaybeSequence[IntStr]]): Column position(s) or name(s) to set as the index.

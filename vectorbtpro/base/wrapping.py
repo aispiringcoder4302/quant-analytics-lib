@@ -594,7 +594,9 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         ndim (Optional[int]): Number of dimensions of the array.
 
             Deduced from the columns if not provided.
-        freq (Optional[FrequencyLike]): Frequency metadata.
+        freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
         parse_index (Optional[bool]): Flag indicating whether to convert the index to a datetime index.
         column_only_select (Optional[bool]): Flag indicating whether column-only selection is enabled.
         range_only_select (Optional[bool]): Flag indicating whether range-only selection is enabled.
@@ -846,7 +848,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             columns (Optional[IndexLike]): Custom columns for the stacked result.
 
                 If not provided, columns are derived from the wrappers.
-            freq (Optional[FrequencyLike]): Frequency to enforce across all indexes.
+            freq (Optional[FrequencyLike]): Custom frequency for the stacked result 
+                (e.g., "daily", "15 min", "index_mean").
+
+                If not provided, frequency is derived from the wrappers.
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -993,12 +999,14 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             index (Optional[IndexLike]): Custom index for the resulting wrapper.
 
                 If not provided, derived from the wrappers.
-            columns (Optional[IndexLike]): Custom columns index for the resulting wrapper.
+            columns (Optional[IndexLike]): Custom columns for the stacked result.
 
-                If not provided, concatenated from wrappers.
-            freq (Optional[FrequencyLike]): Custom frequency for the resulting wrapper.
+                If not provided, columns are derived from the wrappers.
+            freq (Optional[FrequencyLike]): Custom frequency for the stacked result 
+                (e.g., "daily", "15 min", "index_mean").
 
-                If not provided, inferred from wrappers.
+                If not provided, frequency is derived from the wrappers.
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             group_by (GroupByLike): Grouping specification.
 
                 If not provided, groups are concatenated if any wrapper is grouped, otherwise not applied.

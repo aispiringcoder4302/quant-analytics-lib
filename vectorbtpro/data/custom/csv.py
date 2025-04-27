@@ -115,13 +115,13 @@ class CSVData(FileData):
             path (Any): File path to the CSV file.
 
                 If not provided, `key` is used as the file path.
-            start (Optional[DatetimeLike]): Starting datetime for filtering data.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
                 The object's timezone will be used. See `vectorbtpro.utils.datetime_.to_timestamp`.
-            end (Optional[DatetimeLike]): Ending datetime for filtering data.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
                 The object's timezone will be used. See `vectorbtpro.utils.datetime_.to_timestamp`.
-            tz (TimezoneLike): Target timezone for conversion.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             start_row (Optional[int]): Starting row index (inclusive), excluding header rows.

@@ -549,7 +549,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
             Filling is applied post-simulation to avoid NaNs in asset values.
             See `Portfolio.get_filled_close`.
-        year_freq (Optional[FrequencyLike]): Year frequency derived from the portfolio's index.
+        year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
         returns_acc_defaults (KwargsLike): Defaults for `vectorbtpro.returns.accessors.ReturnsAccessor`.
         trades_type (Optional[Union[str, int]]): Default trades type for `Portfolio`.
 
@@ -2240,7 +2240,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             in_output_kwargs (KwargsLike): Keyword arguments for in-output configurations.
             
                 See `Portfolio.in_outputs_indexing_func`.
-            wrapper_meta (DictLike): Metadata dictionary for the wrapper; computed if None.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
@@ -2560,7 +2560,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             in_output_kwargs (KwargsLike): Keyword arguments for resampling in-outputs.
             
                 See `Portfolio.resample_in_outputs`.
-            wrapper_meta (DictLike): Metadata for resampling obtained from the portfolio's wrapper.
+            wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
@@ -10455,10 +10455,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            freq (Optional[FrequencyLike]): Frequency for returns calculation.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
                 Defaults to `vectorbtpro.base.wrapping.ArrayWrapper.freq` if not provided.
-            year_freq (Optional[FrequencyLike]): Yearly frequency for returns calculation.
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
 
                 Defaults to `Portfolio.year_freq` if not provided.
             defaults (KwargsLike): Dictionary of default parameters.
@@ -10596,8 +10597,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            freq (Optional[FrequencyLike]): Frequency for returns calculation.
-            year_freq (Optional[FrequencyLike]): Yearly frequency for returns calculation.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
             defaults (KwargsLike): Dictionary of default parameters.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -11023,8 +11026,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_end (Optional[ArrayLike]): End index of the simulation range.
 
                 Passed inside `settings`.
-            freq (Optional[FrequencyLike]): Frequency for returns calculation.
-            year_freq (Optional[FrequencyLike]): Yearly frequency for returns calculation.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+            
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
             defaults (KwargsLike): Dictionary of default parameters.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -11503,7 +11508,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            line_shape (str): Shape of the plotted line (e.g., "hv" for horizontal-vertical lines).
+            line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
                 If None, it is inferred from the figure.
@@ -11630,7 +11635,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            line_shape (str): Line shape style for the plot.
+            line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
                 If None, it is inferred from the figure.
@@ -11771,7 +11776,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            line_shape (str): Line shape style for the plot.
+            line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
                 If None, it is inferred from the figure.
@@ -12607,7 +12612,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            line_shape (str): Plot line shape style, such as "hv".
+            line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
                 If None, it is inferred from the figure.
@@ -12737,7 +12742,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            line_shape (str): Shape of the plot line (e.g., "hv").
+            line_shape (str): Shape of the plot line (e.g. "hv").
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
                 If None, it is inferred from the figure.
@@ -12867,7 +12872,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            line_shape (str): Shape of the plot lines (e.g., "hv").
+            line_shape (str): Shape of the plot line (e.g. "hv").
             line_visible (bool): Determines if plot lines are visible.
             colorway (Union[None, str, Sequence[str]]): Color scheme used for the plot.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
@@ -13081,7 +13086,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Build in-output configuration documentation.
 
         Args:
-            source_cls (Optional[type]): Source class to obtain the original `in_output_config` documentation.
+            source_cls (Optional[type]): Source class providing the original configuration.
 
                 If None, `Portfolio` is used.
 
@@ -13100,7 +13105,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             __pdoc__ (dict): Dictionary for storing module-level documentation.
-            source_cls (Optional[type]): Source class providing the original `in_output_config` documentation.
+            source_cls (Optional[type]): Source class providing the original configuration.
 
                 If None, `Portfolio` is used.
 

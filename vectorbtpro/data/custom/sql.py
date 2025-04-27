@@ -820,7 +820,9 @@ class SQLData(DBData):
             table (Optional[Union[str, Table]]): Table name or table object.
 
                 Must not be provided together with `query`.
-            schema (Optional[str]): Database schema. Must not be used with `query`.
+            schema (Optional[str]): Database schema.
+            
+                Must not be used with `query`.
             query (Optional[Union[str, Selectable]]): Custom SQL query.
 
                 Must not be provided together with `table` or `schema`.
@@ -836,13 +838,13 @@ class SQLData(DBData):
             dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
 
                 See `SQLData.resolve_engine`.
-            start (Optional[Any]): Starting value for filtering data.
+            start (Optional[Any]): Start value for filtering.
 
                 If the index is datetime and `align_dates` is True, it is parsed
                 with `vectorbtpro.utils.datetime_.to_timestamp`.
 
                 For a multi-index, provide a tuple. Must not be used with `query`.
-            end (Optional[Any]): Ending value for filtering data.
+            end (Optional[Any]): End value for filtering.
 
                 If the index is datetime and `align_dates` is True, it is parsed with
                 `vectorbtpro.utils.datetime_.to_timestamp`.
@@ -860,7 +862,7 @@ class SQLData(DBData):
             to_utc (Optional[Union[bool, str, Sequence[str]]]): Parameter for UTC conversion.
 
                 See `SQLData.prepare_dt`.
-            tz (Optional[TimezoneLike]): Timezone information.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             start_row (Optional[int]): Starting row number for data retrieval.
@@ -1210,7 +1212,7 @@ class SQLData(DBData):
         """Fetch table for a symbol.
 
         Args:
-            symbol (str): Identifier for the symbol.
+            symbol (str): Symbol identifier.
             **kwargs: Keyword arguments for `SQLData.fetch_key`.
 
         Returns:
@@ -1289,7 +1291,7 @@ class SQLData(DBData):
         """Update data for a symbol.
 
         Args:
-            symbol (str): Identifier for the symbol.
+            symbol (str): Symbol identifier.
             **kwargs: Keyword arguments for `SQLData.update_key`.
 
         Returns:

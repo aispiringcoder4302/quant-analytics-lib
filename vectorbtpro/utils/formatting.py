@@ -587,7 +587,9 @@ def format_func(func: tp.Callable, incl_doc: bool = True, **kwargs) -> str:
     """Format a function or class constructor.
 
     Args:
-        func (Callable): Function or class to format. If a class, its `__init__` method is used.
+        func (Callable): Function or class to format.
+        
+            If a class, its `__init__` method is used.
         incl_doc (bool): If True, include the function's docstring in the output if available.
         **kwargs: Keyword arguments for `format_signature`.
 

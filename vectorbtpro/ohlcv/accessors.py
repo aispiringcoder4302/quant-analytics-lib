@@ -308,7 +308,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
-            wrapper_meta (DictLike): Metadata for resampling configuration.
+            wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:

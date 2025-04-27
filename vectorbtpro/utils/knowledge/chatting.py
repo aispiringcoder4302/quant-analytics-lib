@@ -423,7 +423,9 @@ class Embeddings(Configured):
     """Abstract class for embedding providers.
 
     Args:
-        batch_size (Optional[int]): Batch size for processing queries. Use None to disable batching.
+        batch_size (Optional[int]): Batch size for processing queries.
+        
+            Use None to disable batching.
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
         template_context (Kwargs): Additional context for template substitution.
@@ -4716,8 +4718,9 @@ class DocumentRanker(Configured):
 
         Args:
             query (str): Query string for scoring relevance.
-            documents (Optional[Iterable[StoreDocument]]): Iterable of documents to score. If None,
-                documents from the document store are used.
+            documents (Optional[Iterable[StoreDocument]]): Iterable of documents to score.
+            
+                If None, documents from the document store are used.
             refresh (bool): Flag to refresh both documents and embeddings.
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to the value of
                 `refresh` if not specified.

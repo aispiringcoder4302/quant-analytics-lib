@@ -128,8 +128,9 @@ def adjust_lightness(color: tp.Any, amount: float = 0.7) -> str:
 
     Args:
         color (Any): Color represented as a Matplotlib color string, hex string, or RGB/RGBA tuple.
-        amount (float): Factor to adjust the lightness. Values less than 1 darken the color,
-            while values greater than 1 lighten it.
+        amount (float): Factor to adjust the lightness.
+        
+            Values less than 1 darken the color, while values greater than 1 lighten it.
 
     Returns:
         str: The adjusted color in `rgb(r,g,b)` format.

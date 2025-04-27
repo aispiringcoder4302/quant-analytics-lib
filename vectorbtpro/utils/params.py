@@ -143,8 +143,9 @@ def broadcast_params(params_or_dict: tp.ParamsOrDict, to_n: tp.Optional[int] = N
 
     Args:
         params_or_dict (ParamsOrDict): Dictionary or sequence of parameter lists.
-        to_n (Optional[int]): Target length for each parameter list. If not provided,
-            the maximum length among the lists is used.
+        to_n (Optional[int]): Target length for each parameter list.
+        
+            If not provided, the maximum length among the lists is used.
 
     Returns:
         ParamsOrDict: The broadcasted parameters with uniform length.

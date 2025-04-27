@@ -211,9 +211,7 @@ class ColumnMapper(Wrapping):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
-            wrapper_meta (DictLike): Optional metadata for the wrapper.
-
-                If not provided, it is derived from `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:

@@ -105,7 +105,7 @@ def asset_flow_nb(
     by direction using the `direction` parameter.
 
     Args:
-        target_shape (Shape): Shape of the output array.
+        target_shape (Shape): Base dimensions (rows, columns).
         order_records (RecordArray): Array of order records.
         col_map (GroupMap): Tuple of column indices and lengths.
         direction (int): Position direction.
@@ -552,7 +552,7 @@ def cash_deposits_nb(
     """Calculate cash deposit series per column.
 
     Args:
-        target_shape (Shape): Target shape of the output cash deposit array.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         cash_deposits_raw (FlexArray2dLike): Raw cash deposits.
@@ -662,7 +662,7 @@ def cash_deposits_grouped_nb(
     """Calculate cash deposit series aggregated by group.
 
     Args:
-        target_shape (Shape): Target shape of the simulation period.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         cash_deposits_raw (FlexArray2dLike): Raw cash deposits.
@@ -780,7 +780,7 @@ def cash_earnings_nb(
     """Calculate cash earning series per column by applying weight adjustments and simulation range filters.
 
     Args:
-        target_shape (Shape): Shape of the target output array.
+        target_shape (Shape): Base dimensions (rows, columns).
         cash_earnings_raw (FlexArray2dLike): Raw cash earnings.
         
             Provided as a scalar, or per row, column, or element.
@@ -853,7 +853,7 @@ def cash_earnings_grouped_nb(
     """Calculate aggregated cash earning series per group by summing weighted cash earnings of grouped columns.
 
     Args:
-        target_shape (Shape): Shape of the target output array.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_earnings_raw (FlexArray2dLike): Raw cash earnings.
         
@@ -994,7 +994,7 @@ def cash_flow_nb(
     otherwise, computes standard cash flow.
 
     Args:
-        target_shape (Shape): Target shape of the output array.
+        target_shape (Shape): Base dimensions (rows, columns).
         order_records (RecordArray): Array of order records.
         col_map (GroupMap): Tuple of column indices and lengths.
         free (bool): Flag indicating whether to compute free cash flow differences.
@@ -1882,7 +1882,7 @@ def total_profit_nb(
     cash flows over the simulation period.
 
     Args:
-        target_shape (Shape): Target shape of the simulation output.
+        target_shape (Shape): Base dimensions (rows, columns).
         close (Array2d): Matrix of closing prices.
         order_records (RecordArray): Array of order records.
         col_map (GroupMap): Tuple of column indices and lengths.

@@ -546,7 +546,7 @@ def to_timedelta(freq: tp.FrequencyLike = 1, approximate: bool = False) -> tp.Pa
     """Convert a frequency-like object to a `pd.Timedelta`.
 
     Args:
-        freq (FrequencyLike): Frequency representation (string, offset, or `pd.Timedelta`).
+        freq (FrequencyLike): Frequency representation (string, offset, or timedelta).
         approximate (bool): Whether to use approximate conversion for offset objects.
 
     Returns:
@@ -588,7 +588,7 @@ def to_timedelta64(freq: tp.FrequencyLike = 1) -> np.timedelta64:
     """Convert a frequency-like object to a `np.timedelta64`.
 
     Args:
-        freq (FrequencyLike): Frequency representation (string, offset, or `pd.Timedelta`).
+        freq (FrequencyLike): Frequency representation (string, offset, or timedelta).
 
     Returns:
         np.timedelta64: The corresponding NumPy timedelta64 object.
@@ -606,7 +606,7 @@ def to_freq(freq: tp.FrequencyLike, allow_offset: bool = True, keep_offset: bool
     """Convert a frequency-like object to a `pd.DateOffset` or `pd.Timedelta`.
 
     Args:
-        freq (FrequencyLike): Frequency representation.
+        freq (FrequencyLike): Frequency representation (string, offset, or timedelta).
         allow_offset (bool): Whether to allow returning an offset.
         keep_offset (bool): Whether to retain the original offset type if possible.
 
@@ -1094,7 +1094,7 @@ def is_tz_aware(dt: tp.SupportsTZInfoT) -> bool:
 
 
 def to_timezone(
-    tz: tp.Optional[tp.TimezoneLike] = None,
+    tz: tp.TimezoneLike = None,
     to_fixed_offset: tp.Optional[bool] = None,
     parse_with_dateparser: tp.Optional[bool] = None,
     dateparser_kwargs: tp.KwargsLike = None,
@@ -1107,7 +1107,7 @@ def to_timezone(
     If `to_fixed_offset` is True, converts the timezone to a fixed offset.
 
     Args:
-        tz (Optional[TimezoneLike]): Input timezone or offset to parse.
+        tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
         to_fixed_offset (Optional[bool]): Flag to convert the timezone to a fixed offset.
         parse_with_dateparser (Optional[bool]): Flag to enable parsing with the dateparser library.
         dateparser_kwargs (KwargsLike): Keyword arguments for `dateparser.parse`.
@@ -1174,11 +1174,13 @@ def to_timestamp(
     `parse_with_dateparser` is True. For numerical inputs, `dt` is interpreted using the specified `unit`.
 
     Args:
-        dt (DatetimeLike): Datetime input to parse. Can be a string, number, or datetime-like object.
+        dt (DatetimeLike): Datetime input to parse.
+        
+            Can be a string, number, or datetime-like object.
         parse_with_dateparser (Optional[bool]): Flag to enable parsing with the dateparser library.
         dateparser_kwargs (KwargsLike): Keyword arguments for `dateparser.parse`.
         unit (str): Unit of time for numerical timestamps.
-        tz (TimezoneLike): Timezone information used for localizing or converting the timestamp.
+        tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
         to_fixed_offset (Optional[bool]): Flag to convert timezones to a fixed offset.
         **kwargs: Keyword arguments for `pd.Timestamp`.
 
@@ -1287,8 +1289,8 @@ def to_tzaware_timestamp(
 
     Args:
         dt (DatetimeLike): Datetime input to parse.
-        naive_tz (TimezoneLike): Timezone used to localize naive datetime inputs.
-        tz (TimezoneLike): Target timezone for converting the timestamp.
+        naive_tz (TimezoneLike): Timezone specification for TZ-naive datetime (e.g., "UTC", "America/New_York").
+        tz (TimezoneLike): Timezone specification for TZ-aware datetime (e.g., "UTC", "America/New_York").
         **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
@@ -1432,7 +1434,7 @@ def readable_datetime(
     Args:
         dt (DatetimeLike): Datetime-like input to format.
         drop_tz (Optional[bool]): If True, exclude timezone information from the output.
-        freq (Optional[FrequencyLike]): Frequency to guide the formatting precision.
+        freq (Optional[FrequencyLike]): Frequency representation (string, offset, or timedelta).
         **kwargs: Keyword arguments for `to_naive_timestamp` or `to_timestamp`.
 
     Returns:
@@ -1618,7 +1620,7 @@ def date_range(
     *,
     periods: tp.Optional[int] = None,
     freq: tp.Optional[tp.FrequencyLike] = None,
-    tz: tp.Optional[tp.TimezoneLike] = None,
+    tz: tp.TimezoneLike = None,
     inclusive: str = "left",
     timestamp_kwargs: tp.KwargsLike = None,
     freq_kwargs: tp.KwargsLike = None,
@@ -1643,8 +1645,8 @@ def date_range(
         start (Optional[DatetimeLike]): Start of the date range.
         end (Optional[DatetimeLike]): End of the date range.
         periods (Optional[int]): Number of periods to generate.
-        freq (Optional[FrequencyLike]): Frequency string or offset.
-        tz (Optional[TimezoneLike]): Timezone information.
+        freq (Optional[FrequencyLike]): Frequency representation (string, offset, or timedelta).
+        tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
         inclusive (str): Whether to include the start and/or end date in the range.
         timestamp_kwargs (KwargsLike): Keyword arguments for `to_timestamp`.
         freq_kwargs (KwargsLike): Keyword arguments for `to_freq`.
@@ -1884,7 +1886,7 @@ def freq_depends_on_index(freq: tp.FrequencyLike) -> bool:
     Returns True if `freq` is "auto" or starts with "index_", otherwise returns False.
 
     Args:
-        freq (FrequencyLike): Frequency string to check.
+        freq (FrequencyLike): Frequency representation (string, offset, or timedelta).
 
     Returns:
         bool: True if the frequency depends on the index, else False.
@@ -1918,7 +1920,7 @@ def infer_index_freq(
 
     Args:
         index (Index): Pandas datetime index.
-        freq (Optional[FrequencyLike]): Frequency specification as a string or frequency-like object.
+        freq (Optional[FrequencyLike]): Frequency representation (string, offset, or timedelta).
         allow_offset (bool): Whether to allow offset frequency conversion.
         allow_numeric (bool): Whether to permit numeric frequency values.
         freq_from_n (Union[None, bool, int]): Limit for inferring frequency from a subset of the index.
@@ -1985,7 +1987,7 @@ def get_dt_index_gaps(
 
     Args:
         index (IndexLike): Index or index-like object with datetime values.
-        freq (Optional[FrequencyLike]): Frequency specification used for gap calculation.
+        freq (Optional[FrequencyLike]): Frequency representation (string, offset, or timedelta).
         skip_index (Optional[IndexLike]): Index of datetime values to skip.
         **kwargs: Keyword arguments for `prepare_dt_index`.
 

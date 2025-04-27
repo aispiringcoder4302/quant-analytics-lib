@@ -144,7 +144,7 @@ def resolve_signal_conflict_nb(
         position_now (float): Current position size.
         is_entry (bool): Flag indicating the presence of an entry signal.
         is_exit (bool): Flag indicating the presence of an exit signal.
-        direction (int): Signal direction.
+        direction (int): Position direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         conflict_mode (int): Mode used to resolve conflicts between entry and exit signals.
@@ -486,7 +486,7 @@ def prepare_fs_records_nb(
     """Prepare order and log record arrays for from-signals processing.
 
     Args:
-        target_shape (Shape): Base dimensions (rows, columns) for record arrays.
+        target_shape (Shape): Base dimensions (rows, columns).
         max_order_records (Optional[int]): Maximum number of order records expected per column.
 
             Overrides the first dimension of target_shape if provided.
@@ -627,7 +627,7 @@ def from_basic_signals_nb(
     Iterate in column-major order using flexible broadcasting.
 
     Args:
-        target_shape (Shape): Target shape for simulation arrays.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
 
             !!! note
@@ -1595,7 +1595,7 @@ def from_signals_nb(
     """Simulate signals with limit and/or stop orders.
 
     Args:
-        target_shape (Shape): Target shape for simulation arrays.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
 
             !!! note
@@ -4108,7 +4108,7 @@ def init_FSInOutputs_nb(
     """Initialize `vectorbtpro.portfolio.enums.FSInOutputs`.
 
     Args:
-        target_shape (Shape): Target shape for output arrays.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         save_state (bool): Determines if state arrays (position, debt, locked_cash, cash, free_cash) are saved.
@@ -4164,7 +4164,7 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
     """Placeholder `signal_func_nb` that returns no signal.
 
     Args:
-        c (SignalContext): Signal context used in signal evaluation.
+        c (SignalContext): Signal context.
         *args: Additional positional arguments.
 
     Returns:
@@ -4188,7 +4188,7 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
 #     """Custom signal processing function.
 #
 #     Args:
-#         c (SignalContext): Signal context for generating signals.
+#         c (SignalContext): Signal context.
 #
 #     Returns:
 #         Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
@@ -4237,7 +4237,7 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
 #     """Custom segment post-processing function.
 #
 #     Args:
-#         c (SignalSegmentContext): Post-segment context.
+#         c (SignalSegmentContext): Signal segment context.
 #
 #     Returns:
 #         None
@@ -4448,11 +4448,11 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     and post-segment functions can process order executions and update segment-level statistics.
 
     Args:
-        target_shape (Shape): Target shape for simulation arrays.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
-        index (Optional[Array1d]): Array of timestamps or indices.
-        freq (Optional[int]): Frequency of the data.
+        index (Optional[Array1d]): Index in nanosecond format.
+        freq (Optional[int]): Frequency in nanosecond format.
         open (FlexArray2dLike): Opening price.
         
             Provided as a scalar, or per row, column, or element.
@@ -7206,7 +7206,7 @@ def dir_to_ls_signals_nb(
     otherwise, they are allocated as a long entry and a short exit.
 
     Args:
-        target_shape (Shape): Shape of the output arrays.
+        target_shape (Shape): Base dimensions (rows, columns).
         entries (FlexArray2d): 2D array of boolean entry signals.
         exits (FlexArray2d): 2D array of boolean exit signals.
         direction (FlexArray2d): 2D array specifying the trade direction.
@@ -7256,7 +7256,7 @@ def no_adjust_func_nb(c: SignalContext, *args) -> None:
     """Placeholder function that performs no adjustments.
 
     Args:
-        c (SignalContext): Signal context for the current computation.
+        c (SignalContext): Signal context.
         *args: Additional positional arguments.
 
     Returns:
@@ -7307,8 +7307,8 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
     it returns an exit signal accordingly.
 
     Args:
-        c (SignalContext): Signal context holding trading information.
-        direction (int): Signal direction.
+        c (SignalContext): Signal context.
+        direction (int): Position direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         close_at_end (bool): Flag indicating whether to exit the position at the end of the period.
@@ -7365,7 +7365,7 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
     Before computing the signals, the function calls the adjustment function to update the signal context.
 
     Args:
-        c (SignalContext): Signal context with trading state.
+        c (SignalContext): Signal context.
         entries (FlexArray2d): 2D array of boolean entry signals.
         exits (FlexArray2d): 2D array of boolean exit signals.
         direction (FlexArray2d): 2D array specifying the trade direction.
@@ -7420,7 +7420,7 @@ def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
     prior to retrieving the signal.
 
     Args:
-        c (SignalContext): Trading signal context.
+        c (SignalContext): Signal context.
         long_entries (FlexArray2d): 2D array of boolean long entry signals.
         long_exits (FlexArray2d): 2D array of boolean long exit signals.
         short_entries (FlexArray2d): 2D array of boolean short entry signals.
@@ -7474,7 +7474,7 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
     accumulation is enabled.
 
     Args:
-        c (SignalContext): Signal context containing indexing and related signal information.
+        c (SignalContext): Signal context.
         size (FlexArray2d): 2D array of order sizes.
         price (FlexArray2d): 2D array of order prices.
         size_type (FlexArray2d): 2D array representing the order size types.
@@ -7589,7 +7589,7 @@ def save_post_segment_func_nb(  # % line.replace("save_post_segment_func_nb", "p
     """Segment post-processing function that saves state, value, and returns.
 
     Args:
-        c (SignalSegmentContext): Signal segment context containing current segment data and outputs.
+        c (SignalSegmentContext): Signal segment context.
         save_state (bool): Flag to save state data.
         save_value (bool): Flag to save portfolio value.
         save_returns (bool): Flag to save returns data.

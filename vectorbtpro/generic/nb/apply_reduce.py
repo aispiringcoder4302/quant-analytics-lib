@@ -115,7 +115,7 @@ def map_meta_nb(target_shape: tp.Shape, map_func_nb: tp.MapMetaFunc, *args) -> t
     """Map a 2-dimensional array using metadata with `map_func_nb`.
 
     Args:
-        target_shape (Shape): Shape of the output array.
+        target_shape (Shape): Base dimensions (rows, columns).
         map_func_nb (MapMetaFunc): Numba-compiled function that accepts a row index,
             column index, and additional arguments.
         *args: Positional arguments for `map_func_nb`.
@@ -181,7 +181,7 @@ def apply_meta_nb(target_shape: tp.Shape, apply_func_nb: tp.ApplyMetaFunc, *args
     """Apply a meta function to each column of a 2-dimensional array, passing the column index as the first argument.
 
     Args:
-        target_shape (Shape): Shape of the output array.
+        target_shape (Shape): Base dimensions (rows, columns).
         apply_func_nb (ApplyMetaFunc): Numba-compiled function that expects a column index as
             its first argument, followed by additional arguments.
         *args: Positional arguments for `apply_func_nb`.
@@ -247,7 +247,7 @@ def row_apply_meta_nb(target_shape: tp.Shape, apply_func_nb: tp.ApplyMetaFunc, *
     """Apply a meta function to each row of a 2-dimensional array, passing the row index as the first argument.
 
     Args:
-        target_shape (Shape): Shape of the output array.
+        target_shape (Shape): Base dimensions (rows, columns).
         apply_func_nb (ApplyMetaFunc): Numba-compiled function that expects a row index as its
             first argument, followed by additional arguments.
         *args: Positional arguments for `apply_func_nb`.
@@ -496,7 +496,7 @@ def rolling_reduce_meta_nb(
     """Compute meta rolling reduction on each column of a 2D array using index ranges.
 
     Args:
-        target_shape (Shape): Shape of the target output array.
+        target_shape (Shape): Base dimensions (rows, columns).
         window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
         reduce_func_nb (RangeReduceMetaFunc): Reduction function that accepts the start row index,
@@ -528,7 +528,7 @@ def rolling_freq_reduce_1d_nb(
     Args:
         index (Array1d): Array of timestamps corresponding to the entries in the input array.
         arr (Array1d): Input 1D array for computation.
-        freq (timedelta64): Frequency defining the window duration.
+        freq (np.timedelta64): Frequency defining the window duration.
         reduce_func_nb (ReduceFunc): Reduction function that accepts the array and additional arguments.
         *args: Positional arguments for `reduce_func_nb`.
 
@@ -573,7 +573,7 @@ def rolling_freq_reduce_nb(
     Args:
         index (Array1d): Array of timestamps corresponding to the rows in the input 2D array.
         arr (Array2d): Input 2D array for computation.
-        freq (timedelta64): Frequency defining the window duration.
+        freq (np.timedelta64): Frequency defining the window duration.
         reduce_func_nb (ReduceFunc): Reduction function that accepts a 1D array and additional arguments.
         *args: Positional arguments for `reduce_func_nb`.
 
@@ -602,7 +602,7 @@ def rolling_freq_reduce_1d_meta_nb(
     Args:
         col (int): Column index to process.
         index (Array1d): One-dimensional array representing the time index.
-        freq (np.timedelta64): Time frequency defining the rolling window.
+        freq (np.timedelta64): Frequency defining the window duration.
         reduce_func_nb (RangeReduceMetaFunc): Function that accepts the start row index, end row index,
         column index, and additional arguments, returning a single value.
         *args: Positional arguments for `reduce_func_nb`.
@@ -647,7 +647,7 @@ def rolling_freq_reduce_meta_nb(
     Args:
         n_cols (int): Number of columns.
         index (Array1d): One-dimensional array representing the time index.
-        freq (np.timedelta64): Time frequency defining the rolling window.
+        freq (np.timedelta64): Frequency defining the window duration.
         reduce_func_nb (RangeReduceMetaFunc): Function that reduces values over the specified window.
         *args: Positional arguments for `reduce_func_nb`.
 
@@ -849,7 +849,7 @@ def groupby_transform_meta_nb(
     """Meta version of `groupby_transform_nb`.
 
     Args:
-        target_shape (Shape): Desired shape of the output array.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_map (GroupMap): Tuple of group indices and lengths.
         transform_func_nb (GroupByTransformMetaFunc): Function that accepts an array of
             group indices, the group index, and additional arguments, returning a scalar or
@@ -1857,7 +1857,7 @@ def proximity_reduce_meta_nb(
     """Perform a meta reduction by applying a function over window index boundaries.
 
     Args:
-        target_shape (Shape): Shape (rows, columns) of the target output array.
+        target_shape (Shape): Base dimensions (rows, columns).
         window (int): Window size.
         reduce_func_nb (ReduceFunc): Function that accepts start/end indices for rows and
             columns along with additional arguments, and returns a single value.

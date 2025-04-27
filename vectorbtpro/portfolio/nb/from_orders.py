@@ -123,7 +123,7 @@ def from_orders_nb(
     update simulation state arrays.
 
     Args:
-        target_shape (Shape): Target shape for simulation arrays.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
 
             !!! note

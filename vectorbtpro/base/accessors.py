@@ -63,7 +63,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     Args:
         obj (Index): Pandas Index object to be wrapped by the accessor.
-        freq (Optional[FrequencyLike]): Optional frequency for the index.
+        freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 
@@ -108,7 +110,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Convert the index to a PeriodIndex.
 
         Args:
-            freq (FrequencyLike): Frequency to convert the index.
+            freq (FrequencyLike): Frequency of the period index.
             shift (bool): If True, shift the resulting period.
 
         Returns:
@@ -369,8 +371,10 @@ class BaseIDXAccessor(Configured, IndexApplier):
             index (Optional[Index]): Index from which to infer the frequency.
 
                 If None, the accessor's index is used.
-            freq (Optional[FrequencyLike]): Frequency to utilize if not already set.
-            **kwargs: Keyword arguments for `dt.infer_index_freq`.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
             Union[None, float, PandasFrequency]: The inferred frequency, or None if conversion fails.
@@ -436,7 +440,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the number of periods in the index without considering datetime-like properties.
 
         Args:
-            index (Optional[Index]): Index for which to count periods. If None, the accessor's index is used.
+            index (Optional[Index]): Index for which to count periods.
+
+                If None, the accessor's index is used.
 
         Returns:
             int: The number of periods in the index.
@@ -461,7 +467,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
     def get_dt_periods(
         cls_or_self,
         index: tp.Optional[tp.Index] = None,
-        freq: tp.Optional[tp.PandasFrequency] = None,
+        freq: tp.Optional[tp.FrequencyLike] = None,
     ) -> float:
         """Return the number of periods in the index, accounting for its datetime-like properties.
 
@@ -469,7 +475,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
             index (Optional[Index]): Index to process.
 
                 If omitted and invoked on an instance, the object's index is used.
-            freq (Optional[PandasFrequency]): Frequency specifier for the index.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
             float: The calculated number of periods.
@@ -612,7 +620,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             rule (AnyRuleLike): Resampling rule, which may be frequency-like or a resampler.
-            freq (Optional[FrequencyLike]): Target frequency for the resampler.
+            freq (Optional[FrequencyLike]): Frequency of the target index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             resample_kwargs (KwargsLike): Keyword arguments for the Pandas resample method.
             return_pd_resampler (bool): Flag indicating whether to return a Pandas resampler.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
@@ -1168,9 +1178,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func`.
-            wrapper_meta (DictLike): Metadata for indexing.
-
-                If not provided, it is computed.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func`.
         Returns:
             BaseAccessor: A new accessor instance with the selected subset of data.
@@ -1572,7 +1580,7 @@ class BaseAccessor(Wrapping):
             keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
             axis (int): Axis along which to tile the data (1 for columns, 0 for index).
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1612,7 +1620,7 @@ class BaseAccessor(Wrapping):
             keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
             axis (int): Axis along which to repeat the data (1 for columns, 0 for index).
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1642,7 +1650,7 @@ class BaseAccessor(Wrapping):
 
                 Must be a `pd.Series` or `pd.DataFrame`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.align_index_to`.
 
@@ -1737,9 +1745,11 @@ class BaseAccessor(Wrapping):
         """Cross align the input object with another object on both axes.
 
         Args:
-            other (SeriesFrame): Object to cross align with. Must be a `pd.Series` or `pd.DataFrame`.
+            other (SeriesFrame): Object to cross align with.
+
+                Must be a `pd.Series` or `pd.DataFrame`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1986,7 +1996,7 @@ class BaseAccessor(Wrapping):
                 See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `apply_func`.
 
@@ -2131,7 +2141,7 @@ class BaseAccessor(Wrapping):
                 See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `apply_func`.
 
@@ -2278,7 +2288,7 @@ class BaseAccessor(Wrapping):
                 See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `combine_func`.
 
@@ -2464,7 +2474,7 @@ class BaseAccessor(Wrapping):
 
                 See `vectorbtpro.base.reshaping.broadcast`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:

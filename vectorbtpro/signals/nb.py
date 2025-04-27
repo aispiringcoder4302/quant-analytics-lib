@@ -67,7 +67,7 @@ def generate_nb(
     """Create a boolean matrix of `target_shape` and place signals using `place_func_nb`.
 
     Args:
-        target_shape (Shape): Target shape.
+        target_shape (Shape): Base dimensions (rows, columns).
         place_func_nb (PlaceFunc): Signal placement function.
 
             `place_func_nb` must accept a context of type `vectorbtpro.signals.enums.GenEnContext`
@@ -246,7 +246,7 @@ def generate_enex_nb(
     """Place entry and exit signals sequentially using provided placement functions.
 
     Args:
-        target_shape (Shape): Target shape.
+        target_shape (Shape): Base dimensions (rows, columns).
         entry_place_func_nb (PlaceFunc): Function to place entry signals.
 
             Must accept a context of type `vectorbtpro.signals.enums.GenEnExContext`
@@ -426,7 +426,7 @@ def generate_rand_enex_nb(
     randomizing the position of the first entry, the last exit, and all signals in between.
 
     Args:
-        target_shape (Shape): Shape of the output arrays indicating signal positions.
+        target_shape (Shape): Base dimensions (rows, columns).
         n (FlexArray1d): Flexible array specifying the number of entry-exit pairs per column.
         entry_wait (int): Minimum periods to wait after an entry before an exit can be placed.
         exit_wait (int): Minimum periods to wait before placing an exit following an entry.
@@ -525,7 +525,7 @@ def rand_enex_apply_nb(
     """Call `generate_rand_enex_nb` using `apply_func_nb`.
 
     Args:
-        target_shape (Shape): Shape of the output arrays.
+        target_shape (Shape): Base dimensions (rows, columns).
         n (FlexArray1d): Flexible array specifying the number of entry-exit pairs per column.
         entry_wait (int): Minimum periods to wait after an entry before placing an exit.
         exit_wait (int): Minimum periods to wait before placing an exit after an entry.
@@ -1013,7 +1013,7 @@ def sig_pos_rank_nb(c: RankContext, allow_gaps: bool) -> int:
     the current partition. Resets occur at each reset signal.
 
     Args:
-        c (RankContext): Rank context containing signal and partition information.
+        c (RankContext): Ranking context.
         allow_gaps (bool): Flag to determine whether to allow gaps in ranking.
 
     Returns:
@@ -1031,7 +1031,7 @@ def part_pos_rank_nb(c: RankContext) -> int:
     Computes the rank for a partition based on its order in the series. Resets occur at each reset signal.
 
     Args:
-        c (RankContext): Rank context containing partition information.
+        c (RankContext): Ranking context.
 
     Returns:
         int: The computed partition rank.

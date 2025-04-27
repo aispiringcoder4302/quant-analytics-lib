@@ -1328,10 +1328,10 @@ def riskfolio_optimize(
             `resolve_factors_views` for factors views formats.
         solvers (Optional[Sequence[str]]): Solvers.
         sol_params (KwargsLike): Solver parameters.
-        freq (Optional[FrequencyLike]): Frequency used to compute the annualization factor.
+        freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
-            Required when using views.
-        year_freq (Optional[FrequencyLike]): Year frequency used to compute the annualization factor.
+            Required when using views. See `vectorbtpro.utils.datetime_.infer_index_freq`.
+        year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
 
             Required when using views.
         pre_opt (Optional[bool]): Whether to pre-optimize the portfolio using `pre_opt_kwargs`.
@@ -1998,9 +1998,9 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
-            wrapper_meta (DictLike): Metadata for the wrapper's indexing function.
-            alloc_wrapper_meta (DictLike): Metadata for the allocation wrapper indexing.
-            alloc_records_meta (DictLike): Metadata for the allocation records indexing.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
+            alloc_wrapper_meta (DictLike): Metadata from the indexing operation on the allocation wrapper.
+            alloc_records_meta (DictLike): Metadata from the indexing operation on the allocation records.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
@@ -4034,7 +4034,7 @@ class PortfolioOptimizer(Analyzable):
             dropna (Optional[str]): Parameter for NA handling.
 
                 See `PortfolioOptimizer.fill_allocations`.
-            line_shape (str): Line shape.
+            line_shape (str): Shape of the plot line (e.g. "hv").
             plot_rb_dates (Optional[bool]): Whether to plot rebalancing dates.
 
                 Defaults to True if there are no more than 20 rebalancing dates.

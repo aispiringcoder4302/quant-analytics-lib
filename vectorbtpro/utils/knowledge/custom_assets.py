@@ -1326,7 +1326,7 @@ class VBTAsset(KnowledgeAsset):
         Args:
             obj (MaybeList): Object or list of objects to generate mention targets for.
             attr (Optional[str]): Attribute name to target on the object.
-            module (Union[None, str, ModuleType]): Module context for reference resolution.
+            module (Union[None, str, ModuleType]): Module context used in reference resolution.
             resolve (bool): Whether to resolve the object's reference.
             incl_base_attr (Optional[bool]): Include targets for base class attributes if applicable.
             incl_shortcuts (Optional[bool]): Include shortcut forms from vectorbtpro.
@@ -1467,7 +1467,7 @@ class VBTAsset(KnowledgeAsset):
         Args:
             obj (MaybeList): Object or list of objects to search for mentions.
             attr (Optional[str]): Attribute to consider when generating mention targets.
-            module (Union[None, str, ModuleType]): Module context for the object.
+            module (Union[None, str, ModuleType]): Module context used in reference resolution.
             resolve (bool): Whether to resolve the object references.
             incl_shortcuts (Optional[bool]): Include shortcut mentions.
             incl_shortcut_access (Optional[bool]): Include shortcut access mentions.
@@ -1632,9 +1632,12 @@ class PagesAsset(VBTAsset):
     Fields:
         link (str): URL of the page without fragment, such as "https://vectorbt.pro/features/data/",
             or heading with fragment, such as "https://vectorbt.pro/features/data/#trading-view".
-        parent (Optional[str]): URL of the parent page or heading. For example, a heading 1 is a parent of a heading 2.
-        children (List[str]): List of URLs of the child pages and/or headings. For example,
-            a heading 2 is a child of a heading 1.
+        parent (Optional[str]): URL of the parent page or heading.
+        
+            For example, a heading 1 is a parent of a heading 2.
+        children (List[str]): List of URLs of the child pages and/or headings.
+        
+            For example, a heading 2 is a child of a heading 1.
         name (str): Name of the page or heading representing the API object's name, such as "Portfolio.from_signals".
         type (str): Type of the page or heading (e.g., "page", "heading 1").
         icon (Optional[str]): Icon identifier (e.g., "material-brain").
@@ -1792,7 +1795,7 @@ class PagesAsset(VBTAsset):
         Args:
             obj (Any): Object to find.
             attr (Optional[str]): Attribute name to append to the object reference.
-            module (Union[None, str, ModuleType]): Module information for reference resolution.
+            module (Union[None, str, ModuleType]): Module context used in reference resolution.
             resolve (bool): Whether to resolve the object reference.
             **kwargs: Keyword arguments for `VBTAsset.find_refname`.
 
@@ -1899,7 +1902,7 @@ class PagesAsset(VBTAsset):
         Args:
             obj (MaybeList): Object or list of objects to search for.
             attr (Optional[str]): Attribute name to append to the object reference.
-            module (Union[None, str, ModuleType]): Module for resolving the object reference.
+            module (Union[None, str, ModuleType]): Module context used in reference resolution.
             resolve (bool): Whether to resolve the object reference.
             use_parent (Optional[bool]): Include the object's parent page.
             use_base_parents (Optional[bool]): Include base classes/attributes of the parent.
@@ -2309,7 +2312,7 @@ class PagesAsset(VBTAsset):
         Args:
             obj (MaybeList): Object or list of objects to process.
             attr (Optional[str]): Attribute name to query documentation for.
-            module (Union[None, str, ModuleType]): Module associated with the object.
+            module (Union[None, str, ModuleType]): Module context used in reference resolution.
             resolve (bool): Whether to resolve references in the documentation.
             incl_pages (Optional[MaybeIterable[str]]): Iterable of page identifiers or parts to include.
             excl_pages (Optional[MaybeIterable[str]]): Iterable of page identifiers or parts to exclude.
@@ -3691,7 +3694,7 @@ def find_assets(
         obj_or_query (Optional[MaybeList]): Object, list of objects, or query for which to retrieve assets.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute name used during asset retrieval.
-        module (Union[None, str, ModuleType]): Module or module name to use for asset resolution.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
         resolve (bool): Whether to resolve references.
         asset_names (Optional[MaybeIterable[str]]): List specifying the order and selection of assets.
 

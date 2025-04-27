@@ -1150,8 +1150,9 @@ class DTCIdxr(UniIdxr, DefineMixin):
         """Convert a value to a `vectorbtpro.utils.datetime_.DTCNT` instance.
 
         Args:
-            value (Optional[DTCLike]): Datetime-like value to convert. If None, returns a named tuple
-                representing a default DTC instance.
+            value (Optional[DTCLike]): Datetime-like value to convert.
+
+                If None, returns a named tuple representing a default `vectorbtpro.utils.datetime_.DTC` instance.
             **parse_kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.DTC.parse`.
 
         Returns:
@@ -1699,7 +1700,9 @@ def get_index_ranges(
 
     Args:
         index (Index): Index.
-        index_freq (Optional[FrequencyLike]): Index frequency.
+        index_freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
         every (Optional[FrequencyLike]): See `RangeIdxr.every`.
         normalize_every (bool): See `RangeIdxr.normalize_every`.
         split_every (bool): See `RangeIdxr.split_every`.
@@ -2579,7 +2582,9 @@ def get_idxs(
         idxr (object): Input indexer.
         index (Optional[Index]): Optional row index.
         columns (Optional[Index]): Optional column index.
-        freq (Optional[FrequencyLike]): Optional frequency for row indices.
+        freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `Idxr`.
 
@@ -2775,7 +2780,9 @@ class IdxSetter(DefineMixin):
             shape (ShapeLike): Shape of the target array.
             index (Optional[Index]): Index labels of the array.
             columns (Optional[Index]): Column labels of the array.
-            freq (Optional[FrequencyLike]): Frequency information used for generating indices.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             template_context (KwargsLike): Additional context for template substitution.
 
         Returns:

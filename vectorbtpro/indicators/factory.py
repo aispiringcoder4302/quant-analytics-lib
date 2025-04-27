@@ -1389,11 +1389,11 @@ class IndicatorBase(Analyzable):
         return pd.MultiIndex.from_arrays(visible_indexes)
 
     def indexing_func(self: IndicatorBaseT, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> IndicatorBaseT:
-        """Perform indexing on an IndicatorBase instance.
+        """Perform indexing on an `IndicatorBase` instance.
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func`.
-            wrapper_meta (DictLike): Metadata for wrapper indexing.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func`.
 
         Returns:
@@ -2154,7 +2154,7 @@ class IndicatorFactory(Configured):
                         Args:
                             other (MaybeTupleList[Union[IndicatorBase, ArrayLike, BaseAccessor]]): 
                                 The indicator, array, or accessor to compare.
-                            level_name (Optional[str]): Output level name. 
+                            level_name (Optional[str]): Output level name.
                             
                                 If not provided, a name is auto-generated.
                             allow_multiple (bool): Flag indicating whether multiple comparisons are permitted.
@@ -2201,7 +2201,7 @@ class IndicatorFactory(Configured):
                         Args:
                             other (MaybeTupleList[Union[IndicatorBase, ArrayLike, BaseAccessor]]): 
                                 The indicator, array, or accessor to compare.
-                            level_name (Optional[str]): Output level name. 
+                            level_name (Optional[str]): Output level name.
                             
                                 If not provided, a name is auto-generated.
                             allow_multiple (bool): Flag indicating whether multiple comparisons are permitted.
@@ -4090,7 +4090,9 @@ Returns:
                 param_tuple (Tuple[ParamValue, ...]): Tuple of parameter values.
                 
                     May include the timeframe as the last element.
-                timeframe (Optional[FrequencyLike]): Timeframe value.
+                timeframe (Optional[FrequencyLike]): Timeframe specification (e.g., "daily", "15 minutes").
+
+                    See `vectorbtpro.utils.datetime_.to_freq`.
                 **kwargs_: Additional keyword arguments.
     
             Returns:

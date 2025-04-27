@@ -732,19 +732,19 @@ class DuckDBData(DBData):
                 If both `table` and `query` are None, the key becomes the table name.
                 The key can be provided in either `SCHEMA:TABLE` or `CATALOG:SCHEMA:TABLE` format,
                 in which case the `schema` argument is ignored.
-            table (str): Table name.
+            table (Optional[str]): Table name.
 
                 Cannot be used together with `read_path` or `query`.
-            schema (str): Schema name.
+            schema (Optional[str]): Schema name.
 
                 Cannot be used together with `read_path` or `query`.
-            catalog (str): Catalog name.
+            catalog (Optional[str]): Catalog name.
 
                 Cannot be used together with `read_path` or `query`.
-            read_path (PathLike): Path to a file to read.
+            read_path (Optional[PathLike]): Path to a file to read.
 
                 Cannot be used together with `table`, `schema`, `catalog`, or `query`.
-            read_format (str): File format.
+            read_format (Optional[str]): File format.
 
                 Allowed values are "csv", "parquet", and "json".
                 Requires `read_path` to be set.
@@ -761,29 +761,29 @@ class DuckDBData(DBData):
             connection_config (KwargsLike): Additional configuration for the connection;
 
                 See `DuckDBData.resolve_connection`.
-            start (any): Start value for filtering.
+            start (Optional[Any]): Start value for filtering.
 
                 Interpreted as a datetime when the index is of datetime type and `align_dates` is True.
                 Cannot be used together with `query`; include the condition in the query.
-            end (any): End value for filtering.
+            end (Optional[Any]): End value for filtering.
 
                 Interpreted as a datetime when the index is of datetime type and `align_dates` is True.
                 Cannot be used together with `query`; include the condition in the query.
-            align_dates (bool): Whether to align `start` and `end` to the index timezone.
+            align_dates (Optional[bool]): Whether to align `start` and `end` to the index timezone.
 
                 Pulls one row using `LIMIT 1` and applies `SQLData.prepare_dt` to
                 determine the index configuration.
-            parse_dates (Optional[bool]): Parameter for date parsing;
+            parse_dates (Union[None, bool, Sequence[str]]): Parameter for date parsing;
 
                 See `DuckDBData.prepare_dt`.
-            to_utc (Optional[Union[None, bool, str, Sequence[str]]]): Parameter for converting dates to UTC;
+            to_utc (Union[None, bool, str, Sequence[str]]): Parameter for converting dates to UTC;
 
                 See `DuckDBData.prepare_dt`.
-            tz (TimezoneLike): Timezone to apply;
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             index_col (Optional[MaybeSequence[IntStr]]): Column(s) to use as the index.
-            squeeze (bool): Whether to squeeze a DataFrame with a single column into a Series.
+            squeeze (Optional[bool]): Whether to squeeze a DataFrame with a single column into a Series.
             df_kwargs (KwargsLike): Keyword arguments for `relation.df` to convert a relation to a DataFrame.
             **sql_kwargs: Keyword arguments for `connection.execute` to run the SQL query.
 
@@ -1017,7 +1017,7 @@ class DuckDBData(DBData):
         """Fetch the data table for a symbol using the underlying `DuckDBData.fetch_key` method.
 
         Args:
-            symbol (str): Identifier for the symbol whose data table is to be fetched.
+            symbol (str): Symbol identifier.
             **kwargs: Keyword arguments for `DuckDBData.fetch_key`.
 
         Returns:
@@ -1073,7 +1073,7 @@ class DuckDBData(DBData):
         """Update the data table for a symbol using the underlying `DuckDBData.update_key` method.
 
         Args:
-            symbol (str): Identifier for the symbol to update.
+            symbol (str): Symbol identifier.
             **kwargs: Keyword arguments for `DuckDBData.update_key`.
 
         Returns:

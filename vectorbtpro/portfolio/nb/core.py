@@ -368,7 +368,9 @@ def long_sell_nb(
     Args:
         account_state (AccountState): Current account state with cash, position, debt,
             and locked/free cash details.
-        size (float): Desired size to sell. The size is capped by the current open long position.
+        size (float): Desired size to sell.
+
+            The size is capped by the current open long position.
         price (float): Price at which to execute the sell order.
         fees (float): Fee rate applied proportionally to the acquired cash.
         fixed_fees (float): Fixed fee amount applied to the transaction.
@@ -1263,8 +1265,8 @@ def get_diraware_size_nb(size: float, direction: int) -> float:
 
     Args:
         size (float): Base size value.
-        direction (int): Order direction. 
-        
+        direction (int): Order direction.
+
             If equal to `Direction.ShortOnly`, the size is negated.
             See `vectorbtpro.portfolio.enums.Direction`.
 
@@ -2101,7 +2103,7 @@ def prepare_records_nb(
     """Prepare order and log records arrays.
 
     Args:
-        target_shape (Shape): Target shape to determine array dimensions.
+        target_shape (Shape): Base dimensions (rows, columns).
         max_order_records (Optional[int]): Maximum number of order records expected per column.
 
             If None, `target_shape[0]` is used.
@@ -2134,7 +2136,7 @@ def prepare_last_cash_nb(
     """Prepare the last cash array based on cash sharing.
 
     Args:
-        target_shape (Shape): Target shape used to determine dimensions.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         init_cash (FlexArray1d): Array of initial cash values.
@@ -2158,7 +2160,7 @@ def prepare_last_position_nb(target_shape: tp.Shape, init_position: tp.FlexArray
     """Prepare the last position array.
 
     Args:
-        target_shape (Shape): Target shape for determining the number of columns.
+        target_shape (Shape): Base dimensions (rows, columns).
         init_position (FlexArray1d): Array of initial positions.
 
     Returns:
@@ -2182,7 +2184,7 @@ def prepare_last_value_nb(
     """Prepare the last value array by combining cash and position values.
 
     Args:
-        target_shape (Shape): Target shape used to determine the output dimensions.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         init_cash (FlexArray1d): Array of initial cash values.
@@ -2228,7 +2230,7 @@ def prepare_last_pos_info_nb(
     """Prepare last position information array.
 
     Args:
-        target_shape (Shape): Target shape for the position info array.
+        target_shape (Shape): Base dimensions (rows, columns).
         init_position (FlexArray1d): Array of initial positions.
         init_price (FlexArray1d): Array of initial position prices.
         fill_pos_info (bool): If True, fill the position info with initial data.
@@ -2748,12 +2750,8 @@ def check_limit_expired_nb(
         time_delta_format (int): Format for calculating time differences.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
-        index (Optional[Array1d]): Array of time indices, required when using index-based time deltas.
-
-            Must be in nanosecond format.
-        freq (Optional[int]): Frequency value for time calculations when using index format.
-
-            Must be in nanosecond format.
+        index (Optional[Array1d]): Index in nanosecond format.
+        freq (Optional[int]): Frequency in nanosecond format.
 
     Returns:
         Tuple[bool, bool]: A tuple where the first element indicates if the limit expires on open,
@@ -3108,12 +3106,8 @@ def check_td_stop_hit_nb(
         time_delta_format (int): Format for time delta comparisons (e.g., rows or index).
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
-        index (Optional[Array1d]): Array of index values, required when using index-based time delta.
-
-            Must be in nanosecond format.
-        freq (Optional[int]): Frequency for time delta comparisons when using index-based format.
-
-            Must be in nanosecond format.
+        index (Optional[Array1d]): Index in nanosecond format.
+        freq (Optional[int]): Frequency in nanosecond format.
 
     Returns:
         Tuple[bool, bool]: A tuple containing:
@@ -3167,12 +3161,8 @@ def check_dt_stop_hit_nb(
         time_delta_format (int): Format for time delta calculations (rows or index).
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
-        index (Optional[Array1d]): Array of index values, required for index-based time delta.
-
-            Must be in nanosecond format.
-        freq (Optional[int]): Frequency for index-based time delta comparisons.
-
-            Must be in nanosecond format.
+        index (Optional[Array1d]): Index in nanosecond format.
+        freq (Optional[int]): Frequency in nanosecond format.
 
     Returns:
         Tuple[bool, bool]: A tuple containing:

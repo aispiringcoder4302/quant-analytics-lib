@@ -832,7 +832,7 @@ def resolve_merge_func(merge_func: tp.MergeFuncLike) -> tp.Optional[tp.Callable]
     """Resolve a merging function into a callable.
 
     Args:
-        merge_func (MergeFuncLike): Merging function to resolve. 
+        merge_func (MergeFuncLike): Merging function to resolve.
         
             * If provided as a string, it is looked up in `merge_func_config`.
             *If provided as a sequence, a partial application of `mixed_merge` with

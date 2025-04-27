@@ -209,7 +209,7 @@ class AVData(RemoteData):
         See https://www.alphavantage.co/documentation/ for API endpoints and parameters.
 
         Args:
-            symbol (str): Symbol.
+            symbol (str): Symbol identifier.
 
                 May combine symbol/from_currency and market/to_currency using an underscore.
             use_parser (Optional[bool]): Whether to use the parser instead of the `alpha_vantage` package.
@@ -237,13 +237,12 @@ class AVData(RemoteData):
                 If None, it is determined based on `timeframe`, `adjusted`, and `extended`.
                 Required for technical indicators, economic indicators, and fundamental data.
                 See the keys in sub-dictionaries returned by `AVData.parse_api_meta`.
-            timeframe (Optional[str]): Timeframe.
-
-                Accepts human-readable strings (e.g., "15 minutes").
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
                 For time series, forex, and crypto, the interval is inferred from the function name.
                 Defaults to "60min" if `extended` is True, otherwise "daily".
-            tz (Optional[TimezoneLike]): Timezone.
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             adjusted (Optional[bool]): Whether to return time series adjusted for

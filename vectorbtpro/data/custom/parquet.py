@@ -185,8 +185,10 @@ class ParquetData(FileData):
 
         Args:
             key (hashable): Feature or symbol identifier.
-            path (Any): File path. If None, uses `key` as the path to the Parquet file.
-            tz (TimezoneLike): Target timezone.
+            path (Any): File path.
+            
+                If None, uses `key` as the path to the Parquet file.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             squeeze (Optional[bool]): Flag indicating whether to convert a single-column DataFrame to a Series.

@@ -984,7 +984,7 @@ def assert_in(obj1: tp.Any, obj2: tp.Sequence, arg_name: tp.Optional[str] = None
     Args:
         obj1 (Any): Element to search for.
         obj2 (Sequence): Sequence in which to search.
-        arg_name (Optional[str]): Variable name for error messaging.
+        arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:
         None
@@ -1021,7 +1021,7 @@ def assert_not_none(obj: tp.Any, arg_name: tp.Optional[str] = None) -> None:
 
     Args:
         obj (Any): Value to check.
-        arg_name (Optional[str]): Variable name for error messaging.
+        arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:
         None
@@ -1043,7 +1043,7 @@ def assert_instance_of(obj: tp.Any, types: tp.TypeLike, arg_name: tp.Optional[st
     Args:
         obj (Any): Object to validate.
         types (TypeLike): Type, tuple of types, or type name(s) to check against.
-        arg_name (Optional[str]): Variable name for error messaging.
+        arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:
         None
@@ -1068,7 +1068,7 @@ def assert_not_instance_of(obj: tp.Any, types: tp.TypeLike, arg_name: tp.Optiona
     Args:
         obj (Any): Object to validate.
         types (TypeLike): Type, tuple of types, or type name(s) that are disallowed.
-        arg_name (Optional[str]): Variable name for error messaging.
+        arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:
         None
@@ -1093,7 +1093,7 @@ def assert_subclass_of(obj: tp.Type, classes: tp.TypeLike, arg_name: tp.Optional
     Args:
         obj (Type): Type to check.
         classes (TypeLike): Class or tuple of classes for validation.
-        arg_name (Optional[str]): Variable name for error messaging.
+        arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:
         None
@@ -1118,7 +1118,7 @@ def assert_not_subclass_of(obj: tp.Type, classes: tp.TypeLike, arg_name: tp.Opti
     Args:
         obj (Type): Type to check.
         classes (TypeLike): Class or tuple of classes that are disallowed.
-        arg_name (Optional[str]): Variable name for error messaging.
+        arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:
         None
@@ -1162,7 +1162,7 @@ def assert_dtype(obj: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_name
     Args:
         obj (ArrayLike): Array or DataFrame to validate.
         dtype (MaybeTuple[DTypeLike]): Expected data type or a tuple of possible data types.
-        arg_name (Optional[str]): Variable name for error messaging.
+        arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:
         None
@@ -1201,7 +1201,7 @@ def assert_subdtype(obj: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_n
     Args:
         obj (ArrayLike): Array or DataFrame to validate.
         dtype (MaybeTuple[DTypeLike]): Expected data type or a tuple of data types.
-        arg_name (Optional[str]): Variable name for error messaging.
+        arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:
         None

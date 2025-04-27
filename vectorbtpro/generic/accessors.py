@@ -1343,7 +1343,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             distance_measure (Union[int, str]): Distance measure for error computation,
                 mapped using `vectorbtpro.generic.enums.DistanceMeasure` if provided as a string.
             max_error (ArrayLike): Maximum allowed error.
-            max_error_interp_mode (Union[None, int, str]): Interpolation mode for maximum error,
+            max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`,
                 mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
             max_error_as_maxdist (bool): Treat maximum error directly as maximum distance if True.
             max_error_strict (bool): Enforce strict maximum error rules; returns NaN if exceeded.
@@ -2268,7 +2268,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
             use_groupby_apply (bool): If True, apply the reduction function using
                 `GenericAccessor.groupby_apply` with post-processing; otherwise, use
                 `GenericAccessor.resample_to_index`.
-            freq (Optional[FrequencyLike]): Optional frequency parameter that can override the default rule.
+            freq (Optional[FrequencyLike]): Frequency of the target index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             resample_kwargs (KwargsLike): Keyword arguments for the `pd.DataFrame.resample` method.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -3290,8 +3293,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
         `df.resample(closed='right', label='right').last().ffill()` on the target index.
 
         Args:
-            index (AnyRuleLike): Resampler instance or index-like object that defines the new index.
-            freq (Union[None, bool, FrequencyLike]): Resampling frequency override.
+            index (AnyRuleLike): Target index for resampling.
+            freq (Union[None, bool, FrequencyLike]): Frequency of the target index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             nan_value (Optional[Scalar]): Value used for missing data.
 
                 Uses -1 if a mapping exists; otherwise defaults to np.nan.
@@ -3489,7 +3495,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
             reduce_func_nb (Union[str, ReduceFunc, RangeReduceMetaFunc]):
                 Reduction function to apply on each group.
             *args: Positional arguments for `reduce_func_nb`.
-            freq (Union[None, bool, FrequencyLike]): Frequency parameter used during resampling.
+            freq (Union[None, bool, FrequencyLike]): Frequency of the target index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
             before (bool): If True, use index ranges preceding the target index.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -6543,7 +6552,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Plot a stacked area chart.
 
         Args:
-            line_shape (str): Specifies the shape of the line, for example "spline".
+            line_shape (str): Shape of the plot line (e.g. "spline").
             line_visible (bool): Determines whether the line outlining the area is displayed.
             colorway (Union[None, str, Sequence[str]]): Name of a built-in qualitative
                 color palette or a sequence of colors.
@@ -6686,7 +6695,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             error_type (Union[int, str]): Error calculation type, mapped using
                 `vectorbtpro.generic.enums.ErrorType` if provided as a string.
             max_error (ArrayLike): Maximum allowed error.
-            max_error_interp_mode (Union[None, int, str]): Interpolation mode for maximum error,
+            max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`,
                 mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
             column (Optional[Label]): Column label for data selection.
             plot_obj (bool): If True, includes the original object data in the plot.
@@ -7019,7 +7028,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
             error_type (Union[int, str]): Error calculation type, mapped using
                 `vectorbtpro.generic.enums.ErrorType` if provided as a string.
             max_error (ArrayLike): Maximum allowed error.
-            max_error_interp_mode (Union[None, int, str]): Interpolation mode for maximum error,
+            max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`,
                 mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
             jitted (JittedOption): Option to control JIT compilation.
 

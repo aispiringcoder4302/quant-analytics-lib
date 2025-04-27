@@ -229,7 +229,7 @@ class AlpacaData(RemoteData):
         """Fetch a symbol from Alpaca via overriding `vectorbtpro.data.base.Data.fetch_symbol`.
 
         Args:
-            symbol (str): Symbol to fetch.
+            symbol (str): Symbol identifier.
             client (Optional[RESTClient]): Alpaca REST client instance.
 
                 See `AlpacaData.resolve_client`.
@@ -240,16 +240,16 @@ class AlpacaData(RemoteData):
             client_config (KwargsLike): Configuration for the Alpaca client.
 
                 See `AlpacaData.resolve_client`.
-            start (Optional[DatetimeLike]): Start datetime.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (Optional[DatetimeLike]): End datetime.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (Optional[str]): Data timeframe.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
-                Accepts human-readable strings such as "15 minutes".
-            tz (TimezoneLike): Timezone.
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             adjustment (Optional[str]): Corporate action adjustment for returned bars.

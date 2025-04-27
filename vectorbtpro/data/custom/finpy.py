@@ -258,22 +258,22 @@ class FinPyData(RemoteData):
                 Accepts formats such as "fx.bloomberg.daily.NYC.EURUSD.close".
 
                 The fields `freq`, `cut`, `tickers`, and `fields` are optional.
-            market (Market): Market instance.
+            market (Optional[MarketT]): Market instance.
 
                 See `FinPyData.resolve_market`.
             market_config (KwargsLike): Client configuration.
 
                 See `FinPyData.resolve_market`.
-            start (DatetimeLike): Start datetime.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (DatetimeLike): End datetime.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str): Timeframe string.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
-                Accepts human-readable formats such as "15 minutes".
-            tz (TimezoneLike): Timezone.
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             **request_kwargs: Keyword arguments for `findatapy.market.marketdatarequest.MarketDataRequest`.

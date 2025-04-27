@@ -48,7 +48,7 @@ def build_call_seq_nb(
     """Build a call sequence array with specified structure.
 
     Args:
-        target_shape (Shape): Desired shape of the output call sequence array.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         call_seq_type (int): Identifier for the type of call sequence construction.
 
@@ -92,7 +92,7 @@ def build_call_seq(
     """Build a call sequence array using a faster, non-jitted implementation.
 
     Args:
-        target_shape (Shape): Desired shape of the output call sequence array.
+        target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         call_seq_type (int): Identifier for the type of call sequence construction.
 

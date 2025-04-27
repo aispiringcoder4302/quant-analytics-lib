@@ -926,7 +926,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         """Build subplots documentation.
 
         Args:
-            source_cls (Optional[type]): Class used as the source for subplots documentation.
+            source_cls (Optional[type]): Source class providing the original configuration.
 
                 If not provided, defaults to using `PlotsBuilderMixin`.
 
@@ -947,7 +947,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
 
         Args:
             __pdoc__ (dict): Dictionary to update with the overridden subplots documentation.
-            source_cls (Optional[type]): Class used as the source for subplots documentation.
+            source_cls (Optional[type]): Source class providing the original configuration.
 
                 If not provided, defaults to using `PlotsBuilderMixin`.
 

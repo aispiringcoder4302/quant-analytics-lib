@@ -105,11 +105,19 @@ class SyntheticData(CustomData):
         Args:
             key (Symbol): Identifier of the feature or symbol.
             key_is_feature (bool): Specifies if the key represents a feature (True) or a symbol (False).
-            start (Optional[DatetimeLike]): Starting date for generating the datetime index.
-            end (Optional[DatetimeLike]): Ending date for generating the datetime index.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
+
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
+
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
             periods (Optional[int]): Number of periods for the datetime index.
-            timeframe (Optional[FrequencyLike]): Frequency for the datetime index.
-            tz (TimezoneLike): Timezone for the generated data.
+            timeframe (Optional[FrequencyLike]): Timeframe specification (e.g., "daily", "15 minutes").
+
+                See `vectorbtpro.utils.datetime_.to_freq`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
+
+                See `vectorbtpro.utils.datetime_.to_timezone`.
             normalize (Optional[bool]): If True, normalizes the datetime index.
             inclusive (Optional[str]): Inclusivity setting for the datetime range.
             **kwargs: Keyword arguments for `SyntheticData.generate_feature` or

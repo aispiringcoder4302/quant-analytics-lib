@@ -33,8 +33,8 @@ def date_range_nb(
     Inspired by `pd.date_range`.
 
     Args:
-        start (np.datetime64): Starting datetime value.
-        end (np.datetime64): Ending datetime value.
+        start (np.datetime64): Start datetime.
+        end (np.datetime64): End datetime.
         freq (np.timedelta64): Frequency interval for datetime increments.
         incl_left (bool): Include the start datetime if True.
         incl_right (bool): Include the end datetime if True.
@@ -76,7 +76,7 @@ def map_to_target_index_nb(
     Args:
         source_index (Array1d): Array of source indices.
         target_index (Array1d): Array of target indices, which must be strictly increasing.
-        target_freq (Optional[Scalar]): Frequency used to determine valid mappings when provided.
+        target_freq (Optional[Scalar]): Frequency offset for the target index.
         before (bool): If True, map a source index to a target index that is greater than or equal to it;
             otherwise, map to a target index that is less than or equal.
         raise_missing (bool): If True, raise an error when a source index cannot be mapped; otherwise, assign -1.
@@ -181,7 +181,7 @@ def map_index_to_source_ranges_nb(
     Args:
         source_index (Array1d): Array of source indices in increasing order.
         target_index (Array1d): Array of target indices in increasing order.
-        target_freq (Optional[Scalar]): Frequency interval used to limit the mapping range when provided.
+        target_freq (Optional[Scalar]): Frequency offset for the target index.
         before (bool): If True, include source indices preceding or equal to the target; otherwise,
             include those following or equal.
 

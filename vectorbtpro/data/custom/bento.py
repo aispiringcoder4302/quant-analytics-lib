@@ -163,19 +163,18 @@ class BentoData(RemoteData):
             client_config (KwargsLike): Client configuration.
 
                 See `BentoData.resolve_client`.
-            start (Optional[DatetimeLike]): Start datetime.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (Optional[DatetimeLike]): End datetime.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
             resolve_dates (Optional[bool]): Whether to resolve `start` and `end` to UTC timestamps.
-            timeframe (Optional[str]): Timeframe to generate a schema from.
-
-                Allows human-readable strings such as "1 minute".
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
                 If both `timeframe` and `schema` are provided, an error is raised.
-            tz (TimezoneLike): Timezone.
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             dataset (Optional[str]): Dataset identifier.

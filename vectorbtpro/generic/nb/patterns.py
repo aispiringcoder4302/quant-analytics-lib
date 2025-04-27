@@ -220,16 +220,16 @@ def fit_pattern_nb(
         pmax (float): Maximum threshold for clipping the resized pattern.
 
             If NaN, the maximum of the resized pattern is used.
-        invert (bool): Flag indicating whether to invert the rescaled pattern.
-        error_type (int): Identifier for the error calculation mode.
+        invert (bool): Invert the pattern by reflecting its values.
+        error_type (int): Error computation mode.
 
             See `vectorbtpro.generic.enums.ErrorType`.
-        max_error (FlexArray1dLike): Maximum error to be resized.
+        max_error (FlexArray1dLike): Maximum error threshold for normalization.
         
             Provided as a scalar or per element in the pattern.
-        max_error_interp_mode (Optional[int]): Interpolation mode for resizing `max_error`.
+        max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
 
-            If None, `interp_mode` is used.
+            See `vectorbtpro.generic.enums.InterpMode`.
 
     Returns:
         Tuple[Array1d, Array1d]: Tuple containing the resized and rescaled pattern and
@@ -349,7 +349,9 @@ def pattern_similarity_nb(
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
         
             Provided as a scalar or per element in the pattern.
-        max_error_interp_mode (Optional[int]): Interpolation mode for computing the maximum error.
+        max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
+
+            See `vectorbtpro.generic.enums.InterpMode`.
         max_error_as_maxdist (bool): Treat maximum error directly as maximum distance if True.
         max_error_strict (bool): Enforce strict maximum error rules; returns NaN if exceeded.
         min_pct_change (float): Minimum percent change applied during rescaling.

@@ -165,7 +165,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             Represents the return series.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        year_freq (Optional[FrequencyLike]): Frequency used for annualization.
+        year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
         defaults (KwargsLike): Overrides for default settings in `vectorbtpro._settings.returns`.
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
         sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -392,9 +392,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
-            wrapper_meta (DictLike): Indexing metadata.
-
-                If not provided, it is derived from the wrapper.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
@@ -472,7 +470,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
-                If not provided, the `bm_returns` property is used.
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
 
@@ -567,7 +565,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Args:
             ann_factor (float): Annualization factor.
-            freq (PandasFrequency): Data frequency to be scaled.
+            freq (PandasFrequency): Pandas-friendly frequency or offset.
             method_name (Optional[str]): Name of the NumPy method to apply to the annualization factor.
 
         Returns:
@@ -589,7 +587,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Determine whether the specified year frequency depends on the index.
 
         Args:
-            year_freq (FrequencyLike): Year frequency specification.
+            year_freq (FrequencyLike): Year frequency for annualization (e.g., "252 days", "auto").
 
         Returns:
             bool: True if the frequency depends on the index; otherwise, False.
@@ -607,7 +605,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         cls_or_self,
         year_freq: tp.Optional[tp.FrequencyLike] = None,
         index: tp.Optional[tp.Index] = None,
-        freq: tp.Optional[tp.PandasFrequency] = None,
+        freq: tp.Optional[tp.FrequencyLike] = None,
     ) -> tp.Optional[tp.PandasFrequency]:
         """Resolve and return the year frequency based on provided input and index information.
 
@@ -617,9 +615,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         annualization factor is parsed using `ReturnsAccessor.parse_ann_factor`.
 
         Args:
-            year_freq (Optional[FrequencyLike]): Year frequency specification.
+            year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
             index (Optional[Index]): Datetime index used for annualization factor detection.
-            freq (Optional[PandasFrequency]): Data frequency corresponding to the index.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min").
+
+                See `vectorbtpro.utils.datetime_.to_freq`.
 
         Returns:
             Optional[PandasFrequency]: The resolved year frequency, or None if it cannot be determined.
@@ -691,8 +691,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Return the annualization factor based on the given year frequency and data frequency.
 
         Args:
-            year_freq (Optional[FrequencyLike]): Year frequency specification.
-            freq (Optional[FrequencyLike]): Data frequency specification.
+            year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min").
+
+                See `vectorbtpro.utils.datetime_.to_timedelta`.
             raise_error (bool): Flag indicating whether to raise an error if the frequencies are None.
 
         Returns:
@@ -961,7 +963,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
             fill_with_zero (bool): Flag indicating whether to fill missing values with zero.
-            wrapper_meta (DictLike): Metadata for creating the resampling wrapper.
+            wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
@@ -1427,7 +1429,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             levy_alpha (Optional[float]): Levy alpha parameter.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            ddof (Optional[int]): Degrees of freedom for the standard deviation calculation.
+            ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -1493,7 +1495,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             levy_alpha (Optional[float]): Alpha parameter for Lévy correction.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            ddof (Optional[int]): Degrees of freedom for standard deviation computation.
+            ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -1792,7 +1794,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             risk_free (Optional[float]): Risk-free rate for adjusting returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            ddof (Optional[int]): Degrees of freedom for standard deviation calculation.
+            ddof (Optional[int]): Delta degrees of freedom.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1864,7 +1866,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             risk_free (Optional[float]): Risk-free return used in the excess return computation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            ddof (Optional[int]): Degrees of freedom for standard deviation calculation.
+            ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             annualized (bool): Whether to annualize the Sharpe ratio.
@@ -1932,7 +1934,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             risk_free (Optional[float]): Risk-free return used in Sharpe ratio calculation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            ddof (Optional[int]): Degrees of freedom adjustment for statistical calculations.
+            ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bias (bool): Indicates whether bias correction is applied for skewness and kurtosis.
@@ -1982,7 +1984,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             risk_free (Optional[float]): Risk-free return utilized in the Sharpe ratio computation.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            ddof (Optional[int]): Degrees of freedom for statistical adjustments.
+            ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bias (bool): Flag indicating whether to apply bias correction for skewness and kurtosis.
@@ -2033,7 +2035,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            ddof (Optional[int]): Degrees of freedom for standard deviation computation.
+            ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bias (bool): Indicates whether bias correction for skewness and kurtosis should be applied.
@@ -2312,7 +2314,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            ddof (Optional[int]): Delta degrees of freedom for statistical calculation.
+            ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -2378,7 +2380,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            ddof (Optional[int]): Delta degrees of freedom for statistical calculation.
+            ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -2440,7 +2442,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            ddof (Optional[int]): Delta degrees of freedom for normalization.
+            ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -2507,7 +2509,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            ddof (Optional[int]): Degrees of freedom for the calculation.
+            ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -4237,7 +4239,7 @@ class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying data for the Series.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
-        year_freq (Optional[FrequencyLike]): Frequency identifier for annualization.
+        year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
         defaults (KwargsLike): Default configuration parameters.
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
         sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -4282,7 +4284,7 @@ class ReturnsDFAccessor(ReturnsAccessor, GenericDFAccessor):
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying data for the DataFrame.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
-        year_freq (Optional[FrequencyLike]): Frequency identifier for annualization.
+        year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
         defaults (KwargsLike): Default configuration parameters.
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
         sim_end (Optional[ArrayLike]): End index of the simulation range.

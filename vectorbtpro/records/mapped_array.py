@@ -775,8 +775,7 @@ class MappedArray(Analyzable):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
-            wrapper_meta (DictLike): Metadata from the wrapper's indexing function;
-                if None, computed internally.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
@@ -853,7 +852,7 @@ class MappedArray(Analyzable):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
-            wrapper_meta (DictLike): Metadata from the wrapper's resampling method; if None, computed internally.
+            wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:

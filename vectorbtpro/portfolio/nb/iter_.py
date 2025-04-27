@@ -31,7 +31,7 @@ def select_nb(
     """Get the current element using flexible indexing.
 
     Args:
-        c (NamedTuple): Context providing current indices.
+        c (NamedTuple): Context.
         arr (FlexArray2d): Array used for element selection.
         i (Optional[int]): Row index; if None, uses `c.i`.
         col (Optional[int]): Column index; if None, uses `c.col`.
@@ -60,7 +60,7 @@ def select_from_col_nb(
     """Get the current element from a specified column using flexible indexing.
 
     Args:
-        c (NamedTuple): Context providing the current row index.
+        c (NamedTuple): Context.
         col (int): Column index.
         arr (FlexArray2d): Array from which to select the element.
         i (Optional[int]): Row index; if None, uses `c.i`.
@@ -86,7 +86,7 @@ def iter_above_nb(
     """Call `vectorbtpro.generic.nb.iter_.iter_above_nb` using the provided context.
 
     Args:
-        c (NamedTuple): Context containing current index and column information.
+        c (NamedTuple): Context.
         arr1 (FlexArray2d): First array for comparison.
         arr2 (FlexArray2d): Second array for comparison.
         i (Optional[int]): Row index; if None, uses `c.i`.
@@ -117,7 +117,7 @@ def iter_below_nb(
     """Call `vectorbtpro.generic.nb.iter_.iter_below_nb` using the provided context.
 
     Args:
-        c (NamedTuple): Context containing current index and column information.
+        c (NamedTuple): Context.
         arr1 (FlexArray2d): First array for comparison.
         arr2 (FlexArray2d): Second array for comparison.
         i (Optional[int]): Row index; if None, uses `c.i`.
@@ -148,7 +148,7 @@ def iter_crossed_above_nb(
     """Call `vectorbtpro.generic.nb.iter_.iter_crossed_above_nb` using the provided context.
 
     Args:
-        c (NamedTuple): Context containing current index and column information.
+        c (NamedTuple): Context.
         arr1 (FlexArray2d): First array for the crossing comparison.
         arr2 (FlexArray2d): Second array for the crossing comparison.
         i (Optional[int]): Row index; if None, uses `c.i`.
@@ -179,7 +179,7 @@ def iter_crossed_below_nb(
     """Call `vectorbtpro.generic.nb.iter_.iter_crossed_below_nb` using the provided context.
 
     Args:
-        c (NamedTuple): Context containing current index and column information.
+        c (NamedTuple): Context.
         arr1 (FlexArray2d): First array for the crossing comparison.
         arr2 (FlexArray2d): Second array for the crossing comparison.
         i (Optional[int]): Row index; if None, uses `c.i`.

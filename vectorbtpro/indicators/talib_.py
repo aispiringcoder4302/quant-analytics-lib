@@ -289,12 +289,13 @@ def talib_func(func_name: str) -> tp.Callable:
         
         Args:
             *args (ArrayLike): Positional arguments corresponding to TA-Lib indicator input arrays.
-            timeframe (Optional[FrequencyLike]): Frequency to resample input arrays before applying the function.
+            timeframe (Optional[FrequencyLike]): Timeframe specification (e.g., "daily", "15 minutes").
             
                 Resamples the input arrays to this frequency, runs the function, and then resamples 
                 the output arrays back to the original frequency.
+                See `vectorbtpro.utils.datetime_.to_freq`.
             resample_map (KwargsLike): Mapping from input names to resampling aggregation methods.
-            resample_kwargs (KwargsLikeSequence): Keyword arguments for resampling inputs. 
+            resample_kwargs (KwargsLikeSequence): Keyword arguments for resampling inputs.
             
                 See `vectorbtpro.generic.accessors.GenericAccessor.resample_apply`.
             realign_kwargs (KwargsLikeSequence): Keyword arguments for realigning outputs.

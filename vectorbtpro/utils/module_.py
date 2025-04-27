@@ -489,7 +489,7 @@ def resolve_refname(refname: str, module: tp.Union[None, str, ModuleType] = None
 
     Args:
         refname (str): Reference name to resolve.
-        module (Union[None, str, ModuleType]): Module context or its name for resolution.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
 
     Returns:
         Optional[MaybeList[str]]: The resolved reference name(s) as a string or a list of strings,
@@ -600,7 +600,7 @@ def get_refname(
         obj (Any): Object from which to extract the reference name.
 
             If a tuple is provided, its elements are concatenated.
-        module (Union[None, str, ModuleType]): Module context used to resolve the reference name.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
         resolve (bool): Whether to resolve the parsed reference name.
 
     Returns:
@@ -684,7 +684,7 @@ def prepare_refname(
 
     Args:
         obj (Any): Object or reference name to prepare.
-        module (Union[None, str, ModuleType]): Module context used for resolving the object.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
         resolve (bool): Whether to resolve the reference name.
         vbt_only (bool): If True, limit resolution to objects within vectorbtpro.
         return_parts (bool): If True, return a tuple containing the reference name, module, and qualified name.
@@ -783,7 +783,7 @@ def get_api_ref(
 
     Args:
         obj (Any): Object for which the API reference is constructed.
-        module (Union[None, str, ModuleType]): Module context used for resolving the object.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
         resolve (bool): Whether to resolve the object's reference name.
         vbt_only (bool): If True, restrict reference resolution to objects within vectorbtpro.
 
@@ -823,7 +823,7 @@ def open_api_ref(
 
     Args:
         obj (Any): Object whose API reference is to be opened.
-        module (Union[None, str, ModuleType]): Module context used for resolving the object.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
         resolve (bool): Whether to resolve the object's reference name.
         **kwargs: Keyword arguments for `webbrowser.open`.
 

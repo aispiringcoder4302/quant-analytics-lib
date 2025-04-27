@@ -249,19 +249,21 @@ class HDFData(FileData):
                 Will be resolved using `HDFData.split_hdf_path`.
 
                 If None, `key` is used as the file path.
-            start (Optional[DatetimeLike]): Start datetime for filtering.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
                 Extracts the object's index and compares it to this date using the object's timezone.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
 
                 !!! note
                     Applicable only if the object was saved in table format.
-            end (Optional[DatetimeLike]): End datetime for filtering.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
                 Extracts the object's index and compares it to this date using the object's timezone.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
 
                 !!! note
                     Applicable only if the object was saved in table format.
-            tz (TimezoneLike): Target timezone.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             start_row (Optional[int]): Index of the starting row (inclusive).

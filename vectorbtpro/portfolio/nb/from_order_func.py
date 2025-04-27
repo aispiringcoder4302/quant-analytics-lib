@@ -93,7 +93,7 @@ def sort_call_seq_out_1d_nb(
     Best called from `pre_segment_func_nb`.
 
     Args:
-        c (SegmentContext): Simulation segment context.
+        c (SegmentContext): Segment context.
         size (FlexArray1d): 1D array of order sizes using flexible indexing.
         size_type (FlexArray1d): 1D array of order size types.
 
@@ -155,10 +155,10 @@ def sort_call_seq_1d_nb(
     direction: tp.FlexArray1d,
     order_value_out: tp.Array1d,
 ) -> None:
-    """Sort the call sequence associated with the simulation segment context using 1D flexible arrays.
+    """Sort the call sequence associated with the segment context using 1D flexible arrays.
 
     Args:
-        c (SegmentContext): Simulation segment context.
+        c (SegmentContext): Segment context.
         size (FlexArray1d): 1D array of order sizes.
         size_type (FlexArray1d): 1D array of order size types.
 
@@ -194,7 +194,7 @@ def sort_call_seq_out_nb(
     """Sort the call sequence array `call_seq_out` by computing order values using 2D flexible arrays.
 
     Args:
-        c (SegmentContext): Simulation segment context.
+        c (SegmentContext): Segment context.
         size (FlexArray2d): 2D array of order sizes.
         size_type (FlexArray2d): 2D array of order size types.
 
@@ -256,10 +256,10 @@ def sort_call_seq_nb(
     direction: tp.FlexArray2d,
     order_value_out: tp.Array1d,
 ) -> None:
-    """Sort the call sequence associated with the simulation segment context using 2D flexible arrays.
+    """Sort the call sequence associated with the segment context using 2D flexible arrays.
 
     Args:
-        c (SegmentContext): Simulation segment context.
+        c (SegmentContext): Segment context.
         size (FlexArray2d): 2D array of order sizes.
         size_type (FlexArray2d): 2D array of order size types.
 
@@ -315,7 +315,7 @@ def no_pre_func_nb(c: tp.NamedTuple, *args) -> tp.Args:
     """Forward received arguments for preprocessing.
 
     Args:
-        c (NamedTuple): Context (unused in this placeholder).
+        c (NamedTuple): Context.
         *args: Additional positional arguments.
 
     Returns:
@@ -329,7 +329,7 @@ def no_order_func_nb(c: OrderContext, *args) -> Order:
     """Return a placeholder order indicating no order is placed.
 
     Args:
-        c (OrderContext): Order context (unused in this placeholder).
+        c (OrderContext): Order context.
         *args: Additional positional arguments.
 
     Returns:
@@ -343,7 +343,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
     """Perform placeholder postprocessing with no effect.
 
     Args:
-        c (NamedTuple): Context (unused in this placeholder).
+        c (NamedTuple): Context.
         *args: Additional positional arguments.
 
     Returns:
@@ -5301,7 +5301,7 @@ def set_val_price_nb(c: SegmentContext, val_price: tp.FlexArray2d, price: tp.Fle
     For a negative infinity valuation price, the last valuation price is retained.
 
     Args:
-        c (SegmentContext): Context containing segment indices and previous valuation prices.
+        c (SegmentContext): Segment context.
         val_price (FlexArray2d): Array of valuation prices where infinity values trigger fallback behavior.
         price (FlexArray2d): Array of current market prices.
 
@@ -5342,7 +5342,7 @@ def def_pre_segment_func_nb(  # % line.replace("def_pre_segment_func_nb", "pre_s
     If `auto_call_seq` is True, it also sorts the call sequence based on trade size parameters.
 
     Args:
-        c (SegmentContext): Context containing segment information and valuation state.
+        c (SegmentContext): Segment context.
         val_price (FlexArray2d): Array of valuation prices with special handling for infinity.
         price (FlexArray2d): Array of market prices.
         size (FlexArray2d): Array of trade sizes.
@@ -5395,7 +5395,7 @@ def def_order_func_nb(  # % line.replace("def_order_func_nb", "order_func_nb")
     by selecting the appropriate value for the current context.
 
     Args:
-        c (OrderContext): Context containing order-related indices and data.
+        c (OrderContext): Order context.
         size (FlexArray2d): Array of order sizes.
         price (FlexArray2d): Array of order prices.
         size_type (FlexArray2d): Array specifying the type of order sizes.
@@ -5468,7 +5468,7 @@ def def_flex_pre_segment_func_nb(  # % line.replace("def_flex_pre_segment_func_n
     sequence using trade size parameters.
 
     Args:
-        c (SegmentContext): Context containing segment indices and valuation information.
+        c (SegmentContext): Segment context.
         val_price (FlexArray2d): Array of valuation prices with infinity triggers.
         price (FlexArray2d): Array of market prices.
         size (FlexArray2d): Array of trade sizes.
@@ -5523,7 +5523,7 @@ def def_flex_order_func_nb(  # % line.replace("def_flex_order_func_nb", "flex_or
     a column determined by the current call sequence. If no valid call index exists, a no-op order is returned.
 
     Args:
-        c (FlexOrderContext): Context containing flexible order indices and state.
+        c (FlexOrderContext): Flexible order context.
         call_seq_now (Array1d): Array representing the current call sequence for column selection.
         size (FlexArray2d): Array of order sizes.
         price (FlexArray2d): Array of order prices.

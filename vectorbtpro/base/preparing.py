@@ -894,7 +894,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         and substitutes placeholders with the current class's argument configuration details.
 
         Args:
-            source_cls (Optional[type]): Base class to source the `arg_config` documentation from.
+            source_cls (Optional[type]): Source class providing the original configuration.
 
         Returns:
             str: Generated documentation for the argument configuration.
@@ -913,7 +913,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
         Args:
             __pdoc__ (dict): Documentation dictionary to update.
-            source_cls (Optional[type]): Base class to source the `arg_config` documentation from.
+            source_cls (Optional[type]): Source class providing the original configuration.
 
         Returns:
             None
