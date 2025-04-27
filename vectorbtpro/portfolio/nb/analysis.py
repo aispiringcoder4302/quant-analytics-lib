@@ -926,7 +926,7 @@ def get_free_cash_diff_nb(
         position_now (float): Current position size.
         debt_now (float): Current debt amount.
         price (float): Asset price used for computing the transaction value.
-        fees (float): Fees incurred during the transaction.
+        fees (float): Fraction of the order value charged as fee.
 
     Returns:
         Tuple[float, float]: A tuple containing the updated debt and the free cash difference.

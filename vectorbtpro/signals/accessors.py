@@ -2467,7 +2467,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             relation (Union[int, str]): Signal relation represented as an integer or string.
 
-                If provided as a string, it is mapped using `vectorbtpro.signals.enums.SignalRelation`.
+                Mapped using `vectorbtpro.signals.enums.SignalRelation` if provided as a string.
 
         Returns:
             str: A string indicating the relation direction.
@@ -2527,7 +2527,7 @@ class SignalsAccessor(GenericAccessor):
             target (Optional[ArrayLike]): Array-like target used for a two-range operation.
             relation (Union[int, str]): Relation type between ranges.
 
-                See `vectorbtpro.signals.enums.SignalRelation`.
+                Mapped using `vectorbtpro.signals.enums.SignalRelation` if provided as a string.
             incl_open (bool): Whether to include open ranges.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -2854,7 +2854,7 @@ class SignalsAccessor(GenericAccessor):
                 when two arrays are provided, they are treated as source and target signals respectively.
             relation (Union[int, str]): Relation mode for pairing signals.
 
-                See `vectorbtpro.signals.enums.SignalRelation`.
+                Mapped using `vectorbtpro.signals.enums.SignalRelation` if provided as a string.
             incl_open_source (bool): Include open source signals.
             incl_open_target (bool): Include open target signals.
             incl_empty_cols (bool): Include empty columns.

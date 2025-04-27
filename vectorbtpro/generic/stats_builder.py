@@ -831,7 +831,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         metrics documentation string to the key corresponding to the subclass's `metrics` attribute.
 
         Args:
-            __pdoc__ (dict): Dictionary mapping fully qualified names to their documentation strings.
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
             source_cls (Optional[type]): Source class providing the original configuration.
 
         Returns:

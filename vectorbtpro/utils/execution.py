@@ -214,7 +214,7 @@ class ExecutionEngine(Configured):
         """Execute a collection of tasks.
 
         Args:
-            tasks (TasksLike): Iterable of tasks to be executed.
+            tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
             size (Optional[int]): Hint for the number of tasks, useful if `tasks` is a generator.
             keys (Optional[IndexLike]): Keys associated with each task.
 
@@ -1054,8 +1054,7 @@ class RayEngine(ExecutionEngine):
         applying `ray.remote` on functions.
 
         Args:
-            tasks (TasksLike): List of tasks, each as a tuple containing a function, positional arguments,
-                and keyword arguments.
+            tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
             reuse_refs (bool): Flag indicating whether to reuse references for unique objects.
             remote_kwargs (KwargsLike): Keyword arguments for configuring `ray.remote`.
 
@@ -2169,7 +2168,7 @@ class Executor(Configured):
         and returns a list of results.
 
         Args:
-            tasks (TasksLike): List of tasks to be executed.
+            tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
             id_objs (Dict[int, Any]): Dictionary mapping IDs to objects.
 
         Returns:
@@ -2188,7 +2187,7 @@ class Executor(Configured):
         """Construct a serial execution chunk from the provided tasks.
 
         Args:
-            tasks (TasksLike): List of tasks to be executed
+            tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
 
         Returns:
             Task: A task object representing the serial execution of the provided tasks.
@@ -2339,7 +2338,7 @@ class Executor(Configured):
 
         Args:
             engine (Union[ExecutionEngine, Callable]): Execution engine or callable to run the tasks.
-            tasks (TasksLike): Collection of tasks to execute.
+            tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
             size (Optional[int]): Size parameter for execution.
             keys (Optional[IndexLike]): Keys used in mapping task results.
 
@@ -2601,7 +2600,7 @@ class Executor(Configured):
         Execution may involve filtering of results and subsequent merging using a specified merge function.
 
         Args:
-            tasks (TasksLike): Collection of tasks to execute.
+            tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
             size (Optional[int]): Total number of tasks if not inferable from the tasks collection.
             keys (Optional[IndexLike]): Index or keys associated with the tasks.
 
@@ -3180,7 +3179,7 @@ def execute(
     `Executor` instance by updating non-None parameters.
 
     Args:
-        tasks (TasksLike): Tasks or functions with their arguments to execute.
+        tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
         size (Optional[int]): Number of tasks to run concurrently.
         keys (Optional[IndexLike]): Identifiers corresponding to each task.
         executor (Optional[MaybeType[Executor]]): Executor instance or executor type.

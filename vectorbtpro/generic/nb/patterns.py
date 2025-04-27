@@ -146,7 +146,9 @@ def interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size: int, i
         i (int): Target index position.
         source_size (int): Size of the source array.
         target_size (int): Desired size for interpolation.
-        interp_mode (int): Interpolation mode as defined in `vectorbtpro.generic.enums.InterpMode`.
+        interp_mode (int): Interpolation mode.
+
+            See `vectorbtpro.generic.enums.InterpMode`.
 
     Returns:
         float: Interpolated value.
@@ -169,7 +171,9 @@ def interp_resize_1d_nb(arr: tp.FlexArray1d, target_size: int, interp_mode: int)
     Args:
         arr (FlexArray1d): Array to be resized.
         target_size (int): Desired size for the output array.
-        interp_mode (int): Interpolation mode as defined in `vectorbtpro.generic.enums.InterpMode`.
+        interp_mode (int): Interpolation mode.
+
+            See `vectorbtpro.generic.enums.InterpMode`.
 
     Returns:
         Array1d: Resized array with interpolated values.
@@ -202,7 +206,7 @@ def fit_pattern_nb(
     Args:
         arr (Array1d): Input array determining the target length and rescaling range.
         pattern (Array1d): Pattern array to be resized and rescaled.
-        interp_mode (int): Identifier for the interpolation mode used to resize the pattern.
+        interp_mode (int): Interpolation mode.
 
             See `vectorbtpro.generic.enums.InterpMode`.
         rescale_mode (int): Identifier for the rescaling method applied to the pattern.
@@ -329,7 +333,7 @@ def pattern_similarity_nb(
     Args:
         arr (Array1d): 1-dimensional array to compare with the pattern.
         pattern (Array1d): 1-dimensional array representing the reference pattern.
-        interp_mode (int): Interpolation mode for mapping array values.
+        interp_mode (int): Interpolation mode.
 
             See `vectorbtpro.generic.enums.InterpMode`.
         rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.

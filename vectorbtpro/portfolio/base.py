@@ -517,7 +517,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
             Provided in a format that supports flexible indexing.
 
-            See `vectorbtpro.portfolio.enums.InitCashMode`.
+            Mapped using `vectorbtpro.portfolio.enums.InitCashMode` if provided as a string.
 
             !!! note
                 When using `InitCashMode.AutoAlign`, initial cash values are synchronized
@@ -536,7 +536,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             Provided in a format that supports flexible indexing.
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
         sim_end (Optional[ArrayLike]): End index of the simulation range.
-        call_seq (Optional[Array2d]): Sequence of calls per row and column.
+        call_seq (Optional[Array2d]): Sequence array for call order.
         in_outputs (Optional[NamedTuple]): Named tuple containing in-output objects.
 
             Provide pre-broadcasted and grouped objects to substitute default `Portfolio` attributes.
@@ -553,7 +553,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         returns_acc_defaults (KwargsLike): Defaults for `vectorbtpro.returns.accessors.ReturnsAccessor`.
         trades_type (Optional[Union[str, int]]): Default trades type for `Portfolio`.
 
-            See `vectorbtpro.portfolio.enums.TradesType`.
+            Mapped using `vectorbtpro.portfolio.enums.TradesType` if provided as a string.
         orders_cls (Optional[Type]): Class used for wrapping order records.
         logs_cls (Optional[Type]): Class used for wrapping log records.
         trades_cls (Optional[Type]): Class used for wrapping trade records.
@@ -2734,16 +2734,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.size`.
             size_type (Optional[ArrayLike]): Order size type.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.SizeType` and
-                `vectorbtpro.portfolio.enums.Order.size_type`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.size_type`.
             direction (Optional[ArrayLike]): Order direction.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Direction` and
-                `vectorbtpro.portfolio.enums.Order.direction`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.direction`.
             price (Optional[ArrayLike]): Order price.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price` and
-                `vectorbtpro.portfolio.enums.PriceType`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price`.
 
                 Options such as `PriceType.NextOpen` and `PriceType.NextClose` apply per column and
                 require `from_ago` to be None.
@@ -2776,7 +2773,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.reject_prob`.
             price_area_vio_mode (Optional[ArrayLike]): Price area violation mode.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
             allow_partial (Optional[ArrayLike]): Indicates whether partial fills are allowed.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.allow_partial`.
@@ -3300,8 +3297,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 * If `short_entries` or `short_exits` are provided, interpreted as `long_exits`.
             direction (Optional[ArrayLike]): Trading direction.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Direction` and
-                `vectorbtpro.portfolio.enums.Order.direction`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.direction`.
 
                 Takes effect only if `short_entries` and `short_exits` are not provided.
             long_entries (Optional[ArrayLike]): Boolean array of long entry signals.
@@ -3345,8 +3341,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                     Negative size is not allowed; use signals to express direction.
             size_type (Optional[ArrayLike]): Type of size.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.SizeType` and
-                `vectorbtpro.portfolio.enums.Order.size_type`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.size_type`.
 
                 Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
                 `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
@@ -3356,8 +3351,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                     is closed first. See warning in `Portfolio.from_orders`.
             price (Optional[ArrayLike]): Order price.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price` and
-                `vectorbtpro.portfolio.enums.PriceType`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price`.
 
                 Options such as `PriceType.NextOpen` and `PriceType.NextClose` apply per column and
                 require `from_ago` to be None.
@@ -3393,7 +3387,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.reject_prob`.
             price_area_vio_mode (Optional[ArrayLike]): Price area violation mode.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
             allow_partial (Optional[ArrayLike]): Indicates whether partial fills are allowed.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.allow_partial`.
@@ -4191,7 +4185,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     def from_holding(
         cls: tp.Type[PortfolioT],
         close: tp.Union[tp.ArrayLike, OHLCDataMixin],
-        direction: tp.Optional[int] = None,
+        direction: tp.Union[str, int] = None,
         at_first_valid_in: tp.Optional[str] = "close",
         close_at_end: tp.Optional[bool] = None,
         dynamic_mode: bool = False,
@@ -4203,7 +4197,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             close (Union[ArrayLike, OHLCDataMixin]): Close prices or OHLC data used for portfolio simulation.
-            direction (Optional[int]): Holding direction.
+            direction (Union[str, int]): Holding direction.
+
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
 
                 If None, the default hold direction from portfolio settings is used.
             at_first_valid_in (Optional[str]): Column name for determining the first valid entry signal.
@@ -5323,16 +5319,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.size`.
             size_type (Optional[ArrayLike]): Order size type.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.SizeType` and
-                `vectorbtpro.portfolio.enums.Order.size_type`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.size_type`.
             direction (Optional[ArrayLike]): Order direction.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Direction` and
-                `vectorbtpro.portfolio.enums.Order.direction`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.direction`.
             price (Optional[ArrayLike]): Order price.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price` and
-                `vectorbtpro.portfolio.enums.PriceType`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price`.
 
                 Options such as `PriceType.NextOpen` and `PriceType.NextClose` apply per column and
                 require `from_ago` to be None.
@@ -5365,7 +5358,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.reject_prob`.
             price_area_vio_mode (Optional[ArrayLike]): Price area violation mode.
 
-                Broadcasts. See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
             allow_partial (Optional[ArrayLike]): Indicates whether partial fills are allowed.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.allow_partial`.
@@ -6684,6 +6677,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             trades_type (Optional[Union[str, int]]): Type of trades to retrieve.
 
+                Mapped using `vectorbtpro.portfolio.enums.TradesType` if provided as a string.
+
                 Defaults to `Portfolio.trades_type` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -7060,8 +7055,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
-            keep_flex (bool): If True, returns the broadcasted array without wrapping when
-                weights are not applied.
+            keep_flex (bool): Whether to preserve the flexible array structure.
 
         Returns:
             Union[ArrayLike, MaybeSeries]: The computed initial position per column, potentially wrapped.
@@ -7112,7 +7106,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             direction (Union[str, int]): Direction for filtering asset flows.
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             orders (Optional[Orders]): Orders instance containing order data.
 
                 Defaults to `Portfolio.get_orders` if not provided.
@@ -7203,7 +7197,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             direction (Union[str, int]): Direction for filtering asset data.
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             asset_flow (Optional[SeriesFrame]): Asset flow series.
 
                 Defaults to `Portfolio.get_asset_flow` with `direction="both"` if not provided.
@@ -7713,7 +7707,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_weights` if not provided.
 
                 If False, weights are ignored.
-            keep_flex (bool): If True, returns the output in a flexible format.
+            keep_flex (bool): Whether to preserve the flexible array structure.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -7904,7 +7898,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Defaults to `Portfolio.get_weights` if not provided.
 
                 If False, weights are ignored.
-            keep_flex (bool): If True, returns the output in a flexible format.
+            keep_flex (bool): Whether to preserve the flexible array structure.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -8456,7 +8450,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
-            keep_flex (bool): If True, returns the input as flexible data without broadcasting.
+            keep_flex (bool): Whether to preserve the flexible array structure.
 
         Returns:
             Union[ArrayLike, MaybeSeries]: The initial price, possibly wrapped.
@@ -8946,7 +8940,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             direction (Union[str, int]): Direction indicating the exposure type.
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             asset_value (Optional[SeriesFrame]): Asset value series used in the exposure calculation.
 
                 Defaults to `Portfolio.get_asset_value` if not provided.
@@ -13104,7 +13098,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Override the in-output configuration documentation in the __pdoc__ dictionary.
 
         Args:
-            __pdoc__ (dict): Dictionary for storing module-level documentation.
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
             source_cls (Optional[type]): Source class providing the original configuration.
 
                 If None, `Portfolio` is used.

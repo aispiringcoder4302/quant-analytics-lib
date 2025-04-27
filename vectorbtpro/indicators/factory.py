@@ -1735,7 +1735,7 @@ class IndicatorBase(Analyzable):
         apply, cache, entry placement, and exit placement functions if they are not already present.
 
         Args:
-            __pdoc__ (dict): Dictionary mapping keys to their corresponding docstring descriptions.
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
 
         Returns:
             None

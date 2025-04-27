@@ -512,7 +512,7 @@ class SimRangeMixin(Base):
 
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
-            keep_flex (bool): If True, return the raw resolved simulation start positions without wrapping.
+            keep_flex (bool): Whether to preserve the flexible array structure.
             allow_none (bool): Allow simulation positions to be None when applicable.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.
@@ -567,7 +567,7 @@ class SimRangeMixin(Base):
 
         Args:
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            keep_flex (bool): If True, return the raw resolved simulation end positions without wrapping.
+            keep_flex (bool): Whether to preserve the flexible array structure.
             allow_none (bool): Allow simulation positions to be None when applicable.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             group_by (GroupByLike): Grouping specification.

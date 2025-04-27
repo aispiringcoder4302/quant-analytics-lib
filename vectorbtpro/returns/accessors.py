@@ -1661,7 +1661,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Calculate Omega ratio.
 
         Args:
-            risk_free (Optional[float]): Risk-free rate for adjusting returns.
+            risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             required_return (Optional[float]): Required return threshold.
@@ -1726,7 +1726,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            risk_free (Optional[float]): Risk-free rate for adjusting returns.
+            risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             required_return (Optional[float]): Required return threshold.
@@ -1791,7 +1791,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             annualized (bool): Whether to annualize the Sharpe ratio.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            risk_free (Optional[float]): Risk-free rate for adjusting returns.
+            risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             ddof (Optional[int]): Delta degrees of freedom.
@@ -1863,7 +1863,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            risk_free (Optional[float]): Risk-free return used in the excess return computation.
+            risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             ddof (Optional[int]): Delta degrees of freedom.
@@ -1931,7 +1931,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         the sample's skewness and kurtosis, adjusted by the degrees of freedom.
 
         Args:
-            risk_free (Optional[float]): Risk-free return used in Sharpe ratio calculation.
+            risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             ddof (Optional[int]): Delta degrees of freedom.
@@ -1981,7 +1981,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            risk_free (Optional[float]): Risk-free return utilized in the Sharpe ratio computation.
+            risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             ddof (Optional[int]): Delta degrees of freedom.
@@ -2572,7 +2572,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            risk_free (Optional[float]): Risk-free rate applied in the calculation.
+            risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -2639,7 +2639,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            risk_free (Optional[float]): Risk-free rate applied in the calculation.
+            risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.

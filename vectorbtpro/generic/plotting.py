@@ -304,7 +304,7 @@ class Bar(TraceType, TraceUpdater):
         data (Optional[ArrayLike]): Data to create bar traces.
 
             Must be convertible to a NumPy array and have shape (`x_labels`, `trace_names`).
-        trace_names (TraceNames): Names of the traces corresponding to data columns.
+        trace_names (TraceNames): Names for traces corresponding to data columns.
         x_labels (Optional[Labels]): X-axis labels corresponding to the index in pandas.
         trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Bar`.
 
@@ -417,7 +417,7 @@ class Scatter(TraceType, TraceUpdater):
         data (Optional[ArrayLike]): Data values convertible to a NumPy array.
 
             Must have shape corresponding to (`x_labels`, `trace_names`).
-        trace_names (TraceNames): Names of traces corresponding to the columns in the data.
+        trace_names (TraceNames): Names for traces corresponding to data columns.
         x_labels (Optional[Labels]): Labels for the x-axis, typically representing the index in a Pandas DataFrame.
         trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
 
@@ -774,7 +774,7 @@ class Box(TraceType, TraceUpdater):
 
     Args:
         data (Optional[ArrayLike]): Data for the box plot, which is reshaped to a 2D array if provided.
-        trace_names (TraceNames): Names assigned to each trace.
+        trace_names (TraceNames): Names for traces corresponding to data columns.
 
             If provided, their number should match the number of data columns.
         horizontal (bool): Indicates if the box plot is oriented horizontally.

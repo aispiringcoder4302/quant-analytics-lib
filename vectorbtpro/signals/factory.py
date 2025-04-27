@@ -46,11 +46,11 @@ class SignalFactory(IndicatorFactory):
     Generates a fixed number of outputs based on the provided factory mode.
     If other outputs are needed, use in-place outputs via `in_output_names`.
 
-    See `vectorbtpro.signals.enums.FactoryMode` for supported generation modes.
-
     Args:
         *args: Positional arguments for `vectorbtpro.indicators.factory.IndicatorFactory`.
-        mode (Union[str, int]): Factory mode controlling generated outputs, mapped to a `FactoryMode` value.
+        mode (Union[str, int]): Factory mode controlling generated outputs.
+
+            Mapped using `vectorbtpro.signals.enums.FactoryMode` if provided as a string.
         input_names (Optional[Sequence[str]]): Sequence of input names.
 
             Reserved names "entries" and "exits" are not allowed.

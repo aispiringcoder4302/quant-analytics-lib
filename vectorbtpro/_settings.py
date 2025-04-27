@@ -2878,7 +2878,7 @@ class SettingsConfig(Config):
         """Substitute template placeholders in sub-config documentation strings.
 
         Args:
-            __pdoc__ (dict): Dictionary containing documentation for sub-configs.
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
             prettify_kwargs (KwargsLike): Keyword arguments for customizing template substitution.
 
         Returns:

@@ -229,7 +229,7 @@ def apply_and_concat_each(
     * If multiple outputs are produced, returns a list of 2D arrays.
 
     Args:
-        tasks (TasksLike): Collection of tasks, each encapsulating a function and its arguments.
+        tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
         n_outputs (Optional[int]): Expected number of outputs produced by each task.
         execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 

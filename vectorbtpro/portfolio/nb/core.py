@@ -53,9 +53,9 @@ def check_adj_price_nb(
         is_closing_price (bool): If True, enforce the price to match the closing price.
 
             If the adjusted price differs from `PriceArea.close`, it may trigger an error or cap.
-        price_area_vio_mode (int): Mode for handling price violations.
+        price_area_vio_mode (int): Mode for handling price area violations.
 
-            Expected values are defined in `PriceAreaVioMode`.
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
 
     Returns:
         float: The validated and, if necessary, adjusted price.
@@ -88,7 +88,7 @@ def approx_long_buy_value_nb(val_price: float, size: float) -> float:
     and returns it as a negative value to represent spending.
 
     Args:
-        val_price (float): Valuation price.
+        val_price (float): Valuation price of the asset.
         size (float): Order size.
 
     Returns:
@@ -107,7 +107,7 @@ def should_apply_size_granularity_nb(size: float, size_granularity: float) -> bo
 
     Args:
         size (float): Original size value.
-        size_granularity (float): Granularity factor used to round the size.
+        size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
 
     Returns:
         bool: True if size granularity should be applied; otherwise, False.
@@ -126,7 +126,7 @@ def apply_size_granularity_nb(size: float, size_granularity: float) -> float:
 
     Args:
         size (float): Original size value.
-        size_granularity (float): Granularity factor used to adjust the size.
+        size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
 
     Returns:
         float: The size rounded down to a multiple of size_granularity.
@@ -178,12 +178,12 @@ def long_buy_nb(
         account_state (AccountState): Current account state.
         size (float): Requested order size.
         price (float): Order price.
-        fees (float): Proportional fees applied to the order price.
+        fees (float): Fraction of the order value charged as fee.
         fixed_fees (float): Fixed fees for the order.
         slippage (float): Fractional slippage applied to the order price.
         min_size (float): Minimum acceptable order size.
         max_size (float): Maximum acceptable order size.
-        size_granularity (float): Granularity used to adjust order size.
+        size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage factor.
         leverage_mode (int): Mode for leverage calculation (e.g., lazy or eager).
 
@@ -330,7 +330,7 @@ def approx_long_sell_value_nb(position: float, debt: float, val_price: float, si
     Args:
         position (float): Current position size.
         debt (float): Current account debt.
-        val_price (float): Valuation price for the asset.
+        val_price (float): Valuation price of the asset.
         size (float): Requested order size for the long-sell operation.
 
     Returns:
@@ -372,13 +372,13 @@ def long_sell_nb(
 
             The size is capped by the current open long position.
         price (float): Price at which to execute the sell order.
-        fees (float): Fee rate applied proportionally to the acquired cash.
+        fees (float): Fraction of the order value charged as fee.
         fixed_fees (float): Fixed fee amount applied to the transaction.
         slippage (float): Price adjustment factor to compensate for slippage.
         min_size (float): Minimum allowable order size.
         max_size (float): Maximum allowable order size.
-        size_granularity (float): Granularity factor for rounding the order size.
-        price_area_vio_mode (int): Mode to handle price area violations.
+        size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Indicator whether a partial fill of the order is permitted.
@@ -479,7 +479,7 @@ def approx_short_sell_value_nb(val_price: float, size: float) -> float:
     A positive result indicates expenditure (for sorting purposes).
 
     Args:
-        val_price (float): Reference price for evaluating the short sale.
+        val_price (float): Valuation price of the asset.
         size (float): Size of the short position.
 
     Returns:
@@ -516,12 +516,12 @@ def short_sell_nb(
         account_state (AccountState): Current account state.
         size (float): Intended order size to initiate or increase a short position.
         price (float): Market price used to compute the adjusted order price.
-        fees (float): Proportional fee rate applied to the order.
+        fees (float): Fraction of the order value charged as fee.
         fixed_fees (float): Fixed fee amount charged per order.
         slippage (float): Fraction representing potential price slippage.
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
-        size_granularity (float): Order size step size for rounding.
+        size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage multiplier to adjust the cash limit.
         price_area_vio_mode (int): Mode for handling price area violations.
 
@@ -643,7 +643,7 @@ def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, 
         position (float): Current short position size.
         debt (float): Total debt associated with the short position.
         locked_cash (float): Cash currently locked as collateral.
-        val_price (float): Valuation price used to compute the order's value.
+        val_price (float): Valuation price of the asset.
         size (float): Desired order size for the short-buy operation.
 
     Returns:
@@ -693,9 +693,10 @@ def short_buy_nb(
         slippage (float): Slippage percentage to adjust the execution price.
         min_size (float): Minimum acceptable order size.
         max_size (float): Maximum allowed order size.
-        size_granularity (float): Step size used for adjusting order size.
-        price_area_vio_mode (int): Price area violation mode as defined by
-            `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+        size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        price_area_vio_mode (int): Mode for handling price area violations.
+
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Whether to allow a partial fill if the full size cannot be executed.
         percent (float): Scaling factor to restrict the allowed order size.
         price_area (PriceArea): Price area constraint.
@@ -886,15 +887,19 @@ def buy_nb(
         direction (int): Order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        fees (float): Trading fees.
+        fees (float): Fraction of the order value charged as fee.
         fixed_fees (float): Fixed fee charges.
         slippage (float): Slippage applied to the order.
         min_size (float): Minimum allowed order size, may be NaN.
         max_size (float): Maximum allowed order size, may be NaN.
-        size_granularity (float): Granularity factor for the order size, may be NaN.
+        size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage factor.
-        leverage_mode (int): Leverage mode; see `vectorbtpro.portfolio.enums.LeverageMode`.
-        price_area_vio_mode (int): Price area violation mode; see `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+        leverage_mode (int): Leverage mode.
+        
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
+        price_area_vio_mode (int): Mode for handling price area violations.
+
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Flag permitting partial order fills.
         percent (float): Percentage parameter used in order calculations, may be NaN.
         price_area (PriceArea): Price area constraint.
@@ -1090,15 +1095,16 @@ def sell_nb(
         direction (int): Order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        fees (float): Fee associated with the order.
+        fees (float): Fraction of the order value charged as fee.
         fixed_fees (float): Fixed fee amount.
         slippage (float): Allowed price slippage.
         min_size (float): Minimum order size constraint.
         max_size (float): Maximum order size constraint.
-        size_granularity (float): Size granularity factor.
+        size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage factor.
-        price_area_vio_mode (int): Mode for handling price area violation; see
-            `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+        price_area_vio_mode (int): Mode for handling price area violations.
+
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Whether partial fills are permitted.
         percent (float): Order size as a percentage.
         price_area (PriceArea): Price area constraint.
@@ -1296,7 +1302,7 @@ def resolve_size_nb(
         size (float): Input size value.
         size_type (int): Indicator of the size specification type.
         position (float): Current asset position.
-        val_price (float): Valuation price for converting value into asset amount.
+        val_price (float): Valuation price of the asset.
         value (float): Total portfolio value.
         target_size_type (int): Desired size type for the output.
 
@@ -1951,18 +1957,18 @@ def order_nb(
         direction (int): Order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        fees (float): Fee rate or amount.
+        fees (float): Fraction of the order value charged as fee.
         fixed_fees (float): Fixed fees.
         slippage (float): Expected slippage.
         min_size (float): Minimum order size.
         max_size (float): Maximum order size.
-        size_granularity (float): Granularity for order size.
+        size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage multiplier.
         leverage_mode (int): Leverage mode.
 
             See `vectorbtpro.portfolio.enums.LeverageMode`.
         reject_prob (float): Rejection probability threshold.
-        price_area_vio_mode (int): Price area violation mode.
+        price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Allow partial order fulfillment.
@@ -2014,18 +2020,18 @@ def close_position_nb(
 
     Args:
         price (float): Order price.
-        fees (float): Fee rate or amount.
+        fees (float): Fraction of the order value charged as fee.
         fixed_fees (float): Fixed fees.
         slippage (float): Expected slippage.
         min_size (float): Minimum order size.
         max_size (float): Maximum order size.
-        size_granularity (float): Granularity for order size.
+        size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage multiplier.
         leverage_mode (int): Leverage mode.
 
             See `vectorbtpro.portfolio.enums.LeverageMode`.
         reject_prob (float): Rejection probability threshold.
-        price_area_vio_mode (int): Price area violation mode.
+        price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Allow partial order fulfillment.
@@ -2289,7 +2295,7 @@ def prepare_sim_out_nb(
         log_counts (Array1d): Array containing log counts.
         cash_deposits (Array2d): Array of cash deposit entries.
         cash_earnings (Array2d): Array of cash earning entries.
-        call_seq (Optional[Array2d]): Optional array for call sequence.
+        call_seq (Optional[Array2d]): Sequence array for call order.
         in_outputs (Optional[NamedTuple]): Optional additional outputs.
         sim_start (Optional[Array1d]): Optional simulation start times.
         sim_end (Optional[Array1d]): Optional simulation end times.

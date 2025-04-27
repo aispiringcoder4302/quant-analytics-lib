@@ -752,7 +752,7 @@ class VBTAsset(KnowledgeAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
-            to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
             
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             format_html_kwargs (KwargsLike): Keyword arguments for HTML formatting.
@@ -2538,7 +2538,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             link (str): Link of the page.
-            incl_link (bool): If True, include the page specified by `link` in the result.
+            incl_link (bool): Indicates whether to include the page corresponding to `link`.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
@@ -2562,7 +2562,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             link (str): Link of the page.
-            incl_link (bool): If True, include the page specified by `link` in the result.
+            incl_link (bool): Indicates whether to include the page corresponding to `link`.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
@@ -2584,7 +2584,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             link (str): Unique identifier of the page.
-            incl_link (bool): Include the specified page in the results.
+            incl_link (bool): Indicates whether to include the page corresponding to `link`.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
@@ -2610,7 +2610,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             link (str): Link identifying the starting page.
-            incl_link (bool): Include the starting page in the results.
+            incl_link (bool): Indicates whether to include the page corresponding to `link`.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
@@ -2651,7 +2651,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             link (str): Link identifying the target page.
-            incl_link (bool): Include the target page in the results.
+            incl_link (bool): Indicates whether to include the page corresponding to `link`.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
@@ -2678,7 +2678,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             link (str): Link identifying the target page.
-            incl_link (bool): Include the target page in the results.
+            incl_link (bool): Indicates whether to include the page corresponding to `link`.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
@@ -2706,7 +2706,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             link (str): Link identifying the base page.
-            incl_link (bool): Include the base page in the results if it is a heading.
+            incl_link (bool): Indicates whether to include the page corresponding to `link`.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
@@ -2887,7 +2887,7 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
-            to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
             
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
@@ -2941,7 +2941,7 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
-            to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
             
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
@@ -3003,7 +3003,7 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
-            to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
             
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
@@ -3065,7 +3065,7 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
-            to_markdown_kwargs (KwargsLike): Keyword arguments for the markdown conversion process.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
             
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.

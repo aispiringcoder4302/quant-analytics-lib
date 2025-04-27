@@ -1130,9 +1130,9 @@ class Drawdowns(Ranges):
             plot_close (bool): Plot close prices when OHLC data is not available.
             plot_markers (bool): Plot markers for significant drawdown events.
             plot_zones (bool): Plot zones delineating drawdown phases.
-            ohlc_type (Union[None, str, BaseTraceType]): Chart type for OHLC representation.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Specify 'OHLC', 'Candlestick', or a Plotly trace; use None for the default.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
             peak_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for peak markers.

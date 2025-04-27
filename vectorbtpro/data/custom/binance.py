@@ -219,7 +219,7 @@ class BinanceData(RemoteData):
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             klines_type (Union[None, int, str]): Type of klines to fetch.
 
-                See `binance.enums.HistoricalKlinesType` for supported types. Supports strings.
+                Mapped using `binance.enums.HistoricalKlinesType` if provided as a string.
             limit (Optional[int]): Maximum number of klines to retrieve per API call.
             delay (Optional[float]): Delay in seconds after each request.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.

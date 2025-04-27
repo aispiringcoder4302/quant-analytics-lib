@@ -2922,7 +2922,7 @@ class IdxSetter(DefineMixin):
 
         Args:
             shape (ShapeLike): Shape of the new array.
-            keep_flex (bool): If True, returns an optimized array for flexible indexing.
+            keep_flex (bool): Whether to preserve the flexible array structure.
             fill_value (Scalar): Initial fill value for the array.
 
                 This value is overridden by the metadata default if available.

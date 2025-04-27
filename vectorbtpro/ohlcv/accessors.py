@@ -257,7 +257,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             start_value (ArrayLike): Starting value used in the mirror operation.
             ref_feature (ArrayLike): Reference feature for mirroring.
 
-                If a string, it will be mapped using enum fields.
+                Mapped using `vectorbtpro.ohlcv.enums.PriceFeature` if provided as a string.
 
         Returns:
             Frame: A DataFrame with mirrored OHLC features.
@@ -458,12 +458,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         """Plot OHLC data.
 
         Args:
-            ohlc_type (Union[None, str, BaseTraceType]): Type of OHLC plot to render.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Must be either a case-insensitive string
-                `'ohlc'` or `'candlestick'`, or a Plotly trace class.
-
-                If None, the default trace type from settings is used.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
             trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
@@ -613,12 +610,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         """Plot OHLC(V) data using Plotly.
 
         Args:
-            ohlc_type (Union[None, str, BaseTraceType]): Type of OHLC plot to render.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Must be either a case-insensitive string
-                `'ohlc'` or `'candlestick'`, or a Plotly trace class.
-
-                If None, the default trace type from settings is used.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
             plot_volume (bool): Indicates whether to plot volume in a subplot below the OHLC chart.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
             volume_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Bar` for the volume data.

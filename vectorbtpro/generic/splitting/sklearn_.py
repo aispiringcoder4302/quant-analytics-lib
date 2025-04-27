@@ -179,7 +179,7 @@ class SplitterCV(BaseCrossValidator, Base):
         Args:
             X (Any): Input data for splitting.
             y (Any): Target values corresponding to `X`.
-            groups (Any): Group labels for splitting.
+            groups (Any): Group labels.
 
         Returns:
             Splitter: A splitter object configured with the provided data and splitter parameters.

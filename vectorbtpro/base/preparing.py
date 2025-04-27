@@ -912,7 +912,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         Updates the provided documentation dictionary with generated documentation from `build_arg_config_doc`.
 
         Args:
-            __pdoc__ (dict): Documentation dictionary to update.
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
             source_cls (Optional[type]): Source class providing the original configuration.
 
         Returns:

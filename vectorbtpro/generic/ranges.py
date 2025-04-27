@@ -1112,8 +1112,9 @@ class Ranges(PriceRecords):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
             colorize (Union[bool, str, Callable]):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            ohlc_type (Union[None, str, BaseTraceType]): Either 'OHLC', 'Candlestick',
-                or a Plotly trace; pass None to use the default.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
+
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close data.
             projection_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for projections.
@@ -1377,9 +1378,9 @@ class Ranges(PriceRecords):
             column (Optional[Label]): Name of the column to plot.
             plot_ohlc (Union[bool, DataFrame]): Flag or data specifying whether to plot OHLC bars.
             plot_close (Union[bool, Series]): Flag or data specifying whether to plot close values.
-            ohlc_type (Union[None, str, BaseTraceType]): Specifies the trace type for OHLC data.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Either `'OHLC'`, `'Candlestick'` or a Plotly trace. Pass None to use the default.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close data.
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.

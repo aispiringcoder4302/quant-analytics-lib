@@ -2532,9 +2532,9 @@ class Trades(Ranges):
             plot_by_type (bool): Plot exit markers categorized by trade type (neutral, profit, or loss).
 
                 If False, marker appearance is controlled using `exit_trace_kwargs`.
-            ohlc_type (Union[None, str, BaseTraceType]): Either 'OHLC', 'Candlestick', or a Plotly trace type.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Use None to apply the default type.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
             entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for entry markers.
@@ -3018,10 +3018,10 @@ class EntryTrades(Trades):
             column (Optional[Label]): Name of the column to plot.
             plot_ohlc (bool): Whether to plot OHLC data.
             plot_close (bool): Whether to plot close prices if OHLC is not plotted.
-            ohlc_type (Union[None, str, BaseTraceType]): Either 'OHLC', 'Candlestick', or a Plotly trace type.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            ohlc_trace_kwargs (KwargsLike): Keyword arguments for the OHLC trace.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
             long_entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for long entry markers.
             short_entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for short entry markers.
@@ -3305,10 +3305,10 @@ class ExitTrades(Trades):
             column (Optional[Label]): Name of the column to plot.
             plot_ohlc (bool): Whether to plot OHLC data.
             plot_close (bool): Whether to plot close prices if OHLC is not plotted.
-            ohlc_type (Union[None, str, BaseTraceType]): Either 'OHLC', 'Candlestick', or a Plotly trace type.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            ohlc_trace_kwargs (KwargsLike): Keyword arguments for the OHLC trace.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
             long_exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for long exit markers.
             short_exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for short exit markers.

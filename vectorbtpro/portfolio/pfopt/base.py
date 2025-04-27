@@ -2827,7 +2827,7 @@ class PortfolioOptimizer(Analyzable):
             wrapper (ArrayWrapper): Array wrapper instance.
             direction (Union[str, int]): Market direction for allocation, e.g. "longonly".
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             n (Optional[int]): Number of random allocations to generate.
             seed (Optional[int]): Random seed for deterministic output.
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.

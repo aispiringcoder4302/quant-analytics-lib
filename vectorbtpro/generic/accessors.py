@@ -977,7 +977,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (int): Window size.
             wtype (Union[int, str]): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType`.
+                Mapped using `vectorbtpro.generic.enums.WType` if provided as a string.
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1021,7 +1021,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (int): Window size.
             wtype (Union[int, str]): Weighting type.
 
-            See `vectorbtpro.generic.enums.WType`.
+                Mapped using `vectorbtpro.generic.enums.WType` if provided as a string.
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             ddof (int): Delta degrees of freedom.
@@ -1329,22 +1329,27 @@ class GenericAccessor(BaseAccessor, Analyzable):
             max_window (Optional[int]): Maximum length of the rolling window.
             row_select_prob (float): Probability of selecting a row for computation.
             window_select_prob (float): Probability of selecting a specific window size.
-            interp_mode (Union[int, str]): Interpolation mode, mapped using
-                `vectorbtpro.generic.enums.InterpMode` if provided as a string.
-            rescale_mode (Union[int, str]): Rescaling mode, mapped using
-                `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
+            interp_mode (Union[int, str]): Interpolation mode.
+
+                Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
+            rescale_mode (Union[int, str]): Rescaling mode.
+
+                Mapped using `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
             vmin (float): Minimum value used for rescaling `arr`.
             vmax (float): Maximum value used for rescaling `arr`.
             pmin (float): Minimum value used for rescaling `pattern`.
             pmax (float): Maximum value used for rescaling `pattern`.
             invert (bool): Invert the pattern by reflecting its values.
-            error_type (Union[int, str]): Error calculation type, mapped using
-                `vectorbtpro.generic.enums.ErrorType` if provided as a string.
-            distance_measure (Union[int, str]): Distance measure for error computation,
-                mapped using `vectorbtpro.generic.enums.DistanceMeasure` if provided as a string.
+            error_type (Union[int, str]): Error calculation type. 
+            
+                Mapped using `vectorbtpro.generic.enums.ErrorType` if provided as a string.
+            distance_measure (Union[int, str]): Distance measure for error computation.
+
+                Mapped using `vectorbtpro.generic.enums.DistanceMeasure` if provided as a string.
             max_error (ArrayLike): Maximum allowed error.
-            max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`,
-                mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
+            max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`.
+
+                Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
             max_error_as_maxdist (bool): Treat maximum error directly as maximum distance if True.
             max_error_strict (bool): Enforce strict maximum error rules; returns NaN if exceeded.
             min_pct_change (float): Minimum percent change applied during rescaling.
@@ -5612,7 +5617,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             column (Optional[Label]): Column identifier to select specific data.
-            trace_names (TraceNames): Names for the plot traces.
+            trace_names (TraceNames): Names for traces corresponding to data columns.
             x_labels (Optional[Labels]): Labels for the x-axis.
             return_fig (bool): If True, return the figure; otherwise, return a trace updater.
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Scatter`.
@@ -5696,7 +5701,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             column (Optional[Label]): Column label for plotting.
-            trace_names (TraceNames): Names for the chart traces.
+            trace_names (TraceNames): Names for traces corresponding to data columns.
             x_labels (Optional[Labels]): Labels for the x-axis.
             return_fig (bool): Determines whether to return the figure.
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Bar`.
@@ -5743,7 +5748,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             column (Optional[Label]): Column label for plotting.
             by_level (Optional[Level]): Level at which to unstack the data, if applicable.
-            trace_names (TraceNames): Names for the histogram traces.
+            trace_names (TraceNames): Names for traces corresponding to data columns.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -5803,7 +5808,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             column (Optional[Label]): Column label for plotting.
             by_level (Optional[Level]): Level at which to unstack the data, if applicable.
-            trace_names (TraceNames): Names for the box plot traces.
+            trace_names (TraceNames): Names for traces corresponding to data columns.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -6683,20 +6688,24 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             pattern (ArrayLike): Reference pattern array for similarity comparison.
-            interp_mode (Union[int, str]): Interpolation mode, mapped using
-                `vectorbtpro.generic.enums.InterpMode` if provided as a string.
-            rescale_mode (Union[int, str]): Rescaling mode, mapped using
-                `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
+            interp_mode (Union[int, str]): Interpolation mode. 
+            
+                Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
+            rescale_mode (Union[int, str]): Rescaling mode. 
+            
+                Mapped using `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
             vmin (float): Minimum value used for rescaling `arr`.
             vmax (float): Maximum value used for rescaling `arr`.
             pmin (float): Minimum value used for rescaling `pattern`.
             pmax (float): Maximum value used for rescaling `pattern`.
             invert (bool): Invert the pattern by reflecting its values.
-            error_type (Union[int, str]): Error calculation type, mapped using
-                `vectorbtpro.generic.enums.ErrorType` if provided as a string.
+            error_type (Union[int, str]): Error calculation type. 
+            
+                Mapped using `vectorbtpro.generic.enums.ErrorType` if provided as a string.
             max_error (ArrayLike): Maximum allowed error.
-            max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`,
-                mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
+            max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`.
+            
+                Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
             column (Optional[Label]): Column label for data selection.
             plot_obj (bool): If True, includes the original object data in the plot.
             fill_distance (bool): If True, fills the area under the pattern trace.
@@ -7016,20 +7025,24 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
 
         Args:
             pattern (ArrayLike): Reference pattern array for similarity comparison.
-            interp_mode (Union[int, str]): Interpolation mode, mapped using
-                `vectorbtpro.generic.enums.InterpMode` if provided as a string.
-            rescale_mode (Union[int, str]): Rescaling mode, mapped using
-                `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
+            interp_mode (Union[int, str]): Interpolation mode. 
+            
+                Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
+            rescale_mode (Union[int, str]): Rescaling mode. 
+            
+                Mapped using `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
             vmin (float): Minimum value used for rescaling `arr`.
             vmax (float): Maximum value used for rescaling `arr`.
             pmin (float): Minimum value used for rescaling `pattern`.
             pmax (float): Maximum value used for rescaling `pattern`.
             invert (bool): Invert the pattern by reflecting its values.
-            error_type (Union[int, str]): Error calculation type, mapped using
-                `vectorbtpro.generic.enums.ErrorType` if provided as a string.
+            error_type (Union[int, str]): Error calculation type. 
+            
+                Mapped using `vectorbtpro.generic.enums.ErrorType` if provided as a string.
             max_error (ArrayLike): Maximum allowed error.
-            max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`,
-                mapped using `vectorbtpro.generic.enums.InterpMode` if provided.
+            max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`.
+
+                Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

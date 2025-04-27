@@ -1484,8 +1484,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             col_idxs (Union[int, Array1d, slice]): Column indices or a slice specifying columns to select.
             rows_changed (bool): Whether to apply row selection.
             columns_changed (bool): Whether to apply column selection.
-            rotate_rows (bool): Whether to rotate row indices if they are out of bounds.
-            rotate_cols (bool): Whether to rotate column indices if they are out of bounds.
+            rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
+            rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
         Returns:
             Array2d: A two-dimensional NumPy array after applying the selection.

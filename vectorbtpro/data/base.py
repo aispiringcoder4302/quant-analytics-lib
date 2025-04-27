@@ -3108,7 +3108,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             dct (key_dict): Dictionary to search for the key.
             dct_name (str): Name of the dictionary.
             dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Expected type for sub-dictionaries.
-            check_dict_type (bool): Flag to validate the type of the dictionary.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
 
         Returns:
             Any: The value associated with the specified key.
@@ -4893,7 +4893,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             start_value (ArrayLike): Initial value for the transformation.
             ref_feature (ArrayLike): Reference feature used for mirroring.
 
-                If provided as a string, it is mapped using `map_enum_fields` with `PriceFeature`.
+                Mapped using `vectorbtpro.ohlcv.enums.PriceFeature` if provided as a string.
 
         Returns:
             Data: A new data instance with mirrored OHLC features.
@@ -5546,8 +5546,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             arg (Any): Input argument to process.
             k (Key): Key used for lookup when the argument is a key dictionary.
             arg_name (str): Name of the argument for validation and template evaluation.
-            check_dict_type (bool): Indicates whether to validate that the argument is of
-                the expected dictionary type.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
             is_kwargs (bool): Specifies if the argument should be handled as keyword arguments.
 
@@ -5595,8 +5594,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Keyword arguments for directory creation.
             
                 See `vectorbtpro.utils.path_.check_mkdir`.
-            check_dict_type (bool): Indicates whether to validate that dictionary-type
-                arguments match expected types.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata about the saved CSV file(s).
             **kwargs: Keyword arguments for `pd.DataFrame.to_csv`.
@@ -5713,8 +5711,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             
                 See `vectorbtpro.utils.path_.check_mkdir`.
             format (str): File format for HDF storage.
-            check_dict_type (bool): Indicates whether to validate that dictionary-type
-                arguments match expected types.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata about the saved HDF file(s).
             **kwargs: Keyword arguments for `pd.DataFrame.to_hdf`.
@@ -5823,8 +5820,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Keyword arguments for directory creation.
             
                 See `vectorbtpro.utils.path_.check_mkdir`.
-            check_dict_type (bool): Flag indicating whether to verify the structure of
-                dict-like arguments per key.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): Flag specifying whether to return a metadata dictionary
                 containing file paths and saving options.
@@ -5958,7 +5954,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Flag indicating whether to retain original group names when partitioning.
             engine (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
                 Parquet engine to use; valid options are "pyarrow", "fastparquet", or "auto".
-            check_dict_type (bool): Whether to validate the format of dictionary-based arguments.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns a metadata dictionary containing
                 file paths and configuration settings.
@@ -6165,7 +6161,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 The name of the column to use for row numbers.
             engine_config (KwargsLike): Additional configuration for the engine.
             dispose_engine (Optional[bool]): Determines whether to dispose of the engine after saving.
-            check_dict_type (bool): Validates that dictionary arguments match the expected type.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata for each saved table.
             return_engine (bool): If True, returns the database engine used.
@@ -6447,8 +6443,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 Options are "fail", "replace", or "append".
             connection_config (KwargsLike): Keyword arguments for connection configuration.
-            check_dict_type (bool): Validates that feature/symbol-specific arguments are
-                provided as a dictionary.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata including all processed arguments
                 per feature or symbol.
@@ -6987,7 +6982,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Override the feature configuration documentation for the subclass.
 
         Args:
-            __pdoc__ (dict): Documentation dictionary to update.
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
             source_cls (Optional[type]): Source class providing the original configuration.
 
         Returns:

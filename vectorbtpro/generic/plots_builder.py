@@ -946,7 +946,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         """Override subplots documentation for the subclass.
 
         Args:
-            __pdoc__ (dict): Dictionary to update with the overridden subplots documentation.
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
             source_cls (Optional[type]): Source class providing the original configuration.
 
                 If not provided, defaults to using `PlotsBuilderMixin`.
