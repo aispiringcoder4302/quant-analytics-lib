@@ -3352,7 +3352,7 @@ class PortfolioOptimizer(Analyzable):
             name_tuple_to_str (Union[None, bool, Callable]): Option or function to convert name tuples to strings.
             group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]): Group configuration(s) for optimization.
             pre_group_func (Optional[Callable]): Function to preprocess each group configuration.
-            splitter_cls (Optional[Type[Splitter]]): Class used for splitting the data.
+            splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
             eval_id (Optional[Hashable]): Evaluation identifier.
             jitted_loop (bool): Indicates whether to use a Numba-compiled loop for iterating over optimization groups.
             jitted (JittedOption): Option to control JIT compilation.

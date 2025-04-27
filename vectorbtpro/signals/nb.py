@@ -257,12 +257,12 @@ def generate_enex_nb(
             Must accept a context of type `vectorbtpro.signals.enums.GenEnExContext`
             and return the index of the last signal (-1 to break the loop).
         exit_place_args (Args): Arguments passed to `exit_place_func_nb`.
-        entry_wait (int): Number of ticks to wait before placing entries.
+        entry_wait (int): Number of periods to wait before an entry signal is triggered.
 
             !!! note
                 Setting `entry_wait` to 0 or False assumes that both entry and exit can be processed
                 within the same bar, and exit can be processed before entry.
-        exit_wait (int): Number of ticks to wait before placing exits.
+        exit_wait (int): Number of periods to wait before an exit signal is triggered.
 
             !!! note
                 Setting `exit_wait` to 0 or False assumes that both entry and exit can be processed
@@ -428,8 +428,8 @@ def generate_rand_enex_nb(
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         n (FlexArray1d): Flexible array specifying the number of entry-exit pairs per column.
-        entry_wait (int): Minimum periods to wait after an entry before an exit can be placed.
-        exit_wait (int): Minimum periods to wait before placing an exit following an entry.
+        entry_wait (int): Number of periods to wait before an entry signal is triggered.
+        exit_wait (int): Number of periods to wait before an exit signal is triggered.
 
     Returns:
         Tuple[Array2d, Array2d]: A tuple containing a boolean array for entries and a boolean array for exits.
@@ -456,53 +456,30 @@ def generate_rand_enex_nb(
                 entry_idx = np.random.randint(0, target_shape[0] - exit_wait)
                 entries[entry_idx, col] = True
             else:
-                # Minimum range between two entries
                 min_range = entry_wait + exit_wait
-
-                # Minimum total range between first and last entry
                 min_total_range = min_range * (_n - 1)
                 if target_shape[0] < min_total_range + exit_wait + 1:
                     raise ValueError("Cannot take a larger sample than population")
-
-                # We should decide how much space should be allocate before first and after last entry
-                # Maximum space outside of min_total_range
+                
                 max_free_space = target_shape[0] - min_total_range - 1
-
-                # If min_total_range is tiny compared to max_free_space, limit it
-                # otherwise we would have huge space before first and after last entry
-                # Limit it such as distribution of entries mimics uniform
                 free_space = min(max_free_space, 3 * target_shape[0] // (_n + 1))
-
-                # What about last exit? it requires exit_wait space
                 free_space -= exit_wait
-
-                # Now we need to distribute free space among three ranges:
-                # 1) before first, 2) between first and last added to min_total_range, 3) after last
-                # We do 2) such that min_total_range can freely expand to maximum
-                # We allocate twice as much for 3) as for 1) because an exit is missing
+                
                 rand_floats = uniform_summing_to_one_nb(6)
                 chosen_spaces = rescale_float_to_int_nb(rand_floats, (0, free_space), free_space)
                 first_idx = chosen_spaces[0]
                 last_idx = target_shape[0] - np.sum(chosen_spaces[-2:]) - exit_wait - 1
-
-                # Selected range between first and last entry
                 total_range = last_idx - first_idx
-
-                # Maximum range between two entries within total_range
                 max_range = total_range - (_n - 2) * min_range
 
-                # Select random ranges within total_range
                 rand_floats = uniform_summing_to_one_nb(_n - 1)
                 chosen_ranges = rescale_float_to_int_nb(rand_floats, (min_range, max_range), total_range)
-
-                # Translate them into entries
                 entry_idxs = np.empty(_n, dtype=int_)
                 entry_idxs[0] = first_idx
                 entry_idxs[1:] = chosen_ranges
                 entry_idxs = np.cumsum(entry_idxs)
                 entries[entry_idxs, col] = True
 
-        # Generate exits
         for col in range(target_shape[1]):
             entry_idxs = np.flatnonzero(entries[:, col])
             for j in range(len(entry_idxs)):
@@ -527,8 +504,8 @@ def rand_enex_apply_nb(
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         n (FlexArray1d): Flexible array specifying the number of entry-exit pairs per column.
-        entry_wait (int): Minimum periods to wait after an entry before placing an exit.
-        exit_wait (int): Minimum periods to wait before placing an exit after an entry.
+        entry_wait (int): Number of periods to wait before an entry signal is triggered.
+        exit_wait (int): Number of periods to wait before an exit signal is triggered.
 
     Returns:
         Tuple[Array2d, Array2d]: A tuple containing boolean arrays for entries and exits.

@@ -380,7 +380,7 @@ class HDFData(FileData):
 
         Args:
             key (Key): Feature or symbol identifier.
-            key_is_feature (bool): Indicator whether the key represents a feature.
+            key_is_feature (bool): Flag indicating if `key` represents a feature.
             **kwargs: Keyword arguments for `HDFData.fetch_feature` or `HDFData.fetch_symbol`.
 
         Returns:

@@ -4531,11 +4531,9 @@ class DocumentRanker(Configured):
 
         Args:
             documents (Iterable[StoreDocument]): Iterable of documents to embed.
-            refresh (bool): Flag to refresh both documents and embeddings unless overridden.
-            refresh_documents (Optional[bool]): Flag to refresh documents; defaults to the value of
-                `refresh` if not specified.
-            refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to the value of
-                `refresh` if not specified.
+            refresh (bool): Flag to refresh both documents and embeddings.
+            refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
+            refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_embeddings (bool): If True, include embeddings in the returned result.
             return_documents (bool): If True, include the original documents along with their embeddings.
 
@@ -4722,10 +4720,8 @@ class DocumentRanker(Configured):
             
                 If None, documents from the document store are used.
             refresh (bool): Flag to refresh both documents and embeddings.
-            refresh_documents (Optional[bool]): Flag to refresh documents; defaults to the value of
-                `refresh` if not specified.
-            refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to the value of
-                `refresh` if not specified.
+            refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
+            refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_chunks (bool): If True, score and return document chunks.
             return_documents (bool): If True, include original document objects in the output.
 
@@ -4856,8 +4852,8 @@ class DocumentRanker(Configured):
             documents (Optional[Iterable[StoreDocument]]): Collection of documents to score.
 
                 If None, uses documents from the store.
-            refresh (bool): Whether to refresh BM25 indexing.
-            refresh_documents (Optional[bool]): Whether to refresh document splits.
+            refresh (bool): Flag to refresh both documents and embeddings.
+            refresh_documents (Optional[bool]): Flag to refresh documents.
             return_chunks (bool): Whether to process document chunks in scoring.
             return_documents (bool): Whether to return full ScoredDocument objects.
 
@@ -5050,7 +5046,7 @@ class DocumentRanker(Configured):
 
         Args:
             scores (Iterable[float]): Sorted document scores.
-            cutoff (Optional[float]): Score threshold for top documents.
+            cutoff (Optional[float]): Score threshold to filter documents.
 
         Returns:
             Optional[int]: The count of scores greater than or equal to the cutoff, or None if cutoff is None.
@@ -5254,9 +5250,9 @@ class DocumentRanker(Configured):
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.
-            refresh (bool): Whether to refresh document data.
-            refresh_documents (Optional[bool]): Whether to refresh documents.
-            refresh_embeddings (Optional[bool]): Whether to refresh document embeddings.
+            refresh (bool): Flag to refresh both documents and embeddings.
+            refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
+            refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_chunks (bool): Whether to return document chunks.
             return_scores (bool): Whether to return scored documents with their scores.
 
@@ -5341,9 +5337,9 @@ def embed_documents(
 
     Args:
         documents (Iterable[StoreDocument]): Collection of documents to embed.
-        refresh (bool): Flag indicating whether to refresh embeddings.
-        refresh_documents (Optional[bool]): Flag to refresh documents.
-        refresh_embeddings (Optional[bool]): Flag to refresh embeddings.
+        refresh (bool): Flag to refresh both documents and embeddings.
+        refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
+        refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
         return_embeddings (bool): Flag indicating whether to return embeddings.
         return_documents (bool): Flag indicating whether to return documents.
         doc_ranker (Optional[MaybeType[DocumentRanker]]): A `DocumentRanker` class or instance.
@@ -5395,9 +5391,9 @@ def rank_documents(
         min_top_k (TopKLike): Minimum limit for determining top documents.
         max_top_k (TopKLike): Maximum limit for determining top documents.
         cutoff (Optional[float]): Score threshold to filter documents.
-        refresh (bool): Whether to refresh document data.
-        refresh_documents (Optional[bool]): Whether to refresh documents.
-        refresh_embeddings (Optional[bool]): Whether to refresh document embeddings.
+        refresh (bool): Flag to refresh both documents and embeddings.
+        refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
+        refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
         return_chunks (bool): Whether to return document chunks.
         return_scores (bool): Whether to return scored documents with their scores.
         doc_ranker (Optional[MaybeType[DocumentRanker]]): A `DocumentRanker` class or instance.
@@ -5454,9 +5450,9 @@ class Rankable(HasSettings):
         """Embed the instance's documents.
 
         Args:
-            refresh (bool): Flag indicating whether to refresh embeddings.
-            refresh_documents (Optional[bool]): Flag to refresh document processing.
-            refresh_embeddings (Optional[bool]): Flag to refresh embeddings.
+            refresh (bool): Flag to refresh both documents and embeddings.
+            refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
+            refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_embeddings (bool): Flag indicating whether embeddings should be returned.
             return_documents (bool): Flag indicating whether documents should be returned.
             **kwargs: Additional keyword arguments.
@@ -5488,9 +5484,9 @@ class Rankable(HasSettings):
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.
-            refresh (bool): Whether to refresh document data.
-            refresh_documents (Optional[bool]): Whether to refresh documents.
-            refresh_embeddings (Optional[bool]): Whether to refresh document embeddings.
+            refresh (bool): Flag to refresh both documents and embeddings.
+            refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
+            refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_chunks (bool): Whether to return document chunks.
             return_scores (bool): Whether to return scored documents with their scores.
             **kwargs: Additional keyword arguments.

@@ -453,7 +453,7 @@ def repeat(
         n (int): Number of repetitions.
         axis (int): Axis along which to repeat.
         raw (bool): Whether to treat the input as raw array data.
-        ignore_ranges (Optional[bool]): Whether to ignore range constraints.
+        ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
 
     Returns:
         AnyArray: The array repeated along the specified axis.
@@ -488,7 +488,7 @@ def tile(
         n (int): Number of times to tile the array.
         axis (int): Axis along which to tile.
         raw (bool): Whether to treat the input as raw array data.
-        ignore_ranges (Optional[bool]): Whether to ignore range constraints.
+        ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
 
     Returns:
         AnyArray: The tiled array.
@@ -817,7 +817,7 @@ def wrap_broadcasted(
         is_pd (bool): Indicates whether the original object was a Pandas object.
         new_index (Optional[Index]): New index derived from broadcasting.
         new_columns (Optional[Index]): New columns derived from broadcasting.
-        ignore_ranges (Optional[bool]): Whether to ignore RangeIndex types during index repetition.
+        ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
 
     Returns:
         AnyArray: A Pandas DataFrame or Series if `is_pd` is True;
@@ -1175,7 +1175,7 @@ def broadcast(
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         ignore_sr_names (Optional[bool]): Whether to ignore Series names during broadcasting via `broadcast_index`.
-        ignore_ranges (Optional[bool]): Whether to ignore range attributes during broadcasting via `broadcast_index`.
+        ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
         check_index_names (Optional[bool]): Whether to check index names during broadcasting via `broadcast_index`.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 

@@ -824,7 +824,7 @@ def ewm_mean_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, ad
 
     Args:
         arr (Array1d): Input 1D array.
-        span (int): Span used to define the decay for the exponential moving average.
+        span (int): Window span for the exponential weighting.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -883,7 +883,7 @@ def ewm_mean_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjus
 
     Args:
         arr (Array2d): Input 2-dimensional data array.
-        span (int): Span for the exponential weighting.
+        span (int): Window span for the exponential weighting.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 
@@ -1071,7 +1071,7 @@ def ewm_std_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjust
 
     Args:
         arr (Array2d): Input 2-dimensional data array.
-        span (int): Span for the exponential weighting.
+        span (int): Window span for the exponential weighting.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
 

@@ -160,7 +160,7 @@ class BentoData(RemoteData):
             client (Optional[databento.historical.client.Historical]): Client instance.
 
                 See `BentoData.resolve_client`.
-            client_config (KwargsLike): Client configuration.
+            client_config (KwargsLike): Configuration parameters for creating a client.
 
                 See `BentoData.resolve_client`.
             start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").

@@ -3710,7 +3710,7 @@ def find_assets(
             in their usual order at the end.
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
-        pull_kwargs (KwargsLike): Keyword arguments for pulling assets.
+        pull_kwargs (KwargsLike): Keyword arguments for `VBTAsset.pull`.
         aggregate_pages (bool): Whether to aggregate the pages asset.
         aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;

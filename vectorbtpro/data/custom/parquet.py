@@ -274,7 +274,7 @@ class ParquetData(FileData):
 
         Args:
             key (hashable): Feature or symbol identifier.
-            key_is_feature (bool): Indicator whether the key represents a feature.
+            key_is_feature (bool): Flag indicating if `key` represents a feature.
             **kwargs: Keyword arguments for `ParquetData.fetch_feature` or `ParquetData.fetch_symbol`.
 
         Returns:

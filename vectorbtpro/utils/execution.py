@@ -2542,7 +2542,7 @@ class Executor(Configured):
         Args:
             results (ExecResults): Execution results from tasks.
             keys (Optional[IndexLike]): Index or keys associated with the results.
-            filter_results (bool): Indicates whether to filter out results with no output.
+            filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
             raise_no_results (bool): Flag indicating whether to raise a 
                 `NoResultsException` exception if no results remain.
             merge_func (MergeFuncLike): Function to merge the results.

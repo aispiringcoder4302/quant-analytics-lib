@@ -128,7 +128,7 @@ def concat_merge(
 
             May also be provided as a sequence of tuples.
         keys (Optional[Index]): Index or sequence of index objects to assign to the merged result.
-        filter_results (bool): Whether to filter out no-result objects.
+        filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
         raise_no_results (bool): Flag indicating whether to raise a 
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         wrap (Optional[bool]): If True, wrap each array with a Pandas Series using `pd.concat`.
@@ -284,8 +284,8 @@ def row_stack_merge(
     Args:
         *objs (MaybeSequence[MaybeTuple[Any]]): Array-like or wrapping objects to merge.
         keys (Optional[Index]): Keys used for concatenating arrays along the row axis.
-        filter_results (bool): Whether to filter out objects with no results.
-        raise_no_results (bool):Flag indicating whether to raise a 
+        filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
+        raise_no_results (bool): Flag indicating whether to raise a 
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         wrap (Union[None, str, bool]): Determines how to wrap each array before merging.
 
@@ -455,7 +455,7 @@ def column_stack_merge(
                 Applicable to Pandas, NumPy, and `vectorbtpro.base.wrapping.Wrapping` instances.
         fill_value (Scalar): Value to use for filling missing entries when arrays have different row counts.
         keys (Optional[Index]): Keys used to label columns in the merged result.
-        filter_results (bool): Whether to filter out objects that yield no results.
+        filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
         raise_no_results (bool): Flag indicating whether to raise a 
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         wrap (Union[None, str, bool]): Determines wrapping behavior for each object.
@@ -676,7 +676,7 @@ def imageio_merge(
     Args:
         *objs (MaybeSequence[MaybeTuple[Any]]): Figure-like objects to merge.
         keys (Optional[Index]): Not used.
-        filter_results (bool): If True, filter out objects without valid results.
+        filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
         raise_no_results (bool): Flag indicating whether to raise a 
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         to_image_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Figure.to_image`.

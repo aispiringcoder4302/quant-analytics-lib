@@ -7209,7 +7209,7 @@ def dir_to_ls_signals_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         entries (FlexArray2d): 2D array of boolean entry signals.
         exits (FlexArray2d): 2D array of boolean exit signals.
-        direction (FlexArray2d): 2D array specifying the trade direction.
+        direction (FlexArray2d): Array indicating the trade direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
 
@@ -7368,7 +7368,7 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
         c (SignalContext): Signal context.
         entries (FlexArray2d): 2D array of boolean entry signals.
         exits (FlexArray2d): 2D array of boolean exit signals.
-        direction (FlexArray2d): 2D array specifying the trade direction.
+        direction (FlexArray2d): Array indicating the trade direction.
         from_ago (FlexArray2d): 2D array used to adjust the time index for signal lookup.
         adjust_func_nb (AdjustFunc): Function to adjust the context before signal generation.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
@@ -7475,12 +7475,12 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
 
     Args:
         c (SignalContext): Signal context.
-        size (FlexArray2d): 2D array of order sizes.
+        size (FlexArray2d): Array of order sizes.
         price (FlexArray2d): 2D array of order prices.
         size_type (FlexArray2d): 2D array representing the order size types.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        direction (FlexArray2d): 2D array of order directions.
+        direction (FlexArray2d): Array indicating the order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         min_size (FlexArray2d): 2D array of minimum order sizes.

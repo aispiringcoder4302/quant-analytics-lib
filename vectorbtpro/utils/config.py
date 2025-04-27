@@ -1386,7 +1386,7 @@ class HasSettings(Base):
         class and its superclasses.
 
         Args:
-            path_id (Optional[Hashable]): Unique identifier to select a specific settings path from a dictionary.
+            path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include settings paths from superclasses.
             super_first (bool): If True, resolve superclass settings first.
             unique_only (bool): Whether to return only unique settings paths.
@@ -1472,7 +1472,7 @@ class HasSettings(Base):
         """Return the merged settings dictionary associated with this class and its superclasses.
 
         Args:
-            path_id (Optional[Hashable]): Unique identifier to select a settings path from a dictionary.
+            path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include settings from superclasses.
             sub_path (Optional[PathLikeKey]): Sub-path to combine with the main settings path.
             sub_path_only (bool): If True, enforce that the settings exist only under the combined sub-path.
@@ -1540,7 +1540,7 @@ class HasSettings(Base):
         """Return True if settings exist for this class and its superclasses; otherwise, False.
 
         Args:
-            path_id (Optional[Hashable]): Unique identifier to select a settings path from a dictionary.
+            path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include settings from superclasses.
             sub_path (Optional[PathLikeKey]): Sub-path to combine with the main settings path.
             sub_path_only (bool): If True, enforce lookup solely in the combined sub-path.

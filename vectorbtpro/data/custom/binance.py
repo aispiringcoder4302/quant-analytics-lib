@@ -117,7 +117,7 @@ class BinanceData(RemoteData):
 
         Args:
             client (Optional[Client]): Existing Binance client instance.
-            client_config (KwargsLike): Keyword arguments for client configuration.
+            client_config (KwargsLike): Configuration parameters for creating a client.
 
         Returns:
             Client: A resolved or newly created Binance client.
@@ -157,7 +157,7 @@ class BinanceData(RemoteData):
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
             client (Optional[Client]): Binance client instance.
-            client_config (KwargsLike): Keyword arguments for client configuration.
+            client_config (KwargsLike): Configuration parameters for creating a client.
 
         Returns:
             List[str]: A list of Binance symbols.
@@ -202,7 +202,7 @@ class BinanceData(RemoteData):
             client (Optional[Client]): Binance client instance.
 
                 See `BinanceData.resolve_client`.
-            client_config (KwargsLike): Dictionary of client configuration options.
+            client_config (KwargsLike): Configuration parameters for creating a client.
 
                 See `BinanceData.resolve_client`.
             start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").

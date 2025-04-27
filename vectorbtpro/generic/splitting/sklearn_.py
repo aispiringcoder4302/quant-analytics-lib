@@ -33,7 +33,7 @@ class SplitterCV(BaseCrossValidator, Base):
             or factory function.
 
             If None, it is determined automatically using the guess method of the splitter class.
-        splitter_cls (Optional[Type[Splitter]]): Splitter class used as the factory.
+        splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
 
             Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
         split_group_by (AnyGroupByLike): Grouping specification for defining splits.

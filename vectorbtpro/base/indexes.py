@@ -159,7 +159,7 @@ def repeat_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] =
     Args:
         index (IndexLike): Input index to be repeated.
         n (int): Number of repetitions for each element.
-        ignore_ranges (Optional[bool]): If True, ignore indexes of type RangeIndex.
+        ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
 
     Returns:
         Index: A new index with each element repeated n times.
@@ -188,7 +188,7 @@ def tile_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] = N
     Args:
         index (IndexLike): Input index to be tiled.
         n (int): Number of times to tile the index.
-        ignore_ranges (Optional[bool]): If True, ignore indexes of type RangeIndex.
+        ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
 
     Returns:
         Index: The tiled index.

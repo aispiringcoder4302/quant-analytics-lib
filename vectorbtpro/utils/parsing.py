@@ -263,7 +263,7 @@ def annotate_args(
         args (Args): Positional arguments to annotate.
         kwargs (Kwargs): Keyword arguments to annotate.
         only_passed (bool): If True, annotate only the arguments that were explicitly passed.
-        allow_partial (bool): If True, do not raise errors for missing required arguments.
+        allow_partial (bool): Whether to allow partial order fulfillment. missing required arguments.
         attach_annotations (bool): If True, attach type annotations from the function's signature.
         flatten (bool): If True, flatten the annotation dictionary before returning.
 

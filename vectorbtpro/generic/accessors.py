@@ -757,7 +757,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the weighted moving mean for the instance's data using a specified span.
 
         Args:
-            span (int): Window span for computing the weighted moving mean.
+            span (int): Window span for the exponential weighting.
             minp (Optional[int]): Minimum number of observations required.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -792,7 +792,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute the exponentially weighted moving mean for the instance's data using a specified span.
 
         Args:
-            span (int): Window span for computing the exponentially weighted moving mean.
+            span (int): Window span for the exponential weighting.
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.
@@ -829,7 +829,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         data using a specified span.
 
         Args:
-            span (int): Window span for computing the exponentially weighted moving standard deviation.
+            span (int): Window span for the exponential weighting.
             minp (Optional[int]): Minimum number of observations required.
             adjust (bool): Flag indicating whether to adjust weights.
             jitted (JittedOption): Option to control JIT compilation.

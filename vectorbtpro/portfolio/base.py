@@ -4472,7 +4472,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             fill_value (Scalar): Value used to fill missing allocation entries.
             size_type (ArrayLike): Order size type.
             direction (Optional[ArrayLike]): Order direction; if None, determined automatically from allocations.
-            cash_sharing (Optional[bool]): Flag indicating if cash is shared across assets.
+            cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
             call_seq (Optional[ArrayLike]): Call sequence configuration, defaults to "auto".
             group_by (GroupByLike): Grouping specification.
             
@@ -7695,7 +7695,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_deposits_raw (Optional[ArrayLike]): Raw cash deposit values.
 
                 Defaults to `Portfolio._cash_deposits` or 0 if not provided.
-            cash_sharing (Optional[bool]): Flag indicating whether cash sharing is enabled.
+            cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
 
                 Defaults to `Portfolio.cash_sharing` if not provided.
             split_shared (bool): If cash is shared, determines whether to split the deposits evenly across columns.
@@ -7812,7 +7812,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_deposits_raw (Optional[ArrayLike]): Raw cash deposit values.
 
                 Defaults to `Portfolio._cash_deposits` if not provided.
-            cash_sharing (Optional[bool]): Flag indicating whether cash sharing is enabled.
+            cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
 
                 Defaults to `Portfolio.cash_sharing` if not provided.
             split_shared (bool): If cash is shared, determines whether to split the deposits evenly across columns.
@@ -8194,7 +8194,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             free_cash_flow (Optional[SeriesFrame]): Cash flow data representing available free cash.
 
                 Defaults to `Portfolio.get_cash_flow` with `free=True` if not provided.
-            cash_sharing (Optional[bool]): Flag indicating whether cash is shared among columns or groups.
+            cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
 
                 Defaults to `Portfolio.cash_sharing` if not provided.
             split_shared (bool): If True, split shared cash equally among columns in a group.
@@ -9807,7 +9807,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_cash_flow` if not provided.
             log_returns (bool): Flag to compute logarithmic returns.
-            daily_returns (bool): Convert the computed returns to daily return rates if True.
+            daily_returns (bool): Flag to convert computed returns to daily returns.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
@@ -10064,7 +10064,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return market return series per column or group.
 
         Args:
-            init_value (Optional[MaybeSeries]): Initial market value used as a baseline for computations.
+            init_value (Optional[MaybeSeries]): Initial portfolio value.
 
                 Defaults to `Portfolio.get_init_value` if not provided.
             cash_deposits (Optional[ArrayLike]): Cash deposit amounts for the computation.
@@ -10077,7 +10077,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_market_value` if not provided.
             log_returns (bool): Flag to compute logarithmic returns.
-            daily_returns (bool): Convert the computed returns to daily frequency if True.
+            daily_returns (bool): Flag to convert computed returns to daily returns.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
@@ -10186,7 +10186,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return total market return.
 
         Args:
-            init_value (Optional[MaybeSeries]): Initial market value used as a baseline for computations.
+            init_value (Optional[MaybeSeries]): Initial portfolio value.
 
                 Defaults to `Portfolio.get_init_value` if not provided.
             market_value (Optional[SeriesFrame]): Market value series used for computing returns.
@@ -10359,7 +10359,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_bm_value` if not provided.
             log_returns (bool): Flag to compute logarithmic returns.
-            daily_returns (bool): Convert the computed returns to daily frequency if True.
+            daily_returns (bool): Flag to convert computed returns to daily returns.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
@@ -10445,7 +10445,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Defaults to `Portfolio.get_bm_returns` if not provided.
             log_returns (bool): Flag to compute logarithmic returns.
-            daily_returns (bool): Flag to compute daily returns.
+            daily_returns (bool): Flag to convert computed returns to daily returns.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
@@ -10587,7 +10587,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             use_asset_returns (bool): Indicates whether to use asset returns for calculation.
             bm_returns (Union[None, bool, ArrayLike]): Benchmark returns or a flag to resolve benchmark returns.
             log_returns (bool): Flag to compute logarithmic returns.
-            daily_returns (bool): Flag to compute daily returns.
+            daily_returns (bool): Flag to convert computed returns to daily returns.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
@@ -11013,7 +11013,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             use_asset_returns (bool): Indicates whether to use asset returns for calculation.
             bm_returns (Union[None, bool, ArrayLike]): Benchmark returns or a flag to resolve benchmark returns.
             log_returns (bool): Flag to compute logarithmic returns.
-            daily_returns (bool): Flag to compute daily returns.
+            daily_returns (bool): Flag to convert computed returns to daily returns.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
 
                 Passed inside `settings`.
@@ -12140,7 +12140,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             column (Optional[Label]): Column label for selecting the data.
-            init_value (Optional[MaybeSeries]): Initial value data.
+            init_value (Optional[MaybeSeries]): Initial portfolio value.
 
                 Defaults to `Portfolio.get_init_value` if not provided.
             value (Optional[SeriesFrame]): Value data to plot.
@@ -12450,8 +12450,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             column (Optional[Label]): Column label for selecting a specific sub-data.
-            init_value (Optional[MaybeSeries]): Initial portfolio value used for
-                scaling when `pct_scale` is False.
+            init_value (Optional[MaybeSeries]): Initial portfolio value.
 
                 Defaults to `Portfolio.get_init_value` if not provided.
             returns_acc (Optional[ReturnsAccessor]): Returns accessor instance to compute drawdowns.

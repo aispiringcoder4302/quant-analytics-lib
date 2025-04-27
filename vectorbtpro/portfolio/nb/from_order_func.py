@@ -195,11 +195,11 @@ def sort_call_seq_out_nb(
 
     Args:
         c (SegmentContext): Segment context.
-        size (FlexArray2d): 2D array of order sizes.
+        size (FlexArray2d): Array of order sizes.
         size_type (FlexArray2d): 2D array of order size types.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        direction (FlexArray2d): 2D array of order directions.
+        direction (FlexArray2d): Array indicating the order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         order_value_out (Array1d): Array to hold computed order values; must be empty initially.
@@ -260,11 +260,11 @@ def sort_call_seq_nb(
 
     Args:
         c (SegmentContext): Segment context.
-        size (FlexArray2d): 2D array of order sizes.
+        size (FlexArray2d): Array of order sizes.
         size_type (FlexArray2d): 2D array of order size types.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        direction (FlexArray2d): 2D array of order directions.
+        direction (FlexArray2d): Array indicating the order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         order_value_out (Array1d): Array to store computed order values.
@@ -5345,7 +5345,7 @@ def def_pre_segment_func_nb(  # % line.replace("def_pre_segment_func_nb", "pre_s
         c (SegmentContext): Segment context.
         val_price (FlexArray2d): Array of valuation prices with special handling for infinity.
         price (FlexArray2d): Array of market prices.
-        size (FlexArray2d): Array of trade sizes.
+        size (FlexArray2d): Array of order sizes.
         size_type (FlexArray2d): Array denoting the type for each trade size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
@@ -5471,11 +5471,11 @@ def def_flex_pre_segment_func_nb(  # % line.replace("def_flex_pre_segment_func_n
         c (SegmentContext): Segment context.
         val_price (FlexArray2d): Array of valuation prices with infinity triggers.
         price (FlexArray2d): Array of market prices.
-        size (FlexArray2d): Array of trade sizes.
+        size (FlexArray2d): Array of order sizes.
         size_type (FlexArray2d): Array indicating the type of trade sizes.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        direction (FlexArray2d): Array describing the trade direction.
+        direction (FlexArray2d): Array indicating the trade direction.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
         auto_call_seq (bool): Flag to automatically sort the call sequence.

@@ -44,7 +44,7 @@ class SyntheticData(CustomData):
         Args:
             key (Key): Identifier for the feature or symbol.
             index (Index): Datetime index over which data will be generated.
-            key_is_feature (bool): Specifies if the key represents a feature (True) or a symbol (False).
+            key_is_feature (bool): Flag indicating if `key` represents a feature.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -104,7 +104,7 @@ class SyntheticData(CustomData):
 
         Args:
             key (Symbol): Identifier of the feature or symbol.
-            key_is_feature (bool): Specifies if the key represents a feature (True) or a symbol (False).
+            key_is_feature (bool): Flag indicating if `key` represents a feature.
             start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
                 See `vectorbtpro.utils.datetime_.to_timestamp`.
@@ -187,7 +187,7 @@ class SyntheticData(CustomData):
 
         Args:
             key (Key): Identifier of the feature or symbol.
-            key_is_feature (bool): Specifies if the key represents a feature (True) or a symbol (False).
+            key_is_feature (bool): Flag indicating if `key` represents a feature.
             **kwargs: Keyword arguments for `SyntheticData.fetch_feature` or `SyntheticData.fetch_symbol`.
 
         Returns:

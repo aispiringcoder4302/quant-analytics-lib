@@ -166,7 +166,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         bm_returns (Optional[ArrayLike]): Benchmark returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
-        defaults (KwargsLike): Overrides for default settings in `vectorbtpro._settings.returns`.
+        defaults (KwargsLike): Dictionary of default parameters.
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
         sim_end (Optional[ArrayLike]): End index of the simulation range.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor`.
@@ -2999,7 +2999,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute Value at Risk (VaR).
 
         Args:
-            cutoff (Optional[float]): Cutoff value.
+            cutoff (Optional[float]): Fractional cutoff level.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -3060,7 +3060,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            cutoff (Optional[float]): Cutoff value.
+            cutoff (Optional[float]): Fractional cutoff level.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -3117,7 +3117,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute Conditional Value at Risk (CVaR).
 
         Args:
-            cutoff (Optional[float]): Cutoff value.
+            cutoff (Optional[float]): Fractional cutoff level.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -3178,7 +3178,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            cutoff (Optional[float]): Cutoff probability for the CVaR calculation.
+            cutoff (Optional[float]): Fractional cutoff level.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -4240,7 +4240,7 @@ class ReturnsSRAccessor(ReturnsAccessor, GenericSRAccessor):
         obj (Optional[ArrayLike]): Underlying data for the Series.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
         year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
-        defaults (KwargsLike): Default configuration parameters.
+        defaults (KwargsLike): Dictionary of default parameters.
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
         sim_end (Optional[ArrayLike]): End index of the simulation range.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor` and `ReturnsAccessor`.
@@ -4285,7 +4285,7 @@ class ReturnsDFAccessor(ReturnsAccessor, GenericDFAccessor):
         obj (Optional[ArrayLike]): Underlying data for the DataFrame.
         bm_returns (Optional[ArrayLike]): Benchmark returns.
         year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
-        defaults (KwargsLike): Default configuration parameters.
+        defaults (KwargsLike): Dictionary of default parameters.
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
         sim_end (Optional[ArrayLike]): End index of the simulation range.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor` and `ReturnsAccessor`.

@@ -112,7 +112,7 @@ class AlpacaData(RemoteData):
 
                 For possible values, refer to `alpaca.trading.enums`.
             trading_client (Optional[RESTClient]): Existing trading client instance.
-            client_config (KwargsLike): Configuration parameters for initializing the trading client.
+            client_config (KwargsLike): Configuration parameters for creating a client.
 
         Returns:
             List[str]: A list of symbol strings.
@@ -237,7 +237,7 @@ class AlpacaData(RemoteData):
 
                 Automatically determined based on the symbol, as crypto symbols contain "/".
                 Also see `AlpacaData.resolve_client`.
-            client_config (KwargsLike): Configuration for the Alpaca client.
+            client_config (KwargsLike): Configuration parameters for creating a client.
 
                 See `AlpacaData.resolve_client`.
             start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").

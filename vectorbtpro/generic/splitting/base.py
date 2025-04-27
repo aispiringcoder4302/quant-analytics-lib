@@ -3807,8 +3807,8 @@ class Splitter(Analyzable):
             set_group_by (AnyGroupByLike): Grouping specification for defining sets.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            squeeze_one_split (bool): Compress output when only one split is present.
-            squeeze_one_set (bool): Compress output when only one set is present.
+            squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
+            squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             into (Optional[str]): Specifies the output format.
 
                 Options include "stacked", "stacked_by_split", "stacked_by_set",
@@ -5573,8 +5573,8 @@ class Splitter(Analyzable):
             set_group_by (AnyGroupByLike): Grouping specification for defining sets.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            squeeze_one_split (bool): If True and only one split exists, simplify the result.
-            squeeze_one_set (bool): If True and only one set exists, simplify the result.
+            squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
+            squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
             
                 See `vectorbtpro.base.indexes.combine_indexes`.
@@ -5952,8 +5952,8 @@ class Splitter(Analyzable):
             set_group_by (AnyGroupByLike): Grouping specification for defining sets.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            squeeze_one_split (bool): Whether to squeeze the output if only one split is present.
-            squeeze_one_set (bool): Whether to squeeze the output if only one set is present.
+            squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
+            squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
             
                 See `vectorbtpro.base.indexes.combine_indexes`.
@@ -6023,7 +6023,7 @@ class Splitter(Analyzable):
             set_group_by (AnyGroupByLike): Grouping specification for defining sets.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            squeeze_one_split (bool): Whether to return a scalar value if a single split is present.
+            squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
             **kwargs: Keyword arguments for `Splitter.get_mask_arr`.
 
         Returns:
@@ -6090,7 +6090,7 @@ class Splitter(Analyzable):
             set_group_by (AnyGroupByLike): Grouping specification for defining sets.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            squeeze_one_set (bool): Whether to return a scalar value if a single set is present.
+            squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             **kwargs: Keyword arguments for `Splitter.get_mask_arr`.
 
         Returns:
@@ -6151,8 +6151,8 @@ class Splitter(Analyzable):
             set_group_by (AnyGroupByLike): Grouping specification for defining sets.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            squeeze_one_split (bool): If True, squeeze output when there is only one split.
-            squeeze_one_set (bool): If True, squeeze output when there is only one set.
+            squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
+            squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
             
                 See `vectorbtpro.base.indexes.combine_indexes`.
@@ -6264,8 +6264,8 @@ class Splitter(Analyzable):
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-            squeeze_one_split (bool): If True, squeeze the result when there is only one split.
-            squeeze_one_set (bool): If True, squeeze the result when there is only one set.
+            squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
+            squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
             
                 See `vectorbtpro.base.indexes.combine_indexes`.

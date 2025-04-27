@@ -2932,7 +2932,7 @@ def value_at_risk_1d_nb(returns: tp.Array1d, cutoff: float = 0.05) -> float:
 
     Args:
         returns (Array1d): 1D array of returns.
-        cutoff (float): Cutoff probability for VaR calculation expressed as a percentile (e.g., 0.05).
+        cutoff (float): Fractional cutoff level.
 
     Returns:
         float: The VaR computed as the 100 * cutoff percentile of the returns.
@@ -2946,7 +2946,7 @@ def value_at_risk_noarr_1d_nb(returns: tp.Array1d, cutoff: float = 0.05) -> floa
 
     Args:
         returns (Array1d): 1D array of returns.
-        cutoff (float): Cutoff probability for VaR calculation expressed as a percentile.
+        cutoff (float): Fractional cutoff level.
 
     Returns:
         float: The VaR computed as the 100 * cutoff percentile of the returns.
@@ -2980,7 +2980,7 @@ def value_at_risk_nb(
 
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
-        cutoff (float): Cutoff probability for VaR calculation expressed as a percentile (e.g., 0.05).
+        cutoff (float): Fractional cutoff level.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per column.
@@ -3047,7 +3047,7 @@ def rolling_value_at_risk_nb(
     Args:
         returns (Array2d): 2D array of returns.
         window (int): Window size.
-        cutoff (float): Fractional cutoff level for value at risk calculation.
+        cutoff (float): Fractional cutoff level.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
@@ -3101,7 +3101,7 @@ def cond_value_at_risk_1d_nb(returns: tp.Array1d, cutoff: float = 0.05) -> float
 
     Args:
         returns (Array1d): 1D array of returns.
-        cutoff (float): Fractional cutoff level for CVaR calculation.
+        cutoff (float): Fractional cutoff level.
 
     Returns:
         float: Computed conditional value at risk.
@@ -3116,7 +3116,7 @@ def cond_value_at_risk_noarr_1d_nb(returns: tp.Array1d, cutoff: float = 0.05) ->
 
     Args:
         returns (Array1d): 1D array of returns.
-        cutoff (float): Fractional cutoff level for CVaR computation, which is internally scaled to a percentage.
+        cutoff (float): Fractional cutoff level.
 
     Returns:
         float: Computed conditional value at risk.
@@ -3149,7 +3149,7 @@ def cond_value_at_risk_nb(
 
     Args:
         returns (Array2d): 2D array of returns.
-        cutoff (float): Fractional cutoff level for CVaR calculation.
+        cutoff (float): Fractional cutoff level.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per column.
@@ -3214,7 +3214,7 @@ def rolling_cond_value_at_risk_nb(
     Args:
         returns (Array2d): 2D array of returns.
         window (int): Window size.
-        cutoff (float): Fractional cutoff quantile level for CVaR computation.
+        cutoff (float): Fractional cutoff level.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 

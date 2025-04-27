@@ -50,7 +50,7 @@ def check_adj_price_nb(
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): If True, enforce the price to match the closing price.
+        is_closing_price (bool): Flag indicating if the price is a closing price.
 
             If the adjusted price differs from `PriceArea.close`, it may trigger an error or cap.
         price_area_vio_mode (int): Mode for handling price area violations.
@@ -179,10 +179,10 @@ def long_buy_nb(
         size (float): Requested order size.
         price (float): Order price.
         fees (float): Fraction of the order value charged as fee.
-        fixed_fees (float): Fixed fees for the order.
-        slippage (float): Fractional slippage applied to the order price.
-        min_size (float): Minimum acceptable order size.
-        max_size (float): Maximum acceptable order size.
+        fixed_fees (float): Fixed fee amount charged per order.
+        slippage (float): Slippage percentage to adjust the execution price.
+        min_size (float): Minimum allowed order size.
+        max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage factor.
         leverage_mode (int): Mode for leverage calculation (e.g., lazy or eager).
@@ -191,12 +191,12 @@ def long_buy_nb(
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
-        allow_partial (bool): Determines whether partial order execution is permitted.
+        allow_partial (bool): Whether to allow partial order fulfillment.
         percent (float): Fraction of free cash to consider for the order.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Indicates if the provided price is a closing price.
+        is_closing_price (bool): Flag indicating if the price is a closing price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the order result and the updated account state.
@@ -373,20 +373,20 @@ def long_sell_nb(
             The size is capped by the current open long position.
         price (float): Price at which to execute the sell order.
         fees (float): Fraction of the order value charged as fee.
-        fixed_fees (float): Fixed fee amount applied to the transaction.
-        slippage (float): Price adjustment factor to compensate for slippage.
-        min_size (float): Minimum allowable order size.
-        max_size (float): Maximum allowable order size.
+        fixed_fees (float): Fixed fee amount charged per order.
+        slippage (float): Slippage percentage to adjust the execution price.
+        min_size (float): Minimum allowed order size.
+        max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
-        allow_partial (bool): Indicator whether a partial fill of the order is permitted.
+        allow_partial (bool): Whether to allow partial order fulfillment.
         percent (float): Percentage factor to adjust the order size relative to the current position.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Flag indicating if the provided price is derived from a closing value.
+        is_closing_price (bool): Flag indicating if the price is a closing price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the created order result and
@@ -518,7 +518,7 @@ def short_sell_nb(
         price (float): Market price used to compute the adjusted order price.
         fees (float): Fraction of the order value charged as fee.
         fixed_fees (float): Fixed fee amount charged per order.
-        slippage (float): Fraction representing potential price slippage.
+        slippage (float): Slippage percentage to adjust the execution price.
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
@@ -526,12 +526,12 @@ def short_sell_nb(
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
-        allow_partial (bool): Indicates whether a partial fill is permitted.
+        allow_partial (bool): Whether to allow partial order fulfillment.
         percent (float): Fraction of free cash to allocate for the order.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Indicates if the provided price is a closing price.
+        is_closing_price (bool): Flag indicating if the price is a closing price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the filled order result and
@@ -689,20 +689,20 @@ def short_buy_nb(
         size (float): Requested order size for covering the short position.
         price (float): Execution price for the order.
         fees (float): Fraction of the order value charged as fee.
-        fixed_fees (float): Fixed fee amount applied to the order.
+        fixed_fees (float): Fixed fee amount charged per order.
         slippage (float): Slippage percentage to adjust the execution price.
-        min_size (float): Minimum acceptable order size.
+        min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
-        allow_partial (bool): Whether to allow a partial fill if the full size cannot be executed.
+        allow_partial (bool): Whether to allow partial order fulfillment.
         percent (float): Scaling factor to restrict the allowed order size.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Indicates if the provided price is to be treated as a closing price.
+        is_closing_price (bool): Flag indicating if the price is a closing price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the executed order result and
@@ -888,10 +888,10 @@ def buy_nb(
 
             See `vectorbtpro.portfolio.enums.Direction`.
         fees (float): Fraction of the order value charged as fee.
-        fixed_fees (float): Fixed fee charges.
-        slippage (float): Slippage applied to the order.
-        min_size (float): Minimum allowed order size, may be NaN.
-        max_size (float): Maximum allowed order size, may be NaN.
+        fixed_fees (float): Fixed fee amount charged per order.
+        slippage (float): Slippage percentage to adjust the execution price.
+        min_size (float): Minimum allowed order size.
+        max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
@@ -900,12 +900,12 @@ def buy_nb(
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
-        allow_partial (bool): Flag permitting partial order fills.
+        allow_partial (bool): Whether to allow partial order fulfillment.
         percent (float): Percentage parameter used in order calculations, may be NaN.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Indicates whether the provided price is for closing positions.
+        is_closing_price (bool): Flag indicating if the price is a closing price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the order execution result and
@@ -1096,16 +1096,16 @@ def sell_nb(
 
             See `vectorbtpro.portfolio.enums.Direction`.
         fees (float): Fraction of the order value charged as fee.
-        fixed_fees (float): Fixed fee amount.
-        slippage (float): Allowed price slippage.
-        min_size (float): Minimum order size constraint.
-        max_size (float): Maximum order size constraint.
+        fixed_fees (float): Fixed fee amount charged per order.
+        slippage (float): Slippage percentage to adjust the execution price.
+        min_size (float): Minimum allowed order size.
+        max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage factor.
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
-        allow_partial (bool): Whether partial fills are permitted.
+        allow_partial (bool): Whether to allow partial order fulfillment.
         percent (float): Order size as a percentage.
         price_area (PriceArea): Price area constraint.
 
@@ -1958,10 +1958,10 @@ def order_nb(
 
             See `vectorbtpro.portfolio.enums.Direction`.
         fees (float): Fraction of the order value charged as fee.
-        fixed_fees (float): Fixed fees.
-        slippage (float): Expected slippage.
-        min_size (float): Minimum order size.
-        max_size (float): Maximum order size.
+        fixed_fees (float): Fixed fee amount charged per order.
+        slippage (float): Slippage percentage to adjust the execution price.
+        min_size (float): Minimum allowed order size.
+        max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage multiplier.
         leverage_mode (int): Leverage mode.
@@ -1971,7 +1971,7 @@ def order_nb(
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
-        allow_partial (bool): Allow partial order fulfillment.
+        allow_partial (bool): Whether to allow partial order fulfillment.
         raise_reject (bool): Raise an exception if the order is rejected.
         log (bool): Log the order execution.
 
@@ -2021,10 +2021,10 @@ def close_position_nb(
     Args:
         price (float): Order price.
         fees (float): Fraction of the order value charged as fee.
-        fixed_fees (float): Fixed fees.
-        slippage (float): Expected slippage.
-        min_size (float): Minimum order size.
-        max_size (float): Maximum order size.
+        fixed_fees (float): Fixed fee amount charged per order.
+        slippage (float): Slippage percentage to adjust the execution price.
+        min_size (float): Minimum allowed order size.
+        max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage multiplier.
         leverage_mode (int): Leverage mode.
@@ -2034,7 +2034,7 @@ def close_position_nb(
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
-        allow_partial (bool): Allow partial order fulfillment.
+        allow_partial (bool): Whether to allow partial order fulfillment.
         raise_reject (bool): Raise an exception if the order is rejected.
         log (bool): Log the order execution.
 
@@ -3308,7 +3308,7 @@ def get_stop_ladder_exit_size_nb(
 
     Args:
         stop_ (FlexArray2d): 2D array of stop values.
-        step (int): Current ladder step index.
+        step (int): Current step index in the ladder.
         col (int): Current column index.
         init_price (float): Initial price used to resolve stop levels.
         init_position (float): Initial position size.
@@ -3658,7 +3658,7 @@ def set_sl_info_nb(
         ladder (int): Stop ladder mode.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
-        step (int): Ladder step.
+        step (int): Current step index in the ladder.
         step_idx (int): Ladder step index.
 
     Returns:
@@ -3765,7 +3765,7 @@ def set_tsl_info_nb(
         ladder (int): Ladder mode indicator.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
-        step (int): Ladder step value.
+        step (int): Current step index in the ladder.
         step_idx (int): Ladder step index.
 
     Returns:
@@ -3868,7 +3868,7 @@ def set_tp_info_nb(
         ladder (int): Ladder mode indicator.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
-        step (int): Ladder step value.
+        step (int): Current step index in the ladder.
         step_idx (int): Ladder step index.
 
     Returns:
@@ -3967,7 +3967,7 @@ def set_time_info_nb(
         ladder (int): Ladder mode indicator.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
-        step (int): Ladder step value.
+        step (int): Current step index in the ladder.
         step_idx (int): Ladder step index.
 
     Returns:

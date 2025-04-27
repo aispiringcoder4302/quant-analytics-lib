@@ -106,7 +106,7 @@ def compress(
 
     Args:
         bytes_ (bytes): Data to be compressed.
-        compression (CompressionLike): Compression algorithm identifier.
+        compression (CompressionLike): Compression algorithm.
         
             If set to True, the default compression from settings is used.
         file_name (Optional[str]): File name for the compressed data when using archive-based compression.
@@ -203,7 +203,7 @@ def decompress(
 
     Args:
         bytes_ (bytes): Compressed data to be decompressed.
-        compression (CompressionLike): Compression algorithm identifier.
+        compression (CompressionLike): Compression algorithm.
         
             If set to True, the default compression from settings is used.
         file_name (Optional[str]): File name to extract from the archive when using archive-based compression.
@@ -306,7 +306,7 @@ def dumps(
 
     Args:
         obj (Any): Object to serialize.
-        compression (CompressionLike): Compression algorithm to use.
+        compression (CompressionLike): Compression algorithm.
         compress_kwargs (KwargsLike): Keyword arguments for compression.
         **kwargs: Keyword arguments for the pickling library's `dumps` method.
 
@@ -339,7 +339,7 @@ def loads(
 
     Args:
         bytes_ (bytes): Byte stream containing the serialized object.
-        compression (CompressionLike): Compression algorithm used.
+        compression (CompressionLike): Compression algorithm.
         decompress_kwargs (KwargsLike): Keyword arguments for decompression.
         **kwargs: Keyword arguments for the pickling library's `loads` method.
 
@@ -394,7 +394,7 @@ def save_bytes(
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             
             See `vectorbtpro.utils.path_.check_mkdir`.
-        compression (CompressionLike): Compression algorithm to use.
+        compression (CompressionLike): Compression algorithm.
         compress_kwargs (KwargsLike): Keyword arguments for compression.
 
     Returns:
@@ -435,7 +435,7 @@ def load_bytes(
 
     Args:
         path (PathLike): File path to read.
-        compression (CompressionLike): Compression algorithm used.
+        compression (CompressionLike): Compression algorithm.
         decompress_kwargs (KwargsLike): Keyword arguments for decompression.
 
     Returns:
@@ -472,7 +472,7 @@ def save(
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             
             See `vectorbtpro.utils.path_.check_mkdir`.
-        compression (CompressionLike): Compression algorithm to use.
+        compression (CompressionLike): Compression algorithm.
         compress_kwargs (KwargsLike): Keyword arguments for compression.
         **kwargs: Keyword arguments for `dumps`.
 
@@ -507,7 +507,7 @@ def load(
 
     Args:
         path (PathLike): File path from which to load the object.
-        compression (CompressionLike): Compression algorithm used.
+        compression (CompressionLike): Compression algorithm.
         decompress_kwargs (KwargsLike): Keyword arguments for decompression.
         **kwargs: Keyword arguments for `loads`.
 
@@ -1235,7 +1235,7 @@ class Pickleable(Base):
             file_format (Optional[str]): File format extension.
 
                 For options, see `pickle_extensions` and `config_extensions`.
-            compression (CompressionLike): Compression extension.
+            compression (CompressionLike): Compression algorithm.
 
                 For options, see `compression_extensions`.
             for_save (bool): Resolve the file path for saving if True; otherwise, for loading.
@@ -1406,7 +1406,7 @@ class Pickleable(Base):
         Args:
             path (Optional[PathLike]): File path to save the instance.
             file_format (Optional[str]): Format used for serialization.
-            compression (CompressionLike): Compression method if applicable.
+            compression (CompressionLike): Compression algorithm.
             mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             
                 See `vectorbtpro.utils.path_.check_mkdir`.
@@ -1455,7 +1455,7 @@ class Pickleable(Base):
             cls (Type[Pickleable]): Class of the instance.
             path (Optional[PathLike]): Path of the file to load.
             file_format (Optional[str]): Format specifier for determining the file extension.
-            compression (CompressionLike): Compression method if applicable.
+            compression (CompressionLike): Compression algorithm.
             **kwargs: Keyword arguments for `Pickleable.loads` for pickle extensions
                 and `Pickleable.decode_config` for config extensions.
 

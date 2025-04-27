@@ -252,7 +252,7 @@ class QSAdapter(Configured):
 
     Args:
         returns_acc (ReturnsAccessor): Returns accessor instance.
-        defaults (KwargsLike): Default parameters.
+        defaults (KwargsLike): Dictionary of default parameters.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 

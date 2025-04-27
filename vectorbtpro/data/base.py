@@ -5261,7 +5261,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute`.
-            filter_results (bool): If True, filters out function calls that yield no results.
+            filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
             raise_no_results (bool): Flag indicating whether to raise a 
                 `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
             merge_func (MergeFuncLike): Function to merge the results.

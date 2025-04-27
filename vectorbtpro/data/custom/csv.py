@@ -273,7 +273,7 @@ class CSVData(FileData):
 
         Args:
             key (hashable): Identifier for the feature or symbol.
-            key_is_feature (bool): Indicates whether `key` represents a feature.
+            key_is_feature (bool): Flag indicating if `key` represents a feature.
             **kwargs: Keyword arguments for `CSVData.fetch_feature` or `CSVData.fetch_symbol`.
 
         Returns:

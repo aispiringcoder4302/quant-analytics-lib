@@ -73,7 +73,7 @@ def split(
 
             If `splitter` is None, the appropriate method is determined via
             `vectorbtpro.generic.splitting.base.Splitter.guess_method`.
-        splitter_cls (Optional[Type[Splitter]]): Class type to use for constructing or validating the splitter.
+        splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
 
             Defaults to `vectorbtpro.generic.splitting.base.Splitter` if not provided.
         splitter_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter`.
