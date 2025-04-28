@@ -365,7 +365,7 @@ def iter_chunk_meta(
 
     Args:
         size (Optional[int]): Total number of elements to split.
-        min_size (Optional[int]): Minimum allowable size.
+        min_size (Optional[int]): Minimum number of elements to split.
 
             If `size` is less than this value, a single chunk is returned.
         n_chunks (Union[None, int, str]): Number of chunks.
@@ -1282,7 +1282,7 @@ class Chunker(Configured):
         size (Optional[int]): Chunk size used for metadata generation.
 
             See `Chunker.get_chunk_meta_from_args`.
-        min_size (Optional[int]): Minimum chunk size used in metadata generation.
+        min_size (Optional[int]): Minimum number of elements to split.
 
             See `Chunker.get_chunk_meta_from_args`.
         n_chunks (Optional[SizeLike]): Desired number of chunks used in metadata generation.
@@ -1567,7 +1567,7 @@ class Chunker(Configured):
 
                 It can be an integer, an instance of `Sizer`, or a callable that receives the annotated
                 arguments and returns a value.
-            min_size (Optional[int]): Minimum allowed chunk size.
+            min_size (Optional[int]): Minimum number of elements to split.
             n_chunks (Optional[SizeLike]): Desired number of chunks.
 
                 It can be provided as an integer, a string, an instance of `Sizer`, or a callable that

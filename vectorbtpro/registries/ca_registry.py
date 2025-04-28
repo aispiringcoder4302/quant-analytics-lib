@@ -670,10 +670,10 @@ class CAQuery(DefineMixin):
         return self.instance() if self.instance is not None else None
 
     def matches_setup(self, setup: "CABaseSetup") -> bool:
-        """Determine if the given CA setup matches the query criteria.
+        """Determine if the given setup matches the query criteria.
 
         Args:
-            setup (CABaseSetup): CA setup instance to validate against the query.
+            setup (CABaseSetup): Setup instance to validate against the query.
 
         Returns:
             bool: True if the setup meets the query criteria, otherwise False.

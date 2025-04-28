@@ -717,7 +717,7 @@ class TVData(RemoteData):
         use_regex: bool = False,
         sort: bool = True,
         client: tp.Optional[TVClient] = None,
-        client_config: tp.DictLike = None,
+        client_config: tp.KwargsLike = None,
         text: tp.Optional[str] = None,
         exchange: tp.Optional[str] = None,
         pages: tp.Optional[int] = None,
@@ -761,7 +761,7 @@ class TVData(RemoteData):
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to sort the final list of symbols.
             client (Optional[TVClient]): Client instance for API requests.
-            client_config (DictLike): Configuration parameters for the client.
+            client_config (KwargsLike): Configuration parameters for creating a client.
             text (Optional[str]): Text for performing a server-side symbol search.
             exchange (Optional[str]): Exchange for performing a server-side symbol search.
             pages (Optional[int]): Number of pages to retrieve during symbol search.

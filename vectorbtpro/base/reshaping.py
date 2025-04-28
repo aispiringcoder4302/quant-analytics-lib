@@ -264,7 +264,7 @@ def soft_to_ndim(obj: tp.ArrayLike, ndim: int, raw: bool = False) -> tp.AnyArray
     Args:
         obj (ArrayLike): Array-like object to reshape.
         ndim (int): Target number of dimensions (maximum 2).
-        raw (bool): If True, convert to a raw NumPy array before reshaping.
+        raw (bool): If True, return a raw NumPy array.
 
     Returns:
         AnyArray: The reshaped array.
@@ -452,7 +452,7 @@ def repeat(
         obj (ArrayLike): Input array-like object.
         n (int): Number of repetitions.
         axis (int): Axis along which to repeat.
-        raw (bool): Whether to treat the input as raw array data.
+        raw (bool): If True, return a raw NumPy array.
         ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
 
     Returns:
@@ -487,7 +487,7 @@ def tile(
         obj (ArrayLike): Input array-like object.
         n (int): Number of times to tile the array.
         axis (int): Axis along which to tile.
-        raw (bool): Whether to treat the input as raw array data.
+        raw (bool): If True, return a raw NumPy array.
         ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
 
     Returns:

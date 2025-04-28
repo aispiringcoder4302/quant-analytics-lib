@@ -2869,10 +2869,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             ffill_val_price (Optional[bool]): If True, tracks the valuation price only when available
                 to prevent propagation of NaN values.
             update_value (Optional[bool]): If True, updates the group value after each filled order.
-            save_state (Optional[bool]): If True, saves state arrays
-                (such as `cash`, `position`, `debt`, `locked_cash`, and `free_cash`) in in-outputs.
-            save_value (Optional[bool]): If True, saves the portfolio value in in-outputs.
-            save_returns (Optional[bool]): If True, saves the returns array in in-outputs.
+            save_state (Optional[bool]): Flag to record the account state.
+
+                See `vectorbtpro.portfolio.enums.AccountState`.
+            save_value (Optional[bool]): Flag to record the portfolio value.
+            save_returns (Optional[bool]): Flag to record the portfolio returns.
             skip_empty (Optional[bool]): If True, skips processing rows that do not contain any orders.
             max_order_records (Optional[int]): Maximum number of order records expected per column.
 
@@ -3316,22 +3317,22 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 the simulation state.
 
                 Passed to the corresponding signal function. Can be provided as a module path when staticizing.
-            adjust_args (Args): Arguments to pass to `adjust_func_nb`.
+            adjust_args (Args): Positional arguments for `adjust_func_nb`.
             signal_func_nb (Union[None, PathLike, SignalFunc]): Function to generate signals.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
-            signal_args (Args): Arguments to pass to `signal_func_nb`.
+            signal_args (Args): Positional arguments for `signal_func_nb`.
             post_signal_func_nb (Union[None, PathLike, PostSignalFunc]): Post-signal function.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
-            post_signal_args (Args): Arguments to pass to `post_signal_func_nb`.
+            post_signal_args (Args): Positional arguments for `post_signal_func_nb`.
             post_segment_func_nb (Union[None, PathLike, PostSignalSegmentFunc]): Post-segment function.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be provided as a module path when staticizing.
-            post_segment_args (Args): Arguments for `post_segment_func_nb`.
+            post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
             order_mode (bool): If True, simulates in order mode without explicit signals.
             size (Optional[ArrayLike]): Trade size.
 
@@ -3621,10 +3622,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             fill_pos_info (Optional[bool]): Whether to fill position records.
 
                 Disabling this may speed up simulation for simple cases.
-            save_state (Optional[bool]): If True, saves state arrays
-                (such as `cash`, `position`, `debt`, `locked_cash`, and `free_cash`) in in-outputs.
-            save_value (Optional[bool]): If True, saves the portfolio value in in-outputs.
-            save_returns (Optional[bool]): If True, saves the returns array in in-outputs.
+            save_state (Optional[bool]): Flag to record the account state.
+
+                See `vectorbtpro.portfolio.enums.AccountState`.
+            save_value (Optional[bool]): Flag to record the portfolio value.
+            save_returns (Optional[bool]): Flag to record the portfolio returns.
             skip_empty (Optional[bool]): If True, skips processing rows that do not contain any orders.
             max_order_records (Optional[int]): Maximum number of order records expected per column.
 
@@ -4708,45 +4710,45 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             pre_sim_func_nb (Optional[PreSimFunc]): Function called before simulation.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
-            pre_sim_args (Args): Arguments passed to `pre_sim_func_nb`.
+            pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
             post_sim_func_nb (Optional[PostSimFunc]): Function called after simulation.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
-            post_sim_args (Args): Arguments passed to `post_sim_func_nb`.
+            post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
             pre_group_func_nb (Optional[PreGroupFunc]): Function called before each group.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` and
                 is used only when `row_wise` is False.
-            pre_group_args (Args): Arguments passed to `pre_group_func_nb`.
+            pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
             post_group_func_nb (Optional[PostGroupFunc]): Function called after each group.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` and
                 is used only when `row_wise` is False.
-            post_group_args (Args): Arguments passed to `post_group_func_nb`.
+            post_group_args (Args): Positional arguments for `post_group_func_nb`.
             pre_row_func_nb (Optional[PreRowFunc]): Function called before each row.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` and
                 is used only when `row_wise` is True.
-            pre_row_args (Args): Arguments passed to `pre_row_func_nb`.
+            pre_row_args (Args): Positional arguments for `pre_row_func_nb`.
             post_row_func_nb (Optional[PostRowFunc]): Function called after each row.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` and
                 is used only when `row_wise` is True.
-            post_row_args (Args): Arguments passed to `post_row_func_nb`.
+            post_row_args (Args): Positional arguments for `post_row_func_nb`.
             pre_segment_func_nb (Optional[PreSegmentFunc]): Function called before each segment.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
-            pre_segment_args (Args): Arguments passed to `pre_segment_func_nb`.
+            pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
             post_segment_func_nb (Optional[PostSegmentFunc]): Function called after each segment.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
-            post_segment_args (Args): Arguments passed to `post_segment_func_nb`.
+            post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
             order_func_nb (Optional[OrderFunc]): Order generation function.
-            order_args (Args): Arguments passed to `order_func_nb`.
+            order_args (Args): Positional arguments for `order_func_nb`.
             flex_order_func_nb (Optional[FlexOrderFunc]): Flexible order generation function.
-            flex_order_args (Args): Arguments passed to `flex_order_func_nb`.
+            flex_order_args (Args): Positional arguments for `flex_order_func_nb`.
             post_order_func_nb (Optional[PostOrderFunc]): Callback invoked after processing an order.
-            post_order_args (Args): Arguments passed to `post_order_func_nb`.
+            post_order_args (Args): Positional arguments for `post_order_func_nb`.
             open (Optional[ArrayLike]): Open prices.
 
                 Broadcasts. Used as a price boundary (see `vectorbtpro.portfolio.enums.PriceArea`).
@@ -7698,7 +7700,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
 
                 Defaults to `Portfolio.cash_sharing` if not provided.
-            split_shared (bool): If cash is shared, determines whether to split the deposits evenly across columns.
+            split_shared (bool): Whether to split shared cash equally among columns in a group.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
@@ -7815,7 +7817,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
 
                 Defaults to `Portfolio.cash_sharing` if not provided.
-            split_shared (bool): If cash is shared, determines whether to split the deposits evenly across columns.
+            split_shared (bool): Whether to split shared cash equally among columns in a group.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
@@ -8197,7 +8199,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
 
                 Defaults to `Portfolio.cash_sharing` if not provided.
-            split_shared (bool): If True, split shared cash equally among columns in a group.
+            split_shared (bool): Whether to split shared cash equally among columns in a group.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
@@ -8577,7 +8579,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_cash (Optional[MaybeSeries]): Initial cash per column.
 
                 Defaults to `Portfolio.get_init_cash` if not provided.
-            split_shared (bool): Indicates whether to split shared cash among columns.
+            split_shared (bool): Whether to split shared cash equally among columns in a group.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
@@ -11219,7 +11221,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
             fit_sim_range (bool): Flag indicating whether to fit the figure to the simulation range.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
-            pct_scale (bool): Flag to display trade P&L on a percentage scale.
+            pct_scale (bool): Flag to display the y-axis on a percentage scale.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             **kwargs: Keyword arguments for `vectorbtpro.portfolio.trades.Trades.plot_pnl`.
@@ -12291,7 +12293,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            pct_scale (bool): Flag indicating whether to scale the returns as percentages.
+            pct_scale (bool): Flag to display the y-axis on a percentage scale.
             **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsSRAccessor.plot_cumulative`.
 
         Returns:
@@ -12466,7 +12468,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            pct_scale (bool): If True, format the y-axis ticks as percentages.
+            pct_scale (bool): Flag to display the y-axis on a percentage scale.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.

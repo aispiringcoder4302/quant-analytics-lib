@@ -111,7 +111,7 @@ class CSVData(FileData):
         For additional parameters, refer to `pd.read_csv` documentation.
 
         Args:
-            key (hashable): Identifier for a feature or symbol.
+            key (hashable): Feature or symbol identifier.
             path (Any): File path to the CSV file.
 
                 If not provided, `key` is used as the file path.
@@ -272,7 +272,7 @@ class CSVData(FileData):
         """Update the CSV data for a feature or symbol.
 
         Args:
-            key (hashable): Identifier for the feature or symbol.
+            key (hashable): Feature or symbol identifier.
             key_is_feature (bool): Flag indicating if `key` represents a feature.
             **kwargs: Keyword arguments for `CSVData.fetch_feature` or `CSVData.fetch_symbol`.
 

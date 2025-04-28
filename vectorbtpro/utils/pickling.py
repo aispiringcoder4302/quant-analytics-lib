@@ -105,7 +105,7 @@ def compress(
     """Compress given bytes using the specified compression format.
 
     Args:
-        bytes_ (bytes): Data to be compressed.
+        bytes_ (bytes): Byte stream to be compressed.
         compression (CompressionLike): Compression algorithm.
         
             If set to True, the default compression from settings is used.
@@ -202,7 +202,7 @@ def decompress(
     """Decompress given bytes using the specified compression format.
 
     Args:
-        bytes_ (bytes): Compressed data to be decompressed.
+        bytes_ (bytes): Compressed byte stream to be decompressed.
         compression (CompressionLike): Compression algorithm.
         
             If set to True, the default compression from settings is used.
@@ -389,7 +389,7 @@ def save_bytes(
     either explicitly or based on the file's extension.
 
     Args:
-        bytes_ (bytes): Byte stream to write.
+        bytes_ (bytes): Byte stream containing the serialized object.
         path (PathLike): Destination file path.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             
@@ -700,7 +700,7 @@ class Pickleable(Base):
         If the unpickled object is an instance of `RecState`, it is transformed via `reconstruct`.
 
         Args:
-            bytes_ (bytes): Byte stream containing the pickled data.
+            bytes_ (bytes): Byte stream containing the serialized object.
             check_type (bool): If True, validates that the unpickled object is an instance of the class.
             **kwargs: Keyword arguments for `loads`.
 

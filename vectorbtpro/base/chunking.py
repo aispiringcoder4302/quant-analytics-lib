@@ -62,8 +62,7 @@ class GroupLensSizer(ArgSizer):
 
         Args:
             obj (Union[GroupLens, GroupMap]): Array of group lengths or a group map tuple.
-            single_type (Optional[type]): Type to check for a single element;
-                if the object is an instance of this type, returns 1.
+            single_type (Optional[type]): Type of value that is considered single.
 
         Returns:
             int: The size computed from the object.
@@ -266,8 +265,7 @@ class FlexArraySizer(ArraySizer):
         Args:
             obj (AnyArray): Array-like object from which to calculate the size.
             axis (int): Axis along which to determine the size.
-            single_type (Optional[type]): Type for single element check;
-                if the object is an instance of this type, returns 1.
+            single_type (Optional[type]): Type of value that is considered single.
 
         Returns:
             int: The computed size along the specified axis.

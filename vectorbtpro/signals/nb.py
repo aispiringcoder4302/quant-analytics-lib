@@ -72,7 +72,7 @@ def generate_nb(
 
             `place_func_nb` must accept a context of type `vectorbtpro.signals.enums.GenEnContext`
             and return the index of the last signal (-1 to break the loop).
-        place_args (Args): Arguments passed to `place_func_nb`.
+        place_args (Args): Positional arguments for `place_func_nb`.
         only_once (bool): Whether to run the placement function only once.
         wait (int): Number of ticks to wait before placing the next entry.
 
@@ -147,7 +147,7 @@ def generate_ex_nb(
 
             `exit_place_func_nb` must accept a context of type `vectorbtpro.signals.enums.GenExContext`
             and return the index of the last signal (-1 to break the loop).
-        exit_place_args (Args): Arguments passed to `exit_place_func_nb`.
+        exit_place_args (Args): Positional arguments for `exit_place_func_nb`.
         wait (int): Number of ticks to wait before placing exits.
 
             !!! note
@@ -251,12 +251,12 @@ def generate_enex_nb(
 
             Must accept a context of type `vectorbtpro.signals.enums.GenEnExContext`
             and return the index of the last signal (-1 to break the loop).
-        entry_place_args (Args): Arguments passed to `entry_place_func_nb`.
+        entry_place_args (Args): Positional arguments for `entry_place_func_nb`.
         exit_place_func_nb (PlaceFunc): Function to place exit signals.
 
             Must accept a context of type `vectorbtpro.signals.enums.GenEnExContext`
             and return the index of the last signal (-1 to break the loop).
-        exit_place_args (Args): Arguments passed to `exit_place_func_nb`.
+        exit_place_args (Args): Positional arguments for `exit_place_func_nb`.
         entry_wait (int): Number of periods to wait before an entry signal is triggered.
 
             !!! note
@@ -894,7 +894,7 @@ def rank_nb(
     Args:
         mask (Array2d): Boolean mask array indicating positions of signals.
         rank_func_nb (RankFunc): Function that computes the rank for a signal using a rank context.
-        rank_args (Args): Additional arguments for `rank_func_nb`.
+        rank_args (Args): Positional arguments for `rank_func_nb`.
         reset_by (Optional[Array2d]): Boolean array indicating reset positions.
         after_false (bool): If True, disregards the first True partition with no preceding False.
         after_reset (bool): If True, disregards the first True partition before a reset signal.

@@ -481,7 +481,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Build a `KnowledgeAsset` instance from JSON bytes.
 
         Args:
-            bytes_ (bytes): JSON-formatted bytes.
+            bytes_ (bytes): Byte stream containing the JSON object.
             compression (Union[None, bool, str]): Compression type (if applicable).
             decompress_kwargs (KwargsLike): Keyword arguments for decompression.
             **kwargs: Keyword arguments for `KnowledgeAsset`.

@@ -124,8 +124,7 @@ def prepare_params(
         param_names (Sequence[str]): List of parameter names.
         param_settings (Sequence[KwargsLike]): Sequence of dictionaries providing settings for each parameter.
         input_shape (Optional[Shape]): Target shape for broadcasting the parameters.
-        to_2d (bool): Flag indicating whether to convert array-like parameter values to
-            2D arrays during broadcasting.
+        to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
         context (KwargsLike): Additional context for template substitution.
 
     Returns:
@@ -3162,7 +3161,7 @@ Returns:
                 skipna (bool): Whether to skip NaN values.
                 return_cache (bool): If True, return the cache result instead of processing further.
                 use_cache (Union[bool, IFCacheOutput]): Flag or configuration indicating whether to use caching.
-                jitted_loop (bool): Whether to use a JIT-compiled loop.
+                jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop.
                 jitted_warmup (bool): Whether to perform a JIT warmup.
                 param_index (Optional[Index]): Index for parameter combinations.
                 final_index (Optional[Index]): Final index used for the output.

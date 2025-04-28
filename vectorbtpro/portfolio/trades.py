@@ -1781,8 +1781,7 @@ class Trades(Ranges):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            pct_scale (bool): If True, sets the y-axis to display trade returns in percentage format;
-                if False, displays PnL.
+            pct_scale (bool): Flag to display the y-axis on a percentage scale.
             marker_size_range (Tuple[float, float]): Range for marker sizes.
             opacity_range (Tuple[float, float]): Range for marker opacities.
             closed_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trades.
@@ -1996,7 +1995,7 @@ class Trades(Ranges):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            pct_scale (bool): If True, set the x-axis to use returns; otherwise, use PnL.
+            pct_scale (bool): Flag to display the y-axis on a percentage scale.
             field_pct_scale (bool): If True, format the y-axis values as percentages.
             closed_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade markers.
             closed_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed profit markers.

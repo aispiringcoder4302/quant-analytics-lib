@@ -170,7 +170,7 @@ def interp_resize_1d_nb(arr: tp.FlexArray1d, target_size: int, interp_mode: int)
 
     Args:
         arr (FlexArray1d): Array to be resized.
-        target_size (int): Desired size for the output array.
+        target_size (int): Desired size for interpolation.
         interp_mode (int): Interpolation mode.
 
             See `vectorbtpro.generic.enums.InterpMode`.
@@ -209,7 +209,7 @@ def fit_pattern_nb(
         interp_mode (int): Interpolation mode.
 
             See `vectorbtpro.generic.enums.InterpMode`.
-        rescale_mode (int): Identifier for the rescaling method applied to the pattern.
+        rescale_mode (int): Rescaling mode for adjusting the ranges of `arr` and `pattern`.
 
             See `vectorbtpro.generic.enums.RescaleMode`.
         vmin (float): Minimum threshold for clipping the input array.
@@ -356,12 +356,11 @@ def pattern_similarity_nb(
         max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
 
             See `vectorbtpro.generic.enums.InterpMode`.
-        max_error_as_maxdist (bool): Treat maximum error directly as maximum distance if True.
-        max_error_strict (bool): Enforce strict maximum error rules; returns NaN if exceeded.
+        max_error_as_maxdist (bool): Indicates whether `max_error` represents the maximum distance at each point.
+        max_error_strict (bool): If True, any instance of exceeding `max_error` results in a similarity of NaN.
         min_pct_change (float): Minimum percent change applied during rescaling.
-        max_pct_change (float): Maximum percent change applied during rescaling.
-        min_similarity (float): Minimum similarity threshold; if the computed similarity
-            falls below this, returns NaN.
+        max_pct_change (float): Maximum percentage change allowed for a window to remain a search candidate.
+        min_similarity (float): Minimum similarity threshold.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:

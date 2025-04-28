@@ -3824,7 +3824,7 @@ class Splitter(Analyzable):
             attach_bounds (Union[bool, str]): Controls attaching bounds.
 
                 Options include True, "index", "source", "target", etc.
-            right_inclusive (bool): If true, treats the right bound as inclusive.
+            right_inclusive (bool): Whether the right bound is inclusive.
             template_context (KwargsLike): Additional context for template substitution.
             silence_warnings (bool): Flag to suppress warning messages.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
@@ -4192,8 +4192,7 @@ class Splitter(Analyzable):
         into flattened annotated arguments.
 
         Args:
-            flat_ann_args (FlatAnnArgs): Dictionary mapping keys to dictionaries that may
-                include an `annotation` and a `value`.
+            flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -4305,7 +4304,7 @@ class Splitter(Analyzable):
             attach_bounds (Union[bool, str]): Specifies if and how to attach bounds to the result.
 
                 If True or "source", attaches the source bounds; other string options are supported.
-            right_inclusive (bool): Whether the range's right bound is inclusive.
+            right_inclusive (bool): Whether the right bound is inclusive.
             template_context (KwargsLike): Additional context for template substitution.
             silence_warnings (bool): Flag to suppress warning messages.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
@@ -5430,7 +5429,7 @@ class Splitter(Analyzable):
         Args:
             range_ (FixRangeLike): Range specification to process.
             index_bounds (bool): If True, map the bounds to the provided index.
-            right_inclusive (bool): If True, treat the right bound as inclusive before adjustment.
+            right_inclusive (bool): Whether the right bound is inclusive.
             check_constant (bool): If True, verify that the range is constant.
             template_context (KwargsLike): Additional context for template substitution.
             index (Optional[IndexLike]): Index used for mapping bounds.
@@ -5495,7 +5494,7 @@ class Splitter(Analyzable):
 
         Args:
             index_bounds (bool): If True, use the index's data type for the bounds.
-            right_inclusive (bool): If True, treat the right bound as inclusive in computations.
+            right_inclusive (bool): Whether the right bound is inclusive.
             split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
@@ -5566,7 +5565,7 @@ class Splitter(Analyzable):
 
         Args:
             index_bounds (bool): If True, compute bounds using the index.
-            right_inclusive (bool): If True, treat the right boundary as inclusive.
+            right_inclusive (bool): Whether the right bound is inclusive.
             split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.

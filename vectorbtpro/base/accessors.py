@@ -759,7 +759,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         the axis is set to 0; otherwise, 1 is used.
 
         Args:
-            min_size (Optional[int]): Minimum number of elements per chunk.
+            min_size (Optional[int]): Minimum number of elements to split.
             n_chunks (Union[None, int, str]): Number of chunks to create.
             chunk_len (Union[None, int, str]): Length of each chunk.
             chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable of metadata for chunk boundaries.
@@ -1989,7 +1989,7 @@ class BaseAccessor(Wrapping):
             apply_func (Callable): Function to apply.
             *args: Positional arguments for `apply_func`.
             keep_pd (bool): If True, maintain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
-            to_2d (bool): If True, reshape inputs to 2-dimensional arrays; otherwise, retain their original shape.
+            to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -2129,11 +2129,11 @@ class BaseAccessor(Wrapping):
         See also `vectorbtpro.base.combining.apply_and_concat`.
 
         Args:
-            ntimes (int): Number of times to apply `apply_func`.
+            ntimes (int): Number of times to execute `apply_func`.
             apply_func (Callable): Function to execute, with the iteration index as its first parameter.
             *args: Positional arguments for `apply_func`.
             keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert inputs to arrays.
-            to_2d (bool): If True, convert input arrays to a two-dimensional format.
+            to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
             keys (Optional[IndexLike]): Labels for the concatenated results along columns.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -2272,7 +2272,7 @@ class BaseAccessor(Wrapping):
                 Applicable only when using the instance method.
             keep_pd (bool): Determines whether to retain inputs as Pandas objects or
                 convert them to NumPy arrays.
-            to_2d (bool): Determines whether to reshape inputs into 2-dimensional arrays.
+            to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
             concat (bool): Determines whether to concatenate the results along the column axis or
                 combine objects pairwise.
 

@@ -267,12 +267,14 @@ def from_orders_nb(
 
             Provided as a scalar or per group.
         call_seq (Optional[Array2d]): Sequence array for call order.
-        auto_call_seq (bool): Flag to automatically determine call sequence.
+        auto_call_seq (bool): Flag to automatically sort the call sequence.
         ffill_val_price (bool): Flag to forward-fill valuation price.
         update_value (bool): Flag to update portfolio value with each order.
-        save_state (bool): Flag to store simulation state arrays.
-        save_value (bool): Flag to record portfolio value.
-        save_returns (bool): Flag to record portfolio returns.
+        save_state (bool): Flag to record the account state.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
+        save_value (bool): Flag to record the portfolio value.
+        save_returns (bool): Flag to record the portfolio returns.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
         max_log_records (Optional[int]): Maximum number of log records expected per column.

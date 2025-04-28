@@ -1903,7 +1903,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             rank_func_nb (RankFunc): Function used for ranking.
             *args: Positional arguments for `rank_func_nb`.
-            rank_args (ArgsLike): Tuple or list of arguments for `rank_func_nb`.
+            rank_args (ArgsLike): Positional arguments for `rank_func_nb`.
 
                 Must not be provided with `*args`.
             reset_by (Optional[ArrayLike]): Array indicating reset points for broadcasting.
@@ -2081,7 +2081,7 @@ class SignalsAccessor(GenericAccessor):
         """Return signal position ranks computed after each signal specified in `reset_by`.
 
         Args:
-            reset_by (ArrayLike): Array indicating the reset points for ranking.
+            reset_by (ArrayLike): Array used to reset the ranking.
             after_reset (bool): If True, ranking starts after a reset signal.
             allow_gaps (bool): If True, gaps are allowed in the ranking.
             **kwargs: Keyword arguments for `pos_rank`.
@@ -2157,7 +2157,7 @@ class SignalsAccessor(GenericAccessor):
         """Return partition position ranks computed after each signal specified in `reset_by`.
 
         Args:
-            reset_by (ArrayLike): Array indicating reset points for partition ranking.
+            reset_by (ArrayLike): Array used to reset the ranking.
             **kwargs: Keyword arguments for `SignalsAccessor.partition_pos_rank`.
 
         Returns:
@@ -2193,7 +2193,7 @@ class SignalsAccessor(GenericAccessor):
         """Select signals that satisfy the condition `pos_rank == 0`.
 
         Args:
-            reset_by (ArrayLike): Array used to reset the position ranking.
+            reset_by (ArrayLike): Array used to reset the ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -2237,7 +2237,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             n (int): Specific position rank value.
-            reset_by (ArrayLike): Array used to reset the position ranking.
+            reset_by (ArrayLike): Array used to reset the ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -2281,7 +2281,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             n (int): Lower bound for the position rank.
-            reset_by (ArrayLike): Array used to reset the position ranking.
+            reset_by (ArrayLike): Array used to reset the ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
@@ -2325,7 +2325,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             n (int): Upper bound for the position rank (exclusive).
-            reset_by (ArrayLike): Array used to reset the position ranking.
+            reset_by (ArrayLike): Array used to reset the ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.

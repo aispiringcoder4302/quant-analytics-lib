@@ -389,7 +389,8 @@ class ThreadPoolEngine(ExecutionEngine):
     Args:
         init_kwargs (KwargsLike): Keyword arguments for `ThreadPoolExecutor`.
         timeout (Optional[int]): Timeout for waiting on task results.
-        hide_inner_progress (Optional[bool]): Indicates whether inner progress bars are hidden.
+        hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
+            within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
@@ -472,7 +473,8 @@ class ProcessPoolEngine(ExecutionEngine):
     Args:
         init_kwargs (KwargsLike): Keyword arguments for `ProcessPoolExecutor`.
         timeout (Optional[int]): Timeout for waiting on task results.
-        hide_inner_progress (Optional[bool]): Indicates whether inner progress bars are hidden.
+        hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
+            within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
@@ -768,7 +770,8 @@ class MpireEngine(ExecutionEngine):
     Args:
         init_kwargs (KwargsLike): Keyword arguments used for initializing `mpire.WorkerPool`.
         apply_kwargs (KwargsLike): Keyword arguments for `mpire.WorkerPool.async_apply`.
-        hide_inner_progress (Optional[bool]): Flag indicating whether inner progress bars should be hidden.
+        hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
+            within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
@@ -853,8 +856,8 @@ class DaskEngine(ExecutionEngine):
 
     Args:
         compute_kwargs (KwargsLike): Keyword arguments for `dask.compute`.
-        hide_inner_progress (Optional[bool]): Flag indicating whether progress bars should be
-            hidden within each thread.
+        hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
+            within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
@@ -934,7 +937,8 @@ class RayEngine(ExecutionEngine):
         shutdown (Optional[bool]): Flag indicating if the Ray runtime should be shut down upon job completion.
         init_kwargs (KwargsLike): Keyword arguments for `ray.init`.
         remote_kwargs (KwargsLike): Keyword arguments for `ray.remote`.
-        hide_inner_progress (Optional[bool]): Flag indicating if progress bars should be hidden within each thread.
+        hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
+            within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
@@ -1237,12 +1241,13 @@ class Executor(Configured):
     Args:
         engine (Optional[ExecutionEngineLike]): Execution engine.
         engine_config (KwargsLike): Configuration for the execution engine.
-        min_size (Optional[int]): Minimum chunk size used by `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        n_chunks (Union[None, int, str]): Specification for the number of chunks as defined in 
+        min_size (Optional[int]): Minimum number of elements to split, as defined in 
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        chunk_len (Union[None, int, str]): Chunk length specification as defined in 
+        n_chunks (Union[None, int, str]): Specification for the number of chunks, as defined in 
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        chunk_meta (Optional[Iterable[ChunkMeta]]): Metadata for chunks as defined in 
+        chunk_len (Union[None, int, str]): Chunk length specification, as defined in 
+            `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        chunk_meta (Optional[Iterable[ChunkMeta]]): Metadata for chunks, as defined in 
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
         distribute (Optional[str]): Distribution mode.
 
@@ -1604,7 +1609,7 @@ class Executor(Configured):
 
     @property
     def min_size(self) -> tp.Optional[int]:
-        """Minimum chunk size used by `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        """Minimum number of elements to split, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             Optional[int]: Minimum chunk size, if provided; otherwise, None.
@@ -1613,7 +1618,7 @@ class Executor(Configured):
 
     @property
     def n_chunks(self) -> tp.Union[None, int, str]:
-        """Specification for the number of chunks as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        """Specification for the number of chunks, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             Union[None, int, str]: Number of chunks or mode, if provided; otherwise, None.
@@ -1622,7 +1627,7 @@ class Executor(Configured):
 
     @property
     def chunk_len(self) -> tp.Union[None, int, str]:
-        """Chunk length specification as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        """Chunk length specification, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             Union[None, int, str]: Chunk length or mode, if provided; otherwise, None.
@@ -1631,7 +1636,7 @@ class Executor(Configured):
 
     @property
     def chunk_meta(self) -> tp.Optional[tp.ChunkMetaLike]:
-        """Metadata for chunks as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        """Metadata for chunks, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             Optional[ChunkMetaLike]: Metadata for chunks, if provided; otherwise, None.

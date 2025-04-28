@@ -505,7 +505,7 @@ def prepare_sim_start_nb(
     """Prepare the simulation start array based on provided parameters.
 
     Args:
-        sim_shape (Shape): Shape of the simulation array.
+        sim_shape (Shape): Tuple representing the dimensions of the simulation.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.
@@ -543,7 +543,7 @@ def prepare_sim_end_nb(
     """Prepare the simulation end array based on provided parameters.
 
     Args:
-        sim_shape (Shape): Shape of the simulation array.
+        sim_shape (Shape): Tuple representing the dimensions of the simulation.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
         
             Provided as a scalar or per column.
@@ -582,7 +582,7 @@ def prepare_sim_range_nb(
     """Prepare both simulation start and end positions based on provided parameters.
 
     Args:
-        sim_shape (Shape): Shape of the simulation array.
+        sim_shape (Shape): Tuple representing the dimensions of the simulation.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.

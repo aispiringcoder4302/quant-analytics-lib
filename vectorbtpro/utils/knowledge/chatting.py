@@ -3783,7 +3783,7 @@ class LMDBStore(ObjectStore):
         """Decode the given bytes into an object using the configured deserialization settings.
 
         Args:
-            bytes_ (bytes): Bytes representation of the object.
+            bytes_ (bytes): Byte stream containing the serialized object.
 
         Returns:
             StoreObject: The deserialized object.

@@ -1255,7 +1255,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 If None, uses the full length of the data.
             minp (Optional[int]): Minimum number of observations required.
-            pct (bool): If True, compute percentile rank; otherwise, compute ordinal rank.
+            pct (bool): If True, compute the rank as a percentile.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1350,12 +1350,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
             max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`.
 
                 Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
-            max_error_as_maxdist (bool): Treat maximum error directly as maximum distance if True.
-            max_error_strict (bool): Enforce strict maximum error rules; returns NaN if exceeded.
+            max_error_as_maxdist (bool): Indicates whether `max_error` represents the maximum distance at each point.
+            max_error_strict (bool): If True, any instance of exceeding `max_error` results in a similarity of NaN.
             min_pct_change (float): Minimum percent change applied during rescaling.
-            max_pct_change (float): Maximum percent change applied during rescaling.
-            min_similarity (float): Minimum similarity threshold; if the computed similarity
-                falls below this, returns NaN.
+            max_pct_change (float): Maximum percentage change allowed for a window to remain a search candidate.
+            min_similarity (float): Minimum similarity threshold.
             minp (Optional[int]): Minimum number of observations required.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -4479,7 +4478,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         By default, equal values receive the average rank.
 
         Args:
-            pct (bool): Flag to compute percentile ranks instead of raw rank values.
+            pct (bool): If True, compute the rank as a percentile.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -5619,7 +5618,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             column (Optional[Label]): Column identifier to select specific data.
             trace_names (TraceNames): Names for traces corresponding to data columns.
             x_labels (Optional[Labels]): Labels for the x-axis.
-            return_fig (bool): If True, return the figure; otherwise, return a trace updater.
+            return_fig (bool): If True, return the figure; otherwise, return the trace updater.
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Scatter`.
 
         Returns:
@@ -5703,7 +5702,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             column (Optional[Label]): Column label for plotting.
             trace_names (TraceNames): Names for traces corresponding to data columns.
             x_labels (Optional[Labels]): Labels for the x-axis.
-            return_fig (bool): Determines whether to return the figure.
+            return_fig (bool): If True, return the figure; otherwise, return the trace updater.
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Bar`.
 
         Returns:
@@ -5752,7 +5751,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            return_fig (bool): Determines whether to return the figure.
+            return_fig (bool): If True, return the figure; otherwise, return the trace updater.
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Histogram`.
 
         Returns:
@@ -5812,7 +5811,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            return_fig (bool): Determines whether to return the figure.
+            return_fig (bool): If True, return the figure; otherwise, return the trace updater.
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Box`.
 
         Returns:
@@ -6365,7 +6364,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             scene_name (str): Name for the scene in the figure layout.
             fillna (Optional[Number]): Value to replace NaNs in the data.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-            return_fig (bool): If True, return the figure; otherwise, return the volume object.
+            return_fig (bool): If True, return the figure; otherwise, return the trace updater.
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Volume`.
 
         Returns:

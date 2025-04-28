@@ -374,7 +374,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Args:
             axis (Optional[int]): Axis along which to split the instance.
-            min_size (Optional[int]): Minimum size required for a chunk.
+            min_size (Optional[int]): Minimum number of elements to split.
             n_chunks (Union[None, int, str]): Desired number of chunks.
             chunk_len (Union[None, int, str]): Desired length of each chunk.
             chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable of chunk metadata.

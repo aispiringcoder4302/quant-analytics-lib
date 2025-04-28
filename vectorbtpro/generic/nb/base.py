@@ -1521,7 +1521,7 @@ def rank_1d_nb(arr: tp.Array1d, argsorted: tp.Optional[tp.Array1d] = None, pct: 
         argsorted (Optional[Array1d]): Array of indices representing the sorted order of `arr`.
 
             If not provided, the sorting is computed internally.
-        pct (bool): Flag indicating whether to return the ranks as percentiles.
+        pct (bool): If True, compute the rank as a percentile.
 
     Returns:
         Array1d: A 1-dimensional array containing the computed ranks for each element.
@@ -1584,7 +1584,7 @@ def rank_nb(arr: tp.Array2d, argsorted: tp.Optional[tp.Array2d] = None, pct: boo
         argsorted (Optional[Array2d]): Array of indices for each column representing the sorted order.
 
             If not provided, the sorting is computed internally for each column.
-        pct (bool): Flag indicating whether to return the ranks as percentiles.
+        pct (bool): If True, compute the rank as a percentile.
 
     Returns:
         Array2d: A 2-dimensional array containing the computed ranks for each element.
@@ -1707,7 +1707,7 @@ def value_counts_1d_nb(codes: tp.Array1d, n_uniques: int) -> tp.Array1d:
 
     Args:
         codes (Array1d): One-dimensional array of integer codes.
-        n_uniques (int): Total count of unique values.
+        n_uniques (int): Number of unique values.
 
     Returns:
         Array1d: An array of counts for each unique value.
@@ -1730,7 +1730,7 @@ def value_counts_per_row_nb(codes: tp.Array2d, n_uniques: int) -> tp.Array2d:
 
     Args:
         codes (Array2d): 2-dimensional array where each row contains code values.
-        n_uniques (int): Number of unique value categories.
+        n_uniques (int): Number of unique values.
 
     Returns:
         Array2d: A 2-dimensional array of counts with shape (n_uniques, number of rows).

@@ -1634,10 +1634,10 @@ def get_order_size_nb(
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Relevant context.
-        size (float): Base size value used for order size calculation.
-        size_type (int): Indicator of the size type from `vectorbtpro.portfolio.enums.SizeType`.
-
-            Percent sizes are not supported.
+        size (float): Order size.
+        size_type (int): Type of order size.
+        
+            Percent sizes are not supported. See `vectorbtpro.portfolio.enums.SizeType`.
         val_price (Optional[int]): Optional value price used in the order size resolution.
 
     Returns:
@@ -1674,7 +1674,7 @@ def get_order_value_nb(
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Relevant context.
         size (float): Order size.
-        size_type (int): Size type.
+        size_type (int): Type of order size.
                 
             See `vectorbtpro.portfolio.enums.SizeType`.
         direction (int): Order direction.

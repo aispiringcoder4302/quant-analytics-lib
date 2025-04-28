@@ -2130,7 +2130,7 @@ __pdoc__[
 Contains all fields from `OrderContext` along with additional fields representing the order result and 
 the state prior to execution.
 
-This context is passed to `post_order_func_nb`.
+Passed to `post_order_func_nb`.
 """
 for field in PostOrderContext._fields:
     if field in SimulationContext._fields:
@@ -2239,7 +2239,7 @@ __pdoc__[
 
 It includes all fields from `SegmentContext` along with the current call index.
 
-This context is passed to `flex_order_func_nb`.
+Passed to `flex_order_func_nb`.
 """
 for field in FlexOrderContext._fields:
     if field in SimulationContext._fields:

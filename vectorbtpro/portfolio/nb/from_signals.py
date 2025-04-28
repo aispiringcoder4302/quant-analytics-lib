@@ -346,8 +346,8 @@ def signal_to_size_nb(
         is_long_exit (bool): True to indicate a long exit signal.
         is_short_entry (bool): True to indicate a short entry signal.
         is_short_exit (bool): True to indicate a short exit signal.
-        size (float): Magnitude of the trading signal.
-        size_type (int): Identifier for the type of size specification.
+        size (float): Order size.
+        size_type (int): Type of order size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
         accumulate (int): Accumulation mode flag dictating how orders are aggregated.
@@ -811,12 +811,14 @@ def from_basic_signals_nb(
 
             Provided as a scalar or per group.
         call_seq (Optional[Array2d]): Sequence array for call order.
-        auto_call_seq (bool): Flag to automatically determine call sequence.
+        auto_call_seq (bool): Flag to automatically sort the call sequence.
         ffill_val_price (bool): Flag to forward-fill valuation price.
         update_value (bool): Flag to update portfolio value with each order.
-        save_state (bool): Flag to store simulation state arrays.
-        save_value (bool): Flag to record portfolio value.
-        save_returns (bool): Flag to record portfolio returns.
+        save_state (bool): Flag to record the account state.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
+        save_value (bool): Flag to record the portfolio value.
+        save_returns (bool): Flag to record the portfolio returns.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
@@ -1928,12 +1930,14 @@ def from_signals_nb(
 
             Provided as a scalar or per group.
         call_seq (Optional[Array2d]): Sequence array for call order.
-        auto_call_seq (bool): Flag to automatically determine call sequence.
+        auto_call_seq (bool): Flag to automatically sort the call sequence.
         ffill_val_price (bool): Flag to forward-fill valuation price.
         update_value (bool): Flag to update portfolio value with each order.
-        save_state (bool): Flag to store simulation state arrays.
-        save_value (bool): Flag to record portfolio value.
-        save_returns (bool): Flag to record portfolio returns.
+        save_state (bool): Flag to record the account state.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
+        save_value (bool): Flag to record the portfolio value.
+        save_returns (bool): Flag to record the portfolio returns.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
@@ -4111,9 +4115,11 @@ def init_FSInOutputs_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
-        save_state (bool): Determines if state arrays (position, debt, locked_cash, cash, free_cash) are saved.
-        save_value (bool): Determines if the value array is saved.
-        save_returns (bool): Determines if the returns array is saved.
+        save_state (bool): Flag to record the account state.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
+        save_value (bool): Flag to record the portfolio value.
+        save_returns (bool): Flag to record the portfolio returns.
 
     Returns:
         FSInOutputs: An instance of `vectorbtpro.portfolio.enums.FSInOutputs` with initialized arrays.
@@ -4782,7 +4788,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar or per group.
         call_seq (Optional[Array2d]): Sequence array for call order.
-        auto_call_seq (bool): Flag to automatically determine call sequence.
+        auto_call_seq (bool): Flag to automatically sort the call sequence.
         ffill_val_price (bool): Flag to forward-fill valuation price.
         update_value (bool): Whether to update portfolio value during simulation.
         fill_pos_info (bool): Whether to update position information.
@@ -7590,9 +7596,11 @@ def save_post_segment_func_nb(  # % line.replace("save_post_segment_func_nb", "p
 
     Args:
         c (SignalSegmentContext): Signal segment context.
-        save_state (bool): Flag to save state data.
-        save_value (bool): Flag to save portfolio value.
-        save_returns (bool): Flag to save returns data.
+        save_state (bool): Flag to record the account state.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
+        save_value (bool): Flag to record the portfolio value.
+        save_returns (bool): Flag to record the portfolio returns.
 
     Returns:
         None: The function modifies the context in place.

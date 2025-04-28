@@ -1584,7 +1584,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             map_func_nb (Union[RecordsMapFunc, RecordsMapMetaFunc]): Mapping function applied to each record.
-            *args: Positional arguments `map_func_nb`.
+            *args: Positional arguments for `map_func_nb`.
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
             jitted (JittedOption): Option to control JIT compilation.
 

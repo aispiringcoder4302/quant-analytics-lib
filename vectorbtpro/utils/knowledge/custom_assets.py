@@ -2880,7 +2880,7 @@ class MessagesAsset(VBTAsset):
         Args:
             minimize_metadata (Optional[bool]): Whether to minimize metadata.
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
-            clean_metadata (Optional[bool]): Whether to clean metadata.
+            clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
@@ -2934,7 +2934,7 @@ class MessagesAsset(VBTAsset):
             parent_links_only (Optional[bool]): If True, excludes links from the metadata.
             minimize_metadata (Optional[bool]): Whether to minimize metadata.
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
-            clean_metadata (Optional[bool]): Whether to clean metadata.
+            clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
@@ -2996,7 +2996,7 @@ class MessagesAsset(VBTAsset):
             parent_links_only (Optional[bool]): If True, excludes links from the metadata.
             minimize_metadata (Optional[bool]): Whether to minimize metadata.
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
-            clean_metadata (Optional[bool]): Whether to clean metadata.
+            clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
@@ -3058,7 +3058,7 @@ class MessagesAsset(VBTAsset):
             parent_links_only (Optional[bool]): If True, excludes links from the metadata.
             minimize_metadata (Optional[bool]): Whether to minimize metadata.
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
-            clean_metadata (Optional[bool]): Whether to clean metadata.
+            clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.

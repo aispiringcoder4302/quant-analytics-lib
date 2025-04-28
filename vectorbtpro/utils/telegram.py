@@ -359,7 +359,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 kind (str): Type of message to send.
-                chat_id (int): Target chat ID.
+                chat_id (int): Unique identifier of the target chat.
                 *args: Positional arguments for `TelegramBot.send`.
                 log_msg (Optional[str]): Message description for logging; if not provided,
                     defaults to the value of `kind`.
@@ -861,7 +861,7 @@ else:
 
             Args:
                 kind (str): Type of message to send (e.g., "message", "animation").
-                chat_id (int): Target chat ID.
+                chat_id (int): Unique identifier of the target chat.
                 *args: Positional arguments for sending the message.
                 log_msg (Optional[str]): Log message for tracking the message.
 
@@ -903,7 +903,7 @@ else:
             """Send a text message to a chat.
 
             Args:
-                chat_id (int): Target chat ID.
+                chat_id (int): Unique identifier of the target chat.
                 text (str): Text message to send.
                 *args: Positional arguments for `TelegramBot.send`.
                 **kwargs: Keyword arguments for `TelegramBot.send`.
@@ -934,7 +934,7 @@ else:
             """Send a GIPHY animation generated from text to a chat.
 
             Args:
-                chat_id (int): Target chat ID.
+                chat_id (int): Unique identifier of the target chat.
                 text (str): Text to convert into a GIPHY URL.
                 *args: Positional arguments for `TelegramBot.send`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
@@ -1093,7 +1093,7 @@ else:
 
             Args:
                 update (Update): Update that caused the error.
-                context (ContextTypes.DEFAULT_TYPE): Context associated with the error.
+                context (ContextTypes.DEFAULT_TYPE): Context associated with the update.
                 *args: Additional positional arguments.
                 **kwargs: Additional keyword arguments.
 

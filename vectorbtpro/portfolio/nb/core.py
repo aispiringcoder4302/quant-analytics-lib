@@ -192,7 +192,7 @@ def long_buy_nb(
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Whether to allow partial order fulfillment.
-        percent (float): Fraction of free cash to consider for the order.
+        percent (float): Scaling factor to restrict the allowed order size.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
@@ -382,7 +382,7 @@ def long_sell_nb(
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Whether to allow partial order fulfillment.
-        percent (float): Percentage factor to adjust the order size relative to the current position.
+        percent (float): Scaling factor to restrict the allowed order size.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
@@ -522,12 +522,12 @@ def short_sell_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
-        leverage (float): Leverage multiplier to adjust the cash limit.
+        leverage (float): Leverage factor.
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Whether to allow partial order fulfillment.
-        percent (float): Fraction of free cash to allocate for the order.
+        percent (float): Scaling factor to restrict the allowed order size.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
@@ -901,7 +901,7 @@ def buy_nb(
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Whether to allow partial order fulfillment.
-        percent (float): Percentage parameter used in order calculations, may be NaN.
+        percent (float): Scaling factor to restrict the allowed order size.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
@@ -1106,7 +1106,7 @@ def sell_nb(
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (bool): Whether to allow partial order fulfillment.
-        percent (float): Order size as a percentage.
+        percent (float): Scaling factor to restrict the allowed order size.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
@@ -1299,12 +1299,14 @@ def resolve_size_nb(
     The percentage is set only when the `SizeType.Percent(100)` option is used.
 
     Args:
-        size (float): Input size value.
-        size_type (int): Indicator of the size specification type.
+        size (float): Order size.
+        size_type (int): Type of order size.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
         position (float): Current asset position.
         val_price (float): Valuation price of the asset.
         value (float): Total portfolio value.
-        target_size_type (int): Desired size type for the output.
+        target_size_type (int): Requested type of order size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
         as_requirement (bool): Whether to treat the size as a requirement adjustment.
@@ -1400,7 +1402,7 @@ def approx_order_value_nb(
         exec_state (ExecState): Execution state containing portfolio details such as position,
             value, debt, locked cash, and valuation price.
         size (float): Order size.
-        size_type (int): Indicator specifying the type of the order size.
+        size_type (int): Type of order size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
         direction (int): Order direction.
@@ -1963,7 +1965,7 @@ def order_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
-        leverage (float): Leverage multiplier.
+        leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
             See `vectorbtpro.portfolio.enums.LeverageMode`.
@@ -2026,7 +2028,7 @@ def close_position_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
-        leverage (float): Leverage multiplier.
+        leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
             See `vectorbtpro.portfolio.enums.LeverageMode`.
@@ -2239,7 +2241,7 @@ def prepare_last_pos_info_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         init_position (FlexArray1d): Array of initial positions.
         init_price (FlexArray1d): Array of initial position prices.
-        fill_pos_info (bool): If True, fill the position info with initial data.
+        fill_pos_info (bool): Whether to update position information.
 
     Returns:
         RecordArray: Array of last position information records.
@@ -2753,7 +2755,7 @@ def check_limit_expired_nb(
         i (int): Current row index.
         tif (int): Time-in-force duration; use -1 if undefined.
         expiry (int): Explicit expiry time; use -1 if undefined.
-        time_delta_format (int): Format for calculating time differences.
+        time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         index (Optional[Array1d]): Index in nanosecond format.
@@ -2817,7 +2819,7 @@ def resolve_limit_price_nb(
     Args:
         init_price (float): Initial reference price.
         limit_delta (float): Delta value used to adjust the limit price.
-        delta_format (int): Delta format.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Indicates whether the order should hit below the reference price.
@@ -2892,8 +2894,8 @@ def check_limit_hit_nb(
         direction (int): Order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        limit_delta (float): Delta adjustment for computing the limit price.
-        delta_format (int): Delta format.
+        limit_delta (float): Delta value used to adjust the limit price.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         limit_reverse (bool): Flag to reverse the limit condition.
@@ -3001,8 +3003,8 @@ def resolve_stop_price_nb(
 
     Args:
         init_price (float): Initial reference price.
-        stop (float): Stop adjustment value.
-        delta_format (int): Delta format.
+        stop (float): Stop value.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Indicates whether the stop should be applied below the initial price.
@@ -3058,8 +3060,8 @@ def check_stop_hit_nb(
         close (float): Close price.
         is_position_long (bool): Indicates whether the position is long.
         init_price (float): Initial price used for stop price calculation.
-        stop (float): Stop parameter value.
-        delta_format (int): Delta format.
+        stop (float): Stop value.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Direction flag for stop hit determination.
@@ -3109,7 +3111,7 @@ def check_td_stop_hit_nb(
         init_idx (int): Row index of the initial event.
         i (int): Current row index.
         stop (int): Stop offset; -1 indicates no stop.
-        time_delta_format (int): Format for time delta comparisons (e.g., rows or index).
+        time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         index (Optional[Array1d]): Index in nanosecond format.
@@ -3164,7 +3166,7 @@ def check_dt_stop_hit_nb(
     Args:
         i (int): Current row index.
         stop (int): Stop threshold offset; -1 indicates no stop.
-        time_delta_format (int): Format for time delta calculations (rows or index).
+        time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         index (Optional[Array1d]): Index in nanosecond format.
@@ -3221,7 +3223,7 @@ def check_tsl_th_hit_nb(
         init_price (float): Initial price used for threshold computation.
         peak_price (float): Peak price reached (maximum for long, minimum for short).
         threshold (float): TSL threshold value.
-        delta_format (int): Delta format.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
 
@@ -3313,10 +3315,10 @@ def get_stop_ladder_exit_size_nb(
         init_price (float): Initial price used to resolve stop levels.
         init_position (float): Initial position size.
         position_now (float): Current position size.
-        ladder (int): Stop ladder mode; must be static.
+        ladder (int): Stop ladder mode.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
-        delta_format (int): Delta format.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): Determines the direction for stop price resolution.
@@ -3405,7 +3407,7 @@ def get_time_stop_ladder_exit_size_nb(
         ladder (int): Stop ladder mode.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
-        time_delta_format (int): Time delta format.
+        time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         index (Optional[Array1d]): Array of index values when using index-based time delta.
@@ -3538,8 +3540,8 @@ def set_limit_info_nb(
         creation_idx (Optional[int]): Creation row index.
         init_idx (Optional[int]): Initial row index for the order.
         init_price (float): Initial price.
-        init_size (float): Initial size for the order.
-        init_size_type (int): Indicator for size type.
+        init_size (float): Initial order size.
+        init_size_type (int): Type of initial order size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
         init_direction (int): Order direction.
@@ -3549,12 +3551,12 @@ def set_limit_info_nb(
 
             See `vectorbtpro.portfolio.enums.StopType`.
         delta (float): Delta value associated with the order.
-        delta_format (int): Delta format.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         tif (int): Time in force parameter.
         expiry (int): Expiry index.
-        time_delta_format (int): Time delta format.
+        time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         reverse (bool): Flag indicating if the order is reversed.
@@ -3637,12 +3639,12 @@ def set_sl_info_nb(
         init_idx (int): Initial row index for the SL order.
         init_price (float): Initial price for the SL order.
         init_position (float): Initial position size.
-        stop (float): Stop price.
-        exit_price (float): Indicator for the exit price.
+        stop (float): Stop value.
+        exit_price (float): Exit price.
 
             See `vectorbtpro.portfolio.enums.StopExitPrice`.
-        exit_size (float): Exit position size.
-        exit_size_type (int): Type indicator for the exit size.
+        exit_size (float): Exit size.
+        exit_size_type (int): Type of exit size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
         exit_type (int): Exit type indicator.
@@ -3651,8 +3653,8 @@ def set_sl_info_nb(
         order_type (int): Order type for the SL order.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
-        limit_delta (float): Delta value used for limit calculations.
-        delta_format (int): Delta format.
+        limit_delta (float): Delta value used to adjust the limit price.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         ladder (int): Stop ladder mode.
@@ -3743,13 +3745,13 @@ def set_tsl_info_nb(
         peak_price (Optional[float]): Peak price.
 
             Defaults to `init_price` if not provided.
-        stop (float): Stop loss value.
+        stop (float): Stop value.
         th (float): Trailing threshold value.
-        exit_price (float): Exit price mode.
+        exit_price (float): Exit price.
 
             See `vectorbtpro.portfolio.enums.StopExitPrice`.
         exit_size (float): Exit size.
-        exit_size_type (int): Exit size type.
+        exit_size_type (int): Type of exit size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
         exit_type (int): Exit order type.
@@ -3758,11 +3760,11 @@ def set_tsl_info_nb(
         order_type (int): Order execution type.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
-        limit_delta (float): Limit delta value.
-        delta_format (int): Delta format.
+        limit_delta (float): Delta value used to adjust the limit price.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
-        ladder (int): Ladder mode indicator.
+        ladder (int): Stop ladder mode.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
         step (int): Current step index in the ladder.
@@ -3847,12 +3849,12 @@ def set_tp_info_nb(
         init_idx (int): Initialization row index.
         init_price (float): Initial price.
         init_position (float): Initial position size.
-        stop (float): Stop loss value.
-        exit_price (float): Exit price mode.
+        stop (float): Stop value.
+        exit_price (float): Exit price.
 
             See `vectorbtpro.portfolio.enums.StopExitPrice`.
         exit_size (float): Exit size.
-        exit_size_type (int): Exit size type.
+        exit_size_type (int): Type of exit size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
         exit_type (int): Exit order type.
@@ -3861,11 +3863,11 @@ def set_tp_info_nb(
         order_type (int): Order execution type.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
-        limit_delta (float): Limit delta value.
-        delta_format (int): Delta format.
+        limit_delta (float): Delta value used to adjust the limit price.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
-        ladder (int): Ladder mode indicator.
+        ladder (int): Stop ladder mode.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
         step (int): Current step index in the ladder.
@@ -3944,11 +3946,11 @@ def set_time_info_nb(
         init_idx (int): Initialization row index.
         init_position (float): Initial position size.
         stop (int): Stop indicator or time.
-        exit_price (float): Exit price mode.
+        exit_price (float): Exit price.
 
             See `vectorbtpro.portfolio.enums.StopExitPrice`.
         exit_size (float): Exit size.
-        exit_size_type (int): Exit size type.
+        exit_size_type (int): Type of exit size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
         exit_type (int): Exit order type.
@@ -3957,14 +3959,14 @@ def set_time_info_nb(
         order_type (int): Order execution type.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
-        limit_delta (float): Limit delta value.
-        delta_format (int): Delta format.
+        limit_delta (float): Delta value used to adjust the limit price.
+        delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
-        time_delta_format (int): Time delta format.
+        time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
-        ladder (int): Ladder mode indicator.
+        ladder (int): Stop ladder mode.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
         step (int): Current step index in the ladder.

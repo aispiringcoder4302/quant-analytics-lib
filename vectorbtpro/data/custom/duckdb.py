@@ -113,8 +113,7 @@ class DuckDBData(DBData):
         """Resolve and return a DuckDB connection based on provided parameters.
 
         Args:
-            connection (Union[None, str, PathLike, DuckDBPyConnection]): Connection instance,
-                file path, or connection string.
+            connection (Union[None, str, PathLike, DuckDBPyConnection]): Database connection string or instance.
 
                 If None, a default connection is used.
             read_only (bool): Flag indicating whether the connection should be opened in read-only mode.
@@ -183,9 +182,8 @@ class DuckDBData(DBData):
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Flag indicating whether to sort the resulting catalog names.
             incl_system (bool): Flag indicating whether to include system catalogs.
-            connection (Union[None, str, DuckDBPyConnection]): Connection instance,
-                file path, or connection string.
-            connection_config (KwargsLike): Keyword arguments for connection configuration.
+            connection (Union[None, str, DuckDBPyConnection]): Database connection string or instance.
+            connection_config (KwargsLike): Configuration parameters for creating a database connection.
 
         Returns:
             List[str]: A list of catalog names.
@@ -240,9 +238,8 @@ class DuckDBData(DBData):
 
                 If provided, schemas are not prefixed.
             incl_system (bool): Flag indicating whether to include system schemas.
-            connection (Union[None, str, DuckDBPyConnection]): Connection instance,
-                file path, or connection string.
-            connection_config (KwargsLike): Keyword arguments for connection configuration.
+            connection (Union[None, str, DuckDBPyConnection]): Database connection string or instance.
+            connection_config (KwargsLike): Configuration parameters for creating a database connection.
 
         Returns:
             List[str]: A list of schema names.
@@ -299,9 +296,8 @@ class DuckDBData(DBData):
         """Return the current schema in use by the DuckDB connection.
 
         Args:
-            connection (Union[None, str, DuckDBPyConnection]): Connection instance,
-                file path, or connection string.
-            connection_config (KwargsLike): Keyword arguments for connection configuration.
+            connection (Union[None, str, DuckDBPyConnection]): Database connection string or instance.
+            connection_config (KwargsLike): Configuration parameters for creating a database connection.
 
         Returns:
             str: The current schema name.
@@ -358,8 +354,8 @@ class DuckDBData(DBData):
             incl_system (bool): Include system tables and views.
             incl_temporary (bool): Include temporary tables.
             incl_views (bool): Include view objects.
-            connection (Union[None, str, DuckDBPyConnection]): Database connection identifier or object.
-            connection_config (KwargsLike): Keyword arguments for database connection configuration.
+            connection (Union[None, str, DuckDBPyConnection]): Database connection string or instance.
+            connection_config (KwargsLike): Configuration parameters for creating a database connection.
 
         Returns:
             List[str]: List of table names, optionally prefixed with catalog and schema names.
@@ -547,7 +543,7 @@ class DuckDBData(DBData):
                 See `DuckDBData.list_tables`.
             read_path (Optional[PathLike]): File or directory path for reading data.
             read_format (Optional[str]): Format to use when reading data.
-            connection (Union[None, str, DuckDBPyConnection]): Database connection instance or identifier.
+            connection (Union[None, str, DuckDBPyConnection]): Database connection string or instance.
             connection_config: Keyword arguments for configuring the connection.
             share_connection (Optional[bool]): If True, uses a shared connection among keys.
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.db.DBData.pull`.
@@ -755,10 +751,10 @@ class DuckDBData(DBData):
             query (Union[None, str, DuckDBPyRelation]): Custom SQL query.
 
                 Cannot be used together with `catalog`, `schema`, or `table`.
-            connection (Union[None, str, DuckDBPyConnection]): Connection reference.
+            connection (Union[None, str, DuckDBPyConnection]): Database connection string or instance.
 
                 See `DuckDBData.resolve_connection`.
-            connection_config (KwargsLike): Additional configuration for the connection;
+            connection_config (KwargsLike): Configuration parameters for creating a database connection.
 
                 See `DuckDBData.resolve_connection`.
             start (Optional[Any]): Start value for filtering.

@@ -1183,13 +1183,13 @@ class Parameterizer(Configured):
             See `vectorbtpro.base.indexes.clean_index`.
         selection (Optional[Selection]): Template or criteria to select specific parameter indices.
         forward_kwargs_as (KwargsLike): Mapping to forward keyword arguments.
-        mono_min_size (Optional[int]): Minimum size for mono-chunks used by 
+        mono_min_size (Optional[int]): Minimum number of parameter values to split, as defined in 
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        mono_n_chunks (Optional[Union[str, int]]): Specification for the number of mono-chunks as defined in 
+        mono_n_chunks (Optional[Union[str, int]]): Specification for the number of mono-chunks, as defined in 
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        mono_chunk_len (Optional[Union[str, int]]): Specification for the length of each mono-chunk as defined in 
+        mono_chunk_len (Optional[Union[str, int]]): Specification for the length of each mono-chunk, as defined in 
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        mono_chunk_meta (Optional[Iterable[ChunkMeta]]): Custom metadata for mono-chunks as defined in 
+        mono_chunk_meta (Optional[Iterable[ChunkMeta]]): Custom metadata for mono-chunks, as defined in 
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
         mono_reduce (Union[None, bool, Kwargs]): Flag or settings for reducing mono-chunk results.
         mono_merge_func (MaybeDict[MergeFuncLike]): Merging function or a dictionary of such to 
@@ -1475,7 +1475,7 @@ class Parameterizer(Configured):
 
     @property
     def mono_min_size(self) -> tp.Optional[int]:
-        """Minimum size for mono-chunks used by `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        """Minimum number of parameter values to split, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             Optional[int]: The minimum allowed size for mono-chunks.
@@ -1484,7 +1484,7 @@ class Parameterizer(Configured):
 
     @property
     def mono_n_chunks(self) -> tp.Optional[tp.Union[str, int]]:
-        """Specification for the number of mono-chunks as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        """Specification for the number of mono-chunks, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             Optional[Union[str, int]]: The number or method indicator for determining the number of chunks.
@@ -1493,7 +1493,7 @@ class Parameterizer(Configured):
 
     @property
     def mono_chunk_len(self) -> tp.Optional[tp.Union[str, int]]:
-        """Specification for the length of each mono-chunk as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        """Specification for the length of each mono-chunk, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             Optional[Union[str, int]]: The length or method indicator for the size of each mono-chunk.
@@ -1502,7 +1502,7 @@ class Parameterizer(Configured):
 
     @property
     def mono_chunk_meta(self) -> tp.Optional[tp.Iterable[tp.ChunkMeta]]:
-        """Custom metadata for mono-chunks as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        """Custom metadata for mono-chunks, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             Optional[Iterable[ChunkMeta]]: The metadata information for each mono-chunk.
@@ -1665,7 +1665,7 @@ class Parameterizer(Configured):
         Processes function annotations to correctly parse and inject parameter values.
 
         Args:
-            flat_ann_args (FlatAnnArgs): Dictionary of flattened annotated arguments.
+            flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:

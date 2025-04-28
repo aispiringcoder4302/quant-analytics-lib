@@ -301,7 +301,7 @@ class Bar(TraceType, TraceUpdater):
     """Class for creating a bar plot.
 
     Args:
-        data (Optional[ArrayLike]): Data to create bar traces.
+        data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
             Must be convertible to a NumPy array and have shape (`x_labels`, `trace_names`).
         trace_names (TraceNames): Names for traces corresponding to data columns.
@@ -414,7 +414,7 @@ class Scatter(TraceType, TraceUpdater):
     """Class for creating a scatter plot.
 
     Args:
-        data (Optional[ArrayLike]): Data values convertible to a NumPy array.
+        data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
             Must have shape corresponding to (`x_labels`, `trace_names`).
         trace_names (TraceNames): Names for traces corresponding to data columns.
@@ -773,7 +773,7 @@ class Box(TraceType, TraceUpdater):
     For additional keyword arguments for trace customization, see `Histogram`.
 
     Args:
-        data (Optional[ArrayLike]): Data for the box plot, which is reshaped to a 2D array if provided.
+        data (Optional[ArrayLike]): Data convertible to a NumPy array.
         trace_names (TraceNames): Names for traces corresponding to data columns.
 
             If provided, their number should match the number of data columns.
@@ -973,7 +973,7 @@ class Heatmap(TraceType, TraceUpdater):
     """Class for creating a heatmap plot.
 
     Args:
-        data (Optional[ArrayLike]): Data that can be converted to a NumPy array.
+        data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
             Must have shape (`y_labels`, `x_labels`).
         x_labels (Optional[ArrayLike]): Labels for the X-axis corresponding to dataframe columns.
@@ -1108,7 +1108,7 @@ class Volume(TraceType, TraceUpdater):
     """Class for creating a volume plot.
 
     Args:
-        data (Optional[ArrayLike]): Data that can be converted to a NumPy array.
+        data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
             Must be a 3-dimensional array.
         x_labels (Optional[ArrayLike]): Labels for the X-axis.

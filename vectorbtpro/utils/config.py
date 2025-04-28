@@ -1387,7 +1387,7 @@ class HasSettings(Base):
 
         Args:
             path_id (Optional[Hashable]): Identifier for the settings path.
-            inherit (bool): Whether to include settings paths from superclasses.
+            inherit (bool): Whether to include settings from superclasses.
             super_first (bool): If True, resolve superclass settings first.
             unique_only (bool): Whether to return only unique settings paths.
 
@@ -1630,7 +1630,7 @@ class HasSettings(Base):
             key (PathLikeKey): Key identifying the setting.
             default (Any): Value to return if the setting is not found.
             path_id (Optional[Hashable]): Identifier for the settings path.
-            inherit (bool): Whether to include superclasses in the lookup.
+            inherit (bool): Whether to include settings from superclasses.
             sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
             sub_path_only (bool): Whether to consider only the sub-path.
             merge (bool): Whether to merge settings from multiple sources.
@@ -1727,7 +1727,7 @@ class HasSettings(Base):
         Args:
             key (PathLikeKey): Key identifying the setting.
             path_id (Optional[Hashable]): Identifier for the settings path.
-            inherit (bool): Whether to include superclasses in the lookup.
+            inherit (bool): Whether to include settings from superclasses.
             sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
             sub_path_only (bool): Whether to consider only the sub-path.
 

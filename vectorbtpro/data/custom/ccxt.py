@@ -122,7 +122,7 @@ class CCXTData(RemoteData):
 
         Args:
             *args: Positional arguments for `CCXTData.get_custom_setting`.
-            exchange_name (Optional[str]): Name of the exchange used to specify the sub-path.
+            exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
             **kwargs: Keyword arguments for `CCXTData.get_custom_setting`.
 
         Returns:
@@ -158,7 +158,7 @@ class CCXTData(RemoteData):
 
         Args:
             *args: Positional arguments for `CCXTData.resolve_custom_setting`.
-            exchange_name (Optional[str]): Name of the exchange used to define the sub-path.
+            exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
             **kwargs: Keyword arguments for `CCXTData.resolve_custom_setting`.
 
         Returns:
@@ -176,7 +176,7 @@ class CCXTData(RemoteData):
 
         Args:
             *args: Positional arguments for `CCXTData.set_custom_settings`.
-            exchange_name (Optional[str]): Name of the exchange used to determine the sub-path.
+            exchange_name (Optional[str]): Name of the exchange used to form the sub-path.
             **kwargs: Keyword arguments for `CCXTData.set_custom_settings`.
 
         Returns:

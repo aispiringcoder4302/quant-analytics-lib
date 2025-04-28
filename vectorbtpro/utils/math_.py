@@ -170,7 +170,7 @@ def is_addition_zero_nb(
     Args:
         a (float): First operand.
         b (float): Second operand.
-        use_tol (bool): Flag to enable tolerance-based approximation.
+        use_tol (bool): Flag to enable tolerance-based comparison.
         rel_tol (float): Relative tolerance used for approximation.
         abs_tol (float): Absolute tolerance used for approximation.
 
@@ -197,7 +197,7 @@ def add_nb(
     Args:
         a (float): First addend.
         b (float): Second addend.
-        use_tol (bool): Flag to enable tolerance-based operation.
+        use_tol (bool): Flag to enable tolerance-based comparison.
         rel_tol (float): Relative tolerance used for approximation.
         abs_tol (float): Absolute tolerance used for approximation.
 

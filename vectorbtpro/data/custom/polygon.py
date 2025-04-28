@@ -106,7 +106,7 @@ class PolygonData(RemoteData):
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
             client (Optional[PolygonClient]): Existing client instance for API interaction.
-            client_config (dict-like): Parameters for initializing a client if one is not provided.
+            client_config (KwargsLike): Configuration parameters for creating a client.
             **list_tickers_kwargs: Keyword arguments for `polygon.RESTClient.list_tickers`.
 
         Returns:
@@ -162,7 +162,7 @@ class PolygonData(RemoteData):
         cls,
         symbol: str,
         client: tp.Optional[PolygonClientT] = None,
-        client_config: tp.DictLike = None,
+        client_config: tp.KwargsLike = None,
         start: tp.Optional[tp.DatetimeLike] = None,
         end: tp.Optional[tp.DatetimeLike] = None,
         timeframe: tp.Optional[str] = None,
@@ -189,7 +189,7 @@ class PolygonData(RemoteData):
             client (Optional[PolygonClient]): Polygon API client instance.
 
                 See `PolygonData.resolve_client`.
-            client_config (DictLike): Configuration for the Polygon client.
+            client_config (KwargsLike): Configuration parameters for creating a client.
 
                 See `PolygonData.resolve_client`.
             start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").

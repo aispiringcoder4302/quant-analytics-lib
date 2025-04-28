@@ -6401,7 +6401,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             connection (Union[None, str, DuckDBPyConnection, feature_dict, symbol_dict, CustomTemplate]):
-                A DuckDB connection or connection string.
+                Database connection string or instance.
 
                 If None or a string, a connection is resolved via
                 `vectorbtpro.data.custom.duckdb.DuckDBData.resolve_connection`.
@@ -6442,7 +6442,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Action to take if the target table already exists.
 
                 Options are "fail", "replace", or "append".
-            connection_config (KwargsLike): Keyword arguments for connection configuration.
+            connection_config (KwargsLike): Configuration parameters for creating a database connection.
             check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata including all processed arguments

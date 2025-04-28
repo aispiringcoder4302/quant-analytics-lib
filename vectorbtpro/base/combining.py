@@ -285,7 +285,7 @@ def apply_and_concat(
         apply_func (Callable): Function to be executed for each iteration.
         *args: Positional arguments for `apply_func`.
         n_outputs (Optional[int]): Number of arrays returned by each function call.
-        jitted_loop (bool): If True, use a JIT-compiled loop for execution.
+        jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop.
         jitted_warmup (bool): If True, perform a warm-up call for the JIT-compiled function.
         execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
@@ -497,7 +497,7 @@ def combine_multiple(
         objs (Sequence): Sequence of objects to combine.
         combine_func (Callable): Function to combine two objects.
         *args: Positional arguments for `combine_func`.
-        jitted_loop (bool): Flag indicating whether to use the Numba JIT-compiled version.
+        jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop.
         **kwargs: Keyword arguments for `combine_func`.
 
     Returns:

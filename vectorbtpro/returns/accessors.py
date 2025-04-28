@@ -1664,7 +1664,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            required_return (Optional[float]): Required return threshold.
+            required_return (Optional[float]): Required return threshold used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -1729,7 +1729,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            required_return (Optional[float]): Required return threshold.
+            required_return (Optional[float]): Required return threshold used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -2086,7 +2086,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Computes the downside risk of the returns relative to a specified required return.
 
         Args:
-            required_return (Optional[float]): Minimum required return threshold for downside risk.
+            required_return (Optional[float]): Required return threshold used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -2144,7 +2144,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            required_return (Optional[float]): Required return threshold; subtracted from returns.
+            required_return (Optional[float]): Required return threshold used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -2198,7 +2198,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute sortino ratio.
 
         Args:
-            required_return (Optional[float]): Required return threshold.
+            required_return (Optional[float]): Required return threshold used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -2256,7 +2256,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             minp (Optional[int]): Minimum number of observations required.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            required_return (Optional[float]): Required return threshold; subtracted from returns.
+            required_return (Optional[float]): Required return threshold used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -4051,7 +4051,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot` for the main plot.
             bm_kwargs (KwargsLike): Keyword arguments for
                 `vectorbtpro.generic.accessors.GenericSRAccessor.plot` for the benchmark plot.
-            pct_scale (bool): Use percentage scale for the y-axis.
+            pct_scale (bool): Flag to display the y-axis on a percentage scale.
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.

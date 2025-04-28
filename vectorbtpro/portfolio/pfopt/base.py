@@ -2290,7 +2290,7 @@ class PortfolioOptimizer(Analyzable):
             group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]):
                 Configuration(s) for allocation groups.
             pre_group_func (Optional[Callable]): Function applied before processing each group.
-            jitted_loop (bool): Indicates whether to use a Numba-compiled loop for iterating over allocation groups.
+            jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop over allocation groups.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3354,7 +3354,7 @@ class PortfolioOptimizer(Analyzable):
             pre_group_func (Optional[Callable]): Function to preprocess each group configuration.
             splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
             eval_id (Optional[Hashable]): Evaluation identifier.
-            jitted_loop (bool): Indicates whether to use a Numba-compiled loop for iterating over optimization groups.
+            jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop over optimization groups.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
