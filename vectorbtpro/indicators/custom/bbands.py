@@ -86,7 +86,7 @@ class _BBANDS(BBANDS):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         upper_trace_kwargs: tp.KwargsLike = None,
@@ -102,7 +102,7 @@ class _BBANDS(BBANDS):
         and optionally `BBANDS.close`.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Flag indicating whether to include `BBANDS.close` in the plot.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `BBANDS.close`.
             upper_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `BBANDS.upper`.
@@ -132,7 +132,7 @@ class _BBANDS(BBANDS):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

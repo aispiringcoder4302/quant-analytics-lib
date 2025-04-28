@@ -3101,7 +3101,7 @@ def get_hurst_nb(
         min_chunk (int): Minimum chunk size for RS and DMA methods.
         max_chunk (int): Maximum chunk size for RS and DMA methods.
         num_chunks (int): Number of chunks for RS and DMA methods.
-        stabilize (bool): If True, applies stabilization during computation.
+        stabilize (bool): Flag to enable stabilization in the polynomial fit.
 
     Returns:
         float: Estimated Hurst exponent.
@@ -3150,7 +3150,7 @@ def rolling_hurst_1d_nb(
         max_chunk (int): Maximum chunk size for RS and DMA methods.
         num_chunks (int): Number of chunks for RS and DMA methods.
         minp (Optional[int]): Minimum number of observations required.
-        stabilize (bool): If True, applies stabilization during computation.
+        stabilize (bool): Flag to enable stabilization in the polynomial fit.
 
     Returns:
         Array1d: Array of rolling Hurst exponent values.
@@ -3240,7 +3240,7 @@ def rolling_hurst_nb(
         max_chunk (int): Maximum chunk size for RS and DMA methods.
         num_chunks (int): Number of chunks for RS and DMA methods.
         minp (Optional[int]): Minimum number of observations required.
-        stabilize (bool): If True, applies stabilization during computation.
+        stabilize (bool): Flag to enable stabilization in the polynomial fit.
 
     Returns:
         Array2d: Two-dimensional array of rolling Hurst exponent values for each column.

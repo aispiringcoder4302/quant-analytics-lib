@@ -60,7 +60,7 @@ class RandomOHLCData(SyntheticData):
         """Generate data for a symbol.
 
         Args:
-            symbol (hashable): Unique identifier for the symbol.
+            symbol (Symbol): Symbol identifier.
             index (Index): Pandas index representing the time stamps.
             n_ticks (Optional[ArrayLike]): Number of ticks per bar.
 

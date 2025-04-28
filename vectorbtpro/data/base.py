@@ -167,7 +167,7 @@ class BaseDataMixin(Base):
         Tuples are processed recursively.
 
         Args:
-            key (Key): Key to normalize.
+            key (Key): Feature or symbol identifier.
 
         Returns:
             Key: The normalized key.
@@ -272,7 +272,7 @@ class BaseDataMixin(Base):
         """Select one or more features using label(s).
 
         Args:
-            features (MaybeFeatures): Feature or features to select.
+            features (MaybeFeatures): Feature or a list of features.
             **kwargs: Keyword arguments for `BaseDataMixin.select_feature_idxs`.
 
         Returns:
@@ -288,7 +288,7 @@ class BaseDataMixin(Base):
         """Select one or more symbols using label(s).
 
         Args:
-            symbols (MaybeSymbols): Symbol or symbols to select.
+            symbols (MaybeSymbols): Symbol or a list of symbols.
             **kwargs: Keyword arguments for `BaseDataMixin.select_symbol_idxs`.
 
         Returns:
@@ -311,10 +311,10 @@ class BaseDataMixin(Base):
         """Retrieve data for specified features and symbols.
 
         Args:
-            features (Optional[MaybeFeatures]): Feature(s) to retrieve.
-            symbols (Optional[MaybeSymbols]): Symbol(s) to retrieve.
-            feature (Optional[Feature]): Single feature to retrieve.
-            symbol (Optional[Symbol]): Single symbol to retrieve.
+            features (Optional[MaybeFeatures]): Feature identifier(s).
+            symbols (Optional[MaybeSymbols]): Symbol identifier(s).
+            feature (Optional[Feature]): Feature identifier.
+            symbol (Optional[Symbol]): Symbol identifier.
             **kwargs: Keyword arguments for data retrieval.
 
         Returns:
@@ -761,10 +761,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         returned_kwargs (Union[None, feature_dict, symbol_dict]): Keyword arguments returned from data fetching.
         last_index (Union[None, feature_dict, symbol_dict]): Information on the last index.
         delisted (Union[None, feature_dict, symbol_dict]): Information regarding delisted items.
-        tz_localize (Union[None, bool, TimezoneLike]): Flag or parameter for time zone localization.
-        tz_convert (Union[None, bool, TimezoneLike]): Flag or parameter for time zone conversion.
-        missing_index (Optional[str]): Identifier for missing index scenarios.
-        missing_columns (Optional[str]): Identifier for missing columns scenarios.
+        tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
+        tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+        missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
+
+            See `Data.align_index`.
+        missing_columns (Optional[str]): Specifies how to handle missing columns when aligning data.
+
+            See `Data.align_columns`.
         **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
 
     !!! info
@@ -1663,12 +1667,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            apply_group_by (bool): Whether to apply grouping during iteration.
+            apply_group_by (bool): If True, applies the grouping to both iteration and the final output.
+            
+                If False, `group_by` is used solely as an iteration instruction.
 
                 !!! note
                     Grouping is not supported when iterating over keys.
             keep_2d (bool): Whether to retain a two-dimensional structure in the output.
-            key_as_index (bool): Whether to return the key as an index.
+            key_as_index (bool): Whether to return the yielded key as an index.
 
         Returns:
             Items: An iterator yielding pairs of key and corresponding `Data` subsets.
@@ -1951,15 +1957,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             return None
         return self.features[feature_idx]
 
-    def resolve_symbol(self, symbol: tp.Feature, raise_error: bool = False) -> tp.Optional[tp.Feature]:
+    def resolve_symbol(self, symbol: tp.Symbol, raise_error: bool = False) -> tp.Optional[tp.Symbol]:
         """Return the symbol from the instance that matches the provided symbol.
 
         Args:
-            symbol (Feature): Symbol identifier to resolve.
+            symbol (Symbol): Symbol identifier.
             raise_error (bool): Whether to raise an error if the symbol is not found.
 
         Returns:
-            Optional[Feature]: The matching symbol if found; otherwise, None.
+            Optional[Symbol]: The matching symbol if found; otherwise, None.
         """
         symbol_idx = self.get_symbol_idx(symbol, raise_error=raise_error)
         if symbol_idx == -1:
@@ -1973,7 +1979,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         otherwise, it is resolved as a symbol.
 
         Args:
-            key (Key): Key identifier to resolve.
+            key (Key): Feature or symbol identifier.
             raise_error (bool): Whether to raise an error if the key is not found.
 
         Returns:
@@ -1990,7 +1996,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         otherwise, it is resolved as a feature.
 
         Args:
-            column (Column): Column identifier to resolve.
+            column (Column): Column identifier.
             raise_error (bool): Whether to raise an error if the column is not found.
 
         Returns:
@@ -2007,7 +2013,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         otherwise, a list of features is returned.
 
         Args:
-            features (MaybeFeatures): Feature or list of features to resolve.
+            features (MaybeFeatures): Feature or a list of features.
             raise_error (bool): Whether to raise an error if a feature is not found.
 
         Returns:
@@ -2029,7 +2035,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Return the symbol(s) from the instance that match the provided input.
 
         Args:
-            symbols (MaybeSymbols): Symbol or list of symbols to resolve.
+            symbols (MaybeSymbols): Symbol or a list of symbols.
             raise_error (bool): Whether to raise an error if a symbol is not found.
 
         Returns:
@@ -2151,15 +2157,16 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Retrieve one or more features and symbols from the data.
 
         Args:
-            features (Optional[MaybeFeatures]): Features to retrieve.
+            features (Optional[MaybeFeatures]): Feature identifier(s).
+            
                 If not provided, uses `Data.features`.
-            symbols (Optional[MaybeSymbols]): Symbols to retrieve.
+            symbols (Optional[MaybeSymbols]): Symbol identifier(s).
 
                 If not provided, uses `Data.symbols`.
-            feature (Optional[Feature]): Single feature to retrieve.
+            feature (Optional[Feature]): Feature identifier.
 
                 Cannot be used with `features`.
-            symbol (Optional[Symbol]): Single symbol to retrieve.
+            symbol (Optional[Symbol]): Symbol identifier.
 
                 Cannot be used with `symbols`.
             squeeze_features (bool): Whether to squeeze the features when only one element is present.
@@ -2449,8 +2456,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             obj (SeriesFrame): Pandas Series or DataFrame.
-            tz_localize (Union[None, bool, TimezoneLike]): Timezone to localize the index.
-            tz_convert (Union[None, bool, TimezoneLike]): Timezone to convert the index.
+            tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
+            tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
 
         Returns:
             SeriesFrame: The object with a timezone-aware index.
@@ -2490,7 +2497,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Align data to share a common index.
 
         Args:
-            data (dict): Dictionary of Pandas objects.
+            data (dict): Data dictionary.
             missing (Optional[str]): Specifies how to handle missing indices when aligning data.
 
                 * 'nan': Set missing data points to NaN.
@@ -2544,7 +2551,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Align data to share a common set of columns.
 
         Args:
-            data (dict): Dictionary of Pandas objects.
+            data (dict): Data dictionary.
             missing (Optional[str]): Specifies how to handle missing columns when aligning data.
 
                 * 'nan': Set missing data points to NaN.
@@ -2695,15 +2702,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         and aligns both indices and columns.
 
         Args:
-            data (dict): Dictionary mapping keys to Pandas Series or DataFrame to align.
+            data (dict): Data dictionary.
             last_index (Union[None, feature_dict, symbol_dict]): Container to record
                 the last datetime index for each key.
             delisted (Union[None, feature_dict, symbol_dict]): Container to track
                 delisted status for each key.
-            tz_localize (Union[None, bool, TimezoneLike]): Timezone localization flag or value.
-            tz_convert (Union[None, bool, TimezoneLike]): Timezone conversion flag or value.
-            missing_index (Optional[str]): Name to use when an index is missing.
-            missing_columns (Optional[str]): Name to use when columns are missing.
+            tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
+            tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+            missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
+
+                See `Data.align_index`.
+            missing_columns (Optional[str]): Specifies how to handle missing columns when aligning data.
+
+                See `Data.align_columns`.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
@@ -2805,16 +2816,16 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             level_name (Union[None, bool, MaybeIterable[Hashable]]): Level name(s) for indexing.
 
                 See `Data.level_name`.
-            tz_localize (Union[None, bool, TimezoneLike]): Timezone localization flag.
+            tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
 
                 See `Data.prepare_tzaware_index`.
-            tz_convert (Union[None, bool, TimezoneLike]): Timezone conversion flag.
+            tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
 
                 See `Data.prepare_tzaware_index`.
-            missing_index (Optional[str]): Identifier for aligning the index.
+            missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
 
                 See `Data.align_index`.
-            missing_columns (Optional[str]): Identifier for aligning columns.
+            missing_columns (Optional[str]): Specifies how to handle missing columns when aligning data.
 
                 See `Data.align_columns`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
@@ -2977,7 +2988,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             arg (Any): Argument to check for a data dictionary.
-            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Type to check against.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
 
                 Defaults to `key_dict` if not specified.
 
@@ -3032,10 +3043,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Selects the keyword arguments corresponding to a given key from a collection.
 
         Args:
-            key (Key): Key to filter keyword arguments.
+            key (Key): Feature or symbol identifier.
             kwargs (KwargsLike): Dictionary of keyword arguments.
             kwargs_name (str): Name of the keyword arguments dictionary.
-            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Expected type for sub-dictionaries.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
             check_dict_type (bool): Flag to validate the type of dictionaries.
 
         Returns:
@@ -3104,10 +3115,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Selects the value corresponding to a specified key in a dictionary.
 
         Args:
-            key (Key): Key whose value is to be selected.
+            key (Key): Feature or symbol identifier.
             dct (key_dict): Dictionary to search for the key.
             dct_name (str): Name of the dictionary.
-            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Expected type for sub-dictionaries.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
             check_dict_type (bool): Flag to validate the type of dictionaries.
 
         Returns:
@@ -3409,7 +3420,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.add_feature` or `Data.add_symbol`.
 
         Args:
-            key (Key): Key identifier to add.
+            key (Key): Feature or symbol identifier.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the key.
             **kwargs: Keyword arguments for the delegated function.
 
@@ -3431,7 +3442,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.add_symbol` or `Data.add_feature`.
 
         Args:
-            column (Column): Column identifier to add.
+            column (Column): Column identifier.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the column.
             **kwargs: Keyword arguments for the delegated function.
 
@@ -3454,7 +3465,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         The orientation is automatically determined by comparing data columns with existing features and symbols.
 
         Args:
-            key (Key): Identifier corresponding to the feature or symbol.
+            key (Key): Feature or symbol identifier.
             data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the key.
             **kwargs: Keyword arguments for the delegated function.
 
@@ -3639,7 +3650,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Create a new `Data` instance with the specified feature(s) removed.
 
         Args:
-            features (MaybeFeatures): Feature or list of features to remove.
+            features (MaybeFeatures): Feature or a list of features.
             **kwargs: Keyword arguments for `Data.select_feature_idxs`.
 
         Returns:
@@ -4061,7 +4072,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             keys (Union[None, dict, MaybeKeys]): One or multiple keys.
 
                 Depending on `keys_are_features`, these keys will be treated as features or symbols.
-            keys_are_features (Optional[bool]): True if the provided keys correspond to features.
+            keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
             features (Union[None, dict, MaybeFeatures]): One or multiple features.
 
                 If provided as a dictionary, keys are treated as features and values as keyword arguments.
@@ -4081,12 +4092,16 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 !!! note
                     Tuple is interpreted as a single class.
             level_name (Union[None, bool, MaybeIterable[Hashable]]): Used as in `Data.level_name`.
-            tz_localize (Union[None, bool, TimezoneLike]): Timezone localization parameter
+            tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization
                 as used in `Data.from_data`.
-            tz_convert (Union[None, bool, TimezoneLike]): Timezone conversion parameter
+            tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion
                 as used in `Data.from_data`.
-            missing_index (Optional[str]): Parameter for handling a missing index as used in `Data.from_data`.
-            missing_columns (Optional[str]): Parameter for handling missing columns as used in `Data.from_data`.
+            missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
+
+                See `Data.align_index`.
+            missing_columns (Optional[str]): Specifies how to handle missing columns when aligning data.
+
+                See `Data.align_columns`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper for `Data.from_data`.
 
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
@@ -5584,12 +5599,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         or does not include a file suffix, each feature or symbol is saved to an individual file.
 
         Args:
-            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]):
-                A file path, buffer, or mapping of features/symbols to paths.
+            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): File path or buffer.
 
                 When a directory is provided, each feature or symbol is saved to a separate file.
             ext (Union[str, feature_dict, symbol_dict, CustomTemplate]):
-                The file extension to use for CSV files when saving multiple files.
+                File extension to use for CSV files when saving multiple files.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
                 Keyword arguments for directory creation.
             
@@ -5698,12 +5712,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         after the class (with a .h5 extension) is created automatically.
 
         Args:
-            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]):
-                A file path, buffer, or mapping of features/symbols to paths.
+            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): File path or buffer.
 
                 When a directory is provided, each feature or symbol is saved to a separate file.
             key (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
-                The HDF key under which to store the data.
+                HDF key under which to store the data.
 
                 If None, the key defaults to the string representation of the feature or symbol.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
@@ -5811,8 +5824,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         file with a name based on its key. Otherwise, the data is saved to a single file.
 
         Args:
-            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]):
-                File path, directory path, or a key-mapped value.
+            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): File path or buffer.
 
                 When a directory is provided or no file suffix is detected,
                 the key is appended with a ".feather" extension to form the file name.
@@ -6142,11 +6154,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             engine (Union[None, str, EngineT, feature_dict, symbol_dict, CustomTemplate]):
-                A database engine instance, a URL string, or a mapping for per-feature/symbol configuration.
+                Database engine instance, a URL string, or a mapping for per-feature/symbol configuration.
             table (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
-                A table name or mapping for assigning table names to each feature or symbol.
+                Table name or mapping for assigning table names to each feature or symbol.
             schema (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
-                The SQL schema name or mapping; if the schema does not exist, a new one is created.
+                SQL schema name or mapping; if the schema does not exist, a new one is created.
             to_utc (Union[None, bool, str, Sequence[str], feature_dict, symbol_dict, CustomTemplate]):
                 Option to convert datetime columns to UTC.
 
@@ -6156,11 +6168,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             attach_row_number (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
                 Specifies whether to attach a row number column to the data.
             from_row_number (Union[None, int, feature_dict, symbol_dict, CustomTemplate]):
-                The starting row number for numbering if a row number column is attached.
+                Starting row number for numbering if a row number column is attached.
             row_number_column (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
-                The name of the column to use for row numbers.
+                Name of the column to use for row numbers.
             engine_config (KwargsLike): Additional configuration for the engine.
-            dispose_engine (Optional[bool]): Determines whether to dispose of the engine after saving.
+            dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
             check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
             return_meta (bool): If True, returns metadata for each saved table.
@@ -6834,7 +6846,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     def plot(
         self,
-        column: tp.Optional[tp.Hashable] = None,
+        column: tp.Optional[tp.Column] = None,
         feature: tp.Optional[tp.Feature] = None,
         symbol: tp.Optional[tp.Symbol] = None,
         feature_map: tp.KwargsLike = None,
@@ -6845,11 +6857,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Plot one feature across multiple symbols or generate an OHLC(V) chart for a single symbol.
 
         Args:
-            column (Hashable): Name of the feature or symbol to plot.
+            column (Column): Column identifier.
 
                 Used depending on the data orientation.
-            feature (Hashable): Name of the feature to plot.
-            symbol (Hashable): Name of the symbol to plot.
+            feature (Feature): Feature identifier.
+            symbol (Symbol): Symbol identifier.
             feature_map (KwargsLike): Dictionary mapping feature names to OHLCV components.
 
                 Applied only when generating an OHLC(V) chart.

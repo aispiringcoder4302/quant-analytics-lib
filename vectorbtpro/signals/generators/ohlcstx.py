@@ -89,7 +89,7 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         ohlc_kwargs: tp.KwargsLike = None,
         entry_price_kwargs: tp.KwargsLike = None,
         entry_trace_kwargs: tp.KwargsLike = None,
@@ -139,7 +139,7 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
         Plot OHLC, `{0}.{1}` and `{0}.exits`.
     
         Args:
-            column (Optional[Label]): Column label for data selection.
+            column (Optional[Column]): Identifier of the column to plot.
 
                 If None, a default column is used.
             ohlc_kwargs (KwargsLike): Keyword arguments for plotting OHLC data using

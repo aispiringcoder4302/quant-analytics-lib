@@ -117,7 +117,7 @@ class BinanceData(RemoteData):
 
         Args:
             client (Optional[Client]): Existing Binance client instance.
-            client_config (KwargsLike): Configuration parameters for creating a client.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
 
         Returns:
             Client: A resolved or newly created Binance client.
@@ -157,7 +157,7 @@ class BinanceData(RemoteData):
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
             client (Optional[Client]): Binance client instance.
-            client_config (KwargsLike): Configuration parameters for creating a client.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
 
         Returns:
             List[str]: A list of Binance symbols.
@@ -180,7 +180,7 @@ class BinanceData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         client: tp.Optional[ClientT] = None,
         client_config: tp.KwargsLike = None,
         start: tp.Optional[tp.DatetimeLike] = None,
@@ -198,11 +198,11 @@ class BinanceData(RemoteData):
         """Fetch symbol data from Binance.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             client (Optional[Client]): Binance client instance.
 
                 See `BinanceData.resolve_client`.
-            client_config (KwargsLike): Configuration parameters for creating a client.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
 
                 See `BinanceData.resolve_client`.
             start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
@@ -371,7 +371,7 @@ class BinanceData(RemoteData):
 
         return df, dict(tz=tz, freq=freq)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

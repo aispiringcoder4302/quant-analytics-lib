@@ -1527,7 +1527,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             a (ArrayLike): Array to be converted into a mapped array.
             idx_arr (Union[None, str, Array1d]): Array of row indices or field name for retrieving row indices.
                 a field name, or None to use the default index array.
-            mapping (Optional[MappingLike]): Mapping to apply for re-labeling records.
+            mapping (Optional[MappingLike]): Mapping configuration.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.

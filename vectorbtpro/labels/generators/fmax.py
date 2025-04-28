@@ -43,7 +43,7 @@ class _FMAX(FMAX):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         fmax_trace_kwargs: tp.KwargsLike = None,
@@ -54,7 +54,7 @@ class _FMAX(FMAX):
         """Plot `FMAX.fmax` against `FMAX.close`.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Flag indicating whether to plot `FMAX.close`.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMAX.close`.
             fmax_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMAX.fmax`.
@@ -82,7 +82,7 @@ class _FMAX(FMAX):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

@@ -461,7 +461,7 @@ def get_refname_module_and_qualname(
     """Return the module and qualified name extracted from the given reference name.
 
     Args:
-        refname (str): Reference name string.
+        refname (str): Dot-separated reference name.
         module (Optional[ModuleType]): Module context for extraction.
 
     Returns:
@@ -488,7 +488,7 @@ def resolve_refname(refname: str, module: tp.Union[None, str, ModuleType] = None
     """Resolve a reference name into its fully qualified form using the provided module context.
 
     Args:
-        refname (str): Reference name to resolve.
+        refname (str): Dot-separated reference name.
         module (Union[None, str, ModuleType]): Module context used in reference resolution.
 
     Returns:

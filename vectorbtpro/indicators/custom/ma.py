@@ -58,7 +58,7 @@ class _MA(MA):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         ma_trace_kwargs: tp.KwargsLike = None,
@@ -69,7 +69,7 @@ class _MA(MA):
         """Plot the moving average alongside the close price.
 
         Args:
-            column (Optional[Label]): Name of the column to select for plotting.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to include the close price trace in the plot.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MA.close`.
             ma_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MA.ma`.
@@ -97,7 +97,7 @@ class _MA(MA):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

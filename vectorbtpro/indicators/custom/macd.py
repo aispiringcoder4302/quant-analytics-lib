@@ -90,7 +90,7 @@ class _MACD(MACD):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         macd_trace_kwargs: tp.KwargsLike = None,
         signal_trace_kwargs: tp.KwargsLike = None,
         hist_trace_kwargs: tp.KwargsLike = None,
@@ -101,7 +101,7 @@ class _MACD(MACD):
         """Plot the `MACD.macd`, `MACD.signal`, and `MACD.hist` values of the indicator.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             macd_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MACD.macd`.
             signal_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MACD.signal`.
             hist_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Bar` for `MACD.hist`.
@@ -133,7 +133,7 @@ class _MACD(MACD):
         import plotly.graph_objects as go
         from vectorbtpro.utils.figure import make_figure
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

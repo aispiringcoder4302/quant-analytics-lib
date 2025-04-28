@@ -62,7 +62,7 @@ class _RSI(RSI):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         limits: tp.Tuple[float, float] = (30, 70),
         rsi_trace_kwargs: tp.KwargsLike = None,
         add_shape_kwargs: tp.KwargsLike = None,
@@ -73,7 +73,7 @@ class _RSI(RSI):
         """Plot the `RSI.rsi` output of the RSI indicator.
 
         Args:
-            column (Optional[Label]): Label of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             limits (Tuple[float, float]): Tuple representing the lower and upper boundaries for the RSI plot.
             rsi_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `RSI.rsi`.
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
@@ -101,7 +101,7 @@ class _RSI(RSI):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if rsi_trace_kwargs is None:
             rsi_trace_kwargs = {}

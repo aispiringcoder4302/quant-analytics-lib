@@ -57,7 +57,7 @@ class RandomData(SyntheticData):
         """Generate a feature or symbol.
 
         Args:
-            key (Hashable): Feature or symbol.
+            key (Hashable): Feature or symbol identifier.
             index (Index): Pandas index.
             columns (Union[Hashable, IndexLike]): Column names.
 

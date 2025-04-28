@@ -80,7 +80,7 @@ class FeatherData(FileData):
         """Fetch a Feather file for a given feature or symbol.
 
         Args:
-            key (hashable): Feature or symbol identifier.
+            key (Key): Feature or symbol identifier.
             path (str): File path for the Feather file.
 
                 If None, `key` is used as the file path.
@@ -168,8 +168,8 @@ class FeatherData(FileData):
         """Update data for a given feature or symbol.
 
         Args:
-            key (hashable): Feature or symbol identifier.
-            key_is_feature (bool): Flag indicating if `key` represents a feature.
+            key (Key): Feature or symbol identifier.
+            key_is_feature (bool): Flag indicating whether the key represents a feature.
             **kwargs: Keyword arguments for `FeatherData.fetch_feature` or `FeatherData.fetch_symbol`.
 
         Returns:

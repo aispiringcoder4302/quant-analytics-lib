@@ -105,7 +105,7 @@ class _PIVOTINFO(PIVOTINFO):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         conf_value_trace_kwargs: tp.KwargsLike = None,
         last_value_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
@@ -115,7 +115,7 @@ class _PIVOTINFO(PIVOTINFO):
         """Plot the confirmed and last pivot value lines on a figure.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             conf_value_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PIVOTINFO.conf_value`.
             last_value_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PIVOTINFO.last_value`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
@@ -143,7 +143,7 @@ class _PIVOTINFO(PIVOTINFO):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()
@@ -177,7 +177,7 @@ class _PIVOTINFO(PIVOTINFO):
 
     def plot_zigzag(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         zigzag_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
@@ -186,7 +186,7 @@ class _PIVOTINFO(PIVOTINFO):
         """Plot the zigzag line based on pivot data.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
 
             zigzag_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the zigzag line.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
@@ -214,7 +214,7 @@ class _PIVOTINFO(PIVOTINFO):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

@@ -1100,10 +1100,10 @@ def trend_labels_nb(
     Args:
         high (Array2d): 2D array of high prices.
         low (Array2d): 2D array of low prices.
-        up_th (FlexArray2dLike): Upper threshold values for detecting peaks.
+        up_th (FlexArray2dLike): Upper threshold for detecting peaks.
         
             Provided as a scalar, or per row, column, or element.
-        down_th (FlexArray2dLike): Lower threshold values for detecting valleys.
+        down_th (FlexArray2dLike): Lower threshold for detecting valleys.
         
             Provided as a scalar, or per row, column, or element.
         mode (FlexArray1dLike): Trend mode.

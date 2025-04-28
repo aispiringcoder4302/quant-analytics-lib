@@ -76,7 +76,7 @@ class NDLData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         api_key: tp.Optional[str] = None,
         data_format: tp.Optional[str] = None,
         start: tp.Optional[tp.DatetimeLike] = None,
@@ -88,7 +88,7 @@ class NDLData(RemoteData):
         """Fetch a symbol's data from Nasdaq Data Link.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             api_key (Optional[str]): API key.
             data_format (Optional[str]): Data format.
 
@@ -185,11 +185,11 @@ class NDLData(RemoteData):
                     df = df[df.index < end]
         return df, dict(tz=tz)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         """Update a symbol's data using Nasdaq Data Link.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `NDLData.fetch_symbol`.
 
         Returns:

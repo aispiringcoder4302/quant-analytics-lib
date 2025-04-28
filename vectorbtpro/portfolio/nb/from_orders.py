@@ -149,21 +149,15 @@ def from_orders_nb(
         init_price (FlexArray1dLike): Initial position price.
 
             Provided as a scalar or per column.
-        cash_deposits (FlexArray2dLike): Cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
         
             Provided as a scalar, or per row, group, or element.
-
-            Applied at the beginning of each timestamp.
-        cash_earnings (FlexArray2dLike): Cash earnings.
+        cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
-
-            Applied at the end of each timestamp.
-        cash_dividends (FlexArray2dLike): Cash dividends.
+        cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
-
-            Applied at the end of each timestamp.
         size (FlexArray2dLike): Order size.
         
             Provided as a scalar, or per row, column, or element.

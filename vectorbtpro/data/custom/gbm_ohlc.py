@@ -60,7 +60,7 @@ class GBMOHLCData(SyntheticData):
         """Generate synthetic OHLC data for a given symbol using geometric Brownian motion.
 
         Args:
-            symbol (hashable): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             index (Index): Pandas index representing time periods.
             n_ticks (Optional[ArrayLike]): Number of ticks per bar.
 

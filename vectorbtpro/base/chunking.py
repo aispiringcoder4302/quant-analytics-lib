@@ -159,7 +159,9 @@ class GroupLensMapper(ChunkMapper, ArgGetter, DefineMixin):
 
         Args:
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
-            ann_args (Optional[AnnArgs]): Annotated arguments from which group lengths are extracted.
+            ann_args (Optional[AnnArgs]): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -233,7 +235,9 @@ class GroupIdxsMapper(ChunkMapper, ArgGetter, DefineMixin):
 
         Args:
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
-            ann_args (Optional[AnnArgs]): Annotated arguments containing the group map tuple.
+            ann_args (Optional[AnnArgs]): Annotated arguments.
+
+                See `vectorbtpro.utils.parsing.annotate_args`.
             **kwargs: Additional keyword arguments.
 
         Returns:

@@ -150,7 +150,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         self,
         metrics: tp.Optional[tp.MaybeIterable[tp.Union[str, tp.Tuple[str, tp.Kwargs]]]] = None,
         tags: tp.Optional[tp.MaybeIterable[str]] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         group_by: tp.GroupByLike = None,
         per_column: tp.Optional[bool] = None,
         split_columns: tp.Optional[bool] = None,
@@ -236,7 +236,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
             tags (Optional[MaybeIterable[str]]): Tag or tags to filter metrics.
 
                 See `vectorbtpro.utils.tagging.match_tags`.
-            column (Optional[Label]): Name of the column or group.
+            column (Optional[Column]): Column identifier to select.
 
                 !!! hint
                     There are two methods to select a column:

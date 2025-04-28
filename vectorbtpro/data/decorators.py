@@ -59,7 +59,7 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
             Select a feature or symbol from the attribute `{cls.__name__}.{target_name}`.
             
             Args:
-                key (Key): Key used to select the feature or symbol.
+                key (Key): Feature or symbol identifier.
                 **kwargs: Keyword arguments for selection.
                 
             Returns:

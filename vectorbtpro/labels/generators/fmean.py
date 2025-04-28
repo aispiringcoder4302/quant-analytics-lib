@@ -54,7 +54,7 @@ class _FMEAN(FMEAN):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         fmean_trace_kwargs: tp.KwargsLike = None,
@@ -65,7 +65,7 @@ class _FMEAN(FMEAN):
         """Plot the `FMEAN.fmean` indicator against the `FMEAN.close` price.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Flag indicating whether to include `FMEAN.close` in the plot.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMEAN.close`.
             fmean_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMEAN.fmean`.
@@ -93,7 +93,7 @@ class _FMEAN(FMEAN):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

@@ -1758,7 +1758,7 @@ class Trades(Ranges):
 
     def plot_pnl(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         group_by: tp.GroupByLike = False,
         pct_scale: bool = False,
         marker_size_range: tp.Tuple[float, float] = (7, 14),
@@ -1777,7 +1777,7 @@ class Trades(Ranges):
         """Plot trades' profit and loss (PnL) or returns.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column or group to plot.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -1968,7 +1968,7 @@ class Trades(Ranges):
         self,
         field: tp.Union[str, tp.Array1d, MappedArray],
         field_label: tp.Optional[str] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         group_by: tp.GroupByLike = False,
         pct_scale: bool = False,
         field_pct_scale: bool = False,
@@ -1991,7 +1991,7 @@ class Trades(Ranges):
 
                 The field can be specified as a string, a mapped array, or a 1-dimensional array.
             field_label (Optional[str]): Label for the field.
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column or group to plot.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2263,7 +2263,7 @@ class Trades(Ranges):
         self,
         field: tp.Union[str, tp.Array1d, MappedArray],
         field_label: tp.Optional[str] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         group_by: tp.GroupByLike = False,
         plot_bands: bool = False,
         colorize: tp.Union[bool, str, tp.Callable] = "last",
@@ -2279,7 +2279,7 @@ class Trades(Ranges):
 
                 Can also be provided as a two-dimensional array.
             field_label (Optional[str]): Label for the field.
-            column (Optional[Label]): Column name to plot.
+            column (Optional[Column]): Identifier of the column or group to plot.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2416,7 +2416,7 @@ class Trades(Ranges):
 
     def plot_running_edge_ratio(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         volatility: tp.Optional[tp.ArrayLike] = None,
         entry_price_open: bool = False,
         exit_price_close: bool = False,
@@ -2432,7 +2432,7 @@ class Trades(Ranges):
         """Plot the running edge ratio for a specified column or group.
 
         Args:
-            column (Optional[Label]): Column name to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -2498,7 +2498,7 @@ class Trades(Ranges):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_ohlc: bool = True,
         plot_close: bool = True,
         plot_markers: bool = True,
@@ -2523,8 +2523,8 @@ class Trades(Ranges):
         """Plot trades on a Plotly figure.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
-            plot_ohlc (bool): Plot OHLC prices if open, high, low, and close data are available.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_ohlc (bool): Whether to plot the OHLC data.
             plot_close (bool): Plot the close price line when OHLC data is not used.
             plot_markers (bool): Display markers for trade entry and exit points.
             plot_zones (bool): Display zones indicating profit and loss areas.
@@ -2999,7 +2999,7 @@ class EntryTrades(Trades):
 
     def plot_signals(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_ohlc: bool = True,
         plot_close: bool = True,
         ohlc_type: tp.Union[None, str, tp.BaseTraceType] = None,
@@ -3014,8 +3014,8 @@ class EntryTrades(Trades):
         """Plot entry trade signals.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
-            plot_ohlc (bool): Whether to plot OHLC data.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_ohlc (bool): Whether to plot the OHLC data.
             plot_close (bool): Whether to plot close prices if OHLC is not plotted.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
@@ -3286,7 +3286,7 @@ class ExitTrades(Trades):
 
     def plot_signals(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_ohlc: bool = True,
         plot_close: bool = True,
         ohlc_type: tp.Union[None, str, tp.BaseTraceType] = None,
@@ -3301,8 +3301,8 @@ class ExitTrades(Trades):
         """Plot exit trade signals.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
-            plot_ohlc (bool): Whether to plot OHLC data.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_ohlc (bool): Whether to plot the OHLC data.
             plot_close (bool): Whether to plot close prices if OHLC is not plotted.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 

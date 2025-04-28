@@ -760,8 +760,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             min_size (Optional[int]): Minimum number of elements to split.
-            n_chunks (Union[None, int, str]): Number of chunks to create.
-            chunk_len (Union[None, int, str]): Length of each chunk.
+            n_chunks (Union[None, int, str]): Specification for the number of chunks.
+            chunk_len (Union[None, int, str]): Specification for the length of each chunk.
             chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable of metadata for chunk boundaries.
 
                 If not provided, metadata is generated using `vectorbtpro.utils.chunking.iter_chunk_meta`.
@@ -1988,7 +1988,7 @@ class BaseAccessor(Wrapping):
         Args:
             apply_func (Callable): Function to apply.
             *args: Positional arguments for `apply_func`.
-            keep_pd (bool): If True, maintain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
+            keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
             to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -2132,7 +2132,7 @@ class BaseAccessor(Wrapping):
             ntimes (int): Number of times to execute `apply_func`.
             apply_func (Callable): Function to execute, with the iteration index as its first parameter.
             *args: Positional arguments for `apply_func`.
-            keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert inputs to arrays.
+            keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
             to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
             keys (Optional[IndexLike]): Labels for the concatenated results along columns.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
@@ -2270,8 +2270,7 @@ class BaseAccessor(Wrapping):
             allow_multiple (bool): Determines if a tuple, list, or Index is interpreted as multiple objects.
 
                 Applicable only when using the instance method.
-            keep_pd (bool): Determines whether to retain inputs as Pandas objects or
-                convert them to NumPy arrays.
+            keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
             to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
             concat (bool): Determines whether to concatenate the results along the column axis or
                 combine objects pairwise.

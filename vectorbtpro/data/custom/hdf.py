@@ -137,7 +137,7 @@ class HDFData(FileData):
             path (PathLike): Base path to search for HDF files.
             match_regex (Optional[str]): Regular expression to filter matching paths.
             sort_paths (bool): Flag indicating whether to sort the resulting paths.
-            recursive (bool): Flag indicating whether to search directories recursively.
+            recursive (bool): Whether to search subdirectories recursively.
             **kwargs: Keyword arguments for `HDFData.match_path`.
 
         Returns:
@@ -380,7 +380,7 @@ class HDFData(FileData):
 
         Args:
             key (Key): Feature or symbol identifier.
-            key_is_feature (bool): Flag indicating if `key` represents a feature.
+            key_is_feature (bool): Flag indicating whether the key represents a feature.
             **kwargs: Keyword arguments for `HDFData.fetch_feature` or `HDFData.fetch_symbol`.
 
         Returns:

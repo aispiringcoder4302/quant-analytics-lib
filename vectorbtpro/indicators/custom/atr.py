@@ -59,7 +59,7 @@ class _ATR(ATR):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         tr_trace_kwargs: tp.KwargsLike = None,
         atr_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
@@ -69,7 +69,7 @@ class _ATR(ATR):
         """Plot the TR and ATR series.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             tr_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ATR.tr`.
             atr_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ATR.atr`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
@@ -96,7 +96,7 @@ class _ATR(ATR):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

@@ -90,7 +90,7 @@ class BentoData(RemoteData):
             client (Optional[databento.historical.client.Historical]): Client instance.
 
                 If provided, must be of type `databento.historical.client.Historical`.
-            **client_config: Keyword arguments for client configuration.
+            **client_config: Configuration parameters for creating a new client.
 
         Returns:
             databento.historical.client.Historical: The resolved client instance.
@@ -137,7 +137,7 @@ class BentoData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         client: tp.Optional[HistoricalT] = None,
         client_config: tp.KwargsLike = None,
         start: tp.Optional[tp.DatetimeLike] = None,
@@ -154,13 +154,13 @@ class BentoData(RemoteData):
         """Fetch a symbol from Databento by overriding `vectorbtpro.data.base.Data.fetch_symbol`.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
 
                 Can be provided in the `DATASET:SYMBOL` format if `dataset` is not specified.
             client (Optional[databento.historical.client.Historical]): Client instance.
 
                 See `BentoData.resolve_client`.
-            client_config (KwargsLike): Configuration parameters for creating a client.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
 
                 See `BentoData.resolve_client`.
             start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
@@ -279,7 +279,7 @@ class BentoData(RemoteData):
         df = client.timeseries.get_range(**params).to_df(**df_kwargs)
         return df, dict(tz=tz, freq=freq)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

@@ -74,7 +74,7 @@ class _HURST(HURST):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         hurst_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
@@ -83,7 +83,7 @@ class _HURST(HURST):
         """Plot the HURST traces.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             hurst_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `HURST.hurst`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
@@ -113,7 +113,7 @@ class _HURST(HURST):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if hurst_trace_kwargs is None:
             hurst_trace_kwargs = {}

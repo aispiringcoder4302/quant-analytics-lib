@@ -45,14 +45,14 @@ class _PIVOTLB(PIVOTLB):
         * `vectorbtpro.labels.nb.pivots_nb` for the underlying implementation.
     """
 
-    def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
+    def plot(self, column: tp.Optional[tp.Column] = None, **kwargs) -> tp.BaseFigure:
         """Plot the median of `PIVOTLB.high` and `PIVOTLB.low` with a heatmap overlay of `PIVOTLB.labels`.
 
         Calculates the median of the high and low values and overlays it with a heatmap
         representation of the generated labels.
 
         Args:
-            column (Optional[Label]): Column to select from the indicator output.
+            column (Optional[Column]): Identifier of the column to plot.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:

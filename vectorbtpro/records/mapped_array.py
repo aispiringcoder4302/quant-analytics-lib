@@ -485,7 +485,7 @@ class MappedArray(Analyzable):
         idx_arr (Optional[ArrayLike]): One-dimensional row array.
 
             Must be the same size as `mapped_arr`.
-        mapping (Optional[MappingLike]): Mapping.
+        mapping (Optional[MappingLike]): Mapping configuration.
         col_mapper (Optional[ColumnMapper]): Column mapper if already known.
 
             !!! note

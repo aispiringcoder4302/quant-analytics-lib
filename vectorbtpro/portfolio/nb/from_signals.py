@@ -653,13 +653,13 @@ def from_basic_signals_nb(
         init_price (FlexArray1dLike): Initial position price.
 
             Provided as a scalar or per column.
-        cash_deposits (FlexArray2dLike): Cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
         
             Provided as a scalar, or per row, group, or element.
-        cash_earnings (FlexArray2dLike): Cash earnings.
+        cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
-        cash_dividends (FlexArray2dLike): Cash dividends.
+        cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
         long_entries (FlexArray2dLike): Boolean array indicating long entry signals.
@@ -1629,13 +1629,13 @@ def from_signals_nb(
         init_price (FlexArray1dLike): Initial position price.
 
             Provided as a scalar or per column.
-        cash_deposits (FlexArray2dLike): Cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
         
             Provided as a scalar, or per row, group, or element.
-        cash_earnings (FlexArray2dLike): Cash earnings.
+        cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
-        cash_dividends (FlexArray2dLike): Cash dividends.
+        cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
         long_entries (FlexArray2dLike): Boolean array indicating long entry signals.
@@ -4486,13 +4486,13 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         init_price (FlexArray1dLike): Initial position price.
 
             Provided as a scalar or per column.
-        cash_deposits (FlexArray2dLike): Cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
         
             Provided as a scalar, or per row, column or group with cash sharing, or element.
-        cash_earnings (FlexArray2dLike): Cash earnings.
+        cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
-        cash_dividends (FlexArray2dLike): Cash dividends.
+        cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
         signal_func_nb (SignalFunc): Function to be called at each element to generate signals.

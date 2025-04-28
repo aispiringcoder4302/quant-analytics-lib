@@ -239,7 +239,7 @@ class SerialEngine(ExecutionEngine):
             after each iteration.
 
             If provided as an integer, collects garbage every specified number of tasks.
-        delay (Optional[float]): Number of seconds to pause after each function call.
+        delay (Optional[float]): Delay in seconds after each function call.
         **kwargs: Keyword arguments for `ExecutionEngine`.
 
     !!! info
@@ -1245,7 +1245,7 @@ class Executor(Configured):
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
         n_chunks (Union[None, int, str]): Specification for the number of chunks, as defined in 
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        chunk_len (Union[None, int, str]): Chunk length specification, as defined in 
+        chunk_len (Union[None, int, str]): Specification for the length of each chunk, as defined in 
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
         chunk_meta (Optional[Iterable[ChunkMeta]]): Metadata for chunks, as defined in 
             `vectorbtpro.utils.chunking.iter_chunk_meta`.
@@ -1627,7 +1627,7 @@ class Executor(Configured):
 
     @property
     def chunk_len(self) -> tp.Union[None, int, str]:
-        """Chunk length specification, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        """Specification for the length of each chunk, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             Union[None, int, str]: Chunk length or mode, if provided; otherwise, None.

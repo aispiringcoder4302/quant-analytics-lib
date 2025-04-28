@@ -124,7 +124,7 @@ def mirror_ohlc_1d_nb(
         _low = low[i] if low is not None else np.nan
         _close = close[i] if close is not None else np.nan
 
-        if ref_feature == PriceFeature.Open or (ref_feature == -1 and not np.isnan(_open)):
+        if ref_feature == PriceFeature identifier.Open or (ref_feature == -1 and not np.isnan(_open)):
             if first_idx == -1:
                 first_idx = i
                 if not np.isnan(start_value):
@@ -142,7 +142,7 @@ def mirror_ohlc_1d_nb(
                 new_high[i] = (_open / _low) * new_open[i] if not np.isnan(_low) else np.nan
                 new_low[i] = (_open / _high) * new_open[i] if not np.isnan(_high) else np.nan
                 new_close[i] = (_open / _close) * new_open[i] if not np.isnan(_close) else np.nan
-        elif ref_feature == PriceFeature.Close or (ref_feature == -1 and not np.isnan(_close)):
+        elif ref_feature == PriceFeature identifier.Close or (ref_feature == -1 and not np.isnan(_close)):
             if first_idx == -1:
                 first_idx = i
                 if not np.isnan(start_value):
@@ -160,7 +160,7 @@ def mirror_ohlc_1d_nb(
                 new_open[i] = (_close / _open) * new_close[i] if not np.isnan(_open) else np.nan
                 new_high[i] = (_close / _low) * new_close[i] if not np.isnan(_low) else np.nan
                 new_low[i] = (_close / _high) * new_close[i] if not np.isnan(_high) else np.nan
-        elif ref_feature == PriceFeature.High or (ref_feature == -1 and not np.isnan(_high)):
+        elif ref_feature == PriceFeature identifier.High or (ref_feature == -1 and not np.isnan(_high)):
             if first_idx == -1:
                 first_idx = i
                 if not np.isnan(start_value):
@@ -178,7 +178,7 @@ def mirror_ohlc_1d_nb(
                 new_open[i] = (_high / _open) * new_high[i] if not np.isnan(_open) else np.nan
                 new_high[i] = (_high / _low) * new_high[i] if not np.isnan(_low) else np.nan
                 new_close[i] = (_high / _close) * new_high[i] if not np.isnan(_close) else np.nan
-        elif ref_feature == PriceFeature.Low or (ref_feature == -1 and not np.isnan(_low)):
+        elif ref_feature == PriceFeature identifier.Low or (ref_feature == -1 and not np.isnan(_low)):
             if first_idx == -1:
                 first_idx = i
                 if not np.isnan(start_value):

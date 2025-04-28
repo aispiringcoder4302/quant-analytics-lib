@@ -76,7 +76,7 @@ class _VWAP(VWAP):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         vwap_trace_kwargs: tp.KwargsLike = None,
@@ -87,7 +87,7 @@ class _VWAP(VWAP):
         """Plot `VWAP.vwap` against `VWAP.close` values.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to include the `VWAP.close` values in the plot.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `VWAP.close`.
             vwap_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `VWAP.vwap`.
@@ -121,7 +121,7 @@ class _VWAP(VWAP):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

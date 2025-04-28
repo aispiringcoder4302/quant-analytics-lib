@@ -290,7 +290,7 @@ class SQLData(DBData):
             engine (Union[None, str, Engine]): Database engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
-            dispose_engine (Optional[bool]): Indicates whether to dispose the engine after use.
+            dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
 
                 If None, disposal is based on engine metadata.
             **kwargs: Keyword arguments for `inspector.get_schema_names`.
@@ -371,7 +371,7 @@ class SQLData(DBData):
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
-            dispose_engine (Optional[bool]): If True, disposes the engine after the operation.
+            dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
             **kwargs: Keyword arguments for SQLAlchemy's inspector methods.
 
         Returns:
@@ -708,7 +708,7 @@ class SQLData(DBData):
 
         Args:
             keys (Union[MaybeKeys]): Table keys to pull data from.
-            keys_are_features (Optional[bool]): Flag indicating whether the provided keys represent features.
+            keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
             features (Union[MaybeFeatures]): Mapping of features associated with the database tables.
             symbols (Union[MaybeSymbols]): Mapping of symbols associated with the database tables.
             schema (Optional[str]): Database schema name for table identification.
@@ -812,7 +812,7 @@ class SQLData(DBData):
         Fetch data from a SQL database using either a table name or a custom SQL query.
 
         Args:
-            key (str): Feature or symbol.
+            key (str): Feature or symbol identifier.
 
                 If both `table` and `query` are None, the key is used as the table name.
                 If the key contains a colon (`:`), it must follow the `SCHEMA:TABLE` format,
@@ -893,7 +893,7 @@ class SQLData(DBData):
 
                 See `pd.read_sql_query` for details on this argument.
             chunk_func (Optional[Callable]): Function to process and concatenate chunks when `chunksize` is set.
-            squeeze (Optional[bool]): Determines whether to squeeze a DataFrame with one column into a Series.
+            squeeze (Optional[bool]): Flag indicating whether to convert a single-column DataFrame to a Series.
             **read_sql_kwargs: Keyword arguments for `pd.read_sql_query`.
 
                 See https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for additional arguments.
@@ -1195,11 +1195,11 @@ class SQLData(DBData):
         return obj, dict(tz=tz)
 
     @classmethod
-    def fetch_feature(cls, feature: str, **kwargs) -> tp.FeatureData:
+    def fetch_feature(cls, feature: tp.Feature, **kwargs) -> tp.FeatureData:
         """Fetch table for a feature.
 
         Args:
-            feature (str): Identifier for the feature.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `SQLData.fetch_key`.
 
         Returns:
@@ -1208,11 +1208,11 @@ class SQLData(DBData):
         return cls.fetch_key(feature, **kwargs)
 
     @classmethod
-    def fetch_symbol(cls, symbol: str, **kwargs) -> tp.SymbolData:
+    def fetch_symbol(cls, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         """Fetch table for a symbol.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `SQLData.fetch_key`.
 
         Returns:
@@ -1275,11 +1275,11 @@ class SQLData(DBData):
             return self.fetch_feature(key, **kwargs)
         return self.fetch_symbol(key, **kwargs)
 
-    def update_feature(self, feature: str, **kwargs) -> tp.FeatureData:
+    def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
         """Update data for a feature.
 
         Args:
-            feature (str): Identifier for the feature.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `SQLData.update_key`.
 
         Returns:
@@ -1287,11 +1287,11 @@ class SQLData(DBData):
         """
         return self.update_key(feature, **kwargs)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         """Update data for a symbol.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `SQLData.update_key`.
 
         Returns:

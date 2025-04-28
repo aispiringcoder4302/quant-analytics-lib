@@ -106,7 +106,7 @@ class PolygonData(RemoteData):
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
             client (Optional[PolygonClient]): Existing client instance for API interaction.
-            client_config (KwargsLike): Configuration parameters for creating a client.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
             **list_tickers_kwargs: Keyword arguments for `polygon.RESTClient.list_tickers`.
 
         Returns:
@@ -136,7 +136,7 @@ class PolygonData(RemoteData):
 
         Args:
             client (Optional[PolygonClient]): Existing client instance.
-            **client_config: Keyword arguments for initializing the client.
+            **client_config: Configuration parameters for creating a new client.
 
         Returns:
             PolygonClient: An instance of `polygon.rest.RESTClient` for API interactions.
@@ -160,7 +160,7 @@ class PolygonData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         client: tp.Optional[PolygonClientT] = None,
         client_config: tp.KwargsLike = None,
         start: tp.Optional[tp.DatetimeLike] = None,
@@ -179,7 +179,7 @@ class PolygonData(RemoteData):
         """Overrides `vectorbtpro.data.base.Data.fetch_symbol` to fetch data for a given symbol from Polygon.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
 
                 Supports the following APIs:
 
@@ -189,7 +189,7 @@ class PolygonData(RemoteData):
             client (Optional[PolygonClient]): Polygon API client instance.
 
                 See `PolygonData.resolve_client`.
-            client_config (KwargsLike): Configuration parameters for creating a client.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
 
                 See `PolygonData.resolve_client`.
             start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
@@ -211,8 +211,8 @@ class PolygonData(RemoteData):
 
                 Maximum allowed is 50000.
             params (DictLike): Additional query parameters.
-            delay (Optional[float]): Seconds to wait after each API request.
-            retries (Optional[int]): Number of retry attempts on fetch failures.
+            delay (Optional[float]): Delay in seconds after each request.
+            retries (Optional[int]): Number of retries on failure to fetch data.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (DictLike): Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
@@ -414,7 +414,7 @@ class PolygonData(RemoteData):
 
         return df, dict(tz=tz, freq=timeframe)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

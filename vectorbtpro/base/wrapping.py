@@ -375,8 +375,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         Args:
             axis (Optional[int]): Axis along which to split the instance.
             min_size (Optional[int]): Minimum number of elements to split.
-            n_chunks (Union[None, int, str]): Desired number of chunks.
-            chunk_len (Union[None, int, str]): Desired length of each chunk.
+            n_chunks (Union[None, int, str]): Specification for the number of chunks.
+            chunk_len (Union[None, int, str]): Specification for the length of each chunk.
             chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable of chunk metadata.
                 
                 See `vectorbtpro.utils.chunking.iter_chunk_meta`.
@@ -506,9 +506,10 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             apply_group_by (bool): If True, applies the grouping to both iteration and the final output.
+
                 If False, `group_by` is used solely as an iteration instruction.
             keep_2d (bool): Determines whether to retain the two-dimensional structure in the yielded items.
-            key_as_index (bool): Specifies whether the yielded key should be returned as an index.
+            key_as_index (bool): Whether to return the yielded key as an index.
             wrap (Optional[bool]): Flag indicating whether to wrap the yielded items
                 with additional functionality.
 
@@ -2995,10 +2996,9 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
         Args:
             cond_kwargs (KwargsLike): Dictionary containing condition parameters,
-                potentially including a different frequency.
-            custom_arg_names (Optional[Set[str]]): Set of custom argument names.
+            custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
             impacts_caching (bool): Flag indicating whether the changes affect caching.
-            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+            impacts_caching (bool): Flag indicating whether resolution impacts caching.
 
         Returns:
             AttrResolverMixin: The resolved instance.

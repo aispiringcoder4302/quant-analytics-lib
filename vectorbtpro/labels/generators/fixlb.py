@@ -39,11 +39,11 @@ class _FIXLB(FIXLB):
         * `vectorbtpro.labels.nb.fixed_labels_nb` for the underlying implementation.
     """
 
-    def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
+    def plot(self, column: tp.Optional[tp.Column] = None, **kwargs) -> tp.BaseFigure:
         """Plot `FIXLB.close` and overlay it with a heatmap of `FIXLB.labels`.
 
         Args:
-            column (Optional[Label]): Column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:

@@ -4017,7 +4017,7 @@ class PortfolioOptimizer(Analyzable):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         dropna: tp.Optional[str] = "head",
         line_shape: str = "hv",
         plot_rb_dates: tp.Optional[bool] = None,
@@ -4030,7 +4030,7 @@ class PortfolioOptimizer(Analyzable):
         """Plot allocations.
 
         Args:
-            column (Optional[Label]): Name of the allocation group to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             dropna (Optional[str]): Parameter for NA handling.
 
                 See `PortfolioOptimizer.fill_allocations`.
@@ -4039,7 +4039,7 @@ class PortfolioOptimizer(Analyzable):
 
                 Defaults to True if there are no more than 20 rebalancing dates.
             trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
-            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each shape.
+            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
@@ -4074,7 +4074,7 @@ class PortfolioOptimizer(Analyzable):
         assert_can_import("plotly")
         from vectorbtpro.utils.figure import make_figure
 
-        self_group = self.select_col(column=column)
+        self_group = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

@@ -558,7 +558,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
             Args:
                 update (object): Update that triggered the error.
-                context (CallbackContext): Callback context containing error information.
+                context (CallbackContext): Callback context containing additional data.
                 *args: Additional positional arguments.
 
             Returns:

@@ -269,7 +269,7 @@ def map_bounds_to_source_ranges_nb(
         target_rbound_index (Array1d): Array of target right-bound indices, sorted in increasing order.
         closed_lbound (bool): Indicates if the left bound is inclusive.
         closed_rbound (bool): Indicates if the right bound is inclusive.
-        skip_not_found (bool): If True, omit target ranges that cannot be mapped.
+        skip_not_found (bool): Whether to drop indices that are -1 (not found).
 
     Returns:
         Tuple[Array1d, Array1d]: A tuple where the first array contains inclusive start indices and the

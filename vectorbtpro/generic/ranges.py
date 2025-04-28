@@ -1029,7 +1029,7 @@ class Ranges(PriceRecords):
 
     def plot_projections(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         min_duration: tp.Union[str, int, tp.FrequencyLike] = None,
         max_duration: tp.Union[str, int, tp.FrequencyLike] = None,
         last_n: tp.Optional[int] = None,
@@ -1073,7 +1073,7 @@ class Ranges(PriceRecords):
         It also overlays OHLC or close price data if available.
 
         Args:
-            column (Optional[Label]): Column name to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             min_duration (Union[str, int, FrequencyLike]): Filter range records by minimum duration.
             max_duration (Union[str, int, FrequencyLike]): Filter range records by maximum duration.
             last_n (Optional[int]): Number of most recent range records to select.
@@ -1359,7 +1359,7 @@ class Ranges(PriceRecords):
 
     def plot_shapes(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_ohlc: tp.Union[bool, tp.Frame] = True,
         plot_close: tp.Union[bool, tp.Series] = True,
         ohlc_type: tp.Union[None, str, tp.BaseTraceType] = None,
@@ -1375,7 +1375,7 @@ class Ranges(PriceRecords):
         """Plot range shapes on a figure.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_ohlc (Union[bool, DataFrame]): Flag or data specifying whether to plot OHLC bars.
             plot_close (Union[bool, Series]): Flag or data specifying whether to plot close values.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
@@ -1538,7 +1538,7 @@ class Ranges(PriceRecords):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         top_n: tp.Optional[int] = None,
         plot_ohlc: tp.Union[bool, tp.Frame] = True,
         plot_close: tp.Union[bool, tp.Series] = True,
@@ -1562,7 +1562,7 @@ class Ranges(PriceRecords):
         and shaded zones for open and closed ranges.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             top_n (Optional[int]): Display only the top N range records sorted by maximum duration.
             plot_ohlc (Union[bool, Frame]): If True, plot OHLC data or pass a DataFrame to be used as OHLC.
             plot_close (Union[bool, Series]): If True, plot close values; if a Series is provided,
@@ -2552,7 +2552,7 @@ class PatternRanges(Ranges):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         top_n: tp.Optional[int] = None,
         fit_ranges: tp.Union[bool, tp.MaybeSequence[int]] = False,
         plot_patterns: bool = True,
@@ -2572,7 +2572,7 @@ class PatternRanges(Ranges):
         Based on `Ranges.plot` and `vectorbtpro.generic.accessors.GenericSRAccessor.plot_pattern`.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             top_n (Optional[int]): Filter the top N range records by maximum duration.
             fit_ranges (Union[bool, MaybeSequence[int]]): Select the range records to fit.
 

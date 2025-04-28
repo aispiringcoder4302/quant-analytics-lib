@@ -421,7 +421,7 @@ class Resampler(Configured):
 
         Args:
             reverse (bool): Reverse the order of indices for difference calculation if True.
-            return_index (bool): Return the target index mapping if True; otherwise, return a NumPy array.
+            return_index (bool): Return a Pandas Index if True; otherwise, return a NumPy array.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -500,7 +500,7 @@ class Resampler(Configured):
                 Set to "pandas" to use `Resampler.get_rbound_index`.
             closed_lbound (bool): Specify whether the left bound is closed.
             closed_rbound (bool): Specify whether the right bound is closed.
-            skip_not_found (bool): If True, skip mapping for indices that are not found.
+            skip_not_found (bool): Whether to drop indices that are -1 (not found).
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

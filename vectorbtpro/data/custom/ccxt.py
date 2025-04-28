@@ -341,7 +341,7 @@ class CCXTData(RemoteData):
     @classmethod
     def find_earliest_date(
         cls, 
-        symbol: str, 
+        symbol: tp.Symbol, 
         for_internal_use: bool = False, 
         **kwargs,
     ) -> tp.Optional[tp.Timestamp]:
@@ -351,7 +351,7 @@ class CCXTData(RemoteData):
         then performs a binary search to determine the earliest available date.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             for_internal_use (bool): Flag indicating whether the search is for internal processing.
             **kwargs: Keyword arguments for `CCXTData.fetch_symbol`.
 
@@ -366,7 +366,7 @@ class CCXTData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         exchange: tp.Union[None, str, ExchangeT] = None,
         exchange_config: tp.KwargsLike = None,
         start: tp.Optional[tp.DatetimeLike] = None,
@@ -386,7 +386,7 @@ class CCXTData(RemoteData):
         """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch symbol data from a CCXT exchange.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
 
                 Symbol may be provided in the `EXCHANGE:SYMBOL` format.
                 In this case, the `exchange` parameter is ignored.
@@ -412,11 +412,11 @@ class CCXTData(RemoteData):
 
                 Uses `CCXTData.find_earliest_date` when enabled.
             limit (Optional[int]): Maximum number of data items to return.
-            delay (Optional[float]): Delay after each request in seconds.
+            delay (Optional[float]): Delay in seconds after each request.
 
                 !!! note
                     Use only if `enableRateLimit` is not set.
-            retries (Optional[int]): Number of retries on fetch failure.
+            retries (Optional[int]): Number of retries on failure to fetch data.
             fetch_params (KwargsLike): Exchange-specific parameters for `fetch_ohlcv`.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
@@ -589,7 +589,7 @@ class CCXTData(RemoteData):
 
         return df, dict(tz=tz, freq=freq)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

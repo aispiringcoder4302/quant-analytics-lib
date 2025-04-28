@@ -1651,7 +1651,7 @@ class RangeIdxr(UniIdxr, DefineMixin):
     """
 
     skip_not_found: bool = define.field(default=True)
-    """Specifies whether to drop indices with a value of -1 (indicating not found)."""
+    """Whether to drop indices that are -1 (not found)."""
 
     jitted: tp.JittedOption = define.field(default=None)
     """Jitting option provided to `vectorbtpro.base.resampling.base.Resampler.map_bounds_to_source_ranges`."""

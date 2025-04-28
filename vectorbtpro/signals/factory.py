@@ -106,7 +106,7 @@ class SignalFactory(IndicatorFactory):
 
         def plot(
             _self,
-            column: tp.Optional[tp.Label] = None,
+            column: tp.Optional[tp.Column] = None,
             entry_y: tp.Union[None, str, tp.ArrayLike] = None,
             exit_y: tp.Union[None, str, tp.ArrayLike] = None,
             entry_types: tp.Optional[tp.ArrayLike] = None,
@@ -197,7 +197,7 @@ class SignalFactory(IndicatorFactory):
             Plot `{0}.{1}` and `{0}.exits`.
     
             Args:
-                column (Optional[Label]): Column label for selecting signals.
+                column (Optional[Column]): Identifier of the column to plot.
                 entry_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting entry markers.
                 exit_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting exit markers.
                 entry_types (Optional[ArrayLike]): Entry types in string format.

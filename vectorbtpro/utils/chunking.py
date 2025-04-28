@@ -368,10 +368,10 @@ def iter_chunk_meta(
         min_size (Optional[int]): Minimum number of elements to split.
 
             If `size` is less than this value, a single chunk is returned.
-        n_chunks (Union[None, int, str]): Number of chunks.
+        n_chunks (Union[None, int, str]): Specification for the number of chunks.
 
             If "auto", the number of CPU cores is used.
-        chunk_len (Union[None, int, str]): Length of each chunk.
+        chunk_len (Union[None, int, str]): Specification for the length of each chunk.
 
             If "auto", the number of CPU cores is used.
 
@@ -1798,7 +1798,7 @@ class Chunker(Configured):
             ann_args (AnnArgs): Annotated arguments.
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
-            chunk_meta (Iterable[ChunkMeta]): Iterable of chunk metadata.
+            chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
             arg_take_spec (Optional[tp.ArgTakeSpecLike]): Specification for chunk-taking.
 
                 It can be a mapping, a sequence (which will be converted into a mapping),

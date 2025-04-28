@@ -49,11 +49,11 @@ class _TRENDLB(TRENDLB):
         * `vectorbtpro.labels.nb.trend_labels_nb` for the underlying implementation.
     """
 
-    def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
+    def plot(self, column: tp.Optional[tp.Column] = None, **kwargs) -> tp.BaseFigure:
         """Plot the median of `TRENDLB.high` and `TRENDLB.low` and overlay it with a heatmap of `TRENDLB.labels`.
 
         Args:
-            column (Optional[Label]): Column from the indicator data to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:

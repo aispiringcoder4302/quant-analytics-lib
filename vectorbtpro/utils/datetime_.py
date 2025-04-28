@@ -763,7 +763,7 @@ class DTC(DefineMixin):
 
         Args:
             time_str (str): String representing a time.
-            **parse_kwargs: Keyword arguments for parsing.
+            **parse_kwargs: Keyword arguments for `dateutil.parser._parse`.
 
         Returns:
             DTC: A `DTC` instance with the parsed components.
@@ -813,7 +813,7 @@ class DTC(DefineMixin):
 
         Args:
             dtc (DTCLike): Object representing datetime components.
-            **parse_kwargs: Keyword arguments for parsing.
+            **parse_kwargs: Keyword arguments for `DTC.parse_time_str`.
 
         Returns:
             DTC: A `DTC` instance with the parsed components.
@@ -850,7 +850,7 @@ class DTC(DefineMixin):
         Args:
             dtc (DTCLike): Object representing datetime components.
             check_func (Optional[Callable]): Function to validate the parsed object.
-            **parse_kwargs: Keyword arguments for parsing.
+            **parse_kwargs: Keyword arguments for `DTC.parse`.
 
         Returns:
             bool: True if the object is parsable, False otherwise.

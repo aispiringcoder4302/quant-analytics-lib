@@ -664,7 +664,7 @@ def annualized_return_1d_nb(
         returns (Array1d): Array of daily returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[float]): Number of periods for the return calculation.
+        periods (Optional[float]): Number of periods for annualization.
 
             If None, the period is determined by the length of the returns array.
 
@@ -706,7 +706,7 @@ def annualized_return_nb(
         returns (Array2d): Two-dimensional array of returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[FlexArray1dLike]): Number of periods.
+        periods (Optional[FlexArray1dLike]): Number of periods for annualization.
 
             Provided as a scalar or per column.
 
@@ -1138,8 +1138,7 @@ def calmar_ratio_1d_nb(
         returns (Array1d): 1-dimensional array of returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[float]): Number of periods for scaling the ratio;
-            used in the annualized return computation.
+        periods (Optional[float]): Number of periods for annualization.
 
     Returns:
         float: The Calmar ratio of the strategy.
@@ -1189,7 +1188,7 @@ def calmar_ratio_nb(
         returns (Array2d): 2-dimensional array of returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[FlexArray1dLike]): Number of periods.
+        periods (Optional[FlexArray1dLike]): Number of periods for annualization.
 
             Provided as a scalar or per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -3281,7 +3280,7 @@ def capture_ratio_1d_nb(
         bm_returns (Array1d): 1D array of benchmark returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[float]): Number of periods used for annualization.
+        periods (Optional[float]): Number of periods for annualization.
 
     Returns:
         float: The computed capture ratio.
@@ -3335,7 +3334,7 @@ def capture_ratio_nb(
         bm_returns (Array2d): Benchmark returns array with matching dimensions.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[FlexArray1dLike]): Number of periods.
+        periods (Optional[FlexArray1dLike]): Number of periods for annualization.
 
             Provided as a scalar or per column.
 
@@ -3468,7 +3467,7 @@ def up_capture_ratio_1d_nb(
         bm_returns (Array1d): 1-d array of benchmark returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[float]): Number of periods to consider.
+        periods (Optional[float]): Number of periods for annualization.
 
             If None, defaults to the length of the returns array.
 
@@ -3537,7 +3536,7 @@ def up_capture_ratio_nb(
         bm_returns (Array2d): 2-d array of benchmark returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[FlexArray1dLike]): Number of periods.
+        periods (Optional[FlexArray1dLike]): Number of periods for annualization.
 
             Provided as a scalar or per column.
 
@@ -3750,7 +3749,7 @@ def down_capture_ratio_nb(
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
         ann_factor (float): Annualization factor.
         log_returns (bool): Flag indicating whether returns are logarithmic.
-        periods (Optional[FlexArray1dLike]): Number of periods.
+        periods (Optional[FlexArray1dLike]): Number of periods for annualization.
 
             Provided as a scalar or per column.
 

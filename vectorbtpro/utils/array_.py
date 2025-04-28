@@ -201,7 +201,7 @@ def min_rel_rescale(arr: tp.Array, to_range: tp.Tuple[float, float]) -> tp.Array
 
     Args:
         arr (Array): Input array.
-        to_range (Tuple[float, float]): Target range for rescaling.
+        to_range (Tuple[float, float]): Target value range.
 
     Returns:
         Array: The rescaled array with values adjusted relative to the minimum.
@@ -229,7 +229,7 @@ def max_rel_rescale(arr: tp.Array, to_range: tp.Tuple[float, float]) -> tp.Array
 
     Args:
         arr (Array): Input array.
-        to_range (Tuple[float, float]): Target range for rescaling.
+        to_range (Tuple[float, float]): Target value range.
 
     Returns:
         Array: The rescaled array with values adjusted relative to the maximum.

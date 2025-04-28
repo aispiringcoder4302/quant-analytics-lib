@@ -1241,11 +1241,11 @@ def update_value_nb(
 
     Args:
         cash_before (float): Cash amount before the update.
-        cash_now (float): Current cash amount.
+        cash_now (float): Cash amount after the update.
         position_before (float): Asset position before the update.
-        position_now (float): Current position size.
+        position_now (float): Asset position after the update.
         val_price_before (float): Valuation price before the update.
-        val_price_now (float): Current valuation price.
+        val_price_now (float): Valuation price after the update.
         value_before (float): Portfolio value before the update.
 
     Returns:
@@ -2441,7 +2441,7 @@ def update_pos_info_nb(
         i (int): Current row index.
         col (int): Current column index.
         position_before (float): Position size before the order execution.
-        position_now (float): Current position size.
+        position_now (float): Position size after the order execution.
         order_result (OrderResult): Object containing order execution details.
         order_id (int): Identifier of the executed order.
 
@@ -2822,7 +2822,7 @@ def resolve_limit_price_nb(
         delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
-        hit_below (bool): Indicates whether the order should hit below the reference price.
+        hit_below (bool): If True, check whether the target price is hit from above.
 
     Returns:
         float: The computed limit price.
@@ -3007,7 +3007,7 @@ def resolve_stop_price_nb(
         delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
-        hit_below (bool): Indicates whether the stop should be applied below the initial price.
+        hit_below (bool): If True, check whether the target price is hit from above.
 
     Returns:
         float: The computed stop price.
@@ -3064,7 +3064,7 @@ def check_stop_hit_nb(
         delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
-        hit_below (bool): Direction flag for stop hit determination.
+        hit_below (bool): If True, check whether the target price is hit from above.
         can_use_ohlc (bool): Whether to use OHLC data when checking the stop hit.
         check_open (bool): Whether to include the open price in the hit check.
         hard_stop (bool): Whether the stop is considered a hard stop.
@@ -3321,7 +3321,7 @@ def get_stop_ladder_exit_size_nb(
         delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
-        hit_below (bool): Determines the direction for stop price resolution.
+        hit_below (bool): If True, check whether the target price is hit from above.
 
     Returns:
         float: The exit size corresponding to the current ladder step, or NaN if no valid stop is found.

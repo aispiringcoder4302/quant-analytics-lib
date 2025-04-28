@@ -94,7 +94,7 @@ def to_2d_shape(shape: tp.ShapeLike, expand_axis: int = 1) -> tp.Shape:
 
     Args:
         shape (ShapeLike): Shape-like object to convert.
-        expand_axis (int): Axis along which a one-dimensional shape is expanded into two dimensions.
+        expand_axis (int): Axis along which to expand the array if necessary.
 
     Returns:
         Shape: A two-dimensional shape tuple.
@@ -165,7 +165,7 @@ def index_to_frame(obj: tp.Index, reset_index: bool = False) -> tp.Frame:
 
     Args:
         obj (Index): Index to convert.
-        reset_index (bool): Determines whether to reset the index when converting non-MultiIndex objects.
+        reset_index (bool): Whether to reset the index in the resulting DataFrame.
 
     Returns:
         DataFrame: A Pandas DataFrame representation of the index.
@@ -323,7 +323,7 @@ def to_2d(obj: tp.ArrayLike, raw: bool = False, expand_axis: int = 1) -> tp.AnyA
     Args:
         obj (ArrayLike): Array-like object to reshape.
         raw (bool): If True, return a raw NumPy array.
-        expand_axis (int): Axis along which to expand one-dimensional input.
+        expand_axis (int): Axis along which to expand the array if necessary.
 
     Returns:
         AnyArray2d: The reshaped two-dimensional array.

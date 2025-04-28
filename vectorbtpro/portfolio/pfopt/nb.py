@@ -361,7 +361,7 @@ def rescale_allocations_nb(allocations: tp.Array2d, to_range: tp.Tuple[float, fl
 
     Args:
         allocations (Array2d): 2D array containing allocation values.
-        to_range (Tuple[float, float]): Tuple with the new scale's minimum and maximum.
+        to_range (Tuple[float, float]): Target value range.
 
     Returns:
         Array2d: 2D array of allocations rescaled to the specified range.

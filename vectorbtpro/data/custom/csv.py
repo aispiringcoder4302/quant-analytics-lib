@@ -111,7 +111,7 @@ class CSVData(FileData):
         For additional parameters, refer to `pd.read_csv` documentation.
 
         Args:
-            key (hashable): Feature or symbol identifier.
+            key (Key): Feature or symbol identifier.
             path (Any): File path to the CSV file.
 
                 If not provided, `key` is used as the file path.
@@ -138,7 +138,7 @@ class CSVData(FileData):
             chunk_func (Optional[Callable]): Function for processing chunks from a `TextFileReader`.
 
                 This function is invoked when `iterator` or `chunksize` is specified.
-            squeeze (Optional[bool]): If True, a DataFrame with a single column is squeezed into a Series.
+            squeeze (Optional[bool]): Flag indicating whether to convert a single-column DataFrame to a Series.
             **read_kwargs: Keyword arguments for `pd.read_csv`.
 
         Returns:
@@ -247,7 +247,7 @@ class CSVData(FileData):
         """Fetch the CSV file for a feature.
 
         Args:
-            feature (hashable): Feature identifier.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `CSVData.fetch_key`.
 
         Returns:
@@ -260,7 +260,7 @@ class CSVData(FileData):
         """Fetch the CSV file for a symbol.
 
         Args:
-            symbol (hashable): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `CSVData.fetch_key`.
 
         Returns:
@@ -272,8 +272,8 @@ class CSVData(FileData):
         """Update the CSV data for a feature or symbol.
 
         Args:
-            key (hashable): Feature or symbol identifier.
-            key_is_feature (bool): Flag indicating if `key` represents a feature.
+            key (Key): Feature or symbol identifier.
+            key_is_feature (bool): Flag indicating whether the key represents a feature.
             **kwargs: Keyword arguments for `CSVData.fetch_feature` or `CSVData.fetch_symbol`.
 
         Returns:

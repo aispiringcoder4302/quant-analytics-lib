@@ -182,7 +182,7 @@ class AVData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         use_parser: tp.Optional[bool] = None,
         apikey: tp.Optional[str] = None,
         api_meta: tp.Optional[dict] = None,
@@ -209,7 +209,7 @@ class AVData(RemoteData):
         See https://www.alphavantage.co/documentation/ for API endpoints and parameters.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
 
                 May combine symbol/from_currency and market/to_currency using an underscore.
             use_parser (Optional[bool]): Whether to use the parser instead of the `alpha_vantage` package.
@@ -659,7 +659,7 @@ class AVData(RemoteData):
 
         return df, dict(tz=tz, freq=freq)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)
         return self.fetch_symbol(symbol, **kwargs)

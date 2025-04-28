@@ -118,8 +118,8 @@ The `ReturnsAccessor` class provides a single subplot based on `ReturnsAccessor.
 >>> ret_acc.plots().show()
 ```
 
-![](/assets/images/api/returns_plots.light.svg#only-light){: .iimg loading=lazy }
-![](/assets/images/api/returns_plots.dark.svg#only-dark){: .iimg loading=lazy }
+![](/Period specification./images/api/returns_plots.light.svg#only-light){: .iimg loading=lazy }
+![](/Period specification./images/api/returns_plots.dark.svg#only-dark){: .iimg loading=lazy }
 """
 
 import numpy as np
@@ -759,7 +759,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Prepare periods using simulation parameters and a wrapper if necessary.
 
         Args:
-            periods (Union[None, str, ArrayLike]): Designation of periods to prepare.
+            periods (Union[None, str, ArrayLike]): Period specification.
 
                 If None, defaults are used.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -1318,8 +1318,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute annualized return.
 
         Args:
-            periods (Union[None, str, ArrayLike]): Period specification resolved
-                using `ReturnsAccessor.get_periods`.
+            periods (Union[None, str, ArrayLike]): Period specification.
+
+                See `ReturnsAccessor.get_periods`.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1553,8 +1554,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Calculate Calmar ratio.
 
         Args:
-            periods (Union[None, str, ArrayLike]): Period specification resolved
-                using `ReturnsAccessor.get_periods`.
+            periods (Union[None, str, ArrayLike]): Period specification.
+
+                See `ReturnsAccessor.get_periods`.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
@@ -3238,8 +3240,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            periods (Union[None, str, ArrayLike]): Period specification resolved
-                using `ReturnsAccessor.get_periods`.
+            periods (Union[None, str, ArrayLike]): Period specification.
+
+                See `ReturnsAccessor.get_periods`.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
@@ -3363,8 +3366,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            periods (Union[None, str, ArrayLike]): Period specification resolved
-                using `ReturnsAccessor.get_periods`.
+            periods (Union[None, str, ArrayLike]): Period specification.
+
+                See `ReturnsAccessor.get_periods`.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
@@ -3488,8 +3492,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Defaults to `ReturnsAccessor.bm_returns` if not provided.
-            periods (Union[None, str, ArrayLike]): Period specification resolved
-                using `ReturnsAccessor.get_periods`.
+            periods (Union[None, str, ArrayLike]): Period specification.
+
+                See `ReturnsAccessor.get_periods`.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
@@ -3811,8 +3816,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Args:
             cond_kwargs (KwargsLike): Keyword arguments for condition overrides.
-            custom_arg_names (Optional[Set[str]]): Set of custom attribute names to consider during resolution.
-            impacts_caching (bool): Flag indicating whether the changes affect caching.
+            custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
+            impacts_caching (bool): Flag indicating whether resolution impacts caching.
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
@@ -4013,7 +4018,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     def plot_cumulative(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         bm_returns: tp.Optional[tp.ArrayLike] = None,
         start_value: float = 1,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -4033,7 +4038,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Plot cumulative returns.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
                 Will be broadcast per element.
@@ -4076,8 +4081,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             >>> rets.vbt.returns.plot_cumulative(bm_returns=bm_returns).show()
             ```
 
-            ![](/assets/images/api/plot_cumulative.light.svg#only-light){: .iimg loading=lazy }
-            ![](/assets/images/api/plot_cumulative.dark.svg#only-dark){: .iimg loading=lazy }
+            ![](/Period specification./images/api/plot_cumulative.light.svg#only-light){: .iimg loading=lazy }
+            ![](/Period specification./images/api/plot_cumulative.dark.svg#only-dark){: .iimg loading=lazy }
         """
         from vectorbtpro.utils.figure import make_figure, get_domain
         from vectorbtpro._settings import settings

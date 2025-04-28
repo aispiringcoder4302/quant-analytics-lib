@@ -63,7 +63,7 @@ class BasePurgedCV(Base):
     must be Pandas DataFrame/Series with matching indices, and the samples must be ordered by prediction time.
 
     Args:
-        n_folds (int): Number of folds used in cross-validation.
+        n_folds (int): Total number of folds.
         purge_td (TimedeltaLike): Time period added to evaluation times for purging training samples.
     """
 
@@ -154,10 +154,10 @@ class BasePurgedCV(Base):
         Args:
             X (SeriesFrame): DataFrame or Series containing the input data.
             y (Optional[Series]): Series containing the target values.
-            pred_times (Union[None, Index, Series]): Prediction times corresponding to the samples.
+            pred_times (Union[None, Index, Series]): Indices for prediction times.
 
                 If None, the index of `X` is used.
-            eval_times (Union[None, Index, Series]): Evaluation times corresponding to the samples.
+            eval_times (Union[None, Index, Series]): Indices for evaluation times.
 
                 If None, the index of `X` is used.
 
@@ -203,7 +203,7 @@ class PurgedWalkForwardCV(BasePurgedCV):
     based on prediction times, rather than containing an equal number of samples.
 
     Args:
-        n_folds (int): Total number of folds for partitioning the data.
+        n_folds (int): Total number of folds.
         n_test_folds (int): Number of contiguous folds to be used as the test set.
         min_train_folds (int): Minimum number of consecutive folds to use
             for training preceding the test set.
@@ -377,7 +377,7 @@ class PurgedKFoldCV(BasePurgedCV):
     and a training set prediction time, avoiding potential contamination.
 
     Args:
-        n_folds (int): Total number of folds used to partition the dataset.
+        n_folds (int): Total number of folds.
         n_test_folds (int): Number of folds reserved for the test set in each cross-validation round.
         purge_td (TimedeltaLike): Time interval used to purge samples with overlapping
             prediction and evaluation periods.
@@ -505,8 +505,8 @@ class PurgedKFoldCV(BasePurgedCV):
         Args:
             X (SeriesFrame): Feature data to be split.
             y (Optional[Series]): Optional target data.
-            pred_times (Union[None, Index, Series]): Prediction times for the samples.
-            eval_times (Union[None, Index, Series]): Evaluation times for the samples.
+            pred_times (Union[None, Index, Series]): Indices for prediction times.
+            eval_times (Union[None, Index, Series]): Indices for evaluation times.
 
         Returns:
             Iterable[Tuple[Array1d, Array1d]]: Generator of tuples containing training

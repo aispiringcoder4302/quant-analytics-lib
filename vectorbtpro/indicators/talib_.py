@@ -356,7 +356,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
         *outputs,
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         limits: tp.Optional[tp.Tuple[float, float]] = None,
         add_shape_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
@@ -532,7 +532,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the output arrays.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             limits (Optional[Tuple[float, float]]): Tuple representing the lower and upper limits for the plot.
             {output_trace_kwargs_docstring}
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.

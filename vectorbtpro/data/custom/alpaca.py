@@ -112,7 +112,7 @@ class AlpacaData(RemoteData):
 
                 For possible values, refer to `alpaca.trading.enums`.
             trading_client (Optional[RESTClient]): Existing trading client instance.
-            client_config (KwargsLike): Configuration parameters for creating a client.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
 
         Returns:
             List[str]: A list of symbol strings.
@@ -180,7 +180,7 @@ class AlpacaData(RemoteData):
             client (Optional[RESTClient]): Existing client instance to use.
             client_type (Optional[str]): Specifies the type of client to create;
                 expected values are "crypto" or "stocks".
-            **client_config: Keyword arguments for client initialization.
+            **client_config: Configuration parameters for creating a new client.
 
         Returns:
             RESTClient: An instance of the trading client.
@@ -214,7 +214,7 @@ class AlpacaData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         client: tp.Optional[RESTClientT] = None,
         client_type: tp.Optional[str] = None,
         client_config: tp.KwargsLike = None,
@@ -229,7 +229,7 @@ class AlpacaData(RemoteData):
         """Fetch a symbol from Alpaca via overriding `vectorbtpro.data.base.Data.fetch_symbol`.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             client (Optional[RESTClient]): Alpaca REST client instance.
 
                 See `AlpacaData.resolve_client`.
@@ -237,7 +237,7 @@ class AlpacaData(RemoteData):
 
                 Automatically determined based on the symbol, as crypto symbols contain "/".
                 Also see `AlpacaData.resolve_client`.
-            client_config (KwargsLike): Configuration parameters for creating a client.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
 
                 See `AlpacaData.resolve_client`.
             start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
@@ -381,7 +381,7 @@ class AlpacaData(RemoteData):
                     df = df[df.index < end]
         return df, dict(tz=tz, freq=freq)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

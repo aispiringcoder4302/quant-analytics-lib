@@ -60,7 +60,7 @@ def row_stack_arrays(*arrs: tp.MaybeSequence[tp.AnyArray], expand_axis: int = 1)
 
     Args:
         *arrs (MaybeSequence[AnyArray]): Array-like objects to stack.
-        expand_axis (int): Axis along which to expand each array to 2D format.
+        expand_axis (int): Axis along which to expand the array if necessary.
 
     Returns:
         Array2d: A two-dimensional array with the input arrays stacked row-wise.
@@ -81,7 +81,7 @@ def column_stack_arrays(*arrs: tp.MaybeSequence[tp.AnyArray], expand_axis: int =
 
     Args:
         *arrs (MaybeSequence[AnyArray]): Array-like objects to stack.
-        expand_axis (int): Axis used for expanding each array to 2D format.
+        expand_axis (int): Axis along which to expand the array if necessary.
 
     Returns:
         Array2d: A two-dimensional array with the input arrays stacked column-wise.

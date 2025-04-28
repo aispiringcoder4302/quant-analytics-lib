@@ -37,7 +37,7 @@ def get_long_size_nb(position_before: float, position_now: float) -> float:
 
     Args:
         position_before (float): Asset position before the trade.
-        position_now (float): Current position size.
+        position_now (float): Asset position after the trade.
 
     Returns:
         float: The computed change in long size.
@@ -61,7 +61,7 @@ def get_short_size_nb(position_before: float, position_now: float) -> float:
 
     Args:
         position_before (float): Asset position before the trade.
-        position_now (float): Current position size.
+        position_now (float): Asset position after the trade.
 
     Returns:
         float: The computed change in short size.
@@ -273,7 +273,7 @@ def position_mask_nb(
     The mask is computed within the simulation range defined by `sim_start` and `sim_end`.
 
     Args:
-        assets (Array2d): Array of asset positions.
+        assets (Array2d): Array of asset positions per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.
@@ -326,7 +326,7 @@ def position_mask_grouped_nb(
     """Generate a boolean mask indicating active positions for each group based on asset data.
 
     Args:
-        assets (Array2d): Array of asset values.
+        assets (Array2d): Array of asset positions per column.
         group_lens (GroupLens): Array defining the number of columns in each group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
@@ -385,7 +385,7 @@ def position_coverage_nb(
     """Compute the position coverage ratio for each asset column.
 
     Args:
-        assets (Array2d): Array of asset values.
+        assets (Array2d): Array of asset positions per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.
@@ -443,7 +443,7 @@ def position_coverage_grouped_nb(
     """Compute the position coverage ratio for each group of asset columns.
 
     Args:
-        assets (Array2d): Array of asset values.
+        assets (Array2d): Array of asset positions per column.
         group_lens (GroupLens): Array defining the number of columns in each group.
         granular_groups (bool): Flag to determine if coverage is computed per individual column within a group.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -923,8 +923,8 @@ def get_free_cash_diff_nb(
 
     Args:
         position_before (float): Position amount before the transaction.
-        position_now (float): Current position size.
-        debt_now (float): Current debt amount.
+        position_now (float): Position amount after the transaction.
+        debt_now (float): Debt amount after the transaction.
         price (float): Asset price used for computing the transaction value.
         fees (float): Fraction of the order value charged as fee.
 
@@ -997,8 +997,8 @@ def cash_flow_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         order_records (RecordArray): Array of order records.
         col_map (GroupMap): Tuple of column indices and lengths.
-        free (bool): Flag indicating whether to compute free cash flow differences.
-        cash_earnings (FlexArray2dLike): Cash earnings.
+        free (bool): Flag indicating whether to use free cash flow.
+        cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -1173,7 +1173,7 @@ def align_init_cash_nb(
     Args:
         init_cash_raw (int): Raw initial cash value or mode indicator for auto alignment.
         free_cash_flow (Array2d): Array of free cash flow values.
-        cash_deposits (FlexArray2dLike): Cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
         
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -1367,7 +1367,7 @@ def cash_nb(
     Args:
         cash_flow (Array2d): 2D array of cash flow values.
         init_cash (FlexArray1d): Initial cash amounts per column.
-        cash_deposits (FlexArray2dLike): Cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
         
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -1523,7 +1523,7 @@ def asset_value_nb(
 
     Args:
         close (Array2d): Price series per column.
-        assets (Array2d): Asset quantity series per column.
+        assets (Array2d): Array of asset positions per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.
@@ -1892,7 +1892,7 @@ def total_profit_nb(
         init_price (FlexArray1dLike): Initial position price.
         
             Provided as a scalar or per column.
-        cash_earnings (FlexArray2dLike): Cash earnings.
+        cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -2026,7 +2026,7 @@ def returns_nb(
     Args:
         value (Array2d): Array of asset values.
         init_value (FlexArray1d): Initial asset value per column.
-        cash_deposits (FlexArray2dLike): Cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
         
             Provided as a scalar, or per row, column, or element.
         cash_deposits_as_input (bool): Whether to add cash deposits to the input value.
@@ -2291,7 +2291,7 @@ def market_value_nb(
     Args:
         close (Array2d): Asset prices with rows as bars and columns as assets.
         init_value (FlexArray1d): Initial market values for each asset.
-        cash_deposits (FlexArray2dLike): Cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
         
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -2359,7 +2359,7 @@ def market_value_grouped_nb(
         close (Array2d): Asset prices with rows as bars and columns as individual assets.
         group_lens (GroupLens): Array defining the number of columns in each group.
         init_value (FlexArray1d): Initial market values for each asset.
-        cash_deposits (FlexArray2dLike): Cash deposits.
+        cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
         
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).

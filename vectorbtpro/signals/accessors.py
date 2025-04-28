@@ -3506,7 +3506,7 @@ class SignalsAccessor(GenericAccessor):
     def plot(
         self,
         yref: str = "y",
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot signals.
@@ -3528,7 +3528,7 @@ class SignalsAccessor(GenericAccessor):
             ![](/assets/images/api/signals_df_plot.dark.svg#only-dark){: .iimg loading=lazy }
         """
         if column is not None:
-            _self = self.select_col(column=column)
+            _self = self.select_col(column=column, group_by=False)
         else:
             _self = self
         default_kwargs = dict(trace_kwargs=dict(line=dict(shape="hv")))
@@ -3538,7 +3538,7 @@ class SignalsAccessor(GenericAccessor):
     def plot_as_markers(
         self,
         y: tp.Optional[tp.ArrayLike] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot series as markers.
@@ -3617,14 +3617,14 @@ class SignalsAccessor(GenericAccessor):
     def plot_as_entries(
         self,
         y: tp.Optional[tp.ArrayLike] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot signals as entry markers.
 
         Args:
             y (Optional[ArrayLike]): Y-axis values for entry markers.
-            column (Optional[Label]): Column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
 
         Returns:
@@ -3661,14 +3661,14 @@ class SignalsAccessor(GenericAccessor):
     def plot_as_exits(
         self,
         y: tp.Optional[tp.ArrayLike] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot signals as exit markers.
 
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting exit signals.
-            column (Optional[Label]): Label for the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             **kwargs: Keyword arguments for `SignalsAccessor.plot_as_markers`.
 
         Returns:
@@ -3705,14 +3705,14 @@ class SignalsAccessor(GenericAccessor):
     def plot_as_entry_marks(
         self,
         y: tp.Optional[tp.ArrayLike] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot signals as marked entry markers.
 
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting entry markers.
-            column (Optional[Label]): Label for the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             **kwargs: Keyword arguments for `SignalsAccessor.plot_as_markers`.
 
         Returns:
@@ -3753,14 +3753,14 @@ class SignalsAccessor(GenericAccessor):
     def plot_as_exit_marks(
         self,
         y: tp.Optional[tp.ArrayLike] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot signals as marked exit markers.
 
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting exit markers.
-            column (Optional[Label]): Label for the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             **kwargs: Keyword arguments for `SignalsAccessor.plot_as_markers`.
 
         Returns:

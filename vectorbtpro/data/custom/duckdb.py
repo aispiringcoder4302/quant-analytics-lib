@@ -533,9 +533,9 @@ class DuckDBData(DBData):
             keys (MaybeKeys): Keys for which to pull data.
 
                 If not provided, available table names are used.
-            keys_are_features (Optional[bool]): Indicates whether the keys represent features.
-            features (MaybeFeatures): Features used to filter or structure the data.
-            symbols (MaybeSymbols): Symbols used for filtering the data.
+            keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
+            features (MaybeFeatures): Feature or a list of features.
+            symbols (MaybeSymbols): Symbol or a list of symbols.
             catalog (Optional[str]): Catalog name for database lookup.
             schema (Optional[str]): Schema name for database lookup.
             list_tables_kwargs (KwargsLike): Keyword arguments for listing database tables.
@@ -723,7 +723,7 @@ class DuckDBData(DBData):
         Can use a table name (defaulting to the key) or a custom SQL query.
 
         Args:
-            key (str): Feature or symbol.
+            key (str): Feature or symbol identifier.
 
                 If both `table` and `query` are None, the key becomes the table name.
                 The key can be provided in either `SCHEMA:TABLE` or `CATALOG:SCHEMA:TABLE` format,
@@ -779,7 +779,7 @@ class DuckDBData(DBData):
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             index_col (Optional[MaybeSequence[IntStr]]): Column(s) to use as the index.
-            squeeze (Optional[bool]): Whether to squeeze a DataFrame with a single column into a Series.
+            squeeze (Optional[bool]): Flag indicating whether to convert a single-column DataFrame to a Series.
             df_kwargs (KwargsLike): Keyword arguments for `relation.df` to convert a relation to a DataFrame.
             **sql_kwargs: Keyword arguments for `connection.execute` to run the SQL query.
 
@@ -996,11 +996,11 @@ class DuckDBData(DBData):
         return obj, dict(tz=tz)
 
     @classmethod
-    def fetch_feature(cls, feature: str, **kwargs) -> tp.FeatureData:
+    def fetch_feature(cls, feature: tp.Feature, **kwargs) -> tp.FeatureData:
         """Fetch the data table for a feature using the underlying `DuckDBData.fetch_key` method.
 
         Args:
-            feature (str): Identifier for the feature whose data table is to be fetched.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `DuckDBData.fetch_key`.
 
         Returns:
@@ -1009,11 +1009,11 @@ class DuckDBData(DBData):
         return cls.fetch_key(feature, **kwargs)
 
     @classmethod
-    def fetch_symbol(cls, symbol: str, **kwargs) -> tp.SymbolData:
+    def fetch_symbol(cls, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         """Fetch the data table for a symbol using the underlying `DuckDBData.fetch_key` method.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `DuckDBData.fetch_key`.
 
         Returns:
@@ -1053,11 +1053,11 @@ class DuckDBData(DBData):
             return self.fetch_feature(key, **kwargs)
         return self.fetch_symbol(key, **kwargs)
 
-    def update_feature(self, feature: str, **kwargs) -> tp.FeatureData:
+    def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
         """Update the data table for a feature using the underlying `DuckDBData.update_key` method.
 
         Args:
-            feature (str): Identifier for the feature to update.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `DuckDBData.update_key`.
 
         Returns:
@@ -1065,11 +1065,11 @@ class DuckDBData(DBData):
         """
         return self.update_key(feature, **kwargs)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         """Update the data table for a symbol using the underlying `DuckDBData.update_key` method.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `DuckDBData.update_key`.
 
         Returns:

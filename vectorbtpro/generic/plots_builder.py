@@ -123,7 +123,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         self,
         subplots: tp.Optional[tp.MaybeIterable[tp.Union[str, tp.Tuple[str, tp.Kwargs]]]] = None,
         tags: tp.Optional[tp.MaybeIterable[str]] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         group_by: tp.GroupByLike = None,
         per_column: tp.Optional[bool] = None,
         split_columns: tp.Optional[bool] = None,
@@ -197,9 +197,9 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                     before filtering and cannot be used in templates, though they may still be overridden.
 
                 Pass `subplots='all'` to plot all supported subplots.
-            tags (Optional[MaybeIterable[str]]): Tags parameter as described in
+            tags (Optional[MaybeIterable[str]]): Tags parameter, as described in
                 `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            column (Optional[Label]): Column identifier as described in
+            column (Optional[Column]): Identifier of the column to plot, as described in
                 `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             group_by (GroupByLike): Grouping specification, as described in
                 `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.

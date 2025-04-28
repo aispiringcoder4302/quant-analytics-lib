@@ -110,7 +110,7 @@ class _PATSIM(PATSIM):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         similarity_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
@@ -119,7 +119,7 @@ class _PATSIM(PATSIM):
         """Plot `PATSIM.similarity` against `PATSIM.close`.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
 
             similarity_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PATSIM.similarity`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
@@ -145,7 +145,7 @@ class _PATSIM(PATSIM):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         similarity_trace_kwargs = merge_dicts(
             dict(name="Similarity", line=dict(color=plotting_cfg["color_schema"]["lightblue"])),
@@ -170,7 +170,7 @@ class _PATSIM(PATSIM):
 
     def overlay_with_heatmap(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         close_trace_kwargs: tp.KwargsLike = None,
         similarity_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
@@ -180,8 +180,7 @@ class _PATSIM(PATSIM):
         """Overlay `PATSIM.similarity` as a heatmap on top of `PATSIM.close`.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
-
+            column (Optional[Column]): Identifier of the column to plot.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PATSIM.close`.
             similarity_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Heatmap` for `PATSIM.similarity`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
@@ -207,7 +206,7 @@ class _PATSIM(PATSIM):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if close_trace_kwargs is None:
             close_trace_kwargs = {}

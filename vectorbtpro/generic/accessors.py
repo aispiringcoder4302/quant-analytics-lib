@@ -320,7 +320,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Object containing the data.
-        mapping (Optional[MappingLike]): Mapping configuration for data transformation.
+        mapping (Optional[MappingLike]): Mapping configuration.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
 
     !!! info
@@ -1326,9 +1326,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[int]): Window size.
 
                 Defaults to the length of `pattern`.
-            max_window (Optional[int]): Maximum length of the rolling window.
-            row_select_prob (float): Probability of selecting a row for computation.
-            window_select_prob (float): Probability of selecting a specific window size.
+            max_window (Optional[int]): Maximum length of the rolling window for matching.
+            row_select_prob (float): Probability of selecting a row.
+            window_select_prob (float): Probability of selecting a window size.
             interp_mode (Union[int, str]): Interpolation mode.
 
                 Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
@@ -1970,8 +1970,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If a string is provided, it is resolved to a function in `nb` by appending `_reduce_nb`.
                 Use a meta function for operations requiring additional group information.
             *args: Positional arguments for `reduce_func_nb`.
-            groupby_kwargs (KwargsLike): Keyword arguments for groupby operations when
-                using `pd.DataFrame.groupby`.
+            groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -2133,7 +2132,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If a string is provided, the corresponding function is retrieved from the `nb`
                 module using the `_transform_nb` suffix.
             *args: Positional arguments for `transform_func_nb`.
-            groupby_kwargs (KwargsLike): Keyword arguments for the groupby operation.
+            groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
@@ -2265,7 +2264,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 `vectorbtpro.base.resampling.base.Resampler`, `pandas.core.resample.Resampler`,
                 or any object accepted by `pd.DataFrame.resample` when combined with `resample_kwargs`.
             reduce_func_nb (Union[str, ReduceFunc, GroupByReduceMetaFunc, RangeReduceMetaFunc]):
-                The reduction or meta function to apply.
+                Reduction or meta function to apply.
         
                 If provided as a string, it is converted by appending `_reduce_nb` and retrieved from `nb`.
             *args: Positional arguments for `reduce_func_nb`.
@@ -2610,7 +2609,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             reduce_func_nb (Union[str, ReduceFunc, ReduceMetaFunc, ReduceToArrayFunc, ReduceToArrayMetaFunc, ReduceGroupedFunc, ReduceGroupedMetaFunc, ReduceGroupedToArrayFunc, ReduceGroupedToArrayMetaFunc]):
-                The reducing function to apply.
+                Reducing function to apply.
 
                 It can be a function or a string representing the suffix of a reducing
                 function from `vectorbtpro.generic.nb` (e.g., "sum" corresponds to `sum_reduce_nb`).
@@ -2902,7 +2901,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             window (int): Window size.
             reduce_func_nb (Union[str, ReduceFunc, ProximityReduceMetaFunc]):
-                The reduction function or its string identifier.
+                Reduction function or its string identifier.
             *args: Positional arguments for `reduce_func_nb`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -3050,7 +3049,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             squeeze_func_nb (Union[str, ReduceFunc, GroupSqueezeMetaFunc]):
-                The squeeze function applied to each group.
+                Squeeze function applied to each group.
 
                 If provided as a string, it is converted into a function by appending
                 "_reduce_nb" and retrieving it from `nb`.
@@ -5491,8 +5490,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             cond_kwargs (KwargsLike): Keyword arguments that may alter instance conditions.
-            custom_arg_names (Optional[Set[str]]): Set of custom argument names to consider.
-            impacts_caching (bool): Indicator whether modifications affect caching.
+            custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
+            impacts_caching (bool): Flag indicating whether resolution impacts caching.
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
@@ -5605,7 +5604,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         trace_names: tp.TraceNames = None,
         x_labels: tp.Optional[tp.Labels] = None,
         return_fig: bool = True,
@@ -5615,7 +5614,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return the resulting figure or trace updater.
 
         Args:
-            column (Optional[Label]): Column identifier to select specific data.
+            column (Optional[Column]): Identifier of the column to plot.
             trace_names (TraceNames): Names for traces corresponding to data columns.
             x_labels (Optional[Labels]): Labels for the x-axis.
             return_fig (bool): If True, return the figure; otherwise, return the trace updater.
@@ -5635,7 +5634,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         from vectorbtpro.generic.plotting import Scatter
 
         if column is not None:
-            _self = self.select_col(column=column)
+            _self = self.select_col(column=column, group_by=False)
         else:
             _self = self
         if x_labels is None:
@@ -5648,11 +5647,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
             return scatter.fig
         return scatter
 
-    def lineplot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
+    def lineplot(self, column: tp.Optional[tp.Column] = None, **kwargs) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot a line chart using `GenericAccessor.plot` in 'lines' mode.
 
         Args:
-            column (Optional[Label]): Column label for plotting.
+            column (Optional[Column]): Identifier of the column to plot.
             **kwargs: Keyword arguments for `GenericAccessor.plot`.
 
         Returns:
@@ -5668,11 +5667,11 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """
         return self.plot(column=column, **merge_dicts(dict(trace_kwargs=dict(mode="lines")), kwargs))
 
-    def scatterplot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
+    def scatterplot(self, column: tp.Optional[tp.Column] = None, **kwargs) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot a scatter chart using `GenericAccessor.plot` in 'markers' mode.
 
         Args:
-            column (Optional[Label]): Column label for plotting.
+            column (Optional[Column]): Identifier of the column to plot.
             **kwargs: Keyword arguments for `GenericAccessor.plot`.
 
         Returns:
@@ -5690,7 +5689,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def barplot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         trace_names: tp.TraceNames = None,
         x_labels: tp.Optional[tp.Labels] = None,
         return_fig: bool = True,
@@ -5699,7 +5698,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Create a bar chart using `vectorbtpro.generic.plotting.Bar` and return the figure or chart object.
 
         Args:
-            column (Optional[Label]): Column label for plotting.
+            column (Optional[Column]): Identifier of the column to plot.
             trace_names (TraceNames): Names for traces corresponding to data columns.
             x_labels (Optional[Labels]): Labels for the x-axis.
             return_fig (bool): If True, return the figure; otherwise, return the trace updater.
@@ -5719,7 +5718,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         from vectorbtpro.generic.plotting import Bar
 
         if column is not None:
-            _self = self.select_col(column=column)
+            _self = self.select_col(column=column, group_by=False)
         else:
             _self = self
         if x_labels is None:
@@ -5734,7 +5733,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def histplot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         by_level: tp.Optional[tp.Level] = None,
         trace_names: tp.TraceNames = None,
         group_by: tp.GroupByLike = None,
@@ -5745,7 +5744,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return the figure or chart object.
 
         Args:
-            column (Optional[Label]): Column label for plotting.
+            column (Optional[Column]): Identifier of the column to plot.
             by_level (Optional[Level]): Level at which to unstack the data, if applicable.
             trace_names (TraceNames): Names for traces corresponding to data columns.
             group_by (GroupByLike): Grouping specification.
@@ -5777,7 +5776,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             )
 
         if column is not None:
-            _self = self.select_col(column=column)
+            _self = self.select_col(column=column, group_by=False)
         else:
             _self = self
 
@@ -5794,7 +5793,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def boxplot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         by_level: tp.Optional[tp.Level] = None,
         trace_names: tp.TraceNames = None,
         group_by: tp.GroupByLike = None,
@@ -5805,7 +5804,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         return the figure or chart object.
 
         Args:
-            column (Optional[Label]): Column label for plotting.
+            column (Optional[Column]): Identifier of the column to plot.
             by_level (Optional[Level]): Level at which to unstack the data, if applicable.
             trace_names (TraceNames): Names for traces corresponding to data columns.
             group_by (GroupByLike): Grouping specification.
@@ -5837,7 +5836,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             )
 
         if column is not None:
-            _self = self.select_col(column=column)
+            _self = self.select_col(column=column, group_by=False)
         else:
             _self = self
 
@@ -5855,7 +5854,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def plot_against(
         self,
         other: tp.ArrayLike,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         trace_kwargs: tp.KwargsLike = None,
         other_trace_kwargs: tp.Union[str, tp.KwargsLike] = None,
         pos_trace_kwargs: tp.KwargsLike = None,
@@ -5869,7 +5868,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             other (ArrayLike): Second array to compare, which will be broadcast to match the primary data.
-            column (Optional[Label]): Column identifier to select from inputs.
+            column (Optional[Column]): Identifier of the column to plot.
             trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the main series.
             other_trace_kwargs (Union[str, KwargsLike]): Keyword arguments for `plotly.graph_objects.Scatter` for the second series.
 
@@ -6013,7 +6012,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def overlay_with_heatmap(
         self,
         other: tp.ArrayLike,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         trace_kwargs: tp.KwargsLike = None,
         heatmap_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
@@ -6025,7 +6024,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             other (ArrayLike): Second array to compare, which will be broadcast
                 to match the primary data.
-            column (Optional[Label]): Column identifier to select from inputs.
+            column (Optional[Column]): Identifier of the column to plot.
             trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the line.
             heatmap_kwargs (KwargsLike): Keyword arguments for `GenericDFAccessor.heatmap` used to generate the heatmap.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
@@ -6088,7 +6087,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def heatmap(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         x_level: tp.Optional[tp.Level] = None,
         y_level: tp.Optional[tp.Level] = None,
         symmetric: bool = False,
@@ -6109,7 +6108,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         `y_level` to define the axes and optionally use a slider by setting `slider_level`.
 
         Args:
-            column (Optional[Label]): Column to select from the object's data.
+            column (Optional[Column]): Identifier of the column to plot.
             x_level (Optional[Level]): Level for the x-axis of the heatmap.
 
                 Accepts an integer index or string name.
@@ -6173,7 +6172,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         from vectorbtpro.generic.plotting import Heatmap
 
         if column is not None:
-            _self = self.select_col(column=column)
+            _self = self.select_col(column=column, group_by=False)
         else:
             _self = self
         if _self.ndim == 2 or not isinstance(self.wrapper.index, pd.MultiIndex):
@@ -6292,7 +6291,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def ts_heatmap(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         is_y_category: bool = True,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
@@ -6303,7 +6302,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         to produce a heatmap with reversed vertical order.
 
         Args:
-            column (Optional[Label]): Column to select from the object's data.
+            column (Optional[Column]): Identifier of the column to plot.
             is_y_category (bool): Flag indicating whether to treat the y-axis as categorical.
             **kwargs: Keyword arguments for `GenericAccessor.heatmap`.
 
@@ -6320,7 +6319,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def volume(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         x_level: tp.Optional[tp.Level] = None,
         y_level: tp.Optional[tp.Level] = None,
         z_level: tp.Optional[tp.Level] = None,
@@ -6339,7 +6338,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Create a 3D volume figure using the object's multi-index and values.
 
         Args:
-            column (Optional[Label]): Column label to select data.
+            column (Optional[Column]): Identifier of the column to plot.
             x_level (Optional[Level]): Level to use for the x-axis.
 
                 Provide an integer index or a level name.
@@ -6392,7 +6391,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """
         from vectorbtpro.generic.plotting import Volume
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         (x_level, y_level, z_level), (slider_level,) = indexes.pick_levels(
             self_col.wrapper.index,
@@ -6489,7 +6488,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     def qqplot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         sparams: tp.Union[tp.Iterable, tuple, None] = (),
         dist: str = "norm",
         plot_line: bool = True,
@@ -6502,7 +6501,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Plot a probability plot using `scipy.stats.probplot` and display the results as a scatter plot.
 
         Args:
-            column (Optional[Label]): Column label to select data.
+            column (Optional[Column]): Identifier of the column to plot.
             sparams (Union[Iterable, tuple, None]): Parameters to pass to `scipy.stats.probplot`.
             dist (str): Distribution name for generating the probability plot.
             plot_line (bool): Whether to add a fitted reference line based on the probability plot.
@@ -6668,7 +6667,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         error_type: tp.Union[int, str] = "absolute",
         max_error: tp.ArrayLike = np.nan,
         max_error_interp_mode: tp.Union[None, int, str] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_obj: bool = True,
         fill_distance: bool = False,
         obj_trace_kwargs: tp.KwargsLike = None,
@@ -6705,7 +6704,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`.
             
                 Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
-            column (Optional[Label]): Column label for data selection.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_obj (bool): If True, includes the original object data in the plot.
             fill_distance (bool): If True, fills the area under the pattern trace.
             obj_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the original data.
@@ -6766,7 +6765,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             fig = make_figure()
         fig.update_layout(**layout_kwargs)
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
         if plot_obj:
             # Plot object
             fig = self_col.lineplot(
@@ -6988,7 +6987,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying data array.
-        mapping (Optional[MappingLike]): Optional mapping for metadata.
+        mapping (Optional[MappingLike]): Mapping configuration.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseSRAccessor` and `GenericAccessor`.
     """
 
@@ -7100,7 +7099,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
             relative (ArrayLike): Indicator specifying if the brick size is relative.
             start_value (Optional[float]): Starting value for the Renko chart.
             max_out_len (Optional[int]): Maximum length of the output.
-            reset_index (bool): Whether to reset the index of the resulting series.
+            reset_index (bool): Whether to reset the index in the resulting Series.
             return_uptrend (bool): Whether to return the uptrend series along with the Renko series.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -7153,7 +7152,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
             relative (ArrayLike): Indicator specifying if the brick size is relative.
             start_value (Optional[float]): Starting value for the Renko chart.
             max_out_len (Optional[int]): Maximum length of the output.
-            reset_index (bool): Whether to reset the index of the resulting DataFrame.
+            reset_index (bool): Whether to reset the index in the resulting DataFrame.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -7192,7 +7191,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying data object.
-        mapping (Optional[MappingLike]): Mapping for additional configuration.
+        mapping (Optional[MappingLike]): Mapping configuration.
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseDFAccessor` and `GenericAccessor`.
     """
 

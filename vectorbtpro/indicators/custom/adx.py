@@ -57,7 +57,7 @@ class _ADX(ADX):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plus_di_trace_kwargs: tp.KwargsLike = None,
         minus_di_trace_kwargs: tp.KwargsLike = None,
         adx_trace_kwargs: tp.KwargsLike = None,
@@ -68,7 +68,7 @@ class _ADX(ADX):
         """Plot ADX traces including `ADX.plus_di`, `ADX.minus_di`, and `ADX.adx`.
 
         Args:
-            column (Optional[Label]): Column name to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plus_di_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ADX.plus_di`.
             minus_di_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ADX.minus_di`.
             adx_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ADX.adx`.
@@ -96,7 +96,7 @@ class _ADX(ADX):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

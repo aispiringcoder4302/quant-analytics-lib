@@ -49,7 +49,7 @@ class _BOLB(BOLB):
         * `vectorbtpro.labels.nb.breakout_labels_nb` for the underlying implementation.
     """
 
-    def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
+    def plot(self, column: tp.Optional[tp.Column] = None, **kwargs) -> tp.BaseFigure:
         """Plot the median of `BOLB.high` and `BOLB.low` and overlay it with a heatmap of `BOLB.labels`.
 
         Args:

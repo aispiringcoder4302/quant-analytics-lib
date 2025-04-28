@@ -793,8 +793,8 @@ def is_class(obj: type, types: tp.TypeLike) -> bool:
 
     Args:
         obj (type): Class to check.
-        types (TypeLike): Type, string, or `vectorbtpro.utils.parsing.Regex`
-            pattern (or tuple of such) to compare against.
+        types (TypeLike): Type, string, or `vectorbtpro.utils.parsing.Regex` pattern
+            (or tuple of such) representing the superclass.
 
     Returns:
         bool: True if the class matches the type descriptor, False otherwise.
@@ -854,7 +854,8 @@ def is_instance_of(obj: tp.Any, types: tp.TypeLike) -> bool:
 
     Args:
         obj (Any): Object to check.
-        types (TypeLike): Type, a tuple of types, or type name(s).
+        types (TypeLike): Type, string, or `vectorbtpro.utils.parsing.Regex` pattern
+            (or tuple of such) representing the superclass.
 
     Returns:
         bool: True if the object is an instance of the specified type(s), False otherwise.
@@ -1042,7 +1043,8 @@ def assert_instance_of(obj: tp.Any, types: tp.TypeLike, arg_name: tp.Optional[st
 
     Args:
         obj (Any): Object to validate.
-        types (TypeLike): Type, tuple of types, or type name(s) to check against.
+        types (TypeLike): Type, string, or `vectorbtpro.utils.parsing.Regex` pattern
+            (or tuple of such) representing the superclass.
         arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:
@@ -1067,7 +1069,8 @@ def assert_not_instance_of(obj: tp.Any, types: tp.TypeLike, arg_name: tp.Optiona
 
     Args:
         obj (Any): Object to validate.
-        types (TypeLike): Type, tuple of types, or type name(s) that are disallowed.
+        types (TypeLike): Type, string, or `vectorbtpro.utils.parsing.Regex` pattern
+            (or tuple of such) representing the superclass.
         arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:

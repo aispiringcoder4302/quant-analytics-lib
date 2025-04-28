@@ -202,8 +202,7 @@ class SimRangeMixin(Base):
         """Index simulation start.
 
         Args:
-            wrapper_meta (dict): Metadata containing the new wrapper, row indices, and
-                a flag indicating if rows have changed.
+            wrapper_meta (dict): Metadata from the indexing operation on the wrapper.
 
         Returns:
             Optional[ArrayLike]: The updated simulation start positions array,
@@ -227,8 +226,7 @@ class SimRangeMixin(Base):
         """Index simulation end.
 
         Args:
-            wrapper_meta (dict): Metadata containing the new wrapper, row indices, and
-                a flag indicating if rows have changed.
+            wrapper_meta (dict): Metadata from the indexing operation on the wrapper.
 
         Returns:
             Optional[ArrayLike]: The updated simulation end positions array,
@@ -809,7 +807,7 @@ class SimRangeMixin(Base):
     def fit_fig_to_sim_range(
         cls_or_self,
         fig: tp.BaseFigure,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
         wrapper: tp.Optional[ArrayWrapper] = None,
@@ -820,7 +818,7 @@ class SimRangeMixin(Base):
 
         Args:
             fig (BaseFigure): Figure to update.
-            column (Optional[Label]): Column to use for simulation range selection.
+            column (Optional[Column]): Identifier of the column or group to plot.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.

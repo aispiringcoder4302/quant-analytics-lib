@@ -462,7 +462,7 @@ class Orders(PriceRecords):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_ohlc: bool = True,
         plot_close: bool = True,
         ohlc_type: tp.Union[None, str, tp.BaseTraceType] = None,
@@ -479,8 +479,8 @@ class Orders(PriceRecords):
         Plot the order data on a Plotly figure by overlaying OHLC and close price data with buy and sell markers.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
-            plot_ohlc (bool): Whether to plot OHLC data.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_ohlc (bool): Whether to plot the OHLC data.
             plot_close (bool): Whether to plot the close price if OHLC data is unavailable.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 

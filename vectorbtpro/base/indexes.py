@@ -226,7 +226,7 @@ def clean_index(
     Args:
         index (IndexLike): Index to be cleaned.
         drop_duplicates (Optional[bool]): If True, remove duplicate levels.
-        keep (Optional[str]): Determines which duplicate levels to retain.
+        keep (Optional[str]): Indicates which duplicate to retain; valid options are "first" or "last".
         drop_redundant (Optional[bool]): If True, remove redundant levels.
 
     Returns:
@@ -744,9 +744,7 @@ def drop_duplicate_levels(index: tp.Index, keep: tp.Optional[str] = None) -> tp.
 
     Args:
         index (Index): Index from which duplicate levels are removed.
-        keep (Optional[str]): Specifies which duplicate to retain, either 'first' or 'last'.
-
-            If None, the default is used.
+        keep (Optional[str]): Indicates which duplicate to retain; valid options are "first" or "last".
 
     Returns:
         Index: The index with duplicate levels dropped.
@@ -1246,7 +1244,7 @@ class IndexApplier(Base):
             *indexes (Index): One or more indexes to add as new levels.
             on_top (bool): If True, add the new levels before the existing index; if False, add them after.
             drop_duplicates (Optional[bool]): Indicates whether to remove duplicate levels.
-            keep (Optional[str]): Specifies which duplicate to retain.
+            keep (Optional[str]): Indicates which duplicate to retain; valid options are "first" or "last".
             drop_redundant (Optional[bool]): Indicates whether to remove redundant levels.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 
@@ -1356,7 +1354,7 @@ class IndexApplier(Base):
         """Remove duplicate levels from the index using `drop_duplicate_levels`.
 
         Args:
-            keep (Optional[str]): Strategy to determine which duplicate level to retain.
+            keep (Optional[str]): Indicates which duplicate to retain; valid options are "first" or "last".
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 
         Returns:

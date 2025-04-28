@@ -86,7 +86,7 @@ class _STOCH(STOCH):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         limits: tp.Tuple[float, float] = (20, 80),
         fast_k_trace_kwargs: tp.KwargsLike = None,
         slow_k_trace_kwargs: tp.KwargsLike = None,
@@ -99,7 +99,7 @@ class _STOCH(STOCH):
         """Plot `STOCH.slow_k` and `STOCH.slow_d`.
 
         Args:
-            column (Optional[Label]): Name of the column to select for plotting.
+            column (Optional[Column]): Identifier of the column to plot.
             limits (Tuple[float, float]): Lower and upper y-axis limits for the filled range.
             fast_k_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `STOCH.fast_k`.
             slow_k_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `STOCH.slow_k`.
@@ -128,7 +128,7 @@ class _STOCH(STOCH):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fast_k_trace_kwargs is None:
             fast_k_trace_kwargs = {}

@@ -238,7 +238,7 @@ class FinPyData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         market: tp.Optional[MarketT] = None,
         market_config: tp.KwargsLike = None,
         start: tp.Optional[tp.DatetimeLike] = None,
@@ -253,7 +253,7 @@ class FinPyData(RemoteData):
         from findatapy.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
 
                 Accepts formats such as "fx.bloomberg.daily.NYC.EURUSD.close".
 
@@ -398,7 +398,7 @@ class FinPyData(RemoteData):
             df = df.tz_localize("utc")
         return df, dict(tz=tz, freq=freq)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

@@ -385,12 +385,12 @@ class TVClient(Configured):
         self.ws.send(m)
 
     @classmethod
-    def convert_raw_data(cls, raw_data: str, symbol: str) -> tp.Frame:
+    def convert_raw_data(cls, raw_data: str, symbol: tp.Symbol) -> tp.Frame:
         """Convert a raw data string into a Pandas DataFrame containing historical trading data.
 
         Args:
             raw_data (str): Raw data string returned by TradingView.
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
 
         Returns:
             Frame: A DataFrame with columns ['datetime', 'open', 'high', 'low', 'close', 'volume']
@@ -424,11 +424,11 @@ class TVClient(Configured):
         return data
 
     @classmethod
-    def format_symbol(cls, symbol: str, exchange: str, fut_contract: tp.Optional[int] = None) -> str:
+    def format_symbol(cls, symbol: tp.Symbol, exchange: str, fut_contract: tp.Optional[int] = None) -> str:
         """Format a trading symbol based on the exchange and future contract details.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             exchange (str): Exchange code.
             fut_contract (Optional[int]): Future contract number.
 
@@ -447,7 +447,7 @@ class TVClient(Configured):
 
     def get_hist(
         self,
-        symbol: str,
+        symbol: tp.Symbol,
         exchange: str = "NSE",
         interval: str = "1D",
         fut_contract: tp.Optional[int] = None,
@@ -460,7 +460,7 @@ class TVClient(Configured):
         """Retrieve historical trading data for a specified symbol.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             exchange (str): Exchange code.
             interval (str): Time interval for historical data.
             fut_contract (Optional[int]): Future contract number.
@@ -761,12 +761,12 @@ class TVData(RemoteData):
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to sort the final list of symbols.
             client (Optional[TVClient]): Client instance for API requests.
-            client_config (KwargsLike): Configuration parameters for creating a client.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
             text (Optional[str]): Text for performing a server-side symbol search.
             exchange (Optional[str]): Exchange for performing a server-side symbol search.
             pages (Optional[int]): Number of pages to retrieve during symbol search.
             delay (Optional[int]): Delay between requests during symbol search.
-            retries (Optional[int]): Number of retry attempts for symbol search requests.
+            retries (Optional[int]): Number of retries on failure to fetch data.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
@@ -994,7 +994,7 @@ class TVData(RemoteData):
             client (Optional[TVClient]): Instance of `TVClient`.
 
                 If provided, it is used directly.
-            **client_config: Additional configuration parameters for creating a new client.
+            **client_config: Configuration parameters for creating a new client.
 
         Returns:
             TVClient: The resolved client instance.
@@ -1016,7 +1016,7 @@ class TVData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         client: tp.Optional[TVClient] = None,
         client_config: tp.KwargsLike = None,
         exchange: tp.Optional[str] = None,
@@ -1035,13 +1035,13 @@ class TVData(RemoteData):
         Overrides `vectorbtpro.data.base.Data.fetch_symbol`.
 
         Args:
-            symbol (str): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             
                 Must be in the `EXCHANGE:SYMBOL` format if `exchange` is not provided.
             client (Optional[TVClient]): Client instance.
 
                 See `TVData.resolve_client`.
-            client_config (KwargsLike): Configuration parameters for creating a client.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
 
                 See `TVData.resolve_client`.
             exchange (Optional[str]): Market exchange.
@@ -1151,7 +1151,7 @@ class TVData(RemoteData):
 
         return df, dict(tz=tz, freq=freq)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)
         return self.fetch_symbol(symbol, **kwargs)

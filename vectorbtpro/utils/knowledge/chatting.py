@@ -4535,7 +4535,7 @@ class DocumentRanker(Configured):
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
             refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_embeddings (bool): If True, include embeddings in the returned result.
-            return_documents (bool): If True, include the original documents along with their embeddings.
+            return_documents (bool): If True, include original document objects in the output.
 
         Returns:
             Optional[EmbeddedDocuments]: Embedded documents or embeddings based on the specified return flags.
@@ -4722,7 +4722,7 @@ class DocumentRanker(Configured):
             refresh (bool): Flag to refresh both documents and embeddings.
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
             refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
-            return_chunks (bool): If True, score and return document chunks.
+            return_chunks (bool): Whether to return document chunks.
             return_documents (bool): If True, include original document objects in the output.
 
         Returns:
@@ -4854,12 +4854,12 @@ class DocumentRanker(Configured):
                 If None, uses documents from the store.
             refresh (bool): Flag to refresh both documents and embeddings.
             refresh_documents (Optional[bool]): Flag to refresh documents.
-            return_chunks (bool): Whether to process document chunks in scoring.
-            return_documents (bool): Whether to return full ScoredDocument objects.
+            return_chunks (bool): Whether to return document chunks.
+            return_documents (bool): If True, include original document objects in the output.
 
         Returns:
             ScoredDocuments: The computed BM25 scores for each document, as either numeric scores or
-                ScoredDocument objects.
+                `ScoredDocument` objects.
         """
         with self.doc_store, self.emb_store:
             if refresh_documents is None:
@@ -5341,7 +5341,7 @@ def embed_documents(
         refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
         refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
         return_embeddings (bool): Flag indicating whether to return embeddings.
-        return_documents (bool): Flag indicating whether to return documents.
+        return_documents (bool): If True, include original document objects in the output.
         doc_ranker (Optional[MaybeType[DocumentRanker]]): A `DocumentRanker` class or instance.
         **kwargs: Keyword arguments to initialize or update `doc_ranker`.
 
@@ -5454,7 +5454,7 @@ class Rankable(HasSettings):
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
             refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_embeddings (bool): Flag indicating whether embeddings should be returned.
-            return_documents (bool): Flag indicating whether documents should be returned.
+            return_documents (bool): If True, include original document objects in the output.
             **kwargs: Additional keyword arguments.
 
         Returns:

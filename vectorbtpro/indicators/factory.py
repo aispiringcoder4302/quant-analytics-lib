@@ -684,7 +684,7 @@ class IndicatorBase(Analyzable):
 
                 When True, each list of parameter values is broadcast to the number of input columns and applied
                 per column rather than globally. Requires a known input shape.
-            keep_pd (bool): If True, retains inputs as Pandas objects instead of converting them to NumPy arrays.
+            keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
             to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
             pass_packed (bool): If True, passes inputs and parameters to `custom_func` as lists.
 
@@ -1691,9 +1691,11 @@ class IndicatorBase(Analyzable):
                 * a parameter name.
                 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            apply_group_by (bool): Whether to apply additional grouping logic.
+            apply_group_by (bool): If True, applies the grouping to both iteration and the final output.
+            
+                If False, `group_by` is used solely as an iteration instruction.
             keep_2d (bool): Whether to maintain the output data in a two-dimensional format.
-            key_as_index (bool): Whether to use the key as an index in the output.
+            key_as_index (bool): Whether to return the yielded key as an index.
 
         Returns:
             Items: An iterator over key-value pairs representing each column or group.
@@ -4122,13 +4124,13 @@ Returns:
 
         def plot(
             self,
-            column: tp.Optional[tp.Label] = None,
+            column: tp.Optional[tp.Column] = None,
             add_shape_kwargs: tp.KwargsLike = None,
             add_trace_kwargs: tp.KwargsLike = None,
             fig: tp.Optional[tp.BaseFigure] = None,
             **kwargs,
         ) -> tp.BaseFigure:
-            self_col = self.select_col(column=column)
+            self_col = self.select_col(column=column, group_by=False)
 
             return _talib_plot_func(
                 *[getattr(self_col, output_name) for output_name in output_names],
@@ -4145,7 +4147,7 @@ Returns:
             Based on `vbt.talib_plot_func("{func_name}")`.
     
             Args:
-                column (Optional[Label]): Column label to select data for plotting.
+                column (Optional[Column]): Identifier of the column to plot.
                 
                     If provided, selects the corresponding column from the indicator output.
                 add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
@@ -4947,7 +4949,7 @@ Returns:
 
         def plot(
             self,
-            column: tp.Optional[tp.Label] = None,
+            column: tp.Optional[tp.Column] = None,
             buy_trace_kwargs: tp.KwargsLike = None,
             sell_trace_kwargs: tp.KwargsLike = None,
             add_trace_kwargs: tp.KwargsLike = None,
@@ -4957,7 +4959,7 @@ Returns:
             """Plot the buy and sell traces of the indicator.
 
             Args:
-                column (Optional[Label]): Name of the column to plot.
+                column (Optional[Column]): Identifier of the column to plot.
                 buy_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the buy line.
                 sell_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the sell line.
                 add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
@@ -4976,7 +4978,7 @@ Returns:
 
             plotting_cfg = settings["plotting"]
 
-            self_col = self.select_col(column=column)
+            self_col = self.select_col(column=column, group_by=False)
 
             if fig is None:
                 fig = make_figure()

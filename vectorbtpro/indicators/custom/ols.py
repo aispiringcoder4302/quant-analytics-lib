@@ -82,7 +82,7 @@ class _OLS(OLS):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_y: bool = True,
         y_trace_kwargs: tp.KwargsLike = None,
         pred_trace_kwargs: tp.KwargsLike = None,
@@ -93,7 +93,7 @@ class _OLS(OLS):
         """Plot the `OLS.pred` and (optionally) `OLS.y` values.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_y (bool): Whether to plot `OLS.y`.
             y_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `OLS.y`.
             pred_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `OLS.pred`.
@@ -121,7 +121,7 @@ class _OLS(OLS):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()
@@ -156,7 +156,7 @@ class _OLS(OLS):
 
     def plot_zscore(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         alpha: float = 0.05,
         zscore_trace_kwargs: tp.KwargsLike = None,
         add_shape_kwargs: tp.KwargsLike = None,
@@ -167,7 +167,7 @@ class _OLS(OLS):
         """Plot the `OLS.zscore` values with confidence intervals.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             alpha (float): Alpha level for the confidence interval.
 
                 The default alpha value of 0.05 returns a 95% confidence interval.
@@ -198,7 +198,7 @@ class _OLS(OLS):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

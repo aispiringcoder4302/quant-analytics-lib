@@ -51,11 +51,11 @@ class _MEANLB(MEANLB):
         * `vectorbtpro.labels.nb.mean_labels_nb` for the underlying implementation.
     """
 
-    def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
+    def plot(self, column: tp.Optional[tp.Column] = None, **kwargs) -> tp.BaseFigure:
         """Plot the `close` data and overlay it with a heatmap of `MEANLB.labels`.
 
         Args:
-            column (Optional[Label]): Column to select for plotting.
+            column (Optional[Column]): Identifier of the column to plot.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:

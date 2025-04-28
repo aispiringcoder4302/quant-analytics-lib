@@ -153,7 +153,7 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
                     self,
                     *,
                     _func: tp.Callable = qs_func,
-                    column: tp.Optional[tp.Label] = None,
+                    column: tp.Optional[tp.Column] = None,
                     **kwargs,
                 ) -> tp.Any:
                     func_arg_names = get_func_arg_names(_func)

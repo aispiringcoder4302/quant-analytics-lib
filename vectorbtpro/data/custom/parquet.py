@@ -184,7 +184,7 @@ class ParquetData(FileData):
         """Fetch the Parquet file corresponding to a feature or symbol.
 
         Args:
-            key (hashable): Feature or symbol identifier.
+            key (Key): Feature or symbol identifier.
             path (Any): File path.
             
                 If None, uses `key` as the path to the Parquet file.
@@ -248,7 +248,7 @@ class ParquetData(FileData):
         """Fetch the Parquet file corresponding to the given feature.
 
         Args:
-            feature (hashable): Feature identifier.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `ParquetData.fetch_key`.
 
         Returns:
@@ -261,7 +261,7 @@ class ParquetData(FileData):
         """Fetch the Parquet file corresponding to the given symbol.
 
         Args:
-            symbol (hashable): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `ParquetData.fetch_key`.
 
         Returns:
@@ -273,8 +273,8 @@ class ParquetData(FileData):
         """Update and return the data for a given feature or symbol.
 
         Args:
-            key (hashable): Feature or symbol identifier.
-            key_is_feature (bool): Flag indicating if `key` represents a feature.
+            key (Key): Feature or symbol identifier.
+            key_is_feature (bool): Flag indicating whether the key represents a feature.
             **kwargs: Keyword arguments for `ParquetData.fetch_feature` or `ParquetData.fetch_symbol`.
 
         Returns:
@@ -290,7 +290,7 @@ class ParquetData(FileData):
         """Update and return the data for the specified feature.
 
         Args:
-            feature (hashable): Feature identifier.
+            feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for `ParquetData.update_key`.
 
         Returns:
@@ -302,7 +302,7 @@ class ParquetData(FileData):
         """Update and return the data for the specified symbol.
 
         Args:
-            symbol (hashable): Symbol identifier.
+            symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for `ParquetData.update_key`.
 
         Returns:

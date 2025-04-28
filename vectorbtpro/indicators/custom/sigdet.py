@@ -62,7 +62,7 @@ class _SIGDET(SIGDET):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         signal_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
@@ -71,7 +71,7 @@ class _SIGDET(SIGDET):
         """Plot the signal from `SIGDET.signal`.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             signal_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.signal`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
@@ -96,7 +96,7 @@ class _SIGDET(SIGDET):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         signal_trace_kwargs = merge_dicts(
             dict(name="Signal", line=dict(color=plotting_cfg["color_schema"]["lightblue"], shape="hv")),
@@ -113,7 +113,7 @@ class _SIGDET(SIGDET):
 
     def plot_bands(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         upper_band_trace_kwargs: tp.KwargsLike = None,
@@ -126,7 +126,7 @@ class _SIGDET(SIGDET):
         against the close values from `SIGDET.close`.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to plot `SIGDET.close`.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.close`.
             upper_band_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.upper_band`.
@@ -155,7 +155,7 @@ class _SIGDET(SIGDET):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

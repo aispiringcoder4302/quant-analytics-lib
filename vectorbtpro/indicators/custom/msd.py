@@ -59,7 +59,7 @@ class _MSD(MSD):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         msd_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
@@ -68,7 +68,7 @@ class _MSD(MSD):
         """Plot the `MSD.msd` indicator.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             msd_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MSD.msd`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
@@ -93,7 +93,7 @@ class _MSD(MSD):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if msd_trace_kwargs is None:
             msd_trace_kwargs = {}

@@ -43,7 +43,7 @@ class _FMIN(FMIN):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         fmin_trace_kwargs: tp.KwargsLike = None,
@@ -54,7 +54,7 @@ class _FMIN(FMIN):
         """Plot `FMIN.fmin` against `FMIN.close`.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to plot `FMIN.close` along with the indicator.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMIN.close`.
             fmin_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMIN.fmin`.
@@ -82,7 +82,7 @@ class _FMIN(FMIN):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

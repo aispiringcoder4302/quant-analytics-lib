@@ -1351,7 +1351,7 @@ class Splitter(Analyzable):
             by (AnyGroupByLike): Parameter for grouping the index.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            groupby_kwargs (KwargsLike): Keyword arguments for the grouping operation.
+            groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
             grouper_kwargs (KwargsLike): Keyword arguments for constructing the grouper.
             split (Optional[SplitLike]): Specification for further splitting of each range.
 
@@ -5193,7 +5193,7 @@ class Splitter(Analyzable):
 
         Args:
             new_split (SplitLike): Specification for generating new splitting ranges.
-            column (Optional[Hashable]): Identifier of the column to split.
+            column (Optional[Hashable]): Column identifier to select.
 
                 Required if multiple sets are present.
             new_set_labels (Optional[Sequence[Hashable]]): Labels to assign to the new sets.

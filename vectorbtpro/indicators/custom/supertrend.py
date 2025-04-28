@@ -44,7 +44,7 @@ class _SUPERTREND(SUPERTREND):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         superl_trace_kwargs: tp.KwargsLike = None,
@@ -56,7 +56,7 @@ class _SUPERTREND(SUPERTREND):
         """Plot the long and short signals of the Supertrend indicator, and optionally the close prices.
 
         Args:
-            column (Optional[Label]): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Indicates whether to include the `close` price trace.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SUPERTREND.close`.
             superl_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SUPERTREND.long`.
@@ -85,7 +85,7 @@ class _SUPERTREND(SUPERTREND):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

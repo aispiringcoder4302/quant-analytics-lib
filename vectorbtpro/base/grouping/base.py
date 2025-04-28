@@ -692,7 +692,7 @@ class Grouper(Configured):
         """Iterate over group keys and their associated indices.
 
         Args:
-            key_as_index (bool): If True, returns the group key as a subset of the index.
+            key_as_index (bool): Whether to return the yielded key as an index.
 
             **kwargs: Keyword arguments for `Grouper.get_index` and `Grouper.iter_group_idxs`.
 

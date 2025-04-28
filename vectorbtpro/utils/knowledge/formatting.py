@@ -761,7 +761,7 @@ class ContentFormatter(Configured):
         appending them to the overall content.
 
         Args:
-            final (bool): Whether to finalize the content.
+            final (bool): Whether the update finalizes the content.
 
         Returns:
             None
@@ -812,7 +812,7 @@ class ContentFormatter(Configured):
         """Update the content by processing the buffer and flushing outputs if necessary.
 
         Args:
-            final (bool): Whether this update finalizes the content.
+            final (bool): Whether the update finalizes the content.
 
         Returns:
             None
@@ -828,7 +828,7 @@ class ContentFormatter(Configured):
 
         Args:
             new_content (str): String content to append.
-            final (bool): Whether this append operation finalizes the content.
+            final (bool): Whether the update finalizes the content.
 
         Returns:
             None
@@ -1334,7 +1334,7 @@ class HTMLFileFormatter(ContentFormatter):
 
         Args:
             html_content (str): HTML content to format.
-            final (bool): Indicates if the formatting is final, preventing refresh modifications.
+            final (bool): Whether the update finalizes the content.
 
         Returns:
             str: The formatted HTML content.

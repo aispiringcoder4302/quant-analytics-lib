@@ -1099,7 +1099,7 @@ class Drawdowns(Ranges):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         top_n: tp.Optional[int] = 5,
         plot_ohlc: bool = True,
         plot_close: bool = True,
@@ -1124,9 +1124,9 @@ class Drawdowns(Ranges):
         """Plot drawdowns.
 
         Args:
-            column (Optional[Label]): Column name to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             top_n (Optional[int]): Number of top drawdown records to filter by maximum drawdown magnitude.
-            plot_ohlc (bool): Plot OHLC (Open, High, Low, Close) values if available.
+            plot_ohlc (bool): Whether to plot the OHLC data.
             plot_close (bool): Plot close prices when OHLC data is not available.
             plot_markers (bool): Plot markers for significant drawdown events.
             plot_zones (bool): Plot zones delineating drawdown phases.

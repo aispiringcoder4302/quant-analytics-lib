@@ -1191,7 +1191,7 @@ class VBTAsset(KnowledgeAsset):
         Each target is formatted using `VBTAsset.prepare_mention_target`.
 
         Args:
-            refname (str): Base reference name.
+            refname (str): Dot-separated reference name.
             resolve (bool): Whether to resolve annotated reference name parts.
             incl_shortcuts (Optional[bool]): Include shortcuts from `vectorbtpro as vbt`.
             incl_shortcut_access (Optional[bool]): Include attribute access forms.
@@ -3365,8 +3365,8 @@ def find_api(
     `PagesAsset.rank` to rank pages based on the query.
 
     Args:
-        obj_or_query (Optional[MaybeList]): Object reference or query for API lookup.
-        as_query (Optional[bool]): Indicates whether to treat `obj_or_query` as a query.
+        obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
+        as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute to narrow the search.
         module (Optional[Union[str, ModuleType]]): Module to constrain the search.
         resolve (bool): Whether to resolve object references.
@@ -3423,8 +3423,8 @@ def find_docs(
     `PagesAsset.rank` to assess page relevance.
 
     Args:
-        obj_or_query (Optional[MaybeList]): Object reference or query for documentation.
-        as_query (Optional[bool]): Indicates whether to treat `obj_or_query` as a query.
+        obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
+        as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute to narrow the search.
         module (Optional[Union[str, ModuleType]]): Module to constrain the documentation search.
         resolve (bool): Whether to resolve object references.
@@ -3479,10 +3479,10 @@ def find_messages(
     """Find messages associated with an object or query.
 
     Args:
-        obj_or_query (Optional[MaybeList]): Object reference or query used to filter messages.
+        obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
 
             If None, all messages are returned.
-        as_query (Optional[bool]): Treats `obj_or_query` as a query if True.
+        as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute name to filter messages linked to an object.
         module (Union[str, ModuleType, None]): Module context to constrain the message lookup.
         resolve (bool): Whether to resolve object references in messages.
@@ -3554,10 +3554,10 @@ def find_examples(
     """Find code examples relevant to an object or query.
 
     Args:
-        obj_or_query (Optional[MaybeList]): Object reference or query used to filter code examples.
+        obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
 
             If None, all examples are returned.
-        as_query (Optional[bool]): Treats `obj_or_query` as a query if True.
+        as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute name to filter examples associated with an object.
         module (Union[str, ModuleType, None]): Module context to constrain the search for examples.
         resolve (bool): Whether to resolve object references within examples.
@@ -3691,7 +3691,7 @@ def find_assets(
     """Return a dictionary of assets relevant to a given object(s) or query.
 
     Args:
-        obj_or_query (Optional[MaybeList]): Object, list of objects, or query for which to retrieve assets.
+        obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute name used during asset retrieval.
         module (Union[None, str, ModuleType]): Module context used in reference resolution.

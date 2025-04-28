@@ -103,7 +103,7 @@ def records_indexing_func(
 
     Args:
         obj (RecordArray): Record array to be indexed.
-        wrapper_meta (dict): Metadata for the array wrapper configuration.
+        wrapper_meta (dict): Metadata from the indexing operation on the wrapper.
         cls (Union[type, str]): Record class or its attribute name.
         groups_only (bool): Whether to apply indexing only for groups.
         **kwargs: Additional keyword arguments.
@@ -528,10 +528,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         init_price (ArrayLike): Initial position price at each bar.
 
             Provided in a format that supports flexible indexing.
-        cash_deposits (ArrayLike): Cash deposited or withdrawn at each timestamp.
+        cash_deposits (ArrayLike): Cash deposits or withdrawals at the beginning of each bar.
 
             Provided in a format that supports flexible indexing.
-        cash_earnings (ArrayLike): Earnings added at each timestamp.
+        cash_earnings (ArrayLike): Cash earnings or losses at the end of each bar.
 
             Provided in a format that supports flexible indexing.
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -2031,7 +2031,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             obj (Any): Object to index.
-            wrapper_meta (dict): Metadata dictionary used to compute index positions.
+            wrapper_meta (dict): Metadata from the indexing operation on the wrapper.
             obj_name (Optional[str]): Name of the object for identification in warnings.
             grouping (str): Specifies the grouping scheme for indexing.
 
@@ -2179,7 +2179,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         using the `Portfolio.index_obj` method.
 
         Args:
-            wrapper_meta (dict): Metadata information required for indexing the outputs.
+            wrapper_meta (dict): Metadata from the indexing operation on the wrapper.
             **kwargs: Keyword arguments for `Portfolio.index_obj`.
 
         Returns:
@@ -2822,13 +2822,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_price (Optional[ArrayLike]): Initial position price.
 
                 Broadcasts to match the final number of columns.
-            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each timestamp.
+            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
 
                 Broadcasts to match the shape of `init_cash`.
-            cash_earnings (Optional[ArrayLike]): Cash earnings added at the end of each timestamp.
+            cash_earnings (Optional[ArrayLike]): Cash earnings or losses at the end of each bar.
 
                 Broadcasts.
-            cash_dividends (Optional[ArrayLike]): Cash dividends added at the end of each timestamp.
+            cash_dividends (Optional[ArrayLike]): Cash dividends or interest at the end of each bar.
 
                 Broadcasts, are multiplied by the position, and then added to `cash_earnings`.
             cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
@@ -3570,13 +3570,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_price (Optional[ArrayLike]): Initial position price.
 
                 Broadcasts to match the final number of columns.
-            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each timestamp.
+            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
 
                 Broadcasts to match the shape of `init_cash`.
-            cash_earnings (Optional[ArrayLike]): Cash earnings added at the end of each timestamp.
+            cash_earnings (Optional[ArrayLike]): Cash earnings or losses at the end of each bar.
 
                 Broadcasts.
-            cash_dividends (Optional[ArrayLike]): Cash dividends added at the end of each timestamp.
+            cash_dividends (Optional[ArrayLike]): Cash dividends or interest at the end of each bar.
 
                 Broadcasts, are multiplied by the position, and then added to `cash_earnings`.
             cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
@@ -4666,13 +4666,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_price (Optional[ArrayLike]): Initial position price.
 
                 Broadcasts to match the final number of columns.
-            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each timestamp.
+            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
 
                 Broadcasts to match the shape of `init_cash`.
-            cash_earnings (Optional[ArrayLike]): Cash earnings added at the end of each timestamp.
+            cash_earnings (Optional[ArrayLike]): Cash earnings or losses at the end of each bar.
 
                 Broadcasts.
-            cash_dividends (Optional[ArrayLike]): Cash dividends added at the end of each timestamp.
+            cash_dividends (Optional[ArrayLike]): Cash dividends or interest at the end of each bar.
 
                 Broadcasts, are multiplied by the position, and then added to `cash_earnings`.
             cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
@@ -6977,7 +6977,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         `vectorbtpro.generic.drawdowns.Drawdowns.from_price` method of the designated drawdowns class.
 
         Args:
-            value (Optional[SeriesFrame]): Price series used to compute drawdowns.
+            value (Optional[SeriesFrame]): Portfolio value series.
 
                 Defaults to `Portfolio.get_value` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -7291,7 +7291,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             direction (Union[str, int]): Direction for filtering asset positions.
 
                 See `vectorbtpro.portfolio.enums.Direction`.
-            assets (Optional[SeriesFrame]): Asset series data to generate the mask.
+            assets (Optional[SeriesFrame]): Asset positions.
 
                 Defaults to `Portfolio.get_assets` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -7385,7 +7385,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Use "both" to analyze both long and short.
 
                 See `vectorbtpro.portfolio.enums.Direction`.
-            assets (Optional[SeriesFrame]): Asset data used to determine positions.
+            assets (Optional[SeriesFrame]): Asset positions.
 
                 Defaults to `Portfolio.get_assets` if not provided.
             granular_groups (bool): Flag to determine if coverage is computed per individual column within a group.
@@ -7552,7 +7552,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders.values,
             to_2d_array(orders.close),
             orders.col_mapper.col_map,
-            feature=enums.PositionFeature.EntryPrice,
+            feature=enums.PositionFeature identifier.EntryPrice,
             init_position=to_1d_array(init_position),
             init_price=to_1d_array(init_price),
             fill_closed_position=fill_closed_position,
@@ -7659,7 +7659,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             orders.values,
             to_2d_array(orders.close),
             orders.col_mapper.col_map,
-            feature=enums.PositionFeature.ExitPrice,
+            feature=enums.PositionFeature identifier.ExitPrice,
             init_position=to_1d_array(init_position),
             init_price=to_1d_array(init_price),
             fill_closed_position=fill_closed_position,
@@ -8063,11 +8063,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         since any operation incurs a cost.
 
         Args:
-            free (bool): Flag indicating whether to calculate free cash flow.
+            free (bool): Flag indicating whether to use free cash flow.
             orders (Optional[Orders]): Orders instance used for computing cash flow.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            cash_earnings (Optional[ArrayLike]): Cash earnings array.
+            cash_earnings (Optional[ArrayLike]): Cash earnings or losses at the end of each bar.
 
                 Defaults to `Portfolio.get_cash_earnings` with `keep_flex=True` and `group_by=False` or 0 if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -8190,7 +8190,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_cash_raw (Optional[ArrayLike]): Initial cash amount or mode identifier.
 
                 Defaults to `Portfolio._init_cash` if not provided.
-            cash_deposits (Optional[ArrayLike]): Cash deposits to apply.
+            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
 
                 Defaults to `Portfolio.get_cash_deposits` with `keep_flex=True` or 0 if not provided.
             free_cash_flow (Optional[SeriesFrame]): Cash flow data representing available free cash.
@@ -8335,13 +8335,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Get cash balance series per column or group.
 
         Args:
-            free (bool): Flag indicating whether free cash flow is used.
+            free (bool): Flag indicating whether to use free cash flow.
 
                 For details, see `Portfolio.get_cash_flow`.
             init_cash (Optional[ArrayLike]): Initial cash amount.
 
                 Defaults to `Portfolio.get_init_cash` if not provided.
-            cash_deposits (Optional[ArrayLike]): Cash deposits applied.
+            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
 
                 Defaults to `Portfolio.get_cash_deposits` with `keep_flex=True` or 0 if not provided.
             cash_flow (Optional[SeriesFrame]): Cash flow data.
@@ -8748,7 +8748,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             close (Optional[SeriesFrame]): Series or DataFrame of close prices.
 
                 If not provided, uses `Portfolio.filled_close` if available; otherwise, uses `Portfolio.close`.
-            assets (Optional[SeriesFrame]): Series or DataFrame of asset amounts.
+            assets (Optional[SeriesFrame]): Series or DataFrame of asset positions.
 
                 Defaults to `Portfolio.get_assets` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -9170,7 +9170,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             asset_value (Optional[SeriesFrame]): Asset value series used for allocation calculation.
 
                 Defaults to `Portfolio.get_asset_value` with `group_by=False` if not provided.
-            value (Optional[SeriesFrame]): Portfolio value series used for allocation calculation.
+            value (Optional[SeriesFrame]): Portfolio value series.
 
                 Defaults to `Portfolio.get_value` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -9278,7 +9278,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
-            cash_earnings (Optional[ArrayLike]): Cash earnings component included in the profit computation.
+            cash_earnings (Optional[ArrayLike]): Cash earnings or losses at the end of each bar.
 
                 Defaults to `Portfolio.get_cash_earnings` with `keep_flex=True` and `group_by=False` or 0 if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -9570,7 +9570,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_value (Optional[MaybeSeries]): Initial portfolio value.
 
                 Defaults to `Portfolio.get_input_value` if not provided.
-            cash_deposits (Optional[ArrayLike]): Cash deposit amounts for adjusting returns.
+            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
 
                 Defaults to `Portfolio.get_cash_deposits` with `keep_flex=True` or 0 if not provided.
             cash_deposits_as_input (Optional[bool]): Whether to add cash deposits to the input value.
@@ -9917,7 +9917,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_value (Optional[MaybeSeries]): Initial portfolio value.
 
                 Defaults to `Portfolio.get_init_value` with `group_by=False` if not provided.
-            cash_deposits (Optional[ArrayLike]): Cash deposit values.
+            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
 
                 Defaults to `Portfolio.get_cash_deposits` with `split_shared=True`, `keep_flex=True`,
                 and `group_by=False` or 0 if not provided.
@@ -10069,7 +10069,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_value (Optional[MaybeSeries]): Initial portfolio value.
 
                 Defaults to `Portfolio.get_init_value` if not provided.
-            cash_deposits (Optional[ArrayLike]): Cash deposit amounts for the computation.
+            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
 
                 Defaults to `Portfolio.get_cash_deposits` with `keep_flex=True` or 0 if not provided.
             cash_deposits_as_input (Optional[bool]): Flag indicating whether cash deposits are provided as input.
@@ -10285,7 +10285,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 If not provided, uses `Portfolio.filled_bm_close` if available; otherwise, uses `Portfolio.bm_close`.
             init_value (Optional[MaybeSeries]): Initial portfolio value.
-            cash_deposits (Optional[ArrayLike]): Cash deposit values.
+            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
@@ -10355,7 +10355,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             init_value (Optional[MaybeSeries]): Initial portfolio value.
-            cash_deposits (Optional[ArrayLike]): Cash deposit values.
+            cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
             cash_deposits_as_input (Optional[bool]): Flag indicating whether cash deposits are provided as input.
             bm_value (Optional[SeriesFrame]): Benchmark value series or frame.
 
@@ -11068,7 +11068,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_orders(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         orders: tp.Optional[Drawdowns] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
@@ -11082,7 +11082,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot one column of orders.
 
         Args:
-            column (Optional[Label]): Column name to plot orders.
+            column (Optional[Column]): Identifier of the column to plot.
             orders (Optional[Drawdowns]): Orders instance for plotting.
 
                 Defaults to `Portfolio.get_orders` if not provided.
@@ -11134,7 +11134,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_trades(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         trades: tp.Optional[Drawdowns] = None,
         trades_type: tp.Optional[tp.Union[str, int]] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -11149,7 +11149,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot one column of trades.
 
         Args:
-            column (Optional[Label]): Column name to plot trades.
+            column (Optional[Column]): Identifier of the column to plot.
             trades (Optional[Drawdowns]): Trades instance for plotting.
 
                 Defaults to `Portfolio.get_trades` if not provided.
@@ -11195,7 +11195,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_trade_pnl(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         trades: tp.Optional[Drawdowns] = None,
         trades_type: tp.Optional[tp.Union[str, int]] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -11211,7 +11211,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot one column of trade P&L.
 
         Args:
-            column (Optional[Label]): Column name to plot trade P&L.
+            column (Optional[Column]): Identifier of the column to plot.
             trades (Optional[Drawdowns]): Trades instance used for plotting trade P&L.
 
                 Defaults to `Portfolio.get_trades` if not provided.
@@ -11258,7 +11258,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_trade_signals(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         entry_trades: tp.Optional[EntryTrades] = None,
         exit_trades: tp.Optional[ExitTrades] = None,
         positions: tp.Optional[Positions] = None,
@@ -11285,7 +11285,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Markers and shapes are colored by trade direction (green = long, red = short).
 
         Args:
-            column (Optional[Label]): Column name or index to filter the trade signals.
+            column (Optional[Column]): Identifier of the column to plot.
             entry_trades (Optional[EntryTrades]): Entry trades data used for plotting.
 
                 Defaults to `Portfolio.get_entry_trades` if not provided.
@@ -11469,7 +11469,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_cash_flow(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         free: bool = False,
         cash_flow: tp.Optional[tp.SeriesFrame] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -11489,7 +11489,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Keyword arguments are passed to `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 
         Args:
-            column (Optional[Label]): Column label to select from the cash flow data.
+            column (Optional[Column]): Identifier of the column or group to plot.
             free (bool): Flag indicating whether to use free cash flow.
             cash_flow (Optional[SeriesFrame]): Cash flow data used for plotting.
 
@@ -11594,7 +11594,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_cash(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         free: bool = False,
         init_cash: tp.Optional[tp.MaybeSeries] = None,
         cash: tp.Optional[tp.SeriesFrame] = None,
@@ -11613,8 +11613,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot one column or group of cash balance.
 
         Args:
-            column (Optional[Label]): Column label to select cash balance.
-            free (bool): Whether to use free cash balance.
+            column (Optional[Column]): Identifier of the column or group to plot.
+            free (bool): Flag indicating whether to use free cash flow.
             init_cash (Optional[MaybeSeries]): Initial cash balance.
 
                 Defaults to `Portfolio.get_init_cash` if not provided.
@@ -11741,7 +11741,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_asset_flow(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         direction: tp.Union[str, int] = "both",
         asset_flow: tp.Optional[tp.SeriesFrame] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -11758,7 +11758,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot one column of asset flow.
 
         Args:
-            column (Optional[Label]): Column label to select asset flow.
+            column (Optional[Column]): Identifier of the column to plot.
             direction (Union[str, int]): Direction filter for asset flow.
 
                 See `vectorbtpro.portfolio.enums.Direction`.
@@ -11861,7 +11861,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_assets(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         direction: tp.Union[str, int] = "both",
         assets: tp.Optional[tp.SeriesFrame] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -11878,11 +11878,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot one column of asset data.
 
         Args:
-            column (Optional[Label]): Column label to select from asset data.
+            column (Optional[Column]): Identifier of the column to plot.
             direction (Union[str, int]): Asset direction indicator (e.g. "both").
 
                 See `vectorbtpro.portfolio.enums.Direction`.
-            assets (Optional[SeriesFrame]): Asset data to plot.
+            assets (Optional[SeriesFrame]): Asset positions.
 
                 Defaults to `Portfolio.get_assets` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -11990,7 +11990,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_asset_value(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         direction: tp.Union[str, int] = "both",
         asset_value: tp.Optional[tp.SeriesFrame] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -12008,7 +12008,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot asset value data for a single column or a group of columns.
 
         Args:
-            column (Optional[Label]): Column label to select from asset value data.
+            column (Optional[Column]): Identifier of the column to plot.
             direction (Union[str, int]): Direction indicator for asset value data (e.g. "both").
 
                 See `vectorbtpro.portfolio.enums.Direction`.
@@ -12124,7 +12124,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_value(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         init_value: tp.Optional[tp.MaybeSeries] = None,
         value: tp.Optional[tp.SeriesFrame] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -12141,11 +12141,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot one column or group of value.
 
         Args:
-            column (Optional[Label]): Column label for selecting the data.
+            column (Optional[Column]): Identifier of the column or group to plot.
             init_value (Optional[MaybeSeries]): Initial portfolio value.
 
                 Defaults to `Portfolio.get_init_value` if not provided.
-            value (Optional[SeriesFrame]): Value data to plot.
+            value (Optional[SeriesFrame]): Portfolio value series.
 
                 Defaults to `Portfolio.get_value` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -12263,7 +12263,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_cumulative_returns(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         returns_acc: tp.Optional[ReturnsAccessor] = None,
         use_asset_returns: bool = False,
         bm_returns: tp.Union[None, bool, tp.ArrayLike] = None,
@@ -12279,7 +12279,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot one column or group of cumulative returns.
 
         Args:
-            column (Optional[Label]): Column label for selecting cumulative returns data.
+            column (Optional[Column]): Identifier of the column to plot.
             returns_acc (Optional[ReturnsAccessor]): Returns accessor instance.
 
                 Defaults to `Portfolio.get_returns_acc` if not provided.
@@ -12352,7 +12352,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_drawdowns(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         drawdowns: tp.Optional[Drawdowns] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
@@ -12367,7 +12367,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot one column or group of drawdowns.
 
         Args:
-            column (Optional[Label]): Column label for selecting drawdown data.
+            column (Optional[Column]): Identifier of the column to plot.
             drawdowns (Optional[Drawdowns]): Drawdowns instance.
 
                 Defaults to `Portfolio.get_drawdowns` if not provided.
@@ -12433,7 +12433,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_underwater(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         init_value: tp.Optional[tp.MaybeSeries] = None,
         returns_acc: tp.Optional[ReturnsAccessor] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -12451,7 +12451,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot underwater for a specified column or group.
 
         Args:
-            column (Optional[Label]): Column label for selecting a specific sub-data.
+            column (Optional[Column]): Identifier of the column or group to plot.
             init_value (Optional[MaybeSeries]): Initial portfolio value.
 
                 Defaults to `Portfolio.get_init_value` if not provided.
@@ -12571,7 +12571,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_gross_exposure(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         direction: tp.Union[str, int] = "both",
         gross_exposure: tp.Optional[tp.SeriesFrame] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -12589,7 +12589,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot gross exposure for a specified column or group.
 
         Args:
-            column (Optional[Label]): Column label for selecting a specific sub-data.
+            column (Optional[Column]): Identifier of the column or group to plot.
             direction (Union[str, int]): Indicator for the exposure direction
                 (e.g., "both" for combined exposure).
 
@@ -12706,7 +12706,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_net_exposure(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         net_exposure: tp.Optional[tp.SeriesFrame] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
@@ -12723,7 +12723,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot net exposure for a specified column or group.
 
         Args:
-            column (Optional[Label]): Column label to select net exposure data.
+            column (Optional[Column]): Identifier of the column or group to plot.
             net_exposure (Optional[SeriesFrame]): Net exposure data.
 
                 Defaults to `Portfolio.get_net_exposure` if not provided.
@@ -12835,7 +12835,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     @hybrid_method
     def plot_allocations(
         cls_or_self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         allocations: tp.Optional[tp.SeriesFrame] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
@@ -12853,7 +12853,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Plot allocations for a specified group.
 
         Args:
-            column (Optional[Label]): Column label to select allocation data.
+            column (Optional[Column]): Identifier of the column to plot.
             allocations (Optional[SeriesFrame]): Allocation data.
 
                 Defaults to `Portfolio.get_allocations` if not provided.

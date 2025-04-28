@@ -82,7 +82,7 @@ class FileData(LocalData):
             path (PathLike): Starting path to search for files.
             match_regex (Optional[str]): Regular expression for filtering paths.
             sort_paths (bool): Determines if the resulting list should be sorted.
-            recursive (bool): Enables recursive search in directories.
+            recursive (bool): Whether to search subdirectories recursively.
             extension (Optional[str]): Specifies a file extension to filter by (without the dot).
             **kwargs: Additional keyword arguments.
 
@@ -180,9 +180,9 @@ class FileData(LocalData):
 
         Args:
             keys (MaybeKeys): Identifier(s) for features or symbols.
-            keys_are_features (Optional[bool]): Indicates whether the keys represent features.
-            features (MaybeFeatures): Mapping of feature definitions.
-            symbols (MaybeSymbols): Mapping of symbol definitions.
+            keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
+            features (MaybeFeatures): Feature or a list of features.
+            symbols (MaybeSymbols): Symbol or a list of symbols.
             paths (Any): One or more file paths or glob patterns.
             match_paths (Optional[bool]): Flag to enable or disable path matching.
             match_regex (Optional[str]): Regular expression pattern for filtering paths.

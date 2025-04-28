@@ -45,8 +45,10 @@ def fix_field_in_records(
 
     Args:
         record_arrays (List[RecordArray]): List of record arrays to be adjusted.
-        chunk_meta (Iterable[ChunkMeta]): Iterable of chunk metadata objects.
-        ann_args (Optional[AnnArgs]): Annotation arguments used for mapping, if applicable.
+        chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+        ann_args (Optional[AnnArgs]): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
         mapper (Optional[ChunkMapper]): Mapper used to transform chunk metadata before adjusting the field.
         field (str): Field identifier.
 
@@ -75,8 +77,10 @@ def merge_records(
 
     Args:
         results (List[RecordArray]): List of record array chunks to merge.
-        chunk_meta (Iterable[ChunkMeta]): Iterable of chunk metadata objects used to adjust field values.
-        ann_args (Optional[AnnArgs]): Annotation arguments for field mapping.
+        chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+        ann_args (Optional[AnnArgs]): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
         mapper (Optional[ChunkMapper]): Mapper to adjust the `col` field in the record arrays.
 
     Returns:
