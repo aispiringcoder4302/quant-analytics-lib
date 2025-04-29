@@ -287,7 +287,7 @@ def row_stack_merge(
         filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
         raise_no_results (bool): Flag indicating whether to raise a 
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
-        wrap (Union[None, str, bool]): Determines how to wrap each array before merging.
+        wrap (Union[None, str, bool]): Determines wrapping behavior for each object.
 
             * None: Treated as True if `wrapper`, `keys`, or `wrap_kwargs` is provided.
             * True: Wraps each array as a Pandas Series or DataFrame based on its dimensions.
@@ -300,8 +300,9 @@ def row_stack_merge(
             can be a dictionary or a list of dictionaries.
             
             See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-        clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning
-            the concatenated index.
+        clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning MultiIndex levels.
+
+            See `vectorbtpro.base.indexes.clean_index`.
         **kwargs: Keyword arguments for `pd.concat` and
             `vectorbtpro.base.wrapping.Wrapping.row_stack`.
 
@@ -469,8 +470,9 @@ def column_stack_merge(
             can be a dictionary or a list of dictionaries.
             
             See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-        clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning
-            column indexes via `clean_index`.
+        clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning MultiIndex levels.
+
+            See `vectorbtpro.base.indexes.clean_index`.
         **kwargs: Keyword arguments for `pd.concat` and
             `vectorbtpro.base.wrapping.Wrapping.column_stack`.
 

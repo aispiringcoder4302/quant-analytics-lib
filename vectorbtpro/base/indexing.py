@@ -71,11 +71,11 @@ IndexingBaseT = tp.TypeVar("IndexingBaseT", bound="IndexingBase")
 class IndexingBase(Base):
     """Class providing indexing support via the `indexing_func` method."""
 
-    def indexing_func(self: IndexingBaseT, pd_indexing_func: tp.Callable, **kwargs) -> IndexingBaseT:
+    def indexing_func(self: IndexingBaseT, pd_indexing_func: tp.PandasIndexingFunc, **kwargs) -> IndexingBaseT:
         """Apply the given Pandas indexing function on all associated Pandas objects and return a new instance.
 
         Args:
-            pd_indexing_func (Callable): Pandas indexing function to apply.
+            pd_indexing_func (PandasIndexingFunc): Function to perform Pandas-style indexing.
             **kwargs: Keyword arguments for the indexing function.
 
         Returns:
@@ -90,8 +90,8 @@ class IndexingBase(Base):
         """Apply the provided Pandas indexing setter function on all associated Pandas objects.
 
         Args:
-            pd_indexing_setter_func (Callable): Pandas indexing setter function to apply.
-            **kwargs: Keyword arguments for the indexing setter function.
+            pd_indexing_setter_func (Callable): Pandas indexing setter function.
+            **kwargs: Keyword arguments for the setter function.
 
         Returns:
             None
@@ -107,7 +107,7 @@ class LocBase(Base):
 
     Args:
         indexing_func (Callable): Function to perform indexing operations.
-        indexing_setter_func (Optional[Callable]): Function to set values via indexing.
+        indexing_setter_func (Optional[Callable]): Function to perform index setting operations.
         **kwargs: Keyword arguments for indexing operations.
     """
 
@@ -393,8 +393,8 @@ class ParamLoc(LocBase):
 
     Args:
         mapper (Series): Series mapping column names to parameter values.
-        indexing_func (Callable): Function used to perform indexing.
-        indexing_setter_func (Optional[Callable]): Function used for setting indexed values.
+        indexing_func (Callable): Function to perform indexing operations.
+        indexing_setter_func (Optional[Callable]): Function to perform index setting operations.
         level_name (Level): Name of the column level to adjust after selection.
         **kwargs: Keyword arguments for indexing operations.
     """
@@ -506,7 +506,7 @@ class ParamLoc(LocBase):
 def indexing_on_mapper(
     mapper: tp.Series,
     ref_obj: tp.SeriesFrame,
-    pd_indexing_func: tp.Callable,
+    pd_indexing_func: tp.PandasIndexingFunc,
 ) -> tp.Optional[tp.Series]:
     """Broadcast the `mapper` Series to match the structure of `ref_obj` and
     apply the Pandas indexing function.
@@ -514,7 +514,7 @@ def indexing_on_mapper(
     Args:
         mapper (Series): Series used as a mapping to reindex data.
         ref_obj (SeriesFrame): Reference object whose structure defines the target shape.
-        pd_indexing_func (Callable): Function that performs Pandas indexing.
+        pd_indexing_func (PandasIndexingFunc): Function to perform Pandas-style indexing.
 
     Returns:
         Optional[Series]: A new Series with values indexed according to the mapping, or None.

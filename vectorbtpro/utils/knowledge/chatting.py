@@ -4534,7 +4534,7 @@ class DocumentRanker(Configured):
             refresh (bool): Flag to refresh both documents and embeddings.
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
             refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
-            return_embeddings (bool): If True, include embeddings in the returned result.
+            return_embeddings (bool): Flag indicating whether to return embeddings.
             return_documents (bool): If True, include original document objects in the output.
 
         Returns:
@@ -5062,7 +5062,7 @@ class DocumentRanker(Configured):
         """Recursively extract scores from a list of scored documents.
 
         Args:
-            scored_documents (List[ScoredDocument]): List of documents containing scores.
+            scored_documents (List[ScoredDocument]): Documents with existing scores.
 
         Returns:
             List[float]: Scores extracted from each document and its child documents.
@@ -5179,8 +5179,8 @@ class DocumentRanker(Configured):
         """Recursively replace scores in paired embedding and BM25 documents with new scores.
 
         Args:
-            emb_scored_documents (List[ScoredDocument]): Documents scored with embeddings.
-            bm25_scored_documents (List[ScoredDocument]): Documents scored with BM25.
+            emb_scored_documents (List[ScoredDocument]): Documents scored using embeddings.
+            bm25_scored_documents (List[ScoredDocument]): Documents scored using BM25.
             new_scores (List[float]): New scores to assign, consumed in order.
 
         Returns:
@@ -5212,8 +5212,8 @@ class DocumentRanker(Configured):
         """Combine embedding and BM25 scored documents by merging and updating their scores.
 
         Args:
-            emb_scored_documents (List[ScoredDocument]): Documents scored with embeddings.
-            bm25_scored_documents (List[ScoredDocument]): Documents scored with BM25.
+            emb_scored_documents (List[ScoredDocument]): Documents scored using embeddings.
+            bm25_scored_documents (List[ScoredDocument]): Documents scored using BM25.
 
         Returns:
             List[ScoredDocument]: Combined scored documents with updated scores.
@@ -5453,7 +5453,7 @@ class Rankable(HasSettings):
             refresh (bool): Flag to refresh both documents and embeddings.
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
             refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
-            return_embeddings (bool): Flag indicating whether embeddings should be returned.
+            return_embeddings (bool): Flag indicating whether to return embeddings.
             return_documents (bool): If True, include original document objects in the output.
             **kwargs: Additional keyword arguments.
 

@@ -121,7 +121,7 @@ def prepare_params(
         params (MaybeParams): Input parameters, which may include references that need resolution.
 
             They are mapped based on `param_names`.
-        param_names (Sequence[str]): List of parameter names.
+        param_names (Sequence[str]): Names of the parameters.
         param_settings (Sequence[KwargsLike]): Sequence of dictionaries providing settings for each parameter.
         input_shape (Optional[Shape]): Target shape for broadcasting the parameters.
         to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
@@ -3164,7 +3164,7 @@ Returns:
                 return_cache (bool): If True, return the cache result instead of processing further.
                 use_cache (Union[bool, IFCacheOutput]): Flag or configuration indicating whether to use caching.
                 jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop.
-                jitted_warmup (bool): Whether to perform a JIT warmup.
+                jitted_warmup (bool): If True, perform a warm-up call for the JIT-compiled function.
                 param_index (Optional[Index]): Index for parameter combinations.
                 final_index (Optional[Index]): Final index used for the output.
                 single_comb (bool): Whether to combine outputs into a single result.

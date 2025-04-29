@@ -1094,7 +1094,7 @@ class HTMLFileFormatter(ContentFormatter):
         file_suffix_len (Optional[int]): Number of characters for the random hash suffix.
         auto_scroll (Optional[bool]): Enables automatic scrolling during refreshing.
         show_spinner (Optional[bool]): Enables a spinner display during refreshing.
-        open_browser (Optional[bool]): Opens the default browser.
+        open_browser (Optional[bool]): Flag indicating whether to open the web browser.
         to_markdown_kwargs (KwargsLike): Keyword arguments for `to_markdown`.
         to_html_kwargs (KwargsLike): Keyword arguments for `to_html`.
         format_html_kwargs (KwargsLike): Keyword arguments for `format_html`.

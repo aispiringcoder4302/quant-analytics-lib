@@ -291,7 +291,7 @@ def combine_indexes(*indexes: tp.MaybeTuple[tp.IndexLike], **kwargs) -> tp.Index
     """Combine indexes using a Cartesian product.
 
     Args:
-        *indexes (MaybeTuple[IndexLike]): Indexes to combine.
+        *indexes (MaybeTuple[IndexLike]): One or more index-like objects to combine.
         **kwargs: Keyword arguments for `stack_indexes`.
 
     Returns:
@@ -368,7 +368,7 @@ def concat_indexes(
 
     Args:
         *indexes (MaybeSequence[IndexLike]): Indexes to concatenate.
-        index_concat_method (MaybeTuple[Union[str, Callable]]): Method for concatenating indexes.
+        index_concat_method (MaybeTuple[Union[str, Callable]]): Method used for concatenating indexes.
         keys (Optional[IndexLike]): Index to add an additional level on top of the concatenated indexes.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
@@ -1243,9 +1243,9 @@ class IndexApplier(Base):
         Args:
             *indexes (Index): One or more indexes to add as new levels.
             on_top (bool): If True, add the new levels before the existing index; if False, add them after.
-            drop_duplicates (Optional[bool]): Indicates whether to remove duplicate levels.
+            drop_duplicates (Optional[bool]): If True, remove duplicate levels.
             keep (Optional[str]): Indicates which duplicate to retain; valid options are "first" or "last".
-            drop_redundant (Optional[bool]): Indicates whether to remove redundant levels.
+            drop_redundant (Optional[bool]): If True, remove redundant levels.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 
         Returns:
@@ -1301,7 +1301,7 @@ class IndexApplier(Base):
         """Rename levels in the index using `rename_levels`.
 
         Args:
-            mapper (MaybeMappingSequence[Level]): Mapping or sequence indicating new names for the levels.
+            mapper (MaybeMappingSequence[Level]): New name, sequence of names, or mapping for the levels.
             strict (bool): Enforces strict renaming; only exact matches will be renamed.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 

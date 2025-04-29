@@ -376,8 +376,9 @@ class Resampler(Configured):
         """Return the mapping from the source index to the target index.
 
         Args:
-            before (bool): Map to the target index before the given value if True.
-            raise_missing (bool): Raise an error if a target index value is missing.
+            before (bool): If True, map a source index to a target index that is greater than or equal to it;
+                otherwise, map to a target index that is less than or equal.
+            raise_missing (bool): If True, raise an error when a source index cannot be mapped; otherwise, assign -1.
             return_index (bool): Return a Pandas Index if True; otherwise, return a NumPy array.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -450,7 +451,8 @@ class Resampler(Configured):
         """Return the mapping of source index ranges corresponding to the target index.
 
         Args:
-            before (bool): Map to source ranges before the target index if True.
+            before (bool): If True, include source indices preceding or equal to the target; 
+                otherwise, include those following or equal.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -498,8 +500,8 @@ class Resampler(Configured):
             target_rbound_index (Optional[IndexLike]): Right bound of the target index.
 
                 Set to "pandas" to use `Resampler.get_rbound_index`.
-            closed_lbound (bool): Specify whether the left bound is closed.
-            closed_rbound (bool): Specify whether the right bound is closed.
+            closed_lbound (bool): Indicates if the left bound is inclusive.
+            closed_rbound (bool): Indicates if the right bound is inclusive.
             skip_not_found (bool): Whether to drop indices that are -1 (not found).
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -584,11 +586,17 @@ class Resampler(Configured):
             target_freq,
         )
 
-    def last_before_target_index(self, incl_source: bool = True, jitted: tp.JittedOption = None) -> tp.Array1d:
+    def last_before_target_index(
+        self, 
+        incl_source: bool = True,
+        incl_target: bool = False,
+        jitted: tp.JittedOption = None,
+    ) -> tp.Array1d:
         """Return the index of the last element before each target index.
 
         Args:
-            incl_source (bool): Include the source index in the computation if True.
+            incl_source (bool): Whether to include the original source index in the result.
+            incl_target (bool): Whether to include the target index if it matches a source index.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -600,4 +608,9 @@ class Resampler(Configured):
             `vectorbtpro.base.resampling.nb.last_before_target_index_nb`
         """
         func = jit_reg.resolve_option(nb.last_before_target_index_nb, jitted)
-        return func(self.source_index.values, self.target_index.values, incl_source=incl_source)
+        return func(
+            self.source_index.values, 
+            self.target_index.values, 
+            incl_source=incl_source,
+            incl_target=incl_target,
+        )

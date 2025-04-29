@@ -767,8 +767,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 See `vectorbtpro.utils.chunking.iter_chunk_meta`.
             select (bool): Determines whether to use `ArraySelector` (if True) or
                 `ArraySlicer` (if False) for extracting the chunk.
-            return_chunk_meta (bool): If True, yield a tuple containing the chunk metadata and the chunk;
-                if False, yield only the chunk.
+            return_chunk_meta (bool): Flag indicating whether to yield chunk metadata alongside each chunk.
 
         Yields:
             Union[Index, Tuple[ChunkMeta, Index]]: The index chunk or a tuple with
@@ -805,7 +804,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Args:
             apply_func (Union[str, Callable]): Function or method name to apply to each chunk.
             *args: Positional arguments for `apply_func`.
-            chunk_kwargs (KwargsLike): Keyword arguments for the chunking process.
+            chunk_kwargs (KwargsLike): Keyword arguments for the chunking handler.
 
                 See `BaseIDXAccessor.chunk`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
@@ -1484,7 +1483,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             value_or_func (Union[MaybeArray, Callable]): Value to assign or a function that
-                computes the value for each range.
+                computes the value based on context.
             *args: Positional arguments for `value_or_func` if it is callable.
             inplace (bool): If True, modify the data object in place.
             columns (Optional[MaybeSequence[Hashable]]): Column(s) where the value should be set.
@@ -1980,7 +1979,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             data_cls (Optional[Type[Data]]): Data class to use for conversion.
-            columns_are_symbols (bool): Indicates whether columns represent symbols.
+            columns_are_symbols (bool): Flag indicating whether the columns represent symbols.
             **kwargs: Keyword arguments for `Data.from_data`.
 
         Returns:
@@ -2488,7 +2487,7 @@ class BaseAccessor(Wrapping):
 
         Args:
             expr (str): Array expression to evaluate element-wise.
-            frames_back (int): Number of frames to traverse for retrieving context variables.
+            frames_back (int): Number of frames to go back to retrieve context variables.
             use_numexpr (bool): Flag indicating whether to use NumExpr for evaluation.
             numexpr_kwargs (KwargsLike): Keyword arguments for `numexpr.evaluate`.
             local_dict (Optional[Mapping]): Local variables mapping for resolving names in the expression.

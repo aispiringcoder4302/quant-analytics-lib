@@ -272,7 +272,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
         Args:
             arg_name (str): Name of the argument.
-            is_dict (bool): Flag indicating if the default value should be treated as a dictionary.
+            is_dict (bool): Flag indicating if the argument is expected to be a dictionary.
 
         Returns:
             Any: The default value for the argument, or an empty dictionary
@@ -460,7 +460,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Convert a prepared timedelta array to its nanoseconds representation.
 
         Args:
-            td_arr (ArrayLike): Input timedelta array.
+            td_arr (ArrayLike): Input array of timedelta-like elements.
 
         Returns:
             ArrayLike: The array of nanoseconds.
@@ -472,7 +472,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Convert a prepared datetime array to its nanoseconds representation.
 
         Args:
-            dt_arr (ArrayLike): Input datetime array.
+            dt_arr (ArrayLike): Input array of datetime-like elements.
 
         Returns:
             ArrayLike: The array of nanoseconds.

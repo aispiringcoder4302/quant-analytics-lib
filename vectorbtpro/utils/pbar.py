@@ -334,7 +334,7 @@ class ProgressBar(Base):
         """Open the progress bar instance.
 
         Args:
-            reuse (Optional[bool]): Flag to determine whether to reuse an existing progress bar if conflicts arise.
+            reuse (Optional[bool]): Flag indicating whether the progress bar can be reused.
 
         Returns:
             None
@@ -374,7 +374,7 @@ class ProgressBar(Base):
         """Close the progress bar instance.
 
         Args:
-            reuse (Optional[bool]): Flag specifying whether to reuse the progress bar if possible.
+            reuse (Optional[bool]): Flag indicating whether the progress bar can be reused.
             close_children (bool): Whether to close child progress bar instances.
 
         Returns:

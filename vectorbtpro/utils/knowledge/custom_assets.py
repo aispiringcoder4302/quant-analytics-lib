@@ -1193,12 +1193,14 @@ class VBTAsset(KnowledgeAsset):
         Args:
             refname (str): Dot-separated reference name.
             resolve (bool): Whether to resolve annotated reference name parts.
-            incl_shortcuts (Optional[bool]): Include shortcuts from `vectorbtpro as vbt`.
-            incl_shortcut_access (Optional[bool]): Include attribute access forms.
-            incl_shortcut_call (Optional[bool]): Include callable forms.
+            incl_shortcuts (Optional[bool]): Include shortcuts from `import vectorbtpro as vbt`.
+            incl_shortcut_access (Optional[bool]): Include attribute access forms when applicable.
+            incl_shortcut_call (Optional[bool]): Include callable forms when applicable.
             incl_instances (Optional[bool]): Include common class abbreviation forms.
             as_code (Optional[bool]): Format the target as code.
             as_regex (Optional[bool]): Format the target as a regular expression.
+
+                For instance, `vbt.PF` may match `vbt.PFO` if RegEx is not used.
             allow_prefix (Optional[bool]): Allow a prefix in target formatting.
             allow_suffix (Optional[bool]): Allow a suffix in target formatting.
 
@@ -1327,14 +1329,16 @@ class VBTAsset(KnowledgeAsset):
             obj (MaybeList): Object or list of objects to generate mention targets for.
             attr (Optional[str]): Attribute name to target on the object.
             module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object's reference.
+            resolve (bool): Whether to resolve the object's reference name.
             incl_base_attr (Optional[bool]): Include targets for base class attributes if applicable.
-            incl_shortcuts (Optional[bool]): Include shortcut forms from vectorbtpro.
+            incl_shortcuts (Optional[bool]): Include shortcuts from `import vectorbtpro as vbt`.
             incl_shortcut_access (Optional[bool]): Include attribute access forms when applicable.
             incl_shortcut_call (Optional[bool]): Include callable forms when applicable.
             incl_instances (Optional[bool]): Include common class abbreviation forms.
-            as_code (Optional[bool]): Format targets as code.
-            as_regex (Optional[bool]): Format targets as a regular expression.
+            as_code (Optional[bool]): Format the target as code.
+            as_regex (Optional[bool]): Format the target as a regular expression.   
+
+                For instance, `vbt.PF` may match `vbt.PFO` if RegEx is not used.
             allow_prefix (Optional[bool]): Allow a prefix in target formatting.
             allow_suffix (Optional[bool]): Allow a suffix in target formatting.
 
@@ -1465,22 +1469,22 @@ class VBTAsset(KnowledgeAsset):
         mention targets are consolidated using `VBTAsset.merge_mention_targets`.
 
         Args:
-            obj (MaybeList): Object or list of objects to search for mentions.
-            attr (Optional[str]): Attribute to consider when generating mention targets.
+            obj (MaybeList): Object or list of objects to find mentions for.
+            attr (Optional[str]): Attribute name to target on the object.
             module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object references.
-            incl_shortcuts (Optional[bool]): Include shortcut mentions.
-            incl_shortcut_access (Optional[bool]): Include shortcut access mentions.
-            incl_shortcut_call (Optional[bool]): Include shortcut call mentions.
-            incl_instances (Optional[bool]): Include instance mentions.
+            resolve (bool): Whether to resolve the object's reference name.
+            incl_shortcuts (Optional[bool]): Include shortcuts from `import vectorbtpro as vbt`.
+            incl_shortcut_access (Optional[bool]): Include attribute access forms when applicable.
+            incl_shortcut_call (Optional[bool]): Include callable forms when applicable.
+            incl_instances (Optional[bool]): Include common class abbreviation forms.
             incl_custom (Optional[MaybeList[str]]): Additional custom mention targets.
             is_custom_regex (bool): Treat custom mention targets as regular expressions.
-            as_code (Optional[bool]): Search using code-based matching.
-            as_regex (Optional[bool]): Refine search using regular expression matching.
+            as_code (Optional[bool]): Format the target as code.
+            as_regex (Optional[bool]): Format the target as a regular expression.
 
                 For instance, `vbt.PF` may match `vbt.PFO` if RegEx is not used.
-            allow_prefix (Optional[bool]): Allow prefix matching for mentions.
-            allow_suffix (Optional[bool]): Allow suffix matching for mentions.
+            allow_prefix (Optional[bool]): Allow a prefix in target formatting.
+            allow_suffix (Optional[bool]): Allow a suffix in target formatting.
             merge_targets (Optional[bool]): Merge mention targets to simplify the search.
             per_path (bool): Whether to perform the search per specified path.
             path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to 
@@ -1732,7 +1736,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             link (MaybeList[str]): Link or list of links to search for.
-            aggregate (bool): Whether to aggregate redundant links.
+            aggregate (bool): Whether to aggregate headings into pages.
             aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
             incl_descendants (bool): Whether to include descendant headings.
             single_item (bool): Whether to return a single item.
@@ -1794,10 +1798,10 @@ class PagesAsset(VBTAsset):
         The object reference is prepared using `vectorbtpro.utils.module_.prepare_refname`.
 
         Args:
-            obj (Any): Object to find.
-            attr (Optional[str]): Attribute name to append to the object reference.
+            obj (Any): Object to search for.
+            attr (Optional[str]): Attribute name to target on the object.
             module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object reference.
+            resolve (bool): Whether to resolve the object's reference name.
             **kwargs: Keyword arguments for `VBTAsset.find_refname`.
 
         Returns:
@@ -1901,10 +1905,10 @@ class PagesAsset(VBTAsset):
         ancestors, reference descendants, and aggregation of links.
 
         Args:
-            obj (MaybeList): Object or list of objects to search for.
-            attr (Optional[str]): Attribute name to append to the object reference.
+            obj (MaybeList): Object or list of objects to find API pages for.
+            attr (Optional[str]): Attribute name to target on the object.
             module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve the object reference.
+            resolve (bool): Whether to resolve the object's reference name.
             use_parent (Optional[bool]): Include the object's parent page.
             use_base_parents (Optional[bool]): Include base classes/attributes of the parent.
             use_ref_parents (Optional[bool]): Include reference parent pages.
@@ -2311,10 +2315,10 @@ class PagesAsset(VBTAsset):
         and all base classes/attributes using `PagesAsset.aggregate_links`.
 
         Args:
-            obj (MaybeList): Object or list of objects to process.
-            attr (Optional[str]): Attribute name to query documentation for.
+            obj (MaybeList): Object or list of objects to find documentation for.
+            attr (Optional[str]): Attribute name to target on the object.
             module (Union[None, str, ModuleType]): Module context used in reference resolution.
-            resolve (bool): Whether to resolve references in the documentation.
+            resolve (bool): Whether to resolve the object's reference name.
             incl_pages (Optional[MaybeIterable[str]]): Iterable of page identifiers or parts to include.
             excl_pages (Optional[MaybeIterable[str]]): Iterable of page identifiers or parts to exclude.
             page_find_mode (Optional[str]): Mode used for matching pages in `vectorbtpro.utils.search_.find`.
@@ -3317,10 +3321,10 @@ class MessagesAsset(VBTAsset):
         with the provided object(s). Any additional keyword arguments are forwarded to the method.
 
         Args:
-            obj (MaybeList): Object or list of objects to find messages for.
-            attr (Optional[str]): Attribute to refine the search.
-            module (Optional[Union[str, ModuleType]]): Module context to constrain the search.
-            resolve (bool): Whether to resolve object references.
+            obj (MaybeList): Object or list of objects to search for.
+            attr (Optional[str]): Attribute name to target on the object.
+            module (Union[None, str, ModuleType]): Module context used in reference resolution.
+            resolve (bool): Whether to resolve the object's reference name.
             **kwargs: Keyword arguments for `MessagesAsset.find_obj_mentions`.
 
         Returns:
@@ -3368,12 +3372,12 @@ def find_api(
     Args:
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
-        attr (Optional[str]): Attribute to narrow the search.
-        module (Optional[Union[str, ModuleType]]): Module to constrain the search.
-        resolve (bool): Whether to resolve object references.
+        attr (Optional[str]): Attribute name to target on the object.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the object's reference name.
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
-        aggregate (bool): Whether to aggregate the pages.
+        aggregate (bool): Whether to aggregate headings into pages.
         aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         **kwargs: Keyword arguments for `PagesAsset.find_obj_api` or `PagesAsset.rank`.
 
@@ -3426,12 +3430,12 @@ def find_docs(
     Args:
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
-        attr (Optional[str]): Attribute to narrow the search.
-        module (Optional[Union[str, ModuleType]]): Module to constrain the documentation search.
-        resolve (bool): Whether to resolve object references.
+        attr (Optional[str]): Attribute name to target on the object.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the object's reference name.
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
-        aggregate (bool): Whether to aggregate the pages.
+        aggregate (bool): Whether to aggregate headings into pages.
         aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         **kwargs: Keyword arguments for `PagesAsset.find_obj_docs` or `PagesAsset.rank`.
 
@@ -3484,9 +3488,9 @@ def find_messages(
 
             If None, all messages are returned.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
-        attr (Optional[str]): Attribute name to filter messages linked to an object.
-        module (Union[str, ModuleType, None]): Module context to constrain the message lookup.
-        resolve (bool): Whether to resolve object references in messages.
+        attr (Optional[str]): Attribute name to target on the object.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the object's reference name.
         messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.pull`.
         aggregate (Union[bool, str]): Option to aggregate messages; if a string, it specifies the aggregation key.
@@ -3559,9 +3563,9 @@ def find_examples(
 
             If None, all examples are returned.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
-        attr (Optional[str]): Attribute name to filter examples associated with an object.
-        module (Union[str, ModuleType, None]): Module context to constrain the search for examples.
-        resolve (bool): Whether to resolve object references within examples.
+        attr (Optional[str]): Attribute name to target on the object.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the object's reference name.
         as_code (bool): Determines if examples are returned as code including textual content.
         return_type (Optional[str]): Specifies the format of returned content; e.g., "field", "match", or "item".
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
@@ -3694,9 +3698,9 @@ def find_assets(
     Args:
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
-        attr (Optional[str]): Attribute name used during asset retrieval.
+        attr (Optional[str]): Attribute name to target on the object.
         module (Union[None, str, ModuleType]): Module context used in reference resolution.
-        resolve (bool): Whether to resolve references.
+        resolve (bool): Whether to resolve the object's reference name.
         asset_names (Optional[MaybeIterable[str]]): List specifying the order and selection of assets.
 
             May include ellipsis (`...`) to adjust ordering. Allowed asset names are:

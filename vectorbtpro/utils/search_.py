@@ -492,7 +492,7 @@ def contains_in_obj(
         obj (Any): Object to search.
         match_func (Callable): Function that accepts a key and a value and returns True
             if the element is a match and False otherwise.
-        traversal (Optional[str]): Search strategy.
+        traversal (Optional[str]): Traversal strategy.
 
             * "DFS" for depth-first search.
             * "BFS" for breadth-first search.

@@ -640,7 +640,7 @@ def broadcast_arrays(
         *arrs (ArrayLike): Array-like objects to broadcast.
         target_shape (Optional[ShapeLike]): Target shape to which arrays should be broadcasted.
         axis (Optional[MaybeSequence[int]]): Axis specification for broadcasting.
-        expand_axis (Optional[MaybeSequence[int]]): Axis used for expanding dimensions if necessary.
+        expand_axis (Optional[MaybeSequence[int]]): Axis used for expanding dimensions during broadcasting.
 
     Returns:
         Tuple[Array, ...]: A tuple containing the broadcasted arrays.

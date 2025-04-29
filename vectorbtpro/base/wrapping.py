@@ -431,7 +431,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         Args:
             apply_func (Union[str, Callable]): Function or method name to apply to each chunk.
             *args: Positional arguments for `apply_func`.
-            chunk_kwargs (KwargsLike): Keyword arguments controlling the chunking process.
+            chunk_kwargs (KwargsLike): Keyword arguments for the chunking handler.
             
                 See `HasWrapper.chunk`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
@@ -596,10 +596,10 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
             See `vectorbtpro.utils.datetime_.infer_index_freq`.
-        parse_index (Optional[bool]): Flag indicating whether to convert the index to a datetime index.
-        column_only_select (Optional[bool]): Flag indicating whether column-only selection is enabled.
-        range_only_select (Optional[bool]): Flag indicating whether range-only selection is enabled.
-        group_select (Optional[bool]): Flag indicating whether group selection is enabled.
+        parse_index (Optional[bool]): Flag to convert the index to a datetime index with `pd.to_datetime`.
+        column_only_select (Optional[bool]): If True, index the wrapper as a Series of columns/groups.
+        range_only_select (Optional[bool]): If True, allow row selection only by slicing.
+        group_select (Optional[bool]): If True, enable group-based selection when grouping is active.
         grouped_ndim (Optional[int]): Number of dimensions after grouping columns.
         grouper (Optional[Grouper]): A `vectorbtpro.base.grouping.base.Grouper` instance for grouping columns.
         **kwargs: Keyword arguments for `vectorbtpro.base.grouping.base.Grouper`
@@ -1999,14 +1999,14 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             zero_to_none (Optional[bool]): If True, converts a zero column name to None
                 when a single column is present.
             force_2d (bool): If True, force the output to be two-dimensional.
-            fillna (Optional[Scalar]): Value to replace missing (NaN) entries in the array.
-            dtype (Optional[PandasDTypeLike]): Data type for the resulting Pandas object.
+            fillna (Optional[Scalar]): Value to replace missing data (NaN).
+            dtype (Optional[PandasDTypeLike]): Data type for converting the output.
             min_precision (Union[None, int, str]): Minimum precision for numerical conversion.
             max_precision (Union[None, int, str]): Maximum precision for numerical conversion.
             prec_float_only (Optional[bool]): If True, apply precision conversion only to floating point numbers.
             prec_check_bounds (Optional[bool]): If True, enforce bounds checking during precision conversion.
             prec_strict (Optional[bool]): If True, apply strict checking during precision conversion.
-            to_timedelta (bool): If True, convert the output object to timedelta.
+            to_timedelta (bool): Flag indicating whether to convert the output to timedelta format.
             to_index (bool): If True, map output values to the original index.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
@@ -2128,7 +2128,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             name_or_index (NameIndex): Name for a scalar reduction per column or index for an array reduction.
             columns (Optional[IndexLike]): Override for the object's default columns.
             force_1d (bool): Flag to force the input array to be treated as one-dimensional.
-            fillna (Optional[Scalar]): Value to substitute for missing data.
+            fillna (Optional[Scalar]): Value to replace missing data (NaN).
             dtype (Optional[PandasDTypeLike]): Data type for converting the output.
             to_timedelta (bool): Flag indicating whether to convert the output to timedelta format.
             to_index (bool): Flag indicating whether to map scalar results to the object's index.

@@ -220,7 +220,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         """Convert the OHLCV data to a `vectorbtpro.data.base.Data` instance.
 
         Args:
-            data_cls (Optional[Type[Data]]): Class used for data conversion.
+            data_cls (Optional[Type[Data]]): Data class to use for conversion.
             **kwargs: Keyword arguments for `vectorbtpro.data.base.Data.from_data` of `data_cls`.
 
         Returns:

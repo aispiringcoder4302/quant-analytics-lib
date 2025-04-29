@@ -2805,7 +2805,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             data (Union[dict, SeriesFrame]): Dictionary or DataFrame/Series used to construct the instance.
-            columns_are_symbols (bool): Indicates whether the columns in each DataFrame represent symbols.
+            columns_are_symbols (bool): Flag indicating whether the columns represent symbols.
             invert_data (bool): Determines if the data dictionary should be inverted using `Data.invert_data`.
             single_key (bool): Specifies whether the instance should be treated as having a single key.
 

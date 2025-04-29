@@ -1232,7 +1232,7 @@ class Pickleable(Base):
             path (Optional[PathLike]): File path, directory, or None.
 
                 If None or a directory, the file name defaults to the class name.
-            file_format (Optional[str]): File format extension.
+            file_format (Optional[str]): Format specifier for determining the file extension.
 
                 For options, see `pickle_extensions` and `config_extensions`.
             compression (CompressionLike): Compression algorithm.
@@ -1405,7 +1405,7 @@ class Pickleable(Base):
 
         Args:
             path (Optional[PathLike]): File path to save the instance.
-            file_format (Optional[str]): Format used for serialization.
+            file_format (Optional[str]): Format specifier for determining the file extension.
             compression (CompressionLike): Compression algorithm.
             mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
             

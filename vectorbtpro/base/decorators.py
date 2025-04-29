@@ -25,7 +25,7 @@ def override_arg_config(config: Config, merge_configs: bool = True) -> tp.ClassW
 
     Args:
         config (Config): Configuration to override the current argument config.
-        merge_configs (bool): If True, merge the existing configuration with `config`.
+        merge_configs (bool): Whether to merge the existing configuration with the provided one.
 
             If False, replace it entirely.
 

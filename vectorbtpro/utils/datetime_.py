@@ -1718,7 +1718,7 @@ def prepare_dt_index(
 
     Args:
         index (IndexLike): Input index to convert.
-        parse_index (Optional[bool]): Flag to enable parsing with `pd.to_datetime`.
+        parse_index (Optional[bool]): Flag to convert the index to a datetime index with `pd.to_datetime`.
         parse_with_dateparser (Optional[bool]): Flag to enable parsing with the dateparser library.
         dateparser_kwargs (KwargsLike): Keyword arguments for `dateparser.parse`.
         **kwargs: Keyword arguments for `pd.to_datetime`.

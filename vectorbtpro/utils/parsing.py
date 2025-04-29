@@ -493,7 +493,7 @@ def match_flat_ann_arg(
 
     Args:
         flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
-        query (AnnArgQuery): Integer index, string name, or regular expression to match an argument.
+        query (AnnArgQuery): Query to identify the argument by position, name, or regular expression.
         return_name (bool): If True, return the argument's name.
         return_index (bool): If True, return the argument's positional index.
 
@@ -531,7 +531,7 @@ def match_ann_arg(
         ann_args (AnnArgs): Annotated arguments.
 
             See `vectorbtpro.utils.parsing.annotate_args`.
-        query (AnnArgQuery): Query to identify the argument.
+        query (AnnArgQuery): Query to identify the argument by position, name, or regular expression.
         return_name (bool): If True, return the argument's name.
         return_index (bool): If True, return the argument's positional index.
 
@@ -558,7 +558,7 @@ def match_and_set_flat_ann_arg(
 
     Args:
         flat_ann_args (FlatAnnArgs): Flattened annotated arguments.
-        query (AnnArgQuery): Query to identify the argument by index, name, or regular expression.
+        query (AnnArgQuery): Query to identify the argument by position, name, or regular expression.
         new_value (Any): New value to assign to the matched argument(s).
 
     Returns:

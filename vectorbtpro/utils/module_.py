@@ -685,7 +685,7 @@ def prepare_refname(
     Args:
         obj (Any): Object or reference name to prepare.
         module (Union[None, str, ModuleType]): Module context used in reference resolution.
-        resolve (bool): Whether to resolve the reference name.
+        resolve (bool): Whether to resolve the object's reference name.
         vbt_only (bool): If True, limit resolution to objects within vectorbtpro.
         return_parts (bool): If True, return a tuple containing the reference name, module, and qualified name.
         raise_error (bool): Whether to raise an error if the reference name cannot be determined.

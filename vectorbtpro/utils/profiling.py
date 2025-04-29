@@ -115,8 +115,8 @@ def with_timer(
         func (Callable): Function to be decorated.
         timer_kwargs (KwargsLike): Keyword arguments for the `Timer` constructor.
         elapsed_kwargs (KwargsLike): Keyword arguments for the `Timer.elapsed` method.
-        print_func (Optional[Callable]): Function used to print the formatted elapsed time.
-        print_format (Optional[str]): Format string using `{func_name}` and `{elapsed}`.
+        print_func (Optional[Callable]): Function used to print the time report.
+        print_format (Optional[str]): Format string for displaying elapsed time.
         print_kwargs (KwargsLike): Keyword arguments for `print_func`.
 
     Returns:
@@ -213,8 +213,8 @@ def with_timeit(
     Args:
         func (Callable): Function to be decorated.
         timeit_kwargs (KwargsLike): Keyword arguments for the `timeit` function.
-        print_func (Optional[Callable]): Function used to print the formatted execution time.
-        print_format (Optional[str]): Format string using `{func_name}` and `{elapsed}`.
+        print_func (Optional[Callable]): Function used to print the time report.
+        print_format (Optional[str]): Format string for displaying elapsed time.
         print_kwargs (KwargsLike): Keyword arguments for `print_func`.
 
     Returns:
