@@ -1566,7 +1566,7 @@ class IndicatorBase(Analyzable):
         """Return the indicator outputs as a dictionary.
 
         Args:
-            include_all (bool): Include all outputs (regular, in-place, and lazy).
+            include_all (bool): Flag to determine whether to include all outputs (regular, in-place, and lazy).
 
         Returns:
             Dict[str, SeriesFrame]: A mapping of output names to their corresponding data.
@@ -1581,7 +1581,7 @@ class IndicatorBase(Analyzable):
         """Return the indicator outputs as a DataFrame.
 
         Args:
-            include_all (bool): Include all outputs (regular, in-place, and lazy).
+            include_all (bool): Flag to determine whether to include all outputs (regular, in-place, and lazy).
 
         Returns:
             Frame: A DataFrame combining the outputs with output names as column keys.

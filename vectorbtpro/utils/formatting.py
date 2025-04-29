@@ -672,7 +672,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
 
     Args:
         obj (Any): Object to dump.
-        dump_engine (str): Dump engine to use.
+        dump_engine (str): Name of the dump engine.
 
             Options include:
 

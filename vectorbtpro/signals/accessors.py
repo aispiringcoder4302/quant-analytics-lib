@@ -725,9 +725,9 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             *objs: One or two array-like objects representing signal data.
-            force_first (bool): Enforce retention of the first signal.
-            keep_conflicts (bool): Preserve conflicting signals.
-            reverse_order (bool): Process signals in reverse order.
+            force_first (bool): Determines whether the first signal is forced to precede its counterpart.
+            keep_conflicts (bool): Determines if simultaneous signals are processed sequentially.
+            reverse_order (bool): Determines whether to reverse the order of signals.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -803,10 +803,10 @@ class SignalsAccessor(GenericAccessor):
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
-            n (Optional[ArrayLike]): Number or array specifying the number of signals to generate per column.
+            n (Optional[ArrayLike]): Number of signals to generate.
 
                 Must broadcast to the number of columns.
-            prob (Optional[ArrayLike]): Single number or array of probabilities for placing signals.
+            prob (Optional[ArrayLike]): Probability for generating a signal.
 
                 Must broadcast to match the provided shape.
             pick_first (bool): Determines whether to select the first viable signal in cases
@@ -947,7 +947,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
-            n (Optional[ArrayLike]): Number of signals per column.
+            n (Optional[ArrayLike]): Number of signals to generate.
 
                 When provided, signals are generated using `vectorbtpro.signals.nb.generate_rand_enex_nb`.
             entry_prob (Optional[ArrayLike]): Probability of generating an entry signal.
@@ -1113,7 +1113,7 @@ class SignalsAccessor(GenericAccessor):
         Specify `seed` to ensure deterministic output.
 
         Args:
-            prob (Optional[ArrayLike]): Array-like parameter defining the probability of exit signals.
+            prob (Optional[ArrayLike]): Probability for generating a signal.
             seed (Optional[int]): Random seed for deterministic output.
             wait (int): Number of periods to wait after generating an exit signal.
             until_next (bool): Whether to place signals up to the next entry signal.
@@ -1903,10 +1903,13 @@ class SignalsAccessor(GenericAccessor):
             rank_args (ArgsLike): Positional arguments for `rank_func_nb`.
 
                 Must not be provided with `*args`.
-            reset_by (Optional[ArrayLike]): Array indicating reset points for broadcasting.
-            after_false (bool): If True, rank signals occurring after a False value.
-            after_reset (bool): If True, restart ranking after a reset signal.
+            reset_by (Optional[ArrayLike]): Boolean array indicating reset positions.
+            after_false (bool): If True, disregards the first True partition with no preceding False.
+            after_reset (bool): If True, disregards the first True partition before a reset signal.
             reset_wait (int): Offset to treat reset signals.
+            
+                * 0 treats the signal at reset as the first in the next partition.
+                * 1 treats it as the last in the previous partition.
             as_mapped (bool): If True, return the result as a
                 `vectorbtpro.records.mapped_array.MappedArray` instance.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
@@ -2006,7 +2009,7 @@ class SignalsAccessor(GenericAccessor):
             chunked (ChunkedOption): Option to control chunked processing.
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
-            allow_gaps (bool): Indicates whether to allow gaps in ranking.
+            allow_gaps (bool): Flag to determine whether to allow gaps in ranking.
             **kwargs: Keyword arguments for `SignalsAccessor.rank`.
 
         Returns:
@@ -2079,8 +2082,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             reset_by (ArrayLike): Array used to reset the ranking.
-            after_reset (bool): If True, ranking starts after a reset signal.
-            allow_gaps (bool): If True, gaps are allowed in the ranking.
+            after_reset (bool): If True, disregards the first True partition before a reset signal.
+            allow_gaps (bool): Flag to determine whether to allow gaps in ranking.
             **kwargs: Keyword arguments for `pos_rank`.
 
         Returns:
@@ -2374,7 +2377,7 @@ class SignalsAccessor(GenericAccessor):
         """Calculate the distance from the last signal occurrence.
 
         Args:
-            nth (int): Nth signal from the end to compute the distance for.
+            nth (int): Index of the last True value to measure the distance from.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2462,7 +2465,7 @@ class SignalsAccessor(GenericAccessor):
         """Get the direction string corresponding to a signal relation.
 
         Args:
-            relation (Union[int, str]): Signal relation represented as an integer or string.
+            relation (Union[int, str]): Relation mode for pairing signals.
 
                 Mapped using `vectorbtpro.signals.enums.SignalRelation` if provided as a string.
 
@@ -2522,10 +2525,10 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             target (Optional[ArrayLike]): Array-like target used for a two-range operation.
-            relation (Union[int, str]): Relation type between ranges.
+            relation (Union[int, str]): Relation mode for pairing signals.
 
                 Mapped using `vectorbtpro.signals.enums.SignalRelation` if provided as a string.
-            incl_open (bool): Whether to include open ranges.
+            incl_open (bool): Include an open range if no closing signal is found.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -2733,10 +2736,10 @@ class SignalsAccessor(GenericAccessor):
             range_ (Array1d): Array of range values for constructing the index.
             row_idxs (Array1d): Array of row indices used for selecting index labels when needed.
             index (Index): Reference Pandas index for deriving labels.
-            signal_index_type (str): Specifies the type of signal index.
+            signal_index_type (str): Type of signal index to generate.
 
                 Valid values are "range", "position", or "label".
-            signal_index_name (str): Name to assign to the generated index.
+            signal_index_name (str): Name to assign to the signal index.
 
         Returns:
             Index: A Pandas Index constructed based on the specified signal index type.
@@ -2767,14 +2770,14 @@ class SignalsAccessor(GenericAccessor):
             incl_empty_cols (bool): Include empty columns in the unraveling process.
             force_signal_index (bool): Force creation of a new signal index even
                 if the unraveled mask has the same shape as the original.
-            signal_index_type (str): Type for generating the signal index.
+            signal_index_type (str): Type of signal index to generate.
 
                 Allowed values:
 
                 * "range": Basic signal counter in a column.
                 * "position(s)": Row index of the signal in a column.
                 * "label(s)": Label identifying the signal in a column.
-            signal_index_name (str): Name assigned to the signal index.
+            signal_index_name (str): Name to assign to the signal index.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -2859,7 +2862,9 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.base.reshaping.broadcast`.
             force_signal_index (bool): Enforce the generation of a new signal index.
-            signal_index_type (str): Type of signal index to generate. Valid values:
+            signal_index_type (str): Type of signal index to generate.
+
+                Allowed values:
 
                 * "pair_range": Basic pair counter in a column.
                 * "range": Basic signal counter in a column.
@@ -2871,7 +2876,7 @@ class SignalsAccessor(GenericAccessor):
                 * "label(s)": Label of signal in a column.
                 * "source_label(s)": Label of signal in a source column.
                 * "target_label(s)": Label of signal in a target column.
-            signal_index_name (str): Name for the signal index.
+            signal_index_name (str): Name to assign to the signal index.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

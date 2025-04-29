@@ -1118,7 +1118,9 @@ def find_exact(
         target (str): Target string to match.
         string (str): String to check for an exact match.
         ignore_case (bool): Whether to ignore case when matching.
-        return_type (str): Return result format. Accepted values:
+        return_type (str): Return result format.
+        
+            Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
             * "start": Returns a list with the starting index of the match.
@@ -1159,7 +1161,9 @@ def find_start(
         target (str): Substring expected at the beginning of the string.
         string (str): String to check.
         ignore_case (bool): Whether to ignore case when matching.
-        return_type (str): Return result format. Accepted values:
+        return_type (str): Return result format.
+        
+            Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
             * "start": Returns a list with the starting index of the match.
@@ -1200,7 +1204,9 @@ def find_end(
         target (str): Substring expected at the end of the string.
         string (str): String to check.
         ignore_case (bool): Whether to ignore case when matching.
-        return_type (str): Return result format. Accepted values:
+        return_type (str): Return result format.
+        
+            Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
             * "start": Returns a list with the starting index of the match.
@@ -1241,7 +1247,9 @@ def find_substring(
         target (str): Substring to search for.
         string (str): String in which to search.
         ignore_case (bool): Whether to ignore case when matching.
-        return_type (str): Return result format. Accepted values:
+        return_type (str): Return result format.
+        
+            Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
             * "start": Returns a list with the starting index of the match.
@@ -1294,7 +1302,9 @@ def find_regex(
         ignore_case (bool): Whether to ignore case when matching.
         flags (int): Additional flags for compiling the regular expression.
         group (Union[int, str, None]): Specific regex group to extract.
-        return_type (str): Return result format. Accepted values:
+        return_type (str): Return result format.
+        
+            Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
             * "start": Returns a list with the starting index of the match.
@@ -1360,7 +1370,9 @@ def find_fuzzy(
         max_substitutions (Optional[int]): Maximum number of allowed substitutions.
         max_deletions (Optional[int]): Maximum number of allowed deletions.
         max_l_dist (Optional[int]): Maximum allowed Levenshtein distance.
-        return_type (str): Return result format. Accepted values:
+        return_type (str): Return result format.
+        
+            Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
             * "start": Returns a list with the starting index of the match.
@@ -1455,7 +1467,9 @@ def find(
     Args:
         target (str): Target substring or pattern.
         string (str): String in which to search.
-        mode (str): Search mode. Accepted values:
+        mode (str): Search mode.
+        
+            Accepted values:
 
             * "exact": Use `find_exact`
             * "start": Use `find_start`
@@ -1465,7 +1479,9 @@ def find(
             * "fuzzy": Use `find_fuzzy`
             * "rapidfuzz": Use `find_rapidfuzz`
         ignore_case (bool): Whether to ignore case when matching.
-        return_type (str): Return result format. Accepted values:
+        return_type (str): Return result format.
+        
+            Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
             * "start": Returns a list with the starting index of the match.
@@ -1699,7 +1715,9 @@ def replace(
         target (str): Substring to locate in the source string.
         replacement (str): String to substitute for the target.
         string (str): Source string in which to perform the replacement.
-        mode (str): Search and replacement mode. Accepted values:
+        mode (str): Search and replacement mode.
+        
+            Accepted values:
 
             * "exact": Use `replace_exact`
             * "start": Use `replace_start`

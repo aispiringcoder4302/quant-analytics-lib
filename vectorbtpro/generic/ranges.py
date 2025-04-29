@@ -829,8 +829,8 @@ class Ranges(PriceRecords):
             proj_period (Union[None, str, int, FrequencyLike]): Defines the projection length.
 
                 Use an integer for row count or a timedelta-like value.
-            incl_end_idx (bool): Include the end index of the range in the projection.
-            extend (bool): Extend the projection period beyond the end of the range.
+            incl_end_idx (bool): Whether the end index of a range is inclusive.
+            extend (bool): Whether to extend the projection to a fixed length (beyond the end).
 
                 The extension period is taken from the longest range duration if `proj_period`
                 is None, and from the longest `proj_period` if not None.
@@ -1080,17 +1080,27 @@ class Ranges(PriceRecords):
             top_n (Optional[int]): Display only the top N records sorted by maximum duration.
             random_n (Optional[int]): Number of range records to select randomly.
             seed (Optional[int]): Random seed for deterministic output.
-            proj_start (Union[None, str, int, FrequencyLike]): See `Ranges.get_projections`.
+            proj_start (Union[None, str, int, FrequencyLike]): Defines when to start the projection.
+            
+                See `Ranges.get_projections`.
 
                 Allows an option "current_or_{value}", which sets `proj_start` to the duration
                 of the current open range or to the specified value if no open range exists.
-            proj_period (Union[None, str, int, FrequencyLike]): See `Ranges.get_projections`.
+            proj_period (Union[None, str, int, FrequencyLike]): Defines the projection length.
+            
+                See `Ranges.get_projections`.
 
                 Allows options such as "current_or_{option}", "mean", "min", "max", "median",
                 or a percentage like "50%" representing a quantile derived from closed ranges.
-            incl_end_idx (bool): See `Ranges.get_projections`.
-            extend (bool): See `Ranges.get_projections`.
-            ffill (bool): See `Ranges.get_projections`.
+            incl_end_idx (bool): Whether the end index of a range is inclusive.
+            
+                See `Ranges.get_projections`.
+            extend (bool): Whether to extend the projection to a fixed length (beyond the end).
+            
+                See `Ranges.get_projections`.
+            ffill (bool): Forward fill NaN values in the projection, even if they are NaN in `close`.
+            
+                See `Ranges.get_projections`.
             plot_past_period (Union[None, str, int, FrequencyLike]): Past period for plotting.
 
                 Accepts the same options as `proj_period` plus "proj_period" and "current_or_proj_period".

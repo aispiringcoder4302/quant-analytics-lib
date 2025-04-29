@@ -672,7 +672,9 @@ def refine_source(
     """Refine the source code by splitting it into manageable chunks and applying completion methods.
 
     Args:
-        source (Any): Source(s) or object(s) from which to extract the source code. A source may be:
+        source (Any): Source(s) or object(s) from which to extract the source code.
+        
+            A source may be:
 
             * a string containing code (e.g. "import vectorbtpro as vbt ..."),
             * a file path (e.g. "strategies/sma_crossover.py"),
@@ -1272,7 +1274,7 @@ class Chatable(Configured):
             message (str): Message to send to the language model.
             
                 Will be appended to `chat_history` with the role "user".
-            chat_history (Optional[ChatHistory]): Conversation history.
+            chat_history (Optional[ChatHistory]): Chat history, a list of dictionaries with defined roles.
             
                 Will be modified in place.
             formatter (str): Formatter.

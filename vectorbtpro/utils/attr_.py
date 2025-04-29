@@ -245,7 +245,7 @@ class DefineMixin(Hashable):
         """Return a new instance with updated attribute values.
 
         Args:
-            **changes: Keyword arguments specifying the fields to update.
+            **changes: Keyword arguments specifying field updates.
 
         Returns:
             DefineMixin: A new instance reflecting the specified changes.

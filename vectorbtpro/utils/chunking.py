@@ -804,7 +804,7 @@ class ContainerTaker(ChunkTaker, DefineMixin):
         single_type (Optional[TypeLike]): Type or tuple of types that should be treated as a single value.
         ignore_none (bool): Indicates whether None values should be ignored.
         mapper (Optional[ChunkMapper]): Optional chunk mapper (`ChunkMapper`) to process chunk metadata.
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) at which to evaluate this instance.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) used for evaluation.
     """
 
     cont_take_spec: tp.Optional[tp.ContainerTakeSpec] = define.field(default=None)
@@ -1308,7 +1308,7 @@ class Chunker(Configured):
         return_raw_chunks (Optional[bool]): Determines whether to return raw chunk data instead 
             of post-processed results.
         silence_warnings (Optional[bool]): Flag to suppress warning messages.
-        forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments.
+        forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments when forwarding them.
 
             Variables from the context of `Chunker.run` may be included.
         execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
@@ -1619,7 +1619,7 @@ class Chunker(Configured):
         """Resolve the chunk-taking specification.
 
         Args:
-            take_spec (TakeSpec): Specification for chunk-taking.
+            take_spec (TakeSpec): Specification for taking chunks.
 
         Returns:
             TakeSpec: The resolved chunk-taking specification.
@@ -1645,7 +1645,7 @@ class Chunker(Configured):
 
         Args:
             arg (Any): Input argument.
-            take_spec (TakeSpec): Chunk-taking specification.
+            take_spec (TakeSpec): Specification for taking chunks.
 
                 If None or a `NotChunked` instance, the original argument is returned.
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.

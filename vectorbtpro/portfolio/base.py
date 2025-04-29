@@ -3334,13 +3334,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Can be provided as a module path when staticizing.
             post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
             order_mode (bool): If True, simulates in order mode without explicit signals.
-            size (Optional[ArrayLike]): Trade size.
+            size (Optional[ArrayLike]): Size to order.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.size`.
 
                 !!! note
                     Negative size is not allowed; use signals to express direction.
-            size_type (Optional[ArrayLike]): Type of size.
+            size_type (Optional[ArrayLike]): Order size type.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.size_type`.
 
@@ -3368,7 +3368,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             min_size (Optional[ArrayLike]): Minimum order size.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.min_size`.
-            max_size (Optional[ArrayLike]): Maximum trade size.
+            max_size (Optional[ArrayLike]): Maximum order size.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.max_size`.
 
@@ -4306,8 +4306,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             n (Optional[ArrayLike]): Number of signals to generate.
 
                 Mutually exclusive with `entry_prob` and `exit_prob`.
-            prob (Optional[ArrayLike]): Probability of encountering a signal, used for both entries and exits
-                if specific probabilities are not provided.
+            prob (Optional[ArrayLike]): Probability for generating a signal.
             entry_prob (Optional[ArrayLike]): Probability for generating an entry signal.
 
                 Defaults to `prob` if not specified.
@@ -4469,8 +4468,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             close (Union[ArrayLike, OHLCDataMixin]): Close prices or OHLC data used for portfolio simulation.
             optimizer (PortfolioOptimizer): Optimizer instance that provides allocation weights.
             pf_method (str): Portfolio simulation method, either "from_orders" or "from_signals".
-            squeeze_groups (bool): Whether to squeeze groups in the optimizer's allocation output.
-            dropna (Optional[str]): Strategy for handling missing allocation values during filling.
+            squeeze_groups (bool): If True and the data's grouped ndim is 1,
+                group levels are squeezed in the resulting DataFrame.
+            dropna (Optional[str]): Strategy for handling missing allocations, either "all" or "head".
             fill_value (Scalar): Value used to fill missing allocation entries.
             size_type (ArrayLike): Order size type.
             direction (Optional[ArrayLike]): Order direction; if None, determined automatically from allocations.
@@ -4764,9 +4764,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts. Used as a price boundary (see `vectorbtpro.portfolio.enums.PriceArea`).
 
                 For stop signals, `np.nan` is replaced with the minimum of open and close prices.
-            ffill_val_price (Optional[bool]): If True, valuation price is tracked only when known;
-                otherwise, an unknown `close` may lead to NaN.
-            update_value (Optional[bool]): Whether to update group value after each filled order.
+            ffill_val_price (Optional[bool]): If True, tracks the valuation price only when available
+                to prevent propagation of NaN values.
+            update_value (Optional[bool]): If True, updates the group value after each filled order.
             fill_pos_info (Optional[bool]): Whether to fill the position record.
 
                 Disable to improve simulation speed in simple cases.
@@ -10072,7 +10072,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
 
                 Defaults to `Portfolio.get_cash_deposits` with `keep_flex=True` or 0 if not provided.
-            cash_deposits_as_input (Optional[bool]): Flag indicating whether cash deposits are provided as input.
+            cash_deposits_as_input (Optional[bool]): Whether to add cash deposits to the input value.
 
                 Defaults to `Portfolio.cash_deposits_as_input` or False if not provided.
             market_value (Optional[SeriesFrame]): Market value series required for the return calculation.
@@ -10356,7 +10356,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             init_value (Optional[MaybeSeries]): Initial portfolio value.
             cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
-            cash_deposits_as_input (Optional[bool]): Flag indicating whether cash deposits are provided as input.
+            cash_deposits_as_input (Optional[bool]): Whether to add cash deposits to the input value.
             bm_value (Optional[SeriesFrame]): Benchmark value series or frame.
 
                 Defaults to `Portfolio.get_bm_value` if not provided.
@@ -11302,7 +11302,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Defaults to `Portfolio.wrapper` if not provided.
-            plot_positions (Union[bool, str]): Determines how to plot positions. Valid options:
+            plot_positions (Union[bool, str]): Determines how to plot positions.
+            
+                Valid options:
 
                 * "zones" or True
                 * "lines"

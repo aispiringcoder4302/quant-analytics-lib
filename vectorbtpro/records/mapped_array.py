@@ -1421,7 +1421,7 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            apply_per_group (bool): If True, apply the reduction per group of columns.
+            apply_per_group (bool): If True, apply the function per group of columns.
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
             jitted (JittedOption): Option to control JIT compilation.
 

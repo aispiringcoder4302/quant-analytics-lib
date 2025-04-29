@@ -54,7 +54,7 @@ class AssetPipeline(Base):
                 `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc`.
             *args: Positional arguments for `vectorbtpro.utils.execution.Task`.
             prepare (bool): Flag indicating whether to prepare the function before execution.
-            prepare_once (bool): Flag specifying if the function should be prepared only once.
+            prepare_once (bool): Flag indicating whether the function should be prepared only once.
             cond_kwargs (KwargsLike): Keyword arguments for conditional preparation.
             asset_func_meta (Union[None, dict, list]): Metadata for the asset function.
             **kwargs: Keyword arguments for `vectorbtpro.utils.execution.Task`.
@@ -233,7 +233,7 @@ class ComplexAssetPipeline(AssetPipeline):
     Args:
         expression (str): Expression string to evaluate.
         context (KwargsLike): Mapping of variables for expression evaluation.
-        prepare_once (bool): Flag to indicate when functions should be prepared once.
+        prepare_once (bool): Flag indicating whether the function should be prepared only once.
         **resolve_task_kwargs: Keyword arguments for task resolution.
 
     Examples:
@@ -277,7 +277,7 @@ class ComplexAssetPipeline(AssetPipeline):
             expression (str): Expression string to process.
             context (KwargsLike): Mapping of context variables.
             prepare (bool): Flag to indicate whether to prepare function calls.
-            prepare_once (bool): Flag to indicate if functions should be prepared once.
+            prepare_once (bool): Flag indicating whether the function should be prepared only once.
             **resolve_task_kwargs: Keyword arguments for resolving tasks.
 
         Returns:

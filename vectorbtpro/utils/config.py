@@ -177,7 +177,9 @@ def copy_dict(dct: tp.DictLike, copy_mode: str = "shallow", nested: bool = True)
 
     Args:
         dct (DictLike): Input configuration dictionary.
-        copy_mode (str): Copying mode. Supported modes are:
+        copy_mode (str): Copying mode.
+        
+            Supported modes are:
 
             * 'none': No copy is performed.
             * 'shallow': Only the dictionary structure is copied.
@@ -418,7 +420,9 @@ def merge_dicts(
     Args:
         *dicts (DictLike): Dictionaries to merge.
         to_dict (bool): Whether to convert each dictionary using `convert_to_dict` before merging.
-        copy_mode (str): Copy mode used by `copy_dict` to duplicate each dictionary.
+        copy_mode (str): Copying mode.
+
+            See `copy_dict`.
         nested (Optional[bool]): Whether to recursively merge nested dictionaries.
 
             If None, the function determines automatically if any dictionary is nested.
@@ -908,7 +912,9 @@ class Config(pdict):
 
         Args:
             reset_dct_copy_kwargs (KwargsLike): Additional parameters for copying the reset dictionary.
-            copy_mode (Optional[str]): Copy mode to use.
+            copy_mode (Optional[str]): Copying mode.
+
+                See `copy_dict`.
             nested (Optional[bool]): Whether to perform a nested copy.
 
         Returns:
@@ -954,7 +960,9 @@ class Config(pdict):
 
         Args:
             other (DictLike): Dictionary to merge.
-            copy_mode (Optional[str]): Copy mode for merging.
+            copy_mode (Optional[str]): Copying mode.
+
+                See `copy_dict`.
             nested (Optional[bool]): Whether to perform a nested merge.
             **kwargs: Keyword arguments for `merge_dicts`.
 
@@ -2160,7 +2168,9 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         Delegates to `Configured.replace`.
 
         Args:
-            copy_mode (str): Copy mode for configuration copying.
+            copy_mode (str): Copying mode.
+
+                See `copy_dict`.
             nested (bool): Whether nested objects should be copied.
             cls (type): Class to instantiate for the new instance.
 

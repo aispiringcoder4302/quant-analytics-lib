@@ -1565,7 +1565,7 @@ def get_exec_state_nb(
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Relevant context.
-        val_price (Optional[int]): Optional overriding value price for the execution state computation.
+        val_price (Optional[float]): Valuation price of the asset.
 
     Returns:
         ExecState: The updated execution state with attributes such as cash, position, debt,
@@ -1638,7 +1638,7 @@ def get_order_size_nb(
         size_type (int): Type of order size.
         
             Percent sizes are not supported. See `vectorbtpro.portfolio.enums.SizeType`.
-        val_price (Optional[int]): Optional value price used in the order size resolution.
+        val_price (Optional[float]): Valuation price of the asset.
 
     Returns:
         float: The computed order size.
@@ -1680,7 +1680,7 @@ def get_order_value_nb(
         direction (int): Order direction.
         
             See `vectorbtpro.portfolio.enums.Direction`.
-        val_price (Optional[int]): Optional value price used for computing the order value.
+        val_price (Optional[float]): Valuation price of the asset.
 
     Returns:
         float: The approximated order value.
@@ -1712,7 +1712,7 @@ def get_order_result_nb(
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Relevant context.
         order (Order): Order to be executed.
-        val_price (Optional[float]): Optional value price to be used in order execution.
+        val_price (Optional[float]): Valuation price of the asset.
         update_value (bool): Flag indicating whether to update the computed value during order execution.
 
     Returns:

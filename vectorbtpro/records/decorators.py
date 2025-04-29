@@ -234,11 +234,11 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
         "records" for record arrays, and "mapped_array" for mapped arrays. Defaults to "records".
     * `group_by_aware`: Whether the returned object is aligned based on current grouping.
         Defaults to True.
-    * `method_kwargs`: Keyword arguments to pass to the source method.
+    * `method_kwargs`: Keyword arguments for the source method.
     * `decorator`: Decorator function.
         If not specified, defaults to `vectorbtpro.utils.decorators.cached_property` for object types
         "records" and "red_array", and to `vectorbtpro.utils.decorators.cacheable_property` otherwise.
-    * `decorator_kwargs`: Keyword arguments to pass to the decorator, which by default include the
+    * `decorator_kwargs`: Keyword arguments for the decorator, which by default include the
         options `obj_type` and `group_by_aware`.
     * `docstring`: Docstring for the generated method.
 

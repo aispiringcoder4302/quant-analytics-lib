@@ -587,7 +587,7 @@ class CAQuery(DefineMixin):
             query_like (Any): Object representing the query.
 
                 Can be a callable, string, dictionary, type, or other object.
-            use_base_cls (bool): Flag to use the base class if applicable.
+            use_base_cls (bool): Flag indicating whether the base class is used in query parsing.
 
         Returns:
             CAQuery: A new `CAQuery` instance parsed from the input.
@@ -1146,8 +1146,9 @@ class CacheableRegistry(Base):
 
                 They are parsed with `CAQuery.parse`.
             collapse (bool): If True, remove child setups belonging to any matched parent setup.
-            kind (Optional[MaybeIterable[str]]): String or a collection of strings specifying
-                the types of setups to match. Supported values:
+            kind (Optional[MaybeIterable[str]]): Specifies the expected kind(s) of setup to match.
+                
+                Supported values:
 
                 * "class": Matches class setups (instances of `CAClassSetup`).
                 * "instance": Matches instance setups (instances of `CAInstanceSetup`).
@@ -3428,10 +3429,17 @@ class CachingDisabled(Base):
 
     Args:
         query_like (Optional[Any]): Value used for parsing the query via `CAQuery.parse`.
-        use_base_cls (bool): Determines whether the base class is used during query parsing.
-        kind (Optional[MaybeIterable[str]]): Specifies the kinds of setups to filter.
-        exclude (Optional[MaybeIterable[CABaseSetup]]): Setups to exclude from caching.
-        filter_func (Optional[Callable]): Function used to filter setups.
+        use_base_cls (bool): Flag indicating whether the base class is used in query parsing.
+        kind (Optional[MaybeIterable[str]]): Specifies the expected kind(s) of setup to match.
+
+            See `CARegistry.match_setups`.
+        exclude (Optional[MaybeIterable[CABaseSetup]]): Setup or setups to exclude from matching.
+
+            See `CARegistry.match_setups`.
+        filter_func (Optional[Callable]): Function that takes a setup and returns a boolean
+            indicating whether the setup should be included.
+
+            See `CARegistry.match_setups`.
         registry (CacheableRegistry): Registry instance for caching setups.
         disable_whitelist (bool): Whether to disable the whitelist.
         disable_machinery (bool): Whether to disable caching machinery.
@@ -3696,9 +3704,16 @@ class CachingEnabled(Base):
     Args:
         query_like (Optional[Any]): Query specification to restrict caching behavior.
         use_base_cls (bool): Flag indicating whether the base class is used in query parsing.
-        kind (Optional[MaybeIterable[str]]): Type indicator for the caching rule.
-        exclude (Optional[MaybeIterable[CABaseSetup]]): Setups to be excluded from the caching rule.
-        filter_func (Optional[Callable]): Function to filter applicable caching setups.
+        kind (Optional[MaybeIterable[str]]): Specifies the expected kind(s) of setup to match.
+
+            See `CARegistry.match_setups`.
+        exclude (Optional[MaybeIterable[CABaseSetup]]): Setup or setups to exclude from matching.
+
+            See `CARegistry.match_setups`.
+        filter_func (Optional[Callable]): Function that takes a setup and returns a boolean
+            indicating whether the setup should be included.
+
+            See `CARegistry.match_setups`.
         registry (CacheableRegistry): Registry used for managing caching setups.
         enable_whitelist (bool): Flag to enable whitelist for caching setups.
         enable_machinery (bool): Flag to enable the caching machinery.

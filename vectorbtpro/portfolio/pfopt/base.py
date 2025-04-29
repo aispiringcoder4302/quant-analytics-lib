@@ -1199,7 +1199,8 @@ def resolve_hrp_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) -> tp.
     the input can also be provided as a sequence of dictionaries.
 
     Args:
-        constraints (Union[Frame, Sequence]): DataFrame, dict, or sequence of dicts representing HRP constraints.
+        constraints (Union[Frame, Sequence]): HRP constraints provided as a DataFrame, dictionary,
+            or list of dictionaries.
 
             Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
 
@@ -1280,13 +1281,17 @@ def riskfolio_optimize(
             Applied only if `nan_to_zero` is False.
         factors (Optional[AnyArray2d]): 2D array or DataFrame containing factor values.
         port (Optional[Union[RPortfolio, RHCPortfolio]]): Already initialized portfolio.
-        port_cls (Optional[Union[None, str, Type]]): Portfolio class. Supported values:
+        port_cls (Optional[Union[None, str, Type]]): Portfolio class.
+        
+            Supported values:
 
             * None: Uses `Portfolio`
             * "hc" or "hcportfolio" (case-insensitive): Uses `HCPortfolio`
             * Other string: Uses attribute of `riskfolio`
             * Class: Uses a custom class
-        opt_method (Optional[Union[None, str, Callable]]): Optimization method. Supported values:
+        opt_method (Optional[Union[None, str, Callable]]): Optimization method.
+        
+            Supported values:
 
             * None or "optimization": Uses `port.optimization`
             * "wc" or "wc_optimization": Uses `port.wc_optimization`
@@ -1303,7 +1308,9 @@ def riskfolio_optimize(
         asset_classes (Optional[Union[None, Frame, Sequence]]): Asset classes matrix.
 
             See `resolve_asset_classes` for possible formats.
-        constraints_method (Optional[str]): Constraints method. Supported values:
+        constraints_method (Optional[str]): Constraints method.
+        
+            Supported values:
 
             * "assets" or "assets_constraints": Uses [assets constraints](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_constraints)
             * "factors" or "factors_constraints": Uses [factors constraints](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.factors_constraints)
@@ -1316,7 +1323,9 @@ def riskfolio_optimize(
             See `resolve_assets_constraints` for assets constraints formats,
             `resolve_factors_constraints` for factors constraints formats, and
             `resolve_hrp_constraints` for HRP constraints formats.
-        views_method (Optional[str]): Views method. Supported values:
+        views_method (Optional[str]): Views method.
+        
+            Supported values:
 
             * "assets" or "assets_views": Uses [assets views](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_views)
             * "factors" or "factors_views": Uses [factors views](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.factors_views)
@@ -2290,7 +2299,7 @@ class PortfolioOptimizer(Analyzable):
                 strings for the parameter index.
             group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]):
                 Configuration(s) for allocation groups.
-            pre_group_func (Optional[Callable]): Function applied before processing each group.
+            pre_group_func (Optional[Callable]): Function to preprocess and modify the group configuration.
             jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop over allocation groups.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2756,9 +2765,9 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             allocations (AnyArray2d): Filled allocation array.
-            valid_only (bool): Flag to filter only valid allocation points.
-            nonzero_only (bool): Flag to filter only nonzero allocation points.
-            unique_only (bool): Flag to filter only unique allocation points.
+            valid_only (bool): Skip rows where all values are NaN.
+            nonzero_only (bool): Skip rows where all values are zero.
+            unique_only (bool): Skip rows that are identical to the previous valid row.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Required if allocations is not a DataFrame.
@@ -2881,9 +2890,9 @@ class PortfolioOptimizer(Analyzable):
             S (Optional[AnyArray2d]): Price data for running the algorithm.
             n_jobs (int): Number of parallel jobs for algorithm execution.
             log_progress (bool): Flag to enable progress logging.
-            valid_only (bool): Flag to filter only valid allocation points.
-            nonzero_only (bool): Flag to filter only nonzero allocation points.
-            unique_only (bool): Flag to filter only unique allocation points.
+            valid_only (bool): Skip rows where all values are NaN.
+            nonzero_only (bool): Skip rows where all values are zero.
+            unique_only (bool): Skip rows that are identical to the previous valid row.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
                 Required if `S` is not a DataFrame.
@@ -3353,7 +3362,7 @@ class PortfolioOptimizer(Analyzable):
             name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to
                 strings for the parameter index.
             group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]): Group configuration(s) for optimization.
-            pre_group_func (Optional[Callable]): Function to preprocess each group configuration.
+            pre_group_func (Optional[Callable]): Function to preprocess and modify the group configuration.
             splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
             eval_id (Optional[Hashable]): Evaluation identifier.
             jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop over optimization groups.
@@ -3881,12 +3890,13 @@ class PortfolioOptimizer(Analyzable):
         If `dropna` is "head", rows prior to the first allocation are removed.
 
         Args:
-            dropna (Optional[str]): Strategy for removing rows, either "all" or "head".
+            dropna (Optional[str]): Strategy for handling missing allocations, either "all" or "head".
             fill_value (Scalar): Value used to fill empty DataFrame entries.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-            squeeze_groups (bool): Determines whether to squeeze group levels when appropriate.
+            squeeze_groups (bool): If True and the data's grouped ndim is 1,
+                group levels are squeezed in the resulting DataFrame.
 
         Returns:
             DataFrame: A DataFrame with filled allocation values.
@@ -4033,7 +4043,7 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            dropna (Optional[str]): Parameter for NA handling.
+            dropna (Optional[str]): Strategy for handling missing allocations, either "all" or "head".
 
                 See `PortfolioOptimizer.fill_allocations`.
             line_shape (str): Shape of the plot line (e.g. "hv").

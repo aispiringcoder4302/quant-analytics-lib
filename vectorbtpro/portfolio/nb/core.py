@@ -1244,8 +1244,8 @@ def update_value_nb(
         cash_now (float): Cash amount after the update.
         position_before (float): Asset position before the update.
         position_now (float): Asset position after the update.
-        val_price_before (float): Valuation price before the update.
-        val_price_now (float): Valuation price after the update.
+        val_price_before (float): Asset valuation price before the update.
+        val_price_now (float): Asset valuation price after the update.
         value_before (float): Portfolio value before the update.
 
     Returns:
@@ -2361,7 +2361,7 @@ def update_open_pos_info_stats_nb(record: tp.Record, position_now: float, price:
     """Update statistics of an open position record using a custom price.
 
     Args:
-        record (Record): Position record to update.
+        record (Record): Position record to populate.
         position_now (float): Current position size.
         price (float): Price used for updating the statistics.
 
@@ -2436,7 +2436,7 @@ def update_pos_info_nb(
     """Update the position record after an order is filled.
 
     Args:
-        record (Record): Record structure containing trade details.
+        record (Record): Position record to populate.
         i (int): Current row index.
         col (int): Current column index.
         position_before (float): Position size before the order execution.
@@ -2588,7 +2588,7 @@ def check_price_hit_nb(
         close (float): Close price.
         price (float): Target price to evaluate.
         hit_below (bool): If True, check whether the target price is hit from above.
-        can_use_ohlc (bool): Indicates if OHLC data should be used for the evaluation.
+        can_use_ohlc (bool): Whether OHLC data is safe to use for the evaluation.
         check_open (bool): Determines whether the open price should be considered.
         hard_price (bool): If True, enforces the target price when hit by the open price.
 
@@ -2898,8 +2898,8 @@ def check_limit_hit_nb(
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         limit_reverse (bool): Flag to reverse the limit condition.
-        can_use_ohlc (bool): Indicates whether OHLC data can be used for detecting a limit hit.
-        check_open (bool): Flag indicating whether to check if the limit is hit at the open price.
+        can_use_ohlc (bool): Whether OHLC data is safe to use for the evaluation.
+        check_open (bool): Determines whether the open price should be considered.
         hard_limit (bool): Enforces a hard limit without fallback to the open price if True.
 
     Returns:
@@ -3064,8 +3064,8 @@ def check_stop_hit_nb(
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         hit_below (bool): If True, check whether the target price is hit from above.
-        can_use_ohlc (bool): Whether to use OHLC data when checking the stop hit.
-        check_open (bool): Whether to include the open price in the hit check.
+        can_use_ohlc (bool): Whether OHLC data is safe to use for the evaluation.
+        check_open (bool): Determines whether the open price should be considered.
         hard_stop (bool): Whether the stop is considered a hard stop.
 
     Returns:
@@ -3249,7 +3249,7 @@ def resolve_dyn_limit_price_nb(val_price: float, price: float, limit_price: floa
     the order price as the upper bound.
 
     Args:
-        val_price (float): Valuation price used as the lower bound.
+        val_price (float): Asset valuation price used as the lower bound.
         price (float): Order price used as the upper bound.
         limit_price (float): Proposed limit price value; if infinite, selects a bound based on its sign.
 
@@ -3271,7 +3271,7 @@ def resolve_dyn_stop_entry_price_nb(val_price: float, price: float, stop_entry_p
     the order price as the upper bound.
 
     Args:
-        val_price (float): Valuation price used as the lower bound.
+        val_price (float): Asset valuation price used as the lower bound.
         price (float): Order price used as the upper bound.
         stop_entry_price (float): Proposed stop entry price value.
 

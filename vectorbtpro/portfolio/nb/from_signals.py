@@ -84,7 +84,7 @@ def generate_stop_signal_nb(
         stop_exit_type (int): Stop exit type determining how to process the stop condition.
 
             See `vectorbtpro.portfolio.enums.StopExitType`.
-        accumulate (int): Current accumulation mode flag.
+        accumulate (int): Accumulation mode or flag.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
 
@@ -274,7 +274,7 @@ def resolve_opposite_entry_nb(
         upon_opposite_entry (int): Mode for resolving opposite entry signals.
 
             See `vectorbtpro.portfolio.enums.OppositeEntryMode`.
-        accumulate (int): Current accumulation mode flag.
+        accumulate (int): Accumulation mode or flag.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
 
@@ -350,7 +350,7 @@ def signal_to_size_nb(
         size_type (int): Type of order size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        accumulate (int): Accumulation mode flag dictating how orders are aggregated.
+        accumulate (int): Accumulation mode or flag.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
 

@@ -1182,7 +1182,7 @@ class Parameterizer(Configured):
 
             See `vectorbtpro.base.indexes.clean_index`.
         selection (Optional[Selection]): Template or criteria to select specific parameter indices.
-        forward_kwargs_as (KwargsLike): Mapping to forward keyword arguments.
+        forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments when forwarding them.
         mono_min_size (Optional[int]): Minimum number of parameter values to split.
 
             See `vectorbtpro.utils.chunking.iter_chunk_meta`.

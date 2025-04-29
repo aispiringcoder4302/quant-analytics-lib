@@ -1483,7 +1483,8 @@ class VBTAsset(KnowledgeAsset):
             allow_suffix (Optional[bool]): Allow suffix matching for mentions.
             merge_targets (Optional[bool]): Merge mention targets to simplify the search.
             per_path (bool): Whether to perform the search per specified path.
-            path (Optional[MaybeList[PathLikeKey]]): One or more paths to search within.
+            path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to 
+                search within (e.g. "x.y[0].z").
             return_type (Optional[str]): Type of result to return.
             **kwargs: Keyword arguments for `VBTAsset.find` or `VBTAsset.find_code`.
 
@@ -3956,7 +3957,7 @@ def chat_about(
     Args:
         obj (MaybeList): Object or list of objects to chat about.
         message (str): Initial message to start the chat.
-        chat_history (ChatHistory): History of the chat session.
+        chat_history (ChatHistory): Chat history, a list of dictionaries with defined roles.
         asset_names (Optional[MaybeIterable[str]]): List specifying the order and selection of assets.
 
             May include ellipsis (`...`) to adjust ordering. Allowed asset names are:
@@ -4038,11 +4039,11 @@ def search(
 
     Args:
         query (str): Search query string.
-        cache_documents (bool): If True, will use an asset cache manager to store the generated
-            text documents in a local and/or disk cache after conversion.
+        cache_documents (bool): If True, will use an asset cache manager to cache the generated
+            text documents after conversion.
 
             Running the same method again will use the cached documents.
-        cache_key (Optional[str]): Identifier for cached documents.
+        cache_key (Optional[str]): Key for caching documents.
         asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of 
             `vectorbtpro.utils.knowledge.base_assets.AssetCacheManager`.
         asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
@@ -4174,9 +4175,10 @@ def chat(
 
     Args:
         query (str): Query string to process.
-        chat_history (ChatHistory): Current chat history.
-        cache_documents (bool): Enable caching of generated text documents.
-        cache_key (Optional[str]): Identifier for cached documents.
+        chat_history (ChatHistory): Chat history, a list of dictionaries with defined roles.
+        cache_documents (bool): If True, will use an asset cache manager to cache the generated
+            text documents after conversion.
+        cache_key (Optional[str]): Key for caching documents.
         asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of 
             `vectorbtpro.utils.knowledge.base_assets.AssetCacheManager`.
         asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
@@ -4191,7 +4193,7 @@ def chat(
         cutoff (Optional[float]): Score cutoff for ranking.
         return_chunks (Optional[bool]): Return text chunks if True.
         rank_kwargs (KwargsLike): Keyword arguments for `VBTAsset.rank`.
-        wrap_documents (Optional[bool]): Wrap documents during processing if True.
+        wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
         silence_warnings (bool): Flag to suppress warning messages.
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.chat`.
 

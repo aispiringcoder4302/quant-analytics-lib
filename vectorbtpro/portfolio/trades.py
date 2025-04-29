@@ -1430,7 +1430,7 @@ class Trades(Ranges):
         rolling standard deviation is used.
 
         Args:
-            volatility (Optional[ArrayLike]): Volatility measure.
+            volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
                 If None, a 14-period ATR is computed when high and low are available;
                 otherwise, a 14-period rolling standard deviation is used.
@@ -1522,14 +1522,14 @@ class Trades(Ranges):
         14-period rolling standard deviation is used.
 
         Args:
-            volatility (Optional[ArrayLike]): Volatility measure.
+            volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
                 If None, a 14-period ATR is computed when high and low are available;
                 otherwise, a 14-period rolling standard deviation is used.
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
-            incl_shorter (bool): Include trades with shorter durations if True.
+            incl_shorter (bool): Whether to include trades shorter than the current duration step.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2437,7 +2437,7 @@ class Trades(Ranges):
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
-            incl_shorter (bool): Whether to include trades shorter than the maximum duration.
+            incl_shorter (bool): Whether to include trades shorter than the current duration step.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.

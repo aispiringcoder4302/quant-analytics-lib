@@ -898,8 +898,10 @@ def rank_nb(
         reset_by (Optional[Array2d]): Boolean array indicating reset positions.
         after_false (bool): If True, disregards the first True partition with no preceding False.
         after_reset (bool): If True, disregards the first True partition before a reset signal.
-        reset_wait (int): Offset to treat reset signals; 0 treats the signal at reset as the first in the next
-            partition and 1 treats it as the last in the previous partition.
+        reset_wait (int): Offset to treat reset signals.
+        
+            * 0 treats the signal at reset as the first in the next partition.
+            * 1 treats it as the last in the previous partition.
 
     Returns:
         Array2d: An array containing computed signal ranks.
@@ -1182,9 +1184,9 @@ def clean_enex_nb(
         exits (Array2d): 2D boolean array of exit signals.
 
             Each column represents signals for a distinct series.
-        force_first (bool): Enforce the precedence of the first signal in case of conflicts.
-        keep_conflicts (bool): Retain signals that conflict.
-        reverse_order (bool): Process signals in reverse order.
+        force_first (bool): Determines whether the first signal is forced to precede its counterpart.
+        keep_conflicts (bool): Determines if simultaneous signals are processed sequentially.
+        reverse_order (bool): Determines whether to reverse the order of signals.
 
     Returns:
         Tuple[Array2d, Array2d]: A tuple containing the cleaned entries and exits arrays.
@@ -1224,7 +1226,7 @@ def relation_idxs_1d_nb(
     Args:
         source_mask (Array1d): Boolean array indicating source signals.
         target_mask (Array1d): Boolean array indicating target signals.
-        relation (int): Specifies the method for pairing signals.
+        relation (int): Relation mode for pairing signals.
 
             See `vectorbtpro.signals.enums.SignalRelation`.
 
@@ -1463,7 +1465,7 @@ def between_ranges_nb(mask: tp.Array2d, incl_open: bool = False) -> tp.RecordArr
 
     Args:
         mask (Array2d): Boolean array indicating signal positions.
-        incl_open (bool): Include an open range from the last signal to the end if no closing signal is found.
+        incl_open (bool): Include an open range if no closing signal is found.
 
     Returns:
         RecordArray: Array of records containing range metadata.
@@ -1527,9 +1529,10 @@ def between_two_ranges_nb(
     Args:
         source_mask (Array2d): Boolean array indicating positions of source signals.
         target_mask (Array2d): Boolean array indicating positions of target signals.
-        relation (int): Relation identifier for pairing indices;
-            see `vectorbtpro.signals.enums.SignalRelation` for available options.
-        incl_open (bool): Include an open range when no valid target index is found.
+        relation (int): Relation mode for pairing signals.
+
+            See `vectorbtpro.signals.enums.SignalRelation`.
+        incl_open (bool): Include an open range if no closing signal is found.
 
     Returns:
         RecordArray: Array of records containing range data.
@@ -1854,7 +1857,7 @@ def unravel_between_two_nb(
     Args:
         source_mask (Array2d): 2D boolean mask for source signals.
         target_mask (Array2d): 2D boolean mask for target signals.
-        relation (int): Signal relation used for pairing values.
+        relation (int): Relation mode for pairing signals.
 
             See `vectorbtpro.signals.enums.SignalRelation`.
         incl_open_source (bool): Include open source signals when a matching target is not found.

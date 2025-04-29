@@ -388,7 +388,7 @@ class ThreadPoolEngine(ExecutionEngine):
 
     Args:
         init_kwargs (KwargsLike): Keyword arguments for `ThreadPoolExecutor`.
-        timeout (Optional[int]): Timeout for waiting on task results.
+        timeout (Optional[int]): Maximum number of seconds to wait.
         hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
             within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
@@ -472,7 +472,7 @@ class ProcessPoolEngine(ExecutionEngine):
 
     Args:
         init_kwargs (KwargsLike): Keyword arguments for `ProcessPoolExecutor`.
-        timeout (Optional[int]): Timeout for waiting on task results.
+        timeout (Optional[int]): Maximum number of seconds to wait.
         hide_inner_progress (Optional[bool]): Flag indicating whether to hide progress bars
             within individual threads.
         **kwargs: Keyword arguments for `ExecutionEngine`.
@@ -573,7 +573,7 @@ class PathosEngine(ExecutionEngine):
     Args:
         pool_type (Optional[str]): Pool type used for parallel execution.
         init_kwargs (KwargsLike): Keyword arguments used for initializing the pool.
-        timeout (Optional[int]): Maximum duration in seconds before execution is interrupted.
+        timeout (Optional[int]): Maximum number of seconds to wait.
         check_delay (Optional[float]): Delay in seconds between successive task status checks.
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
@@ -644,7 +644,7 @@ class PathosEngine(ExecutionEngine):
 
     @property
     def timeout(self) -> tp.Optional[int]:
-        """Maximum duration in seconds before execution is interrupted.
+        """Maximum number of seconds to wait.
 
         Returns:
             Optional[int]: Timeout in seconds, or None if no timeout is set.

@@ -98,7 +98,7 @@ class Base:
 
         Args:
             message (str): Chat message.
-            chat_history (ChatHistory): Chat history.
+            chat_history (ChatHistory): Chat history, a list of dictionaries with defined roles.
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.custom_assets.chat_about`.
 
         Returns:

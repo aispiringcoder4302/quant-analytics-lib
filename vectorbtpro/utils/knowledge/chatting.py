@@ -216,7 +216,7 @@ class Tokenizer(Configured):
         """Return the total number of tokens across the provided messages.
 
         Args:
-            messages (ChatMessages): Collection of chat messages.
+            messages (ChatMessages): List of dictionaries representing the conversation history.
 
         Returns:
             int: The total token count.
@@ -2269,7 +2269,7 @@ class SegmentSplitter(TokenSplitter):
 
         Args:
             text (str): Text to be split.
-            separator (Optional[str]): Separator used to divide the text.
+            separator (Optional[str]): Separator to insert between data items.
 
         Yields:
             Tuple[int, int, bool]: A tuple containing the segment's start index, end index, and
@@ -3279,7 +3279,7 @@ class FileStore(DictStore):
 
     Args:
         dir_path (Optional[PathLike]): Directory path used for file storage.
-        compression (Union[None, bool, str]): Compression setting used for file operations.
+        compression (CompressionLike): Compression algorithm.
         save_kwargs (KwargsLike): Keyword arguments for saving objects.
         
             See `vectorbtpro.utils.pickling.save`.
@@ -5602,7 +5602,7 @@ class Contextable(HasSettings):
 
         Args:
             message (str): Message to send to the language model.
-            chat_history (Optional[ChatHistory]): Conversation history.
+            chat_history (Optional[ChatHistory]): Chat history, a list of dictionaries with defined roles.
             return_chat (bool): Flag indicating whether to return both the completion and the chat instance.
             **kwargs: Keyword arguments for `Contextable.create_chat`.
 
@@ -5667,7 +5667,7 @@ class RankContextable(Rankable, Contextable):
 
         Args:
             message (str): Message to send to the language model.
-            chat_history (Optional[ChatHistory]): Conversation history.
+            chat_history (Optional[ChatHistory]): Chat history, a list of dictionaries with defined roles.
             incl_past_queries (Optional[bool]): Whether to include past queries in the ranking process.
             rank (Optional[bool]): Flag indicating whether to apply ranking.
             top_k (TopKLike): Number of top documents to return.

@@ -440,7 +440,7 @@ def map_ranges_to_projections_nb(
         proj_period (Optional[int]): Period or duration for the projection.
         proj_period_use_index (bool): Whether to determine the projection period based on the `index` array.
         incl_end_idx (bool): Whether the end index of a range is inclusive.
-        extend (bool): Whether to extend the projection to a fixed length.
+        extend (bool): Whether to extend the projection to a fixed length (beyond the end).
         rebase (bool): Whether to rebase the projection series using a specified start value.
         start_value (FlexArray1dLike): Initial value used for rebasing projections.
         

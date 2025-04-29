@@ -89,7 +89,7 @@ def split(
         return_splitter (bool): If True, returns the constructed splitter instance instead of
             applying it to the function.
         apply_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.apply`.
-        **var_kwargs: Keyword arguments to be distributed between `splitter_kwargs` or `apply_kwargs`.
+        **var_kwargs: Keyword arguments to be distributed between `splitter_kwargs` and `apply_kwargs`.
 
     Returns:
         Callable: The wrapper function that executes the original function using the splitter.

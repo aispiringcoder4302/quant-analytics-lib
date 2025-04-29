@@ -37,7 +37,9 @@ class Chainable(Base):
         `*args` and `**kwargs` are passed.
 
         Args:
-            func (PipeFunc): Function to apply. It can be:
+            func (PipeFunc): Function to apply.
+            
+                It can be:
 
                 * A callable function.
                 * A string representing an attribute path to resolve via `vectorbtpro.utils.attr_.deep_getattr`.

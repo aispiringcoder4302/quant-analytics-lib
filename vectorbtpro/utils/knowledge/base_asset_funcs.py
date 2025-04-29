@@ -1616,7 +1616,7 @@ class DumpAssetFunc(AssetFunc):
         settings and the provided dump engine.
 
         Args:
-            dump_engine (Optional[str]): Name of the dump engine to use.
+            dump_engine (Optional[str]): Name of the dump engine.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
             **kwargs: Additional keyword arguments to merge with the resolved settings.
 

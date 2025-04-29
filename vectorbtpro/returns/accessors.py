@@ -515,7 +515,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Auto-detect the annualization factor using a datetime index.
 
         Args:
-            index (DatetimeIndex): Datetime index used for computing the annualization factor.
+            index (DatetimeIndex): Datetime index used to determine the annualization factor.
 
         Returns:
             Optional[float]: The computed annualization factor, or None if indeterminable.
@@ -1939,7 +1939,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            bias (bool): Indicates whether bias correction is applied for skewness and kurtosis.
+            bias (bool): Flag indicating whether to apply bias correction for skewness and kurtosis.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
@@ -2040,7 +2040,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
-            bias (bool): Indicates whether bias correction for skewness and kurtosis should be applied.
+            bias (bool): Flag indicating whether to apply bias correction for skewness and kurtosis.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.

@@ -43,7 +43,7 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
         context (KwargsLike): Context for template substitution in `MergeFunc.merge_func`
             and `MergeFunc.merge_kwargs`.
         eval_id_prefix (str): Prefix for the substitution identifier.
-        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) for evaluating this instance.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) used for evaluation.
         **kwargs: Keyword arguments acting as `merge_kwargs`.
     """
 

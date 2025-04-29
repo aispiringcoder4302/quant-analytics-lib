@@ -3035,7 +3035,7 @@ class Splitter(Analyzable):
             allow_zero_len (bool): Whether to allow creation of zero-length ranges.
             range_format (Optional[str]): Format for the range.
 
-                If not provided, the format is inferred from `range_`.
+                If not provided, the format is inferred from `range_`. See `Splitter.get_ready_range`.
             wrap_with_template (bool): Whether to wrap the resulting ranges with a template of type
                 `vectorbtpro.utils.template.Rep`.
             wrap_with_fixrange (Optional[bool]): If set to None, new ranges that are sequences
@@ -3821,7 +3821,9 @@ class Splitter(Analyzable):
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
-            range_format (str): Format specifier for resolving the range.
+            range_format (str): Format of the returned range.
+
+                See `Splitter.get_ready_range`.
             point_wise (bool): Whether to perform point-wise range extraction.
             attach_bounds (Union[bool, str]): Controls attaching bounds.
 
@@ -4301,7 +4303,9 @@ class Splitter(Analyzable):
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
-            range_format (str): Format for the range to be applied (e.g., "slice_or_any").
+            range_format (str): Format of the returned range.
+
+                See `Splitter.get_ready_range`.
             point_wise (bool): Whether to perform point-wise range extraction.
             attach_bounds (Union[bool, str]): Specifies if and how to attach bounds to the result.
 
@@ -5124,7 +5128,7 @@ class Splitter(Analyzable):
         """Divide each split into multiple sub-splits using a new splitting specification.
 
         Args:
-            new_split (SplitLike): Specification for generating new splitting ranges.
+            new_split (SplitLike): Specification for splitting ranges.
             sort (bool): Whether to sort the resulting splits by their starting boundaries.
             template_context (KwargsLike): Additional context for template substitution.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
@@ -5194,7 +5198,7 @@ class Splitter(Analyzable):
         to generate new ranges.
 
         Args:
-            new_split (SplitLike): Specification for generating new splitting ranges.
+            new_split (SplitLike): Specification for splitting ranges.
             column (Optional[Hashable]): Column identifier to select.
 
                 Required if multiple sets are present.
@@ -5431,6 +5435,8 @@ class Splitter(Analyzable):
         Args:
             range_ (FixRangeLike): Range specification to process.
             index_bounds (bool): If True, map the bounds to the provided index.
+
+                See `Splitter.map_bounds_to_index`.
             right_inclusive (bool): Whether the right bound is inclusive.
             check_constant (bool): If True, verify that the range is constant.
             template_context (KwargsLike): Additional context for template substitution.
@@ -5495,7 +5501,9 @@ class Splitter(Analyzable):
         Keyword arguments are passed to `Splitter.get_range_bounds`.
 
         Args:
-            index_bounds (bool): If True, use the index's data type for the bounds.
+            index_bounds (bool): If True, map the bounds to the provided index.
+
+                See `Splitter.map_bounds_to_index`.
             right_inclusive (bool): Whether the right bound is inclusive.
             split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
@@ -5566,7 +5574,9 @@ class Splitter(Analyzable):
         """Return a Series or DataFrame containing the start and end bounds.
 
         Args:
-            index_bounds (bool): If True, compute bounds using the index.
+            index_bounds (bool): If True, map the bounds to the provided index.
+
+                See `Splitter.map_bounds_to_index`.
             right_inclusive (bool): Whether the right bound is inclusive.
             split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
