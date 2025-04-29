@@ -286,7 +286,7 @@ class ScheduleManager(Base):
             to (Optional[int]): Specifies an end parameter for the schedule.
             zero_offset (bool): When True, configures the job to use a zero offset.
             force_missed_run (bool): When True, forces the job to run if a scheduled execution was missed.
-            tags (Optional[Iterable[Hashable]]): Tags to assign to the job.
+            tags (Optional[Iterable[Hashable]]): Tags used to identify the scheduled job.
 
         Returns:
             AsyncJob: The configured asynchronous job.
@@ -513,7 +513,7 @@ class ScheduleManager(Base):
         """Delete scheduled jobs filtered by given tags, or all jobs if no tags are provided.
 
         Args:
-            tags (Optional[Iterable[Hashable]]): Tags identifying jobs to delete.
+            tags (Optional[Iterable[Hashable]]): Tags used to identify the scheduled job.
 
         Returns:
             None

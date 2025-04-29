@@ -2217,7 +2217,7 @@ class MappedArray(Analyzable):
             normalize (bool): Normalize the counts by dividing by the total sum.
             sort_uniques (bool): Sort unique values before further processing.
             sort (bool): Sort the results based on frequency counts.
-            ascending (bool): Order sorting in ascending order when `sort` is True.
+            ascending (bool): True for ascending order, False for descending.
             dropna (bool): Exclude NaN values from the counts.
             group_by (GroupByLike): Grouping specification.
 

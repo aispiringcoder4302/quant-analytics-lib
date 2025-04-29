@@ -5274,8 +5274,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 auto-assigning object attributes.
             rename_args (DictLike): Mapping of argument names to substitute names.
             location (Optional[str]): Identifier used to specify the location for indicator selection.
-            prepend_location (Optional[bool]): Specifies whether to prepend the
-                location to the function name.
+            prepend_location (Optional[bool]): When True, indicator names are prefixed with their location.
             unpack (Union[bool, str]): Determines the processing of the function output.
 
                 Use True, "dict", or "frame" to apply post-processing.
@@ -5971,7 +5970,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 Use "str" to convert periods to strings or provide another method for timestamp conversion.
             groupby_kwargs (Union[None, AnyGroupByLike, feature_dict, symbol_dict, CustomTemplate]):
-                Keyword arguments for grouping the index.
+                Keyword arguments for Pandas `groupby` and `resample` methods.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
             keep_groupby_names (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
                 Flag indicating whether to retain original group names when partitioning.
             engine (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
@@ -6735,7 +6736,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             other_objs (Optional[dict]): Additional objects to register within the database.
             date_as_object (bool): Whether to return date columns as objects.
             align_dtypes (bool): Whether to align result column data types with the original data.
-            squeeze (bool): Convert a one-column DataFrame to a Series if True.
+            squeeze (bool): Flag indicating whether to convert a single-column DataFrame to a Series.
             **kwargs: Keyword arguments for `Data.get`.
 
         Returns:

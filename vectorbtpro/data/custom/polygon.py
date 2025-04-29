@@ -105,7 +105,7 @@ class PolygonData(RemoteData):
                 Symbols that do not match this pattern are excluded.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
-            client (Optional[PolygonClient]): Existing client instance for API interaction.
+            client (Optional[PolygonClient]): Polygon API client instance.
             client_config (KwargsLike): Configuration parameters for creating a new client.
             **list_tickers_kwargs: Keyword arguments for `polygon.RESTClient.list_tickers`.
 
@@ -135,7 +135,7 @@ class PolygonData(RemoteData):
         Otherwise, a new client is instantiated using the supplied `client_config`.
 
         Args:
-            client (Optional[PolygonClient]): Existing client instance.
+            client (Optional[PolygonClient]): Polygon API client instance.
             **client_config: Configuration parameters for creating a new client.
 
         Returns:
@@ -211,7 +211,7 @@ class PolygonData(RemoteData):
 
                 Maximum allowed is 50000.
             params (DictLike): Additional query parameters.
-            delay (Optional[float]): Delay in seconds after each request.
+            delay (Optional[float]): Delay in seconds between requests.
             retries (Optional[int]): Number of retries on failure to fetch data.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (DictLike): Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.

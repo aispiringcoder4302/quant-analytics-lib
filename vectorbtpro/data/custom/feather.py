@@ -90,7 +90,7 @@ class FeatherData(FileData):
             index_col (Optional[MaybeSequence[IntStr]]): Column position(s) or name(s) to set as the index.
 
                 Applies if the fetched data has a default index.
-            squeeze (bool): Whether to squeeze a DataFrame with a single column into a Series.
+            squeeze (bool): Flag indicating whether to convert a single-column DataFrame to a Series.
             **read_kwargs: Keyword arguments for `pd.read_feather`.
 
                 See https://pandas.pydata.org/docs/reference/api/pandas.read_feather.html for additional arguments.

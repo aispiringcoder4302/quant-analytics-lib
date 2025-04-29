@@ -135,7 +135,7 @@ class HDFData(FileData):
 
         Args:
             path (PathLike): Base path to search for HDF files.
-            match_regex (Optional[str]): Regular expression to filter matching paths.
+            match_regex (Optional[str]): Regular expression for filtering paths.
             sort_paths (bool): Flag indicating whether to sort the resulting paths.
             recursive (bool): Whether to search subdirectories recursively.
             **kwargs: Keyword arguments for `HDFData.match_path`.

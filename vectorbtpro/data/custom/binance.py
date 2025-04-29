@@ -116,7 +116,7 @@ class BinanceData(RemoteData):
         Otherwise, a new client is created using `client_config`.
 
         Args:
-            client (Optional[Client]): Existing Binance client instance.
+            client (Optional[Client]): Binance client instance.
             client_config (KwargsLike): Configuration parameters for creating a new client.
 
         Returns:
@@ -221,7 +221,7 @@ class BinanceData(RemoteData):
 
                 Mapped using `binance.enums.HistoricalKlinesType` if provided as a string.
             limit (Optional[int]): Maximum number of klines to retrieve per API call.
-            delay (Optional[float]): Delay in seconds after each request.
+            delay (Optional[float]): Delay in seconds between requests.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 

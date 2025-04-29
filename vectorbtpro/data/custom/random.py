@@ -68,7 +68,7 @@ class RandomData(SyntheticData):
             mean (float): Drift or mean of the percentage change.
             std (float): Standard deviation of the percentage change.
             symmetric (bool): Determine if negative returns are diminished to match positive ones.
-            seed (int): Seed to ensure deterministic output.
+            seed (int): Random seed for deterministic output.
 
                 !!! note
                     When using a seed, pass a unique seed per feature or symbol via

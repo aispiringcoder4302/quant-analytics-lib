@@ -363,7 +363,7 @@ class TVClient(Configured):
         """Generate a complete message by constructing the JSON message and adding a header.
 
         Args:
-            func (str): Function name for the message.
+            func (str): Function name associated with the message.
             param_list (List[str]): List of parameter strings.
 
         Returns:
@@ -375,7 +375,7 @@ class TVClient(Configured):
         """Send a message through the WebSocket connection using `ws.send`.
 
         Args:
-            func (str): Function name for the message.
+            func (str): Function name associated with the message.
             param_list (List[str]): List of parameter strings.
 
         Returns:
@@ -430,7 +430,11 @@ class TVClient(Configured):
         Args:
             symbol (Symbol): Symbol identifier.
             exchange (str): Exchange code.
-            fut_contract (Optional[int]): Future contract number.
+            fut_contract (Optional[int]): Futures contract type:
+
+                * None for cash,
+                * 1 for the current continuous contract front, or
+                * 2 for the following contract.
 
         Returns:
             str: The formatted trading symbol.
@@ -463,7 +467,11 @@ class TVClient(Configured):
             symbol (Symbol): Symbol identifier.
             exchange (str): Exchange code.
             interval (str): Time interval for historical data.
-            fut_contract (Optional[int]): Future contract number.
+            fut_contract (Optional[int]): Futures contract type:
+
+                * None for cash,
+                * 1 for the current continuous contract front, or
+                * 2 for the following contract.
             adjustment (str): Price adjustment type.
             extended_session (bool): If True, retrieves extended session data.
             pro_data (bool): If True, uses the professional data WebSocket connection.
@@ -553,7 +561,7 @@ class TVClient(Configured):
         text: tp.Optional[str] = None,
         exchange: tp.Optional[str] = None,
         pages: tp.Optional[int] = None,
-        delay: tp.Optional[int] = None,
+        delay: tp.Optional[float] = None,
         retries: int = 3,
         show_progress: bool = True,
         pbar_kwargs: tp.KwargsLike = None,
@@ -568,7 +576,7 @@ class TVClient(Configured):
             pages (Optional[int]): Maximum number of pages to fetch.
 
                 If not specified, all available pages are fetched.
-            delay (Optional[int]): Delay in seconds between retry attempts and between fetching pages.
+            delay (Optional[float]): Delay in seconds between retry attempts.
             retries (int): Number of retries allowed for each API request in case of JSON decoding errors.
             show_progress (bool): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
@@ -721,7 +729,7 @@ class TVData(RemoteData):
         text: tp.Optional[str] = None,
         exchange: tp.Optional[str] = None,
         pages: tp.Optional[int] = None,
-        delay: tp.Optional[int] = None,
+        delay: tp.Optional[float] = None,
         retries: tp.Optional[int] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
@@ -760,12 +768,12 @@ class TVData(RemoteData):
             symbol_pattern (Optional[str]): Pattern to match the symbol name.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to sort the final list of symbols.
-            client (Optional[TVClient]): Client instance for API requests.
+            client (Optional[TVClient]): Instance of `TVClient`.
             client_config (KwargsLike): Configuration parameters for creating a new client.
             text (Optional[str]): Text for performing a server-side symbol search.
             exchange (Optional[str]): Exchange for performing a server-side symbol search.
             pages (Optional[int]): Number of pages to retrieve during symbol search.
-            delay (Optional[int]): Delay between requests during symbol search.
+            delay (Optional[float]): Delay in seconds between retry attempts.
             retries (Optional[int]): Number of retries on failure to fetch data.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
@@ -1027,7 +1035,7 @@ class TVData(RemoteData):
         extended_session: tp.Optional[bool] = None,
         pro_data: tp.Optional[bool] = None,
         limit: tp.Optional[int] = None,
-        delay: tp.Optional[int] = None,
+        delay: tp.Optional[float] = None,
         retries: tp.Optional[int] = None,
     ) -> tp.SymbolData:
         """Fetch symbol data from TradingView.
@@ -1038,7 +1046,7 @@ class TVData(RemoteData):
             symbol (Symbol): Symbol identifier.
             
                 Must be in the `EXCHANGE:SYMBOL` format if `exchange` is not provided.
-            client (Optional[TVClient]): Client instance.
+            client (Optional[TVClient]): Instance of `TVClient`.
 
                 See `TVData.resolve_client`.
             client_config (KwargsLike): Configuration parameters for creating a new client.
@@ -1053,15 +1061,18 @@ class TVData(RemoteData):
             tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            fut_contract (Optional[int]): Futures contract type: None for cash,
-                1 for the current continuous contract front, or 2 for the following contract.
+            fut_contract (Optional[int]): Futures contract type:
+
+                * None for cash,
+                * 1 for the current continuous contract front, or
+                * 2 for the following contract.
             adjustment (Optional[str]): Adjustment type, either "splits" or "dividends".
             extended_session (Optional[bool]): Whether to fetch extended session data.
 
                 False indicates a regular session.
             pro_data (Optional[bool]): Flag indicating whether to use pro data.
             limit (Optional[int]): Maximum number of items to return.
-            delay (Optional[int]): Time (in seconds) to wait between consecutive requests.
+            delay (Optional[float]): Delay in seconds between retry attempts.
             retries (Optional[int]): Number of retries on failure to fetch data.
 
         Returns:

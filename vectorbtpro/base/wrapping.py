@@ -585,8 +585,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     If the underlying object is a Series, pass `[sr.name]` as `columns`.
 
-    Extra keyword arguments are passed to `vectorbtpro.base.grouping.base.Grouper`.
-
     Args:
         index (IndexLike): Index to be associated with the array.
 

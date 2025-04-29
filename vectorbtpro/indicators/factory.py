@@ -3746,7 +3746,7 @@ Returns:
         Args:
             uppercase (bool): Convert indicator names to uppercase.
             location (Optional[str]): Filter indicators by a specific location.
-            prepend_location (Optional[bool]): If True, prepend the location to each indicator name.
+            prepend_location (Optional[bool]): When True, indicator names are prefixed with their location.
 
         Returns:
             List[str]: The list of custom indicator names.
@@ -3816,8 +3816,6 @@ Returns:
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             location (Optional[str]): Specific location from which to list indicators.
             prepend_location (Optional[bool]): When True, indicator names are prefixed with their location.
-
-                If None, a default behavior is applied.
 
         Returns:
             List[str]: A list of matching indicator names.

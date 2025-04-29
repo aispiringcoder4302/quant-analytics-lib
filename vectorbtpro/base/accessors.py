@@ -623,7 +623,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             freq (Optional[FrequencyLike]): Frequency of the target index (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
-            resample_kwargs (KwargsLike): Keyword arguments for the Pandas resample method.
+            resample_kwargs (KwargsLike): Keyword arguments for Pandas `resample` method.
             return_pd_resampler (bool): Flag indicating whether to return a Pandas resampler.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 

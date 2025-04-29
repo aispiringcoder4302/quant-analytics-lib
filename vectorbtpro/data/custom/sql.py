@@ -865,12 +865,12 @@ class SQLData(DBData):
             tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            start_row (Optional[int]): Starting row number for data retrieval.
+            start_row (Optional[int]): Index of the starting row (inclusive).
 
                 The table must contain the column specified by `row_number_column`.
 
                 Must not be used with `query`.
-            end_row (Optional[int]): Ending row number for data retrieval.
+            end_row (Optional[int]): Index of the ending row (exclusive).
 
                 The table must contain the column specified by `row_number_column`.
 

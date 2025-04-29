@@ -118,8 +118,8 @@ The `ReturnsAccessor` class provides a single subplot based on `ReturnsAccessor.
 >>> ret_acc.plots().show()
 ```
 
-![](/Period specification./images/api/returns_plots.light.svg#only-light){: .iimg loading=lazy }
-![](/Period specification./images/api/returns_plots.dark.svg#only-dark){: .iimg loading=lazy }
+![](/assets/images/api/returns_plots.light.svg#only-light){: .iimg loading=lazy }
+![](/assets/images/api/returns_plots.dark.svg#only-dark){: .iimg loading=lazy }
 """
 
 import numpy as np
@@ -4081,8 +4081,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             >>> rets.vbt.returns.plot_cumulative(bm_returns=bm_returns).show()
             ```
 
-            ![](/Period specification./images/api/plot_cumulative.light.svg#only-light){: .iimg loading=lazy }
-            ![](/Period specification./images/api/plot_cumulative.dark.svg#only-dark){: .iimg loading=lazy }
+            ![](/assets/images/api/plot_cumulative.light.svg#only-light){: .iimg loading=lazy }
+            ![](/assets/images/api/plot_cumulative.dark.svg#only-dark){: .iimg loading=lazy }
         """
         from vectorbtpro.utils.figure import make_figure, get_domain
         from vectorbtpro._settings import settings

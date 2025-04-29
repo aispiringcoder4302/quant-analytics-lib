@@ -1558,7 +1558,7 @@ def get_position_feature_nb(
     order_records: tp.RecordArray,
     close: tp.Array2d,
     col_map: tp.GroupMap,
-    feature: int = PositionFeature identifier.EntryPrice,
+    feature: int = PositionFeature.EntryPrice,
     init_position: tp.FlexArray1dLike = 0.0,
     init_price: tp.FlexArray1dLike = np.nan,
     fill_closed_position: bool = False,
@@ -1666,11 +1666,11 @@ def get_position_feature_nb(
                 raise ValueError(invalid_price_msg)
 
             if in_position:
-                if feature == PositionFeature identifier.EntryPrice:
+                if feature == PositionFeature.EntryPrice:
                     if entry_size_sum != 0:
                         entry_price = entry_gross_sum / entry_size_sum
                         out[last_order_idx:order_idx, col] = entry_price
-                elif feature == PositionFeature identifier.ExitPrice:
+                elif feature == PositionFeature.ExitPrice:
                     if fill_exit_price:
                         remaining_size = add_nb(entry_size_sum, -exit_size_sum)
                         for i in range(last_order_idx, order_idx):
@@ -1684,11 +1684,11 @@ def get_position_feature_nb(
                             out[last_order_idx:order_idx, col] = exit_price
             else:
                 if was_in_position and fill_closed_position:
-                    if feature == PositionFeature identifier.EntryPrice:
+                    if feature == PositionFeature.EntryPrice:
                         if entry_size_sum != 0:
                             entry_price = entry_gross_sum / entry_size_sum
                             out[last_order_idx:order_idx, col] = entry_price
-                    elif feature == PositionFeature identifier.ExitPrice:
+                    elif feature == PositionFeature.ExitPrice:
                         if exit_size_sum != 0:
                             exit_price = exit_gross_sum / exit_size_sum
                             out[last_order_idx:order_idx, col] = exit_price
@@ -1740,11 +1740,11 @@ def get_position_feature_nb(
             last_order_idx = order_idx
 
         if in_position:
-            if feature == PositionFeature identifier.EntryPrice:
+            if feature == PositionFeature.EntryPrice:
                 if entry_size_sum != 0:
                     entry_price = entry_gross_sum / entry_size_sum
                     out[last_order_idx:_sim_end, col] = entry_price
-            elif feature == PositionFeature identifier.ExitPrice:
+            elif feature == PositionFeature.ExitPrice:
                 if fill_exit_price:
                     remaining_size = add_nb(entry_size_sum, -exit_size_sum)
                     for i in range(last_order_idx, _sim_end):
@@ -1757,11 +1757,11 @@ def get_position_feature_nb(
                         exit_price = exit_gross_sum / exit_size_sum
                         out[last_order_idx:_sim_end, col] = exit_price
         elif was_in_position and fill_closed_position:
-            if feature == PositionFeature identifier.EntryPrice:
+            if feature == PositionFeature.EntryPrice:
                 if entry_size_sum != 0:
                     entry_price = entry_gross_sum / entry_size_sum
                     out[last_order_idx:_sim_end, col] = entry_price
-            elif feature == PositionFeature identifier.ExitPrice:
+            elif feature == PositionFeature.ExitPrice:
                 if exit_size_sum != 0:
                     exit_price = exit_gross_sum / exit_size_sum
                     out[last_order_idx:_sim_end, col] = exit_price

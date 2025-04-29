@@ -454,7 +454,7 @@ class Splitter(Analyzable):
             splits (Splits): Iterable of splits supporting both absolute and relative ranges.
             
                 Enable `fix_ranges` to convert relative ranges to absolute ranges.
-            squeeze (bool): Squeeze the splits array if its second dimension has length 1.
+            squeeze (bool): Flag indicating whether to convert a single-column DataFrame to a Series.
             fix_ranges (bool): Convert relative ranges into absolute ranges.
             wrap_with_fixrange (bool): Wrap fixed ranges with `FixRange`.
 
@@ -1352,6 +1352,8 @@ class Splitter(Analyzable):
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
             groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
             grouper_kwargs (KwargsLike): Keyword arguments for constructing the grouper.
             split (Optional[SplitLike]): Specification for further splitting of each range.
 

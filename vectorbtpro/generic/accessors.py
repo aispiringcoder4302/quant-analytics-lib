@@ -1971,6 +1971,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 Use a meta function for operations requiring additional group information.
             *args: Positional arguments for `reduce_func_nb`.
             groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -2275,7 +2277,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
-            resample_kwargs (KwargsLike): Keyword arguments for the `pd.DataFrame.resample` method.
+            resample_kwargs (KwargsLike): Keyword arguments for Pandas `resample` method.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -4805,7 +4807,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             normalize (bool): If True, return relative frequencies of unique values.
             sort_uniques (bool): If True, sort the unique values.
             sort (bool): If True, sort counts by frequency.
-            ascending (bool): If True, sort in ascending order when sorting by frequency.
+            ascending (bool): True for ascending order, False for descending.
             dropna (bool): If True, exclude counts for missing values (NaN).
             group_by (GroupByLike): Grouping specification.
 

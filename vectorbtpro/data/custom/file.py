@@ -185,7 +185,7 @@ class FileData(LocalData):
             symbols (MaybeSymbols): Symbol identifier(s).
             paths (Any): One or more file paths or glob patterns.
             match_paths (Optional[bool]): Flag to enable or disable path matching.
-            match_regex (Optional[str]): Regular expression pattern for filtering paths.
+            match_regex (Optional[str]): Regular expression for filtering paths.
             sort_paths (Optional[bool]): Indicates if the matched paths should be sorted.
             match_path_kwargs (KwargsLike): Keyword arguments for `FileData.match_path`.
             path_to_key_kwargs (KwargsLike): Keyword arguments for `FileData.path_to_key`.

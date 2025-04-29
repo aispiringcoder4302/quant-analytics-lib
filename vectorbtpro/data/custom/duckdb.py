@@ -342,8 +342,8 @@ class DuckDBData(DBData):
         on schema and table names.
 
         Args:
-            catalog_pattern (Optional[str]): Pattern to filter catalogs.
-            schema_pattern (Optional[str]): Pattern to filter schemas.
+            catalog_pattern (Optional[str]): Pattern to filter catalog names.
+            schema_pattern (Optional[str]): Pattern to filter schema names.
             table_pattern (Optional[str]): Pattern to filter table names.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Indicates whether to sort the resulting list.
@@ -351,7 +351,7 @@ class DuckDBData(DBData):
             schema (Optional[str]): Filter results to the specified schema.
 
                 Use `"current_schema"` to refer to the current schema.
-            incl_system (bool): Include system tables and views.
+            incl_system (bool): Flag indicating whether to include system tables and views.
             incl_temporary (bool): Include temporary tables.
             incl_views (bool): Include view objects.
             connection (Union[None, str, DuckDBPyConnection]): Database connection string or instance.

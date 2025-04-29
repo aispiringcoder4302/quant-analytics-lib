@@ -205,7 +205,7 @@ class CCXTData(RemoteData):
             pattern (Optional[str]): Pattern to filter symbols.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Whether to return the symbols in sorted order.
-            exchange (Union[None, str, Exchange]): Identifier or instance of the exchange.
+            exchange (Union[None, str, Exchange]): Exchange identifier or instance.
             exchange_config (Optional[KwargsLike]): Additional configurations for the exchange.
 
         Returns:
@@ -237,7 +237,7 @@ class CCXTData(RemoteData):
         Otherwise, an instance is created using the provided exchange configuration.
 
         Args:
-            exchange (Union[None, str, Exchange]): Identifier or instance of the exchange.
+            exchange (Union[None, str, Exchange]): Exchange identifier or instance.
             **exchange_config: Additional parameters for configuring the exchange.
 
         Returns:
@@ -412,7 +412,7 @@ class CCXTData(RemoteData):
 
                 Uses `CCXTData.find_earliest_date` when enabled.
             limit (Optional[int]): Maximum number of data items to return.
-            delay (Optional[float]): Delay in seconds after each request.
+            delay (Optional[float]): Delay in seconds between requests.
 
                 !!! note
                     Use only if `enableRateLimit` is not set.
