@@ -2283,10 +2283,10 @@ class Trades(Ranges):
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            plot_bands (bool): Controls whether to plot bands.
+            plot_bands (bool): Plot computed bands if True.
 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            colorize (Union[bool, str, Callable]): Colorizing strategy.
+            colorize (Union[bool, str, Callable]): Strategy for colorizing projections or bands.
 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
             field_pct_scale (bool): If True, sets the y-axis to a percentage scale.

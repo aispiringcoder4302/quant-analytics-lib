@@ -428,13 +428,13 @@ class PriceRecords(Records):
         )
 
     def get_bar_open(self, **kwargs) -> MappedArray:
-        """Return a mapped array with the opening price of the bar.
+        """Return a mapped array with the open price of the bar.
 
         Args:
             **kwargs: Keyword arguments for `PriceRecords.apply`.
 
         Returns:
-            MappedArray: The mapped array of bar opening prices.
+            MappedArray: The mapped array of bar open prices.
         """
         return self.apply(nb.bar_price_nb, self._open, **kwargs)
 
@@ -461,12 +461,12 @@ class PriceRecords(Records):
         return self.apply(nb.bar_price_nb, self._low, **kwargs)
 
     def get_bar_close(self, **kwargs) -> MappedArray:
-        """Return a mapped array with the closing price of the bar.
+        """Return a mapped array with the close price of the bar.
 
         Args:
             **kwargs: Keyword arguments for `PriceRecords.apply`.
 
         Returns:
-            MappedArray: The mapped array of bar closing prices.
+            MappedArray: The mapped array of bar close prices.
         """
         return self.apply(nb.bar_price_nb, self._close, **kwargs)

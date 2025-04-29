@@ -356,7 +356,7 @@ def get_entry_trades_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
-        close (FlexArray2dLike): Closing prices.
+        close (FlexArray2dLike): Close prices.
         
             Provided as a scalar, or per row, column, or element.
         col_map (GroupMap): Tuple of column indices and lengths.
@@ -703,7 +703,7 @@ def get_exit_trades_nb(
         order_records (RecordArray): Array of order records.
             
             Contains structured order data from simulation outputs.
-        close (FlexArray2dLike): Closing prices.
+        close (FlexArray2dLike): Close prices.
         
             Provided as a scalar, or per row, column, or element.
         col_map (GroupMap): Tuple of column indices and lengths.
@@ -1208,7 +1208,7 @@ def get_long_view_orders_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
-        close (Array2d): Array of closing prices.
+        close (Array2d): Array of close prices.
         col_map (GroupMap): Tuple of column indices and lengths.
         init_position (FlexArray1dLike): Initial position.
 
@@ -1388,7 +1388,7 @@ def get_short_view_orders_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
-        close (Array2d): 2D array of closing prices.
+        close (Array2d): 2D array of close prices.
         col_map (GroupMap): Tuple of column indices and lengths.
         init_position (FlexArray1dLike): Initial position.
 
@@ -1569,7 +1569,7 @@ def get_position_feature_nb(
     """Compute the position feature at each bar.
 
     Computes the specified position feature (either entry price or exit price) using order records
-    and closing prices across multiple groups. The calculation adapts based on the selected
+    and close prices across multiple groups. The calculation adapts based on the selected
     `feature` and the flags controlling the treatment of open and closed positions.
 
     Args:
@@ -2297,7 +2297,7 @@ def worst_price_idx_nb(
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
-        close (FlexArray2d): Array of closing prices.
+        close (FlexArray2d): Array of close prices.
         entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
         exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
         max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
@@ -2347,7 +2347,7 @@ def expanding_best_price_nb(
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
-        close (FlexArray2d): Array of closing prices.
+        close (FlexArray2d): Array of close prices.
         entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
         exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
         max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
@@ -2423,7 +2423,7 @@ def expanding_worst_price_nb(
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
-        close (FlexArray2d): Array of closing prices.
+        close (FlexArray2d): Array of close prices.
         entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
         exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
         max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
@@ -2869,10 +2869,10 @@ def running_edge_ratio_nb(
     Args:
         trade_records (RecordArray): Array of trade records.
         col_map (GroupMap): Tuple of column indices and lengths.
-        open (Optional[FlexArray2d]): Array of opening prices.
+        open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
-        close (FlexArray2d): Array of closing prices.
+        close (FlexArray2d): Array of close prices.
         volatility (FlexArray2d): Array of volatility values used for normalization.
         entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
         exit_price_close (bool): Include the close price of the exit bar when evaluating prices.

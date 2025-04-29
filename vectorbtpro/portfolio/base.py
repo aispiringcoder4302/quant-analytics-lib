@@ -502,13 +502,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         close (ArrayLike): Last asset price at each bar.
 
             Provided in a format that supports flexible indexing.
-        open (Optional[ArrayLike]): Opening price at each bar.
+        open (Optional[ArrayLike]): Open price at each bar.
 
             Provided in a format that supports flexible indexing.
-        high (Optional[ArrayLike]): Highest price at each bar.
+        high (Optional[ArrayLike]): High price at each bar.
 
             Provided in a format that supports flexible indexing.
-        low (Optional[ArrayLike]): Lowest price at each bar.
+        low (Optional[ArrayLike]): Low price at each bar.
 
             Provided in a format that supports flexible indexing.
         log_records (Optional[RecordArray]): Structured NumPy array of log records.
@@ -4877,7 +4877,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             the valuation price in `pre_segment_func_nb`.
 
         Examples:
-            Buy 10 units each tick using closing price:
+            Buy 10 units each tick using close price:
 
             ```pycon
             >>> @njit
@@ -5214,7 +5214,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             !!! warning
                 Each bar is treated as a black box—price movements within a bar are unknown.
                 Since order processing must mirror real-world conditions, only the opening and
-                closing prices remain reliably ordered.
+                close prices remain reliably ordered.
         """
         if isinstance(close, FOFPreparer):
             preparer = close
@@ -5866,7 +5866,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get forward and backward filled closing price.
+        """Get forward and backward filled close price.
 
         Args:
             close (Optional[SeriesFrame]): Price data to fill.
@@ -5886,7 +5886,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The forward and backward filled closing price data.
+            SeriesFrame: The forward and backward filled close price data.
 
         See:
             `vectorbtpro.generic.nb.base.fbfill_nb`
@@ -5930,7 +5930,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         wrapper: tp.Optional[ArrayWrapper] = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Union[None, bool, tp.SeriesFrame]:
-        """Get forward and backward filled benchmark closing price.
+        """Get forward and backward filled benchmark close price.
 
         Args:
             bm_close (Optional[SeriesFrame]): Benchmark price data to fill.
@@ -5950,7 +5950,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Union[None, bool, SeriesFrame]: The forward and backward filled benchmark closing price data,
+            Union[None, bool, SeriesFrame]: The forward and backward filled benchmark close price data,
                 or the original boolean/None value.
 
         See:
@@ -10281,7 +10281,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Based on `Portfolio.bm_close` and `Portfolio.get_market_value`.
 
         Args:
-            bm_close (Optional[ArrayLike]): Benchmark closing price data.
+            bm_close (Optional[ArrayLike]): Benchmark close price data.
 
                 If not provided, uses `Portfolio.filled_bm_close` if available; otherwise, uses `Portfolio.bm_close`.
             init_value (Optional[MaybeSeries]): Initial portfolio value.

@@ -600,7 +600,7 @@ def build_param_indexer(
 
         Args:
             param_mappers (Sequence[Series]): List of parameter mapping Series.
-            level_names (Optional[Sequence[str]]): List of level names for parameter mappings.
+            level_names (Optional[Sequence[str]]): List of level names corresponding to each parameter.
             **kwargs: Keyword arguments for indexing operations.
         """
 

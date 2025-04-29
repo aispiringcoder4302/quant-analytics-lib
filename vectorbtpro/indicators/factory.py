@@ -223,7 +223,7 @@ def build_columns(
     Args:
         params (Params): Collection of parameter values.
         input_columns (IndexLike): Initial column index to which parameter levels are added.
-        level_names (Optional[Sequence[str]]): List of names for each new parameter level.
+        level_names (Optional[Sequence[str]]): List of level names corresponding to each parameter.
         hide_levels (Optional[Sequence[Union[str, int]]): Levels to exclude from visibility.
         single_value (Optional[Sequence[bool]]): Flags indicating if each parameter is a single value.
         param_settings (KwargsLikeSequence): Settings for parameters such as data type mapping and processing options.
@@ -697,7 +697,7 @@ class IndicatorBase(Analyzable):
             pass_final_index (bool): If True, passes the final index to `custom_func`.
             pass_single_comb (bool): If True, indicates that there is only one parameter combination,
                 and passes this information to `custom_func`.
-            level_names (Optional[Sequence[str]]): List of column level names corresponding to each parameter.
+            level_names (Optional[Sequence[str]]): List of level names corresponding to each parameter.
 
                 The list length must match the number of parameters.
             hide_levels (Optional[Sequence[Union[str, int]]]): List of level names or indices
@@ -1542,7 +1542,7 @@ class IndicatorBase(Analyzable):
 
     @property
     def level_names(self) -> tp.Tuple[str, ...]:
-        """Column level names corresponding to each parameter.
+        """List of level names corresponding to each parameter.
 
         Returns:
             Tuple[str, ...]: A tuple of level names corresponding to each parameter.

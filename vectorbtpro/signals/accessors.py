@@ -1490,10 +1490,10 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             entry_price (ArrayLike): Entry price array.
-            open (ArrayLike): Array of opening prices.
+            open (ArrayLike): Array of open prices.
             high (ArrayLike): Array of high prices.
             low (ArrayLike): Array of low prices.
-            close (ArrayLike): Array of closing prices.
+            close (ArrayLike): Array of close prices.
             sl_stop (ArrayLike): Stop loss level(s).
             tsl_th (ArrayLike): Trailing stop loss threshold(s).
             tsl_stop (ArrayLike): Trailing stop loss level(s).

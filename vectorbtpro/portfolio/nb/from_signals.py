@@ -632,7 +632,7 @@ def from_basic_signals_nb(
 
             !!! note
                 Should be grouped only if cash sharing is enabled.
-        open (FlexArray2dLike): Opening price.
+        open (FlexArray2dLike): Open price.
         
             Provided as a scalar, or per row, column, or element.
         high (FlexArray2dLike): High price.
@@ -641,7 +641,7 @@ def from_basic_signals_nb(
         low (FlexArray2dLike): Low price.
         
             Provided as a scalar, or per row, column, or element.
-        close (FlexArray2dLike): Closing price.
+        close (FlexArray2dLike): Close price.
         
             Provided as a scalar, or per row, column, or element.
         init_cash (FlexArray1dLike): Initial cash amount.
@@ -1602,7 +1602,7 @@ def from_signals_nb(
 
             !!! note
                 Should be grouped only if cash sharing is enabled.
-        open (FlexArray2dLike): Opening price.
+        open (FlexArray2dLike): Open price.
         
             Provided as a scalar, or per row, column, or element.
 
@@ -1617,7 +1617,7 @@ def from_signals_nb(
             Provided as a scalar, or per row, column, or element.
 
             For stop signals, `np.nan` is replaced with the minimum of open and close prices.
-        close (FlexArray2dLike): Closing price.
+        close (FlexArray2dLike): Close price.
         
             Provided as a scalar, or per row, column, or element.
         init_cash (FlexArray1dLike): Initial cash amount.
@@ -3995,7 +3995,7 @@ def from_signals_nb(
                                         last_dt_info["step_idx"][col] = i
 
                                 if tsl_updated:
-                                    # Update highest/lowest price
+                                    # Update high/low price
                                     if can_use_ohlc:
                                         _open = flex_select_nb(open_, i, col)
                                         _high = flex_select_nb(high_, i, col)
@@ -4459,7 +4459,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         index (Optional[Array1d]): Index in nanosecond format.
         freq (Optional[int]): Frequency in nanosecond format.
-        open (FlexArray2dLike): Opening price.
+        open (FlexArray2dLike): Open price.
         
             Provided as a scalar, or per row, column, or element.
 
@@ -4474,7 +4474,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             Provided as a scalar, or per row, column, or element.
 
             For stop signals, `np.nan` is replaced with the minimum of open and close prices.
-        close (FlexArray2dLike): Closing price.
+        close (FlexArray2dLike): Close price.
         
             Provided as a scalar, or per row, column, or element.
         init_cash (FlexArray1dLike): Initial cash amount.
@@ -6954,7 +6954,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         last_dt_info["step_idx"][col] = i
 
                                 if tsl_updated:
-                                    # Update highest/lowest price
+                                    # Update high/low price
                                     if can_use_ohlc:
                                         _open = flex_select_nb(open_, i, col)
                                         _high = flex_select_nb(high_, i, col)

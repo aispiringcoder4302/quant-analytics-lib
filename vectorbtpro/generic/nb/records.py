@@ -1140,10 +1140,10 @@ def get_drawdowns_nb(
     Only `close` is mandatory; other arrays supply supplementary price information.
 
     Args:
-        open (Optional[Array2d]): Opening price time series for each asset column.
-        high (Optional[Array2d]): Highest price time series for each asset column.
-        low (Optional[Array2d]): Lowest price time series for each asset column.
-        close (Array2d): Closing price time series for each asset column.
+        open (Optional[Array2d]): Open price time series for each asset column.
+        high (Optional[Array2d]): High price time series for each asset column.
+        low (Optional[Array2d]): Low price time series for each asset column.
+        close (Array2d): Close price time series for each asset column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
         
             Provided as a scalar or per column.

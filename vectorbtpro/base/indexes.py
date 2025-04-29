@@ -543,8 +543,8 @@ def drop_levels(
 
     Args:
         index (Index): MultiIndex from which levels will be dropped.
-        levels (Union[ExceptLevel, MaybeLevelSequence]): Level names or positions to drop,
-            or an `ExceptLevel` indicating the levels to retain.
+        levels (Union[ExceptLevel, MaybeLevelSequence]): Level names or positions to select,
+            or an `ExceptLevel` indicating the levels to exclude.
         strict (bool): Whether to raise exceptions for invalid level specifications.
 
     Returns:
@@ -1278,7 +1278,8 @@ class IndexApplier(Base):
         """Drop specified levels from the index using `drop_levels`.
 
         Args:
-            levels (Union[ExceptLevel, MaybeLevelSequence]): Level or levels to be dropped from the index.
+            levels (Union[ExceptLevel, MaybeLevelSequence]): Level names or positions to select,
+                or an `ExceptLevel` indicating the levels to exclude.
             strict (bool): Enforces strict matching of the specified levels.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 

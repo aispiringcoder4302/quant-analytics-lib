@@ -3938,7 +3938,7 @@ class PortfolioOptimizer(Analyzable):
         applied to the current optimizer instance.
 
         Args:
-            close (Union[ArrayLike, Data]): Asset closing price data used for simulation.
+            close (Union[ArrayLike, Data]): Asset close price data used for simulation.
             **kwargs: Keyword arguments for `vectorbtpro.portfolio.base.Portfolio.from_optimizer`.
 
         Returns:

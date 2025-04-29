@@ -1883,7 +1883,7 @@ def total_profit_nb(
 
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
-        close (Array2d): Matrix of closing prices.
+        close (Array2d): Matrix of close prices.
         order_records (RecordArray): Array of order records.
         col_map (GroupMap): Tuple of column indices and lengths.
         init_position (FlexArray1dLike): Initial position.

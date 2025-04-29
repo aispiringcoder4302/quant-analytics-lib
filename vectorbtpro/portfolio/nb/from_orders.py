@@ -128,7 +128,7 @@ def from_orders_nb(
 
             !!! note
                 Should be grouped only if cash sharing is enabled.
-        open (FlexArray2dLike): Opening price.
+        open (FlexArray2dLike): Open price.
         
             Provided as a scalar, or per row, column, or element.
         high (FlexArray2dLike): High price.
@@ -137,7 +137,7 @@ def from_orders_nb(
         low (FlexArray2dLike): Low price.
         
             Provided as a scalar, or per row, column, or element.
-        close (FlexArray2dLike): Closing price.
+        close (FlexArray2dLike): Close price.
         
             Provided as a scalar, or per row, column, or element.
         init_cash (FlexArray1dLike): Initial cash amount.
@@ -281,7 +281,7 @@ def from_orders_nb(
         This function is parallelizable.
 
     Examples:
-        Buy and hold using all cash and closing price (default):
+        Buy and hold using all cash and close price (default):
 
         ```pycon
         >>> from vectorbtpro import *

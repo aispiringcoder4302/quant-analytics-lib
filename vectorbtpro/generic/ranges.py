@@ -1096,21 +1096,29 @@ class Ranges(PriceRecords):
                 Accepts the same options as `proj_period` plus "proj_period" and "current_or_proj_period".
             plot_ohlc (Union[bool, DataFrame]): Flag or data specifying whether to plot OHLC.
             plot_close (Union[bool, Series]): Flag or data specifying whether to plot close prices.
-            plot_projections (bool):
+            plot_projections (bool): Plot each projection as a semi-transparent line if True.
+
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_bands (bool):
+            plot_bands (bool): Plot computed bands if True.
+
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_lower (Union[bool, str, Callable]):
+            plot_lower (Union[bool, str, Callable]): Specification for the lower band.
+
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_middle (Union[bool, str, Callable]):
+            plot_middle (Union[bool, str, Callable]): Specification for the middle band.
+
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_upper (Union[bool, str, Callable]):
+            plot_upper (Union[bool, str, Callable]): Specification for the upper band.
+
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_aux_middle (Union[bool, str, Callable]):
+            plot_aux_middle (Union[bool, str, Callable]): Specification for an auxiliary middle band.
+
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            plot_fill (bool):
+            plot_fill (bool): Fill the area between band traces if True.
+
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
-            colorize (Union[bool, str, Callable]):
+            colorize (Union[bool, str, Callable]): Strategy for colorizing projections or bands.
+            
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 

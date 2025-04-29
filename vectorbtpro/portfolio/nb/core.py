@@ -50,7 +50,7 @@ def check_adj_price_nb(
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Flag indicating if the price is a closing price.
+        is_closing_price (bool): Flag indicating if the price is a close price.
 
             If the adjusted price differs from `PriceArea.close`, it may trigger an error or cap.
         price_area_vio_mode (int): Mode for handling price area violations.
@@ -64,17 +64,17 @@ def check_adj_price_nb(
         return adj_price
     if adj_price > price_area.high:
         if price_area_vio_mode == PriceAreaVioMode.Error:
-            raise ValueError("Adjusted order price is above the highest price")
+            raise ValueError("Adjusted order price is above the high price")
         elif price_area_vio_mode == PriceAreaVioMode.Cap:
             adj_price = price_area.high
     if adj_price < price_area.low:
         if price_area_vio_mode == PriceAreaVioMode.Error:
-            raise ValueError("Adjusted order price is below the lowest price")
+            raise ValueError("Adjusted order price is below the low price")
         elif price_area_vio_mode == PriceAreaVioMode.Cap:
             adj_price = price_area.low
     if is_closing_price and adj_price != price_area.close:
         if price_area_vio_mode == PriceAreaVioMode.Error:
-            raise ValueError("Adjusted order price is beyond the closing price")
+            raise ValueError("Adjusted order price is beyond the close price")
         elif price_area_vio_mode == PriceAreaVioMode.Cap:
             adj_price = price_area.close
     return adj_price
@@ -196,7 +196,7 @@ def long_buy_nb(
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Flag indicating if the price is a closing price.
+        is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the order result and the updated account state.
@@ -386,7 +386,7 @@ def long_sell_nb(
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Flag indicating if the price is a closing price.
+        is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the created order result and
@@ -531,7 +531,7 @@ def short_sell_nb(
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Flag indicating if the price is a closing price.
+        is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the filled order result and
@@ -702,7 +702,7 @@ def short_buy_nb(
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Flag indicating if the price is a closing price.
+        is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the executed order result and
@@ -905,7 +905,7 @@ def buy_nb(
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Flag indicating if the price is a closing price.
+        is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the order execution result and
@@ -1110,7 +1110,7 @@ def sell_nb(
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        is_closing_price (bool): Flag indicating if the price is a closing price.
+        is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
         Tuple[OrderResult, AccountState]: A tuple containing the order result and the updated account state.
@@ -2542,10 +2542,10 @@ def resolve_hl_nb(open: float, high: float, low: float, close: float) -> tp.Tupl
     """Resolve the current high and low prices based on OHLC data.
 
     Args:
-        open (float): Opening price.
+        open (float): Open price.
         high (float): High price.
         low (float): Low price.
-        close (float): Closing price.
+        close (float): Close price.
 
     Returns:
         Tuple[float, float]: The resolved high and low prices.
@@ -2582,10 +2582,10 @@ def check_price_hit_nb(
     """Determine whether the target price is hit and compute the effective price and hit flags.
 
     Args:
-        open (float): Opening price.
+        open (float): Open price.
         high (float): High price.
         low (float): Low price.
-        close (float): Closing price.
+        close (float): Close price.
         price (float): Target price to evaluate.
         hit_below (bool): If True, check whether the target price is hit from above.
         can_use_ohlc (bool): Indicates if OHLC data should be used for the evaluation.
@@ -2632,11 +2632,11 @@ def resolve_stop_exit_price_nb(
 
     Args:
         stop_price (float): Computed stop price.
-        close (float): Closing price.
+        close (float): Close price.
         stop_exit_price (float): Option indicating how to determine the exit price.
 
             If equal to `StopExitPrice.Stop` or `StopExitPrice.HardStop`, the stop price is used;
-            if equal to `StopExitPrice.Close`, the closing price is used; otherwise, the provided value is used.
+            if equal to `StopExitPrice.Close`, the close price is used; otherwise, the provided value is used.
 
     Returns:
         float: The resolved exit price.
@@ -2884,10 +2884,10 @@ def check_limit_hit_nb(
     """Resolve the limit price using `resolve_limit_price_nb` and determine if the limit was hit.
 
     Args:
-        open (float): Opening price.
-        high (float): Highest price of the period.
-        low (float): Lowest price of the period.
-        close (float): Closing price.
+        open (float): Open price.
+        high (float): High price of the period.
+        low (float): Low price of the period.
+        close (float): Close price.
         price (float): Reference price used for calculating the limit.
         size (float): Order size (must be non-zero).
         direction (int): Order direction.
@@ -2968,7 +2968,7 @@ def resolve_limit_order_price_nb(
 
     Args:
         limit_price (float): Computed limit price.
-        close (float): Closing price.
+        close (float): Close price.
         limit_order_price (float): Option to select the price from
             `vectorbtpro.portfolio.enums.LimitOrderPrice`:
 
@@ -3053,7 +3053,7 @@ def check_stop_hit_nb(
     """Resolve the stop price using `resolve_stop_price_nb` and check if it was hit.
 
     Args:
-        open (float): Opening price.
+        open (float): Open price.
         high (float): High price.
         low (float): Low price.
         close (float): Close price.

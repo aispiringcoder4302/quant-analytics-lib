@@ -508,7 +508,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             apply_group_by (bool): If True, applies the grouping to both iteration and the final output.
 
                 If False, `group_by` is used solely as an iteration instruction.
-            keep_2d (bool): Determines whether to retain the two-dimensional structure in the yielded items.
+            keep_2d (bool): Whether to maintain the output data in a two-dimensional format.
             key_as_index (bool): Whether to return the yielded key as an index.
             wrap (Optional[bool]): Flag indicating whether to wrap the yielded items
                 with additional functionality.

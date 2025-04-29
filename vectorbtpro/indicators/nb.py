@@ -323,11 +323,11 @@ def bbands_nb(
 def bbands_percent_b_1d_nb(close: tp.Array1d, upper: tp.Array1d, lower: tp.Array1d) -> tp.Array1d:
     """Bollinger Bands %B.
 
-    Computes the %B indicator, which represents the position of the closing price
+    Computes the %B indicator, which represents the position of the close price
     relative to the lower and upper Bollinger Bands.
 
     Args:
-        close (Array1d): 1D array of closing prices.
+        close (Array1d): 1D array of close prices.
         upper (Array1d): 1D array representing the upper Bollinger Band.
         lower (Array1d): 1D array representing the lower Bollinger Band.
 
@@ -350,10 +350,10 @@ def bbands_percent_b_1d_nb(close: tp.Array1d, upper: tp.Array1d, lower: tp.Array
 def bbands_percent_b_nb(close: tp.Array2d, upper: tp.Array2d, lower: tp.Array2d) -> tp.Array2d:
     """Calculate percent b values for Bollinger Bands using 2-dimensional inputs.
 
-    Applies `bbands_percent_b_1d_nb` column-wise on 2D arrays of closing prices and Bollinger Bands.
+    Applies `bbands_percent_b_1d_nb` column-wise on 2D arrays of close prices and Bollinger Bands.
 
     Args:
-        close (Array2d): 2-dimensional array of closing prices.
+        close (Array2d): 2-dimensional array of close prices.
         upper (Array2d): 2-dimensional array of upper Bollinger band values.
         lower (Array2d): 2-dimensional array of lower Bollinger band values.
 
@@ -428,11 +428,11 @@ def avg_gain_1d_nb(
 ) -> tp.Array1d:
     """Calculate average gain over a specified window.
 
-    Computes the average gain from a 1-dimensional array of closing prices by calculating
+    Computes the average gain from a 1-dimensional array of close prices by calculating
     the positive differences between consecutive values and applying a moving average via `ma_1d_nb`.
 
     Args:
-        close (Array1d): 1-dimensional array of closing prices.
+        close (Array1d): 1-dimensional array of close prices.
         window (int): Window size.
         wtype (int): Weighting type.
 
@@ -479,10 +479,10 @@ def avg_gain_nb(
     """Calculate average gain for 2-dimensional arrays.
 
     Computes average gain for each column by applying `avg_gain_1d_nb` on slices
-    of a 2D array of closing prices.
+    of a 2D array of close prices.
 
     Args:
-        close (Array2d): 2-dimensional array of closing prices.
+        close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
         
             Provided as a scalar or per column.
@@ -525,11 +525,11 @@ def avg_loss_1d_nb(
 ) -> tp.Array1d:
     """Calculate average loss over a specified window.
 
-    Computes the average loss from a 1-dimensional array of closing prices by measuring
+    Computes the average loss from a 1-dimensional array of close prices by measuring
     the absolute negative changes between consecutive values and applying a moving average via `ma_1d_nb`.
 
     Args:
-        close (Array1d): 1-dimensional array of closing prices.
+        close (Array1d): 1-dimensional array of close prices.
         window (int): Window size.
         wtype (int): Weighting type.
 
@@ -576,10 +576,10 @@ def avg_loss_nb(
     """Calculate average loss for 2-dimensional arrays.
 
     Computes average loss for each column by applying `avg_loss_1d_nb` on slices
-    of a 2D array of closing prices.
+    of a 2D array of close prices.
 
     Args:
-        close (Array2d): 2-dimensional array of closing prices.
+        close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
         
             Provided as a scalar or per column.
@@ -625,7 +625,7 @@ def rsi_1d_nb(
     Computes the RSI by calculating the average gain and loss, then using these values to quantify the relative strength.
 
     Args:
-        close (Array1d): 1-dimensional array of closing prices.
+        close (Array1d): 1-dimensional array of close prices.
         window (int): Window size.
         wtype (int): Weighting type.
 
@@ -662,10 +662,10 @@ def rsi_nb(
 ) -> tp.Array2d:
     """Calculate the Relative Strength Index (RSI) for 2-dimensional arrays.
 
-    Computes the RSI for each column by applying `rsi_1d_nb` on slices of a 2D array of closing prices.
+    Computes the RSI for each column by applying `rsi_1d_nb` on slices of a 2D array of close prices.
 
     Args:
-        close (Array2d): 2-dimensional array of closing prices.
+        close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
         
             Provided as a scalar or per column.
@@ -714,7 +714,7 @@ def stoch_k_1d_nb(
     Args:
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
-        close (Array1d): Array of closing prices.
+        close (Array1d): Array of close prices.
         window (int): Window size.
         minp (Optional[int]): Minimum number of observations required.
 
@@ -751,7 +751,7 @@ def stoch_k_nb(
     Args:
         high (Array2d): Two-dimensional array of high prices.
         low (Array2d): Two-dimensional array of low prices.
-        close (Array2d): Two-dimensional array of closing prices.
+        close (Array2d): Two-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
         
             Provided as a scalar or per column.
@@ -803,7 +803,7 @@ def stoch_1d_nb(
     Args:
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
-        close (Array1d): Array of closing prices.
+        close (Array1d): Array of close prices.
         fast_k_window (int): Window size for fast %K calculation.
         slow_k_window (int): Window size for the slow %K moving average.
         slow_d_window (int): Window size for the slow %D moving average.
@@ -919,7 +919,7 @@ def stoch_nb(
     Args:
         high (Array2d): Two-dimensional array of high prices.
         low (Array2d): Two-dimensional array of low prices.
-        close (Array2d): Two-dimensional array of closing prices.
+        close (Array2d): Two-dimensional array of close prices.
         fast_k_window (FlexArray1dLike): Window size for fast %K calculation.
         
             Provided as a scalar or per column.
@@ -1025,13 +1025,13 @@ def macd_1d_nb(
     macd_adjust: tp.Optional[bool] = None,
     signal_adjust: tp.Optional[bool] = None,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-    """Calculate MACD and signal line for a 1-D series of closing prices.
+    """Calculate MACD and signal line for a 1-D series of close prices.
 
     Compute the fast and slow moving averages, derive the MACD as their difference,
     and calculate the signal line as the moving average of the MACD.
 
     Args:
-        close (Array1d): 1-D array of closing prices.
+        close (Array1d): 1-D array of close prices.
         fast_window (int): Window size for computing the fast moving average.
         slow_window (int): Window size for computing the slow moving average.
         signal_window (int): Window size for computing the signal moving average.
@@ -1135,7 +1135,7 @@ def macd_nb(
     and calculate the signal line as the moving average of the MACD for each column.
 
     Args:
-        close (Array2d): 2-D array of closing prices.
+        close (Array2d): 2-D array of close prices.
         fast_window (FlexArray1dLike): Window size for computing the fast moving average.
         
             Provided as a scalar or per column.
@@ -1272,7 +1272,7 @@ def iter_tr_nb(high: float, low: float, prev_close: float) -> float:
     Args:
         high (float): Current high price.
         low (float): Current low price.
-        prev_close (float): Previous closing price.
+        prev_close (float): Previous close price.
 
     Returns:
         float: The True Range value.
@@ -1291,13 +1291,13 @@ def iter_tr_nb(high: float, low: float, prev_close: float) -> float:
 def tr_1d_nb(high: tp.Array1d, low: tp.Array1d, close: tp.Array1d) -> tp.Array1d:
     """Calculate the True Range (TR) for a 1-D series of prices.
 
-    Iterate over the closing prices to compute the True Range using the corresponding high, low,
+    Iterate over the close prices to compute the True Range using the corresponding high, low,
     and previous close values.
 
     Args:
         high (Array1d): 1-D array of high prices.
         low (Array1d): 1-D array of low prices.
-        close (Array1d): 1-D array of closing prices.
+        close (Array1d): 1-D array of close prices.
 
     Returns:
         Array1d: 1-D array of True Range values.
@@ -1321,12 +1321,12 @@ def tr_1d_nb(high: tp.Array1d, low: tp.Array1d, close: tp.Array1d) -> tp.Array1d
 def tr_nb(high: tp.Array2d, low: tp.Array2d, close: tp.Array2d) -> tp.Array2d:
     """Calculate the True Range (TR) for each column in 2-D price arrays.
 
-    Process each column independently to compute the True Range using high, low, and closing prices.
+    Process each column independently to compute the True Range using high, low, and close prices.
 
     Args:
         high (Array2d): 2-D array of high prices.
         low (Array2d): 2-D array of low prices.
-        close (Array2d): 2-D array of closing prices.
+        close (Array2d): 2-D array of close prices.
 
     Returns:
         Array2d: 2-D array of True Range values computed column-wise.
@@ -1885,7 +1885,7 @@ def typical_price_1d_nb(high: tp.Array1d, low: tp.Array1d, close: tp.Array1d) ->
     Args:
         high (Array1d): 1-dimensional array of high prices.
         low (Array1d): 1-dimensional array of low prices.
-        close (Array1d): 1-dimensional array of closing prices.
+        close (Array1d): 1-dimensional array of close prices.
 
     Returns:
         Array1d: Typical price calculated as (high + low + close) / 3.
@@ -1911,7 +1911,7 @@ def typical_price_nb(high: tp.Array2d, low: tp.Array2d, close: tp.Array2d) -> tp
     Args:
         high (Array2d): 2-dimensional array of high prices.
         low (Array2d): 2-dimensional array of low prices.
-        close (Array2d): 2-dimensional array of closing prices.
+        close (Array2d): 2-dimensional array of close prices.
 
     Returns:
         Array2d: 2-dimensional array of typical prices for each column.
@@ -1940,7 +1940,7 @@ def vwap_1d_nb(
     Args:
         high (Array1d): 1-dimensional array of high prices.
         low (Array1d): 1-dimensional array of low prices.
-        close (Array1d): 1-dimensional array of closing prices.
+        close (Array1d): 1-dimensional array of close prices.
         volume (Array1d): 1-dimensional array of trading volumes.
         group_lens (GroupLens): Array defining the number of columns in each group.
 
@@ -1993,7 +1993,7 @@ def vwap_nb(
     Args:
         high (Array2d): Array of high prices.
         low (Array2d): Array of low prices.
-        close (Array2d): Array of closing prices.
+        close (Array2d): Array of close prices.
         volume (Array2d): Array of traded volumes.
         group_lens (GroupLens): Array defining the number of columns in each group.
 
@@ -2400,7 +2400,7 @@ def final_basic_bands_nb(
     """Return final basic band values along with trend details for one iteration.
 
     Args:
-        close (float): Current closing price.
+        close (float): Current close price.
         upper (float): Upper band value before adjustments.
         lower (float): Lower band value before adjustments.
         prev_upper (float): Previous upper band value.
@@ -2509,7 +2509,7 @@ def supertrend_1d_nb(
     Args:
         high (Array1d): Array of high price values.
         low (Array1d): Array of low price values.
-        close (Array1d): Array of closing price values.
+        close (Array1d): Array of close price values.
         period (int): Period for the supertrend calculation.
         multiplier (float): Multiplier applied to the average true range.
 
@@ -2859,7 +2859,7 @@ def get_standard_hurst_nb(
     """Estimate the Hurst exponent using the standard method.
 
     Args:
-        close (Array1d): Array of closing prices.
+        close (Array1d): Array of close prices.
         max_lag (int): Maximum lag parameter for the standard computation.
         stabilize (bool): Flag to enable stabilization in the polynomial fit.
 
@@ -2882,7 +2882,7 @@ def get_rs_nb(close: tp.Array1d) -> float:
     """Compute the rescaled range (R/S) used in Hurst exponent estimation.
 
     Args:
-        close (Array1d): Array of closing prices.
+        close (Array1d): Array of close prices.
 
     Returns:
         float: The computed R/S ratio, or 0 if the range or standard deviation is zero.
@@ -2908,7 +2908,7 @@ def get_log_rs_hurst_nb(
     """Estimate the Hurst exponent using the R/S method with logarithmically distributed window sizes.
 
     Args:
-        close (Array1d): Array of closing prices.
+        close (Array1d): Array of close prices.
         min_log (int): Minimum logarithmic window size.
         max_log (int): Maximum logarithmic window size.
         log_step (float): Increment for logarithmic window size.
@@ -2957,7 +2957,7 @@ def get_rs_hurst_nb(
     """Estimate the Hurst exponent using the R/S method with linearly distributed window sizes.
 
     Args:
-        close (Array1d): Array of closing prices.
+        close (Array1d): Array of close prices.
         min_chunk (int): Minimum chunk size for splitting the series.
         max_chunk (int): Maximum chunk size for splitting the series.
         num_chunks (int): Number of chunk sizes to use in the estimation.
@@ -3009,7 +3009,7 @@ def get_dma_hurst_nb(
     """Estimate the Hurst exponent using the DMA method with linearly distributed window sizes.
 
     Args:
-        close (Array1d): Array of closing prices.
+        close (Array1d): Array of close prices.
         min_chunk (int): Minimum window size.
         max_chunk (int): Maximum window size.
         num_chunks (int): Number of windows to use in the regression.
@@ -3052,7 +3052,7 @@ def get_dsod_hurst_nb(close: tp.Array1d) -> float:
     """Estimate the Hurst exponent using the discrete second order derivative method.
 
     Args:
-        close (Array1d): Array of closing prices.
+        close (Array1d): Array of close prices.
 
     Returns:
         float: The estimated Hurst exponent based on the ratio of variances from second order differences.

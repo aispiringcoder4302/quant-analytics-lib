@@ -131,22 +131,22 @@ __pdoc__[
 ```
 
 Fields:
-    Open: Opening price.
+    Open: Open price.
         
         Replaced by `-np.inf`.
-    Close: Closing price.
+    Close: Close price.
         
         Replaced by `np.inf`.
-    NextOpen: Next opening price.
+    NextOpen: Next open price.
         
         Replaced by `-np.inf` with `from_ago` set to 1.
-    NextClose: Next closing price.
+    NextClose: Next close price.
         
         Replaced by `np.inf` with `from_ago` set to 1.
-    NextValidOpen: Next valid (non-NA) opening price.
+    NextValidOpen: Next valid (non-NA) open price.
         
         Replaced by `-np.inf` with `from_ago` set to the distance to the previous valid value.
-    NextValidClose: Next valid (non-NA) closing price.
+    NextValidClose: Next valid (non-NA) close price.
         
         Replaced by `np.inf` with `from_ago` set to the distance to the previous valid value.
 """
@@ -501,10 +501,10 @@ Specifies the price to use as an initial stop price.
 
 Fields:
     ValPrice: Represents the asset's valuation price.
-    Open: Represents the opening price.
+    Open: Represents the open price.
     Price: Represents the order price.
     FillPrice: Represents the filled order price (with slippage applied).
-    Close: Represents the closing price.
+    Close: Represents the close price.
 
 !!! note
     Each flag is negative; if a positive value is provided, it is used directly as a price.
@@ -533,10 +533,10 @@ Specifies the price to use when exiting a position upon a stop signal.
 Fields:
     Stop: Uses the stop price. 
     
-        If the target price is first reached by the opening price, the opening price is used.
+        If the target price is first reached by the open price, the open price is used.
     HardStop: Uses a hard stop price, applying the stop value regardless of whether the target price 
-        is first hit by the opening price.
-    Close: Uses the closing price.
+        is first hit by the open price.
+    Close: Uses the close price.
 
 !!! note
     Each flag is negative; if a positive value is provided, it is used directly as a price.
@@ -881,9 +881,9 @@ Determines which price to use when executing a limit order.
 Fields:
     Limit: The limit price. 
     
-        If the target price is first reached at the opening, the opening price is used.
-    HardLimit: The hard limit price, where the stop price is applied regardless of the opening price trigger.
-    Close: The closing price.
+        If the target price is first reached at the opening, the open price is used.
+    HardLimit: The hard limit price, where the stop price is applied regardless of the open price trigger.
+    Close: The close price.
 
 !!! note
     Each flag is negative; if a positive value is provided, it is used directly as the price.
@@ -1024,22 +1024,22 @@ __pdoc__[
 
 Used together with `PriceAreaVioMode`.
 """
-__pdoc__["PriceArea.open"] = "Opening price of the bar."
+__pdoc__["PriceArea.open"] = "Open price of the bar."
 __pdoc__[
     "PriceArea.high"
-] = """Highest price of the bar.
+] = """High price of the bar.
 
 A violation occurs when the adjusted price exceeds this value.
 """
 __pdoc__[
     "PriceArea.low"
-] = """Lowest price of the bar.
+] = """Low price of the bar.
 
 A violation is triggered when the adjusted price falls below this value.
 """
 __pdoc__[
     "PriceArea.close"
-] = """Closing price of the bar.
+] = """Close price of the bar.
 
 A violation is triggered when the adjusted price goes beyond this value.
 """
@@ -1386,7 +1386,7 @@ Preset simulation methods automatically format any datetime index as UTC without
 __pdoc__["SimulationContext.freq"] = """Frequency of the time index in integer (nanosecond) format."""
 __pdoc__[
     "SimulationContext.open"
-] = """Opening price.
+] = """Open price.
 
 Replaces `Order.price` when it is `-np.inf`.
 
@@ -1394,19 +1394,19 @@ Exhibits behavior similar to `SimulationContext.close`.
 """
 __pdoc__[
     "SimulationContext.high"
-] = """Highest price.
+] = """High price.
 
 Exhibits behavior similar to `SimulationContext.close`.
 """
 __pdoc__[
     "SimulationContext.low"
-] = """Lowest price.
+] = """Low price.
 
 Exhibits behavior similar to `SimulationContext.close`.
 """
 __pdoc__[
     "SimulationContext.close"
-] = """Closing price at each bar.
+] = """Close price at each bar.
 
 Replaces `Order.price` when it is `np.inf`.
 
@@ -1421,7 +1421,7 @@ The array must broadcast to shape `SimulationContext.target_shape`.
 """
 __pdoc__[
     "SimulationContext.bm_close"
-] = """Benchmark closing price at each bar.
+] = """Benchmark close price at each bar.
 
 The array must broadcast to shape `SimulationContext.target_shape`.
 """
@@ -1603,7 +1603,7 @@ For example, a close value of `[1, 2, np.nan, np.nan, 5]` results in `[1, 2, 2, 
     Use only finite values; `-np.inf` and `np.inf` are not allowed.
 
 Examples:
-    Consider 10 units in column 1 and 20 units in column 2. The current opening price of them is 
+    Consider 10 units in column 1 and 20 units in column 2. The current open price of them is 
     $40 and $50 respectively, which is also the default valuation price in the current row,
     available as `last_val_price` in `pre_segment_func_nb`. If both columns are in the same group 
     with cash sharing, the group is valued at $1400 before any `order_func_nb` is called, and can 

@@ -1673,7 +1673,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 !!! note
                     Grouping is not supported when iterating over keys.
-            keep_2d (bool): Whether to retain a two-dimensional structure in the output.
+            keep_2d (bool): Whether to maintain the output data in a two-dimensional format.
             key_as_index (bool): Whether to return the yielded key as an index.
 
         Returns:
