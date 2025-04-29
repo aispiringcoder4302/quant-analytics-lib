@@ -485,7 +485,7 @@ class JITRegistry(Base):
         Args:
             task_id (Hashable): Unique identifier for the task.
             jitter_id (Hashable): Unique identifier for the jitter type.
-            py_func (Callable): Python function to be jitted.
+            py_func (Callable): Python function to decorate.
             jitter_kwargs (KwargsLike): Keyword arguments for configuring the jitter.
             
                 See `vectorbtpro.utils.jitting.resolve_jitter`.
@@ -662,7 +662,7 @@ class JITRegistry(Base):
             register_new (Optional[bool]): Flag to register a new jitted setup.
             return_missing_task (bool): If True, returns `task_id_or_func` when the task is not registered.
             template_context (KwargsLike): Additional context for template substitution.
-            tags (Optional[set]): Additional tags for the jitted setup.
+            tags (Optional[set]): Set of tags associated with the function.
             **jitter_kwargs: Keyword arguments for configuring the jitter.
 
         Returns:

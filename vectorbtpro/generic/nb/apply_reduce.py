@@ -1453,7 +1453,7 @@ def reduce_flat_grouped_nb(
     Args:
         arr (Array2d): 2-dimensional array containing the data.
         group_map (GroupMap): Tuple of group indices and lengths.
-        in_c_order (bool): Determines the order for flattening the group array.
+        in_c_order (bool): If True, flatten in C order; otherwise, in Fortran order.
 
             If True, the group is flattened in C order.
         reduce_func_nb (ReduceToArrayFunc): Function that reduces a flattened array and returns a value.
@@ -1613,7 +1613,7 @@ def reduce_flat_grouped_to_array_nb(
     Args:
         arr (Array2d): 2D input array.
         group_map (GroupMap): Tuple of group indices and lengths.
-        in_c_order (bool): Indicates whether the array should be flattened in C order.
+        in_c_order (bool): If True, flatten in C order; otherwise, in Fortran order.
         reduce_func_nb (ReduceToArrayFunc): Reduction function that returns an array
             for a flattened group.
         *args: Positional arguments for `reduce_func_nb`.
@@ -1757,7 +1757,7 @@ def flatten_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, in_c_order: bool
     Args:
         arr (Array2d): Input 2D array.
         group_map (GroupMap): Tuple of group indices and lengths.
-        in_c_order (bool): If True, flatten columns in C order; otherwise, use an alternate order.
+        in_c_order (bool): If True, flatten in C order; otherwise, in Fortran order.
 
     Returns:
         Array2d: A new 2D array with flattened groups.
@@ -1787,7 +1787,7 @@ def flatten_uniform_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, in_c_ord
     Args:
         arr (Array2d): Input 2D array.
         group_map (GroupMap): Tuple of group indices and lengths.
-        in_c_order (bool): If True, flatten columns in C order; otherwise, use an alternate order.
+        in_c_order (bool): If True, flatten in C order; otherwise, in Fortran order.
 
     Returns:
         Array2d: A new 2D array with flattened groups.

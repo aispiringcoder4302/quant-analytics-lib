@@ -1011,7 +1011,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Resample returns to a custom frequency, date offset, or index.
 
         Args:
-            rule (AnyRuleLike): Resampling rule or date offset.
+            rule (AnyRuleLike): Resampling rule, which may be frequency-like or a resampler.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

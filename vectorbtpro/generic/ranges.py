@@ -425,7 +425,7 @@ class Ranges(PriceRecords):
 
         Args:
             min_duration (Union[str, int, FrequencyLike]): Minimum allowed duration.
-            real (bool): Whether to use real duration for filtering.
+            real (bool): If True, use real durations; otherwise, use effective durations.
             **kwargs: Keyword arguments for `Ranges.apply_mask`.
 
         Returns:
@@ -448,7 +448,7 @@ class Ranges(PriceRecords):
 
         Args:
             max_duration (Union[str, int, FrequencyLike]): Maximum allowed duration.
-            real (bool): Whether to use real duration for filtering.
+            real (bool): If True, use real durations; otherwise, use effective durations.
             **kwargs: Keyword arguments for `Ranges.apply_mask`.
 
         Returns:
@@ -1077,7 +1077,7 @@ class Ranges(PriceRecords):
             min_duration (Union[str, int, FrequencyLike]): Filter range records by minimum duration.
             max_duration (Union[str, int, FrequencyLike]): Filter range records by maximum duration.
             last_n (Optional[int]): Number of most recent range records to select.
-            top_n (Optional[int]): Number of range records with the longest durations to select.
+            top_n (Optional[int]): Display only the top N records sorted by maximum duration.
             random_n (Optional[int]): Number of range records to select randomly.
             seed (Optional[int]): Random seed for deterministic output.
             proj_start (Union[None, str, int, FrequencyLike]): See `Ranges.get_projections`.
@@ -1388,7 +1388,7 @@ class Ranges(PriceRecords):
                 for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").
             yref (str): Reference for the y-axis (e.g., "y", "y2").
-            fig (BaseFigure): Figure object to which traces are added.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
@@ -1563,7 +1563,7 @@ class Ranges(PriceRecords):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            top_n (Optional[int]): Display only the top N range records sorted by maximum duration.
+            top_n (Optional[int]): Display only the top N records sorted by maximum duration.
             plot_ohlc (Union[bool, Frame]): If True, plot OHLC data or pass a DataFrame to be used as OHLC.
             plot_close (Union[bool, Series]): If True, plot close values; if a Series is provided,
                 it is used for plotting.
@@ -2573,7 +2573,7 @@ class PatternRanges(Ranges):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            top_n (Optional[int]): Filter the top N range records by maximum duration.
+            top_n (Optional[int]): Display only the top N records sorted by maximum duration.
             fit_ranges (Union[bool, MaybeSequence[int]]): Select the range records to fit.
 
                 Use True to fit all records, or provide an integer or sequence of

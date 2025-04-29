@@ -61,7 +61,7 @@ class GroupLensSizer(ArgSizer):
         """Get the size of the provided object based on group lengths.
 
         Args:
-            obj (Union[GroupLens, GroupMap]): Array of group lengths or a group map tuple.
+            obj (Union[GroupLens, GroupMap]): Group lengths array or a group map tuple.
             single_type (Optional[type]): Type of value that is considered single.
 
         Returns:

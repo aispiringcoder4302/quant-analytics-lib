@@ -4716,7 +4716,7 @@ class DocumentRanker(Configured):
 
         Args:
             query (str): Query string for scoring relevance.
-            documents (Optional[Iterable[StoreDocument]]): Iterable of documents to score.
+            documents (Optional[Iterable[StoreDocument]]): Collection of documents to score.
             
                 If None, documents from the document store are used.
             refresh (bool): Flag to refresh both documents and embeddings.
@@ -5245,7 +5245,7 @@ class DocumentRanker(Configured):
 
         Args:
             query (str): Query string to evaluate document relevance.
-            documents (Optional[Iterable[StoreDocument]]): Documents to rank.
+            documents (Optional[Iterable[StoreDocument]]): Collection of documents to rank.
             top_k (TopKLike): Number of top documents to return.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.

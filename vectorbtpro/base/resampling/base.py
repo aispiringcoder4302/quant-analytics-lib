@@ -33,8 +33,8 @@ class Resampler(Configured):
     """Class for resampling an index.
 
     Args:
-        source_index (index_like): Source index to be resampled.
-        target_index (index_like): Target index produced by resampling.
+        source_index (IndexLike): Source index to be resampled.
+        target_index (IndexLike): Target index produced by resampling.
         source_freq (Union[None, bool, FrequencyLike]): Frequency of the source index 
             (e.g., "daily", "15 min", "index_mean").
 
@@ -159,7 +159,7 @@ class Resampler(Configured):
 
         Args:
             pd_resampler (pandas.core.resample.Resampler): Pandas resampler object.
-            source_freq (Optional[FrequencyLike]): Frequency for the source index 
+            source_freq (Optional[FrequencyLike]): Frequency of the source index 
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -189,7 +189,7 @@ class Resampler(Configured):
         """Create a `Resampler` instance using the `pd.Series.resample` method.
 
         Args:
-            source_index (index_like): Source index for resampling.
+            source_index (IndexLike): Source index to be resampled.
             *args: Positional arguments for `pd.Series.resample`.
             source_freq (Optional[FrequencyLike]): Frequency of the source index 
                 (e.g., "daily", "15 min", "index_mean").
@@ -216,7 +216,7 @@ class Resampler(Configured):
         """Create a `Resampler` instance using `vectorbtpro.utils.datetime_.date_range`.
 
         Args:
-            source_index (index_like): Source index for resampling.
+            source_index (IndexLike): Source index to be resampled.
             *args: Positional arguments for `vectorbtpro.utils.datetime_.date_range`.
             source_freq (Optional[FrequencyLike]): Frequency of the source index 
                 (e.g., "daily", "15 min", "index_mean").

@@ -169,7 +169,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         Args:
             td_obj (object): Input timedelta-like object, which can be a string,
                 timedelta, DateOffset, or Timedelta.
-            old_as_keys (bool): Flag indicating whether old keys should be preserved.
+            old_as_keys (bool): Flag indicating whether to use parameter values as keys if not provided.
 
         Returns:
             object: The processed timedelta object for broadcasting.
@@ -195,7 +195,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         Args:
             dt_obj (object): Input datetime-like object, which can be a string, time,
                 timedelta, DateOffset, or Timedelta.
-            old_as_keys (bool): Flag indicating whether old keys should be preserved during processing.
+            old_as_keys (bool): Flag indicating whether to use parameter values as keys if not provided.
             last_before (Optional[bool]): Flag indicating if the last valid index before the target should be used.
 
         Returns:

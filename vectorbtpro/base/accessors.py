@@ -205,7 +205,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             *others (Union[IndexLike, BaseIDXAccessor]): (Additional) indexes or accessors to stack.
-            on_top (bool): If True, append the current index after the others; otherwise, prepend it.
+            on_top (bool): If True, add the new levels before the existing index; if False, add them after.
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.stack_indexes`.
 
         Returns:
@@ -232,7 +232,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
         Args:
             *others (Union[IndexLike, BaseIDXAccessor]): (Additional) indexes or accessors to combine.
-            on_top (bool): If True, append the current index after the others; otherwise, prepend it.
+            on_top (bool): If True, add the new levels before the existing index; if False, add them after.
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.combine_indexes`.
 
         Returns:
@@ -762,9 +762,9 @@ class BaseIDXAccessor(Configured, IndexApplier):
             min_size (Optional[int]): Minimum number of elements to split.
             n_chunks (Union[None, int, str]): Specification for the number of chunks.
             chunk_len (Union[None, int, str]): Specification for the length of each chunk.
-            chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable of metadata for chunk boundaries.
+            chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each chunk.
 
-                If not provided, metadata is generated using `vectorbtpro.utils.chunking.iter_chunk_meta`.
+                See `vectorbtpro.utils.chunking.iter_chunk_meta`.
             select (bool): Determines whether to use `ArraySelector` (if True) or
                 `ArraySlicer` (if False) for extracting the chunk.
             return_chunk_meta (bool): If True, yield a tuple containing the chunk metadata and the chunk;
@@ -1311,7 +1311,7 @@ class BaseAccessor(Wrapping):
         """Generate an empty Pandas Series or DataFrame.
 
         Args:
-            shape (Shape): Desired shape.
+            shape (Shape): Tuple specifying the dimensions of the output array.
             fill_value (Scalar): Value to fill the object.
             **kwargs: Keyword arguments for the Pandas constructor.
 

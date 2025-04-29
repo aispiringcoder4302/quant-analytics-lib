@@ -530,12 +530,12 @@ class DuckDBData(DBData):
         connection among provided keys.
 
         Args:
-            keys (MaybeKeys): Keys for which to pull data.
+            keys (MaybeKeys): Feature or symbol identifier(s).
 
                 If not provided, available table names are used.
             keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
-            features (MaybeFeatures): Feature or a list of features.
-            symbols (MaybeSymbols): Symbol or a list of symbols.
+            features (MaybeFeatures): Feature identifier(s).
+            symbols (MaybeSymbols): Symbol identifier(s).
             catalog (Optional[str]): Catalog name for database lookup.
             schema (Optional[str]): Schema name for database lookup.
             list_tables_kwargs (KwargsLike): Keyword arguments for listing database tables.
@@ -697,7 +697,7 @@ class DuckDBData(DBData):
     @classmethod
     def fetch_key(
         cls,
-        key: str,
+        key: tp.Key,
         table: tp.Optional[str] = None,
         schema: tp.Optional[str] = None,
         catalog: tp.Optional[str] = None,
@@ -723,7 +723,7 @@ class DuckDBData(DBData):
         Can use a table name (defaulting to the key) or a custom SQL query.
 
         Args:
-            key (str): Feature or symbol identifier.
+            key (Key): Feature or symbol identifier.
 
                 If both `table` and `query` are None, the key becomes the table name.
                 The key can be provided in either `SCHEMA:TABLE` or `CATALOG:SCHEMA:TABLE` format,
@@ -1021,7 +1021,7 @@ class DuckDBData(DBData):
         """
         return cls.fetch_key(symbol, **kwargs)
 
-    def update_key(self, key: str, from_last_index: tp.Optional[bool] = None, **kwargs) -> tp.KeyData:
+    def update_key(self, key: tp.Key, from_last_index: tp.Optional[bool] = None, **kwargs) -> tp.KeyData:
         """Update the data table for a specified feature or symbol.
 
         This method selects fetch parameters via `DuckDBData.select_fetch_kwargs` and determines
@@ -1030,7 +1030,7 @@ class DuckDBData(DBData):
         invoking either `fetch_feature` or `fetch_symbol` depending on the object's orientation.
 
         Args:
-            key (str): Identifier for the feature or symbol to update.
+            key (Key): Feature or symbol identifier.
             from_last_index (Optional[bool]): Flag indicating whether to update data starting from the last index.
 
                 If not provided, it is inferred from the presence of a "query" in the merged keyword arguments.

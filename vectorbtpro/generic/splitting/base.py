@@ -1361,7 +1361,7 @@ class Splitter(Analyzable):
             
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
-            split_labels (Optional[IndexLike]): Labels to assign to the generated splits.
+            split_labels (Optional[IndexLike]): Labels for the splits.
             freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -1793,7 +1793,7 @@ class Splitter(Analyzable):
         Args:
             index (IndexLike): Index representing the dataset.
             n_folds (int): Total number of folds.
-            n_test_folds (int): Number of folds allocated for testing.
+            n_test_folds (int): Total number of folds allocated for testing.
             min_train_folds (int): Minimum number of folds required for training.
             max_train_folds (Optional[int]): Maximum number of folds allowed for training.
             split_by_time (bool): Indicates whether to split based on time.
@@ -1839,7 +1839,7 @@ class Splitter(Analyzable):
         Args:
             index (IndexLike): Index representing the dataset.
             n_folds (int): Total number of folds.
-            n_test_folds (int): Number of folds allocated for testing.
+            n_test_folds (int): Total number of folds allocated for testing.
             purge_td (TimedeltaLike): Time delta used for purging between splits.
             embargo_td (TimedeltaLike): Time delta used as an embargo between splits.
             pred_times (Union[None, Index, Series]): Indices for prediction times.
@@ -2114,8 +2114,8 @@ class Splitter(Analyzable):
         Args:
             index (IndexLike): Index to be split.
             obj (Any): Object from which values are extracted.
-            splitter (Union[None, str, Splitter, Callable]): Splitter instance,
-                a factory method name, or a factory method.
+            splitter (Union[None, str, Splitter, Callable]): Splitter instance, the name of a factory method
+                (e.g. "from_n_rolling"), or the factory method itself.
 
                 If None, the appropriate splitter is determined using `Splitter.guess_method`.
             splitter_kwargs (KwargsLike): Keyword arguments for `Splitter`.
@@ -2212,8 +2212,8 @@ class Splitter(Analyzable):
             index (IndexLike): Index to be split.
             apply_func (Callable): Function to apply to each split segment.
             *apply_args: Positional arguments for `Splitter.apply`.
-            splitter (Union[None, str, Splitter, Callable]): Splitter instance,
-                a factory method name, or a factory method.
+            splitter (Union[None, str, Splitter, Callable]): Splitter instance, the name of a factory method
+                (e.g. "from_n_rolling"), or the factory method itself.
 
                 If None, the appropriate splitter is determined using `Splitter.guess_method`.
             splitter_kwargs (KwargsLike): Keyword arguments for `Splitter`.
@@ -2668,8 +2668,8 @@ class Splitter(Analyzable):
         the merged ranges.
 
         Args:
-            split (Optional[Selection]): Selection for filtering the split side.
-            set_ (Optional[Selection]): Selection for filtering the set side.
+            split (Optional[Selection]): Selection criteria for splits.
+            set_ (Optional[Selection]): Selection criteria for sets.
             split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
@@ -3647,7 +3647,7 @@ class Splitter(Analyzable):
         Args:
             obj (Any): Array-like object to index.
             ready_range (ReadyRangeLike): Preprocessed range used for indexing.
-            point_wise (bool): Whether to extract elements one point at a time.
+            point_wise (bool): Whether to perform point-wise range extraction.
 
         Returns:
             Any: The extracted segment of the object, or a tuple of elements if `point_wise` is True.
@@ -3690,7 +3690,7 @@ class Splitter(Analyzable):
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
-            point_wise (bool): Whether to extract the range point by point.
+            point_wise (bool): Whether to perform point-wise range extraction.
             template_context (KwargsLike): Additional context for template substitution.
             return_obj_meta (bool): Whether to return metadata about the object.
             return_meta (bool): Whether to return metadata about the range.
@@ -3799,8 +3799,8 @@ class Splitter(Analyzable):
 
         Args:
             obj (Any): Array-like object from which to extract ranges.
-            split (Optional[Selection]): Selection of splits.
-            set_ (Optional[Selection]): Selection of sets.
+            split (Optional[Selection]): Selection criteria for splits.
+            set_ (Optional[Selection]): Selection criteria for sets.
             split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
@@ -4283,8 +4283,8 @@ class Splitter(Analyzable):
         Args:
             apply_func (Callable): Function to apply over each range.
             *apply_args: Positional arguments for `apply_func`.
-            split (Optional[Selection]): Selection specifying which splits to use.
-            set_ (Optional[Selection]): Selection specifying which sets to use.
+            split (Optional[Selection]): Selection criteria for splits.
+            set_ (Optional[Selection]): Selection criteria for sets.
             split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
@@ -4293,14 +4293,14 @@ class Splitter(Analyzable):
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
             squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
             squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
-            remap_to_obj (bool): Whether to remap the range to the object's index for takeable arguments.
+            remap_to_obj (bool): Whether to remap the range to the object's index.
             obj_index (Optional[IndexLike]): Target index for remapping, if available.
             obj_freq (Optional[FrequencyLike]): Frequency of the target index 
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
             range_format (str): Format for the range to be applied (e.g., "slice_or_any").
-            point_wise (bool): Whether to apply `apply_func` in a point-wise manner.
+            point_wise (bool): Whether to perform point-wise range extraction.
             attach_bounds (Union[bool, str]): Specifies if and how to attach bounds to the result.
 
                 If True or "source", attaches the source bounds; other string options are supported.

@@ -1021,7 +1021,7 @@ class MappedArray(Analyzable):
         """Check if the mapped array is sorted.
 
         Args:
-            incl_id (bool): If True, check sorting on both the column and id arrays.
+            incl_id (bool): If True, include record ids in the sorting criteria.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -1049,7 +1049,7 @@ class MappedArray(Analyzable):
         """Sort the mapped array by column array (primary) and id array (secondary) if requested.
 
         Args:
-            incl_id (bool): If True, sort by both the column and id arrays.
+            incl_id (bool): If True, include record ids in the sorting criteria.
             idx_arr (Array1d): Array of row indices.
             group_by (GroupByLike): Grouping specification.
 

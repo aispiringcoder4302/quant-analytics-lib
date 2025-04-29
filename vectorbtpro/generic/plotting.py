@@ -99,7 +99,7 @@ class TraceUpdater(Base):
     """Class for updating Plotly traces.
 
     Args:
-        fig (BaseFigure): Figure containing the traces to update.
+        fig (BaseFigure): Figure to update.
         traces (Tuple[BaseTraceType, ...]): Tuple of Plotly trace objects to update.
     """
 

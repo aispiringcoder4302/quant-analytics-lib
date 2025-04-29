@@ -2860,7 +2860,7 @@ def get_standard_hurst_nb(
 
     Args:
         close (Array1d): Array of closing prices.
-        max_lag (int): Maximum lag value to consider in the estimation.
+        max_lag (int): Maximum lag parameter for the standard computation.
         stabilize (bool): Flag to enable stabilization in the polynomial fit.
 
     Returns:
@@ -3097,7 +3097,7 @@ def get_hurst_nb(
         max_lag (int): Maximum lag parameter for the standard computation.
         min_log (int): Minimum logarithmic scale for the LogRS method.
         max_log (int): Maximum logarithmic scale for the LogRS method.
-        log_step (float): Step increment on the logarithmic scale for the LogRS method.
+        log_step (float): Increment on the logarithmic scale for the LogRS method.
         min_chunk (int): Minimum chunk size for RS and DMA methods.
         max_chunk (int): Maximum chunk size for RS and DMA methods.
         num_chunks (int): Number of chunks for RS and DMA methods.

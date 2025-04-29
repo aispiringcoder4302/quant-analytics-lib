@@ -1055,7 +1055,7 @@ def naive_to_tzaware_time(t: time, tz_out: tp.Optional[tzinfo]) -> time:
 
     Args:
         t (time): Naive time without timezone information.
-        tz_out (Optional[tzinfo]): Target timezone to assign.
+        tz_out (Optional[tzinfo]): Target timezone for conversion.
 
     Returns:
         time: A time instance with timezone information.

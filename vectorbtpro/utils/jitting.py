@@ -55,7 +55,7 @@ class Jitter(Configured):
 
         Args:
             py_func (Callable): Python function to decorate.
-            tags (Optional[set]): Additional tags affecting the decoration process.
+            tags (Optional[set]): Set of tags associated with the function.
 
         Returns:
             Callable: The decorated function.
@@ -211,7 +211,7 @@ def get_func_suffix(py_func: tp.Callable) -> tp.Optional[str]:
     """Retrieve the suffix from a function's name if it corresponds to a registered jitter configuration.
 
     Args:
-        py_func (Callable): Function to inspect.
+        py_func (Callable): Python function to decorate.
 
     Returns:
         Optional[str]: The suffix in lowercase if recognized; otherwise, None.
@@ -436,7 +436,7 @@ def jitted(*args, tags: tp.Optional[set] = None, **jitted_kwargs) -> tp.Callable
 
     Args:
         *args: Positional arguments for the decorator.
-        tags (Optional[set]): Set of tags to pass to the jitter decorator.
+        tags (Optional[set]): Set of tags associated with the function.
         **jitted_kwargs: Keyword arguments to resolve `jitter`.
 
     Returns:

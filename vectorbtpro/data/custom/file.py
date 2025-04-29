@@ -179,10 +179,10 @@ class FileData(LocalData):
         `vectorbtpro.data.base.Data`.
 
         Args:
-            keys (MaybeKeys): Identifier(s) for features or symbols.
+            keys (MaybeKeys): Feature or symbol identifier(s).
             keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
-            features (MaybeFeatures): Feature or a list of features.
-            symbols (MaybeSymbols): Symbol or a list of symbols.
+            features (MaybeFeatures): Feature identifier(s).
+            symbols (MaybeSymbols): Symbol identifier(s).
             paths (Any): One or more file paths or glob patterns.
             match_paths (Optional[bool]): Flag to enable or disable path matching.
             match_regex (Optional[str]): Regular expression pattern for filtering paths.

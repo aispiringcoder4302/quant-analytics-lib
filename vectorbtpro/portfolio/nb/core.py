@@ -185,7 +185,7 @@ def long_buy_nb(
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage factor.
-        leverage_mode (int): Mode for leverage calculation (e.g., lazy or eager).
+        leverage_mode (int): Leverage mode.
 
             See `vectorbtpro.portfolio.enums.LeverageMode`.
         price_area_vio_mode (int): Mode for handling price area violations.
@@ -1797,7 +1797,7 @@ def fill_order_record_nb(records: tp.RecordArray2d, r: int, col: int, i: int, or
         r (int): Index of the order record in the column.
         col (int): Current column index.
         i (int): Current row index.
-        order_result (OrderResult): Result of the order execution containing size, price, fees, and side.
+        order_result (OrderResult): Result of the order execution.
 
     Returns:
         None: This function modifies `records` in place.
@@ -1817,8 +1817,7 @@ def raise_rejected_order_nb(order_result: OrderResult) -> None:
     """Raise a `vectorbtpro.portfolio.enums.RejectedOrderError` based on the order result's status.
 
     Args:
-        order_result (OrderResult): Order result containing status information used to
-            determine the rejection reason.
+        order_result (OrderResult): Result of the order execution.
 
     Returns:
         None
@@ -2442,7 +2441,7 @@ def update_pos_info_nb(
         col (int): Current column index.
         position_before (float): Position size before the order execution.
         position_now (float): Position size after the order execution.
-        order_result (OrderResult): Object containing order execution details.
+        order_result (OrderResult): Result of the order execution.
         order_id (int): Identifier of the executed order.
 
     Returns:
@@ -3535,7 +3534,7 @@ def set_limit_info_nb(
     """Set limit order information in the provided record.
 
     Args:
-        limit_info (Record): Record for limit order information.
+        limit_info (Record): Record containing limit order information.
         signal_idx (int): Row index of the signal triggering the limit order.
         creation_idx (Optional[int]): Creation row index.
         init_idx (Optional[int]): Initial row index for the order.
@@ -3592,7 +3591,7 @@ def clear_limit_info_nb(limit_info: tp.Record) -> None:
     """Clear limit order information in the provided record.
 
     Args:
-        limit_info (Record): Record for limit order information to be cleared.
+        limit_info (Record): Record containing limit order information.
 
     Returns:
         None: The function modifies the `limit_info` record in place.
@@ -3635,7 +3634,7 @@ def set_sl_info_nb(
     """Set SL (stop loss) order information in the provided record.
 
     Args:
-        sl_info (Record): Record for SL order information.
+        sl_info (Record): Record containing SL order information.
         init_idx (int): Initial row index for the SL order.
         init_price (float): Initial price for the SL order.
         init_position (float): Initial position size.
@@ -3647,10 +3646,10 @@ def set_sl_info_nb(
         exit_size_type (int): Type of exit size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        exit_type (int): Exit type indicator.
+        exit_type (int): Exit type.
 
             See `vectorbtpro.portfolio.enums.StopExitType`.
-        order_type (int): Order type for the SL order.
+        order_type (int): Order execution type.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
         limit_delta (float): Delta value used to adjust the limit price.
@@ -3690,7 +3689,7 @@ def clear_sl_info_nb(sl_info: tp.Record) -> None:
     """Clear SL (stop loss) order information in the provided record.
 
     Args:
-        sl_info (Record): Record for SL order information to be cleared.
+        sl_info (Record): Record containing SL order information.
 
     Returns:
         None: The function modifies the `sl_info` record in place.
@@ -3735,7 +3734,7 @@ def set_tsl_info_nb(
     """Set TSL/TTP order information.
 
     Args:
-        tsl_info (Record): Record to store trailing stop (TSL) or trailing take profit (TTP) order data.
+        tsl_info (Record): Record containing TSL order information.
         init_idx (int): Initialization row index.
         init_price (float): Initial price.
         init_position (float): Initial position size.
@@ -3754,7 +3753,7 @@ def set_tsl_info_nb(
         exit_size_type (int): Type of exit size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        exit_type (int): Exit order type.
+        exit_type (int): Exit type.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
         order_type (int): Order execution type.
@@ -3800,7 +3799,7 @@ def clear_tsl_info_nb(tsl_info: tp.Record) -> None:
     """Clear TSL/TTP order information.
 
     Args:
-        tsl_info (Record): Record containing trailing stop order information to clear.
+        tsl_info (Record): Record containing TSL order information.
 
     Returns:
         None: The function modifies the `tsl_info` record in place.
@@ -3845,7 +3844,7 @@ def set_tp_info_nb(
     """Set TP order information.
 
     Args:
-        tp_info (Record): Record to store take profit (TP) order data.
+        tp_info (Record): Record containing TP order information.
         init_idx (int): Initialization row index.
         init_price (float): Initial price.
         init_position (float): Initial position size.
@@ -3857,7 +3856,7 @@ def set_tp_info_nb(
         exit_size_type (int): Type of exit size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        exit_type (int): Exit order type.
+        exit_type (int): Exit type.
 
             See `vectorbtpro.portfolio.enums.StopExitType`.
         order_type (int): Order execution type.
@@ -3900,7 +3899,7 @@ def clear_tp_info_nb(tp_info: tp.Record) -> None:
     """Clear TP order information.
 
     Args:
-        tp_info (Record): Record containing take profit order information to clear.
+        tp_info (Record): Record containing TP order information.
 
     Returns:
         None: The function modifies the `tp_info` record in place.
@@ -3942,7 +3941,7 @@ def set_time_info_nb(
     """Set time order information.
 
     Args:
-        time_info (Record): Record to store time-based order information.
+        time_info (Record): Record containing time-based order information.
         init_idx (int): Initialization row index.
         init_position (float): Initial position size.
         stop (int): Stop indicator or time.
@@ -3953,7 +3952,7 @@ def set_time_info_nb(
         exit_size_type (int): Type of exit size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        exit_type (int): Exit order type.
+        exit_type (int): Exit type.
 
             See `vectorbtpro.portfolio.enums.StopExitType`.
         order_type (int): Order execution type.
@@ -3999,7 +3998,7 @@ def clear_time_info_nb(time_info: tp.Record) -> None:
     """Clear time order information.
 
     Args:
-        time_info (Record): Record containing time-based order information to clear.
+        time_info (Record): Record containing time-based order information.
 
     Returns:
         None: The function modifies the `time_info` record in place.
@@ -4025,7 +4024,7 @@ def get_limit_info_target_price_nb(limit_info: tp.Record) -> float:
     """Get target price from limit order information.
 
     Args:
-        limit_info (Record): Record with limit order details.
+        limit_info (Record): Record containing limit order information.
 
     Returns:
         float: The target price if the limit order information is active; otherwise, NaN.
@@ -4049,7 +4048,7 @@ def get_sl_info_target_price_nb(sl_info: tp.Record, position_now: float) -> floa
     """Get target price from SL order information.
 
     Args:
-        sl_info (Record): Record with stop loss (SL) order details.
+        sl_info (Record): Record containing SL order information.
         position_now (float): Current position size.
 
     Returns:
@@ -4071,7 +4070,7 @@ def get_tsl_info_target_price_nb(tsl_info: tp.Record, position_now: float) -> fl
     """Get target price from trailing stop loss (TSL) order information.
 
     Args:
-        tsl_info (Record): Trailing stop loss order information.
+        tsl_info (Record): Record containing TSL order information.
         position_now (float): Current position size.
 
     Returns:
@@ -4095,7 +4094,7 @@ def get_tp_info_target_price_nb(tp_info: tp.Record, position_now: float) -> floa
     """Get target price from take profit (TP) order information.
 
     Args:
-        tp_info (Record): Take profit order information.
+        tp_info (Record): Record containing TP order information.
         position_now (float): Current position size.
 
     Returns:

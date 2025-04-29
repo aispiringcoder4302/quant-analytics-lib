@@ -410,7 +410,7 @@ class Param(Evaluable, Annotatable, DefineMixin):
 
         Args:
             func (Callable): Function to apply to each value in `Param.value`.
-            old_as_keys (bool): Indicates whether to use the original values as keys if `keys` is not provided.
+            old_as_keys (bool): Flag indicating whether to use parameter values as keys if not provided.
 
         Returns:
             Param: A new `Param` instance with the updated values.
@@ -547,8 +547,8 @@ def combine_params(
         max_misses (Union[None, int, float]): Maximum number of misses allowed in the search for a valid
             combination (applies when not building the full grid).
         seed (Optional[int]): Random seed for deterministic output.
-        name_tuple_to_str (Union[None, bool, Callable]): If True or a callable, converts tuple
-            parameter names to strings.
+        name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to
+            strings for the parameter index.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
             See `vectorbtpro.base.indexes.clean_index`.
@@ -1174,7 +1174,7 @@ class Parameterizer(Configured):
         seed (Optional[int]): Random seed for deterministic output.
         
             See `combine_params`.
-        name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to 
+        name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to
             strings for the parameter index.
         
             See `combine_params`.
@@ -1183,14 +1183,18 @@ class Parameterizer(Configured):
             See `vectorbtpro.base.indexes.clean_index`.
         selection (Optional[Selection]): Template or criteria to select specific parameter indices.
         forward_kwargs_as (KwargsLike): Mapping to forward keyword arguments.
-        mono_min_size (Optional[int]): Minimum number of parameter values to split, as defined in 
-            `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        mono_n_chunks (Optional[Union[str, int]]): Specification for the number of mono-chunks, as defined in 
-            `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        mono_chunk_len (Optional[Union[str, int]]): Specification for the length of each mono-chunk, as defined in 
-            `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        mono_chunk_meta (Optional[Iterable[ChunkMeta]]): Custom metadata for mono-chunks, as defined in 
-            `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        mono_min_size (Optional[int]): Minimum number of parameter values to split.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        mono_n_chunks (Optional[Union[str, int]]): Specification for the number of mono-chunks.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        mono_chunk_len (Optional[Union[str, int]]):  Specification for the length of each mono-chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        mono_chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each mono-chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
         mono_reduce (Union[None, bool, Kwargs]): Flag or settings for reducing mono-chunk results.
         mono_merge_func (MaybeDict[MergeFuncLike]): Merging function or a dictionary of such to 
             combine parameter values.
@@ -1893,10 +1897,18 @@ class Parameterizer(Configured):
 
         Args:
             param_configs (List[Kwargs]): List of parameter configuration dictionaries.
-            mono_min_size (Optional[int]): Minimum allowed size for a mono-chunk.
-            mono_n_chunks (Optional[Union[str, int]]): Desired number of mono-chunks.
-            mono_chunk_len (Optional[Union[str, int]]): Target length of each mono-chunk.
-            mono_chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable of mono-chunk metadata.
+            mono_min_size (Optional[int]): Minimum number of parameter values to split.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        mono_n_chunks (Optional[Union[str, int]]): Specification for the number of mono-chunks.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        mono_chunk_len (Optional[Union[str, int]]):  Specification for the length of each mono-chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        mono_chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each mono-chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             List[List[int]]: List of index lists, each representing a mono-chunk.

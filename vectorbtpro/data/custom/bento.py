@@ -116,7 +116,7 @@ class BentoData(RemoteData):
         """Get the total cost for fetching symbol data.
 
         Args:
-            symbols (MaybeSymbols): Symbol or a list of symbols.
+            symbols (MaybeSymbols): Symbol identifier(s).
             **kwargs: Keyword arguments for `BentoData.fetch_symbol`.
 
         Returns:

@@ -204,7 +204,7 @@ class PurgedWalkForwardCV(BasePurgedCV):
 
     Args:
         n_folds (int): Total number of folds.
-        n_test_folds (int): Number of contiguous folds to be used as the test set.
+        n_test_folds (int): Total number of folds allocated for testing.
         min_train_folds (int): Minimum number of consecutive folds to use
             for training preceding the test set.
         max_train_folds (Optional[int]): Maximum number of consecutive folds to use
@@ -378,7 +378,7 @@ class PurgedKFoldCV(BasePurgedCV):
 
     Args:
         n_folds (int): Total number of folds.
-        n_test_folds (int): Number of folds reserved for the test set in each cross-validation round.
+        n_test_folds (int): Total number of folds allocated for testing.
         purge_td (TimedeltaLike): Time interval used to purge samples with overlapping
             prediction and evaluation periods.
         embargo_td (TimedeltaLike): Time interval defining the embargo period between

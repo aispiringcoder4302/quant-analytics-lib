@@ -148,7 +148,7 @@ class BaseDataMixin(Base):
         """Check whether the provided keys represent multiple keys.
 
         Args:
-            keys (MaybeKeys): Single key or a sequence of keys to evaluate.
+            keys (MaybeKeys): Feature or symbol identifier(s).
 
         Returns:
             bool: True if the keys are a sequence, False if they are hashable.
@@ -272,7 +272,7 @@ class BaseDataMixin(Base):
         """Select one or more features using label(s).
 
         Args:
-            features (MaybeFeatures): Feature or a list of features.
+            features (MaybeFeatures): Feature identifier(s).
             **kwargs: Keyword arguments for `BaseDataMixin.select_feature_idxs`.
 
         Returns:
@@ -288,7 +288,7 @@ class BaseDataMixin(Base):
         """Select one or more symbols using label(s).
 
         Args:
-            symbols (MaybeSymbols): Symbol or a list of symbols.
+            symbols (MaybeSymbols): Symbol identifier(s).
             **kwargs: Keyword arguments for `BaseDataMixin.select_symbol_idxs`.
 
         Returns:
@@ -1748,7 +1748,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         `vectorbtpro.base.indexes.stack_indexes`.
 
         Args:
-            keys (Optional[MaybeKeys]): Keys to use as columns.
+            keys (Optional[MaybeKeys]): Feature or symbol identifier(s) to use as columns.
 
                 If None, defaults to the object's keys.
             attach_classes (bool): Whether to attach classes from `Data.classes`.
@@ -1832,7 +1832,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Return an array wrapper with features as columns.
 
         Args:
-            features (Optional[MaybeFeatures]): Features to use as columns.
+            features (Optional[MaybeFeatures]): Feature identifier(s) to use as columns.
 
                 If None, defaults to a full selection.
             **kwargs: Keyword arguments for `Data.get_key_wrapper` when applicable.
@@ -1856,9 +1856,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Return an array wrapper with symbols as columns.
 
         Args:
-            symbols (Optional[MaybeSymbols]): Symbols to use as columns.
+            symbols (Optional[MaybeSymbols]): Symbol identifier(s) to use as columns.
 
-                If None, defaults to the complete symbol set.
+                If None, defaults to a full selection.
             **kwargs: Keyword arguments for `Data.get_key_wrapper` when applicable.
 
         Returns:
@@ -2013,7 +2013,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         otherwise, a list of features is returned.
 
         Args:
-            features (MaybeFeatures): Feature or a list of features.
+            features (MaybeFeatures): Feature identifier(s).
             raise_error (bool): Whether to raise an error if a feature is not found.
 
         Returns:
@@ -2035,7 +2035,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Return the symbol(s) from the instance that match the provided input.
 
         Args:
-            symbols (MaybeSymbols): Symbol or a list of symbols.
+            symbols (MaybeSymbols): Symbol identifier(s).
             raise_error (bool): Whether to raise an error if a symbol is not found.
 
         Returns:
@@ -2060,7 +2060,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         they are resolved as symbols.
 
         Args:
-            keys (MaybeKeys): Key or list of keys to resolve.
+            keys (MaybeKeys): Feature or symbol identifier(s).
             raise_error (bool): Whether to raise an error if a key is not found.
 
         Returns:
@@ -2077,7 +2077,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         otherwise, they are resolved as features.
 
         Args:
-            columns (MaybeColumns): Column or list of columns to resolve.
+            columns (MaybeColumns): Column identifier(s).
             raise_error (bool): Whether to raise an error if a column is not found.
 
         Returns:
@@ -3204,7 +3204,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Creates a new `Data` instance containing only the selected keys.
 
         Args:
-            keys (MaybeKeys): One or more keys to select.
+            keys (MaybeKeys): Feature or symbol identifier(s).
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
@@ -3233,7 +3233,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Creates a new `Data` instance containing only the selected columns.
 
         Args:
-            columns (MaybeColumns): One or more columns to select.
+            columns (MaybeColumns): Column identifier(s).
             **kwargs: Keyword arguments for `Data.indexing_func`.
 
         Returns:
@@ -3270,7 +3270,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.select_features` or `Data.select_symbols`.
 
         Args:
-            keys (MaybeKeys): One or more keys representing features or symbols.
+            keys (MaybeKeys): Feature or symbol identifier(s).
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3516,8 +3516,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         If a value for `to` is provided, a one-to-one mapping is constructed.
 
         Args:
-            rename (Union[MaybeKeys, Dict[Key, Key]]): Key or mapping of keys to be renamed.
-            to (Optional[MaybeKeys]): New key or keys for the provided key(s).
+            rename (Union[MaybeKeys, Dict[Key, Key]]): Feature or symbol identifier(s) or a mapping.
+            to (Optional[MaybeKeys]): New feature or symbol identifier(s) corresponding to the old one(s).
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
@@ -3547,8 +3547,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         If a value for `to` is provided, a one-to-one mapping is constructed.
 
         Args:
-            rename (Union[MaybeColumns, Dict[Column, Column]]): Column or mapping of columns to be renamed.
-            to (Optional[MaybeColumns]): New column name or names corresponding to the old one(s).
+            rename (Union[MaybeColumns, Dict[Column, Column]]): Column identifier(s) or a mapping.
+            to (Optional[MaybeColumns]): New column identifier(s) corresponding to the old one(s).
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
@@ -3579,8 +3579,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.rename_keys` or `Data.rename_columns`.
 
         Args:
-            rename (Union[MaybeFeatures, Dict[Feature, Feature]]): Feature or mapping of features to be renamed.
-            to (Optional[MaybeFeatures]): New feature name or names corresponding to the old one(s).
+            rename (Union[MaybeFeatures, Dict[Feature, Feature]]): Feature identifier(s) or a mapping.
+            to (Optional[MaybeFeatures]): New feature identifier(s) corresponding to the old one(s).
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3601,8 +3601,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.rename_columns` or `Data.rename_keys`.
 
         Args:
-            rename (Union[MaybeSymbols, Dict[Symbol, Symbol]]): Symbol or mapping of symbols to their new names.
-            to (Optional[MaybeSymbols]): New symbol name if `rename` is a single symbol.
+            rename (Union[MaybeSymbols, Dict[Symbol, Symbol]]): Symbol identifier(s) or a mapping.
+            to (Optional[MaybeSymbols]): New symbol identifier(s) corresponding to the old one(s).
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3624,8 +3624,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         The orientation is automatically determined by comparing data columns with existing features and symbols.
 
         Args:
-            rename (Union[MaybeKeys, Dict[Key, Key]]): Key or mapping for renaming features or symbols.
-            to (Optional[MaybeKeys]): New key name if a single key is provided.
+            rename (Union[MaybeKeys, Dict[Key, Key]]): Feature or symbol identifier(s) or a mapping.
+            to (Optional[MaybeKeys]): New feature or symbol identifier(s) corresponding to the old one(s).
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3650,7 +3650,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Create a new `Data` instance with the specified feature(s) removed.
 
         Args:
-            features (MaybeFeatures): Feature or a list of features.
+            features (MaybeFeatures): Feature identifier(s).
             **kwargs: Keyword arguments for `Data.select_feature_idxs`.
 
         Returns:
@@ -3665,11 +3665,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise ValueError("No features will be left after this operation")
         return self.select_feature_idxs(keep_feature_idxs, **kwargs)
 
-    def remove_symbols(self: DataT, symbols: tp.MaybeFeatures, **kwargs) -> DataT:
+    def remove_symbols(self: DataT, symbols: tp.MaybeSymbols, **kwargs) -> DataT:
         """Create a new `Data` instance with the specified symbol(s) removed.
 
         Args:
-            symbols (MaybeFeatures): Symbol or list of symbols to remove.
+            symbols (MaybeSymbols): Symbol identifier(s).
             **kwargs: Keyword arguments for `Data.select_symbol_idxs`.
 
         Returns:
@@ -3690,7 +3690,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.remove_features` or `Data.remove_symbols`.
 
         Args:
-            keys (MaybeKeys): Key or collection of keys to remove.
+            keys (MaybeKeys): Feature or symbol identifier(s).
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3706,7 +3706,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Depending on the data orientation, delegates to either `Data.remove_symbols` or `Data.remove_features`.
 
         Args:
-            columns (MaybeColumns): Column or list of columns to remove.
+            columns (MaybeColumns): Column identifier(s).
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3723,7 +3723,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         The orientation is automatically determined by comparing data columns with existing features and symbols.
 
         Args:
-            keys (MaybeKeys): Key or collection of keys to remove.
+            keys (MaybeKeys): Feature or symbol identifier(s).
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
@@ -3984,10 +3984,20 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         determined dictionary type.
 
         Args:
-            keys (Union[None, dict, MaybeKeys]): Mapping of keys to use, or None.
+            keys (Union[None, dict, MaybeKeys]): Feature or symbol identifier(s).
             keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
-            features (Union[None, dict, MaybeFeatures]): Mapping of features.
-            symbols (Union[None, dict, MaybeSymbols]): Mapping of symbols.
+            features (Union[None, dict, MaybeFeatures]): Feature identifier(s).
+
+                If provided as a dictionary, keys are treated as features and values as keyword arguments.
+
+                !!! note
+                    Tuple is interpreted as a single feature.
+            symbols (Union[None, dict, MaybeSymbols]): Symbol identifier(s).
+
+                If provided as a dictionary, keys are treated as symbols and values as keyword arguments.
+
+                !!! note
+                    Tuple is interpreted as a single symbol.
 
         Returns:
             Kwargs: Dictionary with metadata:
@@ -4069,17 +4079,17 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         to allow parallelized execution.
 
         Args:
-            keys (Union[None, dict, MaybeKeys]): One or multiple keys.
+            keys (Union[None, dict, MaybeKeys]): Feature or symbol identifier(s).
 
                 Depending on `keys_are_features`, these keys will be treated as features or symbols.
             keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
-            features (Union[None, dict, MaybeFeatures]): One or multiple features.
+            features (Union[None, dict, MaybeFeatures]): Feature identifier(s).
 
                 If provided as a dictionary, keys are treated as features and values as keyword arguments.
 
                 !!! note
                     Tuple is interpreted as a single feature.
-            symbols (Union[None, dict, MaybeSymbols]): One or multiple symbols.
+            symbols (Union[None, dict, MaybeSymbols]): Symbol identifier(s).
 
                 If provided as a dictionary, keys are treated as symbols and values as keyword arguments.
 
@@ -5254,8 +5264,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             func (MaybeIterable[Union[Hashable, Callable]]): Function, location, indicator name,
                 or simulation method to run, or an iterable of such.
             *args: Positional arguments for the function.
-            on_features (Optional[MaybeFeatures]): Features used to select specific parts of the data.
-            on_symbols (Optional[MaybeSymbols]): Symbols used to filter the data.
+            on_features (Optional[MaybeFeatures]): Features identifier(s) used to filter the data.
+            on_symbols (Optional[MaybeSymbols]): Symbols identifier(s) used to filter the data.
             func_args (ArgsLike): Extra positional arguments for the function.
             func_kwargs (KwargsLike): Extra keyword arguments for the function.
             magnet_kwargs (KwargsLike): Keyword arguments injected only if they

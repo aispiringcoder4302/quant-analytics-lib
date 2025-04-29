@@ -1241,14 +1241,18 @@ class Executor(Configured):
     Args:
         engine (Optional[ExecutionEngineLike]): Execution engine.
         engine_config (KwargsLike): Configuration for the execution engine.
-        min_size (Optional[int]): Minimum number of elements to split, as defined in 
-            `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        n_chunks (Union[None, int, str]): Specification for the number of chunks, as defined in 
-            `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        chunk_len (Union[None, int, str]): Specification for the length of each chunk, as defined in 
-            `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        chunk_meta (Optional[Iterable[ChunkMeta]]): Metadata for chunks, as defined in 
-            `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        min_size (Optional[int]): Minimum number of elements to split.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        n_chunks (Union[None, int, str]): Specification for the number of chunks.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        chunk_len (Union[None, int, str]): Specification for the length of each chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
         distribute (Optional[str]): Distribution mode.
 
             * "tasks": Distributes tasks within each chunk.
@@ -2229,7 +2233,7 @@ class Executor(Configured):
         """Call pre-execution function from `Executor`.
 
         Args:
-            cache_chunks (bool): Flag to indicate whether chunk caching is enabled.
+            cache_chunks (bool): Flag indicating whether chunk caching is enabled.
             chunk_cache_dir (Optional[PathLike]): Directory for cached chunks; required if cache
                 clearing is requested.
             pre_clear_chunk_cache (bool): If True, clear the chunk cache directory before execution.

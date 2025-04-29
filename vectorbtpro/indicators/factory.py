@@ -4153,7 +4153,7 @@ Returns:
                 add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
                 add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                     for example, `dict(row=1, col=1)`.
-                fig (Optional[BaseFigure]): Figure instance to update; if None, a new figure is created.
+                fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
                 **kwargs: Keyword arguments for the plotting function.
     
             Returns:

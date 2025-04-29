@@ -46,6 +46,8 @@ def fix_field_in_records(
     Args:
         record_arrays (List[RecordArray]): List of record arrays to be adjusted.
         chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
         ann_args (Optional[AnnArgs]): Annotated arguments.
 
             See `vectorbtpro.utils.parsing.annotate_args`.
@@ -78,6 +80,8 @@ def merge_records(
     Args:
         results (List[RecordArray]): List of record array chunks to merge.
         chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
         ann_args (Optional[AnnArgs]): Annotated arguments.
 
             See `vectorbtpro.utils.parsing.annotate_args`.

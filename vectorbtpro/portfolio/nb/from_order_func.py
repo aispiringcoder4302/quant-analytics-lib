@@ -101,7 +101,7 @@ def sort_call_seq_out_1d_nb(
         direction (FlexArray1d): 1D array of order directions.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        order_value_out (Array1d): Array to store computed order values; must be empty initially.
+        order_value_out (Array1d): Array to hold computed order values; must be empty initially.
         call_seq_out (Array1d): Array containing default call sequence indices, which will be sorted in place.
 
     Returns:
@@ -166,7 +166,7 @@ def sort_call_seq_1d_nb(
         direction (FlexArray1d): 1D array of order directions.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        order_value_out (Array1d): Array to store computed order values.
+        order_value_out (Array1d): Array to hold computed order values; must be empty initially.
 
     Returns:
         None: The function modifies `call_seq_now` in place.
@@ -267,7 +267,7 @@ def sort_call_seq_nb(
         direction (FlexArray2d): Array indicating the order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
-        order_value_out (Array1d): Array to store computed order values.
+        order_value_out (Array1d): Array to hold computed order values; must be empty initially.
 
     Returns:
         None: The function modifies `call_seq_now` in place.

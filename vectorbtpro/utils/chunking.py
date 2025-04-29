@@ -1799,6 +1799,8 @@ class Chunker(Configured):
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
             chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+
+                See `vectorbtpro.utils.chunking.iter_chunk_meta`.
             arg_take_spec (Optional[tp.ArgTakeSpecLike]): Specification for chunk-taking.
 
                 It can be a mapping, a sequence (which will be converted into a mapping),

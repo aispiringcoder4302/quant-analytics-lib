@@ -309,8 +309,8 @@ class SignalsAccessor(GenericAccessor):
         Arguments to `place_func_nb` can be passed either as `*args` or using `place_args` (but not both).
 
         Args:
-            shape (Union[ShapeLike, ArrayWrapper]): Shape-like tuple representing dimensions
-                or an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
+            shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
+                an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
             place_func_nb (PlaceFunc): Numba function for placing signals.
             *args: Positional arguments for `place_func_nb`.
             place_args (ArgsLike): Arguments for `place_func_nb` (either positional or named, but not both).
@@ -433,8 +433,8 @@ class SignalsAccessor(GenericAccessor):
         They should not be provided for both functions simultaneously.
 
         Args:
-            shape (Union[ShapeLike, ArrayWrapper]): Shape-like tuple or
-                an `vectorbtpro.base.wrapping.ArrayWrapper` instance defining the target shape.
+            shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
+                an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
             entry_place_func_nb (PlaceFunc): Numba-jitted function for placing entry signals.
             exit_place_func_nb (PlaceFunc): Numba-jitted function for placing exit signals.
             args: Positional arguments forwarded to both entry and exit functions if
@@ -803,9 +803,6 @@ class SignalsAccessor(GenericAccessor):
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
-
-                If an `vectorbtpro.base.wrapping.ArrayWrapper` is provided, its shape is used and
-                it will serve as the wrapper.
             n (Optional[ArrayLike]): Number or array specifying the number of signals to generate per column.
 
                 Must broadcast to the number of columns.
@@ -948,8 +945,8 @@ class SignalsAccessor(GenericAccessor):
         the provided shape-like tuple is used to determine signal dimensions.
 
         Args:
-            shape (Union[ShapeLike, ArrayWrapper]): Shape of the signals as a tuple or
-                an `vectorbtpro.base.wrapping.ArrayWrapper` instance used for wrapping.
+            shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
+                an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
             n (Optional[ArrayLike]): Number of signals per column.
 
                 When provided, signals are generated using `vectorbtpro.signals.nb.generate_rand_enex_nb`.

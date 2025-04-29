@@ -707,10 +707,10 @@ class SQLData(DBData):
         prior to retrieving data from the SQL database.
 
         Args:
-            keys (Union[MaybeKeys]): Table keys to pull data from.
+            keys (Union[MaybeKeys]): Feature or symbol identifier(s) for the database tables.
             keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
-            features (Union[MaybeFeatures]): Mapping of features associated with the database tables.
-            symbols (Union[MaybeSymbols]): Mapping of symbols associated with the database tables.
+            features (Union[MaybeFeatures]): Feature identifier(s) associated with the database tables.
+            symbols (Union[MaybeSymbols]): Symbol identifier(s) associated with the database tables.
             schema (Optional[str]): Database schema name for table identification.
             list_tables_kwargs (KwargsLike): Keyword arguments for listing database tables.
             
@@ -781,7 +781,7 @@ class SQLData(DBData):
     @classmethod
     def fetch_key(
         cls,
-        key: str,
+        key: tp.Key,
         table: tp.Union[None, str, TableT] = None,
         schema: tp.Optional[str] = None,
         query: tp.Union[None, str, SelectableT] = None,
@@ -812,7 +812,7 @@ class SQLData(DBData):
         Fetch data from a SQL database using either a table name or a custom SQL query.
 
         Args:
-            key (str): Feature or symbol identifier.
+            key (Key): Feature or symbol identifier.
 
                 If both `table` and `query` are None, the key is used as the table name.
                 If the key contains a colon (`:`), it must follow the `SCHEMA:TABLE` format,
@@ -1222,7 +1222,7 @@ class SQLData(DBData):
 
     def update_key(
         self,
-        key: str,
+        key: tp.Key,
         from_last_row: tp.Optional[bool] = None,
         from_last_index: tp.Optional[bool] = None,
         **kwargs,
@@ -1230,7 +1230,7 @@ class SQLData(DBData):
         """Update data for a feature or symbol.
 
         Args:
-            key (str): Identifier for the feature or symbol.
+            key (Key): Feature or symbol identifier.
             from_last_row (Optional[bool]): Flag indicating whether to update starting from the last row.
             from_last_index (Optional[bool]): Flag indicating whether to update starting from the last index.
             **kwargs: Keyword arguments for `SQLData.fetch_feature` or `SQLData.fetch_symbol`.

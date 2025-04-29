@@ -377,7 +377,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             min_size (Optional[int]): Minimum number of elements to split.
             n_chunks (Union[None, int, str]): Specification for the number of chunks.
             chunk_len (Union[None, int, str]): Specification for the length of each chunk.
-            chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable of chunk metadata.
+            chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each chunk.
                 
                 See `vectorbtpro.utils.chunking.iter_chunk_meta`.
             select (bool): Flag indicating whether to select chunks using `ArraySelector`.
@@ -771,8 +771,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Resolve keyword arguments for initializing `ArrayWrapper` after stacking.
 
         Args:
-            *wrappers (MaybeSequence[ArrayWrapper]): `ArrayWrapper` instances used to
-                infer shared configuration.
+            *wrappers (MaybeSequence[ArrayWrapper]): `ArrayWrapper` instances to be stacked.
             **kwargs: Keyword arguments to override configuration parameters.
 
         Returns:
@@ -1019,7 +1018,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
                 See `vectorbtpro.base.indexes.clean_index`.
-            verify_integrity (bool): Whether to verify integrity conditions such as index uniqueness.
+            verify_integrity (bool): Flag to verify the integrity of the concatenated index.
             **kwargs: Keyword arguments for `ArrayWrapper`.
 
         Returns:

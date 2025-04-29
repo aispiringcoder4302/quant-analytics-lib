@@ -548,7 +548,7 @@ class VBTAsset(KnowledgeAsset):
         Uses `VBTAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`.
 
         Args:
-            root_metadata_key (Optional[Key]): Root key for organizing metadata in the Markdown output.
+            root_metadata_key (Optional[Key]): Key under which to nest metadata.
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
@@ -744,7 +744,7 @@ class VBTAsset(KnowledgeAsset):
         Uses `VBTAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
 
         Args:
-            root_metadata_key (Optional[Key]): Root key for organizing metadata in the Markdown output.
+            root_metadata_key (Optional[Key]): Key under which to nest metadata.
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
@@ -3370,7 +3370,7 @@ def find_api(
         attr (Optional[str]): Attribute to narrow the search.
         module (Optional[Union[str, ModuleType]]): Module to constrain the search.
         resolve (bool): Whether to resolve object references.
-        pages_asset (Optional[MaybeType[PagesAsset]]): Asset for API page lookup.
+        pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
         aggregate (bool): Whether to aggregate the pages.
         aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
@@ -3428,7 +3428,7 @@ def find_docs(
         attr (Optional[str]): Attribute to narrow the search.
         module (Optional[Union[str, ModuleType]]): Module to constrain the documentation search.
         resolve (bool): Whether to resolve object references.
-        pages_asset (Optional[MaybeType[PagesAsset]]): Asset for documentation page lookup.
+        pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
         aggregate (bool): Whether to aggregate the pages.
         aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
@@ -3486,7 +3486,7 @@ def find_messages(
         attr (Optional[str]): Attribute name to filter messages linked to an object.
         module (Union[str, ModuleType, None]): Module context to constrain the message lookup.
         resolve (bool): Whether to resolve object references in messages.
-        messages_asset (Optional[MaybeType[MessagesAsset]]): Source asset to retrieve messages from.
+        messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.pull`.
         aggregate (Union[bool, str]): Option to aggregate messages; if a string, it specifies the aggregation key.
         aggregate_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
@@ -3563,8 +3563,8 @@ def find_examples(
         resolve (bool): Whether to resolve object references within examples.
         as_code (bool): Determines if examples are returned as code including textual content.
         return_type (Optional[str]): Specifies the format of returned content; e.g., "field", "match", or "item".
-        pages_asset (Optional[MaybeType[PagesAsset]]): Asset for retrieving page-based content.
-        messages_asset (Optional[MaybeType[MessagesAsset]]): Asset for retrieving message-based content.
+        pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
+        messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull` and `MessagesAsset.pull`.
         aggregate_pages (bool): Indicates whether to aggregate the pages asset.
         aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.

@@ -2702,7 +2702,7 @@ class IdxSetter(DefineMixin):
         Args:
             arr (Array): Array to modify.
             row_idxs (MaybeIndexArray): Row indices or slice specifying which rows to set.
-            col_idxs (MaybeIndexArray): Column indices or slice specifying which columns to set.
+            col_idxs (MaybeIndexArray): Column indices or slice to select.
             v (Any): Value or array of values to assign, which is broadcast to match the target shape.
 
         Returns:

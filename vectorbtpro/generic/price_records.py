@@ -246,7 +246,7 @@ class PriceRecords(Records):
 
         Args:
             *args: Positional arguments for `vectorbtpro.records.base.Records.indexing_func_meta`.
-            records_meta (DictLike): Metadata dictionary to update.
+            records_meta (DictLike): Metadata from the indexing operation on the records.
             **kwargs: Keyword arguments for `vectorbtpro.records.base.Records.indexing_func_meta`.
 
         Returns:
@@ -274,7 +274,7 @@ class PriceRecords(Records):
 
         Args:
             *args: Positional arguments for `PriceRecords.indexing_func_meta`.
-            price_records_meta (DictLike): Metadata dictionary produced by indexing.
+            price_records_meta (DictLike): Metadata from the indexing operation on the price records.
             **kwargs: Keyword arguments for `PriceRecords.indexing_func_meta`.
 
         Returns:
@@ -305,7 +305,7 @@ class PriceRecords(Records):
             *args: Positional arguments for `PriceRecords.resample_meta`.
             ffill_close (bool): Flag to forward fill close prices.
             fbfill_close (bool): Flag to backward fill close prices.
-            records_meta (DictLike): Metadata dictionary for resampling.
+            records_meta (DictLike): Metadata from the resampling operation on the records.
             **kwargs: Keyword arguments for `PriceRecords.resample_meta`.
 
         Returns:

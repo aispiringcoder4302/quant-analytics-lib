@@ -180,7 +180,7 @@ class ColumnMapper(Wrapping):
         Automatically chooses between using column lengths or column map based on sorted status.
 
         Args:
-            col_idxs (MaybeIndexArray): Column indices to select.
+            col_idxs (MaybeIndexArray): Column indices or slice to select.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

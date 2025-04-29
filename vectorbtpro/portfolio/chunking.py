@@ -73,6 +73,8 @@ def in_outputs_merge_func(
     Args:
         results (List[SimulationOutput]): List of simulation output chunks.
         chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
         ann_args (AnnArgs): Annotated arguments.
 
             See `vectorbtpro.utils.parsing.annotate_args`.
@@ -118,6 +120,8 @@ def merge_sim_outs(
     Args:
         results (List[SimulationOutput]): List of simulation output chunks.
         chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
         ann_args (AnnArgs): Annotated arguments.
 
             See `vectorbtpro.utils.parsing.annotate_args`.

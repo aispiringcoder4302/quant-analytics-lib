@@ -1644,9 +1644,10 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             path (Optional[MaybeList[PathLikeKey]]): Path(s) in the data to search within.
             per_path (Optional[bool]): If True, consider targets provided per path.
             find_all (Optional[bool]): If True with multiple targets, returns True only if all targets are matched.
-            keep_path (Optional[bool]): If True, represents matched items as nested dictionaries keyed by the path.
+            keep_path (Optional[bool]): If True, returns results structured as nested dictionaries
+                mirroring the specified path.
             skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
-            source (Optional[CustomTemplateLike]): Template for preprocessing the source data.
+            source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
             in_dumps (Optional[bool]): If True, converts the entire data item to string for searching.
             dump_kwargs (KwargsLike): Keyword arguments for dumping structured data.
         
@@ -1904,7 +1905,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             path (Optional[List[PathLikeKey]]): Specific path(s) within each data item to target.
             per_path (Optional[bool]): Treat target and replacement as per-path values if True.
             find_all (Optional[bool]): Require all targets to be found when multiple targets are provided.
-            keep_path (Optional[bool]): Include the search path in the returned result.
+            keep_path (Optional[bool]): If True, returns results structured as nested dictionaries
+                mirroring the specified path.
             skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
             make_copy (Optional[bool]): Operate on a copy of the data to preserve the original asset.
             changed_only (Optional[bool]): Return only data items that have been modified.
@@ -1991,7 +1993,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             path (Optional[Union[PathLikeKey, List[PathLikeKey]]]): Specific key or keys in the asset data to search.
             per_path (Optional[bool]): Whether to apply the removal for each specified key.
             find_all (Optional[bool]): Whether to remove all matching occurrences.
-            keep_path (Optional[bool]): Whether to retain the original path structure.
+            keep_path (Optional[bool]): If True, returns results structured as nested dictionaries
+                mirroring the specified path.
             skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
             make_copy (Optional[bool]): Whether to operate on a copy of the asset.
             changed_only (Optional[bool]): Whether to return only data items that were modified.

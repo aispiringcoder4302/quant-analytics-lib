@@ -358,7 +358,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Send a message of a specified kind to a target chat ID.
 
             Args:
-                kind (str): Type of message to send.
+                kind (str): Type of message to send (e.g., "message", "animation").
                 chat_id (int): Unique identifier of the target chat.
                 *args: Positional arguments for `TelegramBot.send`.
                 log_msg (Optional[str]): Message description for logging; if not provided,
@@ -386,7 +386,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Send a message of a specified kind to all chat IDs in `TelegramBot.chat_ids`.
 
             Args:
-                kind (str): Type of message to send.
+                kind (str): Type of message to send (e.g., "message", "animation").
                 *args: Positional arguments for `TelegramBot.send`.
                 **kwargs: Keyword arguments for `TelegramBot.send`.
 

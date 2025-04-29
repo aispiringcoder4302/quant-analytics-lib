@@ -138,7 +138,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Args:
-            d (dict): Asset data dictionary containing the 'content' key.
+            d (dict): Asset data dictionary.
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
@@ -254,8 +254,8 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Args:
-            d (dict): Data dictionary containing asset metadata.
-            root_metadata_key (Optional[Key]): Key specifying the root metadata.
+            d (dict): Asset data dictionary.
+            root_metadata_key (Optional[Key]): Key under which to nest metadata.
             allow_empty (Optional[bool]): Whether to allow empty metadata.
             minimize_metadata (bool): Flag to minimize the metadata.
             minimize_keys (Optional[List[PathLikeKey]]): Keys to minimize in the metadata.
@@ -298,7 +298,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Args:
-            d (dict): Data dictionary containing content information.
+            d (dict): Asset data dictionary.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
             
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.

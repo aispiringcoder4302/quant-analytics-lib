@@ -224,7 +224,7 @@ def check_installed(pkg_name: str) -> bool:
     """Return True if the package with the specified name is installed; otherwise, return False.
 
     Args:
-        pkg_name (str): Name of the package to check.
+        pkg_name (str): Name of the package.
 
     Returns:
         bool: True if the package is installed; otherwise, False.
@@ -265,7 +265,7 @@ def assert_can_import(pkg_name: str) -> None:
     is not installed or the installed version is incompatible.
 
     Args:
-        pkg_name (str): Name of the package to check.
+        pkg_name (str): Name of the package.
 
     Returns:
         None
@@ -329,7 +329,7 @@ def warn_cannot_import(pkg_name: str) -> bool:
     a warning is issued and True is returned; otherwise, False is returned.
 
     Args:
-        pkg_name (str): Name of the package to check.
+        pkg_name (str): Name of the package.
 
     Returns:
         bool: True if the package cannot be imported; otherwise, False.

@@ -373,7 +373,7 @@ def concat_indexes(
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
             See `vectorbtpro.base.indexes.clean_index`.
-        verify_integrity (bool): Whether to perform integrity checks on the concatenated index.
+        verify_integrity (bool): Flag to verify the integrity of the concatenated index.
         axis (int): Axis corresponding to the indexes (0 for rows, 1 for columns, or other for groups).
 
     Returns:

@@ -2786,7 +2786,7 @@ def expanding_min_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
 
     Args:
         arr (Array1d): Input array for which the expanding minimum is calculated.
-        minp (int): Minimum number of valid observations required before computing the minimum.
+        minp (int): Minimum number of observations required.
 
     Returns:
         Array1d: An array containing the expanding minimum values.
@@ -2819,7 +2819,7 @@ def expanding_min_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
 
     Args:
         arr (Array2d): 2D input array.
-        minp (int): Minimum number of valid observations required before computing the expanding minimum.
+        minp (int): Minimum number of observations required.
 
     Returns:
         Array2d: A 2D array where each column contains the expanding minimum values.
@@ -2841,7 +2841,7 @@ def expanding_max_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
 
     Args:
         arr (Array1d): Input one-dimensional array.
-        minp (int): Minimum number of valid (non-NaN) values required before computing the maximum.
+        minp (int): Minimum number of observations required.
 
     Returns:
         Array1d: An array containing the expanding maximum values computed from `arr`.
@@ -2874,8 +2874,7 @@ def expanding_max_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
 
     Args:
         arr (Array2d): Input two-dimensional array.
-        minp (int): Minimum number of valid (non-NaN) values required in each column
-            before computing the maximum.
+        minp (int): Minimum number of observations required.
 
     Returns:
         Array2d: A two-dimensional array containing the expanding maximum computed column-wise.

@@ -2286,7 +2286,8 @@ class PortfolioOptimizer(Analyzable):
             param_search_kwargs (KwargsLike): Keyword arguments for parameter search.
             
                 See `vectorbtpro.utils.params.Parameterizer.find_params_in_obj`.
-            name_tuple_to_str (Union[None, bool, Callable]): Determines conversion of name tuples to strings.
+            name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to
+                strings for the parameter index.
             group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]):
                 Configuration(s) for allocation groups.
             pre_group_func (Optional[Callable]): Function applied before processing each group.
@@ -3349,7 +3350,8 @@ class PortfolioOptimizer(Analyzable):
             param_search_kwargs (KwargsLike): Keyword arguments for parameter search.
             
                 See `vectorbtpro.utils.params.Parameterizer.find_params_in_obj`.
-            name_tuple_to_str (Union[None, bool, Callable]): Option or function to convert name tuples to strings.
+            name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to
+                strings for the parameter index.
             group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]): Group configuration(s) for optimization.
             pre_group_func (Optional[Callable]): Function to preprocess each group configuration.
             splitter_cls (Optional[Type[Splitter]]): Splitter class to use.

@@ -1999,7 +1999,7 @@ def to_renko_1d_nb(
         
             Provided as a scalar or per row.
         start_value (Optional[float]): Starting value for Renko calculation.
-        max_out_len (Optional[int]): Maximum number of output bricks allowed.
+        max_out_len (Optional[int]): Maximum length of the output.
 
     Returns:
         Tuple[Array1d, Array1d, Array1d]: A tuple containing:
@@ -2090,7 +2090,7 @@ def to_renko_ohlc_1d_nb(
         
             Provided as a scalar or per row.
         start_value (Optional[float]): Starting value for Renko OHLC calculation.
-        max_out_len (Optional[int]): Maximum number of output bars allowed.
+        max_out_len (Optional[int]): Maximum length of the output.
 
     Returns:
         Tuple[Array2d, Array1d]: A tuple containing:
