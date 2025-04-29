@@ -1539,6 +1539,30 @@ class BaseAccessor(Wrapping):
         if inplace:
             return None
         return obj
+    
+    # ############# Splitting ############# #
+
+    def split(
+        self,
+        *args,
+        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Any:
+        from vectorbtpro.generic.splitting.base import Splitter
+
+        if splitter_cls is None:
+            splitter_cls = Splitter
+        if wrap is None:
+            wrap = self.should_wrap()
+        wrapped_self = self if wrap else self.unwrapped
+        return splitter_cls.split_and_take(
+            self.wrapper.index, 
+            wrapped_self, 
+            *args, 
+            _take_kwargs=dict(into="reset_stacked"),
+            **kwargs
+        )
 
     # ############# Reshaping ############# #
 
