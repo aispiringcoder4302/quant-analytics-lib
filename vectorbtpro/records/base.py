@@ -1113,7 +1113,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Convert records to a human-readable format.
 
         Args:
-            expand_columns (bool): Flag to expand multi-index columns into a structured format.
+            expand_columns (bool): Expand MultiIndex columns into separate columns if present.
 
         Returns:
             Frame: A DataFrame representing the records in a human-readable format.
@@ -1252,7 +1252,8 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Args:
             field (str): Field identifier.
-            minus_one_to_zero (bool): Flag indicating whether to convert -1 values to 0.
+            minus_one_to_zero (bool): If True, convert index -1 to 0; if False,
+                raise an error when -1 is present.
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
         Returns:

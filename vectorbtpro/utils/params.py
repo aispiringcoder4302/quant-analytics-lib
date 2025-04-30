@@ -180,7 +180,7 @@ def create_param_product(params_or_dict: tp.ParamsOrDict) -> tp.ParamsOrDict:
     by computing their Cartesian product, then restructure the result to mirror the input format.
 
     Args:
-        params_or_dict (ParamsOrDict): Dictionary or sequence containing parameter lists.
+        params_or_dict (ParamsOrDict): Dictionary or sequence of parameter lists.
 
     Returns:
         ParamsOrDict: The Cartesian product of the input parameters.
@@ -239,7 +239,7 @@ def params_to_list(
     Otherwise, it is converted directly into a list.
 
     Args:
-        param_values (MaybeParamValues): Parameter value or iterable.
+        param_values (MaybeParamValues): Value or iterable to evaluate.
         is_tuple (bool): If True, treat tuples as single values.
         is_array_like (bool): If True, treat array-like objects as single values.
 
@@ -259,7 +259,7 @@ def get_param_grid_len(param_grid: tp.ParamGrid) -> int:
     of each parameter to determine the total number of combinations.
 
     Args:
-        param_grid (ParamGrid): Dictionary or sequence representing the parameter grid.
+        param_grid (ParamGrid): Parameter grid from which to select combinations.
 
     Returns:
         int: The total number of parameter combinations.
@@ -526,7 +526,7 @@ def combine_params(
 
     Args:
         param_dct (Dict[Hashable, Param]): Dictionary mapping keys to `Param` objects.
-        build_grid (Optional[bool]): If True, materialize the full parameter grid before filtering.
+        build_grid (Optional[bool]): Flag indicating whether to materialize the full parameter grid.
         grid_indices (Union[None, slice, Sequence[int]]): Slice (for example, `slice(None, None, 2)`
             for `::2`) or sequence of indices to skip certain combinations.
 
@@ -1201,8 +1201,8 @@ class Parameterizer(Configured):
 
             See `vectorbtpro.utils.merging.MergeFunc`.
         mono_merge_kwargs (KwargsLike): Keyword arguments for `mono_merge_func`.
-        filter_results (Optional[bool]): Flag indicating whether to filter 
-            `vectorbtpro.utils.execution.NoResult` results during execution.
+        filter_results (Optional[bool]): Flag indicating whether to filter
+            `vectorbtpro.utils.execution.NoResult` results after execution.
         raise_no_results (Optional[bool]): Flag indicating whether to raise a 
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         merge_func (MergeFuncLike): Merging function used to aggregate individual results.
@@ -1742,7 +1742,7 @@ class Parameterizer(Configured):
         """Roll a parameter configuration dictionary by aggregating discrete variable arguments.
 
         Args:
-            param_config (dict): Configuration dictionary with expanded variable arguments.
+            param_config (dict): Parameter configuration dictionary.
             ann_args (AnnArgs): Annotated arguments.
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
@@ -1965,8 +1965,8 @@ class Parameterizer(Configured):
                 See `vectorbtpro.utils.parsing.annotate_args`.
             flat_ann_args (Optional[FlatAnnArgs]): Flattened annotation arguments.
             mono_reduce (Union[bool, Kwargs]): Configuration for reducing parameters.
-            mono_merge_func (MaybeDict[MergeFuncLike]): Merging function or a dictionary of such 
-                to combine parameter values.
+            mono_merge_func (MaybeDict[MergeFuncLike]): Merging function or a dictionary of such to 
+                combine parameter values.
                 
                 See `vectorbtpro.utils.merging.MergeFunc`.
             mono_merge_kwargs (KwargsLike): Keyword arguments for `mono_merge_func`.

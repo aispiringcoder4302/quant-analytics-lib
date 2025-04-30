@@ -431,7 +431,7 @@ def prepare_timedelta_str(timedelta_str: str, allow_space: bool = False) -> str:
 
     Args:
         timedelta_str (str): Input frequency string containing time units.
-        allow_space (bool): Indicates whether to treat whitespace as an additional delimiter.
+        allow_space (bool): Allows splitting by whitespace in addition to commas and semicolons if True.
 
     Returns:
         str: A normalized frequency string with components separated by spaces.
@@ -1181,7 +1181,7 @@ def to_timestamp(
         dateparser_kwargs (KwargsLike): Keyword arguments for `dateparser.parse`.
         unit (str): Unit of time for numerical timestamps.
         tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
-        to_fixed_offset (Optional[bool]): Flag to convert timezones to a fixed offset.
+        to_fixed_offset (Optional[bool]): Flag to convert the timezone to a fixed offset.
         **kwargs: Keyword arguments for `pd.Timestamp`.
 
     Returns:
@@ -1921,7 +1921,7 @@ def infer_index_freq(
     Args:
         index (Index): Pandas datetime index.
         freq (Optional[FrequencyLike]): Frequency representation (string, offset, or timedelta).
-        allow_offset (bool): Whether to allow offset frequency conversion.
+        allow_offset (bool): Whether to allow returning an offset.
         allow_numeric (bool): Whether to permit numeric frequency values.
         freq_from_n (Union[None, bool, int]): Limit for inferring frequency from a subset of the index.
 

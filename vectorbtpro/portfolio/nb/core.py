@@ -3077,7 +3077,7 @@ def check_stop_hit_nb(
         high (float): High price.
         low (float): Low price.
         close (float): Close price.
-        is_position_long (bool): Indicates whether the position is long.
+        is_position_long (bool): True if the position is long, False if short.
         init_price (float): Initial price used for stop price calculation.
         stop (float): Stop value.
         delta_format (int): Format for delta comparisons.
@@ -3417,7 +3417,7 @@ def get_time_stop_ladder_exit_size_nb(
     """Get the exit size corresponding to the current step in the ladder.
 
     Args:
-        stop_ (FlexArray2d): 2D array representing stop values.
+        stop_ (FlexArray2d): 2D array of stop values.
         step (int): Current step index in the ladder.
         col (int): Current column index.
         init_idx (int): Initial row index in the ladder.

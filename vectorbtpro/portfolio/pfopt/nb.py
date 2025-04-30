@@ -269,7 +269,7 @@ def prepare_alloc_points_nb(
     the previous record with the new values; otherwise, register a new allocation point.
 
     Args:
-        index_points (Array1d): Array of index points corresponding to each allocation row.
+        index_points (Array1d): Array of index points for allocation.
         allocations (Array2d): 2D array of allocation values.
         group (int): Identifier for the allocation group.
 

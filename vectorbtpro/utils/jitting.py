@@ -55,7 +55,7 @@ class Jitter(Configured):
 
         Args:
             py_func (Callable): Python function to decorate.
-            tags (Optional[set]): Set of tags associated with the function.
+            tags (Optional[set]): Tags associated with the function.
 
         Returns:
             Callable: The decorated function.
@@ -239,7 +239,7 @@ def resolve_jitter_type(
     """Resolve the jitter type based on the provided parameter.
 
     Args:
-        jitter (Optional[JitterLike]): Jitter.
+        jitter (Optional[JitterLike]): Identifier, subclass, or instance of `Jitter`.
 
             * If `jitter` is None and a Python function is provided, infer the jitter type from
                 the function's name via `get_func_suffix`.
@@ -412,9 +412,9 @@ def resolve_jitter(
     """Resolve a jitter instance.
 
     Args:
-        jitter (Optional[JitterLike]): Jitter configuration or instance.
+        jitter (Optional[JitterLike]): Identifier, subclass, or instance of `Jitter`.
         py_func (Optional[Callable]): Python function used to determine the jitter type.
-        **jitter_kwargs: Keyword arguments for jitter instantiation.
+        **jitter_kwargs: Keyword arguments for configuring the jitter.
 
     Returns:
         Jitter: A jitter instance based on the resolved configuration.
@@ -436,7 +436,7 @@ def jitted(*args, tags: tp.Optional[set] = None, **jitted_kwargs) -> tp.Callable
 
     Args:
         *args: Positional arguments for the decorator.
-        tags (Optional[set]): Set of tags associated with the function.
+        tags (Optional[set]): Tags associated with the function.
         **jitted_kwargs: Keyword arguments to resolve `jitter`.
 
     Returns:

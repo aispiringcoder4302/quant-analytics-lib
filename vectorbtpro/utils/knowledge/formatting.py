@@ -305,15 +305,16 @@ class FormatHTML(Configured):
     in the `<head>`, and JavaScript or inline scripts in the `<body>`.
 
     Args:
-        html_template (Optional[str]): Template for HTML formatting, as a string, function, or custom template.
+        html_template (Optional[CustomTemplateLike]): Template for HTML formatting, 
+            as a string, function, or custom template.
         style_extras (Optional[MaybeList[str]]): Extra CSS rules for the `<style>` element.
         head_extras (Optional[MaybeList[str]]): Extra HTML elements to inject into the `<head>` section.
         body_extras (Optional[MaybeList[str]]): Extra content to insert at the end of the `<body>` section.
         invert_colors (Optional[bool]): Flag to enable color inversion.
         invert_colors_style (Optional[str]): CSS styles applied when colors are inverted.
-        auto_scroll (Optional[bool]): Flag to enable automatic scrolling.
+        auto_scroll (Optional[bool]): Flag to enable automatic scrolling during refreshing.
         auto_scroll_body (Optional[str]): HTML or script to facilitate auto scrolling in the body.
-        show_spinner (Optional[bool]): Flag to display a loading spinner.
+        show_spinner (Optional[bool]): Flag to display a loading spinner during refreshing.
         spinner_style (Optional[str]): CSS style for the spinner.
         spinner_body (Optional[str]): HTML or script for spinner placement.
         use_pygments (Optional[bool]): Flag to enable code highlighting with Pygments.
@@ -329,7 +330,7 @@ class FormatHTML(Configured):
 
     def __init__(
         self,
-        html_template: tp.Optional[str] = None,
+        html_template: tp.Optional[tp.CustomTemplateLike] = None,
         style_extras: tp.Optional[tp.MaybeList[str]] = None,
         head_extras: tp.Optional[tp.MaybeList[str]] = None,
         body_extras: tp.Optional[tp.MaybeList[str]] = None,
@@ -473,7 +474,7 @@ class FormatHTML(Configured):
         Args:
             title (str): Title of the HTML document.
             html_metadata (str): HTML metadata elements, such as meta tags.
-            html_content (str): Main HTML content.
+            html_content (str): HTML content to format.
             **kwargs: Additional parameters to merge into the template context.
 
         Returns:
@@ -526,7 +527,7 @@ class ContentFormatter(Configured):
         buffer_output (Optional[bool]): Whether to buffer output before writing.
         close_output (Optional[bool]): Whether to close the output stream after writing.
         update_interval (Optional[float]): Time interval in seconds for updates.
-        minimal_format (Optional[bool]): Whether to apply minimal formatting to the content.
+        minimal_format (Optional[bool]): Boolean indicating if the input is minimally formatted.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
@@ -1092,8 +1093,8 @@ class HTMLFileFormatter(ContentFormatter):
         temp_files (Optional[bool]): Indicates if HTML content is saved as temporary files.
         file_prefix_len (Optional[int]): Number of characters for the truncated title prefix.
         file_suffix_len (Optional[int]): Number of characters for the random hash suffix.
-        auto_scroll (Optional[bool]): Enables automatic scrolling during refreshing.
-        show_spinner (Optional[bool]): Enables a spinner display during refreshing.
+        auto_scroll (Optional[bool]): Flag to enable automatic scrolling during refreshing.
+        show_spinner (Optional[bool]): Flag to display a loading spinner during refreshing.
         open_browser (Optional[bool]): Flag indicating whether to open the web browser.
         to_markdown_kwargs (KwargsLike): Keyword arguments for `to_markdown`.
         to_html_kwargs (KwargsLike): Keyword arguments for `to_html`.
@@ -1433,9 +1434,9 @@ def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[Conten
     """Resolve a subclass or instance of `ContentFormatter`.
 
     Args:
-        formatter (ContentFormatterLike): Option, subclass, or instance of `ContentFormatter`.
+        formatter (ContentFormatterLike): Identifier, subclass, or instance of `ContentFormatter`.
 
-            Supported options:
+            Supported identifiers:
 
             * "plain" (`PlainFormatter`): Prints the raw output
             * "ipython" (`IPythonFormatter`): Renders unformatted text in a notebook environment

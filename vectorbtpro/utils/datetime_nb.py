@@ -581,7 +581,7 @@ def matches_dtc_nb(dtc: DTCNT, other_dtc: DTCNT) -> bool:
 
     Args:
         dtc (DTCNT): Datetime components to compare.
-        other_dtc (DTCNT): Datetime components to compare.
+        other_dtc (DTCNT): Datetime components to match against.
 
     Returns:
         bool: True if the components match, False otherwise.
@@ -1177,8 +1177,8 @@ def index_within_dtc_range_nb(
 
     Args:
         index (Array1d): One-dimensional array of date-time elements.
-        start_dtc (DTCNT): Starting date-time boundary.
-        end_dtc (DTCNT): Ending date-time boundary.
+        start_dtc (DTCNT): Datetime component object representing the start boundary.
+        end_dtc (DTCNT): Datetime component object representing the end boundary.
         closed_start (bool): Include the start boundary if True.
         closed_end (bool): Include the end boundary if True.
 

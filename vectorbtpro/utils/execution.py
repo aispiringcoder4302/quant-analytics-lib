@@ -1060,7 +1060,7 @@ class RayEngine(ExecutionEngine):
         Args:
             tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
             reuse_refs (bool): Flag indicating whether to reuse references for unique objects.
-            remote_kwargs (KwargsLike): Keyword arguments for configuring `ray.remote`.
+            remote_kwargs (KwargsLike): Keyword arguments for `ray.remote`.
 
         Returns:
             List[Tuple[RemoteFunction, Tuple[ObjectRef, ...], Dict[str, ObjectRef]]]:
@@ -1279,11 +1279,11 @@ class Executor(Configured):
             be removed after execution.
         release_chunk_cache (Optional[bool]): Flag that replaces the chunk cache with dummy objects 
             after execution and loads the full cache after all chunks complete.
-        chunk_clear_cache (Union[None, bool, int]): Boolean or integer specifying if the global cache should 
+        chunk_clear_cache (Union[None, bool, int]): Specifies whether the global cache should 
             be cleared after each chunk or every n chunks.
-        chunk_collect_garbage (Union[None, bool, int]): Boolean or integer specifying if garbage collection should 
+        chunk_collect_garbage (Union[None, bool, int]): Specifies whether garbage collection should 
             be performed after each chunk or every n chunks.
-        chunk_delay (Optional[float]): Optional float specifying the delay in seconds after processing each chunk.
+        chunk_delay (Optional[float]): Delay in seconds after processing each chunk.
         pre_execute_func (Optional[Callable]): Callable to be executed before processing all tasks.
         pre_execute_kwargs (KwargsLike): Keyword arguments for `pre_execute_func`.
         pre_chunk_func (Optional[Callable]): Callable executed before processing each chunk.
@@ -1302,8 +1302,8 @@ class Executor(Configured):
         post_execute_kwargs (KwargsLike): Keyword arguments for `post_execute_func`.
         post_execute_on_sorted (Optional[bool]): Flag indicating whether `post_execute_func` should 
             be invoked after sorting call indices.
-        filter_results (Optional[bool]): Flag determining if results equal to `NoResult` should 
-            be filtered out.
+        filter_results (Optional[bool]): Flag indicating whether to filter
+            `NoResult` results after execution.
         raise_no_results (Optional[bool]): Flag indicating whether to raise a 
                 `NoResultsException` exception if no results remain.
 
@@ -1747,7 +1747,7 @@ class Executor(Configured):
 
     @property
     def chunk_clear_cache(self) -> tp.Union[bool, int]:
-        """Boolean or integer specifying if the global cache should be cleared after each chunk
+        """Specifies whether the global cache should be cleared after each chunk
         or every n chunks.
 
         Returns:
@@ -1757,7 +1757,7 @@ class Executor(Configured):
 
     @property
     def chunk_collect_garbage(self) -> tp.Union[bool, int]:
-        """Boolean or integer specifying if garbage collection should be performed after each
+        """Specifies whether garbage collection should be performed after each
         chunk or every n chunks.
 
         Returns:
@@ -1767,7 +1767,7 @@ class Executor(Configured):
 
     @property
     def chunk_delay(self) -> tp.Optional[float]:
-        """Optional float specifying the delay in seconds after processing each chunk.
+        """Delay in seconds after processing each chunk.
 
         Returns:
             Optional[float]: Delay in seconds after processing each chunk; None if not set.
@@ -3191,11 +3191,11 @@ def execute(
         tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
         size (Optional[int]): Number of tasks to run concurrently.
         keys (Optional[IndexLike]): Identifiers corresponding to each task.
-        executor (Optional[MaybeType[Executor]]): Executor instance or executor type.
-        replace_executor (Optional[bool]): Flag to create a new executor instance by replacing
-            non-None arguments.
-        merge_to_engine_config (Optional[bool]): Flag indicating whether extra keyword arguments
-            should be merged into `engine_config`.
+        executor (Optional[MaybeType[Executor]]): The `Executor` class or instance used for executing iterations.
+        replace_executor (Optional[bool]): Flag to create a new `Executor` instance by replacing non-None
+            arguments when additional options are provided.
+        merge_to_engine_config (Optional[bool]): Flag indicating whether keyword arguments not
+            matching `Executor` keys should be merged into its `engine_config`.
         **kwargs: Keyword arguments for `Executor` or merged into `engine_config`.
 
     Returns:

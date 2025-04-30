@@ -1120,7 +1120,7 @@ def assert_not_subclass_of(obj: tp.Type, classes: tp.TypeLike, arg_name: tp.Opti
 
     Args:
         obj (Type): Type to check.
-        classes (TypeLike): Class or tuple of classes that are disallowed.
+        classes (TypeLike): Class or tuple of classes for validation.
         arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:
@@ -1164,7 +1164,7 @@ def assert_dtype(obj: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_name
 
     Args:
         obj (ArrayLike): Array or DataFrame to validate.
-        dtype (MaybeTuple[DTypeLike]): Expected data type or a tuple of possible data types.
+        dtype (MaybeTuple[DTypeLike]): Expected data type or a tuple of data types.
         arg_name (Optional[str]): Name of the argument for error messaging.
 
     Returns:

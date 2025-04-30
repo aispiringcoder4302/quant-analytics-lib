@@ -178,7 +178,7 @@ def fill_trade_record_nb(
 
             See `vectorbtpro.portfolio.enums.TradeDirection`.
         status (int): Trade status.
-        parent_id (int): Identifier linking the trade to its parent order.
+        parent_id (int): Identifier linking trades to a parent trade.
 
     Returns:
         None: The function modifies `new_records` in place.
@@ -246,7 +246,7 @@ def fill_entry_trades_in_position_nb(
         init_price (float): Initial price for the position.
         first_entry_size (float): Size of the first entry order.
         first_entry_fees (float): Fees of the first entry order.
-        exit_idx (int): Row index corresponding to the exit order.
+        exit_idx (int): Row index of the exit order.
         exit_size_sum (float): Total size of exit orders.
         exit_gross_sum (float): Gross sum used to compute the weighted exit price.
         exit_fees_sum (float): Total exit fees for proportional allocation.
@@ -254,7 +254,7 @@ def fill_entry_trades_in_position_nb(
 
             See `vectorbtpro.portfolio.enums.TradeDirection`.
         status (int): Trade status indicating whether the position is closed.
-        parent_id (int): Identifier linking orders to a parent trade.
+        parent_id (int): Identifier linking trades to a parent trade.
         new_records (RecordArray): Array of records to be filled.
 
             Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.

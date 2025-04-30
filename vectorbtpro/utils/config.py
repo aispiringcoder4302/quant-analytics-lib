@@ -1009,7 +1009,7 @@ class Config(pdict):
 
         Args:
             force (bool): Bypass configuration restrictions if True.
-            **reset_dct_copy_kwargs: Keyword arguments for copying the current state.
+            **reset_dct_copy_kwargs: Keyword arguments for copying the reset dictionary.
 
         Returns:
             None: The reset dictionary is updated in place.
@@ -2192,7 +2192,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
 
         Args:
             other (Any): Object to compare against.
-            check_types (bool): Whether to compare types.
+            check_types (bool): Whether to verify types during comparison.
             check_attrs (bool): Whether to compare writable attributes.
             check_options (bool): Whether to compare configuration options.
             **kwargs: Keyword arguments for `vectorbtpro.utils.checks.is_deep_equal` and `Config.equals`.

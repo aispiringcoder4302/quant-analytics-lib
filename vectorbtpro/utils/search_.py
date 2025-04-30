@@ -175,7 +175,7 @@ def resolve_pathlike_key(key: tp.PathLikeKey, minimize: bool = False) -> tp.Path
 
     Args:
         key (PathLikeKey): Key in either string, Path, or sequence format.
-        minimize (bool): Whether to minimize the key after conversion.
+        minimize (bool): Whether to minimize the resulting key.
 
     Returns:
         tuple: A tuple of tokens representing the path.

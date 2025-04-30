@@ -237,7 +237,7 @@ class AssetCacheManager(Configured):
 
         Args:
             asset (MaybeKnowledgeAsset): Knowledge asset to cache.
-            cache_key (str): Unique identifier under which to store the asset.
+            cache_key (str): Unique identifier for the cached asset.
 
         Returns:
             Optional[Path]: The file path where the asset was saved if persistence is enabled, otherwise None.
@@ -2340,14 +2340,14 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             func (CustomTemplateLike): Reduction function, expression, or template.
             *args: Positional arguments for `KnowledgeAsset.groupby_reduce` or the reduction function.
             initializer (Optional[Any]): Initial value for the reduction.
-            by (Optional[PathLikeKey]): Key to group data items for reduction.
+            by (Optional[PathLikeKey]): Key or path used to group data items.
             template_context (KwargsLike): Additional context for template substitution.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.
             wrap (Optional[bool]): If True, wrap the result in a `KnowledgeAsset` instance.
-            return_iterator (bool): If True, return an iterator over the reduction process.
+            return_iterator (bool): If True, return an iterator instead of executing tasks.
             **kwargs: Keyword arguments for `KnowledgeAsset.groupby_reduce` or the reduction function.
 
         Returns:
@@ -2487,7 +2487,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         For each group, apply `KnowledgeAsset.reduce` with the supplied function and additional arguments.
 
         Args:
-            func (CustomTemplateLike): Function or template used to reduce each group.
+            func (CustomTemplateLike): Reduction function, expression, or template.
             *args: Positional arguments for `KnowledgeAsset.reduce`.
             by (Optional[PathLikeKey]): Key or path used to group data items.
             uniform_groups (Optional[bool]): Whether to group only contiguous identical key values.
@@ -2836,7 +2836,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
             cache_documents (bool): If True, will use an asset cache manager to cache the generated
                 text documents after conversion.
-            cache_key (Optional[str]): Key for caching documents.
+            cache_key (Optional[str]): Unique identifier for the cached asset.
             asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of `AssetCacheManager`.
             asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
             silence_warnings (bool): Flag to suppress warning messages.

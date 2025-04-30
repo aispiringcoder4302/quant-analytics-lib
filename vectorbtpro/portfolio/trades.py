@@ -2000,7 +2000,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             pct_scale (bool): Flag to display the y-axis on a percentage scale.
-            field_pct_scale (bool): If True, format the y-axis values as percentages.
+            field_pct_scale (bool): Flag to display the y-axis on a percentage scale.
             closed_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade markers.
             closed_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed profit markers.
             closed_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed loss markers.
@@ -2293,7 +2293,7 @@ class Trades(Ranges):
             colorize (Union[bool, str, Callable]): Strategy for colorizing projections or bands.
 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            field_pct_scale (bool): If True, sets the y-axis to a percentage scale.
+            field_pct_scale (bool): Flag to display the y-axis on a percentage scale.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.

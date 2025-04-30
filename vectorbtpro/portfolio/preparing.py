@@ -477,7 +477,7 @@ class BasePFPreparer(BasePreparer):
 
         Args:
             arr (ArrayLike): Input array to align.
-            group_lens (Optional[GroupLens]): Array of group lengths for alignment.
+            group_lens (Optional[GroupLens]): Array defining the number of columns in each group.
             check_dtype (Optional[DTypeLike]): Data type to validate the array elements.
             cast_to_dtype (Optional[DTypeLike]): Target data type for casting.
             reduce_func (Union[None, str, Callable]): Reduction function to apply on groups, if applicable.
@@ -1815,7 +1815,7 @@ class FSPreparer(BasePFPreparer):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
-            group_lens (Optional[GroupLens]): Optional group lengths.
+            group_lens (Optional[GroupLens]): Array defining the number of columns in each group.
 
                 If None and cash_sharing is True, they are computed from the wrapper.
             cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.

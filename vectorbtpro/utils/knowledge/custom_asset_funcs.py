@@ -89,7 +89,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         Args:
             d (dict): Asset data dictionary.
             root_metadata_key (Optional[Key]): Key under which to nest metadata.
-            allow_empty (Optional[bool]): Whether empty metadata is permitted.
+            allow_empty (Optional[bool]): Whether to allow empty metadata.
             minimize_metadata (bool): If True, remove specified keys to minimize metadata.
             minimize_keys (Optional[Union[PathLikeKey, list]]): Key or list of keys to remove during minimization.
             clean_metadata (bool): If True, clean the metadata to remove empty or irrelevant values.
@@ -257,9 +257,9 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             d (dict): Asset data dictionary.
             root_metadata_key (Optional[Key]): Key under which to nest metadata.
             allow_empty (Optional[bool]): Whether to allow empty metadata.
-            minimize_metadata (bool): Flag to minimize the metadata.
+            minimize_metadata (bool): If True, remove specified keys to minimize metadata.
             minimize_keys (Optional[List[PathLikeKey]]): Keys to minimize in the metadata.
-            clean_metadata (bool): Flag indicating whether to clean metadata.
+            clean_metadata (bool): If True, clean the metadata to remove empty or irrelevant values.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.

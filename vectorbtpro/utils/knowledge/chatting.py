@@ -340,7 +340,7 @@ def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokeni
     Args:
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
 
-            Supported options:
+            Supported identifiers:
 
             * "tiktoken" for `TikTokenizer`
 
@@ -887,7 +887,7 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
     Args:
         embeddings (EmbeddingsLike): Identifier, subclass, or instance of `Embeddings`.
 
-            Supported options:
+            Supported identifiers:
 
             * "openai" for `OpenAIEmbeddings`
             * "litellm" for `LiteLLMEmbeddings`
@@ -1840,7 +1840,7 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
     Args:
         completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
 
-            Supported options:
+            Supported identifiers:
 
             * "openai" for `OpenAICompletions`
             * "litellm" for `LiteLLMCompletions`
@@ -2610,7 +2610,7 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
     Args:
         text_splitter (TextSplitterLike): Identifier, subclass, or instance of `TextSplitter`.
 
-            Supported options:
+            Supported identifiers:
 
             * "token" for `TokenSplitter`
             * "segment" for `SegmentSplitter`
@@ -3958,7 +3958,7 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
     Args:
         obj_store (ObjectStoreLike): Identifier, subclass, or instance of `ObjectStore`.
 
-            Supported options:
+            Supported identifiers:
 
             * "dict" for `DictStore`
             * "memory" for `MemoryStore`
@@ -4053,11 +4053,11 @@ class DocumentRanker(Configured):
             * "embeddings"
             * "bm25"
             * "hybrid"
-        bm25_tokenizer (Optional[BM25Tokenizer]): BM25 tokenizer for processing text.
+        bm25_tokenizer (Optional[BM25Tokenizer]): BM25 tokenizer instance or type for processing text.
         
             Resolved using `DocumentRanker.resolve_bm25_tokenizer`.
         bm25_tokenizer_kwargs (KwargsLike): Keyword arguments to initialize `bm25_tokenizer`.
-        bm25_retriever (Optional[MaybeType[BM25]]): BM25 retriever for document retrieval.
+        bm25_retriever (Optional[MaybeType[BM25]]): BM25 retriever instance or type for document retrieval.
         
             Resolved using `DocumentRanker.resolve_bm25_retriever`.
         bm25_retriever_kwargs (KwargsLike): Keyword arguments to initialize `bm25_retriever`.
@@ -4097,7 +4097,7 @@ class DocumentRanker(Configured):
         emb_store_kwargs: tp.KwargsLike = None,
         cache_emb_store: tp.Optional[bool] = None,
         search_method: tp.Optional[str] = None,
-        bm25_tokenizer: tp.Optional[BM25TokenizerT] = None,
+        bm25_tokenizer: tp.Optional[tp.MaybeType[BM25TokenizerT]] = None,
         bm25_tokenizer_kwargs: tp.KwargsLike = None,
         bm25_retriever: tp.Optional[tp.MaybeType[BM25T]] = None,
         bm25_retriever_kwargs: tp.KwargsLike = None,
@@ -4427,7 +4427,7 @@ class DocumentRanker(Configured):
 
     def resolve_bm25_tokenizer(
         cls,
-        bm25_tokenizer: tp.Optional[BM25TokenizerT] = None,
+        bm25_tokenizer: tp.Optional[tp.MaybeType[BM25TokenizerT]] = None,
         **kwargs,
     ) -> tp.Tuple[BM25TokenizerT, tp.Kwargs]:
         """Return a tuple containing a resolved instance of `bm25s.tokenization.Tokenizer` and
@@ -4477,7 +4477,7 @@ class DocumentRanker(Configured):
 
     def resolve_bm25_retriever(
         cls,
-        bm25_retriever: tp.Optional[BM25T],
+        bm25_retriever: tp.Optional[tp.MaybeType[BM25T]] = None,
         **kwargs,
     ) -> tp.Tuple[BM25T, tp.Kwargs]:
         """Return a tuple containing a resolved instance of `bm25s.BM25` and retrieval keyword arguments.
@@ -4530,7 +4530,7 @@ class DocumentRanker(Configured):
         Without refreshing, persisted objects from the respective stores are used.
 
         Args:
-            documents (Iterable[StoreDocument]): Iterable of documents to embed.
+            documents (Iterable[StoreDocument]): Collection of documents to embed.
             refresh (bool): Flag to refresh both documents and embeddings.
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
             refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.

@@ -94,7 +94,7 @@ def sort_call_seq_out_1d_nb(
 
     Args:
         c (SegmentContext): Segment context.
-        size (FlexArray1d): 1D array of order sizes using flexible indexing.
+        size (FlexArray1d): 1D array of order sizes.
         size_type (FlexArray1d): 1D array of order size types.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
@@ -5398,29 +5398,29 @@ def def_order_func_nb(  # % line.replace("def_order_func_nb", "order_func_nb")
         c (OrderContext): Order context.
         size (FlexArray2d): Array of order sizes.
         price (FlexArray2d): Array of order prices.
-        size_type (FlexArray2d): Array specifying the type of order sizes.
+        size_type (FlexArray2d): Array specifying the type of each order size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        direction (FlexArray2d): Array indicating the trade direction.
+        direction (FlexArray2d): Array indicating the order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         fees (FlexArray2d): Array of fee values.
         fixed_fees (FlexArray2d): Array of fixed fee values.
-        slippage (FlexArray2d): Array representing slippage values.
+        slippage (FlexArray2d): Array representing slippage.
         min_size (FlexArray2d): Array of minimum order sizes.
         max_size (FlexArray2d): Array of maximum order sizes.
-        size_granularity (FlexArray2d): Array defining order size granularity.
+        size_granularity (FlexArray2d): Array defining granularity for order sizes.
         leverage (FlexArray2d): Array of leverage amounts.
         leverage_mode (FlexArray2d): Array indicating leverage modes.
 
             See `vectorbtpro.portfolio.enums.LeverageMode`.
         reject_prob (FlexArray2d): Array of rejection probabilities.
-        price_area_vio_mode (FlexArray2d): Array specifying violation handling for price areas.
+        price_area_vio_mode (FlexArray2d): Array specifying handling of price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
         allow_partial (FlexArray2d): Array indicating whether partial orders are allowed.
         raise_reject (FlexArray2d): Array determining if rejections should raise errors.
-        log (FlexArray2d): Array containing logging settings.
+        log (FlexArray2d): Array containing logging configurations.
 
     Returns:
         Tuple[int, Order]: A tuple where the first element is an indicator (typically a column index)

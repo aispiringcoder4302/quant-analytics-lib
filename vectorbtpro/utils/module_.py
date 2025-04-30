@@ -785,7 +785,7 @@ def get_api_ref(
         obj (Any): Object for which the API reference is constructed.
         module (Union[None, str, ModuleType]): Module context used in reference resolution.
         resolve (bool): Whether to resolve the object's reference name.
-        vbt_only (bool): If True, restrict reference resolution to objects within vectorbtpro.
+        vbt_only (bool): If True, limit resolution to objects within vectorbtpro.
 
     Returns:
         str: The API reference URL for the given object.

@@ -314,7 +314,7 @@ class SignalsAccessor(GenericAccessor):
             place_func_nb (PlaceFunc): Numba function for placing signals.
             *args: Positional arguments for `place_func_nb`.
             place_args (ArgsLike): Arguments for `place_func_nb` (either positional or named, but not both).
-            only_once (bool): Indicates whether signals should be placed only once.
+            only_once (bool): Whether to run the placement function only once.
             wait (int): Waiting period before signal placement.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -809,8 +809,7 @@ class SignalsAccessor(GenericAccessor):
             prob (Optional[ArrayLike]): Probability of generating a signal.
 
                 Must broadcast to match the provided shape.
-            pick_first (bool): Determines whether to select the first viable signal in cases
-                where multiple are possible.
+            pick_first (bool): If True, stop after placing the first signal.
             seed (Optional[int]): Random seed for deterministic output.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -1499,7 +1498,9 @@ class SignalsAccessor(GenericAccessor):
             tsl_stop (ArrayLike): Trailing stop loss level(s).
             tp_stop (ArrayLike): Take profit level(s).
             reverse (ArrayLike): Flar or array indicating whether to reverse exit signals.
-            is_entry_open (bool): Flag indicating if the entry is considered open.
+            is_entry_open (bool): Indicates if the entry price is available at or before open.
+
+                If True, uses the bar's high and low; otherwise, uses only close.
             out_dict (Optional[Dict[str, ArrayLike]]): Dictionary to store `stop_price` and `stop_type` arrays.
 
                 Providing an empty dictionary will result in these arrays being generated automatically.
@@ -1507,7 +1508,10 @@ class SignalsAccessor(GenericAccessor):
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
             until_next (bool): Whether to place signals up to the next entry signal.
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
-            chain (bool): If True, chain entries and exits, returning a tuple of new entries and exits.
+
+                Ignored when `until_next` is True.
+            chain (bool): If True, chains signals by returning both new entries and exit signals
+                using `SignalsAccessor.generate_both`.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -2767,7 +2771,7 @@ class SignalsAccessor(GenericAccessor):
         """Unravel signals.
 
         Args:
-            incl_empty_cols (bool): Include empty columns in the unraveling process.
+            incl_empty_cols (bool): Include columns that contain no resolved pairs.
             force_signal_index (bool): Force creation of a new signal index even
                 if the unraveled mask has the same shape as the original.
             signal_index_type (str): Type of signal index to generate.
@@ -2855,13 +2859,14 @@ class SignalsAccessor(GenericAccessor):
             relation (Union[int, str]): Relation mode for pairing signals.
 
                 Mapped using `vectorbtpro.signals.enums.SignalRelation` if provided as a string.
-            incl_open_source (bool): Include open source signals.
-            incl_open_target (bool): Include open target signals.
-            incl_empty_cols (bool): Include empty columns.
+            incl_open_source (bool): Include open source signals when a matching target is not found.
+            incl_open_target (bool): Include open target signals when a matching source is not found.
+            incl_empty_cols (bool): Include columns that contain no resolved pairs.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
-            force_signal_index (bool): Enforce the generation of a new signal index.
+            force_signal_index (bool): Force creation of a new signal index even
+                if the unraveled mask has the same shape as the original.
             signal_index_type (str): Type of signal index to generate.
 
                 Allowed values:

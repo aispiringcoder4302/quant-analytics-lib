@@ -940,7 +940,6 @@ class Pickleable(Base):
         Sections containing only a single pair (`_ = _`) are treated as empty dictionaries.
 
         Args:
-            cls (Type[Pickleable]): Class to use for decoding the configuration.
             str_ (str): Configuration string to decode.
             parse_literals (bool): Detect Python literals and container types (e.g., `True`, `[]`),
                 including special values like `np.nan`, `np.inf`, and `-np.inf`.
@@ -1452,7 +1451,6 @@ class Pickleable(Base):
         File path resolution is performed using `Pickleable.resolve_file_path`.
 
         Args:
-            cls (Type[Pickleable]): Class of the instance.
             path (Optional[PathLike]): Path of the file to load.
             file_format (Optional[str]): Format specifier for determining the file extension.
             compression (CompressionLike): Compression algorithm.

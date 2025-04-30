@@ -660,7 +660,7 @@ def pypfopt_optimize(
         allocation_method (Optional[str]): Method name used to compute discrete allocation.
         silence_warnings (Optional[bool]): Flag to suppress warning messages.
         ignore_opt_errors (Optional[bool]): Ignore errors related to target optimization if True.
-        ignore_errors (Optional[bool]): Ignore all errors if True.
+        ignore_errors (Optional[bool]): Whether to ignore errors and return an empty dictionary.
         **kwargs: Keyword arguments for PyPortfolioOpt functions through
             `resolve_pypfopt_func_kwargs` and `resolve_pypfopt_func_call`.
 
@@ -1160,7 +1160,8 @@ def resolve_factors_views(views: tp.Union[tp.Frame, tp.Sequence]) -> tp.Frame:
     the input can also be provided as a sequence of dictionaries.
 
     Args:
-        views (Union[Frame, Sequence]): DataFrame, dict, or sequence of dicts representing factors views.
+        views (Union[Frame, Sequence]): Factor views provided as a DataFrame, dictionary, or
+            list of dictionaries.
 
             Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
 
@@ -2067,7 +2068,7 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
-            group_configs (List[dict]): List of configuration dictionaries for allocation groups.
+            group_configs (List[dict]): List of configurations for allocation groups.
             group_index (Index): Index representing the allocation group.
             group_idx (int): Index specifying which configuration in `group_configs` to use.
             pre_group_func (Optional[Callable]): Function to preprocess and modify the group configuration.
@@ -2288,8 +2289,8 @@ class PortfolioOptimizer(Analyzable):
             indexer_tolerance (Union[None, str, Param]): See `vectorbtpro.base.indexing.PointIdxr.indexer_tolerance`.
             skip_not_found (Union[bool, Param]): See `vectorbtpro.base.indexing.PointIdxr.skip_not_found`.
             index_points (Union[None, MaybeSequence[int], Param]): Manually specified index points.
-            rescale_to (Union[None, Tuple[float, float], Param]): Tuple specifying rescaling bounds for allocations.
-            parameterizer (Optional[MaybeType[Parameterizer]]): Parameterizer instance for detecting parameters.
+            rescale_to (Union[None, Tuple[float, float], Param]): Tuple specifying the rescaling range for allocations.
+            parameterizer (Optional[MaybeType[Parameterizer]]): Parameterizer class or instance for handling parameters.
             
                 See `vectorbtpro.utils.params.Parameterizer`.
             param_search_kwargs (KwargsLike): Keyword arguments for parameter search.
@@ -2838,7 +2839,9 @@ class PortfolioOptimizer(Analyzable):
             direction (Union[str, int]): Market direction for allocation, e.g. "longonly".
 
                 Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
-            n (Optional[int]): Number of random allocations to generate.
+            n (Optional[int]): Number of columns to assign random weights.
+
+                If None, assign weights to all columns.
             seed (Optional[int]): Random seed for deterministic output.
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
@@ -2966,12 +2969,10 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
-            group_configs (List[dict]): List of dictionaries with optimization group configurations.
-            group_index (Index): Index representing the current group's assets.
+            group_configs (List[dict]): List of configurations for optimization groups.
+            group_index (Index): Index representing the optimization group.
             group_idx (int): Index of the current group in group_configs.
-            pre_group_func (Callable): Optional callable to preprocess the group configuration.
-
-                This function is invoked on the group configuration dictionary before optimization.
+            pre_group_func (Callable): Function to preprocess and modify the group configuration.
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:

@@ -1078,7 +1078,7 @@ class CacheableRegistry(Base):
 
         Args:
             cacheable (cacheable): Cacheable object.
-            instance (Optional[Cacheable]): Related instance.
+            instance (Optional[Cacheable]): Instance associated with the cacheable.
 
         Returns:
             Optional[CARunSetup]: The run setup if available and valid; otherwise, None.

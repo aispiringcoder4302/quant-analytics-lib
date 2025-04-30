@@ -106,7 +106,7 @@ def prettify_inited(
     """Prettify an instance initialized with keyword arguments.
 
     Args:
-        cls (type): Class of the instance.
+        cls (type): Class to instantiate for the new instance.
         kwargs (Any): Dictionary of keyword arguments used for initialization.
         replace (DictLike): Mapping for value replacement.
         path (str): Current path in the object hierarchy.

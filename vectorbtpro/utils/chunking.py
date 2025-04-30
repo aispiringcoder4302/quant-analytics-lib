@@ -1314,7 +1314,7 @@ class Chunker(Configured):
         execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
             See `vectorbtpro.utils.execution.execute`.
-        disable (Optional[bool]): Specifies whether chunking is disabled.
+        disable (Optional[bool]): Flag to disable chunking.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
@@ -1890,7 +1890,7 @@ class Chunker(Configured):
         """Parse and return the chunk-taking specification extracted from provided annotations.
 
         Args:
-            annotations (Annotations): Mapping of parameter names to their annotations.
+            annotations (Annotations): Mapping of annotation names to annotation values.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -2328,8 +2328,11 @@ def chunked(
         func (Callable): Function to be decorated.
         chunker (Optional[Chunker]): A `Chunker` type used for splitting the inputs.
         replace_chunker (Optional[bool]): If True, create a new `Chunker` instance by replacing provided attributes.
-        merge_to_execute_kwargs (Optional[bool]): If True, merge extra keyword arguments into `execute_kwargs`.
-        prepend_chunk_meta (Optional[bool]): If True, prepend chunk metadata to the function arguments.
+        merge_to_execute_kwargs (Optional[bool]): Flag that determines whether to merge unspecified
+            keyword arguments into `execute_kwargs`.
+        prepend_chunk_meta (Optional[bool]): Determines whether to prepend a `ChunkMeta` instance to the arguments.
+
+            If set to None, prepending occurs automatically when the first argument is named `chunk_meta`.
         **kwargs: Keyword arguments for `Chunker` or the decorated function.
 
     Returns:

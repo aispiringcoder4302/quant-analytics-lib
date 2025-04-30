@@ -692,7 +692,7 @@ def refine_source(
 
             !!! note
                 Counting starts at 1.
-        system_prompt (Optional[str]): System prompt used for generating completions.
+        system_prompt (Optional[str]): System prompt that precedes the context prompt.
         context (Optional[str]): Custom context.
         attach_metadata (bool): Whether to attach (dumped) metadata to the context.
         attach_imports (Optional[bool]): Whether to attach global source imports to the context.

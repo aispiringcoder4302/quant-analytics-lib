@@ -489,7 +489,7 @@ class JITRegistry(Base):
             jitter_kwargs (KwargsLike): Keyword arguments for configuring the jitter.
             
                 See `vectorbtpro.utils.jitting.resolve_jitter`.
-            tags (set): Set of tags associated with the setup.
+            tags (set): Tags associated with the function.
 
         Returns:
             JitableSetup: The registered `JitableSetup` instance.
@@ -549,7 +549,7 @@ class JITRegistry(Base):
             jitter_kwargs (KwargsLike): Keyword arguments for configuring the jitter.
             
                 See `vectorbtpro.utils.jitting.resolve_jitter`.
-            tags (set): Set of tags associated with the function.
+            tags (set): Tags associated with the function.
 
         Returns:
             Callable: The decorated jitted function.
@@ -662,7 +662,7 @@ class JITRegistry(Base):
             register_new (Optional[bool]): Flag to register a new jitted setup.
             return_missing_task (bool): If True, returns `task_id_or_func` when the task is not registered.
             template_context (KwargsLike): Additional context for template substitution.
-            tags (Optional[set]): Set of tags associated with the function.
+            tags (Optional[set]): Tags associated with the function.
             **jitter_kwargs: Keyword arguments for configuring the jitter.
 
         Returns:
@@ -853,7 +853,7 @@ def register_jitted(
         task_id_or_func (Optional[Union[Hashable, Callable]]): Task identifier or a callable
             from which the task identifier is derived.
         registry (JITRegistry): Registry used to register the decorated function.
-        tags (Optional[set]): Set of tags associated with the function.
+        tags (Optional[set]): Tags associated with the function.
         **options: Keyword arguments for configuration.
 
     Returns:

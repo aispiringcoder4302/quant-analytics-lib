@@ -397,7 +397,7 @@ class VBTAsset(KnowledgeAsset):
         """Return asset item(s) matching the provided link(s).
 
         Args:
-            link (MaybeList[str]): Single link or a list of links to search for.
+            link (MaybeList[str]): Link or list of links to search for.
             mode (str): Matching mode for link matching ("exact" or "end").
             per_path (bool): Whether to match links based on individual path segments.
             single_item (bool): Indicates if only a single matching item is expected.
@@ -1002,7 +1002,7 @@ class VBTAsset(KnowledgeAsset):
         link: tp.Optional[str] = None,
         find_kwargs: tp.KwargsLike = None,
         open_browser: tp.Optional[bool] = None,
-        html_template: tp.Optional[str] = None,
+        html_template: tp.Optional[tp.CustomTemplateLike] = None,
         style_extras: tp.Optional[tp.MaybeList[str]] = None,
         head_extras: tp.Optional[tp.MaybeList[str]] = None,
         body_extras: tp.Optional[tp.MaybeList[str]] = None,
@@ -1023,11 +1023,12 @@ class VBTAsset(KnowledgeAsset):
                 If provided, it is used to locate a target page.
             find_kwargs (KwargsLike): Keyword arguments for `VBTAsset.find_link` when locating the page.
             open_browser (Optional[bool]): Flag indicating whether to open the web browser.
-            html_template (Optional[str]): Custom HTML template for output formatting.
-            style_extras (Optional[MaybeList[str]]): Extra CSS styles for the page.
-            head_extras (Optional[MaybeList[str]]): Extra HTML content for the head section.
-            body_extras (Optional[MaybeList[str]]): Extra HTML content for the body section.
-            invert_colors (Optional[bool]): Flag to invert the color scheme.
+            html_template (Optional[CustomTemplateLike]): Template for HTML formatting, 
+                as a string, function, or custom template.
+            style_extras (Optional[MaybeList[str]]): Extra CSS rules for the `<style>` element.
+            head_extras (Optional[MaybeList[str]]): Extra HTML elements to inject into the `<head>` section.
+            body_extras (Optional[MaybeList[str]]): Extra content to insert at the end of the `<body>` section.
+            invert_colors (Optional[bool]): Flag to enable color inversion.
             title (str): Title of the HTML page.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `VBTAsset.to_html`.
@@ -3570,14 +3571,14 @@ def find_examples(
         return_type (Optional[str]): Specifies the format of returned content; e.g., "field", "match", or "item".
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
-        pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull` and `MessagesAsset.pull`.
+        aggregate_pages (bool): Whether to aggregate the pages asset.
         aggregate_pages (bool): Indicates whether to aggregate the pages asset.
         aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
         aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
         latest_messages_first (bool): If True, orders messages from most recent to oldest.
-        shuffle_messages (bool): If True, shuffles the order of messages.
+        shuffle_messages (bool): Whether to shuffle the order of messages.
         find_kwargs (KwargsLike): Keyword arguments specifically for the find method.
         **kwargs: Keyword arguments for `VBTAsset.find`, `VBTAsset.find_code`, or `VBTAsset.rank`.
 
@@ -3715,7 +3716,7 @@ def find_assets(
             in their usual order at the end.
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
-        pull_kwargs (KwargsLike): Keyword arguments for `VBTAsset.pull`.
+        aggregate_pages (bool): Whether to aggregate the pages asset.
         aggregate_pages (bool): Whether to aggregate the pages asset.
         aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
@@ -4047,7 +4048,7 @@ def search(
             text documents after conversion.
 
             Running the same method again will use the cached documents.
-        cache_key (Optional[str]): Key for caching documents.
+        cache_key (Optional[str]): Unique identifier for the cached asset.
         asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of 
             `vectorbtpro.utils.knowledge.base_assets.AssetCacheManager`.
         asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
@@ -4182,7 +4183,7 @@ def chat(
         chat_history (ChatHistory): Chat history, a list of dictionaries with defined roles.
         cache_documents (bool): If True, will use an asset cache manager to cache the generated
             text documents after conversion.
-        cache_key (Optional[str]): Key for caching documents.
+        cache_key (Optional[str]): Unique identifier for the cached asset.
         asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of 
             `vectorbtpro.utils.knowledge.base_assets.AssetCacheManager`.
         asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
@@ -4190,12 +4191,12 @@ def chat(
             if a string, it specifies the aggregation key.
         aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
         find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
-        rank (Optional[bool]): Enable ranking of assets.
+        rank (Optional[bool]): Flag indicating whether to apply ranking.
         top_k (TopKLike): Number of top items to consider for ranking.
         min_top_k (TopKLike): Minimum number of top items for ranking.
         max_top_k (TopKLike): Maximum number of top items for ranking.
         cutoff (Optional[float]): Score cutoff for ranking.
-        return_chunks (Optional[bool]): Return text chunks if True.
+        return_chunks (Optional[bool]): Whether to return document chunks.
         rank_kwargs (KwargsLike): Keyword arguments for `VBTAsset.rank`.
         wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
         silence_warnings (bool): Flag to suppress warning messages.

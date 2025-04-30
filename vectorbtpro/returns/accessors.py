@@ -1427,7 +1427,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Compute annualized volatility.
 
         Args:
-            levy_alpha (Optional[float]): Levy alpha parameter.
+            levy_alpha (Optional[float]): Alpha parameter for Lévy correction.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             ddof (Optional[int]): Delta degrees of freedom.
@@ -1874,7 +1874,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             annualized (bool): Whether to annualize the Sharpe ratio.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            stream_mode (bool): Indicates if stream mode processing is enabled.
+            stream_mode (bool): Flag indicating whether to use stream mode.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

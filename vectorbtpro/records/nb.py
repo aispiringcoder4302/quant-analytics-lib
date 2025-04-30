@@ -454,7 +454,7 @@ def map_records_meta_nb(n_values: int, map_func_nb: tp.MappedReduceMetaFunc, *ar
     """Map each record index to a single value using a meta mapping function.
 
     Args:
-        n_values (int): Total number of values to process.
+        n_values (int): Total number of values.
         map_func_nb (MappedReduceMetaFunc): Function that accepts a record index and
             additional arguments to return a single value.
         *args: Positional arguments for `map_func_nb`.

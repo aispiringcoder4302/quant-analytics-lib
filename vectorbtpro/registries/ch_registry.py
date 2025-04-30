@@ -88,7 +88,7 @@ class ChunkableRegistry(Base):
 
                 If omitted, it is derived from the function's module and name.
             options (DictLike): Dictionary of options for chunking.
-            tags (SetLike): Set of tags associated with the setup.
+            tags (SetLike): Tags associated with the function.
 
         Returns:
             None
@@ -252,7 +252,7 @@ def register_chunkable(
 
             If omitted, it is derived from the function's module and name.
         registry (ChunkableRegistry): Registry to register the function in.
-        tags (SetLike): Tags associated with the setup.
+        tags (SetLike): Tags associated with the function.
         return_wrapped (bool): Flag indicating whether to wrap the function using the `chunked` decorator.
         **options: Additional options for configuring the chunkable setup.
 
