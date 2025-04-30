@@ -659,6 +659,8 @@ TradesT = tp.TypeVar("TradesT", bound="Trades")
 class Trades(Ranges):
     """Class for representing trade-like records, including entry trades, exit trades, and positions.
 
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.trade_dt`.
+
     !!! info
         For default settings, see `vectorbtpro._settings.trades`.
     """
@@ -680,6 +682,8 @@ class Trades(Ranges):
 
         Returns:
             Ranges: A new instance of `vectorbtpro.generic.ranges.Ranges` constructed from trade record fields.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
@@ -2912,6 +2916,8 @@ class EntryTrades(Trades):
     """Class representing entry trade records, extending `Trades`.
 
     Field configuration is overridden using `entry_trades_field_config`.
+
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.trade_dt`.
     """
 
     @property
@@ -3199,6 +3205,8 @@ class ExitTrades(Trades):
     """Class representing exit trade records, extending `Trades`.
 
     Field configuration is overridden using `exit_trades_field_config`.
+
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.trade_dt`.
     """
 
     @property
@@ -3484,6 +3492,8 @@ class Positions(Trades):
     """Class representing position records, extending `Trades`.
 
     Field configuration is overridden using `positions_field_config`.
+
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.trade_dt`.
     """
 
     @property

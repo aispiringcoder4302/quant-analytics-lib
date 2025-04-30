@@ -21,6 +21,11 @@ from vectorbtpro.records.mapped_array import MappedArray
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import ReadonlyConfig
 
+if tp.TYPE_CHECKING:
+    from vectorbtpro.data.base import Data as DataT
+else:
+    DataT = "vectorbtpro.data.base.Data"
+
 __all__ = [
     "PriceRecords",
 ]
@@ -105,7 +110,7 @@ class PriceRecords(Records):
         cls: tp.Type[PriceRecordsT],
         wrapper: ArrayWrapper,
         records: tp.RecordArray,
-        data: tp.Optional["Data"] = None,
+        data: tp.Optional[DataT] = None,
         open: tp.Optional[tp.ArrayLike] = None,
         high: tp.Optional[tp.ArrayLike] = None,
         low: tp.Optional[tp.ArrayLike] = None,

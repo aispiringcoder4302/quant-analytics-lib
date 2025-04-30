@@ -80,6 +80,8 @@ def apply_weights_to_orders_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         col_arr (Array1d): Array of column indices.
         weights (Array1d): Array of weights used to scale order sizes and fees per column.
 
@@ -159,6 +161,8 @@ def fill_trade_record_nb(
 
     Args:
         new_records (RecordArray): Array of records to be filled.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         r (int): Index at which to fill the trade record.
         col (int): Column index associated with the trade.
         size (float): Trade size.
@@ -231,6 +235,8 @@ def fill_entry_trades_in_position_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         col_map (GroupMap): Tuple of column indices and lengths.
         col (int): Column index for the orders.
         sim_start (int): Simulation start index.
@@ -250,6 +256,8 @@ def fill_entry_trades_in_position_nb(
         status (int): Trade status indicating whether the position is closed.
         parent_id (int): Identifier linking orders to a parent trade.
         new_records (RecordArray): Array of records to be filled.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         r (int): Current trade index used as the starting ID.
 
     Returns:
@@ -356,6 +364,8 @@ def get_entry_trades_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         close (FlexArray2dLike): Close prices.
         
             Provided as a scalar, or per row, column, or element.
@@ -377,6 +387,8 @@ def get_entry_trades_nb(
 
     Returns:
         RecordArray: Array of entry trade records aggregated from order records.
+
+            Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
     !!! tip
         This function is parallelizable.
@@ -702,7 +714,7 @@ def get_exit_trades_nb(
     Args:
         order_records (RecordArray): Array of order records.
             
-            Contains structured order data from simulation outputs.
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         close (FlexArray2dLike): Close prices.
         
             Provided as a scalar, or per row, column, or element.
@@ -724,6 +736,8 @@ def get_exit_trades_nb(
 
     Returns:
         RecordArray: Array of aggregated exit trade records.
+
+            Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
     !!! tip
         This function is parallelizable.
@@ -1007,8 +1021,12 @@ def fill_position_record_nb(new_records: tp.RecordArray, r: int, trade_records: 
 
     Args:
         new_records (RecordArray): Array of records to be filled.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         r (int): Index where the new position record will be inserted.
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
     Returns:
         None: The function modifies `new_records` in place.
@@ -1055,8 +1073,12 @@ def copy_trade_record_nb(new_records: tp.RecordArray, r: int, trade_record: tp.R
 
     Args:
         new_records (RecordArray): Array of records to be filled.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         r (int): Index in `new_records` where the trade record will be inserted.
         trade_record (Record): Trade record to copy.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
     Returns:
         None: The function modifies `new_records` in place.
@@ -1097,10 +1119,14 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         col_map (GroupMap): Tuple of column indices and lengths.
 
     Returns:
         RecordArray: Array of aggregated position records after repartitioning based on group counts.
+
+            Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
     !!! tip
         This function is parallelizable.
@@ -1208,6 +1234,8 @@ def get_long_view_orders_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         close (Array2d): Array of close prices.
         col_map (GroupMap): Tuple of column indices and lengths.
         init_position (FlexArray1dLike): Initial position.
@@ -1388,6 +1416,8 @@ def get_short_view_orders_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         close (Array2d): 2D array of close prices.
         col_map (GroupMap): Tuple of column indices and lengths.
         init_position (FlexArray1dLike): Initial position.
@@ -1574,6 +1604,8 @@ def get_position_feature_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         close (Array2d): Array of market close prices.
         col_map (GroupMap): Tuple of column indices and lengths.
         feature (int): Position feature to compute.
@@ -1779,6 +1811,8 @@ def price_status_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         high (Optional[FlexArray2d]): Array of high prices corresponding to orders.
         low (Optional[FlexArray2d]): Array of low prices corresponding to orders.
 
@@ -1816,6 +1850,8 @@ def trade_winning_streak_nb(trade_records: tp.RecordArray) -> tp.Array1d:
     Args:
         trade_records (RecordArray): Array of trade records.
 
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
+
     Returns:
         Array1d: Array of integers representing the winning streak count for each trade.
     """
@@ -1836,6 +1872,8 @@ def trade_losing_streak_nb(trade_records: tp.RecordArray) -> tp.Array1d:
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
     Returns:
         Array1d: Array of integers representing the losing streak count for each trade.
@@ -1987,6 +2025,8 @@ def trade_best_worst_price_nb(
 
     Args:
         trade (Record): Trade record containing entry and exit indices, status, direction, and prices.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2111,6 +2151,8 @@ def best_price_nb(
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2170,6 +2212,8 @@ def worst_price_nb(
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2231,6 +2275,8 @@ def best_price_idx_nb(
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2294,6 +2340,8 @@ def worst_price_idx_nb(
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2344,6 +2392,8 @@ def expanding_best_price_nb(
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2420,6 +2470,8 @@ def expanding_worst_price_nb(
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.
@@ -2659,6 +2711,8 @@ def expanding_mfe_nb(
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         expanding_best_price (Array2d): 2D array of expanding best prices for each trade.
         use_returns (bool): Flag indicating whether to compute using return-based values.
 
@@ -2700,6 +2754,8 @@ def expanding_mae_nb(
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         expanding_worst_price (Array2d): 2D array of expanding worst prices for each trade.
         use_returns (bool): Flag indicating whether to compute using return-based values.
 
@@ -2755,6 +2811,8 @@ def edge_ratio_nb(
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         col_map (GroupMap): Tuple of column indices and lengths.
         open (Optional[FlexArray2d]): 2D array representing open prices.
         high (Optional[FlexArray2d]): 2D array representing high prices.
@@ -2868,6 +2926,8 @@ def running_edge_ratio_nb(
 
     Args:
         trade_records (RecordArray): Array of trade records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         col_map (GroupMap): Tuple of column indices and lengths.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.

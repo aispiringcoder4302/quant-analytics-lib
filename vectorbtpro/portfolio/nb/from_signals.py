@@ -497,8 +497,8 @@ def prepare_fs_records_nb(
     Returns:
         Tuple[RecordArray2d, RecordArray2d]: A tuple containing:
 
-            `order_records`: Array for order records with dtype fs_order_dt.
-            `log_records`: Array for log records with dtype log_dt.
+            `order_records`: Array for order records (dtype `vectorbtpro.portfolio.enums.fs_order_dt`).
+            `log_records`: Array for log records (dtype `vectorbtpro.portfolio.enums.log_dt`).
     """
     if max_order_records is None:
         order_records = np.empty((target_shape[0], target_shape[1]), dtype=fs_order_dt)

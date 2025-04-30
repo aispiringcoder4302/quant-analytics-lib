@@ -228,7 +228,7 @@ RangesT = tp.TypeVar("RangesT", bound="Ranges")
 class Ranges(PriceRecords):
     """Class for handling range records that extends `vectorbtpro.generic.price_records.PriceRecords`.
 
-    Requires `records_arr` to include all fields defined in `vectorbtpro.generic.enums.range_dt`.
+    Requires `records_arr` to have all fields defined in `vectorbtpro.generic.enums.range_dt`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.ranges`.
@@ -2077,9 +2077,13 @@ __pdoc__[
 class PatternRanges(Ranges):
     """Class for working with range records generated from pattern search, extending `Ranges`.
 
+    Requires `records_arr` to have all fields defined in `vectorbtpro.generic.enums.pattern_range_dt`.
+
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
         records_arr (RecordArray): Array of records.
+
+            Must adhere to the `vectorbtpro.generic.enums.pattern_range_dt` dtype.
         search_configs (List[PSC]): List of `PSC` instances.
         **kwargs: Keyword arguments for `Ranges`.
     """

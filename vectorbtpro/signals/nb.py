@@ -1455,8 +1455,7 @@ def relation_idxs_1d_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def between_ranges_nb(mask: tp.Array2d, incl_open: bool = False) -> tp.RecordArray:
-    """Create a record array of type `vectorbtpro.generic.enums.range_dt` representing
-    ranges between signals in `mask`.
+    """Create a record array representing ranges between signals in `mask`.
 
     The function iterates over each column of the boolean array `mask` to identify consecutive signals.
     When a pair of signals is found, a record is created with start and end indices and a closed status.
@@ -1469,6 +1468,8 @@ def between_ranges_nb(mask: tp.Array2d, incl_open: bool = False) -> tp.RecordArr
 
     Returns:
         RecordArray: Array of records containing range metadata.
+
+            Has the `vectorbtpro.generic.enums.range_dt` dtype.
 
     !!! tip
         This function is parallelizable.
@@ -1519,8 +1520,7 @@ def between_two_ranges_nb(
     relation: int = SignalRelation.OneMany,
     incl_open: bool = False,
 ) -> tp.RecordArray:
-    """Create a record array of type `vectorbtpro.generic.enums.range_dt` representing ranges
-    between source and target masks.
+    """Create a record array representing ranges between source and target masks.
 
     The function uses `relation_idxs_1d_nb` to determine paired indices from the `source_mask`
     and `target_mask` for each column. When valid index pairs are found, a closed range record is created.
@@ -1536,6 +1536,8 @@ def between_two_ranges_nb(
 
     Returns:
         RecordArray: Array of records containing range data.
+
+            Has the `vectorbtpro.generic.enums.range_dt` dtype.
 
     !!! tip
         This function is parallelizable.
@@ -1577,8 +1579,7 @@ def between_two_ranges_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
-    """Create a record array of type `vectorbtpro.generic.enums.range_dt` representing
-    partitions of signals in `mask`.
+    """Create a record array representing partitions of signals in `mask`.
 
     The function scans each column of the boolean array `mask` to identify contiguous
     sequences of signals. Each identified partition is recorded with its start and end indices;
@@ -1590,6 +1591,8 @@ def partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
 
     Returns:
         RecordArray: Array of records containing partition range data.
+
+            Has the `vectorbtpro.generic.enums.range_dt` dtype.
 
     !!! tip
         This function is parallelizable.
@@ -1637,8 +1640,7 @@ def partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def between_partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
-    """Create a record array of type `vectorbtpro.generic.enums.range_dt` representing ranges
-    between partitions in `mask`.
+    """Create a record array representing ranges between partitions in `mask`.
 
     The function identifies the gaps between consecutive partitions in the boolean array `mask`.
     When a new partition starts after an existing one, a range is recorded from the previous
@@ -1649,6 +1651,8 @@ def between_partition_ranges_nb(mask: tp.Array2d) -> tp.RecordArray:
 
     Returns:
         RecordArray: Array of records containing range data between partitions.
+
+            Has the `vectorbtpro.generic.enums.range_dt` dtype.
 
     !!! tip
         This function is parallelizable.

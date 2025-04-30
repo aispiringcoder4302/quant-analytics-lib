@@ -1723,6 +1723,8 @@ def fill_log_record_nb(
 
     Args:
         records (RecordArray2d): Array where log records are stored.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.log_dt` dtype.
         r (int): Index of the log record in the column.
         group (int): Current group index.
         col (int): Current column index.
@@ -1794,6 +1796,8 @@ def fill_order_record_nb(records: tp.RecordArray2d, r: int, col: int, i: int, or
 
     Args:
         records (RecordArray2d): Array where order records are stored.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         r (int): Index of the order record in the column.
         col (int): Current column index.
         i (int): Current row index.
@@ -1879,8 +1883,12 @@ def process_order_nb(
             See `vectorbtpro.portfolio.enums.PriceArea`.
         update_value (bool): Flag indicating whether to update the portfolio value.
         order_records (Optional[RecordArray2d]): Array to store order record details.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         order_counts (Optional[Array1d]): Counters for order records per column.
         log_records (Optional[RecordArray2d]): Array to store detailed log records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.log_dt` dtype.
         log_counts (Optional[Array1d]): Counters for log records per column.
 
     Returns:
@@ -2119,8 +2127,10 @@ def prepare_records_nb(
             If None, `target_shape[0]` is used.
 
     Returns:
-        Tuple[RecordArray2d, RecordArray2d]: Tuple containing the order records array and
-            the log records array.
+        Tuple[RecordArray2d, RecordArray2d]: A tuple containing:
+
+            `order_records`: Array for order records (dtype `vectorbtpro.portfolio.enums.order_dt`).
+            `log_records`: Array for log records (dtype `vectorbtpro.portfolio.enums.log_dt`).
     """
     if max_order_records is None:
         order_records = np.empty((target_shape[0], target_shape[1]), dtype=order_dt)
@@ -2244,6 +2254,8 @@ def prepare_last_pos_info_nb(
 
     Returns:
         RecordArray: Array of last position information records.
+
+            Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
     """
     if fill_pos_info:
         last_pos_info = np.empty(target_shape[1], dtype=trade_dt)
@@ -2291,8 +2303,12 @@ def prepare_sim_out_nb(
 
     Args:
         order_records (RecordArray2d): Array of order records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         order_counts (Array1d): Array containing order counts.
         log_records (RecordArray2d): Array of log records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.log_dt` dtype.
         log_counts (Array1d): Array containing log counts.
         cash_deposits (Array2d): Array of cash deposit entries.
         cash_earnings (Array2d): Array of cash earning entries.
@@ -2362,6 +2378,8 @@ def update_open_pos_info_stats_nb(record: tp.Record, position_now: float, price:
 
     Args:
         record (Record): Position record to populate.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         position_now (float): Current position size.
         price (float): Price used for updating the statistics.
 
@@ -2394,6 +2412,8 @@ def fill_init_pos_info_nb(record: tp.Record, col: int, position_now: float, pric
 
     Args:
         record (Record): Position record to populate.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         col (int): Current column index.
         position_now (float): Current position size.
         price (float): Initial price.
@@ -2437,6 +2457,8 @@ def update_pos_info_nb(
 
     Args:
         record (Record): Position record to populate.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
         i (int): Current row index.
         col (int): Current column index.
         position_before (float): Position size before the order execution.
@@ -2698,9 +2720,7 @@ def should_update_stop_nb(new_stop: float, upon_stop_update: int) -> bool:
 
     Args:
         new_stop (float): New candidate for the stop value.
-        upon_stop_update (int): Mode for updating the stop value, where `StopUpdateMode.Keep`
-            means no update, and `StopUpdateMode.Override` or `StopUpdateMode.OverrideNaN`
-            may trigger an update.
+        upon_stop_update (int): Mode for updating the stop value.
 
     Returns:
         bool: True if the stop value should be updated, otherwise False.
@@ -2753,7 +2773,7 @@ def check_limit_expired_nb(
         creation_idx (int): Row index at which the limit order was created.
         i (int): Current row index.
         tif (int): Time-in-force duration; use -1 if undefined.
-        expiry (int): Explicit expiry time; use -1 if undefined.
+        expiry (int): Expiry index; use -1 if undefined.
         time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
@@ -3535,6 +3555,8 @@ def set_limit_info_nb(
 
     Args:
         limit_info (Record): Record containing limit order information.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.limit_info_dt` dtype.
         signal_idx (int): Row index of the signal triggering the limit order.
         creation_idx (Optional[int]): Creation row index.
         init_idx (Optional[int]): Initial row index for the order.
@@ -3553,8 +3575,8 @@ def set_limit_info_nb(
         delta_format (int): Format for delta comparisons.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
-        tif (int): Time in force parameter.
-        expiry (int): Expiry index.
+        tif (int): Time-in-force duration; use -1 if undefined.
+        expiry (int): Expiry index; use -1 if undefined.
         time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
@@ -3565,9 +3587,6 @@ def set_limit_info_nb(
 
     Returns:
         None: The function modifies the `limit_info` record in place.
-
-    See:
-        `vectorbtpro.portfolio.enums.limit_info_dt`
     """
     limit_info["signal_idx"] = signal_idx
     limit_info["creation_idx"] = creation_idx if creation_idx is not None else signal_idx
@@ -3592,6 +3611,8 @@ def clear_limit_info_nb(limit_info: tp.Record) -> None:
 
     Args:
         limit_info (Record): Record containing limit order information.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.limit_info_dt` dtype.
 
     Returns:
         None: The function modifies the `limit_info` record in place.
@@ -3635,6 +3656,8 @@ def set_sl_info_nb(
 
     Args:
         sl_info (Record): Record containing SL order information.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.sl_info_dt` dtype.
         init_idx (int): Initial row index for the SL order.
         init_price (float): Initial price for the SL order.
         init_position (float): Initial position size.
@@ -3691,6 +3714,8 @@ def clear_sl_info_nb(sl_info: tp.Record) -> None:
     Args:
         sl_info (Record): Record containing SL order information.
 
+            Must adhere to the `vectorbtpro.portfolio.enums.sl_info_dt` dtype.
+
     Returns:
         None: The function modifies the `sl_info` record in place.
     """
@@ -3735,6 +3760,8 @@ def set_tsl_info_nb(
 
     Args:
         tsl_info (Record): Record containing TSL order information.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.tsl_info_dt` dtype.
         init_idx (int): Initialization row index.
         init_price (float): Initial price.
         init_position (float): Initial position size.
@@ -3801,6 +3828,8 @@ def clear_tsl_info_nb(tsl_info: tp.Record) -> None:
     Args:
         tsl_info (Record): Record containing TSL order information.
 
+            Must adhere to the `vectorbtpro.portfolio.enums.tsl_info_dt` dtype.
+
     Returns:
         None: The function modifies the `tsl_info` record in place.
     """
@@ -3845,6 +3874,8 @@ def set_tp_info_nb(
 
     Args:
         tp_info (Record): Record containing TP order information.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.tp_info_dt` dtype.
         init_idx (int): Initialization row index.
         init_price (float): Initial price.
         init_position (float): Initial position size.
@@ -3901,6 +3932,8 @@ def clear_tp_info_nb(tp_info: tp.Record) -> None:
     Args:
         tp_info (Record): Record containing TP order information.
 
+            Must adhere to the `vectorbtpro.portfolio.enums.tp_info_dt` dtype.
+
     Returns:
         None: The function modifies the `tp_info` record in place.
     """
@@ -3942,6 +3975,8 @@ def set_time_info_nb(
 
     Args:
         time_info (Record): Record containing time-based order information.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.time_info_dt` dtype.
         init_idx (int): Initialization row index.
         init_position (float): Initial position size.
         stop (int): Stop indicator or time.
@@ -4000,6 +4035,8 @@ def clear_time_info_nb(time_info: tp.Record) -> None:
     Args:
         time_info (Record): Record containing time-based order information.
 
+            Must adhere to the `vectorbtpro.portfolio.enums.time_info_dt` dtype.
+
     Returns:
         None: The function modifies the `time_info` record in place.
     """
@@ -4026,6 +4063,8 @@ def get_limit_info_target_price_nb(limit_info: tp.Record) -> float:
     Args:
         limit_info (Record): Record containing limit order information.
 
+            Must adhere to the `vectorbtpro.portfolio.enums.time_info_dt` dtype.
+
     Returns:
         float: The target price if the limit order information is active; otherwise, NaN.
     """
@@ -4049,6 +4088,8 @@ def get_sl_info_target_price_nb(sl_info: tp.Record, position_now: float) -> floa
 
     Args:
         sl_info (Record): Record containing SL order information.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.sl_info_dt` dtype.
         position_now (float): Current position size.
 
     Returns:
@@ -4071,6 +4112,8 @@ def get_tsl_info_target_price_nb(tsl_info: tp.Record, position_now: float) -> fl
 
     Args:
         tsl_info (Record): Record containing TSL order information.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.tsl_info_dt` dtype.
         position_now (float): Current position size.
 
     Returns:
@@ -4095,6 +4138,8 @@ def get_tp_info_target_price_nb(tp_info: tp.Record, position_now: float) -> floa
 
     Args:
         tp_info (Record): Record containing TP order information.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.tp_info_dt` dtype.
         position_now (float): Current position size.
 
     Returns:

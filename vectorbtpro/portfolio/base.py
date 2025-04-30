@@ -499,6 +499,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         order_records (Union[RecordArray, SimulationOutput]): Structured NumPy array of order records, or
             a `vectorbtpro.portfolio.enums.SimulationOutput` object.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         close (ArrayLike): Last asset price at each bar.
 
             Provided in a format that supports flexible indexing.
@@ -512,6 +514,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
             Provided in a format that supports flexible indexing.
         log_records (Optional[RecordArray]): Structured NumPy array of log records.
+
+            Must adhere to the `vectorbtpro.portfolio.enums.log_dt` dtype.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
         init_cash (Union[str, ArrayLike]): Initial capital.
 
@@ -6242,6 +6246,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             order_records (Optional[RecordArray]): Structured array of order records.
 
+                Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
+
                 Defaults to `Portfolio.order_records` if not provided.
             open (Optional[SeriesFrame]): Array of open prices.
 
@@ -6367,6 +6373,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             log_records (Optional[RecordArray]): Structured NumPy array of log records.
+
+                Must adhere to the `vectorbtpro.portfolio.enums.log_dt` dtype.
 
                 Defaults to `Portfolio.log_records` if not provided.
             open (Optional[SeriesFrame]): Open price data.

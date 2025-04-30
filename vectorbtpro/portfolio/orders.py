@@ -201,6 +201,8 @@ class Orders(PriceRecords):
     Extends `vectorbtpro.generic.price_records.PriceRecords` to provide functionalities for
     transforming orders, computing order statistics, and generating various views of the order records.
 
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.order_dt`.
+
     !!! info
         For default settings, see `vectorbtpro._settings.orders`.
     """
@@ -751,7 +753,10 @@ FSOrdersT = tp.TypeVar("FSOrdersT", bound="FSOrders")
 @attach_fields(fs_orders_attach_field_config)
 @override_field_config(fs_orders_field_config)
 class FSOrders(Orders):
-    """Class extending `Orders` for working with order records generated from signals."""
+    """Class extending `Orders` for working with order records generated from signals.
+    
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.fs_order_dt`.
+    """
 
     @property
     def field_config(self) -> Config:
@@ -776,6 +781,8 @@ class FSOrders(Orders):
 
         Returns:
             Ranges: A ranges instance representing the signal-to-fill ranges.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
@@ -801,6 +808,8 @@ class FSOrders(Orders):
 
         Returns:
             Ranges: A ranges instance representing the signal-to-creation ranges.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
@@ -826,6 +835,8 @@ class FSOrders(Orders):
 
         Returns:
             Ranges: A ranges instance representing the creation-to-fill ranges.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()

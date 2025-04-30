@@ -376,6 +376,8 @@ class Drawdowns(Ranges):
 
         Returns:
             Ranges: An instance of `Ranges` representing peak-to-end records.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
@@ -401,6 +403,8 @@ class Drawdowns(Ranges):
 
         Returns:
             Ranges: An instance of `Ranges` representing peak-to-valley records.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
@@ -426,6 +430,8 @@ class Drawdowns(Ranges):
 
         Returns:
             Ranges: An instance of `Ranges` representing valley-to-end records.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()

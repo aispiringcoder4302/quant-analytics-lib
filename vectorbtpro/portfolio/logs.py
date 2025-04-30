@@ -211,6 +211,8 @@ class Logs(PriceRecords):
     Extends `vectorbtpro.generic.price_records.PriceRecords` to integrate log-specific configurations,
     including statistics defaults, metrics, and plotting options.
 
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.log_dt`.
+
     !!! info
         For default settings, see `vectorbtpro._settings.logs`.
     """

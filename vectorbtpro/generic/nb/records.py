@@ -50,6 +50,8 @@ def get_ranges_nb(arr: tp.Array2d, gap_value: tp.Scalar) -> tp.RecordArray:
         RecordArray: Record array containing range details with fields
             `id`, `col`, `start_idx`, `end_idx`, and `status`.
 
+            Has the `vectorbtpro.generic.enums.range_dt` dtype.
+
     !!! tip
         This function is parallelizable.
 
@@ -168,6 +170,8 @@ def get_ranges_from_delta_nb(
     Returns:
         RecordArray: Record array with fields `id`, `col`, `start_idx`, `end_idx`,
             and `status` indicating the computed ranges.
+
+            Has the `vectorbtpro.generic.enums.range_dt` dtype.
 
     !!! tip
         This function is parallelizable.
@@ -685,6 +689,8 @@ def find_pattern_1d_nb(
     Returns:
         RecordArray: Array of matching segment records with fields such as
             `id`, `col`, `start_idx`, `end_idx`, `status`, and `similarity`.
+
+            Has the `vectorbtpro.generic.enums.pattern_range_dt` dtype.
     """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 
@@ -975,6 +981,8 @@ def find_pattern_nb(
     Returns:
         RecordArray: Array of records detailing the located pattern matches.
 
+            Has the `vectorbtpro.generic.enums.pattern_range_dt` dtype.
+
     !!! tip
         This function is parallelizable.
     """
@@ -1091,6 +1099,8 @@ def fill_drawdown_record_nb(
 
     Args:
         new_records (RecordArray2d): Array structure to store the drawdown record fields.
+
+            Must adhere to the `vectorbtpro.generic.enums.drawdown_dt` dtype.
         counts (Array2d): Array tracking the current count of records per column.
         i (int): Current index indicating the end of the drawdown.
         col (int): Column index being processed.
@@ -1158,6 +1168,8 @@ def get_drawdowns_nb(
 
     Returns:
         RecordArray: Array of computed drawdown records.
+
+            Has the `vectorbtpro.generic.enums.drawdown_dt` dtype.
 
     !!! tip
         This function is parallelizable.

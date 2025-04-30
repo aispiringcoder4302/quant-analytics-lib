@@ -1123,8 +1123,14 @@ class SimulationOutput(tp.NamedTuple):
 
 
 __pdoc__["SimulationOutput"] = "A named tuple representing the output of a simulation."
-__pdoc__["SimulationOutput.order_records"] = "Flattened order records."
-__pdoc__["SimulationOutput.log_records"] = "Flattened log records."
+__pdoc__["SimulationOutput.order_records"] = """Flattened order records.
+
+Must adhere to the `order_dt` dtype.
+"""
+__pdoc__["SimulationOutput.log_records"] = """Flattened log records.
+
+Must adhere to the `log_dt` dtype.
+"""
 __pdoc__[
     "SimulationOutput.cash_deposits"
 ] = """Cash deposits and withdrawals for each timestamp.
@@ -2807,7 +2813,7 @@ order_fields = [
     ("fees", float_),
     ("side", int_),
 ]
-"""Field definitions for the NumPy dtype `order_dt` representing order records."""
+"""Field definitions for the NumPy dtype `order_dt`."""
 
 order_dt = np.dtype(order_fields, align=True)
 """_"""
@@ -2845,7 +2851,7 @@ fs_order_fields = [
     ("type", int_),
     ("stop_type", int_),
 ]
-"""Field definitions for the NumPy dtype `fs_order_dt` representing order records generated from signals."""
+"""Field definitions for the NumPy dtype `fs_order_dt`."""
 
 fs_order_dt = np.dtype(fs_order_fields, align=True)
 """_"""
@@ -2896,7 +2902,7 @@ trade_fields = [
     ("status", int_),
     ("parent_id", int_),
 ]
-"""Field definitions for the NumPy dtype `trade_dt` representing trade records."""
+"""Field definitions for the NumPy dtype `trade_dt`."""
 
 trade_dt = np.dtype(trade_fields, align=True)
 """_"""
@@ -2980,7 +2986,7 @@ log_fields = [
     ("st1_value", float_),
     ("order_id", int_),
 ]
-"""Field definitions for the NumPy dtype `log_dt` representing log records."""
+"""Field definitions for the NumPy dtype `log_dt`."""
 
 log_dt = np.dtype(log_fields, align=True)
 """_"""
@@ -3070,7 +3076,7 @@ alloc_range_fields = [
     ("alloc_idx", int_),
     ("status", int_),
 ]
-"""Field definitions for the `alloc_range_dt` NumPy dtype representing allocation range records."""
+"""Field definitions for the NumPy dtype `alloc_range_dt`."""
 
 alloc_range_dt = np.dtype(alloc_range_fields, align=True)
 """_"""
@@ -3099,7 +3105,7 @@ alloc_point_fields = [
     ("col", int_),
     ("alloc_idx", int_),
 ]
-"""Field definitions for the `alloc_point_dt` NumPy dtype representing allocation point records."""
+"""Field definitions for the NumPy dtype `alloc_point_dt`."""
 
 alloc_point_dt = np.dtype(alloc_point_fields, align=True)
 """_"""
@@ -3133,7 +3139,7 @@ main_info_fields = [
     ("type", int_),
     ("stop_type", int_),
 ]
-"""Field definitions for the `main_info_dt` NumPy dtype representing main information records."""
+"""Field definitions for the NumPy dtype `main_info_dt`."""
 
 main_info_dt = np.dtype(main_info_fields, align=True)
 """_"""
@@ -3177,7 +3183,7 @@ limit_info_fields = [
     ("reverse", float_),
     ("order_price", float_),
 ]
-"""Fields for the `limit_info_dt` NumPy dtype."""
+"""Field definitions for the NumPy dtype `limit_info_dt`."""
 
 limit_info_dt = np.dtype(limit_info_fields, align=True)
 """_"""
@@ -3224,7 +3230,7 @@ sl_info_fields = [
     ("step", int_),
     ("step_idx", int_),
 ]
-"""Fields for the `sl_info_dt` NumPy dtype."""
+"""Field definitions for the NumPy dtype `sl_info_dt`."""
 
 sl_info_dt = np.dtype(sl_info_fields, align=True)
 """_"""
@@ -3273,7 +3279,7 @@ tsl_info_fields = [
     ("step", int_),
     ("step_idx", int_),
 ]
-"""Fields for the `tsl_info_dt` NumPy dtype."""
+"""Field definitions for the NumPy dtype `tsl_info_dt`."""
 
 tsl_info_dt = np.dtype(tsl_info_fields, align=True)
 """_"""
@@ -3322,7 +3328,7 @@ tp_info_fields = [
     ("step", int_),
     ("step_idx", int_),
 ]
-"""Fields for the `tp_info_dt` NumPy dtype."""
+"""Field definitions for the NumPy dtype `tp_info_dt`."""
 
 tp_info_dt = np.dtype(tp_info_fields, align=True)
 """_"""
@@ -3368,7 +3374,7 @@ time_info_fields = [
     ("step", int_),
     ("step_idx", int_),
 ]
-"""Fields for the `time_info_dt` NumPy dtype."""
+"""Field definitions for the NumPy dtype `time_info_dt`."""
 
 time_info_dt = np.dtype(time_info_fields, align=True)
 """_"""
