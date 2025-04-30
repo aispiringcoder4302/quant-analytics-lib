@@ -300,7 +300,7 @@ class TVClient(Configured):
         """Establish a WebSocket connection.
 
         Args:
-            pro_data (bool): Indicates whether to use the professional data connection.
+            pro_data (bool): If True, uses the professional data WebSocket connection.
 
         Returns:
             None

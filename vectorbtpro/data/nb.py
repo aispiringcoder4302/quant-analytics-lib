@@ -129,7 +129,7 @@ def generate_gbm_data_1d_nb(
         start_value (float): Initial value of the series.
         mean (float): Drift factor in the GBM process.
         std (float): Volatility factor in the GBM process.
-        dt (float): Time increment used in the simulation.
+        dt (float): Time increment per period.
 
     Returns:
         Array2d: An array containing the simulated GBM data.

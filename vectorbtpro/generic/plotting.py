@@ -778,7 +778,7 @@ class Box(TraceType, TraceUpdater):
 
             If provided, their number should match the number of data columns.
         horizontal (bool): Indicates if the box plot is oriented horizontally.
-        remove_nan (bool): Specifies whether to remove NaN values from the data.
+        remove_nan (bool): Flag determining whether NaN values are removed from the data.
         from_quantile (Optional[float]): Lower quantile threshold to filter out data.
 
             Data below this quantile are excluded.
@@ -976,10 +976,10 @@ class Heatmap(TraceType, TraceUpdater):
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
             Must have shape (`y_labels`, `x_labels`).
-        x_labels (Optional[ArrayLike]): Labels for the X-axis corresponding to dataframe columns.
-        y_labels (Optional[ArrayLike]): Labels for the Y-axis corresponding to dataframe index.
-        is_x_category (bool): Indicates whether the X-axis represents categorical data.
-        is_y_category (bool): Indicates whether the Y-axis represents categorical data.
+        x_labels (Optional[Labels]): Labels for the x-axis corresponding to dataframe columns.
+        y_labels (Optional[Labels]): Labels for the y-axis corresponding to dataframe index.
+        is_x_category (bool): Indicates whether the x-axis represents categorical data.
+        is_y_category (bool): Flag indicating whether to treat the y-axis as categorical.
         trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Heatmap`.
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
             for example, `dict(row=1, col=1)`.
@@ -1111,9 +1111,9 @@ class Volume(TraceType, TraceUpdater):
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
             Must be a 3-dimensional array.
-        x_labels (Optional[ArrayLike]): Labels for the X-axis.
-        y_labels (Optional[ArrayLike]): Labels for the Y-axis.
-        z_labels (Optional[ArrayLike]): Labels for the Z-axis.
+        x_labels (Optional[Labels]): Labels for the x-axis.
+        y_labels (Optional[Labels]): Labels for the y-axis.
+        z_labels (Optional[Labels]): Labels for the z-axis.
         trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Volume`.
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
             for example, `dict(row=1, col=1)`.

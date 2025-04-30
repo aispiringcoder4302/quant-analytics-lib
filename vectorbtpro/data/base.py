@@ -754,13 +754,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         wrapper (ArrayWrapper): Array wrapper instance.
         data (Union[feature_dict, symbol_dict]): Data dictionary structured as feature-oriented
             (`feature_dict`) or symbol-oriented (`symbol_dict`).
-        single_key (bool): Flag indicating if the data dictionary contains a single key.
+        single_key (bool): Specifies whether the instance should be treated as having a single key.
         classes (Union[None, feature_dict, symbol_dict]): Class definitions for keys.
         level_name (Union[None, bool, MaybeIterable[Hashable]]): Name(s) of levels for keys.
         fetch_kwargs (Union[None, feature_dict, symbol_dict]): Additional parameters for data fetching.
         returned_kwargs (Union[None, feature_dict, symbol_dict]): Keyword arguments returned from data fetching.
-        last_index (Union[None, feature_dict, symbol_dict]): Information on the last index.
-        delisted (Union[None, feature_dict, symbol_dict]): Information regarding delisted items.
+        last_index (Union[None, feature_dict, symbol_dict]): Container to record
+            the last datetime index for each key.
+        delisted (Union[None, feature_dict, symbol_dict]): Container to track
+            delisted status for each key.
         tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
         tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
         missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
@@ -2292,12 +2294,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             index (Index): Index to be processed.
-            parse_dates (bool): If True, convert an object-typed index to a datetime index
-                using `vectorbtpro.utils.datetime_.prepare_dt_index`.
-            tz_localize (TimezoneLike): If provided, localize a datetime-naive index to the specified timezone.
-            tz_convert (TimezoneLike): If provided, convert a datetime-aware index to the specified timezone.
+            parse_dates (bool): If True, convert to a datetime index using `Data.prepare_dt_index`.
+            tz_localize (TimezoneLike): Timezone to localize a datetime-naive index.
+            tz_convert (TimezoneLike): Timezone to convert a datetime-aware index.
             force_tz_convert (bool): If True, convert the timezone even if the index is not timezone-aware.
-            remove_tz (bool): If True, remove timezone information from the index.
+            remove_tz (bool): Whether to remove timezone information from the index.
 
         Returns:
             SeriesFrame: The processed datetime index.
@@ -2329,12 +2330,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             sr (Series): Series to be processed.
-            parse_dates (bool): If True, convert the series' index to a datetime index
-                using `Data.prepare_dt_index`.
-            tz_localize (TimezoneLike): Timezone for localizing a datetime-naive index.
+            parse_dates (bool): If True, convert to a datetime index using `Data.prepare_dt_index`.
+            tz_localize (TimezoneLike): Timezone to localize a datetime-naive index.
             tz_convert (TimezoneLike): Timezone to convert a datetime-aware index.
-            force_tz_convert (bool): Whether to force timezone conversion even if the
-                index is not timezone-aware.
+            force_tz_convert (bool): If True, convert the timezone even if the index is not timezone-aware.
             remove_tz (bool): Whether to remove timezone information from the index.
 
         Returns:
@@ -2365,7 +2364,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             obj (SeriesFrame): Pandas Series or DataFrame.
-            parse_dates (Union[None, bool, Sequence[str]]): Determines whether to parse dates.
+            parse_dates (Union[None, bool, Sequence[str]]): Specifies whether to parse dates.
 
                 If True, converts any index or column with an object data type to datetime.
                 If a sequence of strings, converts only fields whose name is in the sequence.
@@ -4115,7 +4114,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper for `Data.from_data`.
 
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
-            skip_on_error (Optional[bool]): Skip the feature or symbol if an exception occurs.
+            skip_on_error (Optional[bool]): Whether to skip pulling a feature or symbol if an exception occurs.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
                 This flag is also forwarded to `Data.fetch_feature`/`Data.fetch_symbol` if applicable.
@@ -6171,11 +6170,13 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             schema (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
                 SQL schema name or mapping; if the schema does not exist, a new one is created.
             to_utc (Union[None, bool, str, Sequence[str], feature_dict, symbol_dict, CustomTemplate]):
-                Option to convert datetime columns to UTC.
+                Specifies whether to localize or convert datetime fields to UTC.
 
                 See `Data.prepare_dt`.
-            remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
-                Indicates whether to remove the UTC timezone from datetime columns.
+            remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]): 
+                Indicates whether to remove the timezone after converting to UTC.
+
+                See `Data.prepare_dt`.
             attach_row_number (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
                 Specifies whether to attach a row number column to the data.
             from_row_number (Union[None, int, feature_dict, symbol_dict, CustomTemplate]):
@@ -6456,11 +6457,13 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             
                 See `vectorbtpro.utils.path_.check_mkdir`.
             to_utc (Union[None, bool, str, Sequence[str], feature_dict, symbol_dict, CustomTemplate]):
-                Whether to convert datetime columns to UTC.
+                Specifies whether to localize or convert datetime fields to UTC.
 
                 See `Data.prepare_dt`.
-            remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
-                Whether to remove UTC timezone information from datetime columns.
+            remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]): 
+                Indicates whether to remove the timezone after converting to UTC.
+
+                See `Data.prepare_dt`.
             if_exists (Union[str, feature_dict, symbol_dict, CustomTemplate]):
                 Action to take if the target table already exists.
 

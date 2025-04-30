@@ -163,7 +163,7 @@ def returns_resample_func(
         obj (ArrayLike): Returns data array.
         resampler (Union[Resampler, PandasResampler]): Resampler instance used for resampling.
         wrapper (ArrayWrapper): Array wrapper instance.
-        fill_with_zero (bool): Whether to fill missing values with zero.
+        fill_with_zero (bool): Flag indicating whether to fill missing values with zero.
         log_returns (bool): Flag to compute logarithmic returns.
         **kwargs: Additional keyword arguments.
 
@@ -536,7 +536,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             Provided in a format that supports flexible indexing.
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
         sim_end (Optional[ArrayLike]): End index of the simulation range.
-        call_seq (Optional[Array2d]): Sequence array for call order.
+        call_seq (Optional[Array2d]): Sequence dictating the order in which columns are
+            processed per row and group.
         in_outputs (Optional[NamedTuple]): Named tuple containing in-output objects.
 
             Provide pre-broadcasted and grouped objects to substitute default `Portfolio` attributes.
@@ -759,8 +760,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         the first object is returned.
 
         Args:
-            objs (Sequence[Any]): Sequence of objects to be stacked.
-            wrappers (Sequence[ArrayWrapper]): Sequence of wrapper instances associated with the objects.
+            objs (Sequence[Any]): Objects to be stacked.
+            wrappers (Sequence[ArrayWrapper]): Wrappers corresponding to the objects.
             grouping (str): Strategy for grouping objects.
 
                 Supported options include "columns_or_groups", "columns", "groups", and "cash_sharing".
@@ -2237,7 +2238,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
-            in_output_kwargs (KwargsLike): Keyword arguments for in-output configurations.
+            in_output_kwargs (KwargsLike): Keyword arguments for indexing in-outputs.
             
                 See `Portfolio.in_outputs_indexing_func`.
             wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
@@ -3619,7 +3620,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             ffill_val_price (Optional[bool]): If True, tracks the valuation price only when available
                 to prevent propagation of NaN values.
             update_value (Optional[bool]): If True, updates the group value after each filled order.
-            fill_pos_info (Optional[bool]): Whether to fill position records.
+            fill_pos_info (Optional[bool]): Whether to fill the position information record.
 
                 Disabling this may speed up simulation for simple cases.
             save_state (Optional[bool]): Flag to record the account state.
@@ -3634,7 +3635,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             max_log_records (Optional[int]): Maximum number of log records expected per column.
 
                 Set to a lower number to conserve memory, or 0 to disable logging.
-            in_outputs (Optional[tp.MappingLike]): Mapping of in-output objects for flexible mode.
+            in_outputs (Optional[tp.MappingLike]): Mapping of in-output objects available via
+                `Portfolio.in_outputs` as a named tuple.
 
                 These objects become available via `Portfolio.in_outputs` as a named tuple.
 
@@ -4306,14 +4308,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             n (Optional[ArrayLike]): Number of signals to generate.
 
                 Mutually exclusive with `entry_prob` and `exit_prob`.
-            prob (Optional[ArrayLike]): Probability for generating a signal.
-            entry_prob (Optional[ArrayLike]): Probability for generating an entry signal.
+            prob (Optional[ArrayLike]): Probability of generating a signal.
+            entry_prob (Optional[ArrayLike]): Probability of generating an entry signal.
 
                 Defaults to `prob` if not specified.
-            exit_prob (Optional[ArrayLike]): Probability for generating an exit signal.
+            exit_prob (Optional[ArrayLike]): Probability of generating an exit signal.
 
                 Defaults to `prob` if not specified.
-            param_product (bool): Flag to generate the Cartesian product of signal parameters.
+            param_product (bool): Flag to build a Cartesian product from all parameters.
             seed (Optional[int]): Random seed for deterministic output.
 
                 If None, the seed from portfolio settings is used.
@@ -4475,7 +4477,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             size_type (ArrayLike): Order size type.
             direction (Optional[ArrayLike]): Order direction; if None, determined automatically from allocations.
             cash_sharing (Optional[bool]): Flag indicating whether cash is shared among assets of the same group.
-            call_seq (Optional[ArrayLike]): Call sequence configuration, defaults to "auto".
+            call_seq (Optional[ArrayLike]): Sequence dictating the order in which columns are
+                processed per row and group; defaults to "auto".
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -4767,7 +4770,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             ffill_val_price (Optional[bool]): If True, tracks the valuation price only when available
                 to prevent propagation of NaN values.
             update_value (Optional[bool]): If True, updates the group value after each filled order.
-            fill_pos_info (Optional[bool]): Whether to fill the position record.
+            fill_pos_info (Optional[bool]): Whether to fill the position information record.
 
                 Disable to improve simulation speed in simple cases.
             track_value (Optional[bool]): Whether to track metrics such as current valuation price, value, and return.
@@ -6363,7 +6366,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return log records.
 
         Args:
-            log_records (Optional[RecordArray]): Log records data.
+            log_records (Optional[RecordArray]): Structured NumPy array of log records.
 
                 Defaults to `Portfolio.log_records` if not provided.
             open (Optional[SeriesFrame]): Open price data.
@@ -8576,7 +8579,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_position_value (Optional[MaybeSeries]): Initial position value per column.
 
                 Defaults to `Portfolio.get_init_position` if not provided.
-            init_cash (Optional[MaybeSeries]): Initial cash per column.
+            init_cash (Optional[MaybeSeries]): Initial cash balance.
 
                 Defaults to `Portfolio.get_init_cash` if not provided.
             split_shared (bool): Whether to split shared cash equally among columns in a group.
@@ -9484,10 +9487,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return total return per column or group.
 
         Args:
-            input_value (Optional[MaybeSeries]): Input values for computing returns.
+            input_value (Optional[MaybeSeries]): Initial portfolio or input value used for calculation.
 
                 Defaults to `Portfolio.get_input_value` if not provided.
-            total_profit (Optional[MaybeSeries]): Total profit values per column or group.
+            total_profit (Optional[MaybeSeries]): Total profit to be added to the input value.
 
                 Defaults to `Portfolio.get_total_profit` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -10075,7 +10078,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             cash_deposits_as_input (Optional[bool]): Whether to add cash deposits to the input value.
 
                 Defaults to `Portfolio.cash_deposits_as_input` or False if not provided.
-            market_value (Optional[SeriesFrame]): Market value series required for the return calculation.
+            market_value (Optional[SeriesFrame]): Market value series used for computing returns.
 
                 Defaults to `Portfolio.get_market_value` if not provided.
             log_returns (bool): Flag to compute logarithmic returns.
@@ -11308,10 +11311,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 * "zones" or True
                 * "lines"
-            long_entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for long entry trades.
-            short_entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for short entry trades.
-            long_exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for long exit trades.
-            short_exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for short exit trades.
+            long_entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for long entry markers.
+            short_entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for short entry markers.
+            long_exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for long exit markers.
+            short_exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for short exit markers.
             long_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for long position shapes.
             short_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for short position shapes.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
@@ -12871,7 +12874,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.grouping.base.Grouper`.
             line_shape (str): Shape of the plot line (e.g. "hv").
             line_visible (bool): Determines if plot lines are visible.
-            colorway (Union[None, str, Sequence[str]]): Color scheme used for the plot.
+            colorway (Union[None, str, Sequence[str]]): Name of a built-in qualitative
+                color palette or a sequence of colors.
             xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
 
                 If None, it is inferred from the figure.

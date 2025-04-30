@@ -227,8 +227,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             value (ArrayLike): Input data from which returns are computed.
             init_value (ArrayLike): Initial value to broadcast for each column.
             log_returns (bool): Flag indicating whether returns are logarithmic.
-            sim_start (Optional[Array1d]): Simulation start, which can be a scalar or array-like.
-            sim_end (Optional[Array1d]): Simulation end, which can be a scalar or array-like.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

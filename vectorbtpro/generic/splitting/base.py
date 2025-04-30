@@ -455,7 +455,7 @@ class Splitter(Analyzable):
             
                 Enable `fix_ranges` to convert relative ranges to absolute ranges.
             squeeze (bool): Flag indicating whether to convert a single-column DataFrame to a Series.
-            fix_ranges (bool): Convert relative ranges into absolute ranges.
+            fix_ranges (bool): Whether to convert relative ranges (`RelRange`) into fixed (`FixRange`).
             wrap_with_fixrange (bool): Wrap fixed ranges with `FixRange`.
 
                 If a range is an array, it is wrapped to avoid creating a 3D array.
@@ -641,7 +641,8 @@ class Splitter(Analyzable):
         Args:
             index (IndexLike): Index over which the rolling range is computed.
             length (Union[int, float, TimedeltaLike]): Desired length of the rolling range.
-            offset (Union[int, float, TimedeltaLike]): Offset applied after each split.
+            offset (Union[int, float, TimedeltaLike]): Offset after the previous range's
+                right boundary to determine the start of the next range.
 
                 See `RelRange.offset`.
             offset_anchor (str): Anchor point used when applying the offset.
@@ -1796,9 +1797,11 @@ class Splitter(Analyzable):
             index (IndexLike): Index representing the dataset.
             n_folds (int): Total number of folds.
             n_test_folds (int): Total number of folds allocated for testing.
-            min_train_folds (int): Minimum number of folds required for training.
-            max_train_folds (Optional[int]): Maximum number of folds allowed for training.
-            split_by_time (bool): Indicates whether to split based on time.
+            min_train_folds (int): Minimum number of consecutive folds to use
+                for training preceding the test set.
+            max_train_folds (Optional[int]): Maximum number of consecutive folds to use
+                for training preceding the test set.
+            split_by_time (bool): Whether to partition folds based on equal time intervals using prediction times.
             purge_td (TimedeltaLike): Time delta used for purging between folds.
             pred_times (Union[None, Index, Series]): Indices for prediction times.
             eval_times (Union[None, Index, Series]): Indices for evaluation times.
@@ -1843,7 +1846,8 @@ class Splitter(Analyzable):
             n_folds (int): Total number of folds.
             n_test_folds (int): Total number of folds allocated for testing.
             purge_td (TimedeltaLike): Time delta used for purging between splits.
-            embargo_td (TimedeltaLike): Time delta used as an embargo between splits.
+            embargo_td (TimedeltaLike): Time interval defining the embargo period between
+                test set evaluation times and training predictions.
             pred_times (Union[None, Index, Series]): Indices for prediction times.
             eval_times (Union[None, Index, Series]): Indices for evaluation times.
             **kwargs: Keyword arguments for `Splitter.from_purged`.
@@ -1903,7 +1907,7 @@ class Splitter(Analyzable):
             split_func (Callable): Function that returns a new split based on substituted arguments.
             split_args (ArgsLike): Positional arguments for `split_func`.
             split_kwargs (KwargsLike): Keyword arguments for `split_func`.
-            fix_ranges (bool): Whether to convert splits into fixed ranges.
+            fix_ranges (bool): Whether to convert relative ranges (`RelRange`) into fixed (`FixRange`).
             split (Optional[SplitLike]): Specification for further splitting of each range.
 
                 If None, the entire range is treated as a single split;
@@ -3032,16 +3036,15 @@ class Splitter(Analyzable):
             backwards (bool): Whether to split the range in reverse order.
 
                 When True, the order of the resulting ranges is reversed and length adjustments apply.
-            allow_zero_len (bool): Whether to allow creation of zero-length ranges.
+            allow_zero_len (bool): Permit ranges with zero length.
             range_format (Optional[str]): Format for the range.
 
                 If not provided, the format is inferred from `range_`. See `Splitter.get_ready_range`.
             wrap_with_template (bool): Whether to wrap the resulting ranges with a template of type
                 `vectorbtpro.utils.template.Rep`.
-            wrap_with_fixrange (Optional[bool]): If set to None, new ranges that are sequences
-                will be wrapped with `FixRange`.
+            wrap_with_fixrange (Optional[bool]): If True, wrap the merged range with `FixRange`.
 
-                Otherwise, wrapping is disabled.
+                When None, the type is determined based on sequence checking.
             template_context (KwargsLike): Additional context for template substitution.
             index (Optional[IndexLike]): Index onto which `range_` is mapped.
 
@@ -3217,11 +3220,11 @@ class Splitter(Analyzable):
 
         Args:
             split (FixSplit): Collection of fixed ranges to merge.
-            range_format (Optional[str]): Format specifier for the resulting fixed range.
+            range_format (Optional[str]): Format for the range.
 
                 See `Splitter.get_ready_range`.
-            wrap_with_template (bool): If True, wrap the resulting range with a template
-                using `vectorbtpro.utils.template.Rep`.
+            wrap_with_template (bool): Whether to wrap the resulting ranges with a template of type
+                `vectorbtpro.utils.template.Rep`.
             wrap_with_fixrange (Optional[bool]): If True, wrap the merged range with `FixRange`.
 
                 When None, the type is determined based on sequence checking.
@@ -3598,7 +3601,7 @@ class Splitter(Analyzable):
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
             return_obj_meta (bool): Whether to return metadata for the object.
-            **ready_range_kwargs: Keyword arguments for `Splitter.get_ready_range`.
+            return_obj_meta (bool): Whether to return metadata about the object.
 
         Returns:
             Any: The processed range ready for indexing, or a tuple with object metadata and the range if requested.
@@ -3695,7 +3698,7 @@ class Splitter(Analyzable):
             point_wise (bool): Whether to perform point-wise range extraction.
             template_context (KwargsLike): Additional context for template substitution.
             return_obj_meta (bool): Whether to return metadata about the object.
-            return_meta (bool): Whether to return metadata about the range.
+            return_obj_meta (bool): Whether to return metadata about the object.
             **ready_obj_range_kwargs: Keyword arguments for `Splitter.get_ready_obj_range`.
 
         Returns:
@@ -3825,7 +3828,7 @@ class Splitter(Analyzable):
 
                 See `Splitter.get_ready_range`.
             point_wise (bool): Whether to perform point-wise range extraction.
-            attach_bounds (Union[bool, str]): Controls attaching bounds.
+            attach_bounds (Union[bool, str]): Specifies if and how to attach bounds to the result.
 
                 Options include True, "index", "source", "target", etc.
             right_inclusive (bool): Whether the right bound is inclusive.

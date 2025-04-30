@@ -81,7 +81,7 @@ class FileData(LocalData):
         Args:
             path (PathLike): Starting path to search for files.
             match_regex (Optional[str]): Regular expression for filtering paths.
-            sort_paths (bool): Determines if the resulting list should be sorted.
+            sort_paths (bool): Flag indicating whether to sort the resulting paths.
             recursive (bool): Whether to search subdirectories recursively.
             extension (Optional[str]): Specifies a file extension to filter by (without the dot).
             **kwargs: Additional keyword arguments.

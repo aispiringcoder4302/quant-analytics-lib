@@ -1782,7 +1782,7 @@ class Parameterizer(Configured):
 
         Args:
             param_configs (List[Kwargs]): List of parameter configuration dictionaries.
-            param_index (Optional[Index]): Optional parameter index mapping.
+            param_index (Optional[Index]): Index for parameter combinations.
             selection (Selection): Selection criteria for choosing a parameter combination.
             single_comb (bool): Flag indicating whether to enforce a single combination.
             template_context (KwargsLike): Additional context for template substitution.

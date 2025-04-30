@@ -810,7 +810,8 @@ def from_basic_signals_nb(
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per group.
-        call_seq (Optional[Array2d]): Sequence array for call order.
+        call_seq (Optional[Array2d]): Sequence dictating the order in which columns are
+            processed per row and group.
         auto_call_seq (bool): Flag to automatically sort the call sequence.
         ffill_val_price (bool): Flag to forward-fill valuation price.
         update_value (bool): Flag to update portfolio value with each order.
@@ -1929,7 +1930,8 @@ def from_signals_nb(
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per group.
-        call_seq (Optional[Array2d]): Sequence array for call order.
+        call_seq (Optional[Array2d]): Sequence dictating the order in which columns are
+            processed per row and group.
         auto_call_seq (bool): Flag to automatically sort the call sequence.
         ffill_val_price (bool): Flag to forward-fill valuation price.
         update_value (bool): Flag to update portfolio value with each order.
@@ -4787,11 +4789,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per group.
-        call_seq (Optional[Array2d]): Sequence array for call order.
+        call_seq (Optional[Array2d]): Sequence dictating the order in which columns are
+            processed per row and group.
         auto_call_seq (bool): Flag to automatically sort the call sequence.
         ffill_val_price (bool): Flag to forward-fill valuation price.
         update_value (bool): Whether to update portfolio value during simulation.
-        fill_pos_info (bool): Whether to update position information.
+        fill_pos_info (bool): Whether to fill the position information record.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
         max_log_records (Optional[int]): Maximum number of log records expected per column.

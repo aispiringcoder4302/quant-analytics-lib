@@ -65,7 +65,7 @@ class GBMData(SyntheticData):
             start_value (Optional[float]): Initial value at time 0.
 
                 Note that this value does not appear as the first data point.
-            mean (Optional[float]): Drift or mean of the percentage change.
+            mean (Optional[float]): Drift or average percentage change.
             std (Optional[float]): Standard deviation of the percentage change.
             dt (Optional[float]): Time increment for one period.
             seed (Optional[int]): Random seed for deterministic output.

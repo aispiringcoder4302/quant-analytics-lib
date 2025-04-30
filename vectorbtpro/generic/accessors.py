@@ -2619,7 +2619,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             returns_array (bool): True if the reducing function returns an array.
         
                 Determines whether the output should be processed with array-specific logic.
-            returns_idx (bool): True if the reducing function returns a row index or position.
+            returns_idx (bool): True if the reducing function returns row indices.
         
                 When True, numeric positions may be converted to index labels if `to_index` is also True.
             flatten (bool): True to flatten grouped data before applying the reducing function.
@@ -4805,15 +4805,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 * 1: Count per column.
                 * -1: Count across the entire object.
             normalize (bool): If True, return relative frequencies of unique values.
-            sort_uniques (bool): If True, sort the unique values.
-            sort (bool): If True, sort counts by frequency.
+            sort_uniques (bool): Sort unique values before further processing.
+            sort (bool): Sort the results based on frequency counts.
             ascending (bool): True for ascending order, False for descending.
-            dropna (bool): If True, exclude counts for missing values (NaN).
+            dropna (bool): Exclude NaN values from the counts.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             mapping (Union[None, bool, MappingLike]): Mapping to relabel unique values.
-            incl_all_keys (bool): If True, include all keys from the mapping even if they are absent in the data.
+            incl_all_keys (bool): Include keys from `mapping` that are missing in the data.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -6362,7 +6362,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             slider_level (Optional[Level]): Level to use for grouping data with a slider.
             slider_labels (Optional[Labels]): Labels to override default slider group names.
             active (int): Index of the active slider step.
-            scene_name (str): Name for the scene in the figure layout.
+            scene_name (str): Name of the 3D scene.
             fillna (Optional[Number]): Value to replace NaNs in the data.
             fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
             return_fig (bool): If True, return the figure; otherwise, return the trace updater.
@@ -6708,7 +6708,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
             column (Optional[Column]): Identifier of the column to plot.
             plot_obj (bool): If True, includes the original object data in the plot.
-            fill_distance (bool): If True, fills the area under the pattern trace.
+            fill_distance (bool): Controls whether to fill the space between close and pattern.
+
+                Visible for every interpolation mode except discrete.
             obj_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the original data.
             pattern_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the pattern.
             lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower error bound.
@@ -7328,9 +7330,9 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
         colorize: tp.Union[bool, str, tp.Callable] = True,
         rename_levels: tp.Union[None, dict, tp.Sequence] = None,
         projection_trace_kwargs: tp.KwargsLike = None,
-        upper_trace_kwargs: tp.KwargsLike = None,
-        middle_trace_kwargs: tp.KwargsLike = None,
         lower_trace_kwargs: tp.KwargsLike = None,
+        middle_trace_kwargs: tp.KwargsLike = None,
+        upper_trace_kwargs: tp.KwargsLike = None,
         aux_middle_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
@@ -7391,10 +7393,10 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 * "last": Colorize by last value.
                 * Callable: Function that reduces a Series or DataFrame to compute a metric.
             rename_levels (Union[None, dict, Sequence]): Mapping or sequence to rename multi-index legend levels.
-            projection_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the projection.
-            upper_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper band.
-            middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the middle band.
+            projection_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the projections.
             lower_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower band.
+            middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the middle band.
+            upper_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper band.
             aux_middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the auxiliary middle band.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.

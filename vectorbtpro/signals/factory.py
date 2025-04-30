@@ -51,7 +51,7 @@ class SignalFactory(IndicatorFactory):
         mode (Union[str, int]): Factory mode controlling generated outputs.
 
             Mapped using `vectorbtpro.signals.enums.FactoryMode` if provided as a string.
-        input_names (Optional[Sequence[str]]): Sequence of input names.
+        input_names (Optional[Sequence[str]]): List of input names.
 
             Reserved names "entries" and "exits" are not allowed.
         attr_settings (KwargsLike): Settings for attributes, where each key maps to a dictionary of options.
@@ -740,7 +740,7 @@ class SignalFactory(IndicatorFactory):
                     including arguments from `pass_kwargs`.
                 cache_kwargs (KwargsLike): Settings for the cache function,
                     including arguments from `pass_kwargs`.
-                return_cache (bool): Indicates whether to return only the cache.
+                return_cache (bool): If True, return the cache result instead of processing further.
                 use_cache (Optional[IFCacheOutput]): Cache to use.
                 execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 

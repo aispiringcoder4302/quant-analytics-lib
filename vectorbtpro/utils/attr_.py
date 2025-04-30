@@ -552,7 +552,7 @@ class AttrResolverMixin(Base):
 
         Args:
             attr (str): Original attribute name.
-            out (Any): Value obtained from attribute resolution.
+            out (Any): Resolved attribute value.
             final_kwargs (KwargsLike): Dictionary of keyword arguments used during resolution.
 
         Returns:

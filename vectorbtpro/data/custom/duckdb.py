@@ -769,16 +769,17 @@ class DuckDBData(DBData):
 
                 Pulls one row using `LIMIT 1` and applies `SQLData.prepare_dt` to
                 determine the index configuration.
-            parse_dates (Union[None, bool, Sequence[str]]): Parameter for date parsing;
+            parse_dates (Union[None, bool, Sequence[str]]): Specifies whether to parse dates.
 
                 See `DuckDBData.prepare_dt`.
-            to_utc (Union[None, bool, str, Sequence[str]]): Parameter for converting dates to UTC;
+            to_utc (Union[None, bool, str, Sequence[str]]): Specifies whether to localize or convert
+                datetime fields to UTC.
 
                 See `DuckDBData.prepare_dt`.
             tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            index_col (Optional[MaybeSequence[IntStr]]): Column(s) to use as the index.
+            index_col (Optional[MaybeSequence[IntStr]]): Column position(s) or name(s) to use as the index.
             squeeze (Optional[bool]): Flag indicating whether to convert a single-column DataFrame to a Series.
             df_kwargs (KwargsLike): Keyword arguments for `relation.df` to convert a relation to a DataFrame.
             **sql_kwargs: Keyword arguments for `connection.execute` to run the SQL query.

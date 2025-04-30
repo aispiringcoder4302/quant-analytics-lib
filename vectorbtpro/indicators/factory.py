@@ -620,7 +620,7 @@ class IndicatorBase(Analyzable):
 
                 See `IndicatorFactory.with_custom_func`.
             *args: Positional arguments for `custom_func`.
-            require_input_shape (bool): Flag indicating whether an input shape is required.
+            require_input_shape (bool): Flag indicating whether the input shape is required.
 
                 If True, sets `pass_input_shape` to True and raises an error if `input_shape` is None.
             input_shape (Optional[ShapeLike]): Shape to which each input is broadcast.
@@ -686,7 +686,7 @@ class IndicatorBase(Analyzable):
                 per column rather than globally. Requires a known input shape.
             keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
             to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
-            pass_packed (bool): If True, passes inputs and parameters to `custom_func` as lists.
+            pass_packed (bool): Whether to pass inputs, in-outputs, and parameters as packed tuples.
 
                 For Numba-compiled functions, tuples are passed instead.
             pass_input_shape (Optional[bool]): If True, passes `input_shape` as a keyword argument to `custom_func`.
@@ -1801,7 +1801,7 @@ class IndicatorFactory(Configured):
         output_flags (KwargsLike): Dictionary of flags for in-place and regular outputs.
         lazy_outputs (KwargsLike): Dictionary of user-defined functions bound to the indicator class and
             wrapped with `property` if not already wrapped.
-        attr_settings (KwargsLike): Dictionary with attribute settings.
+        attr_settings (KwargsLike): Settings for attributes, where each key maps to a dictionary of options.
 
             Attributes include `input_names`, `in_output_names`, `output_names`, and `lazy_outputs`.
 
@@ -2484,7 +2484,7 @@ class IndicatorFactory(Configured):
                 !!! note
                     Each output's shape must match the input shape repeated n times (where n is
                     the number of parameter values) along the column axis.
-            require_input_shape (bool): Indicates whether the input shape is required.
+            require_input_shape (bool): Flag indicating whether the input shape is required.
             param_settings (KwargsLike): Dictionary of parameter settings keyed by name.
 
                 See `IndicatorBase.run_pipeline`.
@@ -2976,7 +2976,7 @@ Returns:
             select_params (bool): Whether to automatically select in-outputs and parameters.
 
                 If False, the current iteration index is prepended to the arguments.
-            pass_packed (bool): Whether to pass input, in-output, and parameter groups as packed tuples.
+            pass_packed (bool): Whether to pass inputs, in-outputs, and parameters as packed tuples.
             cache_pass_packed (Optional[bool]): Overrides `pass_packed` for the caching function.
             pass_per_column (bool): Whether to pass the `per_column` flag to the apply function.
             cache_pass_per_column (Optional[bool]): Overrides `pass_per_column` for the caching function.
@@ -3158,7 +3158,7 @@ Returns:
                 param_tuple (Tuple[List[ParamValue], ...]): Tuple of lists of parameter values.
                 *args_: Additional positional arguments.
                 input_shape (Optional[Shape]): Shape of the input arrays.
-                per_column (bool): Whether to process each column separately.
+                per_column (bool): If True, processes parameters separately for each column.
                 split_columns (bool): Whether to split arrays into separate columns.
                 skipna (bool): Whether to skip NaN values.
                 return_cache (bool): If True, return the cache result instead of processing further.
@@ -3167,7 +3167,7 @@ Returns:
                 jitted_warmup (bool): If True, perform a warm-up call for the JIT-compiled function.
                 param_index (Optional[Index]): Index for parameter combinations.
                 final_index (Optional[Index]): Final index used for the output.
-                single_comb (bool): Whether to combine outputs into a single result.
+                single_comb (bool): Flag indicating whether there is only one parameter combination.
                 execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                     See `vectorbtpro.utils.execution.execute`.
@@ -3744,7 +3744,7 @@ Returns:
         """Return a list of custom indicator names.
 
         Args:
-            uppercase (bool): Convert indicator names to uppercase.
+            uppercase (bool): Whether to convert indicator names to uppercase.
             location (Optional[str]): Filter indicators by a specific location.
             prepend_location (Optional[bool]): When True, indicator names are prefixed with their location.
 
@@ -4403,7 +4403,7 @@ Returns:
         """Return a sorted list of parseable indicator class names from the TA module.
 
         Args:
-            uppercase (bool): If True, return indicator names in uppercase.
+            uppercase (bool): Whether to convert indicator names to uppercase.
 
                 Otherwise, names are returned in their original case.
 
@@ -4598,7 +4598,7 @@ Returns:
 
         Args:
             func (Callable): Technical indicator function to parse.
-            test_index_len (int): Number of rows for the test dataframe.
+            test_index_len (int): Number of rows in the generated test DataFrame.
 
         Returns:
             dict: A configuration dictionary containing:

@@ -132,7 +132,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying data object.
-        feature_map (KwargsLike): Mapping for OHLCV features.
+        feature_map (KwargsLike): Dictionary mapping feature names to OHLCV components.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor`.
 
     !!! info
@@ -255,7 +255,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             start_value (ArrayLike): Starting value used in the mirror operation.
-            ref_feature (ArrayLike): Reference feature for mirroring.
+            ref_feature (ArrayLike): Reference feature used for mirroring.
 
                 Mapped using `vectorbtpro.ohlcv.enums.PriceFeature` if provided as a string.
 
@@ -613,7 +613,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
-            plot_volume (bool): Indicates whether to plot volume in a subplot below the OHLC chart.
+            plot_volume (bool): Whether to plot volume below the OHLC chart.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
             volume_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Bar` for the volume data.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;

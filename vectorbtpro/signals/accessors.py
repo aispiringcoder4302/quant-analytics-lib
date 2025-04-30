@@ -806,7 +806,7 @@ class SignalsAccessor(GenericAccessor):
             n (Optional[ArrayLike]): Number of signals to generate.
 
                 Must broadcast to the number of columns.
-            prob (Optional[ArrayLike]): Probability for generating a signal.
+            prob (Optional[ArrayLike]): Probability of generating a signal.
 
                 Must broadcast to match the provided shape.
             pick_first (bool): Determines whether to select the first viable signal in cases
@@ -1113,7 +1113,7 @@ class SignalsAccessor(GenericAccessor):
         Specify `seed` to ensure deterministic output.
 
         Args:
-            prob (Optional[ArrayLike]): Probability for generating a signal.
+            prob (Optional[ArrayLike]): Probability of generating a signal.
             seed (Optional[int]): Random seed for deterministic output.
             wait (int): Number of periods to wait after generating an exit signal.
             until_next (bool): Whether to place signals up to the next entry signal.

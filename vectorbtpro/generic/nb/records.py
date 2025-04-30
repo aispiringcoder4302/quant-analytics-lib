@@ -441,11 +441,16 @@ def map_ranges_to_projections_nb(
         proj_period_use_index (bool): Whether to determine the projection period based on the `index` array.
         incl_end_idx (bool): Whether the end index of a range is inclusive.
         extend (bool): Whether to extend the projection to a fixed length (beyond the end).
-        rebase (bool): Whether to rebase the projection series using a specified start value.
-        start_value (FlexArray1dLike): Initial value used for rebasing projections.
-        
-            Provided as a scalar or per column.
-        ffill (bool): Whether to forward-fill missing projection values.
+
+            The extension period is taken from the longest range duration if `proj_period`
+            is None, and from the longest `proj_period` if not None.
+        rebase (bool): Rebase projection values so that each projection starts with `start_value`.
+
+            If False, the projection retains the original close values.
+        start_value (ArrayLike): Initial value for rebasing.
+
+            Can be a scalar or an array per column. If set to -1, uses the latest close value.
+        ffill (bool): Forward fill NaN values in the projection, even if they are NaN in `close`.
         remove_empty (bool): Whether to exclude projections with no computed changes.
 
     Returns:

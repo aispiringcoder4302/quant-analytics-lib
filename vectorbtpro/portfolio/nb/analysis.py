@@ -858,7 +858,7 @@ def cash_earnings_grouped_nb(
         cash_earnings_raw (FlexArray2dLike): Raw cash earnings.
         
             Provided as a scalar, or per row, column, or element.
-        weights (FlexArray1dLike): Weight factors applied to cash earnings.
+        weights (FlexArray1dLike): Weight factors for scaling cash earnings.
         
             Provided as a scalar or per column.
         sim_start (FlexArray1dLike): Start indices of the simulation range for each column.

@@ -213,7 +213,7 @@ class AVData(RemoteData):
 
                 May combine symbol/from_currency and market/to_currency using an underscore.
             use_parser (Optional[bool]): Whether to use the parser instead of the `alpha_vantage` package.
-            apikey (Optional[str]): API key.
+            apikey (Optional[str]): API key for authenticating with Alpha Vantage.
             api_meta (Optional[dict]): API meta information.
 
                 If None, `AVData.parse_api_meta` is used when `function` is not provided

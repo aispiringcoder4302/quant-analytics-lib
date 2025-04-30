@@ -328,11 +328,11 @@ def bbands_percent_b_1d_nb(close: tp.Array1d, upper: tp.Array1d, lower: tp.Array
 
     Args:
         close (Array1d): 1D array of close prices.
-        upper (Array1d): 1D array representing the upper Bollinger Band.
-        lower (Array1d): 1D array representing the lower Bollinger Band.
+        upper (Array1d): 1D array representing the upper band.
+        lower (Array1d): 1D array representing the lower band.
 
     Returns:
-        Array1d: The %B values computed as (close - lower) / (upper - lower).
+        Array1d: The %B values computed as `(close - lower) / (upper - lower)`.
     """
     return (close - lower) / (upper - lower)
 
@@ -354,8 +354,8 @@ def bbands_percent_b_nb(close: tp.Array2d, upper: tp.Array2d, lower: tp.Array2d)
 
     Args:
         close (Array2d): 2-dimensional array of close prices.
-        upper (Array2d): 2-dimensional array of upper Bollinger band values.
-        lower (Array2d): 2-dimensional array of lower Bollinger band values.
+        upper (Array2d): 2-dimensional array of upper band values.
+        lower (Array2d): 2-dimensional array of lower band values.
 
     Returns:
         Array2d: 2-dimensional array of percent b values.
@@ -376,9 +376,9 @@ def bbands_bandwidth_1d_nb(upper: tp.Array1d, middle: tp.Array1d, lower: tp.Arra
     Computes the bandwidth as the difference between the upper and lower bands divided by the middle band.
 
     Args:
-        upper (Array1d): Array of upper band values.
-        middle (Array1d): Array of middle band values.
-        lower (Array1d): Array of lower band values.
+        upper (Array1d): 1D array representing the upper band.
+        middle (Array1d): 1D array representing the middle band.
+        lower (Array1d): 1D array representing the lower band.
 
     Returns:
         Array1d: Array of computed Bollinger Bands bandwidth values.
@@ -1752,11 +1752,11 @@ def ols_pred_1d_nb(x: tp.Array1d, slope: tp.Array1d, intercept: tp.Array1d) -> t
 
     Args:
         x (Array1d): 1-dimensional array of independent variable values.
-        slope (Array1d): Array of slope values from OLS regression.
-        intercept (Array1d): Array of intercept values from OLS regression.
+        slope (Array1d): 1-dimensional array of slope values.
+        intercept (Array1d): 1-dimensional array of intercept values.
 
     Returns:
-        Array1d: Predicted values computed as intercept + slope * x.
+        Array1d: Predicted values computed as `intercept + slope * x`.
     """
     return intercept + slope * x
 
@@ -2258,7 +2258,7 @@ def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Ar
     Args:
         conf_pivot (Array1d): Array of pivot configuration values.
         conf_idx (Array1d): Array of indices where pivot values should be assigned.
-        last_pivot (Array1d): Array providing the pivot value for the last element.
+        last_pivot (Array1d): Array indicating the type of the last pivot.
 
     Returns:
         Array1d: An array of computed pivot values.
@@ -2289,7 +2289,7 @@ def pivots_nb(conf_pivot: tp.Array2d, conf_idx: tp.Array2d, last_pivot: tp.Array
     Args:
         conf_pivot (Array2d): Array of pivot configuration values for each column.
         conf_idx (Array2d): Array of indices corresponding to pivot positions for each column.
-        last_pivot (Array2d): Array specifying the last pivot value for each column.
+        last_pivot (Array2d): Array indicating the type of the last pivot for each element.
 
     Returns:
         Array2d: An array containing the computed pivot values for each column.
@@ -2511,7 +2511,7 @@ def supertrend_1d_nb(
         low (Array1d): Array of low price values.
         close (Array1d): Array of close price values.
         period (int): Period for the supertrend calculation.
-        multiplier (float): Multiplier applied to the average true range.
+        multiplier (float): Multiplier applied to the ATR.
 
     Returns:
         Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing

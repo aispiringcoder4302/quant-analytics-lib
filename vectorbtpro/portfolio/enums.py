@@ -1441,7 +1441,7 @@ executing any order). The change is marginal and primarily influenced by transac
 """
 __pdoc__[
     "SimulationContext.fill_pos_info"
-] = """Determines whether to fill the position record.
+] = """Determines whether to fill position information.
 
 Disable this feature to improve simulation speed for simple use cases.
 """
@@ -2721,7 +2721,7 @@ class FOInOutputs(tp.NamedTuple):
 __pdoc__["FOInOutputs"] = "A named tuple representing the in-outputs for simulation based on orders."
 __pdoc__[
     "FOInOutputs.cash"
-] = """Reference to `AccountState.cash`.
+] = """See `AccountState.cash`.
 
 Follows groups if cash sharing is enabled; otherwise, follows columns.
 
@@ -2729,7 +2729,7 @@ Populated when `save_state` is True; otherwise, has shape `(0, 0)`.
 """
 __pdoc__[
     "FOInOutputs.position"
-] = """Reference to `AccountState.position`.
+] = """See `AccountState.position`.
 
 Follows columns.
 
@@ -2737,7 +2737,7 @@ Populated when `save_state` is True; otherwise, has shape `(0, 0)`.
 """
 __pdoc__[
     "FOInOutputs.debt"
-] = """Reference to `AccountState.debt`.
+] = """See `AccountState.debt`.
 
 Follows columns.
 
@@ -2829,7 +2829,7 @@ Fields:
     fees: Fees associated with the order.
     side: Side of the order (buy/sell).
 
-        Reference to `OrderSide`.
+        See `OrderSide`.
 """
 
 fs_order_fields = [
@@ -2869,13 +2869,13 @@ Fields:
     fees: Fees associated with the order.
     side: Side of the order (buy/sell).
 
-        Reference to `OrderSide`.
+        See `OrderSide`.
     type: Type of the order (market/limit).
 
-        Reference to `OrderType`.
+        See `OrderType`.
     stop_type: Type of stop loss for the order (SL/TP/etc.).
 
-        Reference to `vectorbtpro.signals.enums.StopType`.
+        See `vectorbtpro.signals.enums.StopType`.
 """
 
 trade_fields = [
@@ -2914,21 +2914,21 @@ Fields:
     col: Column index.
     size: Size of the trade.
     entry_order_id: ID of the entry order.
-    entry_idx: Index of the entry order.
+    entry_idx: Row index of the entry order.
     entry_price: Size-weighted average entry price of the trade.
     entry_fees: Fees associated with the entry order.
     exit_order_id: ID of the exit order.
-    exit_idx: Index of the exit order.
+    exit_idx: Row index of the exit order.
     exit_price: Size-weighted average exit price of the trade.
     exit_fees: Fees associated with the exit order.
     pnl: Profit and loss from the trade.
     return: Return from the trade.
     direction: Direction of the trade (buy/sell).
 
-        Reference to `TradeDirection`.
+        See `vectorbtpro.portfolio.enums.TradeDirection`.
     status: Status of the trade (open/closed).
 
-        Reference to `TradeStatus`.
+        See `vectorbtpro.portfolio.enums.TradeStatus`.
     parent_id: ID of the parent trade or position.
 """
 
@@ -3013,10 +3013,10 @@ Fields:
     req_price: Requested price for the order.
     req_size_type: Size type for the order.
 
-        Reference to `SizeType`.
+        See `SizeType`.
     req_direction: Direction for the order.
 
-        Reference to `Direction`.
+        See `Direction`.
     req_fees: Requested fees for the order.
     req_fixed_fees: Requested fixed fees for the order.
     req_slippage: Requested slippage for the order.
@@ -3026,32 +3026,32 @@ Fields:
     req_leverage: Requested leverage for the order.
     req_leverage_mode: Requested leverage mode for the order.
 
-        Reference to `LeverageMode`.
+        See `LeverageMode`.
     req_reject_prob: Requested rejection probability for the order.
     req_price_area_vio_mode: Requested price area violation mode.
 
-        Reference to `PriceAreaVioMode`.
+        See `PriceAreaVioMode`.
     req_allow_partial: Requested flag indicating if partial filling is allowed.
 
-        Reference to `AllowPartial`.
+        See `AllowPartial`.
     req_raise_reject: Requested flag indicating if rejection should raise an exception.
 
-        Reference to `RaiseReject`.
+        See `RaiseReject`.
     req_log: Requested flag indicating if logging is enabled.
 
-        Reference to `Log`.
+        See `Log`.
     res_size: Resulting size of the order after execution.
     res_price: Resulting price of the order after execution.
     res_fees: Resulting fees of the order after execution.
     res_side: Resulting side of the resulting order.
 
-        Reference to `OrderSide`.
+        See `OrderSide`.
     res_status: Status of the resulting order.
 
-        Reference to `OrderStatus`.
+        See `OrderStatus`.
     res_status_info: Status information of the resulting order.
 
-        Reference to `OrderStatusInfo`.
+        See `OrderStatusInfo`.
     st1_cash: Final cash value after execution.
     st1_position: Final position after execution.
     st1_debt: Final debt value after execution.
@@ -3091,7 +3091,7 @@ Fields:
     alloc_idx: Row index of the allocation.
     status: Status of the allocation range.
 
-        Reference to `vectorbtpro.generic.enums.RangeStatus`.
+        See `vectorbtpro.generic.enums.RangeStatus`.
 """
 
 alloc_point_fields = [
@@ -3147,17 +3147,17 @@ __pdoc__[
 ```
 
 Fields:
-    bar_zone: Reference to `vectorbtpro.generic.enums.BarZone`.
+    bar_zone: See `vectorbtpro.generic.enums.BarZone`.
     signal_idx: Row where signal was placed.
     creation_idx: Row where order was created.
     i: Row from which order information was taken.
     val_price: Valuation price.
     price: Requested price.
     size: Order size.
-    size_type: Reference to `SizeType`.
-    direction: Reference to `Direction`.
-    type: Reference to `OrderType`.
-    stop_type: Reference to `vectorbtpro.signals.enums.StopType`.
+    size_type: See `SizeType`.
+    direction: See `Direction`.
+    type: See `OrderType`.
+    stop_type: See `vectorbtpro.signals.enums.StopType`.
 """
 
 limit_info_fields = [
@@ -3196,16 +3196,16 @@ Fields:
     init_idx: Initial order row index from which information is taken.
     init_price: Initial price.
     init_size: Order size.
-    init_size_type: Reference to `SizeType`.
-    init_direction: Reference to `Direction`.
-    init_stop_type: Reference to `vectorbtpro.signals.enums.StopType`.
+    init_size_type: See `SizeType`.
+    init_direction: See `Direction`.
+    init_stop_type: See `vectorbtpro.signals.enums.StopType`.
     delta: Price delta from the initial price.
-    delta_format: Reference to `DeltaFormat`.
+    delta_format: See `DeltaFormat`.
     tif: Time in force as an integer. Use `-1` to disable.
     expiry: Expiry time as an integer. Use `-1` to disable.
-    time_delta_format: Reference to `TimeDeltaFormat`.
+    time_delta_format: See `TimeDeltaFormat`.
     reverse: Flag indicating if price hit detection should be reversed.
-    order_price: Reference to `LimitOrderPrice`.
+    order_price: See `LimitOrderPrice`.
 """
 
 sl_info_fields = [
@@ -3242,14 +3242,14 @@ Fields:
     init_price: Initial order price.
     init_position: Initial position.
     stop: Updated stop value.
-    exit_price: Reference to `StopExitPrice`.
+    exit_price: See `StopExitPrice`.
     exit_size: Order size.
-    exit_size_type: Reference to `SizeType`.
-    exit_type: Reference to `StopExitType`.
-    order_type: Reference to `OrderType`.
+    exit_size_type: See `SizeType`.
+    exit_type: See `StopExitType`.
+    order_type: See `OrderType`.
     limit_delta: Delta from the hit price, applicable only for `StopType.Limit`.
-    delta_format: Reference to `DeltaFormat`.
-    ladder: Reference to `StopLadderMode`.
+    delta_format: See `DeltaFormat`.
+    ladder: See `StopLadderMode`.
     step: Ladder step count (number of stop executions).
     step_idx: Row index corresponding to the ladder step.
 """
@@ -3294,14 +3294,14 @@ Fields:
     peak_price: Peak price value.
     stop: Updated stop value.
     th: Updated threshold value.
-    exit_price: Reference to `StopExitPrice`.
+    exit_price: See `StopExitPrice`.
     exit_size: Order size.
-    exit_size_type: Reference to `SizeType`.
-    exit_type: Reference to `StopExitType`.
-    order_type: Reference to `OrderType`.
+    exit_size_type: See `SizeType`.
+    exit_type: See `StopExitType`.
+    order_type: See `OrderType`.
     limit_delta: Delta from the hit price, applicable only for `StopType.Limit`.
-    delta_format: Reference to `DeltaFormat`.
-    ladder: Reference to `StopLadderMode`.
+    delta_format: See `DeltaFormat`.
+    ladder: See `StopLadderMode`.
     step: Ladder step count (number of stop executions).
     step_idx: Row index corresponding to the ladder step.
 """
@@ -3340,14 +3340,14 @@ Fields:
     init_price: Initial order price.
     init_position: Initial position.
     stop: Updated stop value.
-    exit_price: Reference to `StopExitPrice`.
+    exit_price: See `StopExitPrice`.
     exit_size: Order size.
-    exit_size_type: Reference to `SizeType`.
-    exit_type: Reference to `StopExitType`.
-    order_type: Reference to `OrderType`.
+    exit_size_type: See `SizeType`.
+    exit_type: See `StopExitType`.
+    order_type: See `OrderType`.
     limit_delta: Delta from the hit price, applicable only for `StopType.Limit`.
-    delta_format: Reference to `DeltaFormat`.
-    ladder: Reference to `StopLadderMode`.
+    delta_format: See `DeltaFormat`.
+    ladder: See `StopLadderMode`.
     step: Ladder step count (number of stop executions).
     step_idx: Row index corresponding to the ladder step.
 """
@@ -3385,15 +3385,15 @@ Fields:
     init_idx: Initial row index.
     init_position: Initial position.
     stop: Updated stop value.
-    exit_price: Reference to `StopExitPrice`.
+    exit_price: See `StopExitPrice`.
     exit_size: Order size.
-    exit_size_type: Reference to `SizeType`.
-    exit_type: Reference to `StopExitType`.
-    order_type: Reference to `OrderType`.
+    exit_size_type: See `SizeType`.
+    exit_type: See `StopExitType`.
+    order_type: See `OrderType`.
     limit_delta: Delta from the hit price, applicable only for `StopType.Limit`.
-    delta_format: Reference to `DeltaFormat` (used only for `StopType.Limit`).
-    time_delta_format: Reference to `TimeDeltaFormat`.
-    ladder: Reference to `StopLadderMode`.
+    delta_format: See `DeltaFormat` (used only for `StopType.Limit`).
+    time_delta_format: See `TimeDeltaFormat`.
+    ladder: See `StopLadderMode`.
     step: Ladder step count (number of stop executions).
     step_idx: Row index corresponding to the ladder step.
 """

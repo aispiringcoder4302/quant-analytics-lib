@@ -1135,7 +1135,7 @@ class Ranges(PriceRecords):
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close data.
-            projection_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for projections.
+            projection_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the projections.
             lower_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower band.
             middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the middle band.
             upper_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper band.
@@ -1365,9 +1365,9 @@ class Ranges(PriceRecords):
                     colorize=colorize,
                     rename_levels=rename_levels,
                     projection_trace_kwargs=projection_trace_kwargs,
-                    upper_trace_kwargs=upper_trace_kwargs,
-                    middle_trace_kwargs=middle_trace_kwargs,
                     lower_trace_kwargs=lower_trace_kwargs,
+                    middle_trace_kwargs=middle_trace_kwargs,
+                    upper_trace_kwargs=upper_trace_kwargs,
                     aux_middle_trace_kwargs=aux_middle_trace_kwargs,
                     add_trace_kwargs=add_trace_kwargs,
                     fig=fig,
@@ -1394,7 +1394,7 @@ class Ranges(PriceRecords):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            plot_ohlc (Union[bool, DataFrame]): Flag or data specifying whether to plot OHLC bars.
+            plot_ohlc (Union[bool, DataFrame]): Flag or data specifying whether to plot OHLC.
             plot_close (Union[bool, Series]): Flag or data specifying whether to plot close values.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
@@ -2256,7 +2256,7 @@ class PatternRanges(Ranges):
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute`.
-            attach_as_close (bool): Attach the input array as the `close` field if True.
+            attach_as_close (bool): Whether to attach the input array as the `close` field.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
                 See `vectorbtpro.base.indexes.clean_index`.
@@ -2602,8 +2602,8 @@ class PatternRanges(Ranges):
 
                 Visible for every interpolation mode except discrete.
             pattern_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the pattern.
-            lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower max error.
-            upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper max error.
+            lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower error bound.
+            upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper error bound.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
             xref (str): Reference for the x-axis (e.g., "x", "x2").

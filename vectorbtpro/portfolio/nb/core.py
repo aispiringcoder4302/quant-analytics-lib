@@ -835,7 +835,7 @@ def approx_buy_value_nb(
     Args:
         position (float): Current position amount.
         debt (float): Current debt amount.
-        locked_cash (float): Amount of cash locked in orders.
+        locked_cash (float): Cash currently locked as collateral.
         val_price (float): Valuation price of the asset.
         size (float): Requested order size.
         direction (int): Order direction.
@@ -2240,7 +2240,7 @@ def prepare_last_pos_info_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         init_position (FlexArray1d): Array of initial positions.
         init_price (FlexArray1d): Array of initial position prices.
-        fill_pos_info (bool): Whether to update position information.
+        fill_pos_info (bool): Whether to fill the position information record.
 
     Returns:
         RecordArray: Array of last position information records.
@@ -2296,10 +2296,10 @@ def prepare_sim_out_nb(
         log_counts (Array1d): Array containing log counts.
         cash_deposits (Array2d): Array of cash deposit entries.
         cash_earnings (Array2d): Array of cash earning entries.
-        call_seq (Optional[Array2d]): Sequence array for call order.
+        call_seq (Optional[Array2d]): Optional call sequence array.
         in_outputs (Optional[NamedTuple]): Optional additional outputs.
-        sim_start (Optional[Array1d]): Optional simulation start times.
-        sim_end (Optional[Array1d]): Optional simulation end times.
+        sim_start (Optional[Array1d]): Optional simulation start positions (inclusive).
+        sim_end (Optional[Array1d]): Optional simulation end positions (exclusive).
 
     Returns:
         SimulationOutput: Simulation output record with repartitioned order and

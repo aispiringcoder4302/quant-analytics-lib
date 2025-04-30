@@ -162,15 +162,15 @@ def fill_trade_record_nb(
         r (int): Index at which to fill the trade record.
         col (int): Column index associated with the trade.
         size (float): Trade size.
-        entry_order_id (int): Identifier for the entry order.
+        entry_order_id (int): ID of the entry order.
         entry_idx (int): Row index of the entry order.
-        entry_price (float): Entry price.
-        entry_fees (float): Entry fees.
-        exit_order_id (int): Identifier for the exit order.
+        entry_price (float): Size-weighted average entry price of the trade.
+        entry_fees (float): Fees associated with the entry order.
+        exit_order_id (int): ID of the exit order.
         exit_idx (int): Row index of the exit order.
-        exit_price (float): Exit price.
-        exit_fees (float): Exit fees.
-        direction (int): Trade direction.
+        exit_price (float): Size-weighted average exit price of the trade.
+        exit_fees (float): Fees associated with the exit order.
+        direction (int): Direction of the trade (buy/sell).
 
             See `vectorbtpro.portfolio.enums.TradeDirection`.
         status (int): Trade status.

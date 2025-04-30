@@ -260,7 +260,8 @@ def from_orders_nb(
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
 
             Provided as a scalar or per group.
-        call_seq (Optional[Array2d]): Sequence array for call order.
+        call_seq (Optional[Array2d]): Sequence dictating the order in which columns are
+            processed per row and group.
         auto_call_seq (bool): Flag to automatically sort the call sequence.
         ffill_val_price (bool): Flag to forward-fill valuation price.
         update_value (bool): Flag to update portfolio value with each order.

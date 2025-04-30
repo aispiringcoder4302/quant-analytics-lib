@@ -2098,7 +2098,7 @@ class MappedArray(Analyzable):
         """Return statistical summary by column/group.
 
         Args:
-            percentiles (Optional[ArrayLike]): List of percentiles to compute.
+            percentiles (Optional[ArrayLike]): Percentiles to include in the summary.
 
                 If None, defaults are used.
             ddof (int): Delta degrees of freedom.
@@ -2208,13 +2208,17 @@ class MappedArray(Analyzable):
         Depending on the specified axis, counts are computed per row, per column, or over the flattened array.
 
         Args:
-            axis (int): Axis along which to count unique values.
+            axis (int): Axis along which to compute counts.
 
-                When 0, computes counts per row; when 1, per column; other values count over all data.
+                Valid options:
+
+                * 0: Count per row.
+                * 1: Count per column.
+                * -1: Count across the entire object.
             idx_arr (Optional[Array1d]): Array of row indices.
 
                 Uses `MappedArray.idx_arr` if not provided.
-            normalize (bool): Normalize the counts by dividing by the total sum.
+            normalize (bool): If True, return relative frequencies of unique values.
             sort_uniques (bool): Sort unique values before further processing.
             sort (bool): Sort the results based on frequency counts.
             ascending (bool): True for ascending order, False for descending.
@@ -2222,8 +2226,8 @@ class MappedArray(Analyzable):
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            mapping (Union[None, bool, MappingLike]): Mapping used to resolve unique value representations.
-            incl_all_keys (bool): Include keys from `mapping` that are missing in the data with counts set to zero.
+            mapping (Union[None, bool, MappingLike]): Mapping to relabel unique values.
+            incl_all_keys (bool): Include keys from `mapping` that are missing in the data.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

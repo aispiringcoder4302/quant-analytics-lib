@@ -604,7 +604,7 @@ class SQLData(DBData):
         Args:
             table (str): Name of the table.
             schema (Optional[str]): Schema where the table is located.
-            row_number_column (Optional[str]): Column name representing the row number.
+            row_number_column (Optional[str]): Name of the column containing row numbers.
             engine (Union[None, str, Engine]): Engine or identifier for the database connection.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
@@ -850,7 +850,7 @@ class SQLData(DBData):
                 `vectorbtpro.utils.datetime_.to_timestamp`.
 
                 For a multi-index, provide a tuple. Must not be used with `query`.
-            align_dates (Optional[bool]): Indicates whether to align `start` and `end` to the index's timezone.
+            align_dates (Optional[bool]): Whether to align `start` and `end` to the index timezone.
 
                 Retrieves one row (using `LIMIT 1`) and uses `SQLData.prepare_dt` to obtain the index.
             parse_dates (Optional[Union[bool, List[IntStr], Dict[IntStr, Any]]]):
@@ -1232,7 +1232,7 @@ class SQLData(DBData):
         Args:
             key (Key): Feature or symbol identifier.
             from_last_row (Optional[bool]): Flag indicating whether to update starting from the last row.
-            from_last_index (Optional[bool]): Flag indicating whether to update starting from the last index.
+            from_last_index (Optional[bool]): Flag indicating whether to update data starting from the last index.
             **kwargs: Keyword arguments for `SQLData.fetch_feature` or `SQLData.fetch_symbol`.
 
         Returns:

@@ -1269,7 +1269,8 @@ def nanpartition_mean_noarr_1d_nb(arr: tp.Array1d, q: float) -> float:
 
     Args:
         arr (Array1d): One-dimensional array containing numerical values that may include NaNs.
-        q (float): Percentile threshold guiding the partitioning, where 0 indicates the minimum value.
+        q (float): Percentile threshold guiding the partitioning,
+            where 0 represents the minimum and 100 represents the maximum.
 
     Returns:
         float: The computed average of the partitioned elements.
@@ -1676,7 +1677,7 @@ def value_counts_nb(codes: tp.Array2d, n_uniques: int, group_map: tp.GroupMap) -
     """Compute value counts per group.
 
     Args:
-        codes (Array2d): 2-dimensional array of code values.
+        codes (Array2d): Factorized array of integer codes.
         n_uniques (int): Number of unique values.
         group_map (GroupMap): Tuple of group indices and lengths.
 
@@ -1706,7 +1707,7 @@ def value_counts_1d_nb(codes: tp.Array1d, n_uniques: int) -> tp.Array1d:
     """Compute value counts.
 
     Args:
-        codes (Array1d): One-dimensional array of integer codes.
+        codes (Array1d): Factorized array of integer codes.
         n_uniques (int): Number of unique values.
 
     Returns:
@@ -1729,7 +1730,7 @@ def value_counts_per_row_nb(codes: tp.Array2d, n_uniques: int) -> tp.Array2d:
     """Compute value counts per row.
 
     Args:
-        codes (Array2d): 2-dimensional array where each row contains code values.
+        codes (Array2d): Factorized array of integer codes.
         n_uniques (int): Number of unique values.
 
     Returns:

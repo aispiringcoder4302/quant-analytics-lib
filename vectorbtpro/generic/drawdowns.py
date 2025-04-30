@@ -317,7 +317,7 @@ class Drawdowns(Ranges):
             low (Optional[ArrayLike]): Array of low prices.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
-            attach_data (bool): Whether to attach the price data to the instance.
+            attach_data (bool): Flag indicating whether to attach the OHLC data.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

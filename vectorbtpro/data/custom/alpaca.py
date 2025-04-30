@@ -177,7 +177,7 @@ class AlpacaData(RemoteData):
         If no client is provided, a new instance is created using the supplied `client_config`.
 
         Args:
-            client (Optional[RESTClient]): Existing client instance to use.
+            client (Optional[RESTClient]): Alpaca REST client instance.
             client_type (Optional[str]): Specifies the type of client to create;
                 expected values are "crypto" or "stocks".
             **client_config: Configuration parameters for creating a new client.
@@ -233,7 +233,8 @@ class AlpacaData(RemoteData):
             client (Optional[RESTClient]): Alpaca REST client instance.
 
                 See `AlpacaData.resolve_client`.
-            client_type (Optional[str]): Type of Alpaca client.
+            client_type (Optional[str]): Specifies the type of client to create;
+                expected values are "crypto" or "stocks".
 
                 Automatically determined based on the symbol, as crypto symbols contain "/".
                 Also see `AlpacaData.resolve_client`.

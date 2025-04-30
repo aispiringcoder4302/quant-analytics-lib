@@ -128,7 +128,7 @@ class BasePurgedCV(Base):
         """Remove training samples based on evaluation times and purge period.
 
         Args:
-            train_indices (Array1d): Array of indices for training samples.
+            train_indices (Array1d): Array of indices corresponding to the training set.
             test_fold_start (int): Left boundary index indicating the start of the test set.
             test_fold_end (int): Right boundary index indicating the end of the test set.
 
@@ -433,9 +433,9 @@ class PurgedKFoldCV(BasePurgedCV):
         the end of the test fold specified by `test_fold_end`.
 
         Args:
-            train_indices (Array1d): Array of training sample indices.
-            test_indices (Array1d): Array of test sample indices.
-            test_fold_end (int): Ending index of the test fold that defines the embargo boundary.
+            train_indices (Array1d): Array of indices corresponding to the training set.
+            test_indices (Array1d): Array of indices corresponding to the test set.
+            test_fold_end (int): Right boundary index indicating the end of the test set.
 
         Returns:
             Array1d: Modified training sample indices after applying the embargo procedure.
@@ -457,7 +457,7 @@ class PurgedKFoldCV(BasePurgedCV):
         Args:
             test_fold_bounds (List[Tuple[int, int]]): List of tuples specifying the start
                 and end indices of test folds.
-            test_indices (Array1d): Array of indices corresponding to the test set samples.
+            test_indices (Array1d): Array of indices corresponding to the test set.
 
         Returns:
             Array1d: Array of training sample indices after purging overlapping samples
@@ -503,8 +503,8 @@ class PurgedKFoldCV(BasePurgedCV):
         """Split the dataset into training and testing sets for cross-validation.
 
         Args:
-            X (SeriesFrame): Feature data to be split.
-            y (Optional[Series]): Optional target data.
+            X (SeriesFrame): DataFrame or Series containing the input data.
+            y (Optional[Series]): Series containing the target values.
             pred_times (Union[None, Index, Series]): Indices for prediction times.
             eval_times (Union[None, Index, Series]): Indices for evaluation times.
 
