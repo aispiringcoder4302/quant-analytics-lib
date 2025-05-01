@@ -273,7 +273,7 @@ class Grouper(Configured):
         """Iterate over group indices based on a group map.
 
         Args:
-            group_map (GroupMap): Tuple of group indices and lengths.
+            group_map (GroupMap): Tuple of indices and lengths for each group.
 
         Yields:
             GroupIdxs: Array of indices representing a single group.

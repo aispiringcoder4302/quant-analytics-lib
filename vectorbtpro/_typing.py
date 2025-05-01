@@ -27,7 +27,7 @@ from typing import *
 
 import numpy as np
 import pandas as pd
-from mypy_extensions import VarArg
+from mypy_extensions import VarArg, KwArg
 from pandas import (
     Series,
     DataFrame as Frame,
@@ -319,6 +319,15 @@ PullOutput = Union[Data, List[Any]]
 TraceName = Union[str, None]
 TraceNames = MaybeSequence[TraceName]
 
+# Combining
+R0ApplyFunc = Callable[[int, VarArg()], None]
+R1ApplyFunc = Callable[[int, VarArg()], Array]
+RMApplyFunc = Callable[[int, VarArg()], Tuple[Array, ...]]
+CApplyFunc = Union[R0ApplyFunc, R1ApplyFunc, RMApplyFunc]
+CombineFunc = Callable[[Any, Any, VarArg()], Any]
+PyCombineFunc = Callable[[Any, Any, VarArg(), KwArg()], Any]
+AnyCombineFunc = Union[CombineFunc, PyCombineFunc]
+
 # Generic
 MapFunc = Callable[[Scalar, VarArg()], Scalar]
 MapMetaFunc = Callable[[int, int, Scalar, VarArg()], Scalar]
@@ -339,6 +348,26 @@ GroupSqueezeMetaFunc = Callable[[int, GroupIdxs, int, VarArg()], Scalar]
 GroupByTransformFunc = Callable[[Array2d, VarArg()], MaybeArray]
 GroupByTransformMetaFunc = Callable[[GroupIdxs, int, VarArg()], MaybeArray]
 
+AnyMapFunc = Union[MapFunc, MapMetaFunc]
+AnyApplyFunc = Union[ApplyFunc, ApplyMetaFunc]
+AnyReduceFunc = Union[ReduceFunc, ReduceMetaFunc]
+AnyGroupByReduceFunc = Union[ReduceFunc, GroupByReduceMetaFunc]
+AnyGroupByTransformFunc = Union[GroupByTransformFunc, GroupByTransformMetaFunc]
+AnyResampleReduceFunc = Union[ReduceFunc, GroupByReduceMetaFunc, RangeReduceMetaFunc]
+AnyFlexReduceFunc = Union[
+    ReduceFunc,
+    ReduceMetaFunc,
+    ReduceToArrayFunc,
+    ReduceToArrayMetaFunc,
+    ReduceGroupedFunc,
+    ReduceGroupedMetaFunc,
+    ReduceGroupedToArrayFunc,
+    ReduceGroupedToArrayMetaFunc,
+]
+AnyProximityReduceFunc = Union[ReduceFunc, ProximityReduceMetaFunc]
+AnyGroupSqueezeFunc = Union[ReduceFunc, GroupSqueezeMetaFunc]
+AnyRangeReduceFunc = Union[ReduceFunc, RangeReduceMetaFunc]
+
 # Signals
 PlaceFunc = Callable[[NamedTuple, VarArg()], int]
 RankFunc = Callable[[NamedTuple, VarArg()], int]
@@ -348,6 +377,9 @@ RecordsMapFunc = Callable[[np.void, VarArg()], Scalar]
 RecordsMapMetaFunc = Callable[[int, VarArg()], Scalar]
 MappedReduceMetaFunc = Callable[[GroupIdxs, int, VarArg()], Scalar]
 MappedReduceToArrayMetaFunc = Callable[[GroupIdxs, int, VarArg()], Array1d]
+
+AnyRecordsMapFunc = Union[RecordsMapFunc, RecordsMapMetaFunc]
+AnyMappedReduceFunc = Union[ReduceFunc, MappedReduceMetaFunc, ReduceToArrayFunc, MappedReduceToArrayMetaFunc]
 
 # Indicators
 ParamValue = Any
@@ -516,3 +548,7 @@ PostSegmentFunc = Callable[[SegmentContext, VarArg()], None]
 OrderFunc = Callable[[OrderContext, VarArg()], Order]
 FlexOrderFunc = Callable[[FlexOrderContext, VarArg()], Tuple[int, Order]]
 PostOrderFunc = Callable[[PostOrderContext, VarArg()], None]
+
+# Portfolio optimization
+AllocateFunc = Callable[[int, int, VarArg()], MaybeArray]
+OptimizeFunc = Callable[[int, int, int, VarArg()], MaybeArray]

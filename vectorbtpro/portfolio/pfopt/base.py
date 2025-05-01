@@ -1844,6 +1844,8 @@ class PortfolioOptimizer(Analyzable):
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         alloc_records (Union[AllocRanges, AllocPoints]): Allocation records associated with the portfolio.
         allocations (Array2d): 2D array containing allocation values.
         **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
@@ -2068,6 +2070,8 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             group_configs (List[dict]): List of configurations for allocation groups.
             group_index (Index): Index representing the allocation group.
             group_idx (int): Index specifying which configuration in `group_configs` to use.
@@ -2274,6 +2278,8 @@ class PortfolioOptimizer(Analyzable):
         Args:
             cls (Type[PortfolioOptimizer]): Class to instantiate.
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             allocate_func (Callable): Function that computes allocations.
             *args: Positional arguments for `allocate_func`.
             every (Union[None, FrequencyLike, Param]): See `vectorbtpro.base.indexing.PointIdxr.every`.
@@ -2678,6 +2684,8 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             allocations (ArrayLike): Flexible array containing allocation data.
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
@@ -2739,6 +2747,8 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             allocations (ArrayLike): Flexible array containing allocation data.
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocations`.
 
@@ -2809,6 +2819,8 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
@@ -2836,6 +2848,8 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             direction (Union[str, int]): Market direction for allocation, e.g. "longonly".
 
                 Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
@@ -2969,6 +2983,8 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             group_configs (List[dict]): List of configurations for optimization groups.
             group_index (Index): Index representing the optimization group.
             group_idx (int): Index of the current group in group_configs.
@@ -3331,6 +3347,8 @@ class PortfolioOptimizer(Analyzable):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             optimize_func (Callable): Optimization function that computes asset allocations
                 based on a given date range.
             *args: Positional arguments for `optimize_func`.

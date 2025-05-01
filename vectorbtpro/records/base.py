@@ -1571,7 +1571,7 @@ class Records(Analyzable, metaclass=MetaRecords):
     @hybrid_method
     def map(
         cls_or_self,
-        map_func_nb: tp.Union[tp.RecordsMapFunc, tp.RecordsMapMetaFunc],
+        map_func_nb: tp.AnyRecordsMapFunc,
         *args,
         dtype: tp.Optional[tp.DTypeLike] = None,
         jitted: tp.JittedOption = None,
@@ -1584,7 +1584,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         For class method calls, `col_mapper` must be provided.
 
         Args:
-            map_func_nb (Union[RecordsMapFunc, RecordsMapMetaFunc]): Mapping function applied to each record.
+            map_func_nb (AnyRecordsMapFunc): Callback function for mapping records.
             *args: Positional arguments for `map_func_nb`.
             dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1621,7 +1621,7 @@ class Records(Analyzable, metaclass=MetaRecords):
     @hybrid_method
     def apply(
         cls_or_self,
-        apply_func_nb: tp.Union[tp.ApplyFunc, tp.ApplyMetaFunc],
+        apply_func_nb: tp.AnyApplyFunc,
         *args,
         group_by: tp.GroupByLike = None,
         apply_per_group: bool = False,
@@ -1636,7 +1636,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         If `apply_per_group` is True, the function is applied separately to each group.
 
         Args:
-            apply_func_nb (Union[ApplyFunc, ApplyMetaFunc]): Function to apply to the records.
+            apply_func_nb (AnyApplyFunc): Callback function for applying to records.
             *args: Positional arguments for `apply_func_nb`.
             group_by (GroupByLike): Grouping specification.
             

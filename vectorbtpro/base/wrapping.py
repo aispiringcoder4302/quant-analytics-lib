@@ -2786,6 +2786,8 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 

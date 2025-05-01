@@ -161,7 +161,7 @@ def get_ranges_from_delta_nb(
         n_rows (int): Total number of rows in the dataset.
         idx_arr (Array1d): Array of row indices.
         id_arr (Array1d): Array of IDs.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         index (Optional[Array1d]): Array of index values used for delta-based calculations.
         delta (int): Delta offset to compute range boundaries.
         delta_use_index (bool): Flag indicating whether to use the index values for delta calculation.
@@ -303,21 +303,21 @@ def range_coverage_nb(
     overlapping: bool = False,
     normalize: bool = False,
 ) -> tp.Array1d:
-    """Calculate the coverage of range records for each group.
+    """Calculate the coverage of range records for each column.
 
     Args:
         start_idx_arr (Array1d): Array of starting row indices for each range record.
         end_idx_arr (Array1d): Array of ending row indices for each range record.
         status_arr (Array2d): Array indicating the status of each range record.
-        col_map (GroupMap): Tuple of column indices and lengths.
-        index_lens (Array1d): Array of index lengths for each group.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
+        index_lens (Array1d): Array of index lengths for each column.
         overlapping (bool): If True, compute the count of overlapping steps.
         normalize (bool): If True, return the coverage as a normalized ratio relative
             to the total number of steps (if overlapping is False) or the number of
             covered steps (if overlapping is True).
 
     Returns:
-        Array1d: An array containing the computed coverage values for each group.
+        Array1d: An array containing the computed coverage values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -383,7 +383,7 @@ def ranges_to_mask_nb(
         start_idx_arr (Array1d): Array of starting row indices for each range record.
         end_idx_arr (Array1d): Array of ending row indices for each range record.
         status_arr (Array2d): Array indicating the status of each range record.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         index_len (int): Length of the index for the resulting mask.
 
     Returns:

@@ -1815,6 +1815,8 @@ class FSPreparer(BasePFPreparer):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             group_lens (Optional[GroupLens]): Array defining the number of columns in each group.
 
                 If None and cash_sharing is True, they are computed from the wrapper.

@@ -159,7 +159,7 @@ def record_col_map_select_nb(
 
     Args:
         records (RecordArray): Array of records.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         new_cols (Array1d): Array of new column indices for selection.
 
     Returns:
@@ -240,14 +240,14 @@ def is_col_id_sorted_nb(col_arr: tp.Array1d, id_arr: tp.Array1d) -> bool:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def first_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
-    """Return a boolean mask marking the first N elements in each column group.
+    """Return a boolean mask marking the first N elements in each column.
 
     Args:
-        col_map (GroupMap): Tuple of column indices and lengths.
-        n (int): Number of elements to mark from the beginning of each group.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
+        n (int): Number of elements to mark from the beginning of each column.
 
     Returns:
-        Array1d: Boolean mask with True for the first N elements of each column group.
+        Array1d: Boolean mask with True for the first N elements of each column.
 
     !!! tip
         This function is parallelizable.
@@ -276,14 +276,14 @@ def first_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def last_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
-    """Return a boolean mask marking the last N elements in each column group.
+    """Return a boolean mask marking the last N elements in each column.
 
     Args:
-        col_map (GroupMap): Tuple of column indices and lengths.
-        n (int): Number of elements to mark from the end of each group.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
+        n (int): Number of elements to mark from the end of each column.
 
     Returns:
-        Array1d: Boolean mask with True for the last N elements of each column group.
+        Array1d: Boolean mask with True for the last N elements of each column.
 
     !!! tip
         This function is parallelizable.
@@ -312,11 +312,11 @@ def last_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def random_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
-    """Return the boolean mask selecting n random elements from each group.
+    """Return the boolean mask selecting n random elements from each column.
 
     Args:
-        col_map (GroupMap): Tuple of column indices and lengths.
-        n (int): Number of elements to select randomly from each group.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
+        n (int): Number of elements to select randomly from each column.
 
     Returns:
         Array1d: Boolean mask array with True at positions of selected elements.
@@ -349,15 +349,15 @@ def random_n_nb(col_map: tp.GroupMap, n: int) -> tp.Array1d:
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def top_n_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, n: int) -> tp.Array1d:
-    """Return the boolean mask selecting the top n elements from each group based on the mapped values.
+    """Return the boolean mask selecting the top n elements from each column based on the mapped values.
 
     Args:
         mapped_arr (Array1d): Array of mapped values.
-        col_map (GroupMap): Tuple of column indices and lengths.
-        n (int): Number of top elements to select from each group.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
+        n (int): Number of top elements to select from each column.
 
     Returns:
-        Array1d: Boolean mask array with True for indices of the top n elements in each group.
+        Array1d: Boolean mask array with True for indices of the top n elements in each column.
 
     !!! tip
         This function is parallelizable.
@@ -387,15 +387,15 @@ def top_n_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, n: int) -> tp.
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def bottom_n_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, n: int) -> tp.Array1d:
-    """Return the boolean mask selecting the bottom n elements from each group based on the mapped values.
+    """Return the boolean mask selecting the bottom n elements from each column based on the mapped values.
 
     Args:
         mapped_arr (Array1d): Array of mapped values.
-        col_map (GroupMap): Tuple of column indices and lengths.
-        n (int): Number of bottom elements to select from each group.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
+        n (int): Number of bottom elements to select from each column.
 
     Returns:
-        Array1d: Boolean mask array with True for indices of the bottom n elements in each group.
+        Array1d: Boolean mask array with True for indices of the bottom n elements in each column.
 
     !!! tip
         This function is parallelizable.
@@ -428,7 +428,8 @@ def map_records_nb(records: tp.RecordArray, map_func_nb: tp.RecordsMapFunc, *arg
 
     Args:
         records (RecordArray): Array of records.
-        map_func_nb (RecordsMapFunc): Function that processes a single record with additional arguments.
+        map_func_nb (RecordsMapFunc): Callback function that accepts a record and
+            additional arguments, and returns a single value.
         *args: Positional arguments for `map_func_nb`.
 
     Returns:
@@ -455,8 +456,8 @@ def map_records_meta_nb(n_values: int, map_func_nb: tp.MappedReduceMetaFunc, *ar
 
     Args:
         n_values (int): Total number of values.
-        map_func_nb (MappedReduceMetaFunc): Function that accepts a record index and
-            additional arguments to return a single value.
+        map_func_nb (MappedReduceMetaFunc): Callback function that accepts a record index and
+            additional arguments, and returns a single value.
         *args: Positional arguments for `map_func_nb`.
 
     Returns:
@@ -484,16 +485,18 @@ def map_records_meta_nb(n_values: int, map_func_nb: tp.MappedReduceMetaFunc, *ar
 )
 @register_jitted(tags={"can_parallel"})
 def apply_nb(arr: tp.Array1d, col_map: tp.GroupMap, apply_func_nb: tp.ApplyFunc, *args) -> tp.Array1d:
-    """Apply a function on segments of an array corresponding to each group.
+    """Apply a function on segments of an array corresponding to each column.
 
     Args:
         arr (Array1d): Array on which to apply the function.
-        col_map (GroupMap): Tuple of column indices and lengths.
-        apply_func_nb (ApplyFunc): Function to apply on each group segment.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
+        apply_func_nb (ApplyFunc): Callback function that accepts a column as a 1D array
+            and additional arguments, and returns a single value or an array that broadcasts
+            to the column's shape.
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        Array1d: Array resulting from applying the function to each group,
+        Array1d: Array resulting from applying the function to each column,
             matching the shape of the input array.
 
     !!! tip
@@ -525,17 +528,18 @@ def apply_nb(arr: tp.Array1d, col_map: tp.GroupMap, apply_func_nb: tp.ApplyFunc,
 )
 @register_jitted(tags={"can_parallel"})
 def apply_meta_nb(n_values: int, col_map: tp.GroupMap, apply_func_nb: tp.ApplyMetaFunc, *args) -> tp.Array1d:
-    """Apply a function to meta information for each group.
+    """Apply a function to meta information for each column.
 
     Args:
         n_values (int): Total number of values.
-        col_map (GroupMap): Tuple of column indices and lengths.
-        apply_func_nb (ApplyMetaFunc): Function that accepts indices, a column index,
-            and additional arguments to return an array.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
+        apply_func_nb (ApplyMetaFunc): Callback function that accepts indices for a column as a 1D array,
+            the column index, and additional arguments, and returns a single value or an array
+            that broadcasts to the column's shape.
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        Array1d: Array resulting from applying the function to each group's meta information.
+        Array1d: Array resulting from applying the function to each column's meta information.
 
     !!! tip
         This function is parallelizable.
@@ -584,16 +588,14 @@ def reduce_mapped_segments_nb(
 
     Uses the last column, index, and id of each segment to compute the reduced value.
 
-    `reduce_func_nb` must accept the segment values and additional positional arguments,
-    and return a single value.
-
     Args:
         mapped_arr (Array1d): Array of mapped values.
         idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
         id_arr (Array1d): Array of IDs corresponding to each value in `mapped_arr`.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         segment_arr (Array1d): Array indicating segment boundaries for mapped values.
-        reduce_func_nb (ReduceFunc): Function to reduce a segment of values.
+        reduce_func_nb (ReduceFunc): Callback function that accepts a segment of `mapped_arr`
+            as a 1D array and additional arguments, and returns a single value.
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
@@ -679,17 +681,15 @@ def reduce_mapped_nb(
 ) -> tp.Array1d:
     """Reduce the mapped array by column to a single reduced value.
 
-    Faster than unstack_mapped_nb used in combination with other vectorbtpro methods,
+    Faster than `unstack_mapped_nb` used in combination with other vectorbtpro methods,
     and it requires less memory, though it does not benefit from caching.
-
-    `reduce_func_nb` must accept a slice of the mapped array and additional positional arguments,
-    and return a single value.
 
     Args:
         mapped_arr (Array1d): Array of mapped values.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         fill_value (float): Fill value used to initialize the output array.
-        reduce_func_nb (ReduceFunc): Reduction function applied to a slice of `mapped_arr`.
+        reduce_func_nb (ReduceFunc): Callback function that accepts a segment of `mapped_arr`
+            as a 1D array and additional arguments, and returns a single value.
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
@@ -731,13 +731,11 @@ def reduce_mapped_meta_nb(
 ) -> tp.Array1d:
     """Provide a meta reduction of the mapped array per column.
 
-    `reduce_func_nb` must accept the mapped indices for a column, the column index,
-    and additional positional arguments, and return a single value.
-
     Args:
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         fill_value (float): Fill value used to initialize the output array.
-        reduce_func_nb (MappedReduceMetaFunc): Reduction function for computing the meta value for a column.
+        reduce_func_nb (MappedReduceMetaFunc): Callback function that accepts mapped indices for a column 
+            as a 1D array, the column index, and additional arguments, and returns a single value.
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
@@ -783,14 +781,13 @@ def reduce_mapped_to_idx_nb(
 ) -> tp.Array1d:
     """Reduce the mapped array by column to determine an index for each column.
 
-    Same as `reduce_mapped_nb` but requires `idx_arr` to determine the index value.
-
     Args:
         mapped_arr (Array1d): Array of mapped values.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
         fill_value (float): Fill value used to initialize the output array.
-        reduce_func_nb (ReduceFunc): Reduction function that computes an index from a slice of `mapped_arr`.
+        reduce_func_nb (ReduceFunc): Callback function that accepts a segment of `mapped_arr`
+            as a 1D array and additional arguments, and returns a single index value.
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
@@ -839,14 +836,15 @@ def reduce_mapped_to_idx_meta_nb(
     """Meta version of `reduce_mapped_to_idx_nb`.
 
     Args:
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         idx_arr (Array1d): Array of row indices.
-        fill_value (float): Value to fill in the output for groups without data.
-        reduce_func_nb (MappedReduceMetaFunc): Reduction function used for meta reduction.
+        fill_value (float): Value to fill in the output for columns without data.
+        reduce_func_nb (MappedReduceMetaFunc): Callback function that accepts mapped indices for a column
+            as a 1D array, the column index, and additional arguments, and returns a single index value.
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: Array containing the meta reduced values for each group.
+        Array1d: Array containing the meta reduced values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -889,13 +887,14 @@ def reduce_mapped_to_array_nb(
 
     Args:
         mapped_arr (Array1d): Array of mapped values.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         fill_value (float): Value used to initialize the output array.
-        reduce_func_nb (ReduceToArrayFunc): Function to reduce the mapped array to an array.
+        reduce_func_nb (ReduceToArrayFunc): Callback function that accepts a segment of `mapped_arr`
+            as a 1D array and additional arguments, and returns a 1D array.
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: 2D array with reduced values across columns, where each column corresponds to a group.
+        Array2d: 2D array with reduced values across columns, where each column corresponds to a column.
 
     !!! tip
         This function is parallelizable.
@@ -946,9 +945,10 @@ def reduce_mapped_to_array_meta_nb(
     """Meta version of `reduce_mapped_to_array_nb`.
 
     Args:
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         fill_value (float): Value used to fill the output array.
-        reduce_func_nb (MappedReduceToArrayMetaFunc): Reduction function for meta conversion.
+        reduce_func_nb (MappedReduceToArrayMetaFunc): Callback function that accepts mapped indices for a column
+            as a 1D array, the column index, and additional arguments, and returns a 1D array.
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
@@ -1008,14 +1008,15 @@ def reduce_mapped_to_idx_array_nb(
 
     Args:
         mapped_arr (Array1d): Array of mapped values.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
         fill_value (float): Value used to initialize the output array.
-        reduce_func_nb (ReduceToArrayFunc): Function to reduce the mapped array to an index array.
+        reduce_func_nb (ReduceToArrayFunc): Callback function that accepts a segment of `mapped_arr`
+            as a 1D array and additional arguments, and returns a 1D array of indices.
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: 2D array with indices corresponding to reduced values for each group.
+        Array2d: 2D array with indices corresponding to reduced values for each column.
 
     !!! note
         Must return integers or raise an exception.
@@ -1073,10 +1074,11 @@ def reduce_mapped_to_idx_array_meta_nb(
     Uses `reduce_func_nb` similarly to `reduce_mapped_meta_nb` to compute a 2D array by reducing mapped indexes.
 
     Args:
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         idx_arr (Array1d): Array of row indices.
         fill_value (float): Fill value used to initialize the output array.
-        reduce_func_nb (MappedReduceToArrayMetaFunc): Reduction function applied on sub-arrays.
+        reduce_func_nb (MappedReduceToArrayMetaFunc): Callback function that accepts mapped indices for a column
+            as a 1D array, the column index, and additional arguments, and returns a 1D array of indices.
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
@@ -1122,14 +1124,14 @@ def reduce_mapped_to_idx_array_meta_nb(
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def mapped_value_counts_per_col_nb(codes: tp.Array1d, n_uniques: int, col_map: tp.GroupMap) -> tp.Array2d:
-    """Get value counts per column/group of a factorized mapped array.
+    """Get value counts per column of a factorized mapped array.
 
-    Counts the occurrences of each unique value in each group defined by the column mapping.
+    Counts the occurrences of each unique value in each column defined by the column mapping.
 
     Args:
         codes (Array1d): Factorized array of integer codes.
         n_uniques (int): Number of unique values.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
 
     Returns:
         Array2d: 2D integer array with counts for each unique value per column.
@@ -1339,16 +1341,16 @@ overload(_ignore_unstack_mapped_nb)(_ignore_unstack_mapped_nb)
 def ignore_unstack_mapped_nb(mapped_arr: tp.Array1d, col_map: tp.GroupMap, fill_value: float) -> tp.Array2d:
     """Unstack mapped array by ignoring index data.
 
-    Rearranges the mapped array into a 2D array using grouping information from `col_map`,
+    Rearranges the mapped array into a 2D array using column information from `col_map`,
     without using explicit row indices.
 
     Args:
         mapped_arr (Array1d): Array of mapped values.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         fill_value (float): Fill value for positions with no data.
 
     Returns:
-        Array2d: 2D array where each column represents a group from the mapped array.
+        Array2d: 2D array where each column represents a column from the mapped array.
     """
     return _ignore_unstack_mapped_nb(mapped_arr, col_map, fill_value)
 

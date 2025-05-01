@@ -34,6 +34,8 @@ class Analyzable(Wrapping, StatsBuilderMixin, PlotsBuilderMixin, metaclass=MetaA
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping`.
     """
 

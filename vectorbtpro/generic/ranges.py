@@ -2081,6 +2081,8 @@ class PatternRanges(Ranges):
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         records_arr (RecordArray): Array of records.
 
             Must adhere to the `vectorbtpro.generic.enums.pattern_range_dt` dtype.

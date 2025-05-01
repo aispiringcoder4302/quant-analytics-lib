@@ -392,6 +392,8 @@ class IndicatorBase(Analyzable):
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         input_list (IFArrayList): List of two-dimensional input arrays.
         input_mapper (IFInputMapper): One-dimensional input mapper array.
         in_output_list (IFArrayList): List of two-dimensional input-output arrays.
@@ -646,8 +648,8 @@ class IndicatorBase(Analyzable):
                 * `dtype`: Data type to use when creating the array with `np.empty`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
-                Arguments wrapped with `vectorbtpro.utils.template.Rep` are substituted
-                with their broadcasted values.
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.

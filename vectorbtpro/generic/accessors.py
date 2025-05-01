@@ -1419,7 +1419,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     @hybrid_method
     def map(
         cls_or_self,
-        map_func_nb: tp.Union[str, tp.MapFunc, tp.MapMetaFunc],
+        map_func_nb: tp.Union[str, tp.AnyMapFunc],
         *args,
         broadcast_named_args: tp.KwargsLike = None,
         broadcast_kwargs: tp.KwargsLike = None,
@@ -1436,12 +1436,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
         it performs broadcasting and template substitution and utilizes the meta mapping version.
 
         Args:
-            map_func_nb (Union[str, MapFunc, MapMetaFunc]): Mapping function to apply.
+            map_func_nb (Union[str, AnyMapFunc]): Callback function for mapping.
 
-                If provided as a string, selects the corresponding Numba function
-                from `nb` with the suffix "_map_nb".
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_map_nb`.
             *args: Positional arguments for `map_func_nb`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -1564,7 +1569,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     @hybrid_method
     def apply_along_axis(
         cls_or_self,
-        apply_func_nb: tp.Union[str, tp.ApplyFunc, tp.ApplyMetaFunc],
+        apply_func_nb: tp.Union[str, tp.AnyApplyFunc],
         *args,
         axis: int = 1,
         broadcast_named_args: tp.KwargsLike = None,
@@ -1579,13 +1584,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
         JIT compilation, and chunked processing.
 
         Args:
-            apply_func_nb (Union[str, ApplyFunc, ApplyMetaFunc]): Function or string identifier
-                to apply along the specified axis.
+            apply_func_nb (Union[str, AnyApplyFunc]): Callback function for applying.
+
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_apply_nb`.
             *args: Positional arguments for `apply_func_nb`.
             axis (int): Axis along which to apply the function.
 
                 Use 1 for column-wise and 0 for row-wise operations.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -1744,7 +1756,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def rolling_apply(
         cls_or_self,
         window: tp.Optional[tp.FrequencyLike],
-        reduce_func_nb: tp.Union[str, tp.ReduceFunc, tp.RangeReduceMetaFunc],
+        reduce_func_nb: tp.Union[str, tp.AnyReduceFunc],
         *args,
         minp: tp.Optional[int] = None,
         broadcast_named_args: tp.KwargsLike = None,
@@ -1761,11 +1773,18 @@ class GenericAccessor(BaseAccessor, Analyzable):
             window (Optional[FrequencyLike]): Window size as an integer or a frequency string.
         
                 If None, an expanding window is used.
-            reduce_func_nb (Union[str, ReduceFunc, RangeReduceMetaFunc]):
-                Reduction function identifier or function.
+            reduce_func_nb (Union[str, AnyReduceFunc]): Callback function for reducing.
+
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             *args: Positional arguments for the reduction function.
             minp (Optional[int]): Minimum number of observations required.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -1946,7 +1965,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def groupby_apply(
         cls_or_self,
         by: tp.AnyGroupByLike,
-        reduce_func_nb: tp.Union[str, tp.ReduceFunc, tp.GroupByReduceMetaFunc],
+        reduce_func_nb: tp.Union[str, tp.AnyGroupByReduceFunc],
         *args,
         groupby_kwargs: tp.KwargsLike = None,
         broadcast_named_args: tp.KwargsLike = None,
@@ -1965,15 +1984,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 It may be an instance of `vectorbtpro.base.grouping.base.Grouper`, a Pandas
                 `GroupBy`, a `vectorbtpro.base.resampling.base.Resampler`, or any groupby-like object.
                 If not accepted by a Grouper, `pd.DataFrame.groupby` is used with `groupby_kwargs`.
-            reduce_func_nb (Union[str, ReduceFunc, GroupByReduceMetaFunc]): Function to reduce groups.
+            reduce_func_nb (Union[str, AnyGroupByReduceFunc]): Callback function for reducing groups.
 
-                If a string is provided, it is resolved to a function in `nb` by appending `_reduce_nb`.
-                Use a meta function for operations requiring additional group information.
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             *args: Positional arguments for `reduce_func_nb`.
             groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
 
                 See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -2109,7 +2133,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def groupby_transform(
         cls_or_self,
         by: tp.AnyGroupByLike,
-        transform_func_nb: tp.Union[str, tp.GroupByTransformFunc, tp.GroupByTransformMetaFunc],
+        transform_func_nb: tp.Union[str, tp.AnyGroupByTransformFunc],
         *args,
         groupby_kwargs: tp.KwargsLike = None,
         broadcast_named_args: tp.KwargsLike = None,
@@ -2128,16 +2152,20 @@ class GenericAccessor(BaseAccessor, Analyzable):
             by (AnyGroupByLike): Grouping key or array for segmenting the data.
         
                 See `GenericAccessor.groupby_apply`.
-            transform_func_nb (Union[str, GroupByTransformFunc, GroupByTransformMetaFunc]):
-                Transformation function to apply.
+            transform_func_nb (Union[str, AnyGroupByTransformFunc]): Callback function for transforming groups.
+
+                For specification, see the underlying Numba function.
         
-                If a string is provided, the corresponding function is retrieved from the `nb`
-                module using the `_transform_nb` suffix.
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_transform_nb`.
             *args: Positional arguments for `transform_func_nb`.
             groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -2247,7 +2275,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def resample_apply(
         cls_or_self,
         rule: tp.AnyRuleLike,
-        reduce_func_nb: tp.Union[str, tp.ReduceFunc, tp.GroupByReduceMetaFunc, tp.RangeReduceMetaFunc],
+        reduce_func_nb: tp.Union[str, tp.AnyResampleReduceFunc],
         *args,
         use_groupby_apply: bool = False,
         freq: tp.Optional[tp.FrequencyLike] = None,
@@ -2265,10 +2293,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
             rule (AnyRuleLike): Frequency-like rule that can be an instance of
                 `vectorbtpro.base.resampling.base.Resampler`, `pandas.core.resample.Resampler`,
                 or any object accepted by `pd.DataFrame.resample` when combined with `resample_kwargs`.
-            reduce_func_nb (Union[str, ReduceFunc, GroupByReduceMetaFunc, RangeReduceMetaFunc]):
-                Reduction or meta function to apply.
+            reduce_func_nb (Union[str, AnyResampleReduceFunc]): Callback function for resampling.
+
+                For specification, see the underlying Numba function.
         
-                If provided as a string, it is converted by appending `_reduce_nb` and retrieved from `nb`.
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             *args: Positional arguments for `reduce_func_nb`.
             use_groupby_apply (bool): If True, apply the reduction function using
                 `GenericAccessor.groupby_apply` with post-processing; otherwise, use
@@ -2279,6 +2309,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
             resample_kwargs (KwargsLike): Keyword arguments for Pandas `resample` method.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -2427,8 +2460,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
     @hybrid_method
     def apply_and_reduce(
         cls_or_self,
-        apply_func_nb: tp.Union[str, tp.ApplyFunc, tp.ApplyMetaFunc],
-        reduce_func_nb: tp.Union[str, tp.ReduceFunc, tp.ReduceMetaFunc],
+        apply_func_nb: tp.Union[str, tp.AnyApplyFunc],
+        reduce_func_nb: tp.Union[str, tp.AnyReduceFunc],
         apply_args: tp.Optional[tuple] = None,
         reduce_args: tp.Optional[tuple] = None,
         broadcast_named_args: tp.KwargsLike = None,
@@ -2445,11 +2478,24 @@ class GenericAccessor(BaseAccessor, Analyzable):
         template substitution and broadcasting are applied.
 
         Args:
-            apply_func_nb (Union[str, ApplyFunc, ApplyMetaFunc]): Function or name of the apply function.
-            reduce_func_nb (Union[str, ReduceFunc, ReduceMetaFunc]): Function or name of the reduce function.
+            apply_func_nb (Union[str, AnyApplyFunc]): Callback function for applying.
+
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_apply_nb`.
+            reduce_func_nb (Union[str, AnyReduceFunc]): Callback function for reducing.
+
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             apply_args (Optional[tuple]): Arguments passed to the apply function.
             reduce_args (Optional[tuple]): Arguments passed to the reduce function.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -2579,17 +2625,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     @hybrid_method
     def reduce(
         cls_or_self,
-        reduce_func_nb: tp.Union[
-            str,
-            tp.ReduceFunc,
-            tp.ReduceMetaFunc,
-            tp.ReduceToArrayFunc,
-            tp.ReduceToArrayMetaFunc,
-            tp.ReduceGroupedFunc,
-            tp.ReduceGroupedMetaFunc,
-            tp.ReduceGroupedToArrayFunc,
-            tp.ReduceGroupedToArrayMetaFunc,
-        ],
+        reduce_func_nb: tp.Union[str, tp.AnyFlexReduceFunc],
         *args,
         returns_array: bool = False,
         returns_idx: bool = False,
@@ -2610,11 +2646,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
         The internal reduction function is chosen based on the grouping status and provided flags.
 
         Args:
-            reduce_func_nb (Union[str, ReduceFunc, ReduceMetaFunc, ReduceToArrayFunc, ReduceToArrayMetaFunc, ReduceGroupedFunc, ReduceGroupedMetaFunc, ReduceGroupedToArrayFunc, ReduceGroupedToArrayMetaFunc]):
-                Reducing function to apply.
+            reduce_func_nb (Union[str, AnyFlexReduceFunc]): Callback function for flexible reducing.
 
-                It can be a function or a string representing the suffix of a reducing
-                function from `vectorbtpro.generic.nb` (e.g., "sum" corresponds to `sum_reduce_nb`).
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             *args: Positional arguments for `reduce_func_nb`.
             returns_array (bool): True if the reducing function returns an array.
         
@@ -2628,6 +2665,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
             order (str): Order in which to flatten the array ("C" for row-major or "F" for column-major).
             to_index (bool): True to convert positions to index labels when `returns_idx` is True.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -2886,7 +2926,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def proximity_apply(
         cls_or_self,
         window: int,
-        reduce_func_nb: tp.Union[str, tp.ReduceFunc, tp.ProximityReduceMetaFunc],
+        reduce_func_nb: tp.Union[str, tp.AnyProximityReduceFunc],
         *args,
         broadcast_named_args: tp.KwargsLike = None,
         broadcast_kwargs: tp.KwargsLike = None,
@@ -2902,10 +2942,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             window (int): Window size.
-            reduce_func_nb (Union[str, ReduceFunc, ProximityReduceMetaFunc]):
-                Reduction function or its string identifier.
+            reduce_func_nb (Union[str, AnyProximityReduceFunc]): Callback function for proximal reducing.
+
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             *args: Positional arguments for `reduce_func_nb`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -3036,7 +3083,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     @hybrid_method
     def squeeze_grouped(
         cls_or_self,
-        squeeze_func_nb: tp.Union[str, tp.ReduceFunc, tp.GroupSqueezeMetaFunc],
+        squeeze_func_nb: tp.Union[str, tp.AnyGroupSqueezeFunc],
         *args,
         broadcast_named_args: tp.KwargsLike = None,
         broadcast_kwargs: tp.KwargsLike = None,
@@ -3050,13 +3097,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Squeeze each group of columns into a single column.
 
         Args:
-            squeeze_func_nb (Union[str, ReduceFunc, GroupSqueezeMetaFunc]):
-                Squeeze function applied to each group.
+            squeeze_func_nb (Union[str, AnyGroupSqueezeFunc]): Callback function for squeezing groups.
 
-                If provided as a string, it is converted into a function by appending
-                "_reduce_nb" and retrieving it from `nb`.
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             *args: Positional arguments for `squeeze_func_nb`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -3477,7 +3528,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
     def resample_to_index(
         cls_or_self,
         index: tp.AnyRuleLike,
-        reduce_func_nb: tp.Union[str, tp.ReduceFunc, tp.RangeReduceMetaFunc],
+        reduce_func_nb: tp.Union[str, tp.AnyRangeReduceFunc],
         *args,
         freq: tp.Union[None, bool, tp.FrequencyLike] = None,
         before: bool = False,
@@ -3497,8 +3548,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             index (AnyRuleLike): Target index for resampling.
-            reduce_func_nb (Union[str, ReduceFunc, RangeReduceMetaFunc]):
-                Reduction function to apply on each group.
+            reduce_func_nb (Union[str, AnyRangeReduceFunc]): Callback function for reducing ranges.
+
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             *args: Positional arguments for `reduce_func_nb`.
             freq (Union[None, bool, FrequencyLike]): Frequency of the target index 
                 (e.g., "daily", "15 min", "index_mean").
@@ -3506,6 +3561,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
             before (bool): If True, use index ranges preceding the target index.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -3693,7 +3751,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         cls_or_self,
         target_lbound_index: tp.IndexLike,
         target_rbound_index: tp.IndexLike,
-        reduce_func_nb: tp.Union[str, tp.ReduceFunc, tp.RangeReduceMetaFunc],
+        reduce_func_nb: tp.Union[str, tp.AnyRangeReduceFunc],
         *args,
         closed_lbound: bool = True,
         closed_rbound: bool = False,
@@ -3711,14 +3769,19 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             target_lbound_index (IndexLike): Target lower bound index for resampling.
             target_rbound_index (IndexLike): Target upper bound index for resampling.
-            reduce_func_nb (Union[str, ReduceFunc, RangeReduceMetaFunc]):
-                Reduction function for aggregating data over index ranges.
+            reduce_func_nb (Union[str, AnyRangeReduceFuncc]): Callback function for reducing ranges.
 
-                If provided as a string, the corresponding function is resolved by appending `_reduce_nb`.
+                For specification, see the underlying Numba function.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             *args: Positional arguments for `reduce_func_nb`.
             closed_lbound (bool): Indicates if the lower bound of the interval is inclusive.
             closed_rbound (bool): Indicates if the upper bound of the interval is inclusive.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.

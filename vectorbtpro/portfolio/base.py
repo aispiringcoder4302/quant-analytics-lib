@@ -137,6 +137,8 @@ def records_resample_func(
         obj (ArrayLike): Record data array.
         resampler (Union[Resampler, PandasResampler]): Resampler instance used for resampling.
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         cls (Union[type, str]): Record class or its attribute name.
         **kwargs: Additional keyword arguments.
 
@@ -163,6 +165,8 @@ def returns_resample_func(
         obj (ArrayLike): Returns data array.
         resampler (Union[Resampler, PandasResampler]): Resampler instance used for resampling.
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         fill_with_zero (bool): Flag indicating whether to fill missing values with zero.
         log_returns (bool): Flag to compute logarithmic returns.
         **kwargs: Additional keyword arguments.
@@ -2426,6 +2430,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             obj_name (str): Name of the object for reference.
             obj_type (str): Identifier specifying the type of the object.
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -3318,22 +3324,27 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             short_exits (Optional[ArrayLike]): Boolean array of short exit signals.
 
                 Broadcasts.
-            adjust_func_nb (Union[None, PathLike, AdjustFunc]): User-defined function to adjust
-                the simulation state.
+            adjust_func_nb (Union[None, PathLike, AdjustFunc]): 
+                Callback function called to adjust the context before signal generation.
+                
+                Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
 
                 Passed to the corresponding signal function. Can be provided as a module path when staticizing.
             adjust_args (Args): Positional arguments for `adjust_func_nb`.
-            signal_func_nb (Union[None, PathLike, SignalFunc]): Function to generate signals.
+            signal_func_nb (Union[None, PathLike, SignalFunc]): 
+                Callback function called to generate signals.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
             signal_args (Args): Positional arguments for `signal_func_nb`.
-            post_signal_func_nb (Union[None, PathLike, PostSignalFunc]): Post-signal function.
+            post_signal_func_nb (Union[None, PathLike, PostSignalFunc]): 
+                Callback function called after processing an order.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
             post_signal_args (Args): Positional arguments for `post_signal_func_nb`.
-            post_segment_func_nb (Union[None, PathLike, PostSignalSegmentFunc]): Post-segment function.
+            post_segment_func_nb (Union[None, PathLike, PostSignalSegmentFunc]): 
+                Callback function called after processing a segment.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be provided as a module path when staticizing.
@@ -3659,7 +3670,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.grouping.base.Grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
-                Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -4714,47 +4726,53 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 `broadcast_named_args`, only against the final shape.
             call_pre_segment (Optional[bool]): Whether to call `pre_segment_func_nb` regardless of `segment_mask`.
             call_post_segment (Optional[bool]): Whether to call `post_segment_func_nb` regardless of `segment_mask`.
-            pre_sim_func_nb (Optional[PreSimFunc]): Function called before simulation.
+            pre_sim_func_nb (Optional[PreSimFunc]): Callback function called before the simulation.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
             pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
-            post_sim_func_nb (Optional[PostSimFunc]): Function called after simulation.
+            post_sim_func_nb (Optional[PostSimFunc]): Callback function called after the simulation.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
             post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
-            pre_group_func_nb (Optional[PreGroupFunc]): Function called before each group.
+            pre_group_func_nb (Optional[PreGroupFunc]): Callback function called before processing a group.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` and
                 is used only when `row_wise` is False.
             pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
-            post_group_func_nb (Optional[PostGroupFunc]): Function called after each group.
+            post_group_func_nb (Optional[PostGroupFunc]): Callback function called after processing a group.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` and
                 is used only when `row_wise` is False.
             post_group_args (Args): Positional arguments for `post_group_func_nb`.
-            pre_row_func_nb (Optional[PreRowFunc]): Function called before each row.
+            pre_row_func_nb (Optional[PreRowFunc]): Callback function called before processing a row.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` and
                 is used only when `row_wise` is True.
             pre_row_args (Args): Positional arguments for `pre_row_func_nb`.
-            post_row_func_nb (Optional[PostRowFunc]): Function called after each row.
+            post_row_func_nb (Optional[PostRowFunc]): Callback function called after processing a row.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` and
                 is used only when `row_wise` is True.
             post_row_args (Args): Positional arguments for `post_row_func_nb`.
-            pre_segment_func_nb (Optional[PreSegmentFunc]): Function called before each segment.
+            pre_segment_func_nb (Optional[PreSegmentFunc]): Callback function called before processing a segment.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
             pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
-            post_segment_func_nb (Optional[PostSegmentFunc]): Function called after each segment.
+            post_segment_func_nb (Optional[PostSegmentFunc]): Callback function called after processing a segment.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
             post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
-            order_func_nb (Optional[OrderFunc]): Order generation function.
+            order_func_nb (Optional[OrderFunc]): Callback function called to generate an order.
+
+                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_order_func_nb`.
             order_args (Args): Positional arguments for `order_func_nb`.
-            flex_order_func_nb (Optional[FlexOrderFunc]): Flexible order generation function.
+            flex_order_func_nb (Optional[FlexOrderFunc]): Callback function called to generate a flexible order.
+
+                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_flex_order_func_nb`.
             flex_order_args (Args): Positional arguments for `flex_order_func_nb`.
-            post_order_func_nb (Optional[PostOrderFunc]): Callback invoked after processing an order.
+            post_order_func_nb (Optional[PostOrderFunc]): Callback function called after processing an order.
+
+                Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
             post_order_args (Args): Positional arguments for `post_order_func_nb`.
             open (Optional[ArrayLike]): Open prices.
 
@@ -4806,7 +4824,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.grouping.base.Grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
-                Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -5377,9 +5396,16 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             log (Optional[ArrayLike]): Flag indicating whether to log orders.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.log`.
-            pre_segment_func_nb (Optional[PreSegmentFunc]): Function called before each segment.
-            order_func_nb (Optional[OrderFunc]): Order generation function.
-            flex_order_func_nb (Optional[FlexOrderFunc]): Flexible order generation function.
+            pre_segment_func_nb (Optional[PreSegmentFunc]): Callback function called before processing a segment.
+
+                Defaults to `vectorbtpro.portfolio.nb.from_order_func.def_pre_segment_func_nb` or
+                `vectorbtpro.portfolio.nb.from_order_func.def_flex_pre_segment_func_nb` if `flexible` is True.
+            order_func_nb (Optional[OrderFunc]): Callback function called to generate an order.
+
+                Defaults to `vectorbtpro.portfolio.nb.from_order_func.def_order_func_nb`.
+            flex_order_func_nb (Optional[FlexOrderFunc]): Callback function called to generate a flexible order.
+
+                Defaults to `vectorbtpro.portfolio.nb.from_order_func.def_flex_order_func_nb`.
             val_price (Optional[ArrayLike]): Asset valuation price used in decision making.
 
                 Broadcasts. Can also be provided as `vectorbtpro.portfolio.enums.ValPriceType`.
@@ -5422,7 +5448,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             flexible (bool): Whether to apply flexible processing.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
-                Allows substitution of argument names wrapped with `vectorbtpro.utils.template.Rep`.
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
             
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -7733,7 +7760,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             group_by (GroupByLike): Grouping specification.
             
                 See `vectorbtpro.base.grouping.base.Grouper`.
-            KwargsLike): Keyword arguments for wrapping the result.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
             Union[ArrayLike, MaybeSeries]: Cash deposit series, either as a raw array or a wrapped series.

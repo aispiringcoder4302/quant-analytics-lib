@@ -2841,7 +2841,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
 
     Manages execution of functions and caching of results through the `CARunSetup.run` method.
 
-    Accepts a `cacheable` argument representing a cacheable property, method, or function from
+    Accepts `cacheable` argument representing a cacheable property, method, or function from
     `vectorbtpro.utils.decorators`.
 
     The setup is uniquely identified by hashing the provided callable and, if applicable, the id of its

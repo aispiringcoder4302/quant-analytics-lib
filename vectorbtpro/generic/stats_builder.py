@@ -236,7 +236,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
             tags (Optional[MaybeIterable[str]]): Tag or tags to filter metrics.
 
                 See `vectorbtpro.utils.tagging.match_tags`.
-            column (Optional[Column]): Column identifier to select.
+            column (Optional[Column]): Identifier of the column to select.
 
                 !!! hint
                     There are two methods to select a column:

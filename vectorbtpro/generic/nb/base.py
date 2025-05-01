@@ -1679,7 +1679,7 @@ def value_counts_nb(codes: tp.Array2d, n_uniques: int, group_map: tp.GroupMap) -
     Args:
         codes (Array2d): Factorized array of integer codes.
         n_uniques (int): Number of unique values.
-        group_map (GroupMap): Tuple of group indices and lengths.
+        group_map (GroupMap): Tuple of indices and lengths for each group.
 
     Returns:
         Array2d: A 2-dimensional array of counts with shape (n_uniques, number of groups).
@@ -1948,7 +1948,7 @@ def demean_nb(arr: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
 
     Args:
         arr (Array2d): Input 2-dimensional array.
-        group_map (GroupMap): Tuple of group indices and lengths.
+        group_map (GroupMap): Tuple of indices and lengths for each group.
 
     Returns:
         Array2d: A 2-dimensional array with each element demeaned by its group's mean.

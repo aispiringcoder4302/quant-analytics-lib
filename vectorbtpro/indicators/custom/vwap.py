@@ -35,6 +35,8 @@ def substitute_anchor(wrapper: ArrayWrapper, anchor: tp.Optional[tp.FrequencyLik
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         anchor (Optional[FrequencyLike]): Reset frequency for grouping.
 
     Returns:

@@ -371,6 +371,8 @@ class Splitter(Analyzable):
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         index (Index): Index used for splitting.
         splits_arr (SplitsArray): Two-dimensional array representing splits.
 
@@ -5202,7 +5204,7 @@ class Splitter(Analyzable):
 
         Args:
             new_split (SplitLike): Specification for splitting ranges.
-            column (Optional[Hashable]): Column identifier to select.
+            column (Optional[Hashable]): Identifier of the column to select.
 
                 Required if multiple sets are present.
             new_set_labels (Optional[Sequence[Hashable]]): Labels to assign to the new sets.

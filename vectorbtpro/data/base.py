@@ -752,6 +752,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         data (Union[feature_dict, symbol_dict]): Data dictionary structured as feature-oriented
             (`feature_dict`) or symbol-oriented (`symbol_dict`).
         single_key (bool): Specifies whether the instance should be treated as having a single key.

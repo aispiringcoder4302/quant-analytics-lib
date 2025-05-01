@@ -1327,7 +1327,7 @@ class MappedArray(Analyzable):
     @hybrid_method
     def apply(
         cls_or_self: tp.MaybeType[MappedArrayT],
-        apply_func_nb: tp.Union[tp.ApplyFunc, tp.ApplyMetaFunc],
+        apply_func_nb: tp.AnyApplyFunc,
         *args,
         group_by: tp.GroupByLike = None,
         apply_per_group: bool = False,
@@ -1342,7 +1342,7 @@ class MappedArray(Analyzable):
         Applies the function on groups of columns if `apply_per_group` is True.
 
         Args:
-            apply_func_nb (Union[ApplyFunc, ApplyMetaFunc]): Function to apply to the mapped array.
+            apply_func_nb (AnyApplyFunc): Callback function for applying to a mapped array.
             *args: Positional arguments for `apply_func_nb`.
             group_by (GroupByLike): Grouping specification.
 
@@ -1410,10 +1410,10 @@ class MappedArray(Analyzable):
                 boundaries per column, or a tuple of such arrays.
 
                 Alternatively, pass "idx" to use the index array.
-            reduce_func_nb (Union[str, ReduceFunc]): Reducing function to apply.
+            reduce_func_nb (Union[str, ReduceFunc]): Callback function for reducing a mapped array.
 
-                If a string is provided, it represents the suffix of a function
-                from `vectorbtpro.generic.nb` (e.g., "sum" for `sum_reduce_nb`).
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             *args: Positional arguments for `reduce_func_nb`.
             idx_arr (Optional[Array1d]): Array of row indices.
 
@@ -1484,9 +1484,7 @@ class MappedArray(Analyzable):
     @hybrid_method
     def reduce(
         cls_or_self,
-        reduce_func_nb: tp.Union[
-            tp.ReduceFunc, tp.MappedReduceMetaFunc, tp.ReduceToArrayFunc, tp.MappedReduceToArrayMetaFunc
-        ],
+        reduce_func_nb: tp.AnyMappedReduceFunc,
         *args,
         idx_arr: tp.Optional[tp.Array1d] = None,
         returns_array: bool = False,
@@ -1502,8 +1500,7 @@ class MappedArray(Analyzable):
         """Reduce mapped array by column/group.
 
         Args:
-            reduce_func_nb (Union[ReduceFunc, MappedReduceMetaFunc, ReduceToArrayFunc, MappedReduceToArrayMetaFunc]):
-                Reduction function to apply.
+            reduce_func_nb (AnyMappedReduceFunc): Callback function for reducing a mapped array.
             *args: Positional arguments for `reduce_func_nb`.
             idx_arr (Optional[Array1d]): Array of row indices used when `returns_idx` is True.
             returns_array (bool): Flag indicating that `reduce_func_nb` returns an array.
@@ -2434,8 +2431,10 @@ class MappedArray(Analyzable):
             idx_arr (Optional[Array1d]): Array of row indices.
 
                 If None, uses `MappedArray.idx_arr`.
-            reduce_func_nb (Union[None, str, ReduceFunc]): Function or name used to reduce
-                conflicting index segments.
+            reduce_func_nb (Union[None, str, ReduceFunc]): Callable function for reducing conflicting segments.
+            
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             reduce_args (ArgsLike): Additional arguments for the reduce function.
             dtype (Optional[DTypeLike]): Data type of the output.
             ignore_index (bool): Whether to ignore the original index and stack values vertically

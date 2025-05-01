@@ -82,7 +82,7 @@ def optimize_meta_nb(
     n_cols: int,
     range_starts: tp.Array1d,
     range_ends: tp.Array1d,
-    optimize_func_nb: tp.Callable,
+    optimize_func_nb: tp.OptimizeFunc,
     *args,
 ) -> tp.Array2d:
     """Optimize over each index range.
@@ -93,10 +93,9 @@ def optimize_meta_nb(
         n_cols (int): Number of columns for the output allocation.
         range_starts (Array1d): Array of starting indices for each range.
         range_ends (Array1d): Array of ending indices for each range.
-        optimize_func_nb (Callable): Function that optimizes a given range.
-
-            It should accept an index, the corresponding start and end indices,
-            and any additional arguments.
+        optimize_func_nb (OptimizeFunc): Callback function that accepts an index, 
+            start row index, end row index, and additional arguments, and returns the optimized 
+            allocation as a single value or an array that broadcasts to the number of columns.
         *args: Positional arguments for `optimize_func_nb`.
 
     Returns:
@@ -107,7 +106,7 @@ def optimize_meta_nb(
     """
     out = np.empty((range_starts.shape[0], n_cols), dtype=float_)
     for i in prange(len(range_starts)):
-        out[i] = optimize_func_nb(i, range_starts[i], range_ends[i], *args)
+        out[i, :] = optimize_func_nb(i, range_starts[i], range_ends[i], *args)
     return out
 
 
@@ -125,7 +124,7 @@ def optimize_meta_nb(
 def allocate_meta_nb(
     n_cols: int,
     index_points: tp.Array1d,
-    allocate_func_nb: tp.Callable,
+    allocate_func_nb: tp.AllocateFunc,
     *args,
 ) -> tp.Array2d:
     """Allocate by mapping each index point.
@@ -135,9 +134,9 @@ def allocate_meta_nb(
     Args:
         n_cols (int): Number of columns for the allocation.
         index_points (Array1d): Array of index points for allocation.
-        allocate_func_nb (Callable): Function that computes allocation at a given point.
-
-            It should accept a point's index, the index value, and any additional arguments.
+        allocate_func_nb (AllocateFunc): Callback function that accepts an index,
+            index point, and additional arguments, and returns the allocation as a single value
+            or an array that broadcasts to the number of columns.
         *args: Positional arguments for `allocate_func_nb`.
 
     Returns:
@@ -148,7 +147,7 @@ def allocate_meta_nb(
     """
     out = np.empty((index_points.shape[0], n_cols), dtype=float_)
     for i in prange(len(index_points)):
-        out[i] = allocate_func_nb(i, index_points[i], *args)
+        out[i, :] = allocate_func_nb(i, index_points[i], *args)
     return out
 
 

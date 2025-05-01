@@ -62,6 +62,8 @@ class PriceRecords(Records):
 
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
         records_arr (RecordArray): Array of records.
         open (Optional[ArrayLike]): Array of open prices.
         high (Optional[ArrayLike]): Array of high prices.
@@ -122,6 +124,8 @@ class PriceRecords(Records):
 
         Args:
             wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
             records (RecordArray): Array of records.
             data (Optional[Data]): Data object containing OHLC data.
             open (Optional[ArrayLike]): Array of open prices.

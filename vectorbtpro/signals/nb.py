@@ -68,10 +68,10 @@ def generate_nb(
 
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
-        place_func_nb (PlaceFunc): Signal placement function.
+        place_func_nb (PlaceFunc): Callback function that accepts `vectorbtpro.signals.enums.GenEnContext`
+            and additional arguments, and returns the index of the last signal (-1 to break the loop).
 
-            `place_func_nb` must accept a context of type `vectorbtpro.signals.enums.GenEnContext`
-            and return the index of the last signal (-1 to break the loop).
+            To place multiple signals, modify `c.out` in the context and return the last index.
         place_args (Args): Positional arguments for `place_func_nb`.
         only_once (bool): Whether to run the placement function only once.
         wait (int): Number of ticks to wait before placing the next entry.
@@ -143,10 +143,10 @@ def generate_ex_nb(
 
     Args:
         entries (Array2d): Boolean array with entry signals.
-        exit_place_func_nb (PlaceFunc): Exit placement function.
+        exit_place_func_nb (PlaceFunc): Callback function that accepts `vectorbtpro.signals.enums.GenExContext`
+            and additional arguments, and returns the index of the last exit signal (-1 to break the loop).
 
-            `exit_place_func_nb` must accept a context of type `vectorbtpro.signals.enums.GenExContext`
-            and return the index of the last signal (-1 to break the loop).
+            To place multiple signals, modify `c.out` in the context and return the last index.
         exit_place_args (Args): Positional arguments for `exit_place_func_nb`.
         wait (int): Number of ticks to wait before placing exits.
 
@@ -247,15 +247,15 @@ def generate_enex_nb(
 
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
-        entry_place_func_nb (PlaceFunc): Function to place entry signals.
+        entry_place_func_nb (PlaceFunc): Callback function that accepts `vectorbtpro.signals.enums.GenEnExContext`
+            and additional arguments, and returns the index of the last entry signal (-1 to break the loop).
 
-            Must accept a context of type `vectorbtpro.signals.enums.GenEnExContext`
-            and return the index of the last signal (-1 to break the loop).
+            To place multiple signals, modify `c.out` in the context and return the last index.
         entry_place_args (Args): Positional arguments for `entry_place_func_nb`.
-        exit_place_func_nb (PlaceFunc): Function to place exit signals.
+        exit_place_func_nb (PlaceFunc): Callback function that accepts `vectorbtpro.signals.enums.GenEnExContext`
+            and additional arguments, and returns the index of the last exit signal (-1 to break the loop).
 
-            Must accept a context of type `vectorbtpro.signals.enums.GenEnExContext`
-            and return the index of the last signal (-1 to break the loop).
+            To place multiple signals, modify `c.out` in the context and return the last index.
         exit_place_args (Args): Positional arguments for `exit_place_func_nb`.
         entry_wait (int): Number of periods to wait before an entry signal is triggered.
 
@@ -887,13 +887,12 @@ def rank_nb(
 ) -> tp.Array2d:
     """Rank each signal using `rank_func_nb`.
 
-    Applies `rank_func_nb` on each True value in the input `mask`. The function `rank_func_nb`
-    must accept a context of type `vectorbtpro.signals.enums.RankContext` and return -1 for no rank
-    or a non-negative integer for a valid rank.
+    Applies `rank_func_nb` on each True value in the input `mask`.
 
     Args:
         mask (Array2d): Boolean mask array indicating positions of signals.
-        rank_func_nb (RankFunc): Function that computes the rank for a signal using a rank context.
+        rank_func_nb (RankFunc): Callback function that accepts `vectorbtpro.signals.enums.RankContext`
+            and additional arguments, and returns -1 for no rank or a non-negative integer for a valid rank.
         rank_args (Args): Positional arguments for `rank_func_nb`.
         reset_by (Optional[Array2d]): Boolean array indicating reset positions.
         after_false (bool): If True, disregards the first True partition with no preceding False.
@@ -1965,7 +1964,7 @@ def ravel_nb(mask: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
 
     Args:
         mask (Array2d): 2D boolean mask to process.
-        group_map (GroupMap): Tuple of group indices and lengths.
+        group_map (GroupMap): Tuple of indices and lengths for each group.
 
     Returns:
         Array2d: 2D boolean mask with True values raveled into individual columns per group.

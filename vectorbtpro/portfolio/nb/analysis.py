@@ -109,7 +109,7 @@ def asset_flow_nb(
         order_records (RecordArray): Array of order records.
 
             Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         direction (int): Position direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
@@ -1000,7 +1000,7 @@ def cash_flow_nb(
         order_records (RecordArray): Array of order records.
 
             Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         free (bool): Flag indicating whether to use free cash flow.
         cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
         
@@ -1891,7 +1891,7 @@ def total_profit_nb(
         order_records (RecordArray): Array of order records.
 
             Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         init_position (FlexArray1dLike): Initial position.
         
             Provided as a scalar or per column.

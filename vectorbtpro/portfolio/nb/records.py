@@ -237,7 +237,7 @@ def fill_entry_trades_in_position_nb(
         order_records (RecordArray): Array of order records.
 
             Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         col (int): Column index for the orders.
         sim_start (int): Simulation start index.
         sim_end (int): Simulation end index.
@@ -369,7 +369,7 @@ def get_entry_trades_nb(
         close (FlexArray2dLike): Close prices.
         
             Provided as a scalar, or per row, column, or element.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
@@ -718,7 +718,7 @@ def get_exit_trades_nb(
         close (FlexArray2dLike): Close prices.
         
             Provided as a scalar, or per row, column, or element.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
@@ -1121,10 +1121,10 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
         trade_records (RecordArray): Array of trade records.
 
             Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
 
     Returns:
-        RecordArray: Array of aggregated position records after repartitioning based on group counts.
+        RecordArray: Array of aggregated position records after repartitioning based on column counts.
 
             Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
@@ -1237,7 +1237,7 @@ def get_long_view_orders_nb(
 
             Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         close (Array2d): Array of close prices.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
@@ -1411,7 +1411,7 @@ def get_short_view_orders_nb(
     """Get view of orders in short positions only.
 
     Filters order records to return only those corresponding to short positions.
-    The function simulates the evolution of trading positions for each group using the provided
+    The function simulates the evolution of trading positions for each column using the provided
     initial position and price, and applies simulation range filters defined by `sim_start` and `sim_end`.
 
     Args:
@@ -1419,7 +1419,7 @@ def get_short_view_orders_nb(
 
             Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         close (Array2d): 2D array of close prices.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         init_position (FlexArray1dLike): Initial position.
 
             Provided as a scalar or per column.
@@ -1599,7 +1599,7 @@ def get_position_feature_nb(
     """Compute the position feature at each bar.
 
     Computes the specified position feature (either entry price or exit price) using order records
-    and close prices across multiple groups. The calculation adapts based on the selected
+    and close prices across multiple columns. The calculation adapts based on the selected
     `feature` and the flags controlling the treatment of open and closed positions.
 
     Args:
@@ -1607,7 +1607,7 @@ def get_position_feature_nb(
 
             Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
         close (Array2d): Array of market close prices.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         feature (int): Position feature to compute.
 
             See `vectorbtpro.portfolio.enums.PositionFeature`.
@@ -2813,7 +2813,7 @@ def edge_ratio_nb(
         trade_records (RecordArray): Array of trade records.
 
             Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         open (Optional[FlexArray2d]): 2D array representing open prices.
         high (Optional[FlexArray2d]): 2D array representing high prices.
         low (Optional[FlexArray2d]): 2D array representing low prices.
@@ -2928,7 +2928,7 @@ def running_edge_ratio_nb(
         trade_records (RecordArray): Array of trade records.
 
             Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
-        col_map (GroupMap): Tuple of column indices and lengths.
+        col_map (GroupMap): Tuple of indices and lengths for each column.
         open (Optional[FlexArray2d]): Array of open prices.
         high (Optional[FlexArray2d]): Array of high prices.
         low (Optional[FlexArray2d]): Array of low prices.

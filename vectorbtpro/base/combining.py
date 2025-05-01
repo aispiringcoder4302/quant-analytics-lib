@@ -30,14 +30,15 @@ __all__ = []
 @register_jitted
 def custom_apply_and_concat_none_nb(
     indices: tp.Array1d,
-    apply_func_nb: tp.Callable,
+    apply_func_nb: tp.R0ApplyFunc,
     *args,
 ) -> None:
     """Run the JIT-compiled function for each index for in-place operations.
 
     Args:
         indices (Array1d): 1D array of indices to iterate over.
-        apply_func_nb (Callable): Function that accepts an index and additional arguments, returning nothing.
+        apply_func_nb (R0ApplyFunc): Callback function that accepts an index and additional arguments, 
+            and returns nothing.
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
@@ -50,14 +51,15 @@ def custom_apply_and_concat_none_nb(
 @register_jitted
 def apply_and_concat_none_nb(
     ntimes: int,
-    apply_func_nb: tp.Callable,
+    apply_func_nb: tp.R0ApplyFunc,
     *args,
 ) -> None:
     """Execute the JIT-compiled function multiple times for in-place operations.
 
     Args:
         ntimes (int): Number of times to execute `apply_func_nb`.
-        apply_func_nb (Callable): Function invoked for each index that returns nothing.
+        apply_func_nb (R0ApplyFunc): Callback function that accepts an index and additional arguments, 
+            and returns nothing.
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
@@ -88,7 +90,7 @@ def to_2d_one_nb(a: tp.Array) -> tp.Array2d:
 @register_jitted
 def custom_apply_and_concat_one_nb(
     indices: tp.Array1d,
-    apply_func_nb: tp.Callable,
+    apply_func_nb: tp.R1ApplyFunc,
     *args,
 ) -> tp.Array2d:
     """Execute a JIT-compiled function that returns a single array per index and
@@ -96,8 +98,8 @@ def custom_apply_and_concat_one_nb(
 
     Args:
         indices (Array1d): 1D array of indices to iterate over.
-        apply_func_nb (Callable): Function that returns an array for a given index
-            and additional arguments.
+        apply_func_nb (R1ApplyFunc): Callback function that accepts an index and additional arguments, 
+            and returns an array.
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
@@ -117,7 +119,7 @@ def custom_apply_and_concat_one_nb(
 @register_jitted
 def apply_and_concat_one_nb(
     ntimes: int,
-    apply_func_nb: tp.Callable,
+    apply_func_nb: tp.R1ApplyFunc,
     *args,
 ) -> tp.Array2d:
     """Execute the JIT-compiled function multiple times, each returning a single array,
@@ -125,8 +127,8 @@ def apply_and_concat_one_nb(
 
     Args:
         ntimes (int): Number of times to execute `apply_func_nb`.
-        apply_func_nb (Callable): Function that returns an array when called with
-            an index and additional arguments.
+        apply_func_nb (R1ApplyFunc): Callback function that accepts an index and additional arguments, 
+            and returns an array.
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
@@ -157,7 +159,7 @@ def to_2d_multiple_nb(a: tp.Iterable[tp.Array]) -> tp.List[tp.Array2d]:
 @register_jitted
 def custom_apply_and_concat_multiple_nb(
     indices: tp.Array1d,
-    apply_func_nb: tp.Callable,
+    apply_func_nb: tp.RMApplyFunc,
     *args,
 ) -> tp.List[tp.Array2d]:
     """Execute a JIT-compiled function that returns multiple arrays per index and
@@ -165,8 +167,8 @@ def custom_apply_and_concat_multiple_nb(
 
     Args:
         indices (Array1d): 1D array of indices to iterate over.
-        apply_func_nb (Callable): Function that returns multiple arrays for a
-            given index and additional arguments.
+        apply_func_nb (RMApplyFunc): Callback function that accepts an index and additional arguments, 
+            and returns multiple arrays.
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
@@ -192,7 +194,7 @@ def custom_apply_and_concat_multiple_nb(
 @register_jitted
 def apply_and_concat_multiple_nb(
     ntimes: int,
-    apply_func_nb: tp.Callable,
+    apply_func_nb: tp.RMApplyFunc,
     *args,
 ) -> tp.List[tp.Array2d]:
     """Execute the JIT-compiled function multiple times, each returning multiple arrays,
@@ -200,8 +202,8 @@ def apply_and_concat_multiple_nb(
 
     Args:
         ntimes (int): Number of times to execute `apply_func_nb`.
-        apply_func_nb (Callable): Function that returns multiple arrays when provided with
-            an index and additional arguments.
+        apply_func_nb (RMApplyFunc): Callback function that accepts an index and additional arguments,
+            and returns multiple arrays.
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
@@ -265,7 +267,7 @@ def apply_and_concat_each(
 
 def apply_and_concat(
     ntimes: int,
-    apply_func: tp.Callable,
+    apply_func: tp.CApplyFunc,
     *args,
     n_outputs: tp.Optional[int] = None,
     jitted_loop: bool = False,
@@ -282,7 +284,7 @@ def apply_and_concat(
 
     Args:
         ntimes (int): Number of times to execute `apply_func`.
-        apply_func (Callable): Function to be executed for each iteration.
+        apply_func (CApplyFunc): Callback function for applying to each index.
         *args: Positional arguments for `apply_func`.
         n_outputs (Optional[int]): Number of arrays returned by each function call.
         jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop.
@@ -349,7 +351,7 @@ def select_and_combine_nb(
     i: int,
     obj: tp.Any,
     others: tp.Sequence,
-    combine_func_nb: tp.Callable,
+    combine_func_nb: tp.CombineFunc,
     *args,
 ) -> tp.AnyArray:
     """Select an element from a sequence and combine it with an object using a JIT-compiled function.
@@ -361,7 +363,8 @@ def select_and_combine_nb(
         i (int): Index used to select an element from `others`.
         obj (Any): Primary object to combine.
         others (Sequence): Sequence of objects available for combination.
-        combine_func_nb (Callable): JIT-compiled function to combine `obj` and the selected element.
+        combine_func_nb (CombineFunc): Callback function that accepts two objects and additional arguments,
+            and returns a combined object.
         *args: Positional arguments for `combine_func_nb`.
 
     Returns:
@@ -374,7 +377,7 @@ def select_and_combine_nb(
 def combine_and_concat_nb(
     obj: tp.Any,
     others: tp.Sequence,
-    combine_func_nb: tp.Callable,
+    combine_func_nb: tp.CombineFunc,
     *args,
 ) -> tp.Array2d:
     """Combine and concatenate the given object with a sequence of objects using a
@@ -383,7 +386,8 @@ def combine_and_concat_nb(
     Args:
         obj (Any): Primary object to combine.
         others (Sequence): Sequence of objects to combine with.
-        combine_func_nb (Callable): Numba-compiled function that combines two objects.
+        combine_func_nb (CombineFunc): Callback function that accepts two objects and additional arguments,
+            and returns a combined object.
         *args: Positional arguments for `combine_func_nb`.
 
     Returns:
@@ -399,7 +403,7 @@ def select_and_combine(
     i: int,
     obj: tp.Any,
     others: tp.Sequence,
-    combine_func: tp.Callable,
+    combine_func: tp.PyCombineFunc,
     *args,
     **kwargs,
 ) -> tp.AnyArray:
@@ -410,7 +414,8 @@ def select_and_combine(
         i (int): Index of the element in `others` to combine.
         obj (Any): Primary object to combine.
         others (Sequence): Sequence of objects.
-        combine_func (Callable): Function to combine two objects.
+        combine_func (PyCombineFunc): Callback function that accepts two objects and additional arguments,
+            and returns a combined object.
         *args: Positional arguments for `combine_func`.
         **kwargs: Keyword arguments for `combine_func`.
 
@@ -423,7 +428,7 @@ def select_and_combine(
 def combine_and_concat(
     obj: tp.Any,
     others: tp.Sequence,
-    combine_func: tp.Callable,
+    combine_func: tp.AnyCombineFunc,
     *args,
     jitted_loop: bool = False,
     **kwargs,
@@ -434,7 +439,8 @@ def combine_and_concat(
     Args:
         obj (Any): Primary object to combine.
         others (Sequence): Sequence of objects to combine with.
-        combine_func (Callable): Function to combine two objects.
+        combine_func (AnyCombineFunc): Callback function that accepts two objects and additional arguments,
+            and returns a combined object.
         *args: Positional arguments for `combine_func`.
         jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop.
         **kwargs: Keyword arguments for `combine_func`.
@@ -465,14 +471,15 @@ def combine_and_concat(
 @register_jitted
 def combine_multiple_nb(
     objs: tp.Sequence,
-    combine_func_nb: tp.Callable,
+    combine_func_nb: tp.CombineFunc,
     *args,
 ) -> tp.Any:
     """Combine a sequence of objects pairwise using a Numba-compiled combination function.
 
     Args:
         objs (Sequence): Sequence of objects to combine.
-        combine_func_nb (Callable): Numba-compiled function that combines two objects.
+        combine_func_nb (CombineFunc): Callback function that accepts two objects and additional arguments,
+            and returns a combined object.
         *args: Positional arguments for `combine_func_nb`.
 
     Returns:
@@ -486,7 +493,7 @@ def combine_multiple_nb(
 
 def combine_multiple(
     objs: tp.Sequence,
-    combine_func: tp.Callable,
+    combine_func: tp.PyCombineFunc,
     *args,
     jitted_loop: bool = False,
     **kwargs,
@@ -495,7 +502,7 @@ def combine_multiple(
 
     Args:
         objs (Sequence): Sequence of objects to combine.
-        combine_func (Callable): Function to combine two objects.
+        combine_func (PyCombineFunc): Callback function for combining two objects.
         *args: Positional arguments for `combine_func`.
         jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop.
         **kwargs: Keyword arguments for `combine_func`.

@@ -306,17 +306,20 @@ class SignalsAccessor(GenericAccessor):
         `shape` can be a shape-like tuple or an instance of `vectorbtpro.base.wrapping.ArrayWrapper`
         (which is used as `wrapper`).
 
-        Arguments to `place_func_nb` can be passed either as `*args` or using `place_args` (but not both).
+        Arguments to `place_func_nb` can be passed either as `*args` or `place_args` (but not both).
 
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
-            place_func_nb (PlaceFunc): Numba function for placing signals.
+            place_func_nb (PlaceFunc): Callback function for placing signals.
             *args: Positional arguments for `place_func_nb`.
             place_args (ArgsLike): Arguments for `place_func_nb` (either positional or named, but not both).
             only_once (bool): Whether to run the placement function only once.
             wait (int): Waiting period before signal placement.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -428,15 +431,14 @@ class SignalsAccessor(GenericAccessor):
         `vectorbtpro.base.wrapping.ArrayWrapper` instance; if an instance is provided,
         it is used as the output wrapper.
 
-        Arguments to `entry_place_func_nb` can be supplied using either positional arguments or
-        `entry_place_args`, and similarly for `exit_place_func_nb` with `exit_place_args`.
-        They should not be provided for both functions simultaneously.
+        Arguments to `entry_place_func_nb` can be passed either as `*args` or `entry_place_args` (but not both).
+        The same applies to `exit_place_func_nb` with `exit_place_args`.
 
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
-            entry_place_func_nb (PlaceFunc): Numba-jitted function for placing entry signals.
-            exit_place_func_nb (PlaceFunc): Numba-jitted function for placing exit signals.
+            entry_place_func_nb (PlaceFunc): Callback function for placing entry signals.
+            exit_place_func_nb (PlaceFunc): Callback function for placing exit signals.
             args: Positional arguments forwarded to both entry and exit functions if
                 explicit arguments are not provided.
             entry_place_args (ArgsLike): Positional arguments for `entry_place_func_nb`.
@@ -444,6 +446,9 @@ class SignalsAccessor(GenericAccessor):
             entry_wait (int): Number of periods to wait before an entry signal is triggered.
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -611,10 +616,10 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """Generate exit signals using a Numba-compiled exit placement function.
 
-        It uses either positional or keyword arguments for exit placement.
+        Arguments to `exit_place_func_nb` can be passed either as `*args` or `exit_place_args` (but not both).
 
         Args:
-            exit_place_func_nb (PlaceFunc): Numba-jitted function for placing exit signals.
+            exit_place_func_nb (PlaceFunc): Callback function for placing exit signals.
             *args: Positional arguments for `exit_place_args`.
             exit_place_args (ArgsLike): Additional arguments for the exit placement function.
 
@@ -623,6 +628,9 @@ class SignalsAccessor(GenericAccessor):
             until_next (bool): Whether to place signals up to the next entry signal.
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -1894,15 +1902,15 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.SeriesFrame, MappedArray]:
         """Compute signal ranks.
 
-        Either positional arguments (`*args`) or tuple-based arguments (`rank_args`) must be supplied
-        for the ranking function, but not both. The input is broadcast using
-        `vectorbtpro.base.reshaping.broadcast` if `reset_by` is specified.
+        Arguments to `rank_func_nb` can be passed either as `*args` or `rank_args` (but not both).
+
+        The input is broadcast using `vectorbtpro.base.reshaping.broadcast` if `reset_by` is specified.
 
         Optionally, the returned result can be converted to a
         `vectorbtpro.records.mapped_array.MappedArray` when `as_mapped` is True.
 
         Args:
-            rank_func_nb (RankFunc): Function used for ranking.
+            rank_func_nb (RankFunc): Compiled function for ranking.
             *args: Positional arguments for `rank_func_nb`.
             rank_args (ArgsLike): Positional arguments for `rank_func_nb`.
 
@@ -1917,6 +1925,9 @@ class SignalsAccessor(GenericAccessor):
             as_mapped (bool): If True, return the result as a
                 `vectorbtpro.records.mapped_array.MappedArray` instance.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.

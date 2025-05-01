@@ -2014,6 +2014,9 @@ class BaseAccessor(Wrapping):
             keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
             to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -2159,6 +2162,9 @@ class BaseAccessor(Wrapping):
             to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
             keys (Optional[IndexLike]): Labels for the concatenated results along columns.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -2305,6 +2311,9 @@ class BaseAccessor(Wrapping):
                 Can only be used with the instance method.
             keys (index_like): Label(s) for the outermost column level.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
