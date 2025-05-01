@@ -808,7 +808,13 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         fill_pos_info (bool): See `vectorbtpro.portfolio.enums.SimulationContext.fill_pos_info`.
         track_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.track_value`.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
         in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
 
     Returns:
@@ -2115,7 +2121,13 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
         fill_pos_info (bool): See `vectorbtpro.portfolio.enums.SimulationContext.fill_pos_info`.
         track_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.track_value`.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
         in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
 
     Returns:
@@ -3301,7 +3313,13 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         fill_pos_info (bool): See `vectorbtpro.portfolio.enums.SimulationContext.fill_pos_info`.
         track_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.track_value`.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
         in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
 
     Returns:
@@ -4486,7 +4504,13 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         fill_pos_info (bool): See `vectorbtpro.portfolio.enums.SimulationContext.fill_pos_info`.
         track_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.track_value`.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
         in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
 
     Returns:
@@ -5367,7 +5391,7 @@ def def_pre_segment_func_nb(  # % line.replace("def_pre_segment_func_nb", "pre_s
         size_type (FlexArray2d): Array denoting the type for each trade size.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        direction (FlexArray2d): Array indicating the trade direction.
+        direction (FlexArray2d): Array indicating the order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
         auto_call_seq (bool): Flag to automatically sort the call sequence.
@@ -5493,9 +5517,9 @@ def def_flex_pre_segment_func_nb(  # % line.replace("def_flex_pre_segment_func_n
         size_type (FlexArray2d): Array indicating the type of trade sizes.
 
             See `vectorbtpro.portfolio.enums.SizeType`.
-        direction (FlexArray2d): Array indicating the trade direction.
+        direction (FlexArray2d): Array indicating the order direction.
 
-            See `vectorbtpro.portfolio.enums.SizeType`.
+            See `vectorbtpro.portfolio.enums.Direction`.
         auto_call_seq (bool): Flag to automatically sort the call sequence.
 
     Returns:

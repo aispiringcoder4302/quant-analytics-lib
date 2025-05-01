@@ -57,7 +57,7 @@ class _SUPERTREND(SUPERTREND):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            plot_close (bool): Indicates whether to include the `close` price trace.
+            plot_close (bool): Whether to plot the close price.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SUPERTREND.close`.
             superl_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SUPERTREND.long`.
             supers_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SUPERTREND.short`.

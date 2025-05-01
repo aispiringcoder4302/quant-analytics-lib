@@ -162,7 +162,7 @@ def get_ranges_from_delta_nb(
         idx_arr (Array1d): Array of row indices.
         id_arr (Array1d): Array of IDs.
         col_map (GroupMap): Tuple of indices and lengths for each column.
-        index (Optional[Array1d]): Array of index values used for delta-based calculations.
+        index (Optional[Array1d]): Index array in nanosecond format.
         delta (int): Delta offset to compute range boundaries.
         delta_use_index (bool): Flag indicating whether to use the index values for delta calculation.
         shift (int): Shift applied to the starting index.
@@ -438,7 +438,7 @@ def map_ranges_to_projections_nb(
         start_idx_arr (Array1d): 1D array of starting row indices for each range.
         end_idx_arr (Array1d): 1D array of ending row indices for each range.
         status_arr (Array1d): 1D array indicating the status of each range.
-        index (Optional[Array1d]): Optional 1D array representing timestamps or indices.
+        index (Optional[Array1d]): Index array in nanosecond format.
         proj_start (int): Offset from the start index to begin the projection.
         proj_start_use_index (bool): Whether to compute the projection start using the `index` array.
         proj_period (Optional[int]): Period or duration for the projection.

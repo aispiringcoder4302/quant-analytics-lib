@@ -130,7 +130,7 @@ def file_size(file_path: tp.PathLike, readable: bool = True, **kwargs) -> tp.Uni
 
     Args:
         file_path (PathLike): Path of the file.
-        readable (bool): Whether to return a human-readable size.
+        readable (bool): Whether to use a human-readable format.
         **kwargs: Keyword arguments for `humanize.naturalsize`.
 
     Returns:
@@ -151,7 +151,7 @@ def dir_size(dir_path: tp.PathLike, readable: bool = True, **kwargs) -> tp.Union
 
     Args:
         dir_path (PathLike): Path of the directory.
-        readable (bool): Whether to return a human-readable size.
+        readable (bool): Whether to use a human-readable format.
         **kwargs: Keyword arguments for `humanize.naturalsize`.
 
     Returns:

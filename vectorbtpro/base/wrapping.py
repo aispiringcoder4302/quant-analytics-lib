@@ -305,6 +305,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         Args:
             *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
             splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+                Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
             wrap (Optional[bool]): Flag indicating whether the instance should be wrapped.
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
@@ -334,6 +336,8 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             apply_func (Union[str, Callable]): Function or attribute name to apply to each split.
             *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
             splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+                Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
             wrap (Optional[bool]): Flag indicating whether the instance should be wrapped.
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 
@@ -2135,7 +2139,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            MaybeSeriesFrame: Wrapped series or DataFrame resulting from the reduction operation.
+            MaybeSeriesFrame: Wrapped Series or DataFrame resulting from the reduction operation.
 
         !!! info
             For default settings, see `vectorbtpro._settings.wrapping`.

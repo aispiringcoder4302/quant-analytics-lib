@@ -127,7 +127,7 @@ class _SIGDET(SIGDET):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            plot_close (bool): Whether to plot `SIGDET.close`.
+            plot_close (bool): Whether to plot the close price.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.close`.
             upper_band_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.upper_band`.
             lower_band_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.lower_band`.

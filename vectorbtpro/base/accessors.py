@@ -700,6 +700,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Args:
             *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
             splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+                Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
         Returns:
@@ -728,6 +730,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
             apply_func (Callable): Function to apply to each split.
             *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
             splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+                Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 
         Returns:
@@ -1920,14 +1924,14 @@ class BaseAccessor(Wrapping):
         return reshaping.broadcast_combs(*objs, **kwargs)
 
     def make_symmetric(self, *args, **kwargs) -> tp.Frame:
-        """Return a symmetric version of the frame using `vectorbtpro.base.reshaping.make_symmetric`.
+        """Return a symmetric version of the DataFrame using `vectorbtpro.base.reshaping.make_symmetric`.
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.reshaping.make_symmetric`.
             **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.make_symmetric`.
 
         Returns:
-            Frame: The symmetric reshaped frame.
+            Frame: The symmetric reshaped DataFrame.
         """
         return reshaping.make_symmetric(self.obj, *args, **kwargs)
 
@@ -2100,10 +2104,10 @@ class BaseAccessor(Wrapping):
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
-            keys (Optional[IndexLike]): Keys to label the columns in the resulting frame.
+            keys (Optional[IndexLike]): Keys to label the columns in the resulting DataFrame.
 
         Returns:
-            Frame: The concatenated frame.
+            Frame: The concatenated DataFrame.
 
         Example:
             ```pycon
@@ -2175,7 +2179,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `apply_func`.
 
         Returns:
-            MaybeTuple[Frame]: The wrapped result as a single frame or a tuple of frames,
+            MaybeTuple[Frame]: The wrapped result as a single DataFrame or a tuple of frames,
                 or None if no result is produced.
 
         !!! note

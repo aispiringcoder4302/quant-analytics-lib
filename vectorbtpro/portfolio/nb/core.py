@@ -1464,7 +1464,7 @@ def execute_order_nb(
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        update_value (bool): Update the account value after executing the order.
+        update_value (bool): Flag to update portfolio value with each order.
 
     Returns:
         Tuple[OrderResult, ExecState]: A tuple containing the order execution result and
@@ -1881,7 +1881,7 @@ def process_order_nb(
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
-        update_value (bool): Flag indicating whether to update the portfolio value.
+        update_value (bool): Flag to update portfolio value with each order.
         order_records (Optional[RecordArray2d]): Array to store order record details.
 
             Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
@@ -2121,10 +2121,12 @@ def prepare_records_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         max_order_records (Optional[int]): Maximum number of order records expected per column.
 
-            If None, `target_shape[0]` is used.
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
 
-            If None, `target_shape[0]` is used.
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
 
     Returns:
         Tuple[RecordArray2d, RecordArray2d]: A tuple containing:
@@ -2777,7 +2779,7 @@ def check_limit_expired_nb(
         time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
-        index (Optional[Array1d]): Index in nanosecond format.
+        index (Optional[Array1d]): Index array in nanosecond format.
         freq (Optional[int]): Frequency in nanosecond format.
 
     Returns:
@@ -3124,16 +3126,16 @@ def check_td_stop_hit_nb(
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
 ) -> tp.Tuple[bool, bool]:
-    """Check whether a TD stop was hit by comparing the initial index with the current index.
+    """Check whether a TD stop was hit by comparing the initial row index with the current row index.
 
     Args:
-        init_idx (int): Row index of the initial event.
+        init_idx (int): Initial row index.
         i (int): Current row index.
         stop (int): Stop offset; -1 indicates no stop.
         time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
-        index (Optional[Array1d]): Index in nanosecond format.
+        index (Optional[Array1d]): Index array in nanosecond format.
         freq (Optional[int]): Frequency in nanosecond format.
 
     Returns:
@@ -3180,7 +3182,7 @@ def check_dt_stop_hit_nb(
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
 ) -> tp.Tuple[bool, bool]:
-    """Check whether a DT stop was hit by comparing the current index against the stop threshold.
+    """Check whether a DT stop was hit by comparing the current row index against the stop threshold.
 
     Args:
         i (int): Current row index.
@@ -3188,7 +3190,7 @@ def check_dt_stop_hit_nb(
         time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
-        index (Optional[Array1d]): Index in nanosecond format.
+        index (Optional[Array1d]): Index array in nanosecond format.
         freq (Optional[int]): Frequency in nanosecond format.
 
     Returns:
@@ -3429,9 +3431,7 @@ def get_time_stop_ladder_exit_size_nb(
         time_delta_format (int): Format for time delta comparisons.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
-        index (Optional[Array1d]): Array of index values when using index-based time delta.
-
-            Must be in nanosecond format.
+        index (Optional[Array1d]): Index array in nanosecond format.
 
     Returns:
         float: The calculated exit size.
@@ -3762,7 +3762,7 @@ def set_tsl_info_nb(
         tsl_info (Record): Record containing TSL order information.
 
             Must adhere to the `vectorbtpro.portfolio.enums.tsl_info_dt` dtype.
-        init_idx (int): Initialization row index.
+        init_idx (int): Initial row index.
         init_price (float): Initial price.
         init_position (float): Initial position size.
         peak_idx (Optional[int]): Peak row index.
@@ -3876,7 +3876,7 @@ def set_tp_info_nb(
         tp_info (Record): Record containing TP order information.
 
             Must adhere to the `vectorbtpro.portfolio.enums.tp_info_dt` dtype.
-        init_idx (int): Initialization row index.
+        init_idx (int): Initial row index.
         init_price (float): Initial price.
         init_position (float): Initial position size.
         stop (float): Stop value.
@@ -3977,7 +3977,7 @@ def set_time_info_nb(
         time_info (Record): Record containing time-based order information.
 
             Must adhere to the `vectorbtpro.portfolio.enums.time_info_dt` dtype.
-        init_idx (int): Initialization row index.
+        init_idx (int): Initial row index.
         init_position (float): Initial position size.
         stop (int): Stop indicator or time.
         exit_price (float): Exit price.

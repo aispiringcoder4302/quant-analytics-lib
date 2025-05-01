@@ -1122,7 +1122,7 @@ class Trades(Ranges):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: Wrapped series frame of expanding best prices.
+            SeriesFrame: Wrapped Series or DataFrame of expanding best prices.
 
         See:
             `vectorbtpro.portfolio.nb.records.expanding_best_price_nb`
@@ -1181,7 +1181,7 @@ class Trades(Ranges):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: Wrapped series frame of expanding worst prices.
+            SeriesFrame: Wrapped Series or DataFrame of expanding worst prices.
 
         See:
             `vectorbtpro.portfolio.nb.records.expanding_worst_price_nb`
@@ -1344,7 +1344,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.get_expanding_best_price`.
 
         Returns:
-            SeriesFrame: Wrapped series frame containing the computed expanding MFE values.
+            SeriesFrame: Wrapped Series or DataFrame containing the computed expanding MFE values.
 
         See:
             `vectorbtpro.portfolio.nb.records.expanding_mfe_nb`
@@ -1394,7 +1394,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.get_expanding_worst_price`.
 
         Returns:
-            SeriesFrame: Wrapped series frame containing the computed expanding MAE values.
+            SeriesFrame: Wrapped Series or DataFrame containing the computed expanding MAE values.
 
         See:
             `vectorbtpro.portfolio.nb.records.expanding_mae_nb`
@@ -2529,7 +2529,7 @@ class Trades(Ranges):
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_ohlc (bool): Whether to plot the OHLC data.
-            plot_close (bool): Plot the close price line when OHLC data is not used.
+            plot_close (bool): Whether to plot the close price if OHLC data is not plotted.
             plot_markers (bool): Display markers for trade entry and exit points.
             plot_zones (bool): Display zones indicating profit and loss areas.
             plot_by_type (bool): Plot exit markers categorized by trade type (neutral, profit, or loss).
@@ -3022,7 +3022,7 @@ class EntryTrades(Trades):
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_ohlc (bool): Whether to plot the OHLC data.
-            plot_close (bool): Whether to plot close prices if OHLC is not plotted.
+            plot_close (bool): Whether to plot the close price if OHLC data is not plotted.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
@@ -3311,7 +3311,7 @@ class ExitTrades(Trades):
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_ohlc (bool): Whether to plot the OHLC data.
-            plot_close (bool): Whether to plot close prices if OHLC is not plotted.
+            plot_close (bool): Whether to plot the close price if OHLC data is not plotted.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.

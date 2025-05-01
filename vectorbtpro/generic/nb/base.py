@@ -1999,7 +1999,7 @@ def to_renko_1d_nb(
         relative (FlexArray1dLike): Indicator determining if relative price changes should be used.
         
             Provided as a scalar or per row.
-        start_value (Optional[float]): Starting value for Renko calculation.
+        start_value (Optional[float]): Starting value for the Renko chart.
         max_out_len (Optional[int]): Maximum length of the output.
 
     Returns:
@@ -2090,7 +2090,7 @@ def to_renko_ohlc_1d_nb(
         relative (FlexArray1dLike): Indicator determining if relative price changes should be used.
         
             Provided as a scalar or per row.
-        start_value (Optional[float]): Starting value for Renko OHLC calculation.
+        start_value (Optional[float]): Starting value for the Renko chart.
         max_out_len (Optional[int]): Maximum length of the output.
 
     Returns:

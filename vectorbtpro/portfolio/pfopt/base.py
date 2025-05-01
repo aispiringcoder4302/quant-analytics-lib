@@ -2298,7 +2298,7 @@ class PortfolioOptimizer(Analyzable):
             rescale_to (Union[None, Tuple[float, float], Param]): Tuple specifying the rescaling range for allocations.
             parameterizer (Optional[MaybeType[Parameterizer]]): Parameterizer class or instance for handling parameters.
             
-                See `vectorbtpro.utils.params.Parameterizer`.
+                Defaults to `vectorbtpro.utils.params.Parameterizer`.
             param_search_kwargs (KwargsLike): Keyword arguments for parameter search.
             
                 See `vectorbtpro.utils.params.Parameterizer.find_params_in_obj`.
@@ -3374,7 +3374,7 @@ class PortfolioOptimizer(Analyzable):
             alloc_wait (Union[int, Param]): Wait parameter used during allocation processing.
             parameterizer (Optional[MaybeType[Parameterizer]]): Parameterizer class or instance for handling parameters.
             
-                See `vectorbtpro.utils.params.Parameterizer`.
+                Defaults to `vectorbtpro.utils.params.Parameterizer`.
             param_search_kwargs (KwargsLike): Keyword arguments for parameter search.
             
                 See `vectorbtpro.utils.params.Parameterizer.find_params_in_obj`.
@@ -3383,6 +3383,8 @@ class PortfolioOptimizer(Analyzable):
             group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]): Group configuration(s) for optimization.
             pre_group_func (Optional[Callable]): Function to preprocess and modify the group configuration.
             splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+                Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
             eval_id (Optional[Hashable]): Evaluation identifier.
             jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop over optimization groups.
             jitted (JittedOption): Option to control JIT compilation.

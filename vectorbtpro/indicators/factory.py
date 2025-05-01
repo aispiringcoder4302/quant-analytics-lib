@@ -339,7 +339,7 @@ def combine_objs(
     """Combine or compare `obj` with `other` to generate signals by applying a custom combine function.
 
     Args:
-        obj (SeriesFrame): Main series or frame to operate on.
+        obj (SeriesFrame): Main Series or DataFrame to operate on.
         other (MaybeTupleList[Union[ArrayLike, BaseAccessor]]): Object or objects to be combined with `obj`.
         combine_func (Callable): Function used to combine or compare elements of `obj` and `other`.
         *args: Positional arguments for `vectorbtpro.base.accessors.BaseAccessor.combine`.
@@ -349,7 +349,7 @@ def combine_objs(
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor.combine`.
 
     Returns:
-        SeriesFrame: The resulting series or frame after combining `obj` with `other`.
+        SeriesFrame: The resulting Series or DataFrame after combining `obj` with `other`.
     """
     if allow_multiple and isinstance(other, (tuple, list)):
         if keys is None:
@@ -375,7 +375,7 @@ def combine_indicator_with_other(
             the arrays from `IndicatorBase.main_output` and `other`.
 
     Returns:
-        SeriesFrame: The resulting series or frame after combining `IndicatorBase.main_output`
+        SeriesFrame: The resulting Series or DataFrame after combining `IndicatorBase.main_output`
             with the other object's data.
     """
     if isinstance(other, IndicatorBase):
@@ -4594,7 +4594,7 @@ Returns:
     def parse_technical_config(cls, func: tp.Callable, test_index_len: int = 100) -> tp.Kwargs:
         """Parse the configuration for a technical indicator function.
 
-        Generates a test dataframe and inspects the provided function's signature and output
+        Generates a test DataFrame and inspects the provided function's signature and output
         to extract configuration details, including input names, parameter names, output names,
         and default parameter values.
 

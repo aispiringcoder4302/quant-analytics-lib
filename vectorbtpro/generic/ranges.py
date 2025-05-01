@@ -1134,7 +1134,7 @@ class Ranges(PriceRecords):
 
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
-            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
             projection_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the projections.
             lower_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower band.
             middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the middle band.
@@ -1400,7 +1400,7 @@ class Ranges(PriceRecords):
 
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
-            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
             add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
@@ -1591,7 +1591,7 @@ class Ranges(PriceRecords):
 
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
             ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
-            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
             start_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for start markers.
             end_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for end markers.
             open_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for open zones.

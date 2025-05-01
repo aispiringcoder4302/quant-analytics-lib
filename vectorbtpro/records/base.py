@@ -83,7 +83,7 @@ Consider the following example:
 
 Records can be printed in two ways.
 
-Raw dataframe that preserves field names and data types:
+Raw DataFrame that preserves field names and data types:
 
 ```pycon
 >>> records.records
@@ -99,7 +99,7 @@ Raw dataframe that preserves field names and data types:
 8   2    2    2        18.0
 ```
 
-Readable dataframe that takes into account `Records.field_config`:
+Readable DataFrame that takes into account `Records.field_config`:
 
 ```pycon
 >>> records.readable

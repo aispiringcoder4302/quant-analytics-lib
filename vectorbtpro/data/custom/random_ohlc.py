@@ -66,9 +66,9 @@ class RandomOHLCData(SyntheticData):
 
                 Flexible argument that can be provided as a template with a context
                 containing `symbol` and `index`.
-            start_value (Optional[float]): Initial value at time zero.
+            start_value (Optional[float]): Initial value at time 0.
 
-                Note that this value does not appear as the first data point in the output.
+                Note that this value does not appear as the first data point.
             mean (Optional[float]): Drift or average percentage change.
             std (Optional[float]): Standard deviation of the percentage change.
             symmetric (Optional[bool]): If True, adjust negative returns to be symmetric with positive ones.

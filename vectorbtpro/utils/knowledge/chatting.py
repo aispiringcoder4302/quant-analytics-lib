@@ -4853,7 +4853,7 @@ class DocumentRanker(Configured):
 
                 If None, uses documents from the store.
             refresh (bool): Flag to refresh both documents and embeddings.
-            refresh_documents (Optional[bool]): Flag to refresh documents.
+            refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
             return_chunks (bool): Whether to return document chunks.
             return_documents (bool): If True, include original document objects in the output.
 

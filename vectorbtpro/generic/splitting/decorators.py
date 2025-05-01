@@ -75,7 +75,7 @@ def split(
             `vectorbtpro.generic.splitting.base.Splitter.guess_method`.
         splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
 
-            Defaults to `vectorbtpro.generic.splitting.base.Splitter` if not provided.
+            Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
         splitter_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter`.
         index (Optional[IndexLike]): Index used for splitting.
 

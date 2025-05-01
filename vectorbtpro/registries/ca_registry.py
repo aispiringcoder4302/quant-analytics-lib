@@ -1687,7 +1687,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """Get stats of the setup as a dict with metrics.
 
         Args:
-            readable (bool): Whether to convert metrics into human-readable formats.
+            readable (bool): Whether to use a human-readable format.
             short_str (bool): Whether to use a short string representation for the setup.
 
         Returns:
@@ -1804,7 +1804,7 @@ class CASetupDelegatorMixin(CAMetrics):
         """Return the hierarchical structure of setups by recursively traversing child setups.
 
         Args:
-            readable (bool): When True, use the readable string representation of each setup.
+            readable (bool): Whether to use a human-readable format.
             short_str (bool): When True and `readable` is False, use the short string representation.
 
         Returns:
@@ -2026,7 +2026,7 @@ class CASetupDelegatorMixin(CAMetrics):
         """Return a DataFrame constructed from the stats dictionaries of child setups.
 
         Args:
-            readable (bool): If True, use the readable string representation for setups.
+            readable (bool): Whether to use a human-readable format.
             short_str (bool): If True, use the short string representation when `readable` is False.
             index_by_hash (bool): If True, set the DataFrame index to the setup hash.
             filter_func (Callable): Function to filter child setups.

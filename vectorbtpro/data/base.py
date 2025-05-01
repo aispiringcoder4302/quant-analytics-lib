@@ -5605,7 +5605,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Union[None, feature_dict, symbol_dict]:
         """Save data to CSV file(s) using Pandas.DataFrame.to_csv.
 
-        Uses `pd.DataFrame.to_csv` to write each data frame to a CSV file. If `path_or_buf` is a directory
+        Uses `pd.DataFrame.to_csv` to write each DataFrame to a CSV file. If `path_or_buf` is a directory
         or does not include a file suffix, each feature or symbol is saved to an individual file.
 
         Args:
@@ -5717,7 +5717,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Union[None, feature_dict, symbol_dict]:
         """Save data to an HDF file using PyTables.
 
-        Uses `pd.DataFrame.to_hdf` to write each data frame to an HDF file.
+        Uses `pd.DataFrame.to_hdf` to write each DataFrame to an HDF file.
         If `path_or_buf` is a directory or does not have a file suffix, a file named
         after the class (with a .h5 extension) is created automatically.
 

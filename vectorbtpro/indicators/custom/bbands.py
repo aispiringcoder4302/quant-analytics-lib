@@ -103,7 +103,7 @@ class _BBANDS(BBANDS):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            plot_close (bool): Flag indicating whether to include `BBANDS.close` in the plot.
+            plot_close (bool): Whether to plot the close price.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `BBANDS.close`.
             upper_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `BBANDS.upper`.
             middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `BBANDS.middle`.

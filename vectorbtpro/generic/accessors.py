@@ -1123,7 +1123,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute rolling correlation.
 
         Args:
-            other (SeriesFrame): Second series or frame for computing correlation.
+            other (SeriesFrame): Second Series or DataFrame for computing correlation.
             window (Optional[int]): Window size.
 
                 If None, uses the full length of the data.
@@ -1159,7 +1159,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute expanding correlation by applying a growing window via `GenericAccessor.rolling_corr`.
 
         Args:
-            other (SeriesFrame): Second series or frame for correlation computation.
+            other (SeriesFrame): Second Series or DataFrame for correlation computation.
             minp (Optional[int]): Minimum number of observations required.
             **kwargs: Keyword arguments for `GenericAccessor.rolling_corr`.
 
@@ -1181,7 +1181,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute rolling ordinary least squares regression.
 
         Args:
-            other (SeriesFrame): Second series or frame to perform regression against.
+            other (SeriesFrame): Second Series or DataFrame to perform regression against.
             window (Optional[int]): Window size.
 
                 If None, uses the full length of the data.
@@ -1230,7 +1230,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Compute expanding ordinary least squares regression.
 
         Args:
-            other (SeriesFrame): Second series or frame for regression.
+            other (SeriesFrame): Second Series or DataFrame for regression.
             minp (Optional[int]): Minimum number of observations required.
             **kwargs: Keyword arguments for `GenericAccessor.rolling_ols`.
 
@@ -2966,7 +2966,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Frame: The resulting frame after applying the proximity reduction.
+            Frame: The resulting DataFrame after applying the proximity reduction.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.proximity_reduce_nb` for the standard version.
@@ -3799,7 +3799,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A resampled series or frame with aggregated values,
+            SeriesFrame: A resampled Series or DataFrame with aggregated values,
                 wrapped based on the specified parameters.
 
         See:
@@ -4426,7 +4426,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Return covariance of non-NaN elements.
 
         Args:
-            other (SeriesFrame): Series or frame to compute covariance with.
+            other (SeriesFrame): Series or DataFrame to compute covariance with.
             ddof (int): Delta degrees of freedom.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
@@ -4485,7 +4485,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Return correlation coefficient of non-NaN elements.
 
         Args:
-            other (SeriesFrame): Series or frame to compute correlation with.
+            other (SeriesFrame): Series or DataFrame to compute correlation with.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -5432,7 +5432,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: Boolean series or dataframe indicating crossing events.
+            SeriesFrame: Boolean Series or DataFrame indicating crossing events.
 
         See:
             `vectorbtpro.generic.nb.base.crossed_above_nb`
@@ -5515,7 +5515,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: Boolean series or dataframe indicating crossing events.
+            SeriesFrame: Boolean Series or DataFrame indicating crossing events.
 
         See:
             `vectorbtpro.generic.nb.base.crossed_below_nb`

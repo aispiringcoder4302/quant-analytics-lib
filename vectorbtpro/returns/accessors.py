@@ -1797,6 +1797,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             ddof (Optional[int]): Delta degrees of freedom.
+
+                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             jitted (JittedOption): Option to control JIT compilation.
@@ -2381,7 +2383,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
-                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
+                Defaults to `ReturnsAccessor.bm_returns` if not provided.
             ddof (Optional[int]): Delta degrees of freedom.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.
@@ -3508,7 +3510,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: Wrapped series or DataFrame containing the down-market capture ratio.
+            MaybeSeries: Wrapped Series or DataFrame containing the down-market capture ratio.
 
         See:
             `vectorbtpro.returns.nb.down_capture_ratio_nb`

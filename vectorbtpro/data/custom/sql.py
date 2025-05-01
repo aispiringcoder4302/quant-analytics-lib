@@ -287,7 +287,7 @@ class SQLData(DBData):
                 Schema names are matched using `SQLData.key_match`.
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
             sort (bool): Flag indicating whether to sort the returned schema names.
-            engine (Union[None, str, Engine]): Database engine instance, URL, or key for engine settings.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
             dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
@@ -368,7 +368,7 @@ class SQLData(DBData):
 
                 If None, all schemas are considered.
             incl_views (bool): Whether to include view names along with table names.
-            engine (Union[None, str, Engine]): Engine or identifier for the database connection.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
             dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
@@ -457,7 +457,7 @@ class SQLData(DBData):
 
         Args:
             schema (str): Name of the schema.
-            engine (Union[None, str, Engine]): Engine or identifier for the database connection.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
 
@@ -490,7 +490,7 @@ class SQLData(DBData):
 
         Args:
             schema (str): Name of the schema to create.
-            engine (Union[None, str, Engine]): Engine or identifier for the database connection.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
 
@@ -528,7 +528,7 @@ class SQLData(DBData):
         Args:
             table (str): Name of the table.
             schema (Optional[str]): Schema in which to search for the table.
-            engine (Union[None, str, Engine]): Engine or identifier for the database connection.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
 
@@ -563,7 +563,7 @@ class SQLData(DBData):
         Args:
             table (str): Name of the table.
             schema (Optional[str]): Schema where the table is located.
-            engine (Union[None, str, Engine]): Engine or identifier for the database connection.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
 
@@ -605,7 +605,7 @@ class SQLData(DBData):
             table (str): Name of the table.
             schema (Optional[str]): Schema where the table is located.
             row_number_column (Optional[str]): Name of the column containing row numbers.
-            engine (Union[None, str, Engine]): Engine or identifier for the database connection.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
 
@@ -715,7 +715,7 @@ class SQLData(DBData):
             list_tables_kwargs (KwargsLike): Keyword arguments for listing database tables.
             
                 See `SQLData.list_tables`.
-            engine (Union[None, str, Engine]): Identifier or object for the database engine.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
             engine_name (Optional[str]): Name of the engine.
             engine_config (KwargsLike): Additional configuration for the engine.
             dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
@@ -826,7 +826,7 @@ class SQLData(DBData):
             query (Optional[Union[str, Selectable]]): Custom SQL query.
 
                 Must not be provided together with `table` or `schema`.
-            engine (Union[None, str, Engine]): Database engine information.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
 
                 See `SQLData.resolve_engine`.
             engine_name (Optional[str]): Name of the engine.

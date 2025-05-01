@@ -2888,10 +2888,12 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             skip_empty (Optional[bool]): If True, skips processing rows that do not contain any orders.
             max_order_records (Optional[int]): Maximum number of order records expected per column.
 
-                Set to a lower number to conserve memory, or 0 to disable order record collection.
+                Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+                lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
             max_log_records (Optional[int]): Maximum number of log records expected per column.
 
-                Set to a lower number to conserve memory, or 0 to disable logging.
+                Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+                reduce memory usage, or higher if multiple logs per timestamp are expected.
             seed (Optional[int]): Random seed for deterministic output.
             group_by (GroupByLike): Grouping specification.
 
@@ -3646,10 +3648,12 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             skip_empty (Optional[bool]): If True, skips processing rows that do not contain any orders.
             max_order_records (Optional[int]): Maximum number of order records expected per column.
 
-                Set to a lower number to conserve memory, or 0 to disable order record collection.
+                Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+                lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
             max_log_records (Optional[int]): Maximum number of log records expected per column.
 
-                Set to a lower number to conserve memory, or 0 to disable logging.
+                Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+                reduce memory usage, or higher if multiple logs per timestamp are expected.
             in_outputs (Optional[tp.MappingLike]): Mapping of in-output objects available via
                 `Portfolio.in_outputs` as a named tuple.
 
@@ -4805,7 +4809,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
             max_log_records (Optional[int]): Maximum number of log records expected per column.
 
-                Defaults to the number of rows in the broadcasted shape. Set to 0 to disable, lower to
+                Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
                 reduce memory usage, or higher if multiple logs per timestamp are expected.
             in_outputs (Optional[tp.MappingLike]): Mapping of in-output objects available via
                 `Portfolio.in_outputs` as a named tuple.
@@ -6118,7 +6122,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Get view of portfolio with long positions only.
 
         Args:
-            orders (Optional[Orders]): Orders to generate the long view.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial position.
@@ -6186,7 +6190,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Get view of portfolio with short positions only.
 
         Args:
-            orders (Optional[Orders]): Orders to generate the short view.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial position.
@@ -6288,7 +6292,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             close (Optional[SeriesFrame]): Array of close prices.
 
                 Defaults to `Portfolio.close_flex` if not provided.
-            orders_cls (Optional[type]): Class to instantiate orders.
+            orders_cls (Optional[type]): Class used for wrapping order records.
 
                 Defaults to `Portfolio.orders_cls` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -6416,7 +6420,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             close (Optional[SeriesFrame]): Close price data.
 
                 Defaults to `Portfolio.close_flex` if not provided.
-            logs_cls (Optional[type]): Class to construct logs.
+            logs_cls (Optional[type]): Class used for wrapping log records.
 
                 Defaults to `Portfolio.logs_cls` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -6497,7 +6501,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return entry trade records.
 
         Args:
-            orders (Optional[Orders]): Order records.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial position.
@@ -6506,7 +6510,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
-            entry_trades_cls (Optional[type]): Class used to generate entry trades.
+            entry_trades_cls (Optional[type]): Class used for wrapping entry trade records.
 
                 Defaults to `Portfolio.entry_trades_cls` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -6582,7 +6586,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return exit trade records.
 
         Args:
-            orders (Optional[Orders]): Order records.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial position.
@@ -6591,7 +6595,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_price (Optional[ArrayLike]): Initial position price.
 
                 Defaults to `Portfolio.get_init_price` with `keep_flex=True` or NaN if not provided.
-            exit_trades_cls (Optional[type]): Class used to generate exit trades.
+            exit_trades_cls (Optional[type]): Class used for wrapping exit trade records.
 
                 Defaults to `Portfolio.exit_trades_cls` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -6665,10 +6669,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return position records.
 
         Args:
-            trades (Optional[Trades]): Trade records used for constructing positions.
+            trades (Optional[Trades]): Instance containing trade records.
 
                 Defaults to `Portfolio.get_exit_trades` if not provided.
-            positions_cls (Optional[type]): Class used to represent positions.
+            positions_cls (Optional[type]): Class used for wrapping position records.
 
                 Defaults to `Portfolio.positions_cls` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -6785,13 +6789,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return a readable DataFrame merging order history with entry and exit trade records.
 
         Args:
-            orders (Optional[Orders]): Orders instance.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            entry_trades (Optional[EntryTrades]): Entry trade records.
+            entry_trades (Optional[EntryTrades]): Instance containing entry trade records.
 
                 Defaults to `Portfolio.get_entry_trades` if not provided.
-            exit_trades (Optional[ExitTrades]): Exit trade records.
+            exit_trades (Optional[ExitTrades]): Instance containing exit trade records.
 
                 Defaults to `Portfolio.get_exit_trades` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -6903,13 +6907,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Pass `group_by=False` to disable grouping.
 
         Args:
-            orders (Optional[Orders]): Order records used to determine signals.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
-            entry_trades (Optional[EntryTrades]): Entry trade records used to determine signals.
+            entry_trades (Optional[EntryTrades]): Instance containing entry trade records.
 
                 Defaults to `Portfolio.get_entry_trades` if not provided.
-            exit_trades (Optional[ExitTrades]): Exit trade records used to determine signals.
+            exit_trades (Optional[ExitTrades]): Instance containing exit trade records.
 
                 Defaults to `Portfolio.get_exit_trades` if not provided.
             idx_arr (Union[None, str, Array1d]): Array of row indices or field name for retrieving row indices.
@@ -7021,7 +7025,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
             rec_sim_range (bool): Flag indicating whether to apply the simulation range recursively.
-            drawdowns_cls (Optional[type]): Class for creating drawdown records.
+            drawdowns_cls (Optional[type]): Class used for wrapping drawdown records.
 
                 Defaults to `Portfolio.drawdowns_cls` if not provided.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
@@ -7147,7 +7151,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             direction (Union[str, int]): Direction for filtering asset flows.
 
                 Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
-            orders (Optional[Orders]): Orders instance containing order data.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial position.
@@ -7515,7 +7519,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Calculates the entry price applied to each bar based on provided orders and initial values.
 
         Args:
-            orders (Optional[Orders]): Order data used for computing entry prices.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial position.
@@ -7543,7 +7547,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A frame containing the computed entry prices per bar.
+            SeriesFrame: A DataFrame containing the computed entry prices per bar.
 
         See:
             `vectorbtpro.portfolio.nb.records.get_position_feature_nb`
@@ -7620,7 +7624,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Determines the exit price for each bar based on order data and initial conditions.
 
         Args:
-            orders (Optional[Orders]): Order data used for computing entry prices.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial position.
@@ -7650,7 +7654,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A frame containing the computed exit prices per bar.
+            SeriesFrame: A DataFrame containing the computed exit prices per bar.
 
         See:
             `vectorbtpro.portfolio.nb.records.get_position_feature_nb`
@@ -8104,7 +8108,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             free (bool): Flag indicating whether to use free cash flow.
-            orders (Optional[Orders]): Orders instance used for computing cash flow.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
             cash_earnings (Optional[ArrayLike]): Cash earnings or losses at the end of each bar.
@@ -9309,7 +9313,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             close (Optional[SeriesFrame]): Price series (close prices) used for profit calculation.
 
                 If not provided, uses `Portfolio.filled_close` if available; otherwise, uses `Portfolio.close`.
-            orders (Optional[Orders]): Orders object containing order records.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
             init_position (Optional[ArrayLike]): Initial position.
@@ -9609,7 +9613,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             init_value (Optional[MaybeSeries]): Initial portfolio value.
 
-                Defaults to `Portfolio.get_input_value` if not provided.
+                Defaults to `Portfolio.get_init_value` if not provided.
             cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
 
                 Defaults to `Portfolio.get_cash_deposits` with `keep_flex=True` or 0 if not provided.
@@ -10397,7 +10401,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             init_value (Optional[MaybeSeries]): Initial portfolio value.
             cash_deposits (Optional[ArrayLike]): Cash deposits or withdrawals at the beginning of each bar.
             cash_deposits_as_input (Optional[bool]): Whether to add cash deposits to the input value.
-            bm_value (Optional[SeriesFrame]): Benchmark value series or frame.
+            bm_value (Optional[SeriesFrame]): Benchmark value Series or DataFrame.
 
                 Defaults to `Portfolio.get_bm_value` if not provided.
             log_returns (bool): Flag to compute logarithmic returns.
@@ -10479,7 +10483,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         it is resolved based on the `use_asset_returns` flag and other parameters.
 
         Args:
-            returns (Optional[SeriesFrame]): Return series or frame.
+            returns (Optional[SeriesFrame]): Return Series or DataFrame.
 
                 Defaults to `Portfolio.get_returns` or `Portfolio.get_asset_returns` if not provided.
             use_asset_returns (bool): Indicates whether to use asset returns for calculation.
@@ -10625,7 +10629,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Based on `Portfolio.get_returns_acc`.
 
         Args:
-            returns (Optional[SeriesFrame]): Return series or frame.
+            returns (Optional[SeriesFrame]): Return Series or DataFrame.
             use_asset_returns (bool): Indicates whether to use asset returns for calculation.
             bm_returns (Union[None, bool, ArrayLike]): Benchmark returns or a flag to resolve benchmark returns.
             log_returns (bool): Flag to compute logarithmic returns.
@@ -11051,7 +11055,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Based on `Portfolio.get_returns_acc`.
 
         Args:
-            returns (Optional[SeriesFrame]): Return series or frame.
+            returns (Optional[SeriesFrame]): Return Series or DataFrame.
             use_asset_returns (bool): Indicates whether to use asset returns for calculation.
             bm_returns (Union[None, bool, ArrayLike]): Benchmark returns or a flag to resolve benchmark returns.
             log_returns (bool): Flag to compute logarithmic returns.
@@ -11109,7 +11113,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     def plot_orders(
         cls_or_self,
         column: tp.Optional[tp.Column] = None,
-        orders: tp.Optional[Drawdowns] = None,
+        orders: tp.Optional[Orders] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
         rec_sim_range: bool = False,
@@ -11123,7 +11127,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            orders (Optional[Drawdowns]): Orders instance for plotting.
+            orders (Optional[Orders]): Instance containing order records.
 
                 Defaults to `Portfolio.get_orders` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -11190,7 +11194,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            trades (Optional[Drawdowns]): Trades instance for plotting.
+            trades (Optional[Drawdowns]): Instance containing trade records.
 
                 Defaults to `Portfolio.get_trades` if not provided.
             trades_type (Optional[Union[str, int]]): Identifier for the type of trades.
@@ -11252,7 +11256,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            trades (Optional[Drawdowns]): Trades instance used for plotting trade P&L.
+            trades (Optional[Drawdowns]): Instance containing trade records.
 
                 Defaults to `Portfolio.get_trades` if not provided.
             trades_type (Optional[Union[str, int]]): Identifier for the type of trades.
@@ -11326,13 +11330,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            entry_trades (Optional[EntryTrades]): Entry trades data used for plotting.
+            entry_trades (Optional[EntryTrades]): Instance containing entry trade records.
 
                 Defaults to `Portfolio.get_entry_trades` if not provided.
-            exit_trades (Optional[ExitTrades]): Exit trades data used for plotting.
+            exit_trades (Optional[ExitTrades]): Instance containing exit trade records.
 
                 Defaults to `Portfolio.get_exit_trades` if not provided.
-            positions (Optional[Positions]): Positions data for plotting position shapes.
+            positions (Optional[Positions]): Instance containing position records.
 
                 Defaults to `Portfolio.get_positions` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
@@ -12410,7 +12414,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            drawdowns (Optional[Drawdowns]): Drawdowns instance.
+            drawdowns (Optional[Drawdowns]): Instance containing drawdown records.
 
                 Defaults to `Portfolio.get_drawdowns` if not provided.
             sim_start (Optional[ArrayLike]): Start index of the simulation range.

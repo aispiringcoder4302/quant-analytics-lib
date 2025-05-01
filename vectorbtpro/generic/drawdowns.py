@@ -1133,7 +1133,7 @@ class Drawdowns(Ranges):
             column (Optional[Column]): Identifier of the column to plot.
             top_n (Optional[int]): Display only the top N records sorted by maximum duration.
             plot_ohlc (bool): Whether to plot the OHLC data.
-            plot_close (bool): Plot close prices when OHLC data is not available.
+            plot_close (bool): Whether to plot the close price if OHLC data is not plotted.
             plot_markers (bool): Plot markers for significant drawdown events.
             plot_zones (bool): Plot zones delineating drawdown phases.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.

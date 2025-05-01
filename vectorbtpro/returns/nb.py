@@ -322,7 +322,7 @@ def cumulative_returns_nb(
 
     Args:
         returns (Array2d): 2D array of periodic returns.
-        start_value (float): Initial portfolio value.
+        start_value (float): Initial value used to scale the cumulative returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
@@ -368,7 +368,7 @@ def final_value_1d_nb(
 
     Args:
         returns (Array1d): 1D array of periodic returns.
-        start_value (float): Initial portfolio value.
+        start_value (float): Initial value used to scale the cumulative returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
 
     Returns:
@@ -415,7 +415,7 @@ def final_value_nb(
 
     Args:
         returns (Array2d): 2D array of periodic returns.
-        start_value (float): Initial portfolio value.
+        start_value (float): Initial value used to scale the cumulative returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
@@ -479,7 +479,7 @@ def rolling_final_value_nb(
     Args:
         returns (Array2d): 2D array of periodic returns.
         window (int): Window size.
-        start_value (float): Initial portfolio value.
+        start_value (float): Initial value used to scale the cumulative returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
         minp (Optional[int]): Minimum number of observations required.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).

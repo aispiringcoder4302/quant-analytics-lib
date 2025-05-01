@@ -775,8 +775,6 @@ class Box(TraceType, TraceUpdater):
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
         trace_names (TraceNames): Names for traces corresponding to data columns.
-
-            If provided, their number should match the number of data columns.
         horizontal (bool): Indicates if the box plot is oriented horizontally.
         remove_nan (bool): Flag determining whether NaN values are removed from the data.
         from_quantile (Optional[float]): Lower quantile threshold to filter out data.
@@ -976,8 +974,8 @@ class Heatmap(TraceType, TraceUpdater):
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
             Must have shape (`y_labels`, `x_labels`).
-        x_labels (Optional[Labels]): Labels for the x-axis corresponding to dataframe columns.
-        y_labels (Optional[Labels]): Labels for the y-axis corresponding to dataframe index.
+        x_labels (Optional[Labels]): Labels for the x-axis corresponding to DataFrame columns.
+        y_labels (Optional[Labels]): Labels for the y-axis corresponding to DataFrame index.
         is_x_category (bool): Indicates whether the x-axis represents categorical data.
         is_y_category (bool): Flag indicating whether to treat the y-axis as categorical.
         trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Heatmap`.

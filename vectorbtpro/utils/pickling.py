@@ -1484,7 +1484,7 @@ class Pickleable(Base):
         """Return the size of this object.
 
         Args:
-            readable (bool): If True, return a human-readable size string.
+            readable (bool): Whether to use a human-readable format.
             **kwargs: Keyword arguments for `humanize.naturalsize`.
 
         Returns:

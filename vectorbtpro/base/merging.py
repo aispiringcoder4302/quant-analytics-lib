@@ -837,7 +837,7 @@ def resolve_merge_func(merge_func: tp.MergeFuncLike) -> tp.Optional[tp.Callable]
         merge_func (MergeFuncLike): Merging function to resolve.
         
             * If provided as a string, it is looked up in `merge_func_config`.
-            *If provided as a sequence, a partial application of `mixed_merge` with
+            * If provided as a sequence, a partial application of `mixed_merge` with
                 `merge_funcs=merge_func` is returned.
             * If provided as an instance of `vectorbtpro.utils.merging.MergeFunc`,
                 its `resolve_merge_func` method is called to obtain the actual callable.

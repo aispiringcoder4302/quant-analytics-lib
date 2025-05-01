@@ -828,7 +828,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.generate`.
 
         Returns:
-            SeriesFrame: A series or frame containing the generated signals.
+            SeriesFrame: A Series or DataFrame containing the generated signals.
 
         See:
             * `vectorbtpro.signals.nb.rand_place_nb` if `n` is provided.

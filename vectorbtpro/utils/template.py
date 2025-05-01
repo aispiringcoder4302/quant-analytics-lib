@@ -107,7 +107,7 @@ class CustomTemplate(Evaluable, DefineMixin):
         the instance setting, and the global default from `vectorbtpro._settings.template`.
 
         Args:
-            strict (Optional[bool]): Override flag for strict error handling.
+            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
 
         Returns:
             bool: The resolved strict flag.
@@ -144,7 +144,7 @@ class CustomTemplate(Evaluable, DefineMixin):
 
         Args:
             context (KwargsLike): Additional context mapping for substitution.
-            strict (Optional[bool]): Flag to indicate whether to raise an error on missing keys.
+            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -188,7 +188,7 @@ class Sub(CustomTemplate):
 
         Args:
             context (KwargsLike): Additional context for substitution.
-            strict (Optional[bool]): Flag indicating whether to raise an error when a key is missing.
+            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -240,7 +240,7 @@ class SafeSub(CustomTemplate):
 
         Args:
             context (KwargsLike): Additional context for substitution.
-            strict (Optional[bool]): Flag indicating whether to raise an error when a key is missing.
+            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -280,7 +280,7 @@ class Rep(CustomTemplate):
 
         Args:
             context (KwargsLike): Additional context mapping to retrieve the replacement.
-            strict (Optional[bool]): Flag indicating whether to raise an error if the key is missing.
+            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -361,7 +361,7 @@ class RepFunc(CustomTemplate):
 
         Args:
             context (KwargsLike): Additional context containing function arguments.
-            strict (Optional[bool]): Flag indicating whether to raise an error if the function call fails.
+            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
@@ -441,7 +441,7 @@ def substitute_templates(
     Args:
         obj (Any): Object to traverse for template substitution.
         context (KwargsLike): Context for replacing template placeholders.
-        strict (Optional[bool]): Flag to determine whether to raise an error if substitution fails.
+        strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
         eval_id (Optional[Hashable]): Evaluation identifier.
         **kwargs: Additional parameters to override default search settings.
 

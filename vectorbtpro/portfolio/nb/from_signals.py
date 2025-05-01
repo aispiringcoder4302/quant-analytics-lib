@@ -489,10 +489,12 @@ def prepare_fs_records_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         max_order_records (Optional[int]): Maximum number of order records expected per column.
 
-            Overrides the first dimension of target_shape if provided.
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
 
-            Overrides the first dimension of target_shape if provided.
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
 
     Returns:
         Tuple[RecordArray2d, RecordArray2d]: A tuple containing:
@@ -822,7 +824,13 @@ def from_basic_signals_nb(
         save_returns (bool): Flag to record the portfolio returns.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
 
     Returns:
         SimulationOutput: The simulation output containing order records, log records, and portfolio results.
@@ -1942,7 +1950,13 @@ def from_signals_nb(
         save_returns (bool): Flag to record the portfolio returns.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
 
     Returns:
         SimulationOutput: The simulation output containing order records, log records, and portfolio results.
@@ -4459,7 +4473,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
         cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
-        index (Optional[Array1d]): Index in nanosecond format.
+        index (Optional[Array1d]): Index array in nanosecond format.
         freq (Optional[int]): Frequency in nanosecond format.
         open (FlexArray2dLike): Open price.
         
@@ -4795,11 +4809,17 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             processed per row and group.
         auto_call_seq (bool): Flag to automatically sort the call sequence.
         ffill_val_price (bool): Flag to forward-fill valuation price.
-        update_value (bool): Whether to update portfolio value during simulation.
+        update_value (bool): Flag to update portfolio value with each order.
         fill_pos_info (bool): Whether to fill the position information record.
         skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
         max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
         max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
         in_outputs (Optional[NamedTuple]): Additional outputs from the simulation.
 
     Returns:
@@ -7220,7 +7240,7 @@ def dir_to_ls_signals_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         entries (FlexArray2d): 2D array of boolean entry signals.
         exits (FlexArray2d): 2D array of boolean exit signals.
-        direction (FlexArray2d): Array indicating the trade direction.
+        direction (FlexArray2d): Array indicating the order direction.
 
             See `vectorbtpro.portfolio.enums.Direction`.
 
@@ -7381,7 +7401,9 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
         c (SignalContext): Signal context.
         entries (FlexArray2d): 2D array of boolean entry signals.
         exits (FlexArray2d): 2D array of boolean exit signals.
-        direction (FlexArray2d): Array indicating the trade direction.
+        direction (FlexArray2d): Array indicating the order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
         from_ago (FlexArray2d): 2D array used to adjust the time index for signal lookup.
         adjust_func_nb (AdjustFunc): Callback function called to adjust the context before signal generation.
 

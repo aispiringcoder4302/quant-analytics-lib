@@ -55,7 +55,7 @@ class _FMIN(FMIN):
 
         Args:
             column (Optional[Column]): Identifier of the column to plot.
-            plot_close (bool): Whether to plot `FMIN.close` along with the indicator.
+            plot_close (bool): Whether to plot the close price.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMIN.close`.
             fmin_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMIN.fmin`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;

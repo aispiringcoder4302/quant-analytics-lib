@@ -366,8 +366,8 @@ def get_entry_trades_nb(
         order_records (RecordArray): Array of order records.
 
             Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
-        close (FlexArray2dLike): Close prices.
-        
+        close (FlexArray2dLike): Close price.
+
             Provided as a scalar, or per row, column, or element.
         col_map (GroupMap): Tuple of indices and lengths for each column.
         init_position (FlexArray1dLike): Initial position.
@@ -713,10 +713,10 @@ def get_exit_trades_nb(
 
     Args:
         order_records (RecordArray): Array of order records.
-            
+
             Must adhere to the `vectorbtpro.portfolio.enums.order_dt` dtype.
-        close (FlexArray2dLike): Close prices.
-        
+        close (FlexArray2dLike): Close price.
+
             Provided as a scalar, or per row, column, or element.
         col_map (GroupMap): Tuple of indices and lengths for each column.
         init_position (FlexArray1dLike): Initial position.
@@ -725,8 +725,6 @@ def get_exit_trades_nb(
         init_price (FlexArray1dLike): Initial position price.
 
             Provided as a scalar or per column.
-            
-            Represented as a 1D array-like structure.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per column.

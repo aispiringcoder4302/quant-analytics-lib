@@ -1713,7 +1713,7 @@ def get_order_result_nb(
             Relevant context.
         order (Order): Order to be executed.
         val_price (Optional[float]): Valuation price of the asset.
-        update_value (bool): Flag indicating whether to update the computed value during order execution.
+        update_value (bool): Flag to update portfolio value with each order.
 
     Returns:
         Tuple[OrderResult, ExecState]: A tuple containing the order result and

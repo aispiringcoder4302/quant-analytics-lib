@@ -483,7 +483,7 @@ class Orders(PriceRecords):
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_ohlc (bool): Whether to plot the OHLC data.
-            plot_close (bool): Whether to plot the close price if OHLC data is unavailable.
+            plot_close (bool): Whether to plot the close price if OHLC data is not plotted.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.

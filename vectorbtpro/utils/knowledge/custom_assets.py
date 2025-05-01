@@ -1489,7 +1489,7 @@ class VBTAsset(KnowledgeAsset):
             merge_targets (Optional[bool]): Merge mention targets to simplify the search.
             per_path (bool): Whether to perform the search per specified path.
             path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to 
-                search within (e.g. "x.y[0].z").
+                search (e.g. "x.y[0].z").
             return_type (Optional[str]): Type of result to return.
             **kwargs: Keyword arguments for `VBTAsset.find` or `VBTAsset.find_code`.
 

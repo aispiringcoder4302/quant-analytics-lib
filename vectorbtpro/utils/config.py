@@ -1356,8 +1356,10 @@ class HasSettings(Base):
 
         Args:
             path (PathLikeKey): Primary settings path.
-            sub_path (Optional[PathLikeKey]): Sub-path to combine with the primary path.
-            sub_path_only (bool): If True, enforce that the settings exist only under the combined sub-path.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
+
+                The sub-path is appended to the resolved path to give it higher priority.
+            sub_path_only (bool): Whether to consider only the combined sub-path.
 
         Returns:
             dict: The settings associated with the given path, optionally merged with sub-path settings.
@@ -1482,8 +1484,10 @@ class HasSettings(Base):
         Args:
             path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include settings from superclasses.
-            sub_path (Optional[PathLikeKey]): Sub-path to combine with the main settings path.
-            sub_path_only (bool): If True, enforce that the settings exist only under the combined sub-path.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
+
+                The sub-path is appended to the resolved path to give it higher priority.
+            sub_path_only (bool): Whether to consider only the combined sub-path.
 
         Returns:
             dict: The merged settings dictionary.
@@ -1525,8 +1529,10 @@ class HasSettings(Base):
 
         Args:
             path (PathLikeKey): Primary settings path.
-            sub_path (Optional[PathLikeKey]): Sub-path to combine with the primary path.
-            sub_path_only (bool): If True, enforce lookup solely in the combined sub-path.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
+
+                The sub-path is appended to the resolved path to give it higher priority.
+            sub_path_only (bool): Whether to consider only the combined sub-path.
 
         Returns:
             bool: True if settings exist under the specified path; otherwise, False.
@@ -1550,8 +1556,10 @@ class HasSettings(Base):
         Args:
             path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include settings from superclasses.
-            sub_path (Optional[PathLikeKey]): Sub-path to combine with the main settings path.
-            sub_path_only (bool): If True, enforce lookup solely in the combined sub-path.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
+
+                The sub-path is appended to the resolved path to give it higher priority.
+            sub_path_only (bool): Whether to consider only the combined sub-path.
 
         Returns:
             bool: True if settings exist; otherwise, False.
@@ -1582,8 +1590,10 @@ class HasSettings(Base):
             path (PathLikeKey): Primary settings path.
             key (PathLikeKey): Key for which to retrieve the setting value.
             default (Any): Default value to return if the key is not found.
-            sub_path (Optional[PathLikeKey]): Sub-path to combine with the primary path.
-            sub_path_only (bool): If True, enforce retrieval only from the combined sub-path.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
+
+                The sub-path is appended to the resolved path to give it higher priority.
+            sub_path_only (bool): Whether to consider only the combined sub-path.
 
         Returns:
             Any: The value corresponding to the specified key, or the default value if not found.
@@ -1639,8 +1649,10 @@ class HasSettings(Base):
             default (Any): Value to return if the setting is not found.
             path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include settings from superclasses.
-            sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
-            sub_path_only (bool): Whether to consider only the sub-path.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
+
+                The sub-path is appended to the resolved path to give it higher priority.
+            sub_path_only (bool): Whether to consider only the combined sub-path.
             merge (bool): Whether to merge settings from multiple sources.
 
         Returns:
@@ -1708,8 +1720,10 @@ class HasSettings(Base):
         Args:
             path (PathLikeKey): Path to check for a setting.
             key (PathLikeKey): Key identifying the setting.
-            sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
-            sub_path_only (bool): Whether to consider only the sub-path.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
+
+                The sub-path is appended to the resolved path to give it higher priority.
+            sub_path_only (bool): Whether to consider only the combined sub-path.
 
         Returns:
             bool: True if the setting exists; otherwise, False.
@@ -1736,8 +1750,10 @@ class HasSettings(Base):
             key (PathLikeKey): Key identifying the setting.
             path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include settings from superclasses.
-            sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
-            sub_path_only (bool): Whether to consider only the sub-path.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
+
+                The sub-path is appended to the resolved path to give it higher priority.
+            sub_path_only (bool): Whether to consider only the combined sub-path.
 
         Returns:
             bool: True if the setting exists; otherwise, False.
@@ -1777,10 +1793,10 @@ class HasSettings(Base):
             default (Any): Value to return if the setting is not found.
             path_id (Optional[Hashable]): Identifier for the settings path.
             inherit (bool): Whether to include settings from superclasses.
-            sub_path (Optional[PathLikeKey]): Sub-key to extend the settings path.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
 
-                The sub-key is appended to the resolved path to give it higher priority.
-            sub_path_only (bool): Whether to consider only the sub-path.
+                The sub-path is appended to the resolved path to give it higher priority.
+            sub_path_only (bool): Whether to consider only the combined sub-path.
             merge (bool): Whether to merge dictionaries if applicable.
 
         Returns:
@@ -1823,7 +1839,9 @@ class HasSettings(Base):
 
         Args:
             path_id (Optional[Hashable]): Identifier for the settings path.
-            sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
+
+                The sub-path is appended to the resolved path to give it higher priority.
             populate_ (bool): Indicates if the settings should be populated.
 
                 If the settings do not exist, pass `populate_=True` to initialize them.
@@ -1872,7 +1890,9 @@ class HasSettings(Base):
 
         Args:
             path_id (Optional[Hashable]): Identifier for the settings path.
-            sub_path (Optional[PathLikeKey]): Sub-key for nested settings.
+            sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
+
+                The sub-path is appended to the resolved path to give it higher priority.
 
         Returns:
             None: The settings are reset in place.

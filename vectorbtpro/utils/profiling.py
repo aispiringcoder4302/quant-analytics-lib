@@ -76,7 +76,7 @@ class Timer(Base):
         """Return the elapsed time since the timer started.
 
         Args:
-            readable (bool): Whether to format the elapsed time as a human-readable string.
+            readable (bool): Whether to use a human-readable format.
             **kwargs: Keyword arguments for `humanize.precisedelta`.
 
         Returns:
@@ -166,7 +166,7 @@ def timeit(func: tp.Callable, readable: bool = True, **kwargs) -> tp.Union[str, 
 
     Args:
         func (Callable): Function to be timed.
-        readable (bool): Whether to format the elapsed time as a human-readable string.
+        readable (bool): Whether to use a human-readable format.
         **kwargs: Keyword arguments for `humanize.precisedelta`.
 
     Returns:
@@ -278,7 +278,7 @@ class MemTracer(Base):
         """Return the final memory usage recorded by `tracemalloc`.
 
         Args:
-            readable (bool): Whether to format the memory usage as a human-readable string.
+            readable (bool): Whether to use a human-readable format.
             **kwargs: Keyword arguments for `humanize.naturalsize`.
 
         Returns:
@@ -296,7 +296,7 @@ class MemTracer(Base):
         """Return the peak memory usage recorded by `tracemalloc`.
 
         Args:
-            readable (bool): Whether to format the memory usage as a human-readable string.
+            readable (bool): Whether to use a human-readable format.
             **kwargs: Keyword arguments for `humanize.naturalsize`.
 
         Returns:
