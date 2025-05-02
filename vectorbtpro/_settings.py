@@ -949,6 +949,7 @@ data = frozen_cfg(
             end=None,
             timeframe="1d",
             tz=None,
+            ticker_kwargs=flex_cfg(),
             history_kwargs=flex_cfg(),
         ),
         binance=flex_cfg(

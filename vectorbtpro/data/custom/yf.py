@@ -87,6 +87,7 @@ class YFData(RemoteData):
         end: tp.Optional[tp.DatetimeLike] = None,
         timeframe: tp.Optional[str] = None,
         tz: tp.TimezoneLike = None,
+        ticker_kwargs: tp.KwargsLike = None,
         **history_kwargs,
     ) -> tp.SymbolData:
         """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Yahoo Finance.
@@ -106,6 +107,7 @@ class YFData(RemoteData):
             tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
+            ticker_kwargs (KwargsLike): Keyword arguments for `yfinance.ticker.Ticker`.
             **history_kwargs: Keyword arguments for `yfinance.base.TickerBase.history`.
 
         Returns:
@@ -125,9 +127,10 @@ class YFData(RemoteData):
         end = cls.resolve_custom_setting(end, "end")
         timeframe = cls.resolve_custom_setting(timeframe, "timeframe")
         tz = cls.resolve_custom_setting(tz, "tz")
+        ticker_kwargs = cls.resolve_custom_setting(ticker_kwargs, "ticker_kwargs", merge=True)
         history_kwargs = cls.resolve_custom_setting(history_kwargs, "history_kwargs", merge=True)
 
-        ticker = yf.Ticker(symbol)
+        ticker = yf.Ticker(symbol, **ticker_kwargs)
         def_history_kwargs = get_func_kwargs(yf.Tickers.history)
         ticker_tz = ticker._get_ticker_tz(history_kwargs.get("timeout", def_history_kwargs["timeout"]))
         if tz is None:
