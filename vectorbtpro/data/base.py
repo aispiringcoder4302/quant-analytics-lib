@@ -766,7 +766,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         delisted (Union[None, feature_dict, symbol_dict]): Container to track
             delisted status for each key.
         tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
+
+            Set to False to disable localization. See `Data.prepare_dt_index`.
         tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+
+            Set to False to disable conversion. See `Data.prepare_dt_index`.
         missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
 
             See `Data.align_index`.
@@ -2296,7 +2300,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             index (Index): Index to be processed.
-            parse_dates (bool): If True, convert to a datetime index using `Data.prepare_dt_index`.
+            parse_dates (bool): If True, convert to a datetime index using `vectorbtpro.utils.datetime_.prepare_dt_index`.
             tz_localize (TimezoneLike): Timezone to localize a datetime-naive index.
             tz_convert (TimezoneLike): Timezone to convert a datetime-aware index.
             force_tz_convert (bool): If True, convert the timezone even if the index is not timezone-aware.
@@ -2332,7 +2336,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             sr (Series): Series to be processed.
-            parse_dates (bool): If True, convert to a datetime index using `Data.prepare_dt_index`.
+            parse_dates (bool): If True, convert to a datetime index using `vectorbtpro.utils.datetime_.prepare_dt_index`.
             tz_localize (TimezoneLike): Timezone to localize a datetime-naive index.
             tz_convert (TimezoneLike): Timezone to convert a datetime-aware index.
             force_tz_convert (bool): If True, convert the timezone even if the index is not timezone-aware.
@@ -2458,7 +2462,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             obj (SeriesFrame): Pandas Series or DataFrame.
             tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
+
+                Set to False to disable localization. See `Data.prepare_dt_index`.
             tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+
+                Set to False to disable conversion. See `Data.prepare_dt_index`.
 
         Returns:
             SeriesFrame: The object with a timezone-aware index.
@@ -2709,7 +2717,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             delisted (Union[None, feature_dict, symbol_dict]): Container to track
                 delisted status for each key.
             tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
+
+                Set to False to disable localization. See `Data.prepare_dt_index`.
             tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+
+                Set to False to disable conversion. See `Data.prepare_dt_index`.
             missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
 
                 See `Data.align_index`.
@@ -2819,10 +2831,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 See `Data.level_name`.
             tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
 
-                See `Data.prepare_tzaware_index`.
+                Set to False to disable localization. See `Data.prepare_dt_index`.
             tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
 
-                See `Data.prepare_tzaware_index`.
+                Set to False to disable conversion. See `Data.prepare_dt_index`.
             missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
 
                 See `Data.align_index`.
@@ -3020,6 +3032,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             arg_name (Optional[str]): Name of the argument for error messaging.
             dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
 
+                Defaults to `Data.dict_type` if not specified.
+
         Returns:
             None
         """
@@ -3048,6 +3062,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             kwargs (KwargsLike): Dictionary of keyword arguments.
             kwargs_name (str): Name of the keyword arguments dictionary.
             dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
+
+                Defaults to `Data.dict_type` if not specified.
             check_dict_type (bool): Flag to validate the type of dictionaries.
 
         Returns:
@@ -3120,6 +3136,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             dct (key_dict): Dictionary to search for the key.
             dct_name (str): Name of the dictionary.
             dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
+
+                Defaults to `Data.dict_type` if not specified.
             check_dict_type (bool): Flag to validate the type of dictionaries.
 
         Returns:
@@ -3884,7 +3902,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             feature (Feature): Feature identifier.
-            skip_on_error (bool): If True, exceptions during fetching are suppressed.
+            skip_on_error (bool): If True, do not raise an exception on error.
             silence_warnings (bool): Flag to suppress warning messages.
             fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_feature`.
 
@@ -3946,7 +3964,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             symbol (Symbol): Symbol identifier.
-            skip_on_error (bool): If True, exceptions during fetching are suppressed.
+            skip_on_error (bool): If True, do not raise an exception on error.
             silence_warnings (bool): Flag to suppress warning messages.
             fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_symbol`.
 
@@ -4103,17 +4121,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 !!! note
                     Tuple is interpreted as a single class.
             level_name (Union[None, bool, MaybeIterable[Hashable]]): Used as in `Data.level_name`.
-            tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization
-                as used in `Data.from_data`.
-            tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion
-                as used in `Data.from_data`.
+            tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
+
+                Set to False to disable localization. See `Data.prepare_dt_index`.
+            tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+
+                Set to False to disable conversion. See `Data.prepare_dt_index`.
             missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
 
                 See `Data.align_index`.
             missing_columns (Optional[str]): Specifies how to handle missing columns when aligning data.
 
                 See `Data.align_columns`.
-            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper for `Data.from_data`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
 
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             skip_on_error (Optional[bool]): Whether to skip pulling a feature or symbol if an exception occurs.
@@ -4385,7 +4405,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             feature (Feature): Feature identifier.
-            skip_on_error (bool): If True, skip update when an error occurs.
+            skip_on_error (bool): If True, do not raise an exception on error.
             silence_warnings (bool): Flag to suppress warning messages.
             update_kwargs (KwargsLike): Keyword arguments for `Data.update_feature`.
 
@@ -4438,7 +4458,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             symbol (Symbol): Symbol identifier.
-            skip_on_error (bool): If True, skip symbol update on error.
+            skip_on_error (bool): If True, do not raise an exception on error.
             silence_warnings (bool): Flag to suppress warning messages.
             update_kwargs (KwargsLike): Keyword arguments for `Data.update_symbol`.
 
@@ -5611,7 +5631,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): File path or buffer.
 
-                When a directory is provided, each feature or symbol is saved to a separate file.
+                If a directory is provided, each feature or symbol is saved in a separate file.
             ext (Union[str, feature_dict, symbol_dict, CustomTemplate]):
                 File extension to use for CSV files when saving multiple files.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
@@ -5724,7 +5744,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): File path or buffer.
 
-                When a directory is provided, each feature or symbol is saved to a separate file.
+                If a directory is provided, each feature or symbol is saved in a separate file.
             key (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
                 HDF key under which to store the data.
 
@@ -5971,9 +5991,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 Use "str" to convert periods to strings or provide another method for timestamp conversion.
             groupby_kwargs (Union[None, AnyGroupByLike, feature_dict, symbol_dict, CustomTemplate]):
-                Keyword arguments for Pandas `groupby` and `resample` methods.
+                Keyword arguments for `pandas.Series.groupby` and `pandas.Series.resample` methods.
 
-                See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
             keep_groupby_names (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
                 Flag indicating whether to retain original group names when partitioning.
             engine (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):

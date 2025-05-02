@@ -1675,7 +1675,7 @@ def get_order_value_nb(
             Relevant context.
         size (float): Order size.
         size_type (int): Type of order size.
-                
+
             See `vectorbtpro.portfolio.enums.SizeType`.
         direction (int): Order direction.
         
@@ -1711,7 +1711,9 @@ def get_order_result_nb(
     Args:
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Relevant context.
-        order (Order): Order to be executed.
+        order (Order): Order to execute.
+
+            See `vectorbtpro.portfolio.enums.Order`.
         val_price (Optional[float]): Valuation price of the asset.
         update_value (bool): Flag to update portfolio value with each order.
 

@@ -1680,7 +1680,7 @@ class Chunker(Configured):
             i (int): Index of the argument.
             ann_arg_name (str): Name of the annotated argument.
             ann_arg (Kwargs): Details of the annotated argument.
-            arg_take_spec (ArgTakeSpec): Specification mapping for chunk-taking.
+            arg_take_spec (ArgTakeSpec): Mapping specifying the extraction rules for each argument.
 
         Returns:
             TakeSpec: The resolved specification for the argument, or `MISSING` if not found.
@@ -2032,7 +2032,7 @@ class Chunker(Configured):
         """Fill and return the chunk-taking specification with missing keys set to None to avoid warnings.
 
         Args:
-            arg_take_spec (ArgTakeSpec): Initial chunk-taking specification.
+            arg_take_spec (ArgTakeSpec): Mapping specifying the extraction rules for each argument.
             ann_args (AnnArgs): Annotated arguments.
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
@@ -2097,7 +2097,7 @@ class Chunker(Configured):
             ann_args (AnnArgs): Annotated arguments.
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
-            arg_take_spec (ArgTakeSpec): Specification for extracting chunk-taking parameters.
+            arg_take_spec (ArgTakeSpec): Mapping specifying the extraction rules for each argument.
             eval_id (Optional[Hashable]): Evaluation identifier.
             **kwargs: Keyword arguments for `ChunkTaker.suggest_size`.
 
@@ -2671,7 +2671,7 @@ def resolve_chunked_option(option: tp.ChunkedOption = None) -> tp.KwargsLike:
     """Return keyword arguments for `chunked` based on a given option.
 
     Args:
-        option (ChunkedOption): Determines the chunking behavior.
+        option (ChunkedOption): Option to control chunked processing.
 
             * True: Use default chunking settings.
             * None or False: Disable chunking.
@@ -2706,7 +2706,9 @@ def specialize_chunked_option(option: tp.ChunkedOption = None, **kwargs) -> tp.K
     """Resolve the provided chunking option and merge it with additional keyword arguments.
 
     Args:
-        option (ChunkedOption): Chunking option to resolve.
+        option (ChunkedOption): Option to control chunked processing.
+
+            See `resolve_chunked_option`.
         **kwargs: Keyword arguments to be merged with the resolved chunking option.
 
     Returns:
@@ -2723,7 +2725,9 @@ def resolve_chunked(func: tp.Callable, option: tp.ChunkedOption = None, **kwargs
 
     Args:
         func (Callable): Function to decorate.
-        option (ChunkedOption): Chunking option determining whether to apply chunked processing.
+        option (ChunkedOption): Option to control chunked processing.
+
+            See `resolve_chunked_option`.
         **kwargs: Keyword arguments for `chunked`.
 
             These are merged with the default chunking settings.

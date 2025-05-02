@@ -572,12 +572,16 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return an index grouper of type `vectorbtpro.base.grouping.base.Grouper`.
 
         Args:
-            by (AnyGroupByLike): Grouper specifier which can be one of the following:
+            by (AnyGroupByLike): Grouper-like specification.
 
-                * A grouper instance.
-                * A Pandas `GroupBy` or `Resampler` instance.
-                * A supported input such as a frequency or an array of indices.
-            groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
+                Can be one of the following:
+
+                * `vectorbtpro.base.grouping.base.Grouper` instance
+                * Pandas `GroupBy` instance
+                * Pandas `Resampler` instance
+                * An instruction for any of the above
+            groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and 
+                `pandas.Series.resample` methods.
             **kwargs: Keyword arguments for initializing `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
@@ -619,11 +623,18 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return an index resampler of type `vectorbtpro.base.resampling.base.Resampler`.
 
         Args:
-            rule (AnyRuleLike): Resampling rule, which may be frequency-like or a resampler.
+            rule (AnyRuleLike): Resampler-like specification.
+
+                Can be one of the following:
+
+                * `vectorbtpro.base.resampling.base.Resampler` instance
+                * Pandas `Resampler` instance
+                * An instruction for any of the above
+                * Datetime-like object or iterable used to create a new index
             freq (Optional[FrequencyLike]): Frequency of the target index (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
-            resample_kwargs (KwargsLike): Keyword arguments for Pandas `resample` method.
+            resample_kwargs (KwargsLike): Keyword arguments for `pandas.Series.resample`.
             return_pd_resampler (bool): Flag indicating whether to return a Pandas resampler.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
@@ -2308,9 +2319,9 @@ class BaseAccessor(Wrapping):
             concat (bool): Determines whether to concatenate the results along the column axis or
                 combine objects pairwise.
 
-                If True, see `vectorbtpro.base.combining.combine_and_concat`.
-                If False, see `vectorbtpro.base.combining.combine_multiple`.
-                If None, defaults to True when combining multiple objects.
+                * If True, see `vectorbtpro.base.combining.combine_and_concat`.
+                * If False, see `vectorbtpro.base.combining.combine_multiple`.
+                * If None, defaults to True when combining multiple objects.
 
                 Can only be used with the instance method.
             keys (index_like): Label(s) for the outermost column level.
@@ -2499,7 +2510,9 @@ class BaseAccessor(Wrapping):
         Otherwise, the evaluation is performed via `vectorbtpro.utils.eval_.evaluate`.
 
         Args:
-            expr (str): Array expression to evaluate element-wise.
+            expr (str): Expression string.
+
+                Must contain valid Python code and can be single-line or multi-line.
             frames_back (int): Number of frames to go back to retrieve context variables.
             use_numexpr (bool): Flag indicating whether to use NumExpr for evaluation.
             numexpr_kwargs (KwargsLike): Keyword arguments for `numexpr.evaluate`.

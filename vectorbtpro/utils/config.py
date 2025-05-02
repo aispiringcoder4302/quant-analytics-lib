@@ -1718,7 +1718,7 @@ class HasSettings(Base):
         """Return whether a setting exists under the specified path.
 
         Args:
-            path (PathLikeKey): Path to check for a setting.
+            path (PathLikeKey): Primary settings path.
             key (PathLikeKey): Key identifying the setting.
             sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
 

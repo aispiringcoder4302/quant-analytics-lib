@@ -272,12 +272,12 @@ class HDFData(FileData):
             end_row (Optional[int]): Index of the ending row (exclusive).
 
                 Also used for querying the index.
-            chunk_func (Optional[Callable]): Function to process and concatenate chunks from `TableIterator`.
+            chunk_func (Optional[Callable]): Function for processing and concatenating chunks from a `TableIterator `.
 
-                Called only if the iterator or chunksize is set.
+                Invoked only if `iterator` or `chunksize` is specified.
             **read_kwargs: Keyword arguments for `pd.read_hdf`.
 
-                See https://pandas.pydata.org/docs/reference/api/pandas.read_hdf.html for additional arguments.
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_hdf.html for arguments.
 
         Returns:
             KeyData: The fetched data and a metadata dictionary.

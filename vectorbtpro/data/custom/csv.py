@@ -135,11 +135,13 @@ class CSVData(FileData):
             parse_dates (Optional[bool]): Whether to parse dates.
 
                 See `pd.read_csv` for details on this argument.
-            chunk_func (Optional[Callable]): Function for processing chunks from a `TextFileReader`.
+            chunk_func (Optional[Callable]): Function for processing and concatenating chunks from a `TextFileReader`.
 
-                This function is invoked when `iterator` or `chunksize` is specified.
+                Invoked only if `iterator` or `chunksize` is specified.
             squeeze (Optional[bool]): Flag indicating whether to convert a single-column DataFrame to a Series.
             **read_kwargs: Keyword arguments for `pd.read_csv`.
+
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html for arguments.
 
         Returns:
             SymbolData: The fetched data and a metadata dictionary.

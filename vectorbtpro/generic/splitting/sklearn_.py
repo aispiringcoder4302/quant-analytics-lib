@@ -32,7 +32,8 @@ class SplitterCV(BaseCrossValidator, Base):
         splitter (Union[None, str, Splitter, Callable]): Splitter instance, the name of a factory method
             (e.g. "from_n_rolling"), or the factory method itself.
 
-            If None, it is determined automatically using the guess method of the splitter class.
+            If None, the appropriate splitter is determined using
+            `vectorbtpro.generic.splitting.base.Splitter.guess_method`.
         splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
 
             Defaults to `vectorbtpro.generic.splitting.base.Splitter`.

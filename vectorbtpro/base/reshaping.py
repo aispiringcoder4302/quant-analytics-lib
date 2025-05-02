@@ -523,8 +523,10 @@ def broadcast_shapes(
 
     Args:
         *shapes (ArrayLike): Shape-like objects to broadcast.
-        axis (Optional[MaybeSequence[int]]): Axis specification to adjust the resulting shape.
-        expand_axis (Optional[MaybeSequence[int]]): Axis used for expanding dimensions during broadcasting.
+        axis (Optional[MaybeSequence[int]]): Axis to broadcast along; allows for
+            different axes for each shape-like object.
+        expand_axis (Optional[MaybeSequence[int]]): Axis to expand along; allows for
+            different axes for each shape-like object.
 
     Returns:
         Tuple[Shape, ...]: A tuple of broadcasted shapes.
@@ -639,8 +641,10 @@ def broadcast_arrays(
     Args:
         *arrs (ArrayLike): Array-like objects to broadcast.
         target_shape (Optional[ShapeLike]): Target shape to which arrays should be broadcasted.
-        axis (Optional[MaybeSequence[int]]): Axis specification for broadcasting.
-        expand_axis (Optional[MaybeSequence[int]]): Axis used for expanding dimensions during broadcasting.
+        axis (Optional[MaybeSequence[int]]): Axis to broadcast along; allows for
+            different axes for each array-like object.
+        expand_axis (Optional[MaybeSequence[int]]): Axis to expand along; allows for
+            different axes for each array-like object.
 
     Returns:
         Tuple[Array, ...]: A tuple containing the broadcasted arrays.
@@ -871,7 +875,8 @@ def align_pd_arrays(
         align_columns (bool): Whether to align DataFrame columns.
         to_index (Optional[Index]): Target index for alignment.
         to_columns (Optional[Index]): Target columns for alignment.
-        axis (Optional[MaybeSequence[int]]): Axis or sequence of axes specifying alignment.
+        axis (Optional[MaybeSequence[int]]): Axis to align along; allows for
+            different axes for each Pandas array.
         reindex_kwargs (KwargsLikeSequence): Keyword arguments for `pd.DataFrame.reindex`.
 
     Returns:
@@ -1164,9 +1169,9 @@ def broadcast(
 
             If the mapping contains all keys in `pd.DataFrame.merge`, it applies to all objects.
         tile (Union[None, int, IndexLike]): Tile the final object by the specified number or index.
-        random_subset (Optional[int]): Select a random subset of parameter values.
+        random_subset (Optional[int]): Select a random subset of parameter combinations.
 
-            Set the seed via NumPy before calling this function for reproducibility.
+            Set the seed for reproducibility.
         seed (Optional[int]): Random seed for deterministic output.
         keep_wrap_default (Optional[bool]): Whether to retain wrapping with
             `vectorbtpro.base.reshaping.Default` for default values.

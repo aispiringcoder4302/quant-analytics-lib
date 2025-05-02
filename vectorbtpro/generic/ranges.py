@@ -1111,7 +1111,7 @@ class Ranges(PriceRecords):
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
             plot_bands (bool): Plot computed bands if True.
 
-                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
             plot_lower (Union[bool, str, Callable]): Specification for the lower band.
 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
@@ -1128,8 +1128,8 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
             colorize (Union[bool, str, Callable]): Strategy for colorizing projections or bands.
-            
-                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
+
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
@@ -1395,7 +1395,7 @@ class Ranges(PriceRecords):
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_ohlc (Union[bool, DataFrame]): Flag or data specifying whether to plot OHLC.
-            plot_close (Union[bool, Series]): Flag or data specifying whether to plot close values.
+            plot_close (Union[bool, Series]): Flag or data specifying whether to plot close prices.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
                 Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
@@ -1583,8 +1583,7 @@ class Ranges(PriceRecords):
             column (Optional[Column]): Identifier of the column to plot.
             top_n (Optional[int]): Display only the top N records sorted by maximum duration.
             plot_ohlc (Union[bool, Frame]): If True, plot OHLC data or pass a DataFrame to be used as OHLC.
-            plot_close (Union[bool, Series]): If True, plot close values; if a Series is provided,
-                it is used for plotting.
+            plot_close (Union[bool, Series]): Flag or data specifying whether to plot close prices.
             plot_markers (bool): Whether to plot markers at the start and end of ranges.
             plot_zones (bool): Whether to plot shaded zones for open and closed ranges.
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
@@ -2250,7 +2249,9 @@ class PatternRanges(Ranges):
             minp (Union[Param, None, int]): See `PSC.minp`.
             overlap_mode (Union[Param, int, str]): See `PSC.overlap_mode`.
             max_records (Union[Param, None, int]): See `PSC.max_records`.
-            random_subset (Optional[int]): Number of random configurations to select.
+            random_subset (Optional[int]): Select a random subset of parameter combinations.
+
+                Set the seed for reproducibility.
             seed (Optional[int]): Random seed for deterministic output.
             search_configs (Optional[Sequence[MaybeSequence[PSC]]]): Sequence of search configuration instances.
 

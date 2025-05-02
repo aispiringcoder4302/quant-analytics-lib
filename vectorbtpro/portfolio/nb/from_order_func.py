@@ -288,6 +288,8 @@ def try_order_nb(c: OrderContext, order: Order) -> tp.Tuple[OrderResult, ExecSta
         c (OrderContext): Order context.
         order (Order): Order to execute.
 
+            See `vectorbtpro.portfolio.enums.Order`.
+
     Returns:
         Tuple[OrderResult, ExecState]: A tuple containing the order execution result and
             the updated execution state.
@@ -4413,8 +4415,8 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         pre_sim_func_nb (PreSimFunc): Callback function called before the simulation.
 
             This function is used for creating global arrays and setting the seed.
-            
-            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`, 
+        
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
             and returns a tuple that is passed to `pre_row_func_nb` and `post_row_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
         post_sim_func_nb (PostSimFunc): Callback function called after the simulation.
@@ -5344,7 +5346,7 @@ def set_val_price_nb(c: SegmentContext, val_price: tp.FlexArray2d, price: tp.Fle
 
     Args:
         c (SegmentContext): Segment context.
-        val_price (FlexArray2d): Array of valuation prices where infinity values trigger fallback behavior.
+        val_price (FlexArray2d): Array of valuation prices with special handling for infinity.
         price (FlexArray2d): Array of current market prices.
 
     Returns:
@@ -5511,7 +5513,7 @@ def def_flex_pre_segment_func_nb(  # % line.replace("def_flex_pre_segment_func_n
 
     Args:
         c (SegmentContext): Segment context.
-        val_price (FlexArray2d): Array of valuation prices with infinity triggers.
+        val_price (FlexArray2d): Array of valuation prices with special handling for infinity.
         price (FlexArray2d): Array of market prices.
         size (FlexArray2d): Array of order sizes.
         size_type (FlexArray2d): Array indicating the type of trade sizes.

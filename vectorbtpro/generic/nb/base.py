@@ -2325,7 +2325,7 @@ def realign_1d_nb(
     Args:
         arr (Array1d): One-dimensional array of values.
         source_index (Array1d): Indices corresponding to the values in `arr`.
-        target_index (Array1d): Target indices used for realignment.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
         source_freq (Optional[Scalar]): Frequency applied to `source_index`.
         target_freq (Optional[Scalar]): Frequency applied to `target_index`.
         source_rbound (bool): Indicates if `source_index` values represent right bounds.
@@ -2454,7 +2454,7 @@ def realign_nb(
     Args:
         arr (Array2d): Two-dimensional array of values.
         source_index (Array1d): Indices corresponding to the rows of `arr`.
-        target_index (Array1d): Target indices used for realignment.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
         source_freq (Optional[Scalar]): Frequency applied to `source_index`.
         target_freq (Optional[Scalar]): Frequency applied to `target_index`.
         source_rbound (bool): Indicates if `source_index` values represent right bounds.

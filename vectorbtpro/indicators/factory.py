@@ -123,7 +123,7 @@ def prepare_params(
             They are mapped based on `param_names`.
         param_names (Sequence[str]): Names of the parameters.
         param_settings (Sequence[KwargsLike]): Sequence of dictionaries providing settings for each parameter.
-        input_shape (Optional[Shape]): Target shape for broadcasting the parameters.
+        input_shape (Optional[Shape]): Shape of the input arrays.
         to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
         context (KwargsLike): Additional context for template substitution.
 
@@ -660,7 +660,9 @@ class IndicatorBase(Analyzable):
                 Each parameter can be an array-like object or a single value.
             param_product (bool): Flag to build a Cartesian product from all parameters.
             combine_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.params.combine_params`.
-            random_subset (Optional[int]): Number of parameter combinations to select randomly.
+            random_subset (Optional[int]): Select a random subset of parameter combinations.
+
+                Set the seed for reproducibility.
             param_settings (Optional[MappingSequence[KwargsLike]]): Settings for each parameter.
 
                 If provided as a mapping, keys should correspond to those in `params`. Accepted keys:
@@ -700,8 +702,6 @@ class IndicatorBase(Analyzable):
             pass_single_comb (bool): If True, indicates that there is only one parameter combination,
                 and passes this information to `custom_func`.
             level_names (Optional[Sequence[str]]): List of level names corresponding to each parameter.
-
-                The list length must match the number of parameters.
             hide_levels (Optional[Sequence[Union[str, int]]]): List of level names or indices
                 to hide from the output.
             build_col_kwargs (KwargsLike): Keyword arguments for `build_columns`.
@@ -5219,7 +5219,7 @@ Returns:
 
         Args:
             func_name (str): Name of the smartmoneyconcepts function to wrap.
-            collapse (bool): Flag to collapse all nested indicators into a single configuration.
+            collapse (bool): Flag to collapse nested indicators' configurations into a single set.
             parse_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory.parse_smc_config`.
             factory_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory`.
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.

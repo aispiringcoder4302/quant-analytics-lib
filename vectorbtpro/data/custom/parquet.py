@@ -200,7 +200,7 @@ class ParquetData(FileData):
                 See `pd.read_parquet` for details.
             **read_kwargs: Keyword arguments for `pd.read_parquet`.
 
-                See https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html for additional arguments.
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html for arguments.
 
         Returns:
             KeyData: The fetched data and a metadata dictionary.

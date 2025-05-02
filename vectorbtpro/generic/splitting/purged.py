@@ -506,7 +506,11 @@ class PurgedKFoldCV(BasePurgedCV):
             X (SeriesFrame): DataFrame or Series containing the input data.
             y (Optional[Series]): Series containing the target values.
             pred_times (Union[None, Index, Series]): Indices for prediction times.
+
+                If None, the index of `X` is used.
             eval_times (Union[None, Index, Series]): Indices for evaluation times.
+
+                If None, the index of `X` is used.
 
         Returns:
             Iterable[Tuple[Array1d, Array1d]]: Generator of tuples containing training

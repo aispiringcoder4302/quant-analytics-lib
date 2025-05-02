@@ -2321,7 +2321,9 @@ class PortfolioOptimizer(Analyzable):
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute`.
-            random_subset (Optional[int]): Limit for randomly selecting a subset of parameters.
+            random_subset (Optional[int]): Select a random subset of parameter combinations.
+
+                Set the seed for reproducibility.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
                 See `vectorbtpro.base.indexes.clean_index`.
@@ -3400,7 +3402,9 @@ class PortfolioOptimizer(Analyzable):
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
                 See `vectorbtpro.utils.execution.execute`.
-            random_subset (Optional[int]): Limit for randomly selecting a subset of parameters.
+            random_subset (Optional[int]): Select a random subset of parameter combinations.
+
+                Set the seed for reproducibility.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
                 See `vectorbtpro.base.indexes.clean_index`.

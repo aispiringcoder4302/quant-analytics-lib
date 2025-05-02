@@ -382,7 +382,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             n_chunks (Union[None, int, str]): Specification for the number of chunks.
             chunk_len (Union[None, int, str]): Specification for the length of each chunk.
             chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each chunk.
-                
+
                 See `vectorbtpro.utils.chunking.iter_chunk_meta`.
             select (bool): Flag indicating whether to select chunks using `ArraySelector`.
             wrap (Optional[bool]): Flag to specify whether to wrap the result.
@@ -3000,8 +3000,8 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         Args:
             cond_kwargs (KwargsLike): Dictionary containing condition parameters,
             custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
-            impacts_caching (bool): Flag indicating whether the changes affect caching.
-            impacts_caching (bool): Flag indicating whether resolution impacts caching.
+            impacts_caching (bool): Flag indicating whether the changes impact caching.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
             AttrResolverMixin: The resolved instance.

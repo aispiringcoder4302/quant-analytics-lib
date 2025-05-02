@@ -1351,12 +1351,13 @@ class Splitter(Analyzable):
 
         Args:
             index (IndexLike): Index to be grouped and split.
-            by (AnyGroupByLike): Parameter for grouping the index.
+            by (AnyGroupByLike): Grouper-like specification.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
+            groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and 
+                `pandas.Series.resample` methods.
 
-                See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
             grouper_kwargs (KwargsLike): Keyword arguments for constructing the grouper.
             split (Optional[SplitLike]): Specification for further splitting of each range.
 
@@ -1753,7 +1754,11 @@ class Splitter(Analyzable):
             purged_splitter (BasePurgedCV): Purged cross-validation splitter instance
                 from `vectorbtpro.generic.splitting.purged`.
             pred_times (Union[None, Index, Series]): Indices for prediction times.
+
+                If None, the index of `X` is used.
             eval_times (Union[None, Index, Series]): Indices for evaluation times.
+
+                If None, the index of `X` is used.
             split_labels (Optional[IndexLike]): Labels for the splits.
             set_labels (Optional[IndexLike]): Labels for the training and testing sets.
             **kwargs: Keyword arguments for `Splitter.from_splits`.
@@ -1806,7 +1811,11 @@ class Splitter(Analyzable):
             split_by_time (bool): Whether to partition folds based on equal time intervals using prediction times.
             purge_td (TimedeltaLike): Time delta used for purging between folds.
             pred_times (Union[None, Index, Series]): Indices for prediction times.
+
+                If None, the index of `X` is used.
             eval_times (Union[None, Index, Series]): Indices for evaluation times.
+
+                If None, the index of `X` is used.
             **kwargs: Keyword arguments for `Splitter.from_purged`.
 
         Returns:
@@ -1851,7 +1860,11 @@ class Splitter(Analyzable):
             embargo_td (TimedeltaLike): Time interval defining the embargo period between
                 test set evaluation times and training predictions.
             pred_times (Union[None, Index, Series]): Indices for prediction times.
+
+                If None, the index of `X` is used.
             eval_times (Union[None, Index, Series]): Indices for evaluation times.
+
+                If None, the index of `X` is used.
             **kwargs: Keyword arguments for `Splitter.from_purged`.
 
         Returns:
@@ -3602,7 +3615,7 @@ class Splitter(Analyzable):
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
-            return_obj_meta (bool): Whether to return metadata for the object.
+            return_obj_meta (bool): Whether to return metadata about the object.
             return_obj_meta (bool): Whether to return metadata about the object.
 
         Returns:
@@ -5134,6 +5147,8 @@ class Splitter(Analyzable):
 
         Args:
             new_split (SplitLike): Specification for splitting ranges.
+
+                See `Splitter.split_range`.
             sort (bool): Whether to sort the resulting splits by their starting boundaries.
             template_context (KwargsLike): Additional context for template substitution.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
@@ -5204,6 +5219,8 @@ class Splitter(Analyzable):
 
         Args:
             new_split (SplitLike): Specification for splitting ranges.
+
+                See `Splitter.split_range`.
             column (Optional[Hashable]): Identifier of the column to select.
 
                 Required if multiple sets are present.

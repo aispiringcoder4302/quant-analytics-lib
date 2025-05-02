@@ -52,11 +52,11 @@ class AssetCacheManager(Configured):
 
     Args:
         persist_cache (Optional[bool]): Whether to persist the cache to disk.
-        cache_dir (Optional[PathLike]): Directory path for storing cached assets.
+        cache_dir (Optional[PathLike]): Directory for saving knowledge assets.
         cache_mkdir_kwargs (KwargsLike): Keyword arguments for cache directory creation.
-            
+
             See `vectorbtpro.utils.path_.check_mkdir`.
-        clear_cache (Optional[bool]): Whether to clear existing cache in the directory.
+        clear_cache (Optional[bool]): Remove the cache directory before operation if True.
         max_cache_count (Optional[int]): Maximum number of assets to retain, evicting older ones.
         save_cache_kwargs (KwargsLike): Keyword arguments for saving assets to disk.
         

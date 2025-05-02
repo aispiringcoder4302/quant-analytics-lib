@@ -323,15 +323,13 @@ def get_id_of_jitter_type(jitter_type: tp.Type[Jitter]) -> tp.Optional[tp.Hashab
 def resolve_jitted_option(option: tp.JittedOption = None) -> tp.KwargsLike:
     """Resolve and return keyword arguments for jitting based on the provided option.
 
-    The `option` parameter may be:
-
-    * True: Apply jitting with default settings.
-    * False: Disable jitting (returns None).
-    * str: Use the option as the jitter name.
-    * dict: Interpret the option as a dictionary of keyword arguments for jitting.
-
     Args:
-        option (JittedOption): Jitting option to resolve.
+        option (JittedOption): Option to control JIT compilation.
+
+            * True: Apply jitting with default settings.
+            * False: Disable jitting (returns None).
+            * str: Use the option as the jitter name.
+            * dict: Interpret the option as a dictionary of keyword arguments for jitting.
 
     Returns:
         KwargsLike: A dictionary of keyword arguments for jitting, or None if jitting is disabled.
@@ -361,7 +359,9 @@ def specialize_jitted_option(option: tp.JittedOption = None, **kwargs) -> tp.Kwa
     """Resolve a jitted option by merging its resolved keyword arguments with additional keyword arguments.
 
     Args:
-        option (JittedOption): Jitted option to resolve.
+        option (JittedOption): Option to control JIT compilation.
+
+            See `resolve_jitted_option`.
         **kwargs: Keyword arguments to merge.
 
     Returns:
@@ -378,7 +378,9 @@ def resolve_jitted_kwargs(option: tp.JittedOption = None, **kwargs) -> tp.Kwargs
     additional keyword arguments.
 
     Args:
-        option (JittedOption): Jitted option to resolve.
+        option (JittedOption): Option to control JIT compilation.
+
+            See `resolve_jitted_option`.
         **kwargs: Keyword arguments to merge.
 
     Returns:

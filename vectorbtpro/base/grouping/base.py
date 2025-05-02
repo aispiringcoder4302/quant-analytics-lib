@@ -58,7 +58,7 @@ class Grouper(Configured):
             * any other sequence such as Pandas Index that has the same length as `index`.
             * `vectorbtpro.base.indexes.ExceptLevel` object (to exclude levels).
             * `vectorbtpro.base.grouping.CustomTemplate` object with `index` as context (to substitute levels).
-        def_lvl_name (Hashable): Default level name for groups when generating new labels.
+        def_lvl_name (Hashable): Default level name for groups.
         allow_enable (bool): Indicates if enabling grouping is permitted when group_by is None.
         allow_disable (bool): Indicates if disabling grouping is permitted when group_by is not None.
         allow_modify (bool): Indicates if modifying groups is allowed.
@@ -166,7 +166,7 @@ class Grouper(Configured):
         Args:
             index (Index): Original Pandas Index.
             group_by (GroupByLike): Grouping specification.
-            def_lvl_name (Hashable): Default level name for groups if a new group index is generated.
+            def_lvl_name (Hashable): Default level name for groups.
 
         Returns:
             GroupBy: The resulting group-by mapping as a Pandas Index,

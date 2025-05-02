@@ -3264,7 +3264,7 @@ class CAQueryDelegator(CASetupDelegatorMixin):
     Args:
         *args: Positional arguments for querying setups.
         registry (CacheableRegistry): Registry used to match setups.
-        collapse (bool): Flag indicating whether to collapse matching setups.
+        collapse (bool): If True, remove child setups belonging to any matched parent setup.
         **kwargs: Keyword arguments for querying setups.
     """
 

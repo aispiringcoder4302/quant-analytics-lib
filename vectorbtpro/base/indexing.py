@@ -724,8 +724,8 @@ class IdxrBase(Base):
         Args:
             index (Index): Index from which to compute slice bounds.
             slice_ (Slice): Slice object with start, stop, and step attributes.
-            closed_start (bool): If True, treats the slice start as inclusive.
-            closed_end (bool): If True, treats the slice end as inclusive.
+            closed_start (bool): Whether the start of a slice is inclusive.
+            closed_end (bool): Whether the end of a slice is inclusive.
 
         Returns:
             slice: The computed slice object representing the index range.

@@ -896,7 +896,7 @@ class SQLData(DBData):
             squeeze (Optional[bool]): Flag indicating whether to convert a single-column DataFrame to a Series.
             **read_sql_kwargs: Keyword arguments for `pd.read_sql_query`.
 
-                See https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for additional arguments.
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for arguments.
 
         Returns:
             KeyData: The fetched data and a metadata dictionary.

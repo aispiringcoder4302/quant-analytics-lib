@@ -1119,11 +1119,12 @@ def apply_and_reduce_1d_meta_nb(
 
     Args:
         col (int): Column index.
-        apply_func_nb (ApplyMetaFunc): Callback function that accepts `col` and additional arguments, 
-            and returns a 1D array.
+        apply_func_nb (ApplyMetaFunc): Callback function that accepts the column index and 
+            additional arguments, and returns a 1D array.
         apply_args (tuple): Positional arguments for `apply_func_nb`.
-        reduce_func_nb (ReduceMetaFunc): Callback function that accepts `col`, the result of `apply_func_nb`
-            as a 1D array, and additional arguments, and returns a single value.
+        reduce_func_nb (ReduceMetaFunc): Callback function that accepts the column index, 
+            the result of `apply_func_nb` as a 1D array, and additional arguments, and 
+            returns a single value.
         reduce_args (tuple): Positional arguments for `reduce_func_nb`.
 
     Returns:
@@ -1157,11 +1158,12 @@ def apply_and_reduce_meta_nb(
 
     Args:
         n_cols (int): Number of columns.
-        apply_func_nb (ApplyMetaFunc): Callback function that accepts `col` and additional arguments, 
-            and returns a 1D array.
+        apply_func_nb (ApplyMetaFunc): Callback function that accepts the column index and 
+            additional arguments, and returns a 1D array.
         apply_args (tuple): Positional arguments for `apply_func_nb`.
-        reduce_func_nb (ReduceMetaFunc): Callback function that accepts `col`, the result of `apply_func_nb`
-            as a 1D array, and additional arguments, and returns a single value.
+        reduce_func_nb (ReduceMetaFunc): Callback function that accepts the column index, 
+            the result of `apply_func_nb` as a 1D array, and additional arguments, and 
+            returns a single value.
         reduce_args (tuple): Positional arguments for `reduce_func_nb`.
 
     Returns:
@@ -1450,8 +1452,6 @@ def reduce_flat_grouped_nb(
         arr (Array2d): 2-dimensional array containing the data.
         group_map (GroupMap): Tuple of indices and lengths for each group.
         in_c_order (bool): If True, flatten in C order; otherwise, in Fortran order.
-
-            If True, the group is flattened in C order.
         reduce_func_nb (ReduceToArrayFunc): Callback function that accepts a flattened group as a 1D array
             and additional arguments, and returns a single value.
         *args: Positional arguments for `reduce_func_nb`.

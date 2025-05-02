@@ -171,12 +171,12 @@ class VBTAsset(KnowledgeAsset):
 
                 If True, uses https://github.com/PyGithub/PyGithub (otherwise requests)
             chunk_size (Optional[int]): Number of bytes per download chunk.
-            cache (Optional[bool]): Use a local cache directory if available.
-            cache_dir (Optional[PathLike]): Directory for caching asset files (`assets_dir` in settings).
+            cache (Optional[bool]): Flag to determine whether to use the cache directory.
+            cache_dir (Optional[PathLike]): Directory for saving JSON asset files (`assets_dir` in settings).
             cache_mkdir_kwargs (KwargsLike): Keyword arguments for cache directory creation.
             
                 See `vectorbtpro.utils.path_.check_mkdir`.
-            clear_cache (Optional[bool]): Remove the cache directory before downloading if True.
+            clear_cache (Optional[bool]): Remove the cache directory before operation if True.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
@@ -660,7 +660,7 @@ class VBTAsset(KnowledgeAsset):
             cache_mkdir_kwargs (KwargsLike): Keyword arguments for cache directory creation.
             
                 See `vectorbtpro.utils.path_.check_mkdir`.
-            clear_cache (Optional[bool]): Flag to clear any existing directory before saving new files.
+            clear_cache (Optional[bool]): Remove the cache directory before operation if True.
             use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
@@ -856,12 +856,14 @@ class VBTAsset(KnowledgeAsset):
         """Save asset content as HTML files and open them in a web browser.
 
         Args:
-            cache (Optional[bool]): Flag to use the cache directory defined by `html_dir` in settings.
-            cache_dir (Optional[PathLike]): Directory for saving HTML files when caching is enabled.
+            cache (Optional[bool]): Flag to determine whether to use the cache directory.
+
+                Otherwise, creates a temporary directory.
+            cache_dir (Optional[PathLike]): Directory for saving HTML files (`html_dir` in settings).
             cache_mkdir_kwargs (KwargsLike): Keyword arguments for cache directory creation.
             
                 See `vectorbtpro.utils.path_.check_mkdir`.
-            clear_cache (Optional[bool]): Flag to clear any existing directory before saving.
+            clear_cache (Optional[bool]): Remove the cache directory before operation if True.
             use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
@@ -3571,8 +3573,8 @@ def find_examples(
         return_type (Optional[str]): Specifies the format of returned content; e.g., "field", "match", or "item".
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
+        pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull` or `MessagesAsset.pull`.
         aggregate_pages (bool): Whether to aggregate the pages asset.
-        aggregate_pages (bool): Indicates whether to aggregate the pages asset.
         aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
@@ -3716,7 +3718,7 @@ def find_assets(
             in their usual order at the end.
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
-        aggregate_pages (bool): Whether to aggregate the pages asset.
+        pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull` or `MessagesAsset.pull`.
         aggregate_pages (bool): Whether to aggregate the pages asset.
         aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;

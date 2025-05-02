@@ -1417,7 +1417,7 @@ class MappedArray(Analyzable):
             *args: Positional arguments for `reduce_func_nb`.
             idx_arr (Optional[Array1d]): Array of row indices.
 
-                If not provided, the instance's `idx_arr` must be set.
+                Uses `MappedArray.idx_arr` if not provided.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
@@ -2430,7 +2430,7 @@ class MappedArray(Analyzable):
         Args:
             idx_arr (Optional[Array1d]): Array of row indices.
 
-                If None, uses `MappedArray.idx_arr`.
+                Uses `MappedArray.idx_arr` if not provided.
             reduce_func_nb (Union[None, str, ReduceFunc]): Callable function for reducing conflicting segments.
             
                 If provided as a string, selects the corresponding Numba callback function
@@ -2555,7 +2555,7 @@ class MappedArray(Analyzable):
         Args:
             idx_arr (Optional[Array1d]): Array of row indices.
 
-                If None, uses `MappedArray.idx_arr`.
+                Uses `MappedArray.idx_arr` if not provided.
             group_by (GroupByLike): Grouping specification.
 
                 See `vectorbtpro.base.grouping.base.Grouper`.

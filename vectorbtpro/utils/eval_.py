@@ -28,7 +28,9 @@ def evaluate(expr: str, context: tp.KwargsLike = None) -> tp.Any:
     """Evaluate one or multiple lines of Python code and return the result of the final expression.
 
     Args:
-        expr (str): String containing one or more lines of Python code.
+        expr (str): Expression string.
+
+            Must contain valid Python code and can be single-line or multi-line.
         context (KwargsLike): Dictionary representing the execution context.
 
     Returns:
@@ -69,7 +71,9 @@ def get_free_vars(expr: str) -> tp.List[str]:
     """Parse the provided code and return free variable names, excluding built-in names.
 
     Args:
-        expr (str): String of Python code to parse.
+        expr (str): Expression string.
+
+            Must contain valid Python code and can be single-line or multi-line.
 
     Returns:
         List[str]: A list of free variable names found in the code.

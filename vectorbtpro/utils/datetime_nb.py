@@ -969,8 +969,8 @@ def within_dtc_range_nb(
         dtc (DTCNT): Datetime component object whose parts (year, month, day, etc.) are evaluated.
         start_dtc (DTCNT): Datetime component object representing the start boundary.
         end_dtc (DTCNT): Datetime component object representing the end boundary.
-        closed_start (bool): Include the start boundary if True.
-        closed_end (bool): Include the end boundary if True.
+        closed_start (bool): Whether the start boundary is inclusive.
+        closed_end (bool): Whether the end boundary is inclusive.
 
     Returns:
         bool: True if the datetime components fall within the specified range, False otherwise.
@@ -1179,8 +1179,8 @@ def index_within_dtc_range_nb(
         index (Array1d): One-dimensional array of date-time elements.
         start_dtc (DTCNT): Datetime component object representing the start boundary.
         end_dtc (DTCNT): Datetime component object representing the end boundary.
-        closed_start (bool): Include the start boundary if True.
-        closed_end (bool): Include the end boundary if True.
+        closed_start (bool): Whether the start boundary is inclusive.
+        closed_end (bool): Whether the end boundary is inclusive.
 
     Returns:
         Array1d: A boolean mask with True for elements within the range and False otherwise.

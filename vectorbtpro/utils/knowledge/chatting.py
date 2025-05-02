@@ -2044,7 +2044,7 @@ class TokenSplitter(TextSplitter):
         chunk_overlap (Union[None, int, float]): Number or fraction of tokens
             overlapping between consecutive chunks.
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
-            
+
             Resolved using `resolve_tokenizer`.
         tokenizer_kwargs (KwargsLike): Keyword arguments to initialize or update `tokenizer`.
         **kwargs: Keyword arguments for `TextSplitter`.
@@ -4851,7 +4851,7 @@ class DocumentRanker(Configured):
             query (str): Query string for relevance scoring.
             documents (Optional[Iterable[StoreDocument]]): Collection of documents to score.
 
-                If None, uses documents from the store.
+                If None, documents from the document store are used.
             refresh (bool): Flag to refresh both documents and embeddings.
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
             return_chunks (bool): Whether to return document chunks.
@@ -5246,6 +5246,8 @@ class DocumentRanker(Configured):
         Args:
             query (str): Query string to evaluate document relevance.
             documents (Optional[Iterable[StoreDocument]]): Collection of documents to rank.
+
+                If None, documents from the document store are used.
             top_k (TopKLike): Number of top documents to return.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
@@ -5387,6 +5389,8 @@ def rank_documents(
     Args:
         query (str): Query string for ranking.
         documents (Optional[Iterable[StoreDocument]]): Collection of documents to rank.
+
+            If None, documents from the document store are used.
         top_k (TopKLike): Number of top documents to return.
         min_top_k (TopKLike): Minimum limit for determining top documents.
         max_top_k (TopKLike): Maximum limit for determining top documents.
@@ -5562,7 +5566,7 @@ class Contextable(HasSettings):
         Args:
             to_context_kwargs (KwargsLike): Keyword arguments for `Contextable.to_context`.
             completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
-        
+
                 Resolved using `resolve_completions`.
             **kwargs: Keyword arguments to initialize or update `completions`.
 

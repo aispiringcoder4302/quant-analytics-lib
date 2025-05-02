@@ -666,7 +666,7 @@ def annualized_return_1d_nb(
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for annualization.
 
-            If None, the period is determined by the length of the returns array.
+            Defaults to the length of the returns array.
 
     Returns:
         float: Computed annualized return.
@@ -710,7 +710,7 @@ def annualized_return_nb(
 
             Provided as a scalar or per column.
 
-            If None, periods are determined from the simulation range.
+            Defaults to the length of the simulation range.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per column.
@@ -1140,6 +1140,8 @@ def calmar_ratio_1d_nb(
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for annualization.
 
+            Defaults to the length of the returns array.
+
     Returns:
         float: The Calmar ratio of the strategy.
 
@@ -1191,6 +1193,8 @@ def calmar_ratio_nb(
         periods (Optional[FlexArray1dLike]): Number of periods for annualization.
 
             Provided as a scalar or per column.
+
+            Defaults to the length of the simulation range.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per column.
@@ -3282,6 +3286,8 @@ def capture_ratio_1d_nb(
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for annualization.
 
+            Defaults to the length of the returns array.
+
     Returns:
         float: The computed capture ratio.
     """
@@ -3338,7 +3344,7 @@ def capture_ratio_nb(
 
             Provided as a scalar or per column.
 
-            If None, computed as the difference between simulation end and simulation start.
+            Defaults to the length of the simulation range.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per column.
@@ -3469,7 +3475,7 @@ def up_capture_ratio_1d_nb(
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for annualization.
 
-            If None, defaults to the length of the returns array.
+            Defaults to the length of the returns array.
 
     Returns:
         float: The calculated up capture ratio.
@@ -3540,7 +3546,7 @@ def up_capture_ratio_nb(
 
             Provided as a scalar or per column.
 
-            If None, computed as the difference between simulation end and simulation start.
+            Defaults to the length of the simulation range.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per column.
@@ -3675,7 +3681,7 @@ def down_capture_ratio_1d_nb(
         log_returns (bool): Flag indicating whether returns are logarithmic.
         periods (Optional[float]): Number of periods for annualization.
 
-            If None, the function uses the length of the returns array.
+            Defaults to the length of the returns array.
 
     Returns:
         float: The computed down capture ratio.
@@ -3753,7 +3759,7 @@ def down_capture_ratio_nb(
 
             Provided as a scalar or per column.
 
-            If None, periods are computed as `sim_end` minus `sim_start`.
+            Defaults to the length of the simulation range.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
             Provided as a scalar or per column.

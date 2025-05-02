@@ -139,7 +139,9 @@ def cast_account_state_nb(account_state: AccountState) -> AccountState:
     """Convert all numeric fields of the given `AccountState` to floats.
 
     Args:
-        account_state (AccountState): Original account state instance with numeric attributes.
+        account_state (AccountState): Current state of the trading account.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
 
     Returns:
         AccountState: A new account state instance with all numerical attributes cast to float.
@@ -175,7 +177,9 @@ def long_buy_nb(
     """Open or increase a long position.
 
     Args:
-        account_state (AccountState): Current account state.
+        account_state (AccountState): Current state of the trading account.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
         size (float): Requested order size.
         price (float): Order price.
         fees (float): Fraction of the order value charged as fee.
@@ -366,8 +370,9 @@ def long_sell_nb(
     """Decrease or close a long position.
 
     Args:
-        account_state (AccountState): Current account state with cash, position, debt,
-            and locked/free cash details.
+        account_state (AccountState): Current state of the trading account.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
         size (float): Desired size to sell.
 
             The size is capped by the current open long position.
@@ -513,7 +518,9 @@ def short_sell_nb(
     """Open or increase a short position by placing a sell order.
 
     Args:
-        account_state (AccountState): Current account state.
+        account_state (AccountState): Current state of the trading account.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
         size (float): Intended order size to initiate or increase a short position.
         price (float): Market price used to compute the adjusted order price.
         fees (float): Fraction of the order value charged as fee.
@@ -686,6 +693,8 @@ def short_buy_nb(
 
     Args:
         account_state (AccountState): Current state of the trading account.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
         size (float): Requested order size for covering the short position.
         price (float): Execution price for the order.
         fees (float): Fraction of the order value charged as fee.
@@ -881,7 +890,9 @@ def buy_nb(
     based on the current state and provided parameters.
 
     Args:
-        account_state (AccountState): Current state of the account.
+        account_state (AccountState): Current state of the trading account.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
         size (float): Order size.
         price (float): Execution price for the order.
         direction (int): Order direction.
@@ -1089,7 +1100,9 @@ def sell_nb(
     for the remaining size.
 
     Args:
-        account_state (AccountState): Current account state.
+        account_state (AccountState): Current state of the trading account.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
         size (float): Order size.
         price (float): Order price.
         direction (int): Order direction.
@@ -1399,8 +1412,9 @@ def approx_order_value_nb(
     Positive value indicates spending (used for sorting purposes).
 
     Args:
-        exec_state (ExecState): Execution state containing portfolio details such as position,
-            value, debt, locked cash, and valuation price.
+        exec_state (ExecState): Current execution state.
+
+            See `vectorbtpro.portfolio.enums.ExecState`.
         size (float): Order size.
         size_type (int): Type of order size.
 
@@ -1733,9 +1747,17 @@ def fill_log_record_nb(
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
         exec_state (ExecState): Execution state before executing the order.
-        order (Order): Order details including size, price, fees, and other parameters.
+
+            See `vectorbtpro.portfolio.enums.ExecState`.
+        order (Order): Order to execute.
+
+            See `vectorbtpro.portfolio.enums.Order`.
         order_result (OrderResult): Result of the order execution.
+
+            See `vectorbtpro.portfolio.enums.OrderResult`.
         new_exec_state (ExecState): Execution state after executing the order.
+
+            See `vectorbtpro.portfolio.enums.ExecState`.
         order_id (int): Unique identifier of the order.
 
     Returns:
@@ -1803,6 +1825,8 @@ def fill_order_record_nb(records: tp.RecordArray2d, r: int, col: int, i: int, or
         i (int): Current row index.
         order_result (OrderResult): Result of the order execution.
 
+            See `vectorbtpro.portfolio.enums.OrderResult`.
+
     Returns:
         None: This function modifies `records` in place.
     """
@@ -1822,6 +1846,8 @@ def raise_rejected_order_nb(order_result: OrderResult) -> None:
 
     Args:
         order_result (OrderResult): Result of the order execution.
+
+            See `vectorbtpro.portfolio.enums.OrderResult`.
 
     Returns:
         None
@@ -1876,8 +1902,12 @@ def process_order_nb(
         group (int): Current group index.
         col (int): Current column index.
         i (int): Current row index.
-        exec_state (ExecState): Current execution state before processing the order.
-        order (Order): Order details to be processed.
+        exec_state (ExecState): Current execution state.
+
+            See `vectorbtpro.portfolio.enums.ExecState`.
+        order (Order): Order to execute.
+
+            See `vectorbtpro.portfolio.enums.Order`.
         price_area (PriceArea): Price area constraint.
 
             See `vectorbtpro.portfolio.enums.PriceArea`.
@@ -2466,6 +2496,8 @@ def update_pos_info_nb(
         position_before (float): Position size before the order execution.
         position_now (float): Position size after the order execution.
         order_result (OrderResult): Result of the order execution.
+
+            See `vectorbtpro.portfolio.enums.OrderResult`.
         order_id (int): Identifier of the executed order.
 
     Returns:
@@ -3487,6 +3519,8 @@ def is_limit_info_active_nb(limit_info: tp.Record) -> bool:
     Args:
         limit_info (Record): Record containing limit order information.
 
+            Must adhere to the `vectorbtpro.portfolio.enums.limit_info_dt` dtype.
+
     Returns:
         bool: True if the limit order record is active, otherwise False.
     """
@@ -3782,7 +3816,7 @@ def set_tsl_info_nb(
             See `vectorbtpro.portfolio.enums.SizeType`.
         exit_type (int): Exit type.
 
-            See `vectorbtpro.portfolio.enums.OrderType`.
+            See `vectorbtpro.portfolio.enums.StopExitType`.
         order_type (int): Order execution type.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
@@ -4063,7 +4097,7 @@ def get_limit_info_target_price_nb(limit_info: tp.Record) -> float:
     Args:
         limit_info (Record): Record containing limit order information.
 
-            Must adhere to the `vectorbtpro.portfolio.enums.time_info_dt` dtype.
+            Must adhere to the `vectorbtpro.portfolio.enums.limit_info_dt` dtype.
 
     Returns:
         float: The target price if the limit order information is active; otherwise, NaN.

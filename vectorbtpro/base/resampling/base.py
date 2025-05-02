@@ -376,8 +376,8 @@ class Resampler(Configured):
         """Return the mapping from the source index to the target index.
 
         Args:
-            before (bool): If True, map a source index to a target index that is greater than or equal to it;
-                otherwise, map to a target index that is less than or equal.
+            before (bool): If True, include source indices preceding or equal to the target;
+                otherwise, include those following or equal.
             raise_missing (bool): If True, raise an error when a source index cannot be mapped; otherwise, assign -1.
             return_index (bool): Return a Pandas Index if True; otherwise, return a NumPy array.
             jitted (JittedOption): Option to control JIT compilation.

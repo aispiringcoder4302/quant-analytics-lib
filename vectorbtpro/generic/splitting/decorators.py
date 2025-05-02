@@ -71,7 +71,7 @@ def split(
         splitter (Union[None, str, Splitter, Callable]): Splitter instance, the name of a factory method
             (e.g. "from_n_rolling"), or the factory method itself.
 
-            If `splitter` is None, the appropriate method is determined via
+            If None, the appropriate splitter is determined using
             `vectorbtpro.generic.splitting.base.Splitter.guess_method`.
         splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
 

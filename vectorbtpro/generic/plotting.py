@@ -303,7 +303,7 @@ class Bar(TraceType, TraceUpdater):
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
-            Must be convertible to a NumPy array and have shape (`x_labels`, `trace_names`).
+            Must have shape corresponding to (`x_labels`, `trace_names`).
         trace_names (TraceNames): Names for traces corresponding to data columns.
         x_labels (Optional[Labels]): X-axis labels corresponding to the index in pandas.
         trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Bar`.
@@ -567,7 +567,7 @@ class Histogram(TraceType, TraceUpdater):
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
-            Data must have shape (any, trace_names).
+            The second axis must correspond to `trace_names`.
         trace_names (TraceNames): Names for traces corresponding to data columns.
         horizontal (bool): Flag indicating whether the histogram is plotted horizontally.
         remove_nan (bool): Flag determining whether NaN values are removed from the data.
@@ -774,6 +774,8 @@ class Box(TraceType, TraceUpdater):
 
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
+
+            The second axis must correspond to `trace_names`.
         trace_names (TraceNames): Names for traces corresponding to data columns.
         horizontal (bool): Indicates if the box plot is oriented horizontally.
         remove_nan (bool): Flag determining whether NaN values are removed from the data.
@@ -1108,7 +1110,7 @@ class Volume(TraceType, TraceUpdater):
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
-            Must be a 3-dimensional array.
+            Must have shape corresponding to (`x_labels`, `y_labels`, `z_labels`).
         x_labels (Optional[Labels]): Labels for the x-axis.
         y_labels (Optional[Labels]): Labels for the y-axis.
         z_labels (Optional[Labels]): Labels for the z-axis.

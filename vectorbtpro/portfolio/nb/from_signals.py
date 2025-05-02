@@ -7524,7 +7524,7 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
             See `vectorbtpro.portfolio.enums.Direction`.
         min_size (FlexArray2d): 2D array of minimum order sizes.
         max_size (FlexArray2d): 2D array of maximum order sizes.
-        val_price (FlexArray2d): 2D array of valuation prices for order evaluation.
+        val_price (FlexArray2d): 2D array of valuation prices with special handling for infinity.
         from_ago (FlexArray2d): 2D array determining the offset index for fetching order parameters.
         adjust_func_nb (AdjustFunc): Callback function called to adjust the context before signal generation.
 

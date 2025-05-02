@@ -77,8 +77,8 @@ def map_to_target_index_nb(
         source_index (Array1d): Array of source indices.
         target_index (Array1d): Array of target indices, which must be strictly increasing.
         target_freq (Optional[Scalar]): Frequency offset for the target index.
-        before (bool): If True, map a source index to a target index that is greater than or equal to it;
-            otherwise, map to a target index that is less than or equal.
+        before (bool): If True, include source indices preceding or equal to the target;
+            otherwise, include those following or equal.
         raise_missing (bool): If True, raise an error when a source index cannot be mapped; otherwise, assign -1.
 
     Returns:
@@ -136,7 +136,7 @@ def index_difference_nb(
 
     Args:
         source_index (Array1d): Array of source indices, expected to be strictly increasing.
-        target_index (Array1d): Array of target indices, expected to be strictly increasing.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
 
     Returns:
         Array1d: Array of integer positions from `source_index` that do not appear in `target_index`.
@@ -180,7 +180,7 @@ def map_index_to_source_ranges_nb(
 
     Args:
         source_index (Array1d): Array of source indices in increasing order.
-        target_index (Array1d): Array of target indices in increasing order.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
         target_freq (Optional[Scalar]): Frequency offset for the target index.
         before (bool): If True, include source indices preceding or equal to the target; 
             otherwise, include those following or equal.
@@ -355,7 +355,7 @@ def resample_source_mask_nb(
     Args:
         source_mask (Array1d): Boolean array representing the source mask.
         source_index (Array1d): Array of source indices, sorted in increasing order.
-        target_index (Array1d): Array of target indices, sorted in increasing order.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
         source_freq (Optional[Scalar]): Frequency offset for the source index.
         target_freq (Optional[Scalar]): Frequency offset for the target index.
 
@@ -423,7 +423,7 @@ def last_before_target_index_nb(
 
     Args:
         source_index (Array1d): Array of source indices, sorted in increasing order.
-        target_index (Array1d): Array of target indices, sorted in increasing order.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
         incl_source (bool): Whether to include the original source index in the result.
         incl_target (bool): Whether to include the target index if it matches a source index.
 

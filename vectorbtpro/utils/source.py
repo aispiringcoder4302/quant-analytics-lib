@@ -524,7 +524,7 @@ def add_source_indent(source: str, indent: int) -> str:
 
     Args:
         source (str): Python source code.
-        indent (int): Number of spaces to add as indentation to each non-empty line.
+        indent (int): Number of leading spaces to add to each non-empty line.
 
     Returns:
         str: The resulting source code with added indentation.

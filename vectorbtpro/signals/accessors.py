@@ -444,7 +444,15 @@ class SignalsAccessor(GenericAccessor):
             entry_place_args (ArgsLike): Positional arguments for `entry_place_func_nb`.
             exit_place_args (ArgsLike): Positional arguments for `exit_place_func_nb`.
             entry_wait (int): Number of periods to wait before an entry signal is triggered.
+
+                !!! note
+                    Setting `entry_wait` to 0 or False assumes that both entry and exit can be processed
+                    within the same bar, and exit can be processed before entry.
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
+
+                !!! note
+                    Setting `exit_wait` to 0 or False assumes that both entry and exit can be processed
+                    within the same bar, and entry can be processed before exit.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
                 Use templates such as `vectorbtpro.utils.template.Rep` to substitute
@@ -624,9 +632,20 @@ class SignalsAccessor(GenericAccessor):
             exit_place_args (ArgsLike): Additional arguments for the exit placement function.
 
                 Must not be provided together with positional arguments.
-            wait (int): Number of periods to wait before applying the exit placement.
+            wait (int): Number of ticks to wait before placing exits.
+
+                !!! note
+                    Setting `wait` to 0 or False may result in two signals at one bar.
             until_next (bool): Whether to place signals up to the next entry signal.
+
+                !!! note
+                    Setting it to False makes it difficult to tell which exit belongs to which entry.
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
+
+                Has only effect when `until_next` is disabled.
+
+                !!! note
+                    Setting it to True makes it impossible to tell which exit belongs to which entry.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
                 Use templates such as `vectorbtpro.utils.template.Rep` to substitute
@@ -967,7 +986,15 @@ class SignalsAccessor(GenericAccessor):
                 `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
             seed (Optional[int]): Random seed for deterministic output.
             entry_wait (int): Number of periods to wait before an entry signal is triggered.
+
+                !!! note
+                    Setting `entry_wait` to 0 or False assumes that both entry and exit can be processed
+                    within the same bar, and exit can be processed before entry.
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
+
+                !!! note
+                    Setting `exit_wait` to 0 or False assumes that both entry and exit can be processed
+                    within the same bar, and entry can be processed before exit.
             entry_pick_first (bool): Whether to stop after generating the first entry signal.
             exit_pick_first (bool): Whether to stop after generating the first exit signal.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1122,9 +1149,20 @@ class SignalsAccessor(GenericAccessor):
         Args:
             prob (Optional[ArrayLike]): Probability of generating a signal.
             seed (Optional[int]): Random seed for deterministic output.
-            wait (int): Number of periods to wait after generating an exit signal.
+            wait (int): Number of ticks to wait before placing exits.
+
+                !!! note
+                    Setting `wait` to 0 or False may result in two signals at one bar.
             until_next (bool): Whether to place signals up to the next entry signal.
+
+                !!! note
+                    Setting it to False makes it difficult to tell which exit belongs to which entry.
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
+
+                Has only effect when `until_next` is disabled.
+
+                !!! note
+                    Setting it to True makes it impossible to tell which exit belongs to which entry.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.
@@ -1268,11 +1306,25 @@ class SignalsAccessor(GenericAccessor):
 
                 You can pass an empty dictionary to automatically generate and access the `stop_ts` array.
             entry_wait (int): Number of periods to wait before an entry signal is triggered.
+
+                !!! note
+                    Setting `entry_wait` to 0 or False assumes that both entry and exit can be processed
+                    within the same bar, and exit can be processed before entry.
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
+
+                !!! note
+                    Setting `exit_wait` to 0 or False assumes that both entry and exit can be processed
+                    within the same bar, and entry can be processed before exit.
             until_next (bool): Whether to place signals up to the next entry signal.
+
+                !!! note
+                    Setting it to False makes it difficult to tell which exit belongs to which entry.
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
 
-                Ignored when `until_next` is True.
+                Has only effect when `until_next` is disabled.
+
+                !!! note
+                    Setting it to True makes it impossible to tell which exit belongs to which entry.
             chain (bool): If True, chains signals by returning both new entries and exit signals
                 using `SignalsAccessor.generate_both`.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -1513,11 +1565,25 @@ class SignalsAccessor(GenericAccessor):
 
                 Providing an empty dictionary will result in these arrays being generated automatically.
             entry_wait (int): Number of periods to wait before an entry signal is triggered.
+
+                !!! note
+                    Setting `entry_wait` to 0 or False assumes that both entry and exit can be processed
+                    within the same bar, and exit can be processed before entry.
             exit_wait (int): Number of periods to wait before an exit signal is triggered.
+
+                !!! note
+                    Setting `exit_wait` to 0 or False assumes that both entry and exit can be processed
+                    within the same bar, and entry can be processed before exit.
             until_next (bool): Whether to place signals up to the next entry signal.
+
+                !!! note
+                    Setting it to False makes it difficult to tell which exit belongs to which entry.
             skip_until_exit (bool): Whether to skip processing entry signals until the next exit.
 
-                Ignored when `until_next` is True.
+                Has only effect when `until_next` is disabled.
+
+                !!! note
+                    Setting it to True makes it impossible to tell which exit belongs to which entry.
             chain (bool): If True, chains signals by returning both new entries and exit signals
                 using `SignalsAccessor.generate_both`.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
@@ -2782,7 +2848,7 @@ class SignalsAccessor(GenericAccessor):
         """Unravel signals.
 
         Args:
-            incl_empty_cols (bool): Include columns that contain no resolved pairs.
+            incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
             force_signal_index (bool): Force creation of a new signal index even
                 if the unraveled mask has the same shape as the original.
             signal_index_type (str): Type of signal index to generate.
@@ -2872,7 +2938,7 @@ class SignalsAccessor(GenericAccessor):
                 Mapped using `vectorbtpro.signals.enums.SignalRelation` if provided as a string.
             incl_open_source (bool): Include open source signals when a matching target is not found.
             incl_open_target (bool): Include open target signals when a matching source is not found.
-            incl_empty_cols (bool): Include columns that contain no resolved pairs.
+            incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.

@@ -65,9 +65,10 @@ class RandomData(SyntheticData):
             start_value (float): Value at time 0.
 
                 Not included as the first value in the output.
-            mean (float): Drift or mean of the percentage change.
-            std (float): Standard deviation of the percentage change.
-            symmetric (bool): Determine if negative returns are diminished to match positive ones.
+            mean (float): Mean of the Gaussian distribution for sampling returns.
+            std (float): Standard deviation of the Gaussian distribution for sampling returns.
+            symmetric (bool): If True, converts negative returns to be symmetric to positive ones,
+                reducing their negative impact.
             seed (int): Random seed for deterministic output.
 
                 !!! note

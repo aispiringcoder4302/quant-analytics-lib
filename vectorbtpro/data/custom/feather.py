@@ -93,7 +93,7 @@ class FeatherData(FileData):
             squeeze (bool): Flag indicating whether to convert a single-column DataFrame to a Series.
             **read_kwargs: Keyword arguments for `pd.read_feather`.
 
-                See https://pandas.pydata.org/docs/reference/api/pandas.read_feather.html for additional arguments.
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_feather.html for arguments.
 
         Returns:
             KeyData: The fetched data and a metadata dictionary.

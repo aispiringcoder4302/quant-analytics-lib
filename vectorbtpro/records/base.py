@@ -984,7 +984,8 @@ class Records(Analyzable, metaclass=MetaRecords):
         """Resample the record array.
 
         Args:
-            resampler (Union[Resampler, PandasResampler]): Instance used to resample the record array.
+            resampler (Union[Resampler, PandasResampler]): `vectorbtpro.base.resampling.base.Resampler` instance 
+                or a Pandas resampler.
 
         Returns:
             RecordArray: The resampled record array.
@@ -1026,8 +1027,6 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             *args: Positional arguments for `Records.resample_meta`.
             records_meta (DictLike): Metadata from the resampling operation on the records.
-
-                If None, it is computed using `Records.resample_meta`.
             **kwargs: Keyword arguments for `Records.resample_meta`.
 
         Returns:

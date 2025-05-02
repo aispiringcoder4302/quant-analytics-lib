@@ -1011,7 +1011,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Resample returns to a custom frequency, date offset, or index.
 
         Args:
-            rule (AnyRuleLike): Resampling rule, which may be frequency-like or a resampler.
+            rule (AnyRuleLike): Resampler-like specification.
+
+                See `ReturnsAccessor.resample_apply`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -3819,7 +3821,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Args:
             cond_kwargs (KwargsLike): Keyword arguments for condition overrides.
             custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
-            impacts_caching (bool): Flag indicating whether resolution impacts caching.
+            impacts_caching (bool): Flag indicating whether the changes impact caching.
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:

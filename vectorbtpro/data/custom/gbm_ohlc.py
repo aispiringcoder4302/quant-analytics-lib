@@ -68,8 +68,8 @@ class GBMOHLCData(SyntheticData):
             start_value (float): Initial value at time 0.
 
                 Note that this value does not appear as the first value in the resulting data.
-            mean (float): Drift representing the mean percentage change.
-            std (float): Standard deviation of the percentage change.
+            mean (float): Drift factor in the GBM process.
+            std (float): Volatility factor in the GBM process.
             dt (float): Time increment per period.
             seed (Optional[int]): Random seed for deterministic output.
             jitted (any): Jitting option; refer to `vectorbtpro.utils.jitting.resolve_jitted_option`.

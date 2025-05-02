@@ -539,7 +539,7 @@ def is_index_equal(obj1: tp.Any, obj2: tp.Any, check_names: bool = True) -> bool
     Args:
         obj1 (Any): First index to compare.
         obj2 (Any): Second index to compare.
-        check_names (bool): If True, compare the index names in addition to the index values.
+        check_names (bool): Whether to check index names in addition to values.
 
     Returns:
         bool: True if the indexes are equal, False otherwise.
@@ -562,7 +562,7 @@ def is_default_index(obj: tp.Any, check_names: bool = True) -> bool:
 
     Args:
         obj (Any): Index to check.
-        check_names (bool): If True, compare the index names in addition to the index range.
+        check_names (bool): Whether to check index names in addition to values.
 
     Returns:
         bool: True if the index is a default range index, False otherwise.
@@ -1355,7 +1355,7 @@ def assert_index_equal(obj1: tp.Index, obj2: tp.Index, check_names: bool = True)
     Args:
         obj1 (Index): First index to compare.
         obj2 (Index): Second index to compare.
-        check_names (bool): Whether to check the names of the indexes.
+        check_names (bool): Whether to check index names in addition to values.
 
     Returns:
         None
@@ -1373,7 +1373,7 @@ def assert_columns_equal(obj1: tp.Index, obj2: tp.Index, check_names: bool = Tru
     Args:
         obj1 (Index): First columns index to compare.
         obj2 (Index): Second columns index to compare.
-        check_names (bool): Whether to check the names of the columns.
+        check_names (bool): Whether to check index names in addition to values.
 
     Returns:
         None

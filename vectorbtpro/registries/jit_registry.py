@@ -807,7 +807,7 @@ class JITRegistry(Base):
             task_id (Union[Hashable, Callable]): Task identifier or a function.
 
                 Specifies the task for which the option is applied.
-            option (JittedOption): Option used to configure jitting.
+            option (JittedOption): Option to control JIT compilation.
             **kwargs: Keyword arguments for `vectorbtpro.utils.jitting.resolve_jitted_kwargs`.
 
         Returns:

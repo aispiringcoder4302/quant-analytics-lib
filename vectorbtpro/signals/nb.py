@@ -429,7 +429,15 @@ def generate_rand_enex_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         n (FlexArray1d): Flexible array specifying the number of entry-exit pairs per column.
         entry_wait (int): Number of periods to wait before an entry signal is triggered.
+
+            !!! note
+                Setting `entry_wait` to 0 or False assumes that both entry and exit can be processed
+                within the same bar, and exit can be processed before entry.
         exit_wait (int): Number of periods to wait before an exit signal is triggered.
+
+            !!! note
+                Setting `exit_wait` to 0 or False assumes that both entry and exit can be processed
+                within the same bar, and entry can be processed before exit.
 
     Returns:
         Tuple[Array2d, Array2d]: A tuple containing a boolean array for entries and a boolean array for exits.
@@ -505,7 +513,15 @@ def rand_enex_apply_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         n (FlexArray1d): Flexible array specifying the number of entry-exit pairs per column.
         entry_wait (int): Number of periods to wait before an entry signal is triggered.
+
+            !!! note
+                Setting `entry_wait` to 0 or False assumes that both entry and exit can be processed
+                within the same bar, and exit can be processed before entry.
         exit_wait (int): Number of periods to wait before an exit signal is triggered.
+
+            !!! note
+                Setting `exit_wait` to 0 or False assumes that both entry and exit can be processed
+                within the same bar, and entry can be processed before exit.
 
     Returns:
         Tuple[Array2d, Array2d]: A tuple containing boolean arrays for entries and exits.
@@ -1698,7 +1714,7 @@ def unravel_nb(
 
     Args:
         mask (Array2d): Input 2D boolean mask.
-        incl_empty_cols (bool): Flag to include empty columns for original mask columns with no True values.
+        incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
 
     Returns:
         Tuple[Array2d, Array1d, Array1d, Array1d]: A tuple containing:
@@ -1767,7 +1783,7 @@ def unravel_between_nb(
     Args:
         mask (Array2d): Input 2D boolean mask.
         incl_open_source (bool): Flag to include the source True value even if a valid target is absent.
-        incl_empty_cols (bool): Flag to include empty columns for original mask columns with no valid pairs.
+        incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
 
     Returns:
         Tuple[Array2d, Array1d, Array1d, Array1d, Array1d, Array1d]: A tuple containing:
@@ -1865,7 +1881,7 @@ def unravel_between_two_nb(
             See `vectorbtpro.signals.enums.SignalRelation`.
         incl_open_source (bool): Include open source signals when a matching target is not found.
         incl_open_target (bool): Include open target signals when a matching source is not found.
-        incl_empty_cols (bool): Include columns that contain no resolved pairs.
+        incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
 
     Returns:
         Tuple[Array2d, Array2d, Array1d, Array1d, Array1d, Array1d, Array1d]: A tuple containing:

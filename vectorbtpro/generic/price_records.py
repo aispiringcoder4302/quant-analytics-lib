@@ -210,8 +210,8 @@ class PriceRecords(Records):
         Args:
             *objs (MaybeSequence[PriceRecords]): `PriceRecords` instances to be stacked.
             reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
-            ffill_close (bool): Flag to forward fill close prices.
-            fbfill_close (bool): Flag to backward fill close prices.
+            ffill_close (bool): If True, forward-fill missing values in the close prices.
+            fbfill_close (bool): If True, forward and backward-fill missing values in the close prices.
             **kwargs: Keyword arguments for `PriceRecords`.
 
         Returns:
@@ -312,8 +312,8 @@ class PriceRecords(Records):
 
         Args:
             *args: Positional arguments for `PriceRecords.resample_meta`.
-            ffill_close (bool): Flag to forward fill close prices.
-            fbfill_close (bool): Flag to backward fill close prices.
+            ffill_close (bool): If True, forward-fill missing values in the close prices.
+            fbfill_close (bool): If True, forward and backward-fill missing values in the close prices.
             records_meta (DictLike): Metadata from the resampling operation on the records.
             **kwargs: Keyword arguments for `PriceRecords.resample_meta`.
 

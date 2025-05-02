@@ -1280,7 +1280,7 @@ class IndexApplier(Base):
         Args:
             levels (Union[ExceptLevel, MaybeLevelSequence]): Level names or positions to select,
                 or an `ExceptLevel` indicating the levels to exclude.
-            strict (bool): Enforces strict matching of the specified levels.
+            strict (bool): Whether to raise exceptions for invalid level specifications.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 
         Returns:
@@ -1302,7 +1302,7 @@ class IndexApplier(Base):
 
         Args:
             mapper (MaybeMappingSequence[Level]): New name, sequence of names, or mapping for the levels.
-            strict (bool): Enforces strict renaming; only exact matches will be renamed.
+            strict (bool): Whether to raise exceptions for invalid level specifications.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 
         Returns:
@@ -1324,7 +1324,7 @@ class IndexApplier(Base):
 
         Args:
             level_names (Union[ExceptLevel, MaybeLevelSequence]): Level or levels to select from the index.
-            strict (bool): Enforces strict matching for the selection.
+            strict (bool): Whether to raise exceptions for invalid level specifications.
             **kwargs: Keyword arguments for `IndexApplier.apply_to_index`.
 
         Returns:

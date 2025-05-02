@@ -1327,6 +1327,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 Defaults to the length of `pattern`.
             max_window (Optional[int]): Maximum length of the rolling window for matching.
+
+                If None, defaults to `window`.
             row_select_prob (float): Probability of selecting a row.
             window_select_prob (float): Probability of selecting a window size.
             interp_mode (Union[int, str]): Interpolation mode.
@@ -1979,11 +1981,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Apply a groupby reduction function on a wrapped 2D array.
 
         Args:
-            by (AnyGroupByLike): Grouping key or object that defines groups.
+            by (AnyGroupByLike): Grouper-like specification.
 
-                It may be an instance of `vectorbtpro.base.grouping.base.Grouper`, a Pandas
-                `GroupBy`, a `vectorbtpro.base.resampling.base.Resampler`, or any groupby-like object.
-                If not accepted by a Grouper, `pd.DataFrame.groupby` is used with `groupby_kwargs`.
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
             reduce_func_nb (Union[str, AnyGroupByReduceFunc]): Callback function for reducing groups.
 
                 For specification, see the underlying Numba function.
@@ -1991,9 +1991,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If provided as a string, selects the corresponding Numba callback function
                 from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
             *args: Positional arguments for `reduce_func_nb`.
-            groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
+            groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and 
+                `pandas.Series.resample` methods.
 
-                See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
                 Use templates such as `vectorbtpro.utils.template.Rep` to substitute
@@ -2149,9 +2150,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
         When invoked on a class, the meta version of the transformation function is used.
 
         Args:
-            by (AnyGroupByLike): Grouping key or array for segmenting the data.
+            by (AnyGroupByLike): Grouper-like specification.
         
-                See `GenericAccessor.groupby_apply`.
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
             transform_func_nb (Union[str, AnyGroupByTransformFunc]): Callback function for transforming groups.
 
                 For specification, see the underlying Numba function.
@@ -2159,9 +2160,10 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If provided as a string, selects the corresponding Numba callback function
                 from `vectorbtpro.generic.nb` with the suffix `_transform_nb`.
             *args: Positional arguments for `transform_func_nb`.
-            groupby_kwargs (KwargsLike): Keyword arguments for Pandas `groupby` and `resample` methods.
+            groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and 
+                `pandas.Series.resample` methods.
             
-                See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
                 Use templates such as `vectorbtpro.utils.template.Rep` to substitute
@@ -2290,9 +2292,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Resample the underlying data using a specified rule and reduction function.
 
         Args:
-            rule (AnyRuleLike): Frequency-like rule that can be an instance of
-                `vectorbtpro.base.resampling.base.Resampler`, `pandas.core.resample.Resampler`,
-                or any object accepted by `pd.DataFrame.resample` when combined with `resample_kwargs`.
+            rule (AnyRuleLike): Resampler-like specification.
+
+                Can be one of the following:
+
+                * `vectorbtpro.base.resampling.base.Resampler` instance
+                * Pandas `Resampler` instance
+                * An instruction for any of the above
             reduce_func_nb (Union[str, AnyResampleReduceFunc]): Callback function for resampling.
 
                 For specification, see the underlying Numba function.
@@ -2307,7 +2313,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
-            resample_kwargs (KwargsLike): Keyword arguments for Pandas `resample` method.
+            resample_kwargs (KwargsLike): Keyword arguments for `pandas.Series.resample`.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
                 Use templates such as `vectorbtpro.utils.template.Rep` to substitute
@@ -3254,9 +3260,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Flatten each group of columns in the associated data.
 
         Args:
-            order (str): Order in which to flatten columns.
-
-                Accepts 'C' or 'F'.
+            order (str): Order in which to flatten the array ("C" for row-major or "F" for column-major).
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -4362,9 +4366,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Return count of non-NaN elements.
 
         Args:
-            use_jitted (Optional[bool]): Flag to use the jitted implementation.
-
-                If unspecified, the default setting is used.
+            use_jitted (Optional[bool]): Whether to use jitted execution.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -4577,7 +4579,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Return labeled index of minimum non-NaN element.
 
         Args:
-            order (str): Memory order for processing the array.
+            order (str): Order in which to flatten the array ("C" for row-major or "F" for column-major).
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -4632,7 +4634,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Return labeled index of maximum non-NaN element.
 
         Args:
-            order (str): Memory order for processing the array.
+            order (str): Order in which to flatten the array ("C" for row-major or "F" for column-major).
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
@@ -4647,7 +4649,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            SeriesFrame: The labeled index as a panPandasdas Series or DataFrame.
+            SeriesFrame: The labeled index as a Pandas Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.apply_reduce.argmax_reduce_nb`
@@ -5556,7 +5558,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             cond_kwargs (KwargsLike): Keyword arguments that may alter instance conditions.
             custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
-            impacts_caching (bool): Flag indicating whether resolution impacts caching.
+            impacts_caching (bool): Flag indicating whether the changes impact caching.
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
@@ -6182,12 +6184,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 Accepts an integer index or string name.
             symmetric (bool): Whether to apply symmetric unstacking to the data.
             sort (bool): Whether to sort the data when unstacking.
-            x_labels (Optional[Labels]): Labels for the x-axis.
-
-                Defaults to the object's columns.
-            y_labels (Optional[Labels]): Labels for the y-axis.
-
-                Defaults to the object's index.
+            x_labels (Optional[Labels]): Labels for the x-axis corresponding to DataFrame columns.
+            y_labels (Optional[Labels]): Labels for the y-axis corresponding to DataFrame index.
             slider_level (Optional[Level]): Level to use for creating a slider in multi-index plots.
             active (int): Index of the trace to display initially in slider-based plots.
             slider_labels (Optional[Labels]): Labels for the slider steps.
