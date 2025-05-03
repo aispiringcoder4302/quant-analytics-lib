@@ -27,7 +27,11 @@ def order_not_filled_nb(status: int, status_info: int) -> OrderResult:
 
     Args:
         status (int): Order status code.
+
+            See `vectorbtpro.portfolio.enums.OrderStatus`.
         status_info (int): Additional status information code.
+
+            See `vectorbtpro.portfolio.enums.OrderStatusInfo`.
 
     Returns:
         OrderResult: An order result with NaN size, price, and fees, a side of -1,
@@ -2756,6 +2760,8 @@ def should_update_stop_nb(new_stop: float, upon_stop_update: int) -> bool:
         new_stop (float): New candidate for the stop value.
         upon_stop_update (int): Mode for updating the stop value.
 
+            See `vectorbtpro.portfolio.enums.StopUpdateMode`.
+
     Returns:
         bool: True if the stop value should be updated, otherwise False.
     """
@@ -2776,8 +2782,7 @@ def should_update_time_stop_nb(new_stop: int, upon_stop_update: int) -> bool:
         new_stop (int): New candidate for the time stop value.
         upon_stop_update (int): Mode for updating the time stop value.
 
-            Mode `StopUpdateMode.Keep` indicates no update, while `StopUpdateMode.Override` or
-            `StopUpdateMode.OverrideNaN` may trigger an update.
+            See `vectorbtpro.portfolio.enums.StopUpdateMode`.
 
     Returns:
         bool: True if the time stop value should be updated, otherwise False.
@@ -3023,12 +3028,9 @@ def resolve_limit_order_price_nb(
     Args:
         limit_price (float): Computed limit price.
         close (float): Close price.
-        limit_order_price (float): Option to select the price from
-            `vectorbtpro.portfolio.enums.LimitOrderPrice`:
+        limit_order_price (float): Limit order price or option.
 
-            * If equal to `LimitOrderPrice.Limit` or `LimitOrderPrice.HardLimit`, returns `limit_price`.
-            * If equal to `LimitOrderPrice.Close`, returns `close`.
-            * Otherwise, returns the provided value.
+            See `vectorbtpro.portfolio.enums.LimitOrderPrice`.
 
     Returns:
         float: The resolved limit order price.
@@ -3583,7 +3585,7 @@ def set_limit_info_nb(
     expiry: int = -1,
     time_delta_format: int = TimeDeltaFormat.Index,
     reverse: bool = False,
-    order_price: int = LimitOrderPrice.Limit,
+    order_price: float = LimitOrderPrice.Limit,
 ) -> None:
     """Set limit order information in the provided record.
 
@@ -3615,7 +3617,7 @@ def set_limit_info_nb(
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         reverse (bool): Flag indicating if the order is reversed.
-        order_price (int): Order price type.
+        order_price (float): Limit order price or option.
 
             See `vectorbtpro.portfolio.enums.LimitOrderPrice`.
 

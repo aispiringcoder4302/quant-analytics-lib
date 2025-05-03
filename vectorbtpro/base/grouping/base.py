@@ -296,7 +296,7 @@ class Grouper(Configured):
         """Build a `Grouper` instance from a Pandas `GroupBy` object.
 
         Args:
-            cls (Type[Grouper]): The `Grouper` class.
+            cls (Type[Grouper]): `Grouper` class.
             pd_group_by (PandasGroupByLike): Pandas `GroupBy` or
                 `vectorbtpro.base.resampling.base.Resampler` object.
             **kwargs: Keyword arguments for `Grouper`.

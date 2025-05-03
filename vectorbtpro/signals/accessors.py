@@ -733,7 +733,7 @@ class SignalsAccessor(GenericAccessor):
     @hybrid_method
     def clean(
         cls_or_self,
-        *objs,
+        *objs: tp.ArrayLike,
         force_first: bool = True,
         keep_conflicts: bool = False,
         reverse_order: bool = False,
@@ -749,7 +749,10 @@ class SignalsAccessor(GenericAccessor):
         If two arrays (entries and exits) are provided, it cleans them using `vectorbtpro.signals.nb.clean_enex_nb`.
 
         Args:
-            *objs: One or two array-like objects representing signal data.
+            *objs (ArrayLike): One or two array-like objects representing signal data.
+
+                When one array is provided, it is treated as the primary signal array;
+                when two arrays are provided, they are treated as entry and exit signals respectively.
             force_first (bool): Determines whether the first signal is forced to precede its counterpart.
             keep_conflicts (bool): Determines if simultaneous signals are processed sequentially.
             reverse_order (bool): Determines whether to reverse the order of signals.
@@ -2911,7 +2914,7 @@ class SignalsAccessor(GenericAccessor):
     @hybrid_method
     def unravel_between(
         cls_or_self,
-        *objs,
+        *objs: tp.ArrayLike,
         relation: tp.Union[int, str] = "onemany",
         incl_open_source: bool = False,
         incl_open_target: bool = False,
@@ -2929,7 +2932,7 @@ class SignalsAccessor(GenericAccessor):
         Selects the appropriate unraveling method based on the number of input arrays.
 
         Args:
-            *objs: One or two array-like objects representing signal data.
+            *objs (ArrayLike): One or two array-like objects representing signal data.
 
                 When one array is provided, it is treated as the primary signal array;
                 when two arrays are provided, they are treated as source and target signals respectively.

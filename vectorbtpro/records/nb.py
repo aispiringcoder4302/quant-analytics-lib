@@ -1362,7 +1362,7 @@ def unstack_index_nb(repeat_cnt_arr: tp.Array1d) -> tp.Array1d:
     Generates a flattened index array where each index is repeated according to its count in `repeat_cnt_arr`.
 
     Args:
-        repeat_cnt_arr (Array1d): Array of repeat counts for each index.
+        repeat_cnt_arr (Array1d): Array of repetition counts for each index.
 
     Returns:
         Array1d: Flattened index array with indices repeated as specified.
@@ -1427,7 +1427,7 @@ def repeat_unstack_mapped_nb(
         mapped_arr (Array1d): Array of mapped values.
         col_arr (Array1d): Array of column indices corresponding to each element in `mapped_arr`.
         idx_arr (Array1d): Array of row indices corresponding to each element in `mapped_arr`.
-        repeat_cnt_arr (Array1d): Array of repetition counts used to compute starting indices.
+        repeat_cnt_arr (Array1d): Array of repetition counts for each index.
         n_cols (int): Total number of columns in the output array.
         fill_value (float): Value used to initialize the output array.
 

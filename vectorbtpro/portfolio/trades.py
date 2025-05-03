@@ -1793,10 +1793,10 @@ class Trades(Ranges):
             pct_scale (bool): Flag to display the y-axis on a percentage scale.
             marker_size_range (Tuple[float, float]): Range for marker sizes.
             opacity_range (Tuple[float, float]): Range for marker opacities.
-            closed_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trades.
-            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trades with profit.
-            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trades with loss.
-            open_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for open trades.
+            closed_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade markers.
+            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade with profit markers.
+            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade with loss markers.
+            open_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for open trade markers.
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
                 for example, `dict(row=1, col=1)`.
@@ -2007,8 +2007,8 @@ class Trades(Ranges):
             pct_scale (bool): Flag to display the y-axis on a percentage scale.
             field_pct_scale (bool): Flag to display the y-axis on a percentage scale.
             closed_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade markers.
-            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed profit markers.
-            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed loss markers.
+            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade with profit markers.
+            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade with loss markers.
             open_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for open trade markers.
             hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
             vline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the vertical line.

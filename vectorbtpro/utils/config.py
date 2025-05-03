@@ -272,7 +272,7 @@ def reorder_dict(dct: dict, keys: tp.Iterable[tp.Union[tp.Hashable, type(...)]],
         keys (Iterable[Union[Hashable, Ellipsis]]): List of keys specifying the new order.
 
             A single Ellipsis (`...`) can be used to indicate remaining keys.
-        skip_missing (bool): If True, ignore keys missing from `dct`.
+        skip_missing (bool): If True, ignore keys not present in `dct`.
 
     Returns:
         dict: A new dictionary with items reordered.

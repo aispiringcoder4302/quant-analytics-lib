@@ -1179,9 +1179,12 @@ def broadcast(
         wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
-        ignore_sr_names (Optional[bool]): Whether to ignore Series names during broadcasting via `broadcast_index`.
+        ignore_sr_names (Optional[bool]): Whether to ignore conflicting Series names.
+
+            Conflicting Series names are those that differ and are not None.
         ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
-        check_index_names (Optional[bool]): Whether to check index names during broadcasting via `broadcast_index`.
+        check_index_names (Optional[bool]): Whether to validate index/columns names equality
+            (see `vectorbtpro.utils.checks.is_index_equal`).
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
             See `vectorbtpro.base.indexes.clean_index`.

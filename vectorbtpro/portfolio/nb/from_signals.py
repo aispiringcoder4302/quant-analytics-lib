@@ -4511,17 +4511,17 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
         
             Provided as a scalar, or per row, column, or element.
-        signal_func_nb (SignalFunc): Callback function called to generate signals.
+        signal_func_nb (SignalFunc): Callback function to be called to generate signals.
 
             Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*signal_args`, 
             and returns four signals: long entry, long exit, short entry, and short exit.
         signal_args (ArgsLike): Positional arguments for `signal_func_nb`
-        post_signal_func_nb (PostSignalFunc): Callback function called after processing an order.
+        post_signal_func_nb (PostSignalFunc): Callback function to be called after processing an order.
 
             Accepts `vectorbtpro.portfolio.enums.PostSignalContext` and `*post_signal_args`, 
             and returns nothing.
         post_signal_args (ArgsLike): Positional arguments for `post_signal_func_nb`
-        post_segment_func_nb (PostSignalSegmentFunc): Callback function called after processing a segment.
+        post_segment_func_nb (PostSignalSegmentFunc): Callback function to be called after processing a segment.
 
             Accepts `vectorbtpro.portfolio.enums.SignalSegmentContext` and `*post_segment_args`, 
             and returns nothing.
@@ -7343,7 +7343,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
 
             See `vectorbtpro.portfolio.enums.Direction`.
         close_at_end (bool): Flag indicating whether to exit the position at the end of the period.
-        adjust_func_nb (AdjustFunc): Callback function called to adjust the context before signal generation.
+        adjust_func_nb (AdjustFunc): Callback function to be called to adjust the context before signal generation.
 
             Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
@@ -7405,7 +7405,7 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
 
             See `vectorbtpro.portfolio.enums.Direction`.
         from_ago (FlexArray2d): 2D array used to adjust the time index for signal lookup.
-        adjust_func_nb (AdjustFunc): Callback function called to adjust the context before signal generation.
+        adjust_func_nb (AdjustFunc): Callback function to be called to adjust the context before signal generation.
 
             Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
@@ -7463,7 +7463,7 @@ def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
         short_entries (FlexArray2d): 2D array of boolean short entry signals.
         short_exits (FlexArray2d): 2D array of boolean short exit signals.
         from_ago (FlexArray2d): 2D array used as a time offset for signal selection.
-        adjust_func_nb (AdjustFunc): Callback function called to adjust the context before signal generation.
+        adjust_func_nb (AdjustFunc): Callback function to be called to adjust the context before signal generation.
 
             Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
@@ -7526,7 +7526,7 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
         max_size (FlexArray2d): 2D array of maximum order sizes.
         val_price (FlexArray2d): 2D array of valuation prices with special handling for infinity.
         from_ago (FlexArray2d): 2D array determining the offset index for fetching order parameters.
-        adjust_func_nb (AdjustFunc): Callback function called to adjust the context before signal generation.
+        adjust_func_nb (AdjustFunc): Callback function to be called to adjust the context before signal generation.
 
             Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
         adjust_args (Args): Positional arguments for `adjust_func_nb`.

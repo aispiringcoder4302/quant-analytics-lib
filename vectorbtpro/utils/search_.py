@@ -1032,7 +1032,7 @@ def unflatten_obj(path_dct: tp.PathDict) -> tp.Any:
     """Recursively reconstruct an object from a path dictionary.
 
     Args:
-        path_dct (PathDict): Dictionary mapping path-like keys to corresponding values.
+        path_dct (PathDict): Mapping of path-like keys to corresponding values.
 
     Returns:
         Any: The reconstructed object.
@@ -1365,7 +1365,7 @@ def find_fuzzy(
         target (str): Target substring to search for.
         string (str): String in which to search.
         ignore_case (bool): Whether to ignore case when matching.
-        threshold (Optional[float]): Similarity threshold percentage.
+        threshold (Optional[float]): Similarity threshold percentage for fuzzy matching.
         max_insertions (Optional[int]): Maximum number of allowed insertions.
         max_substitutions (Optional[int]): Maximum number of allowed substitutions.
         max_deletions (Optional[int]): Maximum number of allowed deletions.

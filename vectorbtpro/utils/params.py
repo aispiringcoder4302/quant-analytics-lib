@@ -261,6 +261,8 @@ def get_param_grid_len(param_grid: tp.ParamGrid) -> int:
     Args:
         param_grid (ParamGrid): Parameter grid from which to select combinations.
 
+            Each parameter value can be a sequence or an integer indicating the count of values.
+
     Returns:
         int: The total number of parameter combinations.
     """
@@ -1899,16 +1901,16 @@ class Parameterizer(Configured):
             param_configs (List[Kwargs]): List of parameter configuration dictionaries.
             mono_min_size (Optional[int]): Minimum number of parameter values to split.
 
-            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        mono_n_chunks (Optional[Union[str, int]]): Specification for the number of mono-chunks.
+                See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+            mono_n_chunks (Optional[Union[str, int]]): Specification for the number of mono-chunks.
 
-            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        mono_chunk_len (Optional[Union[str, int]]):  Specification for the length of each mono-chunk.
+                See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+            mono_chunk_len (Optional[Union[str, int]]):  Specification for the length of each mono-chunk.
 
-            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
-        mono_chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each mono-chunk.
+                See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+            mono_chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each mono-chunk.
 
-            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+                See `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
             List[List[int]]: List of index lists, each representing a mono-chunk.
@@ -1965,9 +1967,9 @@ class Parameterizer(Configured):
                 See `vectorbtpro.utils.parsing.annotate_args`.
             flat_ann_args (Optional[FlatAnnArgs]): Flattened annotation arguments.
             mono_reduce (Union[bool, Kwargs]): Configuration for reducing parameters.
-            mono_merge_func (MaybeDict[MergeFuncLike]): Merging function or a dictionary of such to 
+            mono_merge_func (MaybeDict[MergeFuncLike]): Merging function or a dictionary of such to
                 combine parameter values.
-                
+
                 See `vectorbtpro.utils.merging.MergeFunc`.
             mono_merge_kwargs (KwargsLike): Keyword arguments for `mono_merge_func`.
             template_context (KwargsLike): Additional context for template substitution.
@@ -2398,7 +2400,7 @@ def parameterized(
 
     Args:
         func (Callable): Function to be decorated.
-        parameterizer (Optional[Type[Parameterizer]]): The `Parameterizer` class or instance for
+        parameterizer (Optional[Type[Parameterizer]]): `Parameterizer` class or instance for
             parameterizing inputs.
         replace_parameterizer (Optional[bool]): Flag to create a new `Parameterizer` instance with
             non-None arguments replaced.

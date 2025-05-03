@@ -2979,6 +2979,8 @@ Returns:
 
                 If False, the current iteration index is prepended to the arguments.
             pass_packed (bool): Whether to pass inputs, in-outputs, and parameters as packed tuples.
+
+                For Numba-compiled functions, tuples are passed instead.
             cache_pass_packed (Optional[bool]): Overrides `pass_packed` for the caching function.
             pass_per_column (bool): Whether to pass the `per_column` flag to the apply function.
             cache_pass_per_column (Optional[bool]): Overrides `pass_per_column` for the caching function.
@@ -3756,6 +3758,8 @@ Returns:
 
         Args:
             uppercase (bool): Whether to convert indicator names to uppercase.
+
+                Otherwise, names are returned in their original case.
             location (Optional[str]): Filter indicators by a specific location.
             prepend_location (Optional[bool]): When True, indicator names are prefixed with their location.
 

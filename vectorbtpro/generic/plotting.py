@@ -569,7 +569,7 @@ class Histogram(TraceType, TraceUpdater):
 
             The second axis must correspond to `trace_names`.
         trace_names (TraceNames): Names for traces corresponding to data columns.
-        horizontal (bool): Flag indicating whether the histogram is plotted horizontally.
+        horizontal (bool): Flag indicating whether the plot is oriented horizontally.
         remove_nan (bool): Flag determining whether NaN values are removed from the data.
         from_quantile (float): Lower quantile threshold used to filter out data points.
 
@@ -777,7 +777,7 @@ class Box(TraceType, TraceUpdater):
 
             The second axis must correspond to `trace_names`.
         trace_names (TraceNames): Names for traces corresponding to data columns.
-        horizontal (bool): Indicates if the box plot is oriented horizontally.
+        horizontal (bool): Flag indicating whether the plot is oriented horizontally.
         remove_nan (bool): Flag determining whether NaN values are removed from the data.
         from_quantile (Optional[float]): Lower quantile threshold to filter out data.
 

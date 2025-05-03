@@ -1057,7 +1057,7 @@ def macd_1d_nb(
             Uses `adjust` if not provided.
         signal_adjust (Optional[bool]): Alternative flag for signal moving average adjustment.
 
-            Uses `signal_adjust` if not provided.
+            Uses `adjust` if not provided.
 
     Returns:
         Tuple[Array1d, Array1d]: A tuple where the first element is the MACD and the second is the signal line.

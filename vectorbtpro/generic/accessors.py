@@ -4696,6 +4696,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             percentiles (Optional[ArrayLike]): Percentiles to include in the summary.
+
+                If None, defaults are used.
             ddof (int): Delta degrees of freedom.
             jitted (JittedOption): Option to control JIT compilation.
 

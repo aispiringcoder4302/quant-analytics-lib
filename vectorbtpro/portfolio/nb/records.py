@@ -177,7 +177,9 @@ def fill_trade_record_nb(
         direction (int): Direction of the trade (buy/sell).
 
             See `vectorbtpro.portfolio.enums.TradeDirection`.
-        status (int): Trade status.
+        status (int): Trade status indicating whether the position is closed.
+
+            See `vectorbtpro.portfolio.enums.TradeStatus`.
         parent_id (int): Identifier linking trades to a parent trade.
 
     Returns:
@@ -254,6 +256,8 @@ def fill_entry_trades_in_position_nb(
 
             See `vectorbtpro.portfolio.enums.TradeDirection`.
         status (int): Trade status indicating whether the position is closed.
+
+            See `vectorbtpro.portfolio.enums.TradeStatus`.
         parent_id (int): Identifier linking trades to a parent trade.
         new_records (RecordArray): Array of records to be filled.
 

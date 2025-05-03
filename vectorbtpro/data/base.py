@@ -757,6 +757,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         data (Union[feature_dict, symbol_dict]): Data dictionary structured as feature-oriented
             (`feature_dict`) or symbol-oriented (`symbol_dict`).
         single_key (bool): Specifies whether the instance should be treated as having a single key.
+
+            Automatically set to False when multiple keys are present.
         classes (Union[None, feature_dict, symbol_dict]): Class definitions for keys.
         level_name (Union[None, bool, MaybeIterable[Hashable]]): Name(s) of levels for keys.
         fetch_kwargs (Union[None, feature_dict, symbol_dict]): Additional parameters for data fetching.
@@ -4004,6 +4006,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             keys (Union[None, dict, MaybeKeys]): Feature or symbol identifier(s).
+
+                Depending on `keys_are_features`, these keys will be treated as features or symbols.
             keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
             features (Union[None, dict, MaybeFeatures]): Feature identifier(s).
 
@@ -5152,7 +5156,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             data (Data): Data instance on which to execute the function.
             func_name (str): Name identifying the function to run.
             *args: Positional arguments for `Data.run`.
-            raise_errors (bool): If True, exceptions encountered during execution are raised.
+            raise_errors (bool): If True, raises any exceptions encountered.
             silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `Data.run`.
 

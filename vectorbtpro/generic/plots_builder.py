@@ -77,7 +77,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         """Resolve a setting for `PlotsBuilderMixin.plots` by combining defaults and user-provided values.
 
         Args:
-            value (Optional[Any]): User-provided setting value.
+            value (Optional[Any]): Provided value for the setting.
             key (str): Key identifying the specific setting.
             merge (bool): Flag indicating whether to merge the default and provided values.
 
@@ -197,7 +197,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                     before filtering and cannot be used in templates, though they may still be overridden.
 
                 Pass `subplots='all'` to plot all supported subplots.
-            tags (Optional[MaybeIterable[str]]): Tags parameter, as described in
+            tags (Optional[MaybeIterable[str]]): Tag or tags to filter metrics, as described in
                 `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
             column (Optional[Column]): Identifier of the column to plot, as described in
                 `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.

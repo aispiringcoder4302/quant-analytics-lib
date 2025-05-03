@@ -104,7 +104,7 @@ def adjust_opacity(color: tp.Any, opacity: float) -> str:
     """Return a color string with the specified opacity adjustment.
 
     Args:
-        color (Any): Color specified as an `rgb` or `rgba` string or an RGB tuple.
+        color (Any): Color represented as a Matplotlib color string, hex string, or RGB/RGBA tuple.
         opacity (float): Desired opacity value.
 
     Returns:
@@ -119,7 +119,11 @@ def adjust_opacity(color: tp.Any, opacity: float) -> str:
         color = parse_rgba_tuple(color)
     elif isinstance(color, str) and color.startswith("rgb"):
         color = parse_rgb_tuple(color)
-    rgb = mc.to_rgb(color)
+    try:
+        c = mc.cnames[color]
+    except:
+        c = color
+    rgb = mc.to_rgb(c)
     return "rgba(%d,%d,%d,%.4f)" % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255), opacity)
 
 

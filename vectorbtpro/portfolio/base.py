@@ -3339,26 +3339,26 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Broadcasts.
             adjust_func_nb (Union[None, PathLike, AdjustFunc]): 
-                Callback function called to adjust the context before signal generation.
+                Callback function to be called to adjust the context before signal generation.
                 
                 Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*adjust_args`, and returns nothing.
 
                 Passed to the corresponding signal function. Can be provided as a module path when staticizing.
             adjust_args (Args): Positional arguments for `adjust_func_nb`.
             signal_func_nb (Union[None, PathLike, SignalFunc]): 
-                Callback function called to generate signals.
+                Callback function to be called to generate signals.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
             signal_args (Args): Positional arguments for `signal_func_nb`.
             post_signal_func_nb (Union[None, PathLike, PostSignalFunc]): 
-                Callback function called after processing an order.
+                Callback function to be called after processing an order.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be given as a module path when staticizing.
             post_signal_args (Args): Positional arguments for `post_signal_func_nb`.
             post_segment_func_nb (Union[None, PathLike, PostSignalSegmentFunc]): 
-                Callback function called after processing a segment.
+                Callback function to be called after processing a segment.
 
                 See `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb`.
                 Can be provided as a module path when staticizing.
@@ -3669,17 +3669,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             in_outputs (Optional[tp.MappingLike]): Mapping of in-output objects available via
                 `Portfolio.in_outputs` as a named tuple.
 
-                These objects become available via `Portfolio.in_outputs` as a named tuple.
-
-                * To substitute `Portfolio` attributes, provide broadcasted and grouped objects
-                    (e.g., via `broadcast_named_args` and templates).
-                * When chunking, supply the chunk specification and merging function.
-
-                See `vectorbtpro.portfolio.chunking.merge_sim_outs`.
+                To override `Portfolio` attributes, provide objects that are already broadcasted and grouped
+                (e.g. using `broadcast_named_args` and templates). Also see `Portfolio.in_outputs_indexing_func`
+                for indexing details. When chunking, supply the chunk specification and merging function as per
+                `vectorbtpro.portfolio.chunking.merge_sim_outs`.
 
                 !!! note
-                    When using Numba below 0.54, `in_outputs` must be a globally defined
-                    named tuple rather than a mapping.
+                    For Numba versions below 0.54, `in_outputs` must be a globally defined named tuple
+                    rather than a mapping.
             seed (Optional[int]): Random seed for deterministic output.
             group_by (GroupByLike): Grouping specification.
 
@@ -4744,51 +4741,51 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 `broadcast_named_args`, only against the final shape.
             call_pre_segment (Optional[bool]): Whether to call `pre_segment_func_nb` regardless of `segment_mask`.
             call_post_segment (Optional[bool]): Whether to call `post_segment_func_nb` regardless of `segment_mask`.
-            pre_sim_func_nb (Optional[PreSimFunc]): Callback function called before the simulation.
+            pre_sim_func_nb (Optional[PreSimFunc]): Callback function to be called before the simulation.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
             pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
-            post_sim_func_nb (Optional[PostSimFunc]): Callback function called after the simulation.
+            post_sim_func_nb (Optional[PostSimFunc]): Callback function to be called after the simulation.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
             post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
-            pre_group_func_nb (Optional[PreGroupFunc]): Callback function called before processing a group.
+            pre_group_func_nb (Optional[PreGroupFunc]): Callback function to be called before processing a group.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` and
                 is used only when `row_wise` is False.
             pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
-            post_group_func_nb (Optional[PostGroupFunc]): Callback function called after processing a group.
+            post_group_func_nb (Optional[PostGroupFunc]): Callback function to be called after processing a group.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` and
                 is used only when `row_wise` is False.
             post_group_args (Args): Positional arguments for `post_group_func_nb`.
-            pre_row_func_nb (Optional[PreRowFunc]): Callback function called before processing a row.
+            pre_row_func_nb (Optional[PreRowFunc]): Callback function to be called before processing a row.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` and
                 is used only when `row_wise` is True.
             pre_row_args (Args): Positional arguments for `pre_row_func_nb`.
-            post_row_func_nb (Optional[PostRowFunc]): Callback function called after processing a row.
+            post_row_func_nb (Optional[PostRowFunc]): Callback function to be called after processing a row.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` and
                 is used only when `row_wise` is True.
             post_row_args (Args): Positional arguments for `post_row_func_nb`.
-            pre_segment_func_nb (Optional[PreSegmentFunc]): Callback function called before processing a segment.
+            pre_segment_func_nb (Optional[PreSegmentFunc]): Callback function to be called before processing a segment.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb`.
             pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
-            post_segment_func_nb (Optional[PostSegmentFunc]): Callback function called after processing a segment.
+            post_segment_func_nb (Optional[PostSegmentFunc]): Callback function to be called after processing a segment.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
             post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
-            order_func_nb (Optional[OrderFunc]): Callback function called to generate an order.
+            order_func_nb (Optional[OrderFunc]): Callback function to be called to generate an order.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_order_func_nb`.
             order_args (Args): Positional arguments for `order_func_nb`.
-            flex_order_func_nb (Optional[FlexOrderFunc]): Callback function called to generate a flexible order.
+            flex_order_func_nb (Optional[FlexOrderFunc]): Callback function to be called to generate a flexible order.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_flex_order_func_nb`.
             flex_order_args (Args): Positional arguments for `flex_order_func_nb`.
-            post_order_func_nb (Optional[PostOrderFunc]): Callback function called after processing an order.
+            post_order_func_nb (Optional[PostOrderFunc]): Callback function to be called after processing an order.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
             post_order_args (Args): Positional arguments for `post_order_func_nb`.
@@ -4812,7 +4809,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             update_value (Optional[bool]): If True, updates the group value after each filled order.
             fill_pos_info (Optional[bool]): Whether to fill the position information record.
 
-                Disable to improve simulation speed in simple cases.
+                Disabling this may speed up simulation for simple cases.
             track_value (Optional[bool]): Whether to track metrics such as current valuation price, value, and return.
 
                 Disable to improve simulation speed in simple cases.
@@ -5414,14 +5411,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             log (Optional[ArrayLike]): Flag indicating whether to log orders.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.log`.
-            pre_segment_func_nb (Optional[PreSegmentFunc]): Callback function called before processing a segment.
+            pre_segment_func_nb (Optional[PreSegmentFunc]): Callback function to be called before processing a segment.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.def_pre_segment_func_nb` or
                 `vectorbtpro.portfolio.nb.from_order_func.def_flex_pre_segment_func_nb` if `flexible` is True.
-            order_func_nb (Optional[OrderFunc]): Callback function called to generate an order.
+            order_func_nb (Optional[OrderFunc]): Callback function to be called to generate an order.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.def_order_func_nb`.
-            flex_order_func_nb (Optional[FlexOrderFunc]): Callback function called to generate a flexible order.
+            flex_order_func_nb (Optional[FlexOrderFunc]): Callback function to be called to generate a flexible order.
 
                 Defaults to `vectorbtpro.portfolio.nb.from_order_func.def_flex_order_func_nb`.
             val_price (Optional[ArrayLike]): Asset valuation price used in decision making.
@@ -7364,7 +7361,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             direction (Union[str, int]): Direction for filtering asset positions.
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             assets (Optional[SeriesFrame]): Asset positions.
 
                 Defaults to `Portfolio.get_assets` if not provided.
@@ -7458,7 +7455,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Use "both" to analyze both long and short.
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             assets (Optional[SeriesFrame]): Asset positions.
 
                 Defaults to `Portfolio.get_assets` if not provided.
@@ -8818,7 +8815,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Typically "both" is used to consider all directions.
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             close (Optional[SeriesFrame]): Series or DataFrame of close prices.
 
                 If not provided, uses `Portfolio.filled_close` if available; otherwise, uses `Portfolio.close`.
@@ -8919,7 +8916,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         This functionality is useful for generating returns and comparing assets within the same group.
 
         Args:
-            cash (Optional[SeriesFrame]): Cash flow series.
+            cash (Optional[SeriesFrame]): Cash balance data.
 
                 Defaults to `Portfolio.get_cash` if not provided.
             asset_value (Optional[SeriesFrame]): Asset value series for computation.
@@ -9240,7 +9237,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Args:
             direction (Union[str, int]): Direction for allocation calculation.
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             asset_value (Optional[SeriesFrame]): Asset value series used for allocation calculation.
 
                 Defaults to `Portfolio.get_asset_value` with `group_by=False` if not provided.
@@ -11882,7 +11879,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             column (Optional[Column]): Identifier of the column to plot.
             direction (Union[str, int]): Direction filter for asset flow.
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             asset_flow (Optional[SeriesFrame]): Asset flow data.
 
                 Defaults to `Portfolio.get_asset_flow` if not provided.
@@ -12002,7 +11999,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             column (Optional[Column]): Identifier of the column to plot.
             direction (Union[str, int]): Asset direction indicator (e.g. "both").
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             assets (Optional[SeriesFrame]): Asset positions.
 
                 Defaults to `Portfolio.get_assets` if not provided.
@@ -12132,7 +12129,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             column (Optional[Column]): Identifier of the column to plot.
             direction (Union[str, int]): Direction indicator for asset value data (e.g. "both").
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             asset_value (Optional[SeriesFrame]): Asset value data to plot.
 
                 Defaults to `Portfolio.get_asset_value` if not provided.
@@ -12720,7 +12717,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             direction (Union[str, int]): Indicator for the exposure direction
                 (e.g., "both" for combined exposure).
 
-                See `vectorbtpro.portfolio.enums.Direction`.
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
             gross_exposure (Optional[SeriesFrame]): Gross exposure data series.
 
                 Defaults to `Portfolio.get_gross_exposure` if not provided.

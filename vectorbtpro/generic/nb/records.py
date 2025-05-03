@@ -455,7 +455,7 @@ def map_ranges_to_projections_nb(
 
             Can be a scalar or an array per column. If set to -1, uses the latest close value.
         ffill (bool): Forward fill NaN values in the projection, even if they are NaN in `close`.
-        remove_empty (bool): Whether to exclude projections with no computed changes.
+        remove_empty (bool): Remove projections that are NaN or contain only a single element.
 
     Returns:
         Tuple[Array1d, Array2d]: A tuple where the first element is a 1D array of
@@ -1110,6 +1110,8 @@ def fill_drawdown_record_nb(
         valley_val (float): Value at the valley (lowest point) of the drawdown.
         end_val (float): Value at the end of the drawdown.
         status (int): Code representing the status of the drawdown.
+
+            See `vectorbtpro.generic.enums.RangeStatus`.
 
     Returns:
         None: This function modifies `new_records` in place.

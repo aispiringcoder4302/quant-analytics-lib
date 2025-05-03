@@ -767,8 +767,7 @@ class DuckDBData(DBData):
                 Cannot be used together with `query`; include the condition in the query.
             align_dates (Optional[bool]): Whether to align `start` and `end` to the index timezone.
 
-                Pulls one row using `LIMIT 1` and applies `SQLData.prepare_dt` to
-                determine the index configuration.
+                Retrieves one row (using `LIMIT 1`) and uses `SQLData.prepare_dt` to obtain the index.
             parse_dates (Union[None, bool, Sequence[str]]): Specifies whether to parse dates.
 
                 See `DuckDBData.prepare_dt`.

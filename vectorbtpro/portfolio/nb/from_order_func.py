@@ -713,30 +713,30 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
             Provided as a scalar, or per row, group, or element.
         call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
         call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
-        pre_sim_func_nb (PreSimFunc): Callback function called before the simulation.
+        pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
 
             This function is used for creating global arrays and setting the seed.
             
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`, 
             and returns a tuple that is passed to `pre_group_func_nb` and `post_group_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
-        post_sim_func_nb (PostSimFunc): Callback function called after the simulation.
+        post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
 
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
             and returns nothing.
         post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
-        pre_group_func_nb (PreGroupFunc): Callback function called before processing a group.
+        pre_group_func_nb (PreGroupFunc): Callback function to be called before processing a group.
 
             Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
             `pre_sim_func_nb`, and `*pre_group_args`, and returns a tuple that is passed to 
             `pre_segment_func_nb` and `post_segment_func_nb`.
         pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
-        post_group_func_nb (PostGroupFunc): Callback function called after processing a group.
+        post_group_func_nb (PostGroupFunc): Callback function to be called after processing a group.
 
             Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
             `pre_sim_func_nb`, and `*post_group_args`, and returns nothing.
         post_group_args (Args): Positional arguments for `post_group_func_nb`.
-        pre_segment_func_nb (PreSegmentFunc): Callback function called before processing a segment
+        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment
             if `segment_mask` or `call_pre_segment` is True.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
@@ -757,7 +757,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                 You can override elements of `last_val_price` to influence group valuation.
                 See `vectorbtpro.portfolio.enums.SimulationContext.last_val_price`.
         pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
-        post_segment_func_nb (PostSegmentFunc): Callback function called after processing a segment 
+        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment 
             if `segment_mask` or `call_post_segment` is True.
 
             Handles the addition of `cash_earnings`, final group re-valuation, and the final update
@@ -766,7 +766,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
             `pre_group_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
-        order_func_nb (OrderFunc): Callback function called to generate an order.
+        order_func_nb (OrderFunc): Callback function to be called to generate an order.
 
             Used for generating or skipping an order. 
             
@@ -777,7 +777,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                 If the returned order is rejected, a new order cannot be issued. Ensure that the order
                 passes (e.g., by using `try_order_nb`). For greater flexibility, use `from_flex_order_func_nb`.
         order_args (Args): Positional arguments for `order_func_nb`.
-        post_order_func_nb (PostOrderFunc): Callback function called after processing an order.
+        post_order_func_nb (PostOrderFunc): Callback function to be called after processing an order.
 
             Accepts `vectorbtpro.portfolio.enums.PostOrderContext`, the unpacked output
             from `pre_segment_func_nb`, and `*post_order_args`, and returns nothing.
@@ -2026,30 +2026,30 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             Provided as a scalar, or per row, group, or element.
         call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
         call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
-        pre_sim_func_nb (PreSimFunc): Callback function called before the simulation.
+        pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
 
             This function is used for creating global arrays and setting the seed. 
             
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`, 
             and returns a tuple that is passed to `pre_row_func_nb` and `post_row_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
-        post_sim_func_nb (PostSimFunc): Callback function called after the simulation.
+        post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
 
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
             and returns nothing.
         post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
-        pre_row_func_nb (PreRowFunc): Callback function called before processing a row.
+        pre_row_func_nb (PreRowFunc): Callback function to be called before processing a row.
 
             Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
             `pre_sim_func_nb`, and `*pre_row_args`, and returns a tuple that is passed to
             `pre_segment_func_nb` and `post_segment_func_nb`.
         pre_row_args (Args): Positional arguments for `pre_row_func_nb`.
-        post_row_func_nb (PostRowFunc): Callback function called after processing a row.
+        post_row_func_nb (PostRowFunc): Callback function to be called after processing a row.
 
             Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
             `pre_sim_func_nb`, and `*post_row_args`, and returns nothing.
         post_row_args (Args): Positional arguments for `post_row_func_nb`.
-        pre_segment_func_nb (PreSegmentFunc): Callback function called before processing a segment 
+        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment 
             if `segment_mask` or `call_pre_segment` is True.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
@@ -2070,7 +2070,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                 You can override elements of `last_val_price` to influence group valuation.
                 See `vectorbtpro.portfolio.enums.SimulationContext.last_val_price`.
         pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
-        post_segment_func_nb (PostSegmentFunc): Callback function called after processing a segment 
+        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment 
             if `segment_mask` or `call_post_segment` is True.
 
             Handles the addition of `cash_earnings`, final group re-valuation, and the final update
@@ -2079,7 +2079,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
             `pre_row_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
-        order_func_nb (OrderFunc): Callback function called to generate an order.
+        order_func_nb (OrderFunc): Callback function to be called to generate an order.
 
             Used for generating or skipping an order.
             
@@ -2090,7 +2090,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                 If the returned order is rejected, a new order cannot be issued. Ensure that the order
                 passes (e.g., by using `try_order_nb`). For greater flexibility, use `from_flex_order_func_nb`.
         order_args (Args): Positional arguments for `order_func_nb`.
-        post_order_func_nb (PostOrderFunc): Callback function called after processing an order.
+        post_order_func_nb (PostOrderFunc): Callback function to be called after processing an order.
 
             Accepts `vectorbtpro.portfolio.enums.PostOrderContext`, the unpacked output
             from `pre_segment_func_nb`, and `*post_order_args`, and returns nothing.
@@ -3221,30 +3221,30 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
             Provided as a scalar, or per row, group, or element.
         call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
         call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
-        pre_sim_func_nb (PreSimFunc): Callback function called before the simulation.
+        pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
 
             This function is used for creating global arrays and setting the seed.
             
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`, 
             and returns a tuple that is passed to `pre_group_func_nb` and `post_group_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
-        post_sim_func_nb (PostSimFunc): Callback function called after the simulation.
+        post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
 
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
             and returns nothing.
         post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
-        pre_group_func_nb (PreGroupFunc): Callback function called before processing a group.
+        pre_group_func_nb (PreGroupFunc): Callback function to be called before processing a group.
 
             Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
             `pre_sim_func_nb`, and `*pre_group_args`, and returns a tuple that is passed to
             `pre_segment_func_nb` and `post_segment_func_nb`.
         pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
-        post_group_func_nb (PostGroupFunc): Callback function called after processing a group.
+        post_group_func_nb (PostGroupFunc): Callback function to be called after processing a group.
 
             Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
             `pre_sim_func_nb`, and `*post_group_args`, returning nothing.
         post_group_args (Args): Positional arguments for `post_group_func_nb`.
-        pre_segment_func_nb (PreSegmentFunc): Callback function called before processing a segment
+        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment
             if `segment_mask` or `call_pre_segment` is True.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
@@ -3265,7 +3265,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                 You can override elements of `last_val_price` to influence group valuation.
                 See `vectorbtpro.portfolio.enums.SimulationContext.last_val_price`.
         pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
-        post_segment_func_nb (PostSegmentFunc): Callback function called after processing a segment
+        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment
             if `segment_mask` or `call_post_segment` is True.
 
             Handles the addition of `cash_earnings`, final group re-valuation, and the final update
@@ -3274,7 +3274,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
             `pre_group_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
-        flex_order_func_nb (FlexOrderFunc): Callback function called to generate a flexible order.
+        flex_order_func_nb (FlexOrderFunc): Callback function to be called to generate a flexible order.
 
             Used for generating an order in a column.
             
@@ -3282,7 +3282,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
             `pre_segment_func_nb`, and `*order_args`, and returns a tuple of 
             (column, `vectorbtpro.portfolio.enums.Order`).
         flex_order_args (Args): Positional arguments for `flex_order_func_nb`.
-        post_order_func_nb (PostOrderFunc): Callback function called after processing an order.
+        post_order_func_nb (PostOrderFunc): Callback function to be called after processing an order.
 
             Accepts `vectorbtpro.portfolio.enums.PostOrderContext`, the unpacked output
             from `pre_segment_func_nb`, and `*post_order_args`, and returns nothing.
@@ -4412,30 +4412,30 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
             Provided as a scalar, or per row, group, or element.
         call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
         call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
-        pre_sim_func_nb (PreSimFunc): Callback function called before the simulation.
+        pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
 
             This function is used for creating global arrays and setting the seed.
         
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
             and returns a tuple that is passed to `pre_row_func_nb` and `post_row_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
-        post_sim_func_nb (PostSimFunc): Callback function called after the simulation.
+        post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
 
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
             and returns nothing.
         post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
-        pre_row_func_nb (PreRowFunc): Callback function called before processing a row.
+        pre_row_func_nb (PreRowFunc): Callback function to be called before processing a row.
 
             Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
             `pre_sim_func_nb`, and `*pre_row_args`, and returns a tuple that is passed to 
             `pre_segment_func_nb` and `post_segment_func_nb`.
         pre_row_args (Args): Positional arguments for `pre_row_func_nb`.
-        post_row_func_nb (PostRowFunc): Callback function called after processing a row.
+        post_row_func_nb (PostRowFunc): Callback function to be called after processing a row.
 
             Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
             `pre_sim_func_nb`, and `*post_row_args`, and returns nothing.
         post_row_args (Args): Positional arguments for `post_row_func_nb`.
-        pre_segment_func_nb (PreSegmentFunc): Callback function called before processing a segment
+        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment
             if `segment_mask` or `call_pre_segment` is True.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
@@ -4456,7 +4456,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                 You can override elements of `last_val_price` to influence group valuation.
                 See `vectorbtpro.portfolio.enums.SimulationContext.last_val_price`.
         pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
-        post_segment_func_nb (PostSegmentFunc): Callback function called after processing a segment
+        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment
             if `segment_mask` or `call_post_segment` is True.
 
             Handles the addition of `cash_earnings`, final group re-valuation, and the final update
@@ -4465,7 +4465,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
             `pre_row_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
-        flex_order_func_nb (FlexOrderFunc): Callback function called to generate a flexible order.
+        flex_order_func_nb (FlexOrderFunc): Callback function to be called to generate a flexible order.
 
             Used for generating an order in a column. 
             
@@ -4473,7 +4473,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
             `pre_segment_func_nb`, and `*order_args`, and returns a tuple of 
             (column, `vectorbtpro.portfolio.enums.Order`).
         flex_order_args (Args): Positional arguments for `flex_order_func_nb`.
-        post_order_func_nb (PostOrderFunc): Callback function called after processing an order.
+        post_order_func_nb (PostOrderFunc): Callback function to be called after processing an order.
 
             Accepts `vectorbtpro.portfolio.enums.PostOrderContext`, the unpacked output
             from `pre_segment_func_nb`, and `*post_order_args`, and returns nothing.

@@ -1118,8 +1118,9 @@ def resolve_assets_views(views: tp.Union[tp.Frame, tp.Sequence]) -> tp.Frame:
     Missing column names are automatically filled.
 
     Args:
-        views (Union[Frame, Sequence]): Asset views provided as a DataFrame, dictionary, or
-            list of dictionaries.
+        views (Union[Frame, Sequence]): Asset views provided as a DataFrame, dictionary, or list of dictionaries.
+
+            Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
 
     Returns:
         Frame: A DataFrame structured for asset views in Riskfolio-Lib.
@@ -1160,8 +1161,7 @@ def resolve_factors_views(views: tp.Union[tp.Frame, tp.Sequence]) -> tp.Frame:
     the input can also be provided as a sequence of dictionaries.
 
     Args:
-        views (Union[Frame, Sequence]): Factor views provided as a DataFrame, dictionary, or
-            list of dictionaries.
+        views (Union[Frame, Sequence]): Factor views provided as a DataFrame, dictionary, or list of dictionaries.
 
             Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
 
@@ -2304,8 +2304,7 @@ class PortfolioOptimizer(Analyzable):
                 See `vectorbtpro.utils.params.Parameterizer.find_params_in_obj`.
             name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to
                 strings for the parameter index.
-            group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]):
-                Configuration(s) for allocation groups.
+            group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]): Group configuration(s) for allocation.
             pre_group_func (Optional[Callable]): Function to preprocess and modify the group configuration.
             jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop over allocation groups.
             jitted (JittedOption): Option to control JIT compilation.
@@ -2989,7 +2988,7 @@ class PortfolioOptimizer(Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             group_configs (List[dict]): List of configurations for optimization groups.
             group_index (Index): Index representing the optimization group.
-            group_idx (int): Index of the current group in group_configs.
+            group_idx (int): Index specifying which configuration in `group_configs` to use.
             pre_group_func (Callable): Function to preprocess and modify the group configuration.
             silence_warnings (bool): Flag to suppress warning messages.
 

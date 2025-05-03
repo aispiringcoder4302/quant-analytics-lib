@@ -389,7 +389,7 @@ def unsqueeze_nan(*arrs: tp.Array, nan_mask: tp.Optional[tp.Array1d] = None) -> 
 
     Args:
         *arrs (Array): Input array(s) where NaN values will be inserted.
-        nan_mask (Optional[Array1d]): Boolean mask indicating positions for NaN insertion.
+        nan_mask (Optional[Array1d]): Boolean mask indicating positions of NaN values.
 
             If None or if no True values are detected, the original arrays are returned.
 

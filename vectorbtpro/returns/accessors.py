@@ -1793,8 +1793,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Args:
             annualized (bool): Whether to annualize the Sharpe ratio.
-
-                Defaults to the value in `ReturnsAccessor.defaults` if not provided.
             risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
                 Defaults to the value in `ReturnsAccessor.defaults` if not provided.

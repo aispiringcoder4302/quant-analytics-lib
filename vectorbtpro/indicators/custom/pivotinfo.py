@@ -82,16 +82,24 @@ class _PIVOTINFO(PIVOTINFO):
     """Class representing the indicator returning various pivot analysis metrics based on predefined thresholds.
 
     Fields:
-        `conf_pivot` (Pivot): Type of the latest confirmed pivot (running).
-        `conf_idx` (int): Index of the latest confirmed pivot (running).
-        `conf_value` (float): High/low value under the latest confirmed pivot (running).
-        `last_pivot` (Pivot): Type of the latest pivot (running).
-        `last_idx` (int): Index of the latest pivot (running).
-        `last_value` (float): High/low value under the latest pivot (running).
-        `pivots` (Pivot): Confirmed pivots stored by their indices
+        conf_pivot (int): Type of the latest confirmed pivot (running).
+
+            See `vectorbtpro.indicators.enums.Pivot`.
+        conf_idx (int): Index of the latest confirmed pivot (running).
+        conf_value (float): High/low value under the latest confirmed pivot (running).
+        last_pivot (int): Type of the latest pivot (running).
+
+            See `vectorbtpro.indicators.enums.Pivot`.
+        last_idx (int): Index of the latest pivot (running).
+        last_value (float): High/low value under the latest pivot (running).
+        pivots (int): Confirmed pivots stored by their indices
+
+            See `vectorbtpro.indicators.enums.Pivot`.
             (looking ahead - use only for plotting).
-        `modes` (TrendMode): Trend modes between confirmed pivot points
+        modes (int): Trend modes between confirmed pivot points
             (looking ahead - use only for plotting).
+
+            See `vectorbtpro.indicators.enums.TrendMode`.
 
     See:
         * `vectorbtpro.indicators.nb.pivot_info_nb` for the underlying implementation.

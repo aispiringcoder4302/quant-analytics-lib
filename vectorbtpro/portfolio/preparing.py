@@ -1819,7 +1819,7 @@ class FSPreparer(BasePFPreparer):
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             group_lens (Optional[GroupLens]): Array defining the number of columns in each group.
 
-                If None and cash_sharing is True, they are computed from the wrapper.
+                If None and `cash_sharing` is True, they are computed from the wrapper.
             cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
             save_state (bool): Flag to record the account state.
 

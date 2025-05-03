@@ -55,6 +55,8 @@ class SignalFactory(IndicatorFactory):
 
             Reserved names "entries" and "exits" are not allowed.
         attr_settings (KwargsLike): Settings for attributes, where each key maps to a dictionary of options.
+
+            See `vectorbtpro.indicators.factory.IndicatorFactory`.
         **kwargs: Keyword arguments for `vectorbtpro.indicators.factory.IndicatorFactory`.
     """
 
@@ -278,7 +280,7 @@ class SignalFactory(IndicatorFactory):
             jit_kwargs (KwargsLike): Keyword arguments for the `@njit` decorator of the parameter
                 selection function.
 
-                By default, sets `nogil` to True.
+                Has `nogil` set to True by default.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

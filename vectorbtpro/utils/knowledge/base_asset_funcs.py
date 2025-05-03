@@ -798,7 +798,7 @@ class FindAssetFunc(AssetFunc):
         `vectorbtpro.utils.search_.Not` to indicate negation.
 
         Args:
-            k (Optional[Hashable]): Identifier key (unused in matching).
+            k (Optional[Hashable]): Key associated with the current element.
             d (Any): Data item to test.
             target (MaybeList[Any]): Target value(s) or callable(s) to determine if a match occurs.
 

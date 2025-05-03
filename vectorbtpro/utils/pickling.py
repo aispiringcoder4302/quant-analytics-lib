@@ -110,7 +110,7 @@ def compress(
         
             If `True`, uses the default compression algorithm from settings.
             For options, see `extensions.compression` in `vectorbtpro._settings.pickling`.
-        file_name (Optional[str]): File name for the compressed data when using archive-based compression.
+        file_name (Optional[str]): Name of the file in the archive when using archive-based compression.
         **compress_kwargs: Keyword arguments for the compression function
             of the compression package.
 
@@ -207,7 +207,7 @@ def decompress(
         compression (CompressionLike): Compression algorithm.
 
             See `compress`.
-        file_name (Optional[str]): File name to extract from the archive when using archive-based compression.
+        file_name (Optional[str]): Name of the file in the archive when using archive-based compression.
         **decompress_kwargs: Keyword arguments for the decompression function
             of the compression package.
 
@@ -969,7 +969,7 @@ class Pickleable(Base):
             use_class_ids (bool): Replace class identifiers prefixed with `@` with corresponding classes.
             code_context (KwargsLike): Context dictionary used during execution of Python code.
             parser_kwargs (KwargsLike): Keyword arguments for `configparser.RawConfigParser`.
-            check_type (bool): Check types during decoding.
+            check_type (bool): If True, validates that the decoded object is an instance of the class.
             **kwargs: Keyword arguments for `Pickleable.decode_config_node`.
 
         Returns:

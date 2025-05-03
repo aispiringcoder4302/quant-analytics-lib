@@ -1533,7 +1533,7 @@ def interval_to_ms(interval: str) -> tp.Optional[int]:
     Returns None if the conversion fails.
 
     Args:
-        interval (str): Interval string (e.g., '5m' for 5 minutes).
+        interval (str): Time interval (e.g., '5m' for 5 minutes).
 
     Returns:
         Optional[int]: The interval in milliseconds, or None if conversion fails.

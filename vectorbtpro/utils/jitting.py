@@ -415,6 +415,8 @@ def resolve_jitter(
 
     Args:
         jitter (Optional[JitterLike]): Identifier, subclass, or instance of `Jitter`.
+
+            See `resolve_jitter_type`.
         py_func (Optional[Callable]): Function used to infer the jitter type if `jitter` is None
         **jitter_kwargs: Keyword arguments for configuring the jitter.
 

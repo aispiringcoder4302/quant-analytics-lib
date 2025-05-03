@@ -679,7 +679,9 @@ def within_fixed_dtc_nb(
         c (int): Datetime component value.
         start_c (int): Start boundary of the fixed range.
         end_c (int): End boundary of the fixed range.
-        prev_status (int): Previous status code from `DTCS`.
+        prev_status (int): Previous status code.
+
+            See `DTCS`.
         closed_start (bool): Whether the start boundary is inclusive.
         closed_end (bool): Whether the end boundary is inclusive.
         is_last (bool): Flag specifying if this is the final evaluation.
@@ -784,7 +786,9 @@ def within_periodic_dtc_nb(
         c (int): Datetime component value.
         start_c (int): Start boundary of the periodic range.
         end_c (int): End boundary of the periodic range.
-        prev_status (int): Previous status code from `DTCS`.
+        prev_status (int): Previous status code.
+
+            See `DTCS`.
         closed_start (bool): Whether the start boundary is inclusive.
         closed_end (bool): Whether the end boundary is inclusive.
         overflow_later (bool): Flag to handle overflow when the range wraps around.

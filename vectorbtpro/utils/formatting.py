@@ -501,7 +501,7 @@ def format_parameter(param: inspect.Parameter, annotate: bool = False) -> str:
 
     Args:
         param (inspect.Parameter): Parameter to format.
-        annotate (bool): Include type annotation in the formatted string if True.
+        annotate (bool): Include type annotations if True.
 
     Returns:
         str: The formatted parameter.

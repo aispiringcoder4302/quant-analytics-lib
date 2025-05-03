@@ -64,7 +64,8 @@ class GBMOHLCData(SyntheticData):
             index (Index): Pandas index representing time periods.
             n_ticks (Optional[ArrayLike]): Number of ticks per bar.
 
-                Can be substituted using a template with a context containing `symbol` and `index`.
+                Flexible argument that can be provided as a template with a context
+                containing `symbol` and `index`.
             start_value (float): Initial value at time 0.
 
                 Note that this value does not appear as the first value in the resulting data.

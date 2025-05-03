@@ -401,7 +401,7 @@ class VBTAsset(KnowledgeAsset):
             mode (str): Search mode.
 
                 See `vectorbtpro.utils.search_.find`.
-            per_path (bool): Whether to match links based on individual path segments.
+            per_path (bool): Whether to perform the search per specified path.
             single_item (bool): Indicates if only a single matching item is expected.
             consolidate (bool): If True, consolidates matches sharing the same top parent link.
             allow_empty (bool): If True, returns an empty result when no match is found.
@@ -1668,7 +1668,7 @@ class PagesAsset(VBTAsset):
         Processes the provided list of links and removes links that appear as descendant headings.
 
         Args:
-            links (List[str]): List of link strings to process.
+            links (List[str]): List of link strings to descend.
             **kwargs: Keyword arguments for `replace`.
 
         Returns:

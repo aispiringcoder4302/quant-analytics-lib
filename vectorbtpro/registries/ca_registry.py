@@ -3442,7 +3442,7 @@ class CachingDisabled(Base):
             See `CARegistry.match_setups`.
         registry (CacheableRegistry): Registry instance for caching setups.
         disable_whitelist (bool): Whether to disable the whitelist.
-        disable_machinery (bool): Whether to disable caching machinery.
+        disable_machinery (bool): Flag to disable caching machinery.
         clear_cache (bool): Whether to clear the cache when disabling caching.
         silence_warnings (bool): Flag to suppress warning messages.
 
@@ -3716,7 +3716,7 @@ class CachingEnabled(Base):
             See `CARegistry.match_setups`.
         registry (CacheableRegistry): Registry used for managing caching setups.
         enable_whitelist (bool): Flag to enable whitelist for caching setups.
-        enable_machinery (bool): Flag to enable the caching machinery.
+        enable_machinery (bool): Flag to enable caching machinery.
         clear_cache (bool): Flag to clear caches upon exiting the context.
         silence_warnings (bool): Flag to suppress warning messages.
 

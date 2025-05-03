@@ -840,8 +840,8 @@ class SQLData(DBData):
                 See `SQLData.resolve_engine`.
             start (Optional[Any]): Start value for filtering.
 
-                If the index is datetime and `align_dates` is True, it is parsed
-                with `vectorbtpro.utils.datetime_.to_timestamp`.
+                If the index is datetime and `align_dates` is True, it is parsed with
+                `vectorbtpro.utils.datetime_.to_timestamp`.
 
                 For a multi-index, provide a tuple. Must not be used with `query`.
             end (Optional[Any]): End value for filtering.

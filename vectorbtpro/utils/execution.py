@@ -1268,7 +1268,7 @@ class Executor(Configured):
         cache_chunks (Optional[bool]): Flag indicating whether chunks should be cached.
         chunk_cache_dir (Optional[PathLike]): Directory for storing chunk cache files.
         chunk_cache_save_kwargs (KwargsLike): Keyword arguments for saving chunk cache.
-            
+
             See `vectorbtpro.utils.pickling.save`.
         chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading chunk cache.
         
@@ -1284,19 +1284,19 @@ class Executor(Configured):
         chunk_collect_garbage (Union[None, bool, int]): Specifies whether garbage collection should 
             be performed after each chunk or every n chunks.
         chunk_delay (Optional[float]): Delay in seconds after processing each chunk.
-        pre_execute_func (Optional[Callable]): Callable to be executed before processing all tasks.
+        pre_execute_func (Optional[Callable]): Function to be called before executing all tasks.
         pre_execute_kwargs (KwargsLike): Keyword arguments for `pre_execute_func`.
-        pre_chunk_func (Optional[Callable]): Callable executed before processing each chunk.
+        pre_chunk_func (Optional[Callable]): Function to be called before executing each chunk.
 
             If the callable returns a value other than None, its return value is appended to
             the results and the chunk is skipped.
         pre_chunk_kwargs (KwargsLike): Keyword arguments for `pre_chunk_func`.
-        post_chunk_func (Optional[Callable]): Callable executed after processing each chunk.
+        post_chunk_func (Optional[Callable]): Function to be called after executing each chunk.
 
             If it returns None, the existing chunk results are retained; otherwise, its return
             value replaces them.
         post_chunk_kwargs (KwargsLike): Keyword arguments for `post_chunk_func`.
-        post_execute_func (Optional[Callable]): Callable executed after processing all tasks.
+        post_execute_func (Optional[Callable]): Function to be called after executing all tasks.
 
             If it returns None, the default results are preserved; otherwise, its return value replaces them.
         post_execute_kwargs (KwargsLike): Keyword arguments for `post_execute_func`.
@@ -2237,7 +2237,7 @@ class Executor(Configured):
             chunk_cache_dir (Optional[PathLike]): Directory for cached chunks; required if cache
                 clearing is requested.
             pre_clear_chunk_cache (bool): If True, clear the chunk cache directory before execution.
-            pre_execute_func (Optional[Callable]): Function to be invoked prior to executing tasks.
+            pre_execute_func (Optional[Callable]): Function to be called before executing all tasks.
             pre_execute_kwargs (KwargsLike): Keyword arguments for `pre_execute_func`.
             template_context (KwargsLike): Additional context for template substitution.
 
@@ -2289,7 +2289,10 @@ class Executor(Configured):
             
                 See `vectorbtpro.utils.pickling.load`.
             release_chunk_cache (bool): If True, release the chunk cache by substituting dummy data after loading.
-            pre_chunk_func (Optional[Callable]): Function to be invoked before processing the chunk.
+            pre_chunk_func (Optional[Callable]): Function to be called before executing each chunk.
+
+                If the callable returns a value other than None, its return value is appended to
+                the results and the chunk is skipped.
             pre_chunk_kwargs (KwargsLike): Keyword arguments for `pre_chunk_func`.
             template_context (KwargsLike): Additional context for template substitution.
 
@@ -2401,7 +2404,10 @@ class Executor(Configured):
             chunk_collect_garbage (Union[bool, int]): Determines whether to collect garbage immediately
                 or after a specified number of chunks.
             chunk_delay (Optional[float]): Delay in seconds after processing the chunk.
-            post_chunk_func (Optional[Callable]): Function to post-process chunk results.
+            post_chunk_func (Optional[Callable]): Function to be called after executing each chunk.
+
+                If it returns None, the existing chunk results are retained; otherwise, its return
+                value replaces them.
             post_chunk_kwargs (KwargsLike): Keyword arguments for `post_chunk_func`.
             chunk_executed (bool): Indicates if the chunk was executed.
             template_context (KwargsLike): Additional context for template substitution.
@@ -2488,7 +2494,9 @@ class Executor(Configured):
                 See `vectorbtpro.utils.pickling.load`.
             post_clear_chunk_cache (bool): If True, clear the chunk cache directory after loading cached results.
             release_chunk_cache (bool): If True, release cached chunk data by replacing with dummy values.
-            post_execute_func (Optional[Callable]): Function to post-process the overall execution results.
+            post_execute_func (Optional[Callable]): Function to be called after executing all tasks.
+
+                If it returns None, the default results are preserved; otherwise, its return value replaces them.
             post_execute_kwargs (KwargsLike): Keyword arguments for `post_execute_func`.
             template_context (KwargsLike): Additional context for template substitution.
 
@@ -3191,7 +3199,9 @@ def execute(
         tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
         size (Optional[int]): Number of tasks to run concurrently.
         keys (Optional[IndexLike]): Identifiers corresponding to each task.
-        executor (Optional[MaybeType[Executor]]): The `Executor` class or instance used for executing iterations.
+        executor (Optional[MaybeType[Executor]]): `Executor` class or instance used for executing iterations.
+
+            If None, a default executor is selected from the configuration.
         replace_executor (Optional[bool]): Flag to create a new `Executor` instance by replacing non-None
             arguments when additional options are provided.
         merge_to_engine_config (Optional[bool]): Flag indicating whether keyword arguments not
@@ -3335,7 +3345,7 @@ def iterated(
         over_arg (Optional[AnnArgQuery]): Query specifying which argument to iterate over.
 
             If None, the first positional argument is used.
-        executor (Optional[MaybeType[Executor]]): The `Executor` class or instance used for executing iterations.
+        executor (Optional[MaybeType[Executor]]): `Executor` class or instance used for executing iterations.
 
             If None, a default executor is selected from the configuration.
         replace_executor (Optional[bool]): Flag to create a new `Executor` instance by replacing non-None

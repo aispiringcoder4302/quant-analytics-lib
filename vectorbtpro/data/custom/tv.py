@@ -466,7 +466,7 @@ class TVClient(Configured):
         Args:
             symbol (Symbol): Symbol identifier.
             exchange (str): Exchange code.
-            interval (str): Time interval for historical data.
+            interval (str): Time interval (e.g., '5m' for 5 minutes).
             fut_contract (Optional[int]): Futures contract type:
 
                 * None for cash,
@@ -772,14 +772,16 @@ class TVData(RemoteData):
             client_config (KwargsLike): Configuration parameters for creating a new client.
             text (Optional[str]): Text for performing a server-side symbol search.
             exchange (Optional[str]): Exchange for performing a server-side symbol search.
-            pages (Optional[int]): Number of pages to retrieve during symbol search.
+            pages (Optional[int]): Maximum number of pages to fetch.
+
+                If not specified, all available pages are fetched.
             delay (Optional[float]): Delay in seconds between retry attempts.
             retries (Optional[int]): Number of retries on failure to fetch data.
             show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
             pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.
-            market (Optional[str]): Market to filter symbols in the market scanner.
+            market (Optional[str]): Market or region in which to scan for symbols.
 
                 Defaults to "global" if no search-specific parameters are provided.
             markets (Optional[List[str]]): Markets to restrict the market scanner results.

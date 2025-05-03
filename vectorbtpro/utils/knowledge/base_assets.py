@@ -850,7 +850,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             k (Optional[int]): Number of items to sample.
-            
+
                 Defaults to 1 if not specified.
             seed (Optional[int]): Random seed for deterministic output.
             wrap (bool): If True, wrap the sampled data in a new asset; otherwise, return raw data items.
@@ -880,6 +880,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             k (Optional[int]): Number of items to sample.
+
+                Defaults to 1 if not specified.
             seed (Optional[int]): Random seed for deterministic output.
             **kwargs: Keyword arguments for `KnowledgeAsset.print`.
 
@@ -1660,7 +1662,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
             in_dumps (Optional[bool]): If True, converts the entire data item to string for searching.
             dump_kwargs (KwargsLike): Keyword arguments for dumping structured data.
-        
+
                 See `vectorbtpro.utils.formatting.dump`.
             template_context (KwargsLike): Additional context for template substitution.
             return_type (Optional[str]): Indicates the return type: "item", "field", or "bool".
