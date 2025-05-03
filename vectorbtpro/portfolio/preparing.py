@@ -1630,7 +1630,7 @@ class FSPreparer(BasePFPreparer):
     def post_signal_func_nb(self) -> tp.Optional[tp.Callable]:
         """Processed `post_signal_func_nb` argument.
 
-        In dynamic mode, if not provided, a default `vectorbtpro.portfolio.nb.from_signals.no_post_func_nb`
+        In dynamic mode, if not provided, a default `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`
         is returned; otherwise, the provided callable is used.
 
         If dynamic mode is inactive, returns None.
@@ -1650,7 +1650,7 @@ class FSPreparer(BasePFPreparer):
 
         In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_signals.save_post_segment_func_nb`
         if saving state, value, or returns is enabled; otherwise, returns
-        `vectorbtpro.portfolio.nb.from_signals.no_post_func_nb`.
+        `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
 
         If a value is provided, it is returned. Outside dynamic mode, returns None.
 
@@ -2795,7 +2795,7 @@ class FDOFPreparer(FOFPreparer):
     """Class for preparing the portfolio using `vectorbtpro.portfolio.base.Portfolio.from_def_order_func`.
 
     !!! info
-        For default settings, see `from_order_func` in `vectorbtpro._settings.from_def_order_func`.
+        For default settings, see `from_def_order_func` in `vectorbtpro._settings.portfolio`.
     """
 
     _settings_path: tp.SettingsPath = "portfolio.from_def_order_func"

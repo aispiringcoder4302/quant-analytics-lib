@@ -957,7 +957,7 @@ else:
 
             Args:
                 text (str): Text to convert into a GIPHY URL.
-                *args: Positional arguments for `TelegramBot.send_all`.
+                *args: Positional arguments for `TelegramBot.send_to_all`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
 
                     If not provided, defaults to `TelegramBot.giphy_kwargs`.

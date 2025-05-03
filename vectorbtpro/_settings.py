@@ -10,11 +10,11 @@
 
 """Module providing global settings for vectorbtpro.
 
-The `settings` config is also accessible via `vectorbtpro.settings`.
+The `settings` config is also accessible via `vbt.settings`.
 
 !!! note
-    All vectorbtpro modules import `vectorbtpro._settings.settings`, not `vectorbtpro.settings`.
-    Overwriting `vectorbtpro.settings` only replaces the user reference.
+    All vectorbtpro modules import `vectorbtpro._settings.settings`, not `vbt.settings`.
+    Overwriting `vbt.settings` only replaces the user reference.
     Update the settings config directly instead of replacing it.
 
 The `settings` config has the following properties:

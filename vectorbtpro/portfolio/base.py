@@ -2743,6 +2743,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Order parameters such as size, price, fees, and others are broadcast as necessary and processed
         to construct the resulting portfolio.
 
+        Prepared using `vectorbtpro.portfolio.preparing.FOPreparer`.
+
         Args:
             close (Union[ArrayLike, OHLCDataMixin, FOPreparer, PFPrepResult]): Close prices or
                 OHLC data used for portfolio simulation.
@@ -3305,7 +3307,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts.
 
                 * If an instance of `vectorbtpro.data.base.OHLCDataMixin`, extracts open, high, low, and close prices.
-                * If an instance of `vectorbtpro.portfolio.preparing.FOPreparer`, it is used as a preparer.
+                * If an instance of `vectorbtpro.portfolio.preparing.FSPreparer`, it is used as a preparer.
                 * If an instance of `vectorbtpro.portfolio.preparing.PFPrepResult`, it is used as a preparer result.
             entries (Optional[ArrayLike]): Boolean array of entry signals.
 
@@ -3697,7 +3699,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             staticized (StaticizedOption): Keyword arguments or a task id for staticizing.
 
-                If True or a dict, these are passed to `vectorbtpro.utils.cutting.cut_and_save_func`
+                If True or a dict, these are passed to `vectorbtpro.utils.source.cut_and_save_func`
                 to cache the simulator. If a hashable or callable, it is used as a task id for an already
                 registered simulator. The dict may include options like `override` and `reload`.
             bm_close (Optional[ArrayLike]): Benchmark asset price at each bar.
@@ -4675,7 +4677,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         !!! hint
             See `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb` for illustrations.
 
-        Prepared by `vectorbtpro.portfolio.preparing.FOFPreparer`.
+        Prepared using `vectorbtpro.portfolio.preparing.FOFPreparer`.
 
         Args:
             close (Union[ArrayLike, OHLCDataMixin, FOFPreparer, PFPrepResult]): Close prices or
@@ -4684,7 +4686,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts.
 
                 * If an instance of `vectorbtpro.data.base.OHLCDataMixin`, extracts open, high, low, and close prices.
-                * If an instance of `vectorbtpro.portfolio.preparing.FOPreparer`, it is used as a preparer.
+                * If an instance of `vectorbtpro.portfolio.preparing.FOFPreparer`, it is used as a preparer.
                 * If an instance of `vectorbtpro.portfolio.preparing.PFPrepResult`, it is used as a preparer result.
             init_cash (Optional[ArrayLike]): Initial capital.
 
@@ -4866,7 +4868,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             staticized (StaticizedOption): Keyword arguments or a task id for staticizing.
 
-                If True or a dict, these are passed to `vectorbtpro.utils.cutting.cut_and_save_func`
+                If True or a dict, these are passed to `vectorbtpro.utils.source.cut_and_save_func`
                 to cache the simulator. If a hashable or callable, it is used as a task id for an already
                 registered simulator. The dict may include options like `override` and `reload`.
             bm_close (Optional[ArrayLike]): Benchmark asset price at each bar.
@@ -5346,7 +5348,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         * `pre_segment_func_nb` is set to `vectorbtpro.portfolio.nb.from_order_func.def_pre_segment_func_nb`
         * `order_func_nb` is set to `vectorbtpro.portfolio.nb.from_order_func.def_order_func_nb`
 
-        Prepared by `vectorbtpro.portfolio.preparing.FDOFPreparer`.
+        Prepared using `vectorbtpro.portfolio.preparing.FDOFPreparer`.
 
         Args:
             close (Union[ArrayLike, OHLCDataMixin, FDOFPreparer, PFPrepResult]): Close prices or
@@ -5355,7 +5357,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Broadcasts.
 
                 * If an instance of `vectorbtpro.data.base.OHLCDataMixin`, extracts open, high, low, and close prices.
-                * If an instance of `vectorbtpro.portfolio.preparing.FOPreparer`, it is used as a preparer.
+                * If an instance of `vectorbtpro.portfolio.preparing.FDOFPreparer`, it is used as a preparer.
                 * If an instance of `vectorbtpro.portfolio.preparing.PFPrepResult`, it is used as a preparer result.
             size (Optional[ArrayLike]): Size to order.
 
@@ -5472,7 +5474,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             return_preparer (bool): If True, returns the preparer instance
-                (`vectorbtpro.portfolio.preparing.FPreparer`).
+                (`vectorbtpro.portfolio.preparing.FDOFPreparer`).
 
                 !!! note
                     In this case, the seed is not automatically set;
@@ -10730,7 +10732,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return the quantstats adapter computed by `Portfolio.get_qs` with default arguments.
 
         Returns:
-            QSAdapter: An instance of `vectorbtpro.returns.qs.QSAdapter`.
+            QSAdapter: An instance of `vectorbtpro.returns.qs_adapter.QSAdapter`.
         """
         return self.get_qs()
 

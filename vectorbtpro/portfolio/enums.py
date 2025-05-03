@@ -644,7 +644,7 @@ Fields:
     TargetValue: Specifies the target asset value using `ExecState.val_price`. 
     
         Converted to `SizeType.TargetAmount`.
-    TargetPercent: Specifies the target percentage of total value using `ExecState.value_now`. 
+    TargetPercent: Specifies the target percentage of total value using `ExecState.value`. 
     
         Converted to `SizeType.TargetValue`.
     TargetPercent100: Equivalent to `SizeType.TargetPercent` where 1.0 represents 1%.

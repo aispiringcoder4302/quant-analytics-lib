@@ -1917,13 +1917,13 @@ class PSC(DefineMixin):
     """
 
     rescale_mode: tp.Union[int, str] = define.optional_field()
-    """Rescaling mode for adjusting the ranges of `PSC.arr` and `PSC.pattern`.
+    """Rescaling mode for adjusting the ranges of the input array and `PSC.pattern`.
     
     See `vectorbtpro.generic.enums.RescaleMode`.
     """
 
     vmin: tp.Union[float] = define.optional_field()
-    """Minimum value used for rescaling `PSC.arr`.
+    """Minimum value used for rescaling the input array.
 
     Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
     and for verifying `PSC.min_pct_change` and `PSC.max_pct_change`. 
@@ -1932,7 +1932,7 @@ class PSC(DefineMixin):
     """
 
     vmax: tp.Union[float] = define.optional_field()
-    """Maximum value used for rescaling `PSC.arr`.
+    """Maximum value used for rescaling the input array.
     
     Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax` 
     and for verifying `PSC.min_pct_change` and `PSC.max_pct_change`. 

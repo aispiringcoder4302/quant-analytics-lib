@@ -41,7 +41,7 @@ class _RANDX(RANDX):
 
     See:
         * `vectorbtpro.signals.nb.rand_place_nb` for details on the exit placement.
-        * `vectorbtpro.signals.generators.RAND` for parameter notes.
+        * `vectorbtpro.signals.generators.rand.RAND` for parameter notes.
 
     Examples:
         Generate an exit signal for each entry:

@@ -1363,9 +1363,9 @@ class BaseAccessor(Wrapping):
         """Apply an indexing operation to the accessor.
 
         Args:
-            *args: Positional arguments for `vectorbtpro.base.indexing.Wrapping.apply_to_index`.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.Wrapping.apply_to_index`.
             wrap (bool): If False, return the underlying Pandas object; if True, return an accessor.
-            **kwargs: Keyword arguments for `vectorbtpro.base.indexing.Wrapping.apply_to_index`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping.apply_to_index`.
 
         Returns:
             Union[BaseAccessor, SeriesFrame]: An accessor instance with the applied indexing,

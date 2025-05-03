@@ -57,7 +57,7 @@ class Grouper(Configured):
             * sequence of integers or strings that is shorter than `index` (multiple MultiIndex levels).
             * any other sequence such as Pandas Index that has the same length as `index`.
             * `vectorbtpro.base.indexes.ExceptLevel` object (to exclude levels).
-            * `vectorbtpro.base.grouping.CustomTemplate` object with `index` as context (to substitute levels).
+            * `vectorbtpro.utils.template.CustomTemplate` object with `index` as context (to substitute levels).
         def_lvl_name (Hashable): Default level name for groups.
         allow_enable (bool): Indicates if enabling grouping is permitted when group_by is None.
         allow_disable (bool): Indicates if disabling grouping is permitted when group_by is not None.

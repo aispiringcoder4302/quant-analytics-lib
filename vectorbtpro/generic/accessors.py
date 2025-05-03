@@ -4450,7 +4450,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             MaybeSeries: The covariance computed from non-NaN elements.
 
         See:
-            * `vectorbtpro.generic.nb.apply_reduce.cov_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.apply_reduce.cov_reduce_grouped_meta_nb` for grouped operations.
             * `vectorbtpro.generic.nb.base.nancov_nb` for non-grouped operations.
         """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))
@@ -4508,7 +4508,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             MaybeSeries: The correlation coefficient computed from non-NaN elements.
 
         See:
-            * `vectorbtpro.generic.nb.apply_reduce.corr_reduce_nb` for grouped operations.
+            * `vectorbtpro.generic.nb.apply_reduce.corr_reduce_grouped_meta_nb` for grouped operations.
             * `vectorbtpro.generic.nb.base.nancorr_nb` for non-grouped operations.
         """
         self_obj, other_obj = reshaping.broadcast(self.obj, other, **resolve_dict(broadcast_kwargs))

@@ -3651,7 +3651,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
         """Calculate the maximum drawdown (MDD) from returns, yielding the same output as
-        `ReturnsAccessor.drawdowns.max_drawdown`.
+        `vectorbtpro.generic.drawdowns.Drawdowns.max_drawdown`.
 
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.

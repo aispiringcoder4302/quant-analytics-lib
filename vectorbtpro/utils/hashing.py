@@ -59,3 +59,40 @@ class Hashable(Base):
         if isinstance(other, type(self)):
             return self.hash_key == other.hash_key
         raise NotImplementedError
+    
+
+class UnhashableArgsError(Exception):
+    """Exception raised for unhashable arguments."""
+
+    pass
+
+
+def hash_args(
+    func: tp.Callable,
+    args: tp.Args,
+    kwargs: tp.Kwargs,
+    ignore_args: tp.Optional[tp.Iterable[tp.AnnArgQuery]] = None,
+) -> int:
+    """Compute a hash based on the annotated arguments of `func`.
+
+    Args:
+        func (Callable): Function whose arguments are processed.
+        args (Args): Positional arguments for `func`.
+        kwargs (Kwargs): Keyword arguments for `func`.
+        ignore_args (Optional[Iterable[AnnArgQuery]]): Sequence of queries for arguments to ignore.
+
+    Returns:
+        int: The computed hash value.
+    """
+    from vectorbtpro.utils.parsing import annotate_args, flatten_ann_args, ignore_flat_ann_args
+    
+    if ignore_args is None:
+        ignore_args = []
+    ann_args = annotate_args(func, args, kwargs, only_passed=True)
+    flat_ann_args = flatten_ann_args(ann_args)
+    if len(ignore_args) > 0:
+        flat_ann_args = ignore_flat_ann_args(flat_ann_args, ignore_args)
+    try:
+        return hash(tuple(map(lambda x: (x[0], x[1]["value"]), flat_ann_args.items())))
+    except TypeError:
+        raise UnhashableArgsError

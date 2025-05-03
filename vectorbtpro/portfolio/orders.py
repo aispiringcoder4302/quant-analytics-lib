@@ -293,7 +293,7 @@ class Orders(PriceRecords):
         Computes order sizes by negating values for sell orders.
 
         Args:
-            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.map_array`.
+            **kwargs: Keyword arguments for `Orders.map_array`.
 
         Returns:
             MaybeSeries: A series representing the signed sizes.
@@ -308,7 +308,7 @@ class Orders(PriceRecords):
         Calculates the order value as the product of the signed size and price values.
 
         Args:
-            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.map_array`.
+            **kwargs: Keyword arguments for `Orders.map_array`.
 
         Returns:
             MaybeSeries: A series representing the computed order values.
@@ -856,7 +856,7 @@ class FSOrders(Orders):
 
     def get_signal_to_creation_duration(self, **kwargs) -> MappedArray:
         """Return the duration between signal and creation indices as a
-        `vectorbtpro.generic.mapped_array.MappedArray`.
+        `vectorbtpro.records.mapped_array.MappedArray`.
 
         Args:
             **kwargs: Keyword arguments for `FSOrders.map_array`.
@@ -869,7 +869,7 @@ class FSOrders(Orders):
 
     def get_creation_to_fill_duration(self, **kwargs) -> MappedArray:
         """Return the duration between creation and fill indices as a
-        `vectorbtpro.generic.mapped_array.MappedArray`.
+        `vectorbtpro.records.mapped_array.MappedArray`.
 
         Args:
             **kwargs: Keyword arguments for `FSOrders.map_array`.
@@ -882,7 +882,7 @@ class FSOrders(Orders):
 
     def get_signal_to_fill_duration(self, **kwargs) -> MappedArray:
         """Return the duration between signal and fill indices as a
-        `vectorbtpro.generic.mapped_array.MappedArray`.
+        `vectorbtpro.records.mapped_array.MappedArray`.
 
         Args:
             **kwargs: Keyword arguments for `FSOrders.map_array`.

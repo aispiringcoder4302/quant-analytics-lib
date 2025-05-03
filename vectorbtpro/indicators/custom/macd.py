@@ -85,7 +85,6 @@ class _MACD(MACD):
         * https://www.investopedia.com/terms/m/macd.asp the definition of MACD.
         * `vectorbtpro.indicators.nb.macd_nb` for the underlying implementation.
         * `vectorbtpro.indicators.nb.macd_hist_nb` for the underlying implementation of `MACD.hist`.
-        * `vectorbtpro.indicators.nb.macd_signal_nb` for the underlying implementation of `MACD.signal`.
     """
 
     def plot(

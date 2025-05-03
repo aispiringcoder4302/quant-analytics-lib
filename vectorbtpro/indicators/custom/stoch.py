@@ -76,12 +76,6 @@ class _STOCH(STOCH):
     See:
         * https://www.investopedia.com/terms/s/stochasticoscillator.asp for the definition of STOCH.
         * `vectorbtpro.indicators.nb.stoch_nb` for the underlying implementation.
-        * `vectorbtpro.indicators.nb.stoch_fast_k_nb` for the underlying implementation of
-            the `STOCH.fast_k` property.
-        * `vectorbtpro.indicators.nb.stoch_slow_k_nb` for the underlying implementation of
-            the `STOCH.slow_k` property.
-        * `vectorbtpro.indicators.nb.stoch_slow_d_nb` for the underlying implementation of
-            the `STOCH.slow_d` property.
     """
 
     def plot(

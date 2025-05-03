@@ -1449,7 +1449,7 @@ def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[Conten
         ContentFormatter: The resolved formatter.
 
     !!! info
-        For default settings, see `formatting` in `vectorbtpro._settings.formatting`.
+        For default settings, see `formatting` in `vectorbtpro._settings.knowledge`.
     """
     if formatter is None:
         from vectorbtpro._settings import settings

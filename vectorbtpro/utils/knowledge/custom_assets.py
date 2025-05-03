@@ -1777,7 +1777,7 @@ class PagesAsset(VBTAsset):
 
         Args:
             refname (MaybeList[str]): Reference name or list of reference names.
-            **kwargs: Keyword arguments for `VBTAsset.find_page`.
+            **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
             MaybePagesAsset: A new pages asset corresponding to the reference name.
@@ -1807,7 +1807,7 @@ class PagesAsset(VBTAsset):
             attr (Optional[str]): Attribute name to target on the object.
             module (Union[None, str, ModuleType]): Module context used in reference resolution.
             resolve (bool): Whether to resolve the object's reference name.
-            **kwargs: Keyword arguments for `VBTAsset.find_refname`.
+            **kwargs: Keyword arguments for `PagesAsset.find_refname`.
 
         Returns:
             MaybePagesAsset: A new pages asset corresponding to the object or reference name.

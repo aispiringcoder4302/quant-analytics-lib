@@ -1617,9 +1617,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         `Data` instance with an updated wrapper and modified data.
 
         Args:
-            *args: Positional arguments for `Data.indexing_func_meta`.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
             replace_kwargs (KwargsLike): Keyword arguments for `Data.replace`.
-            **kwargs: Keyword arguments for `Data.indexing_func_meta`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
             Data: A new `Data` instance after indexing.
@@ -5087,7 +5087,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             rule (Optional[AnyRuleLike]): Time rule for realignment.
 
-                If not provided, uses `Data.wrapper.freq`.
+                If not provided, uses `vectorbtpro.base.wrapping.ArrayWrapper.freq`.
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
             wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
             ffill (bool): Whether to forward-fill missing values during realignment.

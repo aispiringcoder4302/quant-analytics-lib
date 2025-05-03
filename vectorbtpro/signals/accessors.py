@@ -2006,7 +2006,7 @@ class SignalsAccessor(GenericAccessor):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.to_mapped`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.base.Records.to_mapped`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Ranked positions as an array or a mapped array.

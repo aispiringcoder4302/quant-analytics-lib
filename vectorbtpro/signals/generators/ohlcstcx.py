@@ -40,7 +40,7 @@ class _OHLCSTCX(OHLCSTCX):
 
     See:
         * `vectorbtpro.signals.nb.ohlc_stop_place_nb` for details on the exit placement.
-        * `vectorbtpro.signals.generators.OHLCSTX` for parameter details.
+        * `vectorbtpro.signals.generators.ohlcstx.OHLCSTX` for parameter details.
     """
 
     plot = _bind_ohlcstx_plot(OHLCSTCX, "new_entries")

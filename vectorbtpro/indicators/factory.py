@@ -229,7 +229,7 @@ def build_columns(
         param_settings (KwargsLikeSequence): Settings for parameters such as data type mapping and processing options.
         per_column (bool): If True, processes parameters separately for each column.
         ignore_ranges (bool): If True, ignores range checks during column stacking.
-        **kwargs: Keyword arguments for `vectorbtpro.base.indexing.stack_indexes`.
+        **kwargs: Keyword arguments for `vectorbtpro.base.indexes.stack_indexes`.
 
     Returns:
         dict: A dictionary containing:

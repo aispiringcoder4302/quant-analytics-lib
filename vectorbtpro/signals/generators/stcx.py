@@ -38,7 +38,7 @@ class _STCX(STCX):
 
     See:
         * `vectorbtpro.signals.nb.stop_place_nb` for details on the exit placement.
-        * `vectorbtpro.signals.generators.STX` for parameter details.
+        * `vectorbtpro.signals.generators.stx.STX` for parameter details.
     """
 
     pass

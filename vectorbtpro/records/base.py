@@ -1279,7 +1279,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             field (str): Field identifier.
             mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
             
-                See `vectorbtpro.records.base.MappedArray.apply_mapping`.
+                See `vectorbtpro.records.mapped_array.MappedArray.apply_mapping`.
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
         Returns:
@@ -1299,7 +1299,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             field (str): Field identifier.
             mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
             
-                See `vectorbtpro.records.base.MappedArray.apply_mapping`.
+                See `vectorbtpro.records.mapped_array.MappedArray.apply_mapping`.
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
         Returns:

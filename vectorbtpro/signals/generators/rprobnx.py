@@ -52,7 +52,7 @@ class _RPROBNX(RPROBNX):
 
     See:
         * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the entry and exit placement.
-        * `vectorbtpro.signals.generators.RPROB` for parameter details.
+        * `vectorbtpro.signals.generators.rprob.RPROB` for parameter details.
 
     Examples:
         Test all probability combinations:

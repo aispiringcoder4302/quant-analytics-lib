@@ -426,7 +426,8 @@ from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.caching import Cacheable
 from vectorbtpro.utils.decorators import cacheableT, cacheable_property
 from vectorbtpro.utils.formatting import ptable
-from vectorbtpro.utils.parsing import Regex, hash_args, UnhashableArgsError, get_func_arg_names
+from vectorbtpro.utils.hashing import hash_args, UnhashableArgsError
+from vectorbtpro.utils.parsing import Regex, get_func_arg_names
 from vectorbtpro.utils.profiling import Timer
 from vectorbtpro.utils.warnings_ import warn
 

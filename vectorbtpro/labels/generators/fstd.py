@@ -50,7 +50,7 @@ class _FSTD(FSTD):
     """Class representing the look-ahead future standard deviation generator.
 
     See:
-        * `vectorbtpro.indicators.nb.future_std_nb` for the underlying implementation.
+        * `vectorbtpro.labels.nb.future_std_nb` for the underlying implementation.
     """
 
     def plot(

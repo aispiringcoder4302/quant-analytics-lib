@@ -44,7 +44,7 @@ class _RANDNX(RANDNX):
 
     See:
         * `vectorbtpro.signals.nb.rand_enex_apply_nb` for details on the entry and exit placement.
-        * `vectorbtpro.signals.generators.RAND` for parameter details.
+        * `vectorbtpro.signals.generators.rand.RAND` for parameter details.
 
     Examples:
         Test three different entry and exit signal configurations:

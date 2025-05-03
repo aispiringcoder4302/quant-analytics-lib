@@ -3606,7 +3606,7 @@ def set_limit_info_nb(
             See `vectorbtpro.portfolio.enums.Direction`.
         init_stop_type (int): Initial stop type.
 
-            See `vectorbtpro.portfolio.enums.StopType`.
+            See `vectorbtpro.signals.enums.StopType`.
         delta (float): Delta value associated with the order.
         delta_format (int): Format for delta comparisons.
 
