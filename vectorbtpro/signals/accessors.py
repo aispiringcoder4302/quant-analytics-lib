@@ -312,8 +312,8 @@ class SignalsAccessor(GenericAccessor):
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
             place_func_nb (PlaceFunc): Callback function for placing signals.
-            *args: Positional arguments for `place_func_nb`.
-            place_args (ArgsLike): Arguments for `place_func_nb` (either positional or named, but not both).
+            *args: Alias for `place_args`.
+            place_args (ArgsLike): Positional arguments for `place_func_nb`.
             only_once (bool): Whether to run the placement function only once.
             wait (int): Waiting period before signal placement.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
@@ -628,10 +628,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             exit_place_func_nb (PlaceFunc): Callback function for placing exit signals.
-            *args: Positional arguments for `exit_place_args`.
-            exit_place_args (ArgsLike): Additional arguments for the exit placement function.
-
-                Must not be provided together with positional arguments.
+            *args: Alias for `exit_place_args`.
+            exit_place_args (ArgsLike): Positional arguments for `exit_place_func_nb`.
             wait (int): Number of ticks to wait before placing exits.
 
                 !!! note
@@ -1977,10 +1975,8 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             rank_func_nb (RankFunc): Compiled function for ranking.
-            *args: Positional arguments for `rank_func_nb`.
+            *args: Alias for `rank_args`.
             rank_args (ArgsLike): Positional arguments for `rank_func_nb`.
-
-                Must not be provided with `*args`.
             reset_by (Optional[ArrayLike]): Boolean array indicating reset positions.
             after_false (bool): If True, disregards the first True partition with no preceding False.
             after_reset (bool): If True, disregards the first True partition before a reset signal.
@@ -2819,7 +2815,11 @@ class SignalsAccessor(GenericAccessor):
             index (Index): Reference Pandas index for deriving labels.
             signal_index_type (str): Type of signal index to generate.
 
-                Valid values are "range", "position", or "label".
+                Allowed values:
+
+                * "range": Basic signal counter in a column.
+                * "position(s)": Row index of the signal in a column.
+                * "label(s)": Label identifying the signal in a column.
             signal_index_name (str): Name to assign to the signal index.
 
         Returns:
@@ -2936,7 +2936,7 @@ class SignalsAccessor(GenericAccessor):
             relation (Union[int, str]): Relation mode for pairing signals.
 
                 Mapped using `vectorbtpro.signals.enums.SignalRelation` if provided as a string.
-            incl_open_source (bool): Include open source signals when a matching target is not found.
+            incl_open_source (bool): Flag to include the source True value even if a valid target is absent.
             incl_open_target (bool): Include open target signals when a matching source is not found.
             incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.

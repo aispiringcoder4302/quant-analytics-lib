@@ -3280,6 +3280,8 @@ class FileStore(DictStore):
     Args:
         dir_path (Optional[PathLike]): Directory path used for file storage.
         compression (CompressionLike): Compression algorithm.
+        
+            See `vectorbtpro.utils.pickling.compress`.
         save_kwargs (KwargsLike): Keyword arguments for saving objects.
         
             See `vectorbtpro.utils.pickling.save`.

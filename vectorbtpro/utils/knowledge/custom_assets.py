@@ -398,7 +398,9 @@ class VBTAsset(KnowledgeAsset):
 
         Args:
             link (MaybeList[str]): Link or list of links to search for.
-            mode (str): Matching mode for link matching ("exact" or "end").
+            mode (str): Search mode.
+
+                See `vectorbtpro.utils.search_.find`.
             per_path (bool): Whether to match links based on individual path segments.
             single_item (bool): Indicates if only a single matching item is expected.
             consolidate (bool): If True, consolidates matches sharing the same top parent link.
@@ -3579,7 +3581,7 @@ def find_examples(
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
         aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
-        latest_messages_first (bool): If True, orders messages from most recent to oldest.
+        latest_messages_first (bool): Whether to order messages with the most recent first.
         shuffle_messages (bool): Whether to shuffle the order of messages.
         find_kwargs (KwargsLike): Keyword arguments specifically for the find method.
         **kwargs: Keyword arguments for `VBTAsset.find`, `VBTAsset.find_code`, or `VBTAsset.rank`.
@@ -3724,7 +3726,7 @@ def find_assets(
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
         aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
-        latest_messages_first (bool): Whether to order messages with the latest first.
+        latest_messages_first (bool): Whether to order messages with the most recent first.
         shuffle_messages (bool): Whether to shuffle the order of messages.
         api_kwargs (KwargsLike): Keyword arguments for `find_api`.
         docs_kwargs (KwargsLike): Keyword arguments for `find_docs`.
@@ -3977,7 +3979,7 @@ def chat_about(
 
             For example, `["messages", ...]` puts "messages" at the beginning and all other assets
             in their usual order at the end.
-        latest_messages_first (bool): If True, sorts messages in reverse chronological order.
+        latest_messages_first (bool): Whether to order messages with the most recent first.
         shuffle_messages (Optional[bool]): If True, shuffles the order of messages.
         shuffle (Optional[bool]): If True, shuffles the combined asset.
         find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
@@ -4185,6 +4187,8 @@ def chat(
         chat_history (ChatHistory): Chat history, a list of dictionaries with defined roles.
         cache_documents (bool): If True, will use an asset cache manager to cache the generated
             text documents after conversion.
+
+            Running the same method again will use the cached documents.
         cache_key (Optional[str]): Unique identifier for the cached asset.
         asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of 
             `vectorbtpro.utils.knowledge.base_assets.AssetCacheManager`.

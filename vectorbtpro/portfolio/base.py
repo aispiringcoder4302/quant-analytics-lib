@@ -8647,9 +8647,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         Combines initial cash with the value of the initial position.
 
         Args:
-            init_position_value (Optional[MaybeSeries]): Initial position value per column.
+            init_position_value (Optional[MaybeSeries]): Initial position value.
 
-                Defaults to `Portfolio.get_init_position` if not provided.
+                Defaults to `Portfolio.get_init_position_value` if not provided.
             init_cash (Optional[MaybeSeries]): Initial cash balance.
 
                 Defaults to `Portfolio.get_init_cash` if not provided.
@@ -9764,7 +9764,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return asset PnL series combining realized and unrealized profit and loss per column or group.
 
         Args:
-            init_position_value (Optional[MaybeSeries]): Initial asset position values.
+            init_position_value (Optional[MaybeSeries]): Initial position value.
 
                 Defaults to `Portfolio.get_init_position_value` if not provided.
             asset_value (Optional[SeriesFrame]): Asset value series.
@@ -9873,7 +9873,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         and are comparable to an all-in investment with zero cash held.
 
         Args:
-            init_position_value (Optional[MaybeSeries]): Initial position value series.
+            init_position_value (Optional[MaybeSeries]): Initial position value.
 
                 Defaults to `Portfolio.get_init_position_value` if not provided.
             asset_value (Optional[SeriesFrame]): Asset value series.

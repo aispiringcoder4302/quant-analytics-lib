@@ -1784,7 +1784,7 @@ class IndicatorFactory(Configured):
     Args:
         class_name (Optional[str]): Name for the created indicator class.
         class_docstring (Optional[str]): Docstring for the created indicator class.
-        module_name (Optional[str]): Name of the originating module.
+        module_name (Optional[str]): Module name to bind the generated class.
         short_name (Optional[str]): Concise name for the indicator.
 
             Defaults to lower-case `class_name`.
@@ -2749,7 +2749,7 @@ class IndicatorFactory(Configured):
             exec(code, scope)
             return scope[func_name]
 
-        _0 = self.class_name
+        _0 = Indicator.__name__
         _1 = ""
         if len(self.input_names) > 0:
             _1 += "\n* Inputs: " + ", ".join(map(lambda x: f"`{x}`", self.input_names))
@@ -2867,7 +2867,7 @@ Returns:
 
             setattr(Indicator, "_run_combs", classmethod(_run_combs))
 
-            _0 = self.class_name
+            _0 = Indicator.__name__
             _1 = ""
             if len(self.input_names) > 0:
                 _1 += "\n* Inputs: " + ", ".join(map(lambda x: f"`{x}`", self.input_names))
@@ -3152,7 +3152,11 @@ Returns:
             execute_kwargs: tp.KwargsLike = None,
             **kwargs_,
         ) -> tp.Union[None, tp.IFCacheOutput, tp.Array2d, tp.List[tp.Array2d]]:
-            """Forward inputs and parameters to `apply_func`, performing caching and pre-processing.
+            """Forward inputs and parameters to `{0}`, performing caching and pre-processing.
+
+            Caching is performed using `{1}` if provided, and the results are passed to
+            `{0}`. If `{0}` is a Numba-compiled function, the actual apply-function becomes
+            `{2}`, which handles the selection of parameters and the passing of arguments.
 
             Args:
                 input_tuple (Tuple[AnyArray, ...]): Tuple of input arrays.
@@ -3177,7 +3181,7 @@ Returns:
 
             Returns:
                 Union[None, IFCacheOutput, Array2d, List[Array2d]]:
-                    The result of applying `apply_func`, which may be:
+                    The result of applying `{0}`, which may be:
 
                     * The cache output if `return_cache` is True.
                     * A 2D array.
@@ -3480,6 +3484,11 @@ Returns:
                 execute_kwargs=execute_kwargs,
             )
 
+        custom_func.__doc__ = custom_func.__doc__.format(
+            Indicator.__name__ + ".apply_func",
+            Indicator.__name__ + ".cache_func",
+            Indicator.__name__ + ".param_select_func_nb",
+        )
         return self.with_custom_func(
             custom_func,
             pass_packed=True,

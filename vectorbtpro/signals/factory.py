@@ -104,6 +104,8 @@ class SignalFactory(IndicatorFactory):
         )
         self._mode = mode
 
+        Indicator = self.Indicator
+
         def plot(
             _self,
             column: tp.Optional[tp.Column] = None,
@@ -212,12 +214,12 @@ class SignalFactory(IndicatorFactory):
             Returns:
                 BaseFigure: Updated figure with plotted signals.
             """.format(
-                self.class_name,
+                Indicator.__name__,
                 "new_entries" if mode == FactoryMode.Chain else "entries",
             )
         )
 
-        setattr(self.Indicator, "plot", plot)
+        setattr(Indicator, "plot", plot)
 
     @property
     def mode(self) -> int:
@@ -720,7 +722,7 @@ class SignalFactory(IndicatorFactory):
             execute_kwargs: tp.KwargsLike = None,
             **kwargs_,
         ) -> tp.Union[None, tp.IFCacheOutput, tp.Array2d, tp.List[tp.Array2d]]:
-            """Forward inputs and parameters to `apply_func`, performing caching and pre-processing.
+            """Forward inputs and parameters to `{0}`, performing caching and pre-processing.
 
             Args:
                 input_tuple (Tuple[AnyArray, ...]): Tuple of input arrays.
@@ -729,8 +731,8 @@ class SignalFactory(IndicatorFactory):
                 *args_: Additional positional arguments.
                 input_shape (Optional[Shape]): Shape of the input arrays.
                 place_args (ArgsLike): Arguments passed to any placement function (depending on the mode).
-                entry_place_args (ArgsLike): Arguments for the entry placement function.
-                exit_place_args (ArgsLike): Arguments for the exit placement function.
+                entry_place_args (ArgsLike): Positional arguments for `{1}`.
+                exit_place_args (ArgsLike): Positional arguments for `{2}`.
                 entry_args (ArgsLike): Alias for `entry_place_args`.
                 exit_args (ArgsLike): Alias for `exit_place_args`.
                 cache_args (ArgsLike): Arguments passed to the cache function.
@@ -749,7 +751,7 @@ class SignalFactory(IndicatorFactory):
 
             Returns:
                 Union[None, IFCacheOutput, Array2d, List[Array2d]]:
-                    The result of applying `apply_func`, which may be:
+                    The result of applying `{0}`, which may be:
 
                     * The cache output if `return_cache` is True.
                     * A 2D array.
@@ -980,6 +982,11 @@ class SignalFactory(IndicatorFactory):
                     execute_kwargs=execute_kwargs,
                 )
 
+        custom_func.__doc__ = custom_func.__doc__.format(
+            Indicator.__name__ + ".apply_func",
+            Indicator.__name__ + ".entry_place_func_nb", 
+            Indicator.__name__ + ".exit_place_func_nb",
+        )
         return self.with_custom_func(
             custom_func,
             pass_packed=True,

@@ -1688,7 +1688,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
         Args:
             readable (bool): Whether to use a human-readable format.
-            short_str (bool): Whether to use a short string representation for the setup.
+            short_str (bool): When True and `readable` is False, use the short string representation.
 
         Returns:
             dict: Dictionary containing the following metrics:
@@ -2027,7 +2027,7 @@ class CASetupDelegatorMixin(CAMetrics):
 
         Args:
             readable (bool): Whether to use a human-readable format.
-            short_str (bool): If True, use the short string representation when `readable` is False.
+            short_str (bool): When True and `readable` is False, use the short string representation.
             index_by_hash (bool): If True, set the DataFrame index to the setup hash.
             filter_func (Callable): Function to filter child setups.
             include (Sequence[str]): List of column names to include in the DataFrame.

@@ -160,6 +160,8 @@ class ChunkableRegistry(Base):
 
         Args:
             setup_id_or_func (Union[Hashable, Callable]): Setup identifier or function.
+
+                If a function is provided, the identifier is constructed from its module and name.
             target_func (Optional[Callable]): Alternative function to decorate.
 
                 If omitted, the function from the setup is used.
@@ -195,6 +197,8 @@ class ChunkableRegistry(Base):
 
         Args:
             setup_id_or_func (Union[Hashable, Callable]): Setup identifier or function.
+
+                If a function is provided, the identifier is constructed from its module and name.
             option (ChunkedOption): Option to control chunked processing.
             target_func (Optional[Callable]): Alternative function to apply the setup on.
             **kwargs: Keyword arguments for `vectorbtpro.utils.chunking.resolve_chunked`.

@@ -541,7 +541,7 @@ def last_day_of_month_nb(y: int, m: int) -> int:
 
     Args:
         y (int): Year.
-        m (int): Month number.
+        m (int): Month.
 
     Returns:
         int: The last day of the month.
@@ -580,7 +580,7 @@ def matches_dtc_nb(dtc: DTCNT, other_dtc: DTCNT) -> bool:
     Components with a value of -1 are considered unspecified and are ignored in the comparison.
 
     Args:
-        dtc (DTCNT): Datetime components to compare.
+        dtc (DTCNT): Named tuple with datetime components, where missing values are indicated by -1.
         other_dtc (DTCNT): Datetime components to match against.
 
     Returns:
@@ -966,7 +966,7 @@ def within_dtc_range_nb(
     """Determine if the given datetime components fall within a specified range.
 
     Args:
-        dtc (DTCNT): Datetime component object whose parts (year, month, day, etc.) are evaluated.
+        dtc (DTCNT): Named tuple with datetime components, where missing values are indicated by -1.
         start_dtc (DTCNT): Datetime component object representing the start boundary.
         end_dtc (DTCNT): Datetime component object representing the end boundary.
         closed_start (bool): Whether the start boundary is inclusive.

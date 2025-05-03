@@ -498,7 +498,7 @@ from vectorbtpro._dtypes import *
 from vectorbtpro.base.indexes import stack_indexes
 from vectorbtpro.base.reshaping import to_1d_array, to_2d_array, to_pd_array, broadcast_to
 from vectorbtpro.base.wrapping import ArrayWrapper
-from vectorbtpro.generic.enums import range_dt
+from vectorbtpro.generic.enums import range_dt, WType
 from vectorbtpro.generic.ranges import Ranges
 from vectorbtpro.portfolio import nb
 from vectorbtpro.portfolio.enums import TradeDirection, TradeStatus, trade_dt
@@ -510,6 +510,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils.array_ import min_rel_rescale, max_rel_rescale
 from vectorbtpro.utils.colors import adjust_lightness
 from vectorbtpro.utils.config import merge_dicts, Config, ReadonlyConfig, HybridConfig
+from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.template import Rep, RepEval, RepFunc
 
 __all__ = [
@@ -1419,6 +1420,8 @@ class Trades(Ranges):
     def get_edge_ratio(
         self,
         volatility: tp.Optional[tp.ArrayLike] = None,
+        window: int = 14,
+        wtype: tp.Union[int, str] = "wilder",
         entry_price_open: bool = False,
         exit_price_close: bool = False,
         max_duration: tp.Optional[int] = None,
@@ -1429,15 +1432,15 @@ class Trades(Ranges):
     ) -> tp.SeriesFrame:
         """Compute edge ratio.
 
-        Computes the edge ratio using `vectorbtpro.portfolio.nb.records.edge_ratio_nb`. If `volatility`
-        is None, a 14-period ATR is computed when high and low are provided; otherwise, a 14-period
-        rolling standard deviation is used.
-
         Args:
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
-                If None, a 14-period ATR is computed when high and low are available;
-                otherwise, a 14-period rolling standard deviation is used.
+                If None, an ATR is computed when high and low are available; 
+                otherwise, a rolling standard deviation is used.
+            window (int): Window size for the volatility calculation.
+            wtype (Union[int, str]): Weighting type.
+
+                Mapped using `vectorbtpro.generic.enums.WType` if provided as a string.
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
@@ -1464,9 +1467,10 @@ class Trades(Ranges):
             raise ValueError("Must provide close")
 
         if volatility is None:
+            if isinstance(wtype, str):
+                wtype = map_enum_fields(wtype, WType)
             if self._high is not None and self._low is not None:
                 from vectorbtpro.indicators.nb import atr_nb
-                from vectorbtpro.generic.enums import WType
 
                 if self._high is None or self._low is None:
                     raise ValueError("Must provide high and low for ATR calculation")
@@ -1475,17 +1479,16 @@ class Trades(Ranges):
                     high=to_2d_array(self._high),
                     low=to_2d_array(self._low),
                     close=to_2d_array(self._close),
-                    window=14,
-                    wtype=WType.Wilder,
+                    window=window,
+                    wtype=wtype,
                 )[1]
             else:
                 from vectorbtpro.indicators.nb import msd_nb
-                from vectorbtpro.generic.enums import WType
 
                 volatility = msd_nb(
                     close=to_2d_array(self._close),
-                    window=14,
-                    wtype=WType.Wilder,
+                    window=window,
+                    wtype=wtype,
                 )
         else:
             volatility = broadcast_to(volatility, self.wrapper, to_pd=False, keep_flex=True)
@@ -1511,6 +1514,8 @@ class Trades(Ranges):
     def get_running_edge_ratio(
         self,
         volatility: tp.Optional[tp.ArrayLike] = None,
+        window: int = 14,
+        wtype: tp.Union[int, str] = "wilder",
         entry_price_open: bool = False,
         exit_price_close: bool = False,
         max_duration: tp.Optional[int] = None,
@@ -1521,15 +1526,15 @@ class Trades(Ranges):
     ) -> tp.SeriesFrame:
         """Compute running edge ratio.
 
-        Computes the running edge ratio using `vectorbtpro.portfolio.nb.records.running_edge_ratio_nb`. If
-        `volatility` is None, a 14-period ATR is computed when high and low are available; otherwise, a
-        14-period rolling standard deviation is used.
-
         Args:
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
-                If None, a 14-period ATR is computed when high and low are available;
-                otherwise, a 14-period rolling standard deviation is used.
+                If None, an ATR is computed when high and low are available; 
+                otherwise, a rolling standard deviation is used.
+            window (int): Window size for the volatility calculation.
+            wtype (Union[int, str]): Weighting type.
+
+                Mapped using `vectorbtpro.generic.enums.WType` if provided as a string.
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
@@ -1554,9 +1559,10 @@ class Trades(Ranges):
             raise ValueError("Must provide close")
 
         if volatility is None:
+            if isinstance(wtype, str):
+                wtype = map_enum_fields(wtype, WType)
             if self._high is not None and self._low is not None:
                 from vectorbtpro.indicators.nb import atr_nb
-                from vectorbtpro.generic.enums import WType
 
                 if self._high is None or self._low is None:
                     raise ValueError("Must provide high and low for ATR calculation")
@@ -1565,17 +1571,16 @@ class Trades(Ranges):
                     high=to_2d_array(self._high),
                     low=to_2d_array(self._low),
                     close=to_2d_array(self._close),
-                    window=14,
-                    wtype=WType.Wilder,
+                    window=window,
+                    wtype=wtype,
                 )[1]
             else:
                 from vectorbtpro.indicators.nb import msd_nb
-                from vectorbtpro.generic.enums import WType
 
                 volatility = msd_nb(
                     close=to_2d_array(self._close),
-                    window=14,
-                    wtype=WType.Wilder,
+                    window=window,
+                    wtype=wtype,
                 )
         else:
             volatility = broadcast_to(volatility, self.wrapper, to_pd=False, keep_flex=True)
@@ -2422,6 +2427,8 @@ class Trades(Ranges):
         self,
         column: tp.Optional[tp.Column] = None,
         volatility: tp.Optional[tp.ArrayLike] = None,
+        window: int = 14,
+        wtype: tp.Union[int, str] = "wilder",
         entry_price_open: bool = False,
         exit_price_close: bool = False,
         max_duration: tp.Optional[int] = None,
@@ -2438,6 +2445,13 @@ class Trades(Ranges):
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
+
+                If None, an ATR is computed when high and low are available; 
+                otherwise, a rolling standard deviation is used.
+            window (int): Window size for the volatility calculation.
+            wtype (Union[int, str]): Weighting type.
+
+                Mapped using `vectorbtpro.generic.enums.WType` if provided as a string.
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
@@ -2461,6 +2475,8 @@ class Trades(Ranges):
         running_edge_ratio = self.resolve_shortcut_attr(
             "running_edge_ratio",
             volatility=volatility,
+            window=window,
+            wtype=wtype,
             entry_price_open=entry_price_open,
             exit_price_close=exit_price_close,
             max_duration=max_duration,

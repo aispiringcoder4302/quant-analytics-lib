@@ -800,8 +800,9 @@ class FindAssetFunc(AssetFunc):
         Args:
             k (Optional[Hashable]): Identifier key (unused in matching).
             d (Any): Data item to test.
-            target (MaybeList[Any]): Matching criterion, either a function or a
-                `vectorbtpro.utils.search_.Not` instance.
+            target (MaybeList[Any]): Target value(s) or callable(s) to determine if a match occurs.
+
+                Also supports negation using `vectorbtpro.utils.search_.Not`.
             find_all (bool): Flag specifying if all targets should be evaluated.
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.find`.
 
@@ -1196,7 +1197,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
         Args:
             k (Optional[Hashable]): Key associated with the current element.
             d (Any): Original value to evaluate for a match.
-            target (MaybeList[Any]): Target value or callable to determine if a match occurs.
+            target (MaybeList[Any]): Target value(s) or callable(s) to determine if a match occurs.
             replacement (MaybeList[Any]): Replacement value or callable to apply when a match is found.
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.replace`.
 
@@ -1617,6 +1618,8 @@ class DumpAssetFunc(AssetFunc):
 
         Args:
             dump_engine (Optional[str]): Name of the dump engine.
+
+                See `vectorbtpro.utils.formatting.dump`.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
             **kwargs: Additional keyword arguments to merge with the resolved settings.
 

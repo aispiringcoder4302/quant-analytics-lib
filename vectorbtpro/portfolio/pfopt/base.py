@@ -1033,8 +1033,8 @@ def resolve_assets_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) -> 
     Missing column names are automatically filled.
 
     Args:
-        constraints (Union[Frame, Sequence]): Asset constraints provided as a DataFrame, dictionary,
-            or list of dictionaries.
+        constraints (Union[Frame, Sequence]): Asset constraints provided as a DataFrame, dictionary, or
+            list of dictionaries.
 
     Returns:
         Frame: A DataFrame structured for asset constraints in Riskfolio-Lib.
@@ -1200,8 +1200,8 @@ def resolve_hrp_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) -> tp.
     the input can also be provided as a sequence of dictionaries.
 
     Args:
-        constraints (Union[Frame, Sequence]): HRP constraints provided as a DataFrame, dictionary,
-            or list of dictionaries.
+        constraints (Union[Frame, Sequence]): HRP constraints provided as a DataFrame, dictionary, or
+            list of dictionaries.
 
             Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
 

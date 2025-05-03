@@ -34,6 +34,8 @@ def override_field_config(config: Config, merge_configs: bool = True) -> tp.Clas
         config (Config): Configuration to override the field configuration.
         merge_configs (bool): Whether to merge the existing configuration with the provided one.
 
+            If False, replace it entirely.
+
     Returns:
         ClassWrapper: The decorator function that returns the decorated class.
     """

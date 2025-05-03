@@ -1879,7 +1879,7 @@ def unravel_between_two_nb(
         relation (int): Relation mode for pairing signals.
 
             See `vectorbtpro.signals.enums.SignalRelation`.
-        incl_open_source (bool): Include open source signals when a matching target is not found.
+        incl_open_source (bool): Flag to include the source True value even if a valid target is absent.
         incl_open_target (bool): Include open target signals when a matching source is not found.
         incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
 

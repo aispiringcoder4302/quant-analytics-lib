@@ -232,7 +232,7 @@ def apply_and_concat_each(
 
     Args:
         tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
-        n_outputs (Optional[int]): Expected number of outputs produced by each task.
+        n_outputs (Optional[int]): Number of arrays returned by each function call.
         execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
             See `vectorbtpro.utils.execution.execute`.
@@ -502,7 +502,8 @@ def combine_multiple(
 
     Args:
         objs (Sequence): Sequence of objects to combine.
-        combine_func (PyCombineFunc): Callback function for combining two objects.
+        combine_func (PyCombineFunc): Callback function that accepts two objects and additional arguments,
+            and returns a combined object.
         *args: Positional arguments for `combine_func`.
         jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop.
         **kwargs: Keyword arguments for `combine_func`.

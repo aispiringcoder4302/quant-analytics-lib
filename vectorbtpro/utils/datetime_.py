@@ -1907,7 +1907,7 @@ def infer_index_freq(
     allow_numeric: bool = True,
     freq_from_n: tp.Union[None, bool, int] = None,
 ) -> tp.Union[None, int, float, tp.PandasFrequency]:
-    """Infers or converts the frequency for a datetime index.
+    """Infer or convert the frequency for a datetime index.
 
     If `freq` is None, the frequency is inferred using `parse_index_freq`. If a string is provided:
 
@@ -1976,7 +1976,7 @@ def get_dt_index_gaps(
     skip_index: tp.Optional[tp.IndexLike] = None,
     **kwargs,
 ) -> tp.Tuple[tp.Index, tp.Index]:
-    """Identifies gaps in a datetime index.
+    """Identify gaps in a datetime index.
 
     The function determines gaps in a datetime index and returns two indexes:
 
@@ -2028,7 +2028,7 @@ def get_dt_index_gaps(
 
 
 def get_rangebreaks(index: tp.IndexLike, **kwargs) -> list:
-    """Computes range breaks based on datetime index gaps.
+    """Compute range breaks based on datetime index gaps.
 
     The function obtains gap boundaries using `get_dt_index_gaps` and returns a list of dictionaries,
     each containing a `bounds` key with a tuple representing the limits of a gap.

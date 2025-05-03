@@ -457,6 +457,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             path (PathLike): Path to the JSON file.
             compression (CompressionLike): Compression algorithm.
+        
+                See `vectorbtpro.utils.pickling.compress`.
             decompress_kwargs (KwargsLike): Keyword arguments for decompression.
             **kwargs: Keyword arguments for `KnowledgeAsset`.
 
@@ -483,6 +485,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             bytes_ (bytes): Byte stream containing the JSON object.
             compression (CompressionLike): Compression algorithm.
+        
+                See `vectorbtpro.utils.pickling.compress`.
             decompress_kwargs (KwargsLike): Keyword arguments for decompression.
             **kwargs: Keyword arguments for `KnowledgeAsset`.
 
@@ -567,7 +571,10 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Set one or more data items in the asset.
 
         Args:
-            index (Union[int, slice, Iterable[Union[bool, int]]]): Index specifying which data items to update.
+            index (Union[int, slice, Iterable[Union[bool, int]]]): Index specifying the item(s) to update.
+
+                A boolean iterable selects items by truth value, an integer iterable selects specific
+                positions, a slice selects a range, and an integer selects a single item.
             value (Any): New value or iterable of values to assign.
             inplace (bool): If True, modify the asset in place.
 
@@ -625,7 +632,10 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Delete one or more data items from the asset.
 
         Args:
-            index (Union[int, slice, Iterable[Union[bool, int]]]): Index specifying the data items to remove.
+            index (Union[int, slice, Iterable[Union[bool, int]]]): Index specifying the item(s) to remove.
+
+                A boolean iterable selects items by truth value, an integer iterable selects specific
+                positions, a slice selects a range, and an integer selects a single item.
             inplace (bool): If True, delete the items in place.
 
         Returns:
@@ -1638,7 +1648,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         the data item under the path is represented by "x" while its fields are represented by their names.
 
         Args:
-            target (MaybeList[Any]): Data items or targets to search for.
+            target (MaybeList[Any]): Target value(s) or callable(s) to determine if a match occurs.
+
+                Also supports negation using `vectorbtpro.utils.search_.Not`.
             path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to search (e.g. "x.y[0].z").
             per_path (Optional[bool]): If True, consider targets provided per path.
             find_all (Optional[bool]): Require all targets to be found when multiple targets are provided.
@@ -2155,6 +2167,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
             dump_engine (Optional[str]): Name of the dump engine.
+
+                See `vectorbtpro.utils.formatting.dump`.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
@@ -2194,6 +2208,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
             dump_engine (Optional[str]): Name of the dump engine.
+
+                See `vectorbtpro.utils.formatting.dump`.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc.prepare_and_call`.
 
@@ -2774,7 +2790,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             to_documents_kwargs (KwargsLike): Keyword arguments for `KnowledgeAsset.to_documents`.
-            wrap_documents (Optional[bool]): Flag indicating whether to retain the document embedding structure.
+            wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.embed_documents`.
 
         Returns:
@@ -2836,6 +2852,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
             cache_documents (bool): If True, will use an asset cache manager to cache the generated
                 text documents after conversion.
+
+                Running the same method again will use the cached documents.
             cache_key (Optional[str]): Unique identifier for the cached asset.
             asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of `AssetCacheManager`.
             asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.

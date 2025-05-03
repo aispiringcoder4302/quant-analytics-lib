@@ -247,7 +247,7 @@ def resolve_jitter_type(
                 `vectorbtpro._settings.jitting`.
             * If `jitter` is a subclass of `Jitter` or an instance thereof, return the appropriate class.
             * Otherwise, an error is raised.
-        py_func (Optional[Callable]): Function used to infer the jitter type when `jitter` is None.
+        py_func (Optional[Callable]): Function used to infer the jitter type if `jitter` is None
 
     Returns:
         Type[Jitter]: The resolved jitter class.
@@ -415,7 +415,7 @@ def resolve_jitter(
 
     Args:
         jitter (Optional[JitterLike]): Identifier, subclass, or instance of `Jitter`.
-        py_func (Optional[Callable]): Python function used to determine the jitter type.
+        py_func (Optional[Callable]): Function used to infer the jitter type if `jitter` is None
         **jitter_kwargs: Keyword arguments for configuring the jitter.
 
     Returns:

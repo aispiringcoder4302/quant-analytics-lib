@@ -3055,7 +3055,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         dict_type: tp.Optional[tp.Type[tp.Union[feature_dict, symbol_dict]]] = None,
         check_dict_type: bool = True,
     ) -> tp.Kwargs:
-        """Selects the keyword arguments corresponding to a given key from a collection.
+        """Select the keyword arguments corresponding to a given key from a collection.
 
         Args:
             key (Key): Feature or symbol identifier.
@@ -3094,7 +3094,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def select_feature_kwargs(cls, feature: tp.Feature, kwargs: tp.KwargsLike, **kwargs_) -> tp.Kwargs:
-        """Selects the keyword arguments associated with a feature.
+        """Select the keyword arguments associated with a feature.
 
         Args:
             feature (Feature): Feature identifier.
@@ -3108,7 +3108,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def select_symbol_kwargs(cls, symbol: tp.Symbol, kwargs: tp.KwargsLike, **kwargs_) -> tp.Kwargs:
-        """Selects the keyword arguments associated with a symbol.
+        """Select the keyword arguments associated with a symbol.
 
         Args:
             symbol (Symbol): Symbol identifier.
@@ -3129,7 +3129,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         dict_type: tp.Optional[tp.Type[tp.Union[feature_dict, symbol_dict]]] = None,
         check_dict_type: bool = True,
     ) -> tp.Any:
-        """Selects the value corresponding to a specified key in a dictionary.
+        """Select the value corresponding to a specified key in a dictionary.
 
         Args:
             key (Key): Feature or symbol identifier.
@@ -3153,7 +3153,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def select_feature_from_dict(cls, feature: tp.Feature, dct: feature_dict, **kwargs) -> tp.Any:
-        """Selects the value associated with a feature in the given dictionary.
+        """Select the value associated with a feature in the given dictionary.
 
         Args:
             feature (Feature): Feature identifier.
@@ -3167,7 +3167,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def select_symbol_from_dict(cls, symbol: tp.Symbol, dct: symbol_dict, **kwargs) -> tp.Any:
-        """Selects the value associated with a symbol in the given dictionary.
+        """Select the value associated with a symbol in the given dictionary.
 
         Args:
             symbol (Symbol): Symbol identifier.
@@ -3181,7 +3181,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def select_from_dict(cls, dct: dict, keys: tp.Keys, raise_error: bool = False) -> dict:
-        """Creates a new dictionary by selecting specified keys from the given dictionary.
+        """Create a new dictionary by selecting specified keys from the given dictionary.
 
         Args:
             dct (dict): Source dictionary.
@@ -3197,7 +3197,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def get_intersection_dict(cls, dct: dict) -> dict:
-        """Retrieves a dictionary of sub-keys and values that are common and identical across all entries.
+        """Retrieve a dictionary of sub-keys and values that are common and identical across all entries.
 
         Args:
             dct (dict): Source dictionary containing nested dictionaries as values.
@@ -3220,7 +3220,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return new_dct
 
     def select_keys(self: DataT, keys: tp.MaybeKeys, **kwargs) -> DataT:
-        """Creates a new `Data` instance containing only the selected keys.
+        """Create a new `Data` instance containing only the selected keys.
 
         Args:
             keys (MaybeKeys): Feature or symbol identifier(s).
@@ -3249,7 +3249,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         )
 
     def select_columns(self: DataT, columns: tp.MaybeColumns, **kwargs) -> DataT:
-        """Creates a new `Data` instance containing only the selected columns.
+        """Create a new `Data` instance containing only the selected columns.
 
         Args:
             columns (MaybeColumns): Column identifier(s).
@@ -3284,7 +3284,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return self.select_keys(symbols, **kwargs)
 
     def select(self: DataT, keys: tp.MaybeKeys, **kwargs) -> DataT:
-        """Creates a new `Data` instance with selected features or symbols based on the provided keys.
+        """Create a new `Data` instance with selected features or symbols based on the provided keys.
 
         Depending on the data orientation, delegates to either `Data.select_features` or `Data.select_symbols`.
 

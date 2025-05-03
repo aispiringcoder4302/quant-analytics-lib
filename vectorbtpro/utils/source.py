@@ -584,7 +584,7 @@ def get_source_imports(source: str, global_only: bool = False) -> str:
 
 
 def get_source_map(source: str) -> dict:
-    """Generates a high-level map of top-level variables, functions, and classes defined in the source code.
+    """Generate a high-level map of top-level variables, functions, and classes defined in the source code.
 
     Args:
         source (str): Python source code.
@@ -702,6 +702,8 @@ def refine_source(
 
             If None, becomes True if `split` is True.
         dump_engine (str): Name of the dump engine.
+
+            See `vectorbtpro.utils.formatting.dump`.
         dump_kwargs (KwargsLike): Keyword arguments for dumping structured data.
         
             See `vectorbtpro.utils.formatting.dump`.

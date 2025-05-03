@@ -1887,7 +1887,7 @@ class BaseAccessor(Wrapping):
         """Broadcast input arrays to a common shape.
 
         Args:
-            *others (Union[ArrayLike, BaseAccessor]): (Additional) arrays to broadcast.
+            *others (Union[ArrayLike, BaseAccessor]): (Additional) arrays for broadcasting.
 
             **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.broadcast`.
 
@@ -2513,11 +2513,15 @@ class BaseAccessor(Wrapping):
             expr (str): Expression string.
 
                 Must contain valid Python code and can be single-line or multi-line.
-            frames_back (int): Number of frames to go back to retrieve context variables.
+            frames_back (int): Number of frames to go back from the current frame.
             use_numexpr (bool): Flag indicating whether to use NumExpr for evaluation.
             numexpr_kwargs (KwargsLike): Keyword arguments for `numexpr.evaluate`.
-            local_dict (Optional[Mapping]): Local variables mapping for resolving names in the expression.
-            global_dict (Optional[Mapping]): Global variables mapping for resolving names in the expression.
+            local_dict (Optional[Mapping]): Dictionary of local variables.
+
+                If not provided, uses the calling frame's local variables.
+            global_dict (Optional[Mapping]): Dictionary of global variables.
+
+                If not provided, uses the calling frame's global variables.
             broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
                 See `vectorbtpro.base.reshaping.broadcast`.

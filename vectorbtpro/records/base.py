@@ -1526,7 +1526,8 @@ class Records(Analyzable, metaclass=MetaRecords):
         Args:
             a (ArrayLike): Array to be converted into a mapped array.
             idx_arr (Union[None, str, Array1d]): Array of row indices or field name for retrieving row indices.
-                a field name, or None to use the default index array.
+
+                If None, `Records.idx_arr` is used.
             mapping (Optional[MappingLike]): Mapping configuration.
             group_by (GroupByLike): Grouping specification.
             

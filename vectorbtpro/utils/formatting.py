@@ -675,15 +675,16 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         dump_engine (str): Name of the dump engine.
 
             Options include:
-
-            * "repr"
-            * "prettify"
-            * "nestedtext"
-            * "yaml"
-            * "pyyaml
-            * "ruamel" or "ruamel.yaml"
-            * "toml"
-            * "json"
+    
+            * "repr": Python's `repr` function
+            * "repr_doc": `repr_doc`
+            * "prettify": `prettify`
+            * "nestedtext": `nestedtext` (https://pypi.org/project/nestedtext/)
+            * "pyyaml": `pyyaml` (https://pypi.org/project/PyYAML/)
+            * "ruamel" or "ruamel.yaml": `ruamel` (https://pypi.org/project/ruamel.yaml/)
+            * "yaml": `pyyaml` or `ruamel`, depending on which is installed
+            * "toml": `toml` (https://pypi.org/project/toml/)
+            * "json": `json` (https://docs.python.org/3/library/json.html)
         **kwargs: Keyword arguments for the dump engine.
 
     Returns:
@@ -693,6 +694,8 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         return obj
     if dump_engine.lower() == "repr":
         return repr(obj)
+    if dump_engine.lower() == "repr_doc":
+        return repr_doc(obj, **kwargs)
     if dump_engine.lower() == "prettify":
         return prettify(obj, **kwargs)
     if dump_engine.lower() == "nestedtext":
@@ -784,6 +787,8 @@ def get_dump_language(dump_engine: str) -> str:
 
     Args:
         dump_engine (str): Name of the dump engine.
+
+            See `vectorbtpro.utils.formatting.dump`.
 
     Returns:
         str: The corresponding language name, or an empty string if the dump engine is unknown.
