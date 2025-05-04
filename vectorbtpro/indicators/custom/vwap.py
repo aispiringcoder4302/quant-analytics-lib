@@ -39,6 +39,8 @@ def substitute_anchor(wrapper: ArrayWrapper, anchor: tp.Optional[tp.FrequencyLik
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
         anchor (Optional[FrequencyLike]): Reset frequency for grouping.
 
+            See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
+
     Returns:
         Array1d: An array containing the group lengths.
     """
@@ -54,10 +56,30 @@ VWAP = IndicatorFactory(
     input_names=["high", "low", "close", "volume"],
     param_names=["anchor"],
     output_names=["vwap"],
+    attr_settings=dict(
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        close=dict(
+            doc="Close price series.",
+        ),
+        volume=dict(
+            doc="Volume series.",
+        ),
+        vwap=dict(
+            doc="Volume-Weighted Average Price (VWAP) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.vwap_nb,
     param_settings=dict(
-        anchor=dict(template=RepFunc(substitute_anchor)),
+        anchor=dict(
+            template=RepFunc(substitute_anchor),
+            doc="Reset frequency for grouping (see `substitute_anchor`).",
+        ),
     ),
     anchor="D",
 )
@@ -72,8 +94,9 @@ class _VWAP(VWAP):
     The `anchor` parameter specifies the grouping for when the VWAP resets and can be any valid index grouper.
 
     See:
-        * https://www.investopedia.com/terms/v/vwap.asp for the definition of VWAP.
+        * `VWAP.run` for the main entry point.
         * `vectorbtpro.indicators.nb.vwap_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/v/vwap.asp for the definition of VWAP.
     """
 
     def plot(

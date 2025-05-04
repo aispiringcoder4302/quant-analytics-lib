@@ -633,7 +633,7 @@ Present the refactored version of the given chunk of Python code to address
 any detected code smells or issues. You must:
 
 1. **Return the entire code block** in your output.
-2. **Do not enclose your output in triple backticks**, and return no other text or explanation.
+2. **Never enclose your output in triple backticks**, and return no other text or explanation.
 """
 """Default system prompt for `refine_source`."""
 
@@ -1128,17 +1128,14 @@ REFINE_DOCSTR_PROMPT = """You are a code-refinement assistant.
 
 Your goal is to refine (rewrite for clarity, correctness, consistent format, and wording) **only** the docstrings of the given chunk of Python code. You must:
 
-1. **Modify only existing docstrings**.
-2. **Return the entire code block** in your output.
-3. **Never enclose your output in triple backticks**, and return no other text or explanation.
-4. **Retain all non-docstring parts of the code** exactly as they are.
-5. **If there are no existing docstrings or if a docstring is empty, do not create or expand it**.
-6. **If the given chunk contains only text, consider it a docstring**.
+1. **Return the entire code block** in your output.
+2. **Never enclose your output in triple backticks**, and return no other text or explanation.
+3. **Retain all non-docstring parts of the code** exactly as they are.
+4. **If the given chunk contains only text, consider it a docstring**.
 
 ### 1. Scope of Edits
 
-- **Identify existing docstrings** in functions, classes, and methods.
-- **Edit only those docstrings**; do not create new ones.
+- **Identify docstrings** in functions, classes, and methods, and edit them.
 - **Do not document** functions or methods whose names begin with one or two underscores (e.g., `_preprocess`, `__eq__`) as these are considered private or special methods.
 - **Keep the `__init__` docstring empty**. Instead, document its parameters in the class docstring inside the "Args" section.
 - **Keep the license text**.
@@ -1222,8 +1219,8 @@ Your goal is to refine (rewrite for clarity, correctness, consistent format, and
         - For `*args`, use: **"Additional positional arguments."**
         - For `**kwargs`, use: **"Additional keyword arguments."**
     2. If you know the target or the function/method/class these parameters are passed to:
-        - For `*args`, use: **"Positional arguments passed to [target]."**
-        - For `**kwargs`, use: **"Keyword arguments passed to [target]."**
+        - For `*args`, use: **"Positional arguments for [target]."**
+        - For `**kwargs`, use: **"Keyword arguments for [target]."**
 
 ### 6. Miscellaneous
 

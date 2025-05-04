@@ -10,11 +10,10 @@
 
 """Module providing the `RAND` class for generating random entry signals."""
 
-import numpy as np
-
 from vectorbtpro.indicators.configs import flex_col_param_config
 from vectorbtpro.signals.factory import SignalFactory
 from vectorbtpro.signals.nb import rand_place_nb
+from vectorbtpro.utils.config import merge_dicts
 
 __all__ = [
     "RAND",
@@ -34,7 +33,12 @@ RAND = SignalFactory(
         pass_params=["n"],
     ),
     param_settings=dict(
-        n=flex_col_param_config,
+        n=merge_dicts(
+            flex_col_param_config,
+            dict(
+                doc="Number of entries to place, as a scalar or an array (per column).",
+            ),
+        ),
     ),
     seed=None,
 )
@@ -44,6 +48,7 @@ class _RAND(RAND):
     """Class representing a random entry signal generator based on probabilities.
 
     See:
+        * `RAND.run` for the main entry point.
         * `vectorbtpro.signals.nb.rand_place_nb` for details on the entry placement.
 
     !!! hint

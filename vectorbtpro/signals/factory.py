@@ -95,6 +95,28 @@ class SignalFactory(IndicatorFactory):
         for output_name in output_names:
             attr_settings[output_name] = dict(dtype=np.bool_)
 
+        if "entries" in input_names or "entries" in output_names:
+            entries_settings = attr_settings.get("entries", None)
+            if entries_settings is None:
+                entries_settings = {}
+            if "doc" not in entries_settings:
+                entries_settings["doc"] = "Entry signal series."
+            attr_settings["entries"] = entries_settings
+        if "exits" in output_names:
+            exits_settings = attr_settings.get("exits", None)
+            if exits_settings is None:
+                exits_settings = {}
+            if "doc" not in exits_settings:
+                exits_settings["doc"] = "Exit signal series."
+            attr_settings["exits"] = exits_settings
+        if "new_entries" in output_names:
+            new_entries_settings = attr_settings.get("new_entries", None)
+            if new_entries_settings is None:
+                new_entries_settings = {}
+            if "doc" not in new_entries_settings:
+                new_entries_settings["doc"] = "New entry signal series."
+            attr_settings["new_entries"] = new_entries_settings
+
         IndicatorFactory.__init__(
             self,
             *args,
@@ -108,118 +130,158 @@ class SignalFactory(IndicatorFactory):
 
         Indicator = self.Indicator
 
-        def plot(
-            _self,
-            column: tp.Optional[tp.Column] = None,
-            entry_y: tp.Union[None, str, tp.ArrayLike] = None,
-            exit_y: tp.Union[None, str, tp.ArrayLike] = None,
-            entry_types: tp.Optional[tp.ArrayLike] = None,
-            exit_types: tp.Optional[tp.ArrayLike] = None,
-            entry_trace_kwargs: tp.KwargsLike = None,
-            exit_trace_kwargs: tp.KwargsLike = None,
-            fig: tp.Optional[tp.BaseFigure] = None,
-            **kwargs,
-        ) -> tp.BaseFigure:
-            self_col = _self.select_col(column=column, group_by=False)
-            if entry_y is not None and isinstance(entry_y, str):
-                entry_y = getattr(self_col, entry_y)
-            if exit_y is not None and isinstance(exit_y, str):
-                exit_y = getattr(self_col, exit_y)
+        if mode == FactoryMode.Entries:
 
-            if entry_trace_kwargs is None:
-                entry_trace_kwargs = {}
-            if exit_trace_kwargs is None:
-                exit_trace_kwargs = {}
-            entry_trace_kwargs = merge_dicts(
-                dict(name="New Entries" if mode == FactoryMode.Chain else "Entries"),
-                entry_trace_kwargs,
-            )
-            exit_trace_kwargs = merge_dicts(dict(name="Exits"), exit_trace_kwargs)
-            if entry_types is not None:
-                entry_types = np.asarray(entry_types)
+            def plot(
+                _self,
+                column: tp.Optional[tp.Column] = None,
+                entry_y: tp.Union[None, str, tp.ArrayLike] = None,
+                entry_types: tp.Optional[tp.ArrayLike] = None,
+                entry_trace_kwargs: tp.KwargsLike = None,
+                fig: tp.Optional[tp.BaseFigure] = None,
+                **kwargs,
+            ) -> tp.BaseFigure:
+                self_col = _self.select_col(column=column, group_by=False)
+                if entry_y is not None and isinstance(entry_y, str):
+                    entry_y = getattr(self_col, entry_y)
                 entry_trace_kwargs = merge_dicts(
-                    dict(customdata=entry_types, hovertemplate="(%{x}, %{y})<br>Type: %{customdata}"),
+                    dict(name="Entries"),
                     entry_trace_kwargs,
                 )
-            if exit_types is not None:
-                exit_types = np.asarray(exit_types)
-                exit_trace_kwargs = merge_dicts(
-                    dict(customdata=exit_types, hovertemplate="(%{x}, %{y})<br>Type: %{customdata}"),
-                    exit_trace_kwargs,
-                )
-            if mode == FactoryMode.Entries:
+                if entry_types is not None:
+                    entry_types = np.asarray(entry_types)
+                    entry_trace_kwargs = merge_dicts(
+                        dict(customdata=entry_types, hovertemplate="(%{x}, %{y})<br>Type: %{customdata}"),
+                        entry_trace_kwargs,
+                    )
                 fig = self_col.entries.vbt.signals.plot_as_entries(
                     y=entry_y,
                     trace_kwargs=entry_trace_kwargs,
                     fig=fig,
                     **kwargs,
                 )
-            elif mode == FactoryMode.Exits:
-                fig = self_col.entries.vbt.signals.plot_as_entries(
-                    y=entry_y,
-                    trace_kwargs=entry_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
-                fig = self_col.exits.vbt.signals.plot_as_exits(
-                    y=exit_y,
-                    trace_kwargs=exit_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
-            elif mode == FactoryMode.Both:
-                fig = self_col.entries.vbt.signals.plot_as_entries(
-                    y=entry_y,
-                    trace_kwargs=entry_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
-                fig = self_col.exits.vbt.signals.plot_as_exits(
-                    y=exit_y,
-                    trace_kwargs=exit_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
-            else:
-                fig = self_col.new_entries.vbt.signals.plot_as_entries(
-                    y=entry_y,
-                    trace_kwargs=entry_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
-                fig = self_col.exits.vbt.signals.plot_as_exits(
-                    y=exit_y,
-                    trace_kwargs=exit_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
+                return fig
 
-            return fig
-
-        plot.__doc__ = inspect.cleandoc(
-            """
-            Plot `{0}.{1}` and `{0}.exits`.
-    
-            Args:
-                column (Optional[Column]): Identifier of the column to plot.
-                entry_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting entry markers.
-                exit_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting exit markers.
-                entry_types (Optional[ArrayLike]): Entry types in string format.
-                exit_types (Optional[ArrayLike]): Exit types in string format.
-                entry_trace_kwargs (KwargsLike): Keyword arguments for 
-                    `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-                exit_trace_kwargs (KwargsLike): Keyword arguments for 
-                    `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
-                fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
-                **kwargs: Keyword arguments for `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
-    
-            Returns:
-                BaseFigure: Updated figure with plotted signals.
-            """.format(
-                Indicator.__name__,
-                "new_entries" if mode == FactoryMode.Chain else "entries",
+            plot.__doc__ = inspect.cleandoc(
+                """
+                Plot `{0}.{1}`.
+        
+                Args:
+                    column (Optional[Column]): Identifier of the column to plot.
+                    entry_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting entry markers.
+                    entry_types (Optional[ArrayLike]): Entry types in string format.
+                    entry_trace_kwargs (KwargsLike): Keyword arguments for 
+                        `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
+                    fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+                    **kwargs: Keyword arguments for `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
+        
+                Returns:
+                    BaseFigure: Updated figure with plotted signals.
+                """.format(
+                    Indicator.__name__, "entries"
+                )
             )
-        )
+        else:
+
+            def plot(
+                _self,
+                column: tp.Optional[tp.Column] = None,
+                entry_y: tp.Union[None, str, tp.ArrayLike] = None,
+                exit_y: tp.Union[None, str, tp.ArrayLike] = None,
+                entry_types: tp.Optional[tp.ArrayLike] = None,
+                exit_types: tp.Optional[tp.ArrayLike] = None,
+                entry_trace_kwargs: tp.KwargsLike = None,
+                exit_trace_kwargs: tp.KwargsLike = None,
+                fig: tp.Optional[tp.BaseFigure] = None,
+                **kwargs,
+            ) -> tp.BaseFigure:
+                self_col = _self.select_col(column=column, group_by=False)
+                if entry_y is not None and isinstance(entry_y, str):
+                    entry_y = getattr(self_col, entry_y)
+                if exit_y is not None and isinstance(exit_y, str):
+                    exit_y = getattr(self_col, exit_y)
+                entry_trace_kwargs = merge_dicts(
+                    dict(name="New Entries" if mode == FactoryMode.Chain else "Entries"),
+                    entry_trace_kwargs,
+                )
+                exit_trace_kwargs = merge_dicts(dict(name="Exits"), exit_trace_kwargs)
+                if entry_types is not None:
+                    entry_types = np.asarray(entry_types)
+                    entry_trace_kwargs = merge_dicts(
+                        dict(customdata=entry_types, hovertemplate="(%{x}, %{y})<br>Type: %{customdata}"),
+                        entry_trace_kwargs,
+                    )
+                if exit_types is not None:
+                    exit_types = np.asarray(exit_types)
+                    exit_trace_kwargs = merge_dicts(
+                        dict(customdata=exit_types, hovertemplate="(%{x}, %{y})<br>Type: %{customdata}"),
+                        exit_trace_kwargs,
+                    )
+                if mode == FactoryMode.Exits:
+                    fig = self_col.entries.vbt.signals.plot_as_entries(
+                        y=entry_y,
+                        trace_kwargs=entry_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                    fig = self_col.exits.vbt.signals.plot_as_exits(
+                        y=exit_y,
+                        trace_kwargs=exit_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                elif mode == FactoryMode.Both:
+                    fig = self_col.entries.vbt.signals.plot_as_entries(
+                        y=entry_y,
+                        trace_kwargs=entry_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                    fig = self_col.exits.vbt.signals.plot_as_exits(
+                        y=exit_y,
+                        trace_kwargs=exit_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                else:
+                    fig = self_col.new_entries.vbt.signals.plot_as_entries(
+                        y=entry_y,
+                        trace_kwargs=entry_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                    fig = self_col.exits.vbt.signals.plot_as_exits(
+                        y=exit_y,
+                        trace_kwargs=exit_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                return fig
+
+            plot.__doc__ = inspect.cleandoc(
+                """
+                Plot `{0}.{1}` and `{0}.exits`.
+        
+                Args:
+                    column (Optional[Column]): Identifier of the column to plot.
+                    entry_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting entry markers.
+                    exit_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting exit markers.
+                    entry_types (Optional[ArrayLike]): Entry types in string format.
+                    exit_types (Optional[ArrayLike]): Exit types in string format.
+                    entry_trace_kwargs (KwargsLike): Keyword arguments for 
+                        `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
+                    exit_trace_kwargs (KwargsLike): Keyword arguments for 
+                        `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
+                    fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+                    **kwargs: Keyword arguments for `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
+        
+                Returns:
+                    BaseFigure: Updated figure with plotted signals.
+                """.format(
+                    Indicator.__name__,
+                    "new_entries" if mode == FactoryMode.Chain else "entries",
+                )
+            )
 
         setattr(Indicator, "plot", plot)
 
@@ -986,7 +1048,7 @@ class SignalFactory(IndicatorFactory):
 
         custom_func.__doc__ = custom_func.__doc__.format(
             Indicator.__name__ + ".apply_func",
-            Indicator.__name__ + ".entry_place_func_nb", 
+            Indicator.__name__ + ".entry_place_func_nb",
             Indicator.__name__ + ".exit_place_func_nb",
         )
         return self.with_custom_func(

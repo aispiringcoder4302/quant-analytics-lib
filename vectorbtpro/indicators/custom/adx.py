@@ -28,14 +28,41 @@ ADX = IndicatorFactory(
     input_names=["high", "low", "close"],
     param_names=["window", "wtype"],
     output_names=["plus_di", "minus_di", "dx", "adx"],
+    attr_settings=dict(
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        close=dict(
+            doc="Close price series.",
+        ),
+        plus_di=dict(
+            doc="Positive Directional Indicator (DI) series.",
+        ),
+        minus_di=dict(
+            doc="Negative Directional Indicator (DI) series.",
+        ),
+        dx=dict(
+            doc="Directional Movement Index (DX) series.",
+        ),
+        adx=dict(
+            doc="Average Directional Index (ADX) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.adx_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         )
     ),
     window=14,
@@ -51,8 +78,9 @@ class _ADX(ADX):
     Measures trend strength to assist traders in assessing market conditions.
 
     See:
-        * https://www.investopedia.com/terms/a/adx.asp for the definition of ADX.
+        * `ADX.run` for the main entry point.
         * `vectorbtpro.indicators.nb.adx_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/a/adx.asp for the definition of ADX.
     """
 
     def plot(

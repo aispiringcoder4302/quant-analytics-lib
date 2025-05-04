@@ -64,16 +64,60 @@ PIVOTINFO = IndicatorFactory(
         ),
     ),
     attr_settings=dict(
-        conf_pivot=dict(dtype=Pivot, enum_unkval=0),
-        last_pivot=dict(dtype=Pivot, enum_unkval=0),
-        pivots=dict(dtype=Pivot, enum_unkval=0),
-        modes=dict(dtype=TrendMode, enum_unkval=0),
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        conf_pivot=dict(
+            dtype=Pivot, 
+            enum_unkval=0,
+            doc="Type of the latest confirmed pivot (running, see `vectorbtpro.indicators.enums.Pivot`).",
+        ),
+        conf_idx=dict(
+            doc="Index of the latest confirmed pivot (running).",
+        ),
+        last_pivot=dict(
+            dtype=Pivot, 
+            enum_unkval=0,
+            doc="Type of the latest pivot (running, see `vectorbtpro.indicators.enums.Pivot`).",
+        ),
+        last_idx=dict(
+            doc="Index of the latest pivot (running).",
+        ),
+        conf_value=dict(
+            doc="High/low value under the latest confirmed pivot (running).",
+        ),
+        last_value=dict(
+            doc="High/low value under the latest pivot (running).",
+        ),
+        pivots=dict(
+            dtype=Pivot, 
+            enum_unkval=0,
+            doc="Confirmed pivots stored by their indices (looking ahead, see `vectorbtpro.indicators.enums.Pivot`).",
+        ),
+        modes=dict(
+            dtype=TrendMode, 
+            enum_unkval=0,
+            doc="Trend modes between confirmed pivot points (looking ahead, see `vectorbtpro.indicators.enums.TrendMode`).",
+        ),
     ),
 ).with_apply_func(
     nb.pivot_info_nb,
     param_settings=dict(
-        up_th=flex_elem_param_config,
-        down_th=flex_elem_param_config,
+        up_th=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Threshold for identifying a peak (high) pivot point, as a scalar or an array.",
+            ),
+        ),
+        down_th=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Threshold for identifying a trough (low) pivot point, as a scalar or an array.",
+            ),
+        ),
     ),
 )
 
@@ -81,27 +125,8 @@ PIVOTINFO = IndicatorFactory(
 class _PIVOTINFO(PIVOTINFO):
     """Class representing the indicator returning various pivot analysis metrics based on predefined thresholds.
 
-    Fields:
-        conf_pivot (int): Type of the latest confirmed pivot (running).
-
-            See `vectorbtpro.indicators.enums.Pivot`.
-        conf_idx (int): Index of the latest confirmed pivot (running).
-        conf_value (float): High/low value under the latest confirmed pivot (running).
-        last_pivot (int): Type of the latest pivot (running).
-
-            See `vectorbtpro.indicators.enums.Pivot`.
-        last_idx (int): Index of the latest pivot (running).
-        last_value (float): High/low value under the latest pivot (running).
-        pivots (int): Confirmed pivots stored by their indices
-
-            See `vectorbtpro.indicators.enums.Pivot`.
-            (looking ahead - use only for plotting).
-        modes (int): Trend modes between confirmed pivot points
-            (looking ahead - use only for plotting).
-
-            See `vectorbtpro.indicators.enums.TrendMode`.
-
     See:
+        * `PIVOTINFO.run` for the main entry point.
         * `vectorbtpro.indicators.nb.pivot_info_nb` for the underlying implementation.
         * `vectorbtpro.indicators.nb.pivot_value_nb` for the underlying implementation of
             the `PIVOTINFO.conf_value` and `PIVOTINFO.last_value` properties.

@@ -2179,7 +2179,7 @@ __pdoc__[
 ] = """`OrderContext.value_now` value after order execution.
 
 If `SimulationContext.update_value` is enabled, this value is updated with the new cash and column value;
- otherwise, it remains unchanged.
+otherwise, it remains unchanged.
 """
 __pdoc__["PostOrderContext.return_now"] = "`OrderContext.return_now` value after order execution."
 __pdoc__["PostOrderContext.pos_info_now"] = "`OrderContext.pos_info_now` value after order execution."

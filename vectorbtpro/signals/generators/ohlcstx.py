@@ -39,7 +39,28 @@ ohlcstx_config = ReadonlyConfig(
         in_output_names=["stop_price", "stop_type"],
         param_names=["sl_stop", "tsl_th", "tsl_stop", "tp_stop", "reverse"],
         attr_settings=dict(
-            stop_type=dict(dtype=StopType),
+            entry_price=dict(
+                doc="Entry price series.",
+            ),
+            open=dict(
+                doc="Open price series.",
+            ),
+            high=dict(
+                doc="High price series.",
+            ),
+            low=dict(
+                doc="Low price series.",
+            ),
+            close=dict(
+                doc="Close price series.",
+            ),
+            stop_price=dict(
+                doc="Stop price series.",
+            ),
+            stop_type=dict(
+                dtype=StopType,
+                doc="Stop type series (see `vectorbtpro.signals.enums.StopType`).",
+            ),
         ),
     )
 )
@@ -59,11 +80,36 @@ ohlcstx_func_config = ReadonlyConfig(
             stop_type=dict(dtype=int_),
         ),
         param_settings=dict(
-            sl_stop=flex_elem_param_config,
-            tsl_th=flex_elem_param_config,
-            tsl_stop=flex_elem_param_config,
-            tp_stop=flex_elem_param_config,
-            reverse=flex_elem_param_config,
+            sl_stop=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Stop loss value, as a scalar or an array.",
+                ),
+            ),
+            tsl_th=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Trailing stop threshold value, as a scalar or an array.",
+                ),
+            ),
+            tsl_stop=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Trailing stop value, as a scalar or an array.",
+                ),
+            ),
+            tp_stop=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Take profit value, as a scalar or an array.",
+                ),
+            ),
+            reverse=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Whether to reverse the position, as a scalar or an array.",
+                ),
+            ),
         ),
         open=np.nan,
         high=np.nan,
@@ -177,6 +223,7 @@ class _OHLCSTX(OHLCSTX):
     """Class representing an exit signal generator based on OHLC data and stop values.
 
     See:
+        * `OHLCSTX.run` for the main entry point.
         * `vectorbtpro.signals.nb.ohlc_stop_place_nb` for details on the exit placement.
 
     !!! hint

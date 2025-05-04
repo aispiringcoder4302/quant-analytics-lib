@@ -16,11 +16,17 @@
 
 from vectorbtpro._settings import settings
 
+__pdoc__ = {}
+
 int_ = settings["numpy"]["int_"]
-"""Default integer data type retrieved from `vectorbtpro._settings.numpy`."""
+"""_"""
+
+__pdoc__["int_"] = """Default integer data type retrieved from `vectorbtpro._settings.numpy`."""
 
 float_ = settings["numpy"]["float_"]
-"""Default floating point data type retrieved from `vectorbtpro._settings.numpy`."""
+"""_"""
+
+__pdoc__["float_"] = """Default floating point data type retrieved from `vectorbtpro._settings.numpy`."""
 
 __all__ = [
     "int_",

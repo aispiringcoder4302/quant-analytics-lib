@@ -40,24 +40,50 @@ MACD = IndicatorFactory(
             ),
         ),
     ),
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        macd=dict(
+            doc="Moving Average Convergence Divergence (MACD) series.",
+        ),
+        signal=dict(
+            doc="Signal series.",
+        ),
+        hist=dict(
+            doc="Histogram series.",
+        ),
+    ),
 ).with_apply_func(
     nb.macd_nb,
     kwargs_as_args=["minp", "macd_minp", "signal_minp", "adjust", "macd_adjust", "signal_adjust"],
     param_settings=dict(
+        fast_window=dict(
+            doc="Fast window size.",
+        ),
+        slow_window=dict(
+            doc="Slow window size.",
+        ),
+        signal_window=dict(
+            doc="Signal window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         ),
         macd_wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type for MACD (see `vectorbtpro.generic.enums.WType`).",
         ),
         signal_wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type for signal (see `vectorbtpro.generic.enums.WType`).",
         ),
     ),
     fast_window=12,
@@ -82,9 +108,10 @@ class _MACD(MACD):
     two moving averages of price data.
 
     See:
-        * https://www.investopedia.com/terms/m/macd.asp the definition of MACD.
+        * `MACD.run` for the main entry point.
         * `vectorbtpro.indicators.nb.macd_nb` for the underlying implementation.
         * `vectorbtpro.indicators.nb.macd_hist_nb` for the underlying implementation of `MACD.hist`.
+        * https://www.investopedia.com/terms/m/macd.asp the definition of MACD.
     """
 
     def plot(

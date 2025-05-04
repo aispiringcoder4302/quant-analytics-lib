@@ -659,6 +659,8 @@ DTCNT = namedtuple(
         nanosecond=-1,
     ),
 )
+"""_"""
+
 __pdoc__[
     "DTCNT"
 ] = """A named tuple representing date-time components for `DTC`.
@@ -1175,7 +1177,7 @@ def to_timestamp(
 
     Args:
         dt (DatetimeLike): Datetime input to parse.
-        
+
             Can be a string, number, or datetime-like object.
         parse_with_dateparser (Optional[bool]): Flag to enable parsing with the dateparser library.
         dateparser_kwargs (KwargsLike): Keyword arguments for `dateparser.parse`.

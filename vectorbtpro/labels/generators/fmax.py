@@ -27,8 +27,24 @@ FMAX = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wait"],
     output_names=["fmax"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        fmax=dict(
+            doc="Future maximum series.",
+        ),
+    ),
 ).with_apply_func(
     nb.future_max_nb,
+    param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
+        wait=dict(
+            doc="Number of periods to wait before calculating the future maximum.",
+        ),
+    ),
     window=14,
     wait=1,
 )
@@ -38,6 +54,7 @@ class _FMAX(FMAX):
     """Class representing the look-ahead future maximum generator.
 
     See:
+        * `FMAX.run` for the main entry point.
         * `vectorbtpro.labels.nb.future_max_nb` for the underlying implementation.
     """
 

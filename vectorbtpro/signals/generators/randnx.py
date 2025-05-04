@@ -13,6 +13,7 @@
 from vectorbtpro.indicators.configs import flex_col_param_config
 from vectorbtpro.signals.factory import SignalFactory
 from vectorbtpro.signals.nb import rand_enex_apply_nb
+from vectorbtpro.utils.config import merge_dicts
 
 __all__ = [
     "RANDNX",
@@ -30,7 +31,12 @@ RANDNX = SignalFactory(
     rand_enex_apply_nb,
     require_input_shape=True,
     param_settings=dict(
-        n=flex_col_param_config,
+        n=merge_dicts(
+            flex_col_param_config,
+            dict(
+                doc="Number of entries to place, as a scalar or an array (per column).",
+            ),
+        ),
     ),
     kwargs_as_args=["entry_wait", "exit_wait"],
     entry_wait=1,
@@ -43,6 +49,7 @@ class _RANDNX(RANDNX):
     """Class representing a random entry and exit signal generator based on probabilities.
 
     See:
+        * `RANDNX.run` for the main entry point.
         * `vectorbtpro.signals.nb.rand_enex_apply_nb` for details on the entry and exit placement.
         * `vectorbtpro.signals.generators.rand.RAND` for parameter details.
 

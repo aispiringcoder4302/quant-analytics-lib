@@ -2006,7 +2006,7 @@ class SignalsAccessor(GenericAccessor):
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
             
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-            **kwargs: Keyword arguments for `vectorbtpro.records.base.Records.to_mapped`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.to_mapped`.
 
         Returns:
             Union[SeriesFrame, MappedArray]: Ranked positions as an array or a mapped array.
@@ -3658,13 +3658,13 @@ class SignalsAccessor(GenericAccessor):
 
         obj = self.obj
         if isinstance(obj, pd.DataFrame):
-            obj = self.select_col_from_obj(obj, column=column)
+            obj = self.select_col_from_obj(obj, column=column, group_by=False)
         if y is None:
             y = pd.Series.vbt.empty_like(obj, 1)
         else:
             y = reshaping.to_pd_array(y)
             if isinstance(y, pd.DataFrame):
-                y = self.select_col_from_obj(y, column=column)
+                y = self.select_col_from_obj(y, column=column, group_by=False)
             obj, y = reshaping.broadcast(obj, y, columns_from="keep")
             obj = obj.fillna(False).astype(np.bool_)
             if y.name is None:

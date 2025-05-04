@@ -52,30 +52,93 @@ PATSIM = IndicatorFactory(
         "min_similarity",
     ],
     output_names=["similarity"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        similarity=dict(
+            doc="Rolling pattern similarity series.",
+        ),
+    ),
 ).with_apply_func(
     generic_nb.rolling_pattern_similarity_nb,
     param_settings=dict(
-        pattern=dict(is_array_like=True, min_one_dim=True),
+        pattern=dict(
+            is_array_like=True, 
+            min_one_dim=True,
+            doc="Pattern to compare against.",
+        ),
+        window=dict(
+            doc="Window size.",
+        ),
+        max_window=dict(
+            doc="Maximum window size.",
+        ),
+        row_select_prob=dict(
+            doc="Probability of selecting a row in the close series.",
+        ),
+        window_select_prob=dict(
+            doc="Probability of selecting a window in the close series.",
+        ),
         interp_mode=dict(
             dtype=generic_enums.InterpMode,
             post_index_func=lambda index: index.str.lower(),
+            doc="Interpolation mode (see `vectorbtpro.generic.enums.InterpMode`).",
         ),
         rescale_mode=dict(
             dtype=generic_enums.RescaleMode,
             post_index_func=lambda index: index.str.lower(),
+            doc="Rescale mode (see `vectorbtpro.generic.enums.RescaleMode`).",
+        ),
+        vmin=dict(
+            doc="Minimum value for rescaling the window.",
+        ),
+        vmax=dict(
+            doc="Maximum value for rescaling the window.",
+        ),
+        pmin=dict(
+            doc="Minimum value for rescaling the pattern.",
+        ),
+        pmax=dict(
+            doc="Maximum value for rescaling the pattern.",
+        ),
+        invert=dict(
+            doc="Whether to invert the pattern.",
         ),
         error_type=dict(
             dtype=generic_enums.ErrorType,
             post_index_func=lambda index: index.str.lower(),
+            doc="Error type (see `vectorbtpro.generic.enums.ErrorType`).",
         ),
         distance_measure=dict(
             dtype=generic_enums.DistanceMeasure,
             post_index_func=lambda index: index.str.lower(),
+            doc="Distance measure (see `vectorbtpro.generic.enums.DistanceMeasure`).",
         ),
-        max_error=dict(is_array_like=True, min_one_dim=True),
+        max_error=dict(
+            is_array_like=True, 
+            min_one_dim=True,
+            doc="Maximum error threshold.",
+        ),
         max_error_interp_mode=dict(
             dtype=generic_enums.InterpMode,
             post_index_func=lambda index: index.str.lower(),
+            doc="Interpolation mode for the maximum error (see `vectorbtpro.generic.enums.InterpMode`).",
+        ),
+        max_error_as_maxdist=dict(
+            doc="Whether to use maximum error as maximum distance.",
+        ),
+        max_error_strict=dict(
+            doc="Whether exceeding the maximum error is considered a failure.",
+        ),
+        min_pct_change=dict(
+            doc="Minimum percentage change threshold.",
+        ),
+        max_pct_change=dict(
+            doc="Maximum percentage change threshold.",
+        ),
+        min_similarity=dict(
+            doc="Minimum similarity threshold.",
         ),
     ),
     window=None,
@@ -105,6 +168,7 @@ class _PATSIM(PATSIM):
     """Class representing the rolling pattern similarity indicator.
 
     See:
+        * `PATSIM.run` for the main entry point.
         * `vectorbtpro.generic.nb.rolling.rolling_pattern_similarity_nb` for the underlying implementation.
     """
 

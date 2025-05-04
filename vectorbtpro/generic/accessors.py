@@ -5703,7 +5703,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         from vectorbtpro.generic.plotting import Scatter
 
         if column is not None:
-            _self = self.select_col(column=column, group_by=False)
+            _self = self.select_col(column=column)
         else:
             _self = self
         if x_labels is None:
@@ -5787,7 +5787,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         from vectorbtpro.generic.plotting import Bar
 
         if column is not None:
-            _self = self.select_col(column=column, group_by=False)
+            _self = self.select_col(column=column)
         else:
             _self = self
         if x_labels is None:
@@ -5845,7 +5845,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             )
 
         if column is not None:
-            _self = self.select_col(column=column, group_by=False)
+            _self = self.select_col(column=column)
         else:
             _self = self
 
@@ -5905,7 +5905,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             )
 
         if column is not None:
-            _self = self.select_col(column=column, group_by=False)
+            _self = self.select_col(column=column)
         else:
             _self = self
 
@@ -5976,13 +5976,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         obj = self.obj
         if isinstance(obj, pd.DataFrame):
-            obj = self.select_col_from_obj(obj, column=column)
+            obj = self.select_col_from_obj(obj, column=column, group_by=False)
         if other is None:
             other = pd.Series.vbt.empty_like(obj, 1)
         else:
             other = reshaping.to_pd_array(other)
             if isinstance(other, pd.DataFrame):
-                other = self.select_col_from_obj(other, column=column)
+                other = self.select_col_from_obj(other, column=column, group_by=False)
             obj, other = reshaping.broadcast(obj, other, columns_from="keep")
             if other.name is None:
                 other = other.rename("Other")
@@ -6129,13 +6129,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         obj = self.obj
         if isinstance(obj, pd.DataFrame):
-            obj = self.select_col_from_obj(obj, column=column)
+            obj = self.select_col_from_obj(obj, column=column, group_by=False)
         if other is None:
             other = pd.Series.vbt.empty_like(obj, 1)
         else:
             other = reshaping.to_pd_array(other)
             if isinstance(other, pd.DataFrame):
-                other = self.select_col_from_obj(other, column=column)
+                other = self.select_col_from_obj(other, column=column, group_by=False)
             obj, other = reshaping.broadcast(obj, other, columns_from="keep")
             if other.name is None:
                 other = other.rename("Other")
@@ -6237,7 +6237,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         from vectorbtpro.generic.plotting import Heatmap
 
         if column is not None:
-            _self = self.select_col(column=column, group_by=False)
+            _self = self.select_col(column=column)
         else:
             _self = self
         if _self.ndim == 2 or not isinstance(self.wrapper.index, pd.MultiIndex):
@@ -6589,7 +6589,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """
         import scipy.stats as st
 
-        obj = self.select_col_from_obj(self.obj, column=column)
+        obj = self.select_col_from_obj(self.obj, column=column, group_by=False)
         qq = st.probplot(obj, sparams=sparams, dist=dist)
         fig = pd.Series(qq[0][1], index=qq[0][0]).vbt.scatterplot(fig=fig, **kwargs)
 
@@ -7035,10 +7035,10 @@ if settings["importing"]["sklearn"]:
         "transform_config"
     ] = f"""Configuration for transformation methods to be attached to `GenericAccessor`.
 
-    ```python
-    {transform_config.prettify_doc()}
-    ```
-    """
+```python
+{transform_config.prettify_doc()}
+```
+"""
 
     GenericAccessor = attach_transform_methods(transform_config)(GenericAccessor)
 

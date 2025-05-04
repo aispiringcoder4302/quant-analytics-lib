@@ -501,6 +501,17 @@ def generate_rand_enex_nb(
     return entries, exits
 
 
+@register_chunkable(
+    size=ch.ShapeSizer(arg_query="target_shape", axis=1),
+    arg_take_spec=dict(
+        target_shape=ch.ShapeSlicer(axis=1),
+        n=base_ch.FlexArraySlicer(),
+        entry_wait=None,
+        exit_wait=None,
+    ),
+    merge_func="column_stack",
+)
+@register_jitted
 def rand_enex_apply_nb(
     target_shape: tp.Shape,
     n: tp.FlexArray1d,
@@ -702,6 +713,7 @@ def ohlc_stop_place_nb(
 
             Typically, uses `StopType.SL` for stop loss, `StopType.TP` for take profit,
             and trailing stop types (`StopType.TSL` or `StopType.TTP`).
+            See `vectorbtpro.signals.enums.StopType`.
         sl_stop (FlexArray2d): Stop loss percentage array.
 
             Utilizes flexible indexing. Set an element to `np.nan` to disable.

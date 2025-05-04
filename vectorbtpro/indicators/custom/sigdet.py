@@ -30,15 +30,62 @@ SIGDET = IndicatorFactory(
     input_names=["close"],
     param_names=["lag", "factor", "influence", "up_factor", "down_factor", "mean_influence", "std_influence"],
     output_names=["signal", "upper_band", "lower_band"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        signal=dict(
+            doc="Signal series.",
+        ),
+        upper_band=dict(
+            doc="Upper band series.",
+        ),
+        lower_band=dict(
+            doc="Lower band series.",
+        ),
+    ),
 ).with_apply_func(
     nb.signal_detection_nb,
     param_settings=dict(
-        factor=flex_elem_param_config,
-        influence=flex_elem_param_config,
-        up_factor=flex_elem_param_config,
-        down_factor=flex_elem_param_config,
-        mean_influence=flex_elem_param_config,
-        std_influence=flex_elem_param_config,
+        lag=dict(
+            doc="Lag period for the z-score calculation.",
+        ),
+        factor=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Factor to multiply the z-score by, as a scalar or an array.",
+            ),
+        ),
+        influence=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Influence of the z-score on the signal, as a scalar or an array.",
+            ),
+        ),
+        up_factor=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Factor to multiply the z-score by for upward signals, as a scalar or an array.",
+            ),
+        ),
+        down_factor=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Factor to multiply the z-score by for downward signals, as a scalar or an array.",
+            ),
+        ),
+        mean_influence=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Influence of the mean on the signal, as a scalar or an array.",
+            ),
+        ),
+        std_influence=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Influence of the standard deviation on the signal, as a scalar or an array.",
+            ),
+        ),
     ),
     lag=14,
     factor=1.0,
@@ -56,8 +103,9 @@ class _SIGDET(SIGDET):
     For additional details, see [this StackOverflow answer]().
 
     See:
-        * https://stackoverflow.com/a/22640362 for the original algorithm.
+        * `SIGDET.run` for the main entry point.
         * `vectorbtpro.indicators.nb.signal_detection_nb` for the underlying implementation.
+        * https://stackoverflow.com/a/22640362 for the original algorithm.
     """
 
     def plot(

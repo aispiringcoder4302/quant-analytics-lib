@@ -87,7 +87,7 @@ class_abbr_config = HybridConfig(
 __pdoc__[
     "class_abbr_config"
 ] = f"""Configuration for class name abbreviations.
- 
+
 ```python
 {class_abbr_config.prettify_doc()}
 ```

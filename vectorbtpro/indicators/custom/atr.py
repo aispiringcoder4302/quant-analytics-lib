@@ -28,14 +28,35 @@ ATR = IndicatorFactory(
     input_names=["high", "low", "close"],
     param_names=["window", "wtype"],
     output_names=["tr", "atr"],
+    attr_settings=dict(
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        close=dict(
+            doc="Close price series.",
+        ),
+        tr=dict(
+            doc="True Range (TR) series.",
+        ),
+        atr=dict(
+            doc="Average True Range (ATR) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.atr_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         )
     ),
     window=14,
@@ -53,8 +74,9 @@ class _ATR(ATR):
     indicating periods of increased market volatility.
 
     See:
-        * https://www.investopedia.com/terms/a/atr.asp for the definition of ATR.
+        * `ATR.run` for the main entry point.
         * `vectorbtpro.indicators.nb.atr_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/a/atr.asp for the definition of ATR.
     """
 
     def plot(

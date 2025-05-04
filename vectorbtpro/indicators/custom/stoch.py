@@ -28,24 +28,56 @@ STOCH = IndicatorFactory(
     input_names=["high", "low", "close"],
     param_names=["fast_k_window", "slow_k_window", "slow_d_window", "wtype", "slow_k_wtype", "slow_d_wtype"],
     output_names=["fast_k", "slow_k", "slow_d"],
+    attr_settings=dict(
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        close=dict(
+            doc="Close price series.",
+        ),
+        fast_k=dict(
+            doc="Fast %K series.",
+        ),
+        slow_k=dict(
+            doc="Slow %K series.",
+        ),
+        slow_d=dict(
+            doc="Slow %D series.",
+        ),
+    ),
 ).with_apply_func(
     nb.stoch_nb,
     kwargs_as_args=["minp", "fast_k_minp", "slow_k_minp", "slow_d_minp", "adjust", "slow_k_adjust", "slow_d_adjust"],
     param_settings=dict(
+        fast_k_window=dict(
+            doc="Window size for Fast %K.",
+        ),
+        slow_k_window=dict(
+            doc="Window size for Slow %K.",
+        ),
+        slow_d_window=dict(
+            doc="Window size for Slow %D.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         ),
         slow_k_wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type for Slow %K (see `vectorbtpro.generic.enums.WType`).",
         ),
         slow_d_wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type for Slow %D (see `vectorbtpro.generic.enums.WType`).",
         ),
     ),
     fast_k_window=14,
@@ -74,8 +106,9 @@ class _STOCH(STOCH):
     See [Investopedia – Stochastic Oscillator](https://www.investopedia.com/terms/s/stochasticoscillator.asp).
 
     See:
-        * https://www.investopedia.com/terms/s/stochasticoscillator.asp for the definition of STOCH.
+        * `STOCH.run` for the main entry point.
         * `vectorbtpro.indicators.nb.stoch_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/s/stochasticoscillator.asp for the definition of STOCH.
     """
 
     def plot(

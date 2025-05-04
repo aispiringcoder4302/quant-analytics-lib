@@ -47,15 +47,42 @@ BBANDS = IndicatorFactory(
             ),
         ),
     ),
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        upper=dict(
+            doc="Upper Bollinger Band series.",
+        ),
+        middle=dict(
+            doc="Middle Bollinger Band series.",
+        ),
+        lower=dict(
+            doc="Lower Bollinger Band series.",
+        ),
+        percent_b=dict(
+            doc="Percent B series.",
+        ),
+        bandwidth=dict(
+            doc="Bollinger Bandwidth series.",
+        ),
+    ),
 ).with_apply_func(
     nb.bbands_nb,
     kwargs_as_args=["minp", "adjust", "ddof"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
-        )
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
+        ),
+        alpha=dict(
+            doc="Number of standard deviations from the middle band to the upper and lower bands.",
+        ),
     ),
     window=14,
     wtype="simple",
@@ -78,10 +105,11 @@ class _BBANDS(BBANDS):
     These bands help identify market volatility and potential overbought or oversold conditions.
 
     See:
-        * https://www.investopedia.com/terms/b/bollingerbands.asp for the definition of BBANDS.
+        * `BBANDS.run` for the main entry point.
         * `vectorbtpro.indicators.nb.bbands_nb` for the underlying implementation.
         * `vectorbtpro.indicators.nb.bbands_percent_b_nb` for the underlying implementation of `BBANDS.percent_b`.
         * `vectorbtpro.indicators.nb.bbands_bandwidth_nb` for the underlying implementation of `BBANDS.bandwidth`.
+        * https://www.investopedia.com/terms/b/bollingerbands.asp for the definition of BBANDS.
     """
 
     def plot(

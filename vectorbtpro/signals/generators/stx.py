@@ -15,7 +15,7 @@ import numpy as np
 from vectorbtpro.indicators.configs import flex_elem_param_config
 from vectorbtpro.signals.factory import SignalFactory
 from vectorbtpro.signals.nb import stop_place_nb
-from vectorbtpro.utils.config import ReadonlyConfig
+from vectorbtpro.utils.config import ReadonlyConfig, merge_dicts
 
 __all__ = [
     "STX",
@@ -32,6 +32,20 @@ stx_config = ReadonlyConfig(
         input_names=["entry_ts", "ts", "follow_ts"],
         in_output_names=["stop_ts"],
         param_names=["stop", "trailing"],
+        attr_settings=dict(
+            entry_ts=dict(
+                doc="Entry time series.",
+            ),
+            ts=dict(
+                doc="Time series used for evaluating stop signals.",
+            ),
+            follow_ts=dict(
+                doc="Follow-up time series.",
+            ),
+            stop_ts=dict(
+                doc="Stop time series.",
+            ),
+        ),
     )
 )
 """Factory configuration for creating a `STX` signal generator instance."""
@@ -45,8 +59,18 @@ stx_func_config = ReadonlyConfig(
             pass_params=["stop", "trailing"],
         ),
         param_settings=dict(
-            stop=flex_elem_param_config,
-            trailing=flex_elem_param_config,
+            stop=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Stop value, as a scalar or an array.",
+                ),
+            ),
+            trailing=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Whether to use trailing stop, as a scalar or an array.",
+                ),
+            ),
         ),
         trailing=False,
         ts=np.nan,
@@ -64,6 +88,7 @@ class _STX(STX):
     """Class representing an exit signal generator based on stop values.
 
     See:
+        * `STX.run` for the main entry point.
         * `vectorbtpro.signals.nb.stop_place_nb` for details on the exit placement.
 
     !!! hint

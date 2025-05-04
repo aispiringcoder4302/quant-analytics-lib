@@ -4110,7 +4110,7 @@ class PortfolioOptimizer(Analyzable):
         assert_can_import("plotly")
         from vectorbtpro.utils.figure import make_figure
 
-        self_group = self.select_col(column=column, group_by=False)
+        self_group = self.select_col(column=column)
 
         if fig is None:
             fig = make_figure()

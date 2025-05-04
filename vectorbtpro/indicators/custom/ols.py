@@ -51,9 +51,43 @@ OLS = IndicatorFactory(
             ),
         ),
     ),
+    attr_settings=dict(
+        x=dict(
+            doc="Independent variable series.",
+        ),
+        y=dict(
+            doc="Dependent variable series.",
+        ),
+        slope=dict(
+            doc="Slope of the regression line.",
+        ),
+        intercept=dict(
+            doc="Intercept of the regression line.",
+        ),
+        zscore=dict(
+            doc="Z-score of the regression line.",
+        ),
+        pred=dict(
+            doc="Predicted values based on the regression line.",
+        ),
+        error=dict(
+            doc="Error between the actual and predicted values.",
+        ),
+        angle=dict(
+            doc="Angle of the regression line in radians.",
+        ),
+    ),
 ).with_apply_func(
     nb.ols_nb,
     kwargs_as_args=["minp", "ddof", "with_zscore"],
+    param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
+        norm_window=dict(
+            doc="Normalization window size.",
+        ),
+    ),
     window=14,
     norm_window=None,
     minp=None,
@@ -69,8 +103,7 @@ class _OLS(OLS):
     the market or between different stocks by computing rolling linear regressions.
 
     See:
-        * https://www.investopedia.com/articles/trading/09/linear-regression-time-price.asp
-            for the definition of OLS.
+        * `OLS.run` for the main entry point.
         * `vectorbtpro.indicators.nb.ols_nb` for the underlying implementation.
         * `vectorbtpro.indicators.nb.ols_pred_nb` for the underlying implementation of
             the `OLS.pred` property.
@@ -78,6 +111,8 @@ class _OLS(OLS):
             the `OLS.error` property.
         * `vectorbtpro.indicators.nb.ols_angle_nb` for the underlying implementation of
             the `OLS.angle` property.
+        * https://www.investopedia.com/articles/trading/09/linear-regression-time-price.asp
+            for the definition of OLS.
     """
 
     def plot(

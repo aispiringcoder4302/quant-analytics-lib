@@ -599,6 +599,8 @@ def pivots_1d_nb(
     Returns:
         Array1d: An array of integer values indicating the detected pivot points.
 
+            See `vectorbtpro.indicators.enums.Pivot`.
+
     !!! note
         Two adjacent peak and valley points must surpass the respective threshold values.
         If thresholds are specified element-wise, each new or updated pivot applies its corresponding threshold.
@@ -680,7 +682,7 @@ def pivots_nb(
     up_th: tp.FlexArray2dLike,
     down_th: tp.FlexArray2dLike,
 ) -> tp.Array2d:
-    """Generate pivot labels column‐wise for two-dimensional input arrays.
+    """Generate pivot labels column-wise for two-dimensional input arrays.
 
     Args:
         high (Array2d): Two-dimensional array of high values.

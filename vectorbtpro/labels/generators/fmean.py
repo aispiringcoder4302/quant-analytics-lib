@@ -28,14 +28,29 @@ FMEAN = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype", "wait"],
     output_names=["fmean"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        fmean=dict(
+            doc="Future mean series.",
+        ),
+    ),
 ).with_apply_func(
     nb.future_mean_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             post_index_func=lambda index: index.str.lower(),
-        )
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
+        ),
+        wait=dict(
+            doc="Number of periods to wait before calculating the future mean.",
+        ),
     ),
     window=14,
     wtype="simple",
@@ -49,6 +64,7 @@ class _FMEAN(FMEAN):
     """Class representing the look-ahead future mean generator.
 
     See:
+        * `FMEAN.run` for the main entry point.
         * `vectorbtpro.labels.nb.future_mean_nb` for the underlying implementation.
     """
 

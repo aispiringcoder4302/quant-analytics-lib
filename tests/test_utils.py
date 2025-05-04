@@ -35,6 +35,7 @@ from vectorbtpro.utils import (
     pickling,
     chunking,
     jitting,
+    hashing,
 )
 
 pathos_available = True
@@ -2858,14 +2859,6 @@ class TestParsing:
             == list(flat_ann_args.items())[2:]
         )
 
-    def test_hash_args(self):
-        def f(a, *args, b=2, **kwargs):
-            pass
-
-        with pytest.raises(Exception):
-            parsing.hash_args(f, (0, 1), dict(c=np.array([1, 2, 3])))
-        parsing.hash_args(f, (0, 1), dict(c=np.array([1, 2, 3])), ignore_args=["c"])
-
     def test_get_context_vars(self):
         a = 1
         b = 2
@@ -2874,6 +2867,19 @@ class TestParsing:
             parsing.get_context_vars(["a", "b", "c"])
         assert parsing.get_context_vars(["c", "d", "e"], local_dict=dict(c=1, d=2, e=3)) == [1, 2, 3]
         assert parsing.get_context_vars(["c", "d", "e"], global_dict=dict(c=1, d=2, e=3)) == [1, 2, 3]
+
+
+# ############# hashing ############# #
+
+
+class TestHashing:
+    def test_hash_args(self):
+        def f(a, *args, b=2, **kwargs):
+            pass
+
+        with pytest.raises(Exception):
+            hashing.hash_args(f, (0, 1), dict(c=np.array([1, 2, 3])))
+        hashing.hash_args(f, (0, 1), dict(c=np.array([1, 2, 3])), ignore_args=["c"])
 
 
 # ############# execution ############# #

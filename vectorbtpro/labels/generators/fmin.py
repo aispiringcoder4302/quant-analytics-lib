@@ -27,8 +27,24 @@ FMIN = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wait"],
     output_names=["fmin"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        fmin=dict(
+            doc="Future minimum series.",
+        ),
+    ),
 ).with_apply_func(
     nb.future_min_nb,
+    param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
+        wait=dict(
+            doc="Number of periods to wait before calculating the future minimum.",
+        ),
+    ),
     window=14,
     wait=1,
 )
@@ -38,6 +54,7 @@ class _FMIN(FMIN):
     """Class representing the look-ahead future minimum generator.
 
     See:
+        * `FMIN.run` for the main entry point.
         * `vectorbtpro.labels.nb.future_min_nb` for the underlying implementation.
     """
 

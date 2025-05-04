@@ -28,14 +28,26 @@ MA = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype"],
     output_names=["ma"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        ma=dict(
+            doc="Moving Average (MA) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.ma_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         )
     ),
     window=14,
@@ -52,8 +64,9 @@ class _MA(MA):
     fluctuations by filtering out short-term noise from the price data.
 
     See:
-        * https://www.investopedia.com/terms/m/movingaverage.asp for the definition of MA.
+        * `MA.run` for the main entry point.
         * `vectorbtpro.indicators.nb.ma_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/m/movingaverage.asp for the definition of MA.
     """
 
     def plot(

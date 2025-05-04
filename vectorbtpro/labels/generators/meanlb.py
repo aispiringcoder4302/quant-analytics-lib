@@ -27,14 +27,29 @@ MEANLB = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype", "wait"],
     output_names=["labels"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        labels=dict(
+            doc="Mean labels series.",
+        ),
+    ),
 ).with_apply_func(
     nb.mean_labels_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             post_index_func=lambda index: index.str.lower(),
-        )
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
+        ),
+        wait=dict(
+            doc="Number of periods to wait before calculating the mean labels.",
+        ),
     ),
     window=14,
     wtype="simple",
@@ -48,6 +63,7 @@ class _MEANLB(MEANLB):
     """Class representing the look-ahead mean label generator.
 
     See:
+        * `MEANLB.run` for the main entry point.
         * `vectorbtpro.labels.nb.mean_labels_nb` for the underlying implementation.
     """
 

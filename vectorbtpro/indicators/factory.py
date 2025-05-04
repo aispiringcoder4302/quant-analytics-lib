@@ -646,6 +646,7 @@ class IndicatorBase(Analyzable):
                 If provided as a mapping, keys should correspond to those in `in_outputs`. Accepted keys:
 
                 * `dtype`: Data type to use when creating the array with `np.empty`.
+                * `doc`: Documentation string for the in-place output.
             broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
                 Use templates such as `vectorbtpro.utils.template.Rep` to substitute
@@ -678,6 +679,7 @@ class IndicatorBase(Analyzable):
                 * `broadcast_kwargs`: Keyword arguments for input broadcasting.
                 * `per_column`: Allow splitting parameter values per column for multi-indexing.
                 * `post_index_func`: Function to transform the final parameter index level.
+                * `doc`: Documentation string for the parameter.
             run_unique (bool): Flag to run only on unique parameter combinations.
 
                 !!! note
@@ -764,7 +766,7 @@ class IndicatorBase(Analyzable):
         if in_output_settings is None:
             in_output_settings = {}
         if checks.is_mapping(in_output_settings):
-            checks.assert_dict_valid(in_output_settings, [in_output_names, "dtype"])
+            checks.assert_dict_valid(in_output_settings, [in_output_names, ["dtype", "doc"]])
             in_output_settings = [in_output_settings.get(k, None) for k in in_output_names]
         if broadcast_named_args is None:
             broadcast_named_args = {}
@@ -807,6 +809,7 @@ class IndicatorBase(Analyzable):
                         "broadcast_kwargs",
                         "per_column",
                         "post_index_func",
+                        "doc",
                     ],
                 ],
             )
@@ -1815,6 +1818,7 @@ class IndicatorFactory(Configured):
                 that contains data in string format.
             * `enum_unkval`: Value to be considered as unknown (applies only to enumerated data types).
             * `make_cacheable`: Whether to make the property cacheable (applies only to inputs).
+            * `doc`: Documentation string for the attribute.
         metrics (KwargsLike): Metrics supported by `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
 
             If a dictionary is provided, it will be converted to a `vectorbtpro.utils.config.Config`.
@@ -1934,7 +1938,7 @@ class IndicatorFactory(Configured):
                 attr_settings,
                 [
                     all_attr_names,
-                    ["dtype", "enum_unkval", "make_cacheable"],
+                    ["dtype", "enum_unkval", "make_cacheable", "doc"],
                 ],
             )
 
@@ -2491,7 +2495,7 @@ class IndicatorFactory(Configured):
 
                 See `IndicatorBase.run_pipeline`.
             in_output_settings (KwargsLike): Dictionary of in-place output settings keyed by name.
-
+            
                 See `IndicatorBase.run_pipeline`.
             hide_params (Union[None, bool, Sequence[str]]): Either a boolean to hide all parameter column
                 levels or a list of parameter names for which the column levels should be hidden.
@@ -2748,35 +2752,43 @@ class IndicatorFactory(Configured):
             code = compile(func_str, filename, "single")
             exec(code, scope)
             return scope[func_name]
+        
+        def _prepare_name(name: str) -> str:
+            if self.attr_settings.get(name, {}).get("doc", None):
+                return f"\n    * `{name}`: {self.attr_settings[name]['doc']}"
+            if param_settings is not None and param_settings.get(name, {}).get("doc", None):
+                return f"\n    * `{name}`: {param_settings[name]['doc']}"
+            if in_output_settings is not None and in_output_settings.get(name, {}).get("doc", None):
+                return f"\n    * `{name}`: {in_output_settings[name]['doc']}"
+            return f"\n    * `{name}`"
 
         _0 = Indicator.__name__
         _1 = ""
         if len(self.input_names) > 0:
-            _1 += "\n* Inputs: " + ", ".join(map(lambda x: f"`{x}`", self.input_names))
+            _1 += "\n\nInputs:" + "".join(map(_prepare_name, self.input_names))
         if len(self.in_output_names) > 0:
-            _1 += "\n* In-place outputs: " + ", ".join(map(lambda x: f"`{x}`", self.in_output_names))
+            _1 += "\n\nIn-place outputs:" + "".join(map(_prepare_name, self.in_output_names))
         if len(self.param_names) > 0:
-            _1 += "\n* Parameters: " + ", ".join(map(lambda x: f"`{x}`", self.param_names))
+            _1 += "\n\nParameters:" + "".join(map(_prepare_name, self.param_names))
         if len(self.output_names) > 0:
-            _1 += "\n* Outputs: " + ", ".join(map(lambda x: f"`{x}`", self.output_names))
+            _1 += "\n\nOutputs:" + "".join(map(_prepare_name, self.output_names))
         if len(self.lazy_outputs) > 0:
-            _1 += "\n* Lazy outputs: " + ", ".join(map(lambda x: f"`{x}`", list(self.lazy_outputs.keys())))
-        run_docstring = """Run `{0}` indicator.
-{1}
+            _1 += "\n\nLazy outputs:" + "".join(map(_prepare_name, list(self.lazy_outputs.keys())))
+        run_docstring = inspect.cleandoc(
+            """
+            Run `{0}` indicator.{1}
 
-Pass a list of parameter names as `hide_params` to hide their column levels, or `True` to hide all.
-Set `hide_default` to False to display column levels for parameters with default values.
+            Pass a list of parameter names as `hide_params` to hide their column levels, or `True` to hide all.
+            Set `hide_default` to False to display column levels for parameters with default values.
 
-Args:
-    *args: Positional arguments corresponding to inputs, parameters, and in-place outputs.
-    **kwargs: Keyword arguments for `{0}.run_pipeline`.
+            Args:
+                *args: Positional arguments corresponding to inputs, parameters, and in-place outputs.
+                **kwargs: Keyword arguments for `{0}.run_pipeline`.
 
-Returns:
-    Indicator: An instance of the `{0}` indicator, or a tuple of additional objects if applicable.
-""".format(
-            _0,
-            _1,
-        )
+            Returns:
+                Indicator: An instance of the `{0}` indicator, or a tuple of additional objects if applicable.
+            """
+        ).format(_0, _1)
         run = compile_run_function("run", run_docstring, def_run_kwargs)
         run.__name__ = "run"
         run.__module__ = Indicator.__module__
@@ -2870,46 +2882,44 @@ Returns:
             _0 = Indicator.__name__
             _1 = ""
             if len(self.input_names) > 0:
-                _1 += "\n* Inputs: " + ", ".join(map(lambda x: f"`{x}`", self.input_names))
+                _1 += "\n\nInputs:" + "".join(map(_prepare_name, self.input_names))
             if len(self.in_output_names) > 0:
-                _1 += "\n* In-place outputs: " + ", ".join(map(lambda x: f"`{x}`", self.in_output_names))
+                _1 += "\n\nIn-place outputs:" + "".join(map(_prepare_name, self.in_output_names))
             if len(self.param_names) > 0:
-                _1 += "\n* Parameters: " + ", ".join(map(lambda x: f"`{x}`", self.param_names))
+                _1 += "\n\nParameters:" + "".join(map(_prepare_name, self.param_names))
             if len(self.output_names) > 0:
-                _1 += "\n* Outputs: " + ", ".join(map(lambda x: f"`{x}`", self.output_names))
+                _1 += "\n\nOutputs:" + "".join(map(_prepare_name, self.output_names))
             if len(self.lazy_outputs) > 0:
-                _1 += "\n* Lazy outputs: " + ", ".join(map(lambda x: f"`{x}`", list(self.lazy_outputs.keys())))
-            run_combs_docstring = """Create multiple `{0}` indicator instances based on parameter combinations.
+                _1 += "\n\nLazy outputs:" + "".join(map(_prepare_name, list(self.lazy_outputs.keys())))
+            run_combs_docstring = inspect.cleandoc(
+                """
+                Create multiple `{0}` indicator instances based on parameter combinations.{1}
 
-{1}
+                `comb_func` must accept an iterable of parameter tuples along with `r`. 
+                It also supports combinatoric iterators from `itertools`, like `itertools.combinations`.
 
-`comb_func` must accept an iterable of parameter tuples along with `r`. 
-It also supports combinatoric iterators from `itertools`, like `itertools.combinations`.
+                Args:
+                    *args: Positional arguments corresponding to inputs, parameters, and in-place outputs.
+                    **kwargs: Keyword arguments for pipeline configuration and combination settings, including:
+                    
+                        * `r`: The number of indicators to run.
+                        * `param_product`: Flag controlling parameter combination behavior.
+                        * `comb_func`: Function to combine parameter tuples (e.g., `itertools.combinations`).
+                        * `run_unique`: If True, computes raw outputs before constructing indicators.
+                        * `short_names`: Custom short names for each indicator.
+                        * `hide_params`: Parameter names to hide column levels.
+                        * `hide_default`: Whether to hide parameters with default values.
+                        
+                        Other keyword arguments are passed to `{0}.run`.
 
-Args:
-    *args: Positional arguments corresponding to inputs, parameters, and in-place outputs.
-    **kwargs: Keyword arguments for pipeline configuration and combination settings, including:
-    
-        * `r`: The number of indicators to run.
-        * `param_product`: Flag controlling parameter combination behavior.
-        * `comb_func`: Function to combine parameter tuples (e.g., `itertools.combinations`).
-        * `run_unique`: If True, computes raw outputs before constructing indicators.
-        * `short_names`: Custom short names for each indicator.
-        * `hide_params`: Parameter names to hide column levels.
-        * `hide_default`: Whether to hide parameters with default values.
-        
-        Other keyword arguments are passed to `{0}.run`.
+                Returns:
+                    Tuple[Indicator, ...]: A tuple of indicator instances generated.
 
-Returns:
-    Tuple[Indicator, ...]: A tuple of indicator instances generated.
-
-!!! note
-    Use this method only when multiple indicator instances are required.
-    To test multiple parameters, pass them as lists to `{0}.run`.
-""".format(
-                _0,
-                _1,
-            )
+                !!! note
+                    Use this method only when multiple indicator instances are required.
+                    To test multiple parameters, pass them as lists to `{0}.run`.
+                """
+            ).format(_0, _1)
             run_combs = compile_run_function("run_combs", run_combs_docstring, def_run_combs_kwargs)
             run_combs.__name__ = "run_combs"
             run_combs.__module__ = Indicator.__module__

@@ -28,14 +28,26 @@ MSD = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype"],
     output_names=["msd"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        msd=dict(
+            doc="Moving Standard Deviation (MSD) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.msd_nb,
     kwargs_as_args=["minp", "adjust", "ddof"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         )
     ),
     window=14,
@@ -53,8 +65,9 @@ class _MSD(MSD):
     the magnitude of recent price movements to assess asset volatility.
 
     See:
-        * https://en.wikipedia.org/wiki/Standard_deviation for the definition of standard deviation.
+        * `MSD.run` for the main entry point.
         * `vectorbtpro.indicators.nb.msd_nb` for the underlying implementation.
+        * https://en.wikipedia.org/wiki/Standard_deviation for the definition of standard deviation.
     """
 
     def plot(

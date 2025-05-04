@@ -28,14 +28,26 @@ RSI = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype"],
     output_names=["rsi"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        rsi=dict(
+            doc="Relative Strength Index (RSI) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.rsi_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         )
     ),
     window=14,
@@ -56,8 +68,9 @@ class _RSI(RSI):
     See [Relative Strength Index (RSI)](https://www.investopedia.com/terms/r/rsi.asp).
 
     See:
-        * https://www.investopedia.com/terms/r/rsi.asp for the definition of RSI.
+        * `RSI.run` for the main entry point.
         * `vectorbtpro.indicators.nb.rsi_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/r/rsi.asp for the definition of RSI.
     """
 
     def plot(

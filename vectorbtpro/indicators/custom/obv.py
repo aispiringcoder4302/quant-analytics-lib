@@ -28,6 +28,17 @@ OBV = IndicatorFactory(
     input_names=["close", "volume"],
     param_names=[],
     output_names=["obv"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        volume=dict(
+            doc="Volume series.",
+        ),
+        obv=dict(
+            doc="On-Balance Volume (OBV) series.",
+        ),
+    ),
 ).with_custom_func(nb.obv_nb)
 
 
@@ -40,8 +51,9 @@ class _OBV(OBV):
     See [On-Balance Volume (OBV)](https://www.investopedia.com/terms/o/onbalancevolume.asp).
 
     See:
-        * https://www.investopedia.com/terms/o/onbalancevolume.asp for the definition of OBV.
+        * `OBV.run` for the main entry point.
         * `vectorbtpro.indicators.nb.obv_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/o/onbalancevolume.asp for the definition of OBV.
     """
 
     def plot(

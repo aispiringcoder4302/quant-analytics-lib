@@ -38,15 +38,48 @@ HURST = IndicatorFactory(
         "num_chunks",
     ],
     output_names=["hurst"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        hurst=dict(
+            doc="Hurst exponent series.",
+        ),
+    ),
 ).with_apply_func(
     nb.rolling_hurst_nb,
     kwargs_as_args=["minp", "stabilize"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         method=dict(
             dtype=HurstMethod,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
-        )
+            doc="Hurst exponent computation method (see `vectorbtpro.indicators.enums.HurstMethod`)",
+        ),
+        max_lag=dict(
+            doc="Maximum lag parameter for the standard computation.",
+        ),
+        min_log=dict(
+            doc="Minimum logarithmic scale for the LogRS method.",
+        ),
+        max_log=dict(
+            doc="Maximum logarithmic scale for the LogRS method.",
+        ),
+        log_step=dict(
+            doc="Increment on the logarithmic scale for the LogRS method.",
+        ),
+        min_chunk=dict(
+            doc="Minimum chunk size for RS and DMA methods.",
+        ),
+        max_chunk=dict(
+            doc="Maximum chunk size for RS and DMA methods.",
+        ),
+        num_chunks=dict(
+            doc="Number of chunks for RS and DMA methods.",
+        ),
     ),
     window=200,
     method="standard",
@@ -68,8 +101,9 @@ class _HURST(HURST):
     This indicator measures the long-term memory of a time series.
 
     See:
-        * https://de.wikipedia.org/wiki/Hurst-Exponent for the definition of the Hurst exponent.
+        * `HURST.run` for the main entry point.
         * `vectorbtpro.indicators.nb.rolling_hurst_nb` for the underlying implementation.
+        * https://de.wikipedia.org/wiki/Hurst-Exponent for the definition of the Hurst exponent.
     """
 
     def plot(

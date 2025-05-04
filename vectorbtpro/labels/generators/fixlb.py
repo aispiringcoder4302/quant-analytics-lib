@@ -26,8 +26,21 @@ FIXLB = IndicatorFactory(
     input_names=["close"],
     param_names=["n"],
     output_names=["labels"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        labels=dict(
+            doc="Fixed labels.",
+        ),
+    ),
 ).with_apply_func(
     nb.fixed_labels_nb,
+    param_settings=dict(
+        n=dict(
+            doc="Period offset into the future.",
+        ),
+    ),
     n=1,
 )
 
@@ -36,6 +49,7 @@ class _FIXLB(FIXLB):
     """Class representing the look-ahead fixed label generator.
 
     See:
+        * `FIXLB.run` for the main entry point.
         * `vectorbtpro.labels.nb.fixed_labels_nb` for the underlying implementation.
     """
 

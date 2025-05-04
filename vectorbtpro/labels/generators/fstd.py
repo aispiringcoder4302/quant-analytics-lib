@@ -28,14 +28,29 @@ FSTD = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype", "wait"],
     output_names=["fstd"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        fstd=dict(
+            doc="Future standard deviation series.",
+        ),
+    ),
 ).with_apply_func(
     nb.future_std_nb,
     kwargs_as_args=["minp", "adjust", "ddof"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             post_index_func=lambda index: index.str.lower(),
-        )
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
+        ),
+        wait=dict(
+            doc="Number of periods to wait before calculating the future standard deviation.",
+        ),
     ),
     window=14,
     wtype="simple",
@@ -50,6 +65,7 @@ class _FSTD(FSTD):
     """Class representing the look-ahead future standard deviation generator.
 
     See:
+        * `FSTD.run` for the main entry point.
         * `vectorbtpro.labels.nb.future_std_nb` for the underlying implementation.
     """
 
