@@ -64,7 +64,7 @@ def in_outputs_merge_func(
     ann_args: tp.AnnArgs,
     mapper: base_ch.GroupLensMapper,
 ) -> tp.NamedTuple:
-    """Merge chunks of in-output objects.
+    """Merge chunks of in-place output objects.
 
     Concatenates 1-dimensional arrays, stacks columns of 2-dimensional arrays, and
     merges record arrays using `vectorbtpro.records.chunking.merge_records`.
@@ -89,7 +89,7 @@ def in_outputs_merge_func(
             in_outputs[k] = None
             continue
         if not isinstance(v, np.ndarray):
-            raise TypeError(f"Cannot merge in-output object '{k}' of type {type(v)}")
+            raise TypeError(f"Cannot merge in-place output object '{k}' of type {type(v)}")
         if v.ndim == 2:
             in_outputs[k] = column_stack_arrays([getattr(r.in_outputs, k) for r in results])
         elif v.ndim == 1:
@@ -99,7 +99,7 @@ def in_outputs_merge_func(
                 records = [getattr(r.in_outputs, k) for r in results]
                 in_outputs[k] = merge_records(records, chunk_meta, ann_args=ann_args, mapper=mapper)
         else:
-            raise ValueError(f"Cannot merge in-output object '{k}' with number of dimensions {v.ndim}")
+            raise ValueError(f"Cannot merge in-place output object '{k}' with number of dimensions {v.ndim}")
     return type(results[0].in_outputs)(**in_outputs)
 
 
@@ -114,7 +114,7 @@ def merge_sim_outs(
     """Merge chunks of `vectorbtpro.portfolio.enums.SimulationOutput` instances.
 
     Merges various components including order and log records, cash deposits, cash earnings, call sequence,
-    in-outputs, and simulation timing arrays. If `vectorbtpro.portfolio.enums.SimulationOutput.in_outputs`
+    in-place outputs, and simulation timing arrays. If `vectorbtpro.portfolio.enums.SimulationOutput.in_outputs`
     is provided, a merge function such as `in_outputs_merge_func` must be used.
 
     Args:
@@ -126,7 +126,7 @@ def merge_sim_outs(
 
             See `vectorbtpro.utils.parsing.annotate_args`.
         mapper (GroupLensMapper): Mapper for grouping and lens mapping.
-        in_outputs_merge_func (Callable): Function to merge in-output objects.
+        in_outputs_merge_func (Callable): Function to merge in-place output objects.
         **kwargs: Keyword arguments for `in_outputs_merge_func`.
 
     Returns:

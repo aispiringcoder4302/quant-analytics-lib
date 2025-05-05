@@ -93,7 +93,7 @@ def iter_above_nb(
         col (Optional[int]): Column index; if None, uses `c.col`.
 
     Returns:
-        bool: Result of the above comparison.
+        bool: True if `arr1` is above `arr2`, otherwise False.
     """
     if i is None:
         _i = c.i
@@ -124,7 +124,7 @@ def iter_below_nb(
         col (Optional[int]): Column index; if None, uses `c.col`.
 
     Returns:
-        bool: Result of the below comparison.
+        bool: True if `arr1` is below `arr2`, otherwise False.
     """
     if i is None:
         _i = c.i

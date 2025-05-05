@@ -175,7 +175,7 @@ class DuckDBData(DBData):
     ) -> tp.List[str]:
         """List available catalogs from the DuckDB database.
 
-        Catalogs "system" and "temp" are omitted if incl_system is False.
+        Catalogs "system" and "temp" are omitted if `incl_system` is False.
 
         Args:
             pattern (Optional[str]): Pattern to filter catalog names.
@@ -227,7 +227,7 @@ class DuckDBData(DBData):
 
         If catalog is None, the method searches all catalogs and prefixes each schema with
         the catalog name if multiple catalogs are found. Schemas "information_schema" and
-        "pg_catalog" are omitted if incl_system is False.
+        "pg_catalog" are omitted if `incl_system` is False.
 
         Args:
             catalog_pattern (Optional[str]): Pattern to filter catalog names.

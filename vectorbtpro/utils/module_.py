@@ -138,7 +138,7 @@ def search_package(
         return_first (bool): If True, return the first matching object.
 
     Returns:
-        Union[None, Any, Dict[str, Any]]: If return_first is True, returns the first matching object or None;
+        Union[None, Any, Dict[str, Any]]: If `return_first` is True, returns the first matching object or None;
             otherwise, returns a dictionary of matching objects.
     """
     if blacklist is None:

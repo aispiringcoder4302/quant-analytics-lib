@@ -92,7 +92,7 @@ class SQLData(DBData):
 
     @classmethod
     def get_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> dict:
-        """Return custom engine settings with sub_path set to the engine name.
+        """Return custom engine settings with `sub_path` set to the engine name.
 
         Args:
             *args: Positional arguments for `SQLData.get_custom_settings`.
@@ -110,7 +110,7 @@ class SQLData(DBData):
 
     @classmethod
     def has_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> bool:
-        """Return whether custom engine settings exist with sub_path set to the engine name.
+        """Return whether custom engine settings exist with `sub_path` set to the engine name.
 
         Args:
             *args: Positional arguments for `SQLData.has_custom_settings`.
@@ -128,7 +128,7 @@ class SQLData(DBData):
 
     @classmethod
     def get_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> tp.Any:
-        """Return the custom engine setting with sub_path set to the engine name.
+        """Return the custom engine setting with `sub_path` set to the engine name.
 
         Args:
             *args: Positional arguments for `SQLData.get_custom_setting`.
@@ -146,7 +146,7 @@ class SQLData(DBData):
 
     @classmethod
     def has_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> bool:
-        """Return whether a custom engine setting exists with sub_path set to the engine name.
+        """Return whether a custom engine setting exists with `sub_path` set to the engine name.
 
         Args:
             *args: Positional arguments for `SQLData.has_custom_setting`.
@@ -164,7 +164,7 @@ class SQLData(DBData):
 
     @classmethod
     def resolve_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> tp.Any:
-        """Resolve the custom engine setting with sub_path set to the engine name.
+        """Resolve the custom engine setting with `sub_path` set to the engine name.
 
         Args:
             *args: Positional arguments for `SQLData.resolve_custom_setting`.
@@ -182,7 +182,7 @@ class SQLData(DBData):
 
     @classmethod
     def set_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> None:
-        """Set custom engine settings with sub_path set to the engine name.
+        """Set custom engine settings with `sub_path` set to the engine name.
 
         Args:
             *args: Positional arguments for `SQLData.set_custom_settings`.

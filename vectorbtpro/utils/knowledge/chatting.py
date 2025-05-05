@@ -1397,7 +1397,7 @@ class Completions(Configured):
             return_response (bool): Flag to return the raw response along with the file path.
 
         Returns:
-            ChatOutput: A file path for the formatted output; if return_response is True,
+            ChatOutput: A file path for the formatted output; if `return_response` is True,
                 a tuple containing the file path and raw response.
         """
         chat_history = self.chat_history
@@ -4307,7 +4307,7 @@ class DocumentRanker(Configured):
         return self._emb_store
 
     @property
-    def search_method(self) -> bool:
+    def search_method(self) -> str:
         """Strategy for document search.
 
         Supported strategies: 
@@ -4317,7 +4317,7 @@ class DocumentRanker(Configured):
         * "hybrid"
 
         Returns:
-            bool: The search method used for document retrieval.
+            str: The search method used for document retrieval.
         """
         return self._search_method
 
@@ -5006,15 +5006,15 @@ class DocumentRanker(Configured):
 
     @classmethod
     def resolve_top_k(cls, scores: tp.Iterable[float], top_k: tp.TopKLike = None) -> tp.Optional[int]:
-        """Resolve the top_k value from sorted scores.
+        """Resolve the `top_k` value from sorted scores.
 
         Args:
             scores (Iterable[float]): Sorted document scores.
-            top_k (TopKLike): Parameter specifying the top_k selection method, which can be an integer,
+            top_k (TopKLike): Parameter specifying the `top_k` selection method, which can be an integer,
                 a float percentage, a string ('elbow' or 'kmeans'), or a callable.
 
         Returns:
-            Optional[int]: The resolved top_k value, or None if top_k is not provided.
+            Optional[int]: The resolved `top_k` value, or None if `top_k` is not provided.
         """
         if top_k is None:
             return None

@@ -110,7 +110,7 @@ class CustomTemplate(Evaluable, DefineMixin):
             strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
 
         Returns:
-            bool: The resolved strict flag.
+            bool: True if strict mode is enabled, False otherwise.
 
         !!! info
             For default settings, see `vectorbtpro._settings.template`.

@@ -1151,7 +1151,7 @@ If not tracked, it is set to None.
 """
 __pdoc__[
     "SimulationOutput.in_outputs"
-] = """Named tuple containing in-output objects.
+] = """Named tuple containing in-place output objects.
 
 If not tracked, this value is None.
 """
@@ -1521,7 +1521,7 @@ Analogous to `SimulationContext.order_counts`, this array reflects the count of 
 """
 __pdoc__[
     "SimulationContext.in_outputs"
-] = """Named tuple with in-output objects.
+] = """Named tuple with in-place output objects.
 
 May contain objects of arbitrary shape and type, and is returned as part of `SimulationOutput`.
 """
@@ -2711,7 +2711,7 @@ __pdoc__["PostSignalContext.val_price_before"] = "`ExecState.value` value before
 __pdoc__["PostSignalContext.order_result"] = "See `PostOrderContext.order_result`."
 
 
-# ############# In-outputs ############# #
+# ############# In-place outputs ############# #
 
 
 class FOInOutputs(tp.NamedTuple):
@@ -2724,7 +2724,7 @@ class FOInOutputs(tp.NamedTuple):
     returns: tp.Array2d
 
 
-__pdoc__["FOInOutputs"] = "A named tuple representing the in-outputs for simulation based on orders."
+__pdoc__["FOInOutputs"] = "A named tuple representing the in-place outputs for simulation based on orders."
 __pdoc__[
     "FOInOutputs.cash"
 ] = """See `AccountState.cash`.
@@ -2793,7 +2793,7 @@ class FSInOutputs(tp.NamedTuple):
     returns: tp.Array2d
 
 
-__pdoc__["FSInOutputs"] = "Named tuple representing the in-outputs for simulation based on signals."
+__pdoc__["FSInOutputs"] = "Named tuple representing the in-place outputs for simulation based on signals."
 __pdoc__["FSInOutputs.cash"] = "See `FOInOutputs.cash`."
 __pdoc__["FSInOutputs.position"] = "See `FOInOutputs.position`."
 __pdoc__["FSInOutputs.debt"] = "See `FOInOutputs.debt`."

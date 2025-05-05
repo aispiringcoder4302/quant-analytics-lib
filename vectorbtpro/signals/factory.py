@@ -790,7 +790,7 @@ class SignalFactory(IndicatorFactory):
 
             Args:
                 input_tuple (Tuple[AnyArray, ...]): Tuple of input arrays.
-                in_output_tuple (Tuple[List[AnyArray], ...]): Tuple of lists of in-output arrays.
+                in_output_tuple (Tuple[List[AnyArray], ...]): Tuple of lists of in-place output arrays.
                 param_tuple (Tuple[List[ParamValue], ...]): Tuple of lists of parameter values.
                 *args_: Additional positional arguments.
                 input_shape (Optional[Shape]): Shape of the input arrays.

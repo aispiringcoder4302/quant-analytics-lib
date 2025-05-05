@@ -1141,16 +1141,16 @@ class VBTAsset(KnowledgeAsset):
 
     @classmethod
     def get_class_abbrs(cls, name: str) -> tp.List[str]:
-        """Generate snake_case and abbreviated versions of a class name.
+        """Generate `snake_case` and abbreviated versions of a class name.
 
-        Uses the constituent parts of the class name to produce variations in snake_case format,
+        Uses the constituent parts of the class name to produce variations in `snake_case` format,
         including abbreviations based on a predefined configuration.
 
         Args:
             name (str): Class name.
 
         Returns:
-            List[str]: A list of snake_case and abbreviated class name variants.
+            List[str]: A list of `snake_case` and abbreviated class name variants.
         """
         from itertools import product
 

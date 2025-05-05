@@ -3595,8 +3595,8 @@ class CachingDisabled(Base):
 
         Returns:
             Dict[int, dict]: A dictionary where each key is a setup hash and each value is another
-                dictionary containing the initial settings (such as active state, whitelist,
-                and use_cache flag) for that setup.
+                dictionary containing the initial settings (such as `active`, `whitelist`,
+                and `use_cache` flags) for that setup.
         """
         return self._init_setup_settings
 

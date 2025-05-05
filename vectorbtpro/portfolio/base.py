@@ -486,10 +486,10 @@ class MetaPortfolio(type(Analyzable)):
 
     @property
     def in_output_config(cls) -> Config:
-        """In-output configuration settings.
+        """In-place output configuration settings.
 
         Returns:
-            Config: The configuration settings for in-outputs.
+            Config: The configuration settings for in-place outputs.
         """
         return cls._in_output_config
 
@@ -548,11 +548,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         sim_end (Optional[ArrayLike]): End index of the simulation range.
         call_seq (Optional[Array2d]): Sequence dictating the order in which columns are
             processed per row and group.
-        in_outputs (Optional[NamedTuple]): Named tuple containing in-output objects.
+        in_outputs (Optional[NamedTuple]): Named tuple containing in-place output objects.
 
             Provide pre-broadcasted and grouped objects to substitute default `Portfolio` attributes.
             See `Portfolio.in_outputs_indexing_func` for indexing details.
-        use_in_outputs (Optional[bool]): Indicates whether to return in-output objects when accessing properties.
+        use_in_outputs (Optional[bool]): Indicates whether to return in-place output objects when accessing properties.
         bm_close (Optional[ArrayLike]): Last benchmark asset price at each bar.
 
             Provided in a format that supports flexible indexing.
@@ -797,7 +797,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         for obj in objs:
             if obj is None or isinstance(obj, bool) or (checks.is_np_array(obj) and obj.size == 0):
                 if not checks.is_deep_equal(obj, objs[0]):
-                    raise ValueError(f"Cannot unify scalar in-outputs with the name '{obj_name}'")
+                    raise ValueError(f"Cannot unify scalar in-place outputs with the name '{obj_name}'")
             else:
                 all_none = False
                 break
@@ -839,7 +839,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             for i, obj in enumerate(objs):
                 wrapped_objs.append(wrappers[i].wrap(obj, group_by=obj_group_by))
             return wrapper.row_stack_arrs(*wrapped_objs, group_by=obj_group_by, wrap=False)
-        raise ValueError(f"Cannot figure out how to stack in-outputs with the name '{obj_name}' along rows")
+        raise ValueError(f"Cannot figure out how to stack in-place outputs with the name '{obj_name}' along rows")
 
     @classmethod
     def row_stack_in_outputs(
@@ -878,7 +878,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             all_keys |= set(obj.in_outputs._asdict().keys())
         for obj in objs:
             if obj.in_outputs is None or len(all_keys.difference(set(obj.in_outputs._asdict().keys()))) > 0:
-                raise ValueError("Objects to be merged must have the same in-output fields")
+                raise ValueError("Objects to be merged must have the same in-place output fields")
 
         cls_dir = set(dir(cls))
         new_in_outputs = {}
@@ -1231,7 +1231,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         for obj in objs:
             if obj is None or isinstance(obj, bool) or (checks.is_np_array(obj) and obj.size == 0):
                 if not checks.is_deep_equal(obj, objs[0]):
-                    raise ValueError(f"Cannot unify scalar in-outputs with the name '{obj_name}'")
+                    raise ValueError(f"Cannot unify scalar in-place outputs with the name '{obj_name}'")
             else:
                 all_none = False
                 break
@@ -1288,7 +1288,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             for i, obj in enumerate(objs):
                 wrapped_objs.append(wrappers[i].wrap(obj, group_by=obj_group_by))
             return wrapper.column_stack_arrs(*wrapped_objs, group_by=obj_group_by, wrap=False)
-        raise ValueError(f"Cannot figure out how to stack in-outputs with the name '{obj_name}' along columns")
+        raise ValueError(f"Cannot figure out how to stack in-place outputs with the name '{obj_name}' along columns")
 
     @classmethod
     def column_stack_in_outputs(
@@ -1299,7 +1299,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Stack `Portfolio.in_outputs` along columns.
 
         Merge the `in_outputs` from multiple `Portfolio` instances by stacking corresponding fields.
-        All in-output tuples must either be None or have identical fields.
+        All in-place output tuples must either be None or have identical fields.
 
         If a field is also defined as an attribute of the `Portfolio` class, its options are used
         to determine the required type and layout by merging results from `Portfolio.parse_field_options`
@@ -1310,7 +1310,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments for `Portfolio.column_stack_objs`.
 
         Returns:
-            Optional[NamedTuple]: A new in_outputs named tuple with fields stacked along columns, or
+            Optional[NamedTuple]: A new `in_outputs` named tuple with fields stacked along columns, or
                 None if all `in_outputs` are None.
         """
         if len(objs) == 1:
@@ -1328,7 +1328,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             all_keys |= set(obj.in_outputs._asdict().keys())
         for obj in objs:
             if obj.in_outputs is None or len(all_keys.difference(set(obj.in_outputs._asdict().keys()))) > 0:
-                raise ValueError("Objects to be merged must have the same in-output fields")
+                raise ValueError("Objects to be merged must have the same in-place output fields")
 
         cls_dir = set(dir(cls))
         new_in_outputs = {}
@@ -1386,7 +1386,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         * Two-dimensional arrays are merged via `vectorbtpro.base.wrapping.ArrayWrapper.column_stack_arrs`.
         * One-dimensional arrays are concatenated via `vectorbtpro.base.wrapping.ArrayWrapper.concat_arrs`.
 
-        In-outputs are merged using `Portfolio.column_stack_in_outputs` and records are aggregated
+        In-place outputs are merged using `Portfolio.column_stack_in_outputs` and records are aggregated
         using `vectorbtpro.records.base.Records.column_stack_records_arrs`.
 
         Args:
@@ -1611,7 +1611,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    # ############# In-outputs ############# #
+    # ############# In-place outputs ############# #
 
     _in_output_config: tp.ClassVar[Config] = HybridConfig(
         dict(
@@ -1626,14 +1626,14 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @property
     def in_output_config(self) -> Config:
-        """In-output configuration of `${cls_name}`.
+        """In-place output configuration of `${cls_name}`.
 
         ```python
         ${in_output_config}
         ```
 
         Returns:
-            Config: A hybrid-copied in-output configuration from `${cls_name}._in_output_config`.
+            Config: A hybrid-copied in-place output configuration from `${cls_name}._in_output_config`.
 
                 Changing this instance's configuration does not affect the class-level configuration.
 
@@ -1932,13 +1932,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         group_by: tp.GroupByLike = None,
         **kwargs,
     ) -> tp.Union[None, bool, tp.AnyArray]:
-        """Find and wrap an in-output object matching a specified field.
+        """Find and wrap an in-place output object matching a specified field.
 
-        This method searches for an in-output field that matches the provided name or any of its aliases.
+        This method searches for an in-place output field that matches the provided name or any of its aliases.
         If the field is found among the attributes of this `Portfolio` instance, its options are used to
         determine the required type and layout. Otherwise, options are resolved from `Portfolio.in_outputs`
         and `Portfolio.in_output_config`, and candidates are filtered using `Portfolio.matches_field_options`.
-        The identified in-output object is then wrapped via `Portfolio.wrap_obj`.
+        The identified in-place output object is then wrapped via `Portfolio.wrap_obj`.
 
         Args:
             field (str): Field identifier.
@@ -1951,10 +1951,10 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments for `Portfolio.wrap_obj`.
 
         Returns:
-            Union[None, bool, AnyArray]: The wrapped in-output object.
+            Union[None, bool, AnyArray]: The wrapped in-place output object.
         """
         if self.in_outputs is None:
-            raise ValueError("No in-outputs attached")
+            raise ValueError("No in-place outputs attached")
 
         if field in self.cls_dir:
             prop = getattr(type(self), field)
@@ -2202,7 +2202,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments for `Portfolio.index_obj`.
 
         Returns:
-            Optional[NamedTuple]: A new named tuple with the indexed in-output fields,
+            Optional[NamedTuple]: A new named tuple with the indexed in-place output fields,
                 or None if `Portfolio.in_outputs` is None.
         """
         if self.in_outputs is None:
@@ -2252,11 +2252,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> PortfolioT:
         """Perform indexing on the Portfolio.
 
-        In-outputs are indexed using `Portfolio.in_outputs_indexing_func`.
+        In-place outputs are indexed using `Portfolio.in_outputs_indexing_func`.
 
         Args:
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
-            in_output_kwargs (KwargsLike): Keyword arguments for indexing in-outputs.
+            in_output_kwargs (KwargsLike): Keyword arguments for indexing in-place outputs.
             
                 See `Portfolio.in_outputs_indexing_func`.
             wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
@@ -2519,7 +2519,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments for `Portfolio.resample_obj`.
 
         Returns:
-            Optional[NamedTuple]: A resampled in-outputs object created from the existing outputs,
+            Optional[NamedTuple]: A resampled in-place outputs object created from the existing outputs,
                 or None if `Portfolio.in_outputs` is not set.
         """
         if self.in_outputs is None:
@@ -2572,7 +2572,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Resample the `Portfolio` instance.
 
         Resamples various portfolio components including price series, order and log records,
-        cash deposits, cash earnings, benchmark data, and in-outputs. Downsampling is performed
+        cash deposits, cash earnings, benchmark data, and in-place outputs. Downsampling is performed
         using methods provided by the portfolio's wrapper, with optional forward-fill or backward-fill
         applied to the close prices.
 
@@ -2580,7 +2580,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
             ffill_close (bool): If True, forward-fill missing values in the close prices.
             fbfill_close (bool): If True, forward and backward-fill missing values in the close prices.
-            in_output_kwargs (KwargsLike): Keyword arguments for resampling in-outputs.
+            in_output_kwargs (KwargsLike): Keyword arguments for resampling in-place outputs.
             
                 See `Portfolio.resample_in_outputs`.
             wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
@@ -3668,7 +3668,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
                 reduce memory usage, or higher if multiple logs per timestamp are expected.
-            in_outputs (Optional[tp.MappingLike]): Mapping of in-output objects available via
+            in_outputs (Optional[tp.MappingLike]): Mapping of in-place output objects available via
                 `Portfolio.in_outputs` as a named tuple.
 
                 To override `Portfolio` attributes, provide objects that are already broadcasted and grouped
@@ -4824,7 +4824,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
                 reduce memory usage, or higher if multiple logs per timestamp are expected.
-            in_outputs (Optional[tp.MappingLike]): Mapping of in-output objects available via
+            in_outputs (Optional[tp.MappingLike]): Mapping of in-place output objects available via
                 `Portfolio.in_outputs` as a named tuple.
 
                 To override `Portfolio` attributes, provide objects that are already broadcasted and grouped
@@ -4848,7 +4848,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.reshaping.broadcast`.
             template_context (KwargsLike): Additional context for template substitution.
             keep_inout_flex (Optional[bool]): Whether to preserve raw, editable arrays during
-                broadcasting for in-outputs.
+                broadcasting for in-place outputs.
 
                 Disable to allow editing of `segment_mask`, `cash_deposits`, and `cash_earnings` during simulation.
             jitted (JittedOption): Option to control JIT compilation.
@@ -5633,19 +5633,19 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @property
     def in_outputs(self) -> tp.Optional[tp.NamedTuple]:
-        """Named tuple with in-output objects.
+        """Named tuple with in-place output objects.
 
         Returns:
-            Optional[NamedTuple]: A named tuple containing additional in-output objects, or None if not set.
+            Optional[NamedTuple]: A named tuple containing additional in-place output objects, or None if not set.
         """
         return self._in_outputs
 
     @property
     def use_in_outputs(self) -> bool:
-        """Whether to return in-output objects when calling properties.
+        """Whether to return in-place output objects when calling properties.
 
         Returns:
-            bool: True if in-output objects should be used for property values; otherwise, False.
+            bool: True if in-place output objects should be used for property values; otherwise, False.
         """
         return self._use_in_outputs
 
@@ -9233,7 +9233,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Return portfolio allocation series per column.
 
         Calculate the portfolio allocation series using the provided asset and
-        portfolio value data. If called on an instance and asset_value or value
+        portfolio value data. If called on an instance and `asset_value` or `value`
         is not provided, they are derived from shortcut attributes.
 
         Args:
@@ -13205,7 +13205,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @classmethod
     def build_in_output_config_doc(cls, source_cls: tp.Optional[type] = None) -> str:
-        """Build in-output configuration documentation.
+        """Build in-place output configuration documentation.
 
         Args:
             source_cls (Optional[type]): Source class providing the original configuration.
@@ -13213,7 +13213,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 If None, `Portfolio` is used.
 
         Returns:
-            str: The generated in-output configuration documentation.
+            str: The generated in-place output configuration documentation.
         """
         if source_cls is None:
             source_cls = Portfolio
@@ -13223,7 +13223,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @classmethod
     def override_in_output_config_doc(cls, __pdoc__: dict, source_cls: tp.Optional[type] = None) -> None:
-        """Override the in-output configuration documentation in the __pdoc__ dictionary.
+        """Override the in-place output configuration documentation in the `__pdoc__` dictionary.
 
         Args:
             __pdoc__ (dict): Dictionary mapping objects to their documentation strings.

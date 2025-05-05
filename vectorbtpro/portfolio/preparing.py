@@ -421,7 +421,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `in_outputs` before broadcasting.
 
         Returns:
-            Union[None, NamedTuple, CustomTemplate]: The in-outputs before broadcasting.
+            Union[None, NamedTuple, CustomTemplate]: The in-place outputs before broadcasting.
         """
         in_outputs = self["in_outputs"]
         if (
@@ -717,7 +717,7 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def in_outputs(self) -> tp.Optional[tp.NamedTuple]:
-        """Template-substituted in-outputs.
+        """Template-substituted in-place outputs.
 
         Substitutes templates in the input outputs using the template context.
 
@@ -1463,7 +1463,7 @@ class FSPreparer(BasePFPreparer):
         If not set, defaults to False.
 
         Returns:
-            bool: The processed order mode.
+            bool: True if order mode is enabled, False otherwise.
         """
         order_mode = self["order_mode"]
         if order_mode is None:
@@ -1797,7 +1797,7 @@ class FSPreparer(BasePFPreparer):
         """Pre-resolution value for the `max_log_records` argument.
 
         Returns:
-            Optional[int]: The pre-broadcast max_log_records value.
+            Optional[int]: The pre-broadcast `max_log_records` value.
         """
         return self["max_log_records"]
 

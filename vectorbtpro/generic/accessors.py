@@ -7298,8 +7298,8 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             return_meta (bool): Whether to return metadata including band details.
 
         Returns:
-            Union[Series, dict]: A computed band as a Series if return_meta is False, or a dict containing
-                band metadata (`band_name`, `band_title`, and `band_func`) if return_meta is True.
+            Union[Series, dict]: A computed band as a Series if `return_meta` is False, or a dict containing
+                band metadata (`band_name`, `band_title`, and `band_func`) if `return_meta` is True.
         """
         band_name = band_name.lower().replace(" ", "")
         if band_name == "median":

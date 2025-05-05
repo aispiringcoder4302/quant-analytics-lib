@@ -209,7 +209,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.stack_indexes`.
 
         Returns:
-            Index: The resulting stacked index.
+            Index: The stacked index.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
@@ -236,7 +236,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.combine_indexes`.
 
         Returns:
-            Index: The resulting combined index.
+            Index: The combined index.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):

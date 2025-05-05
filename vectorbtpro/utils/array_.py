@@ -373,7 +373,7 @@ def squeeze_nan(*arrs: tp.Array, nan_mask: tp.Optional[tp.Array1d] = None) -> tp
             If None or if no True values are detected, the original arrays are returned.
 
     Returns:
-        Tuple[Array, ...]: Tuple of arrays with entries removed where nan_mask is True.
+        Tuple[Array, ...]: Tuple of arrays with entries removed where `nan_mask` is True.
     """
     if nan_mask is None or not np.any(nan_mask):
         return arrs

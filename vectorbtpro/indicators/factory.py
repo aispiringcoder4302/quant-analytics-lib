@@ -692,7 +692,7 @@ class IndicatorBase(Analyzable):
                 per column rather than globally. Requires a known input shape.
             keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
             to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
-            pass_packed (bool): Whether to pass inputs, in-outputs, and parameters as packed tuples.
+            pass_packed (bool): Whether to pass inputs, in-place outputs, and parameters as packed tuples.
 
                 For Numba-compiled functions, tuples are passed instead.
             pass_input_shape (Optional[bool]): If True, passes `input_shape` as a keyword argument to `custom_func`.
@@ -1794,7 +1794,7 @@ class IndicatorFactory(Configured):
         prepend_name (bool): Whether to prepend `short_name` to each parameter level.
         input_names (Optional[Sequence[str]]): List of input names.
         param_names (Optional[Sequence[str]]): List of parameter names.
-        in_output_names (Optional[Sequence[str]]): List of in-output names.
+        in_output_names (Optional[Sequence[str]]): List of in-place output names.
 
             An in-place output is modified in place rather than being returned. Advantages include:
 
@@ -1920,7 +1920,7 @@ class IndicatorFactory(Configured):
         if len(all_output_names) == 0:
             raise ValueError("Must have at least one in-place or regular output")
         if len(set.intersection(set(input_names), set(in_output_names), set(output_names))) > 0:
-            raise ValueError("Inputs, in-outputs, and parameters must all have unique names")
+            raise ValueError("Inputs, in-place outputs, and parameters must all have unique names")
         if output_flags is None:
             output_flags = {}
         checks.assert_instance_of(output_flags, dict)
@@ -2366,10 +2366,10 @@ class IndicatorFactory(Configured):
 
     @property
     def in_output_names(self) -> tp.List[str]:
-        """List of in-output names.
+        """List of in-place output names.
 
         Returns:
-            List[str]: The list of in-output names.
+            List[str]: The list of in-place output names.
         """
         return self._in_output_names
 
@@ -2965,7 +2965,7 @@ class IndicatorFactory(Configured):
                     (one per parameter combination). If `per_column` is True, each array corresponds to a column;
                     otherwise, they all refer to the same array. If `takes_1d` is True, each array is further split
                     into multiple column arrays. Still passed as a single array to the caching function.
-                * In-output arrays corresponding to `in_output_names`, with similar behavior as input arrays.
+                * In-place output arrays corresponding to `in_output_names`, with similar behavior as input arrays.
                 * Parameter values corresponding to `param_names`, passed as a tuple if `pass_packed` is True,
                     or unpacked otherwise. If `select_params` is True, each argument is a list with one value per
                     parameter combination. When `per_column` is True, each value corresponds to a column; if
@@ -2985,10 +2985,10 @@ class IndicatorFactory(Configured):
                 It accepts the same arguments as `apply_func` and must return a single object or
                 a tuple of objects. The returned objects are appended as additional arguments to `apply_func`.
             takes_1d (bool): Whether to split 2D arrays into multiple 1D arrays along the column axis.
-            select_params (bool): Whether to automatically select in-outputs and parameters.
+            select_params (bool): Whether to automatically select in-place outputs and parameters.
 
                 If False, the current iteration index is prepended to the arguments.
-            pass_packed (bool): Whether to pass inputs, in-outputs, and parameters as packed tuples.
+            pass_packed (bool): Whether to pass inputs, in-place outputs, and parameters as packed tuples.
 
                 For Numba-compiled functions, tuples are passed instead.
             cache_pass_packed (Optional[bool]): Overrides `pass_packed` for the caching function.
@@ -3172,7 +3172,7 @@ class IndicatorFactory(Configured):
 
             Args:
                 input_tuple (Tuple[AnyArray, ...]): Tuple of input arrays.
-                in_output_tuple (Tuple[List[AnyArray], ...]): Tuple of lists of in-output arrays.
+                in_output_tuple (Tuple[List[AnyArray], ...]): Tuple of lists of in-place output arrays.
                 param_tuple (Tuple[List[ParamValue], ...]): Tuple of lists of parameter values.
                 *args_: Additional positional arguments.
                 input_shape (Optional[Shape]): Shape of the input arrays.
@@ -3203,7 +3203,7 @@ class IndicatorFactory(Configured):
             if jitted_loop and not checks.is_numba_func(apply_func):
                 raise ValueError("Apply function must be Numba-compiled for jitted_loop=True")
             if skipna and len(in_output_tuple) > 1:
-                raise ValueError("NaNs cannot be skipped for in-outputs")
+                raise ValueError("NaNs cannot be skipped for in-place outputs")
             if skipna and jitted_loop:
                 raise ValueError("NaNs cannot be skipped when jitted_loop=True")
             if forward_skipna:
@@ -4343,7 +4343,7 @@ class IndicatorFactory(Configured):
         Requires `pandas-ta` installed. See https://github.com/twopirllc/pandas-ta for details.
 
         Args:
-            func_name (str): Name of the pandas_ta function to wrap.
+            func_name (str): Name of the `pandas_ta` function to wrap.
 
                 The function name is case-insensitive.
             parse_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory.parse_pandas_ta_config`.
@@ -5341,7 +5341,7 @@ class IndicatorFactory(Configured):
             magnet_inputs (Iterable[str]): Names to be recognized as input variables.
 
                 Defaults to `open`, `high`, `low`, `close`, and `volume`.
-            magnet_in_outputs (Iterable[str]): Names to be recognized as in-output variables.
+            magnet_in_outputs (Iterable[str]): Names to be recognized as in-place output variables.
 
                 Defaults to an empty list.
             magnet_params (Iterable[str]): Names to be recognized as parameter variables.
@@ -5374,7 +5374,7 @@ class IndicatorFactory(Configured):
 
         * `vectorbtpro.indicators.expr.expr_res_func_config` (calls are executed immediately)
         * `vectorbtpro.indicators.expr.expr_func_config`
-        * Input, in-output, and parameter names
+        * Input, in-place output, and parameter names
         * Keyword arguments
         * Attributes of `np`
         * Attributes of `vectorbtpro.generic.nb` (both with and without `_nb` suffix)
@@ -5399,7 +5399,7 @@ class IndicatorFactory(Configured):
         If `parse_annotations` is True, annotations beginning with `@` define variable roles:
 
         * `@in_*`: Input variable.
-        * `@inout_*`: In-output variable.
+        * `@inout_*`: In-place output variable.
         * `@p_*`: Parameter variable.
         * `@out_*`: Output variable.
         * `@out_*:`: Indicates that the subsequent part until a comma represents an output.

@@ -245,7 +245,7 @@ class cacheable_property(custom_property):
         """Initial `use_cache` value.
 
         Returns:
-            bool: The initial value of `use_cache`.
+            bool: True if caching is enabled, False otherwise.
         """
         return self._init_use_cache
 
@@ -254,7 +254,7 @@ class cacheable_property(custom_property):
         """Initial `whitelist` flag.
 
         Returns:
-            bool: The initial value of `whitelist`.
+            bool: True if whitelisting is enabled, False otherwise.
         """
         return self._init_whitelist
 

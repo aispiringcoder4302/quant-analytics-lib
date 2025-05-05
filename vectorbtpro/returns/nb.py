@@ -2978,7 +2978,7 @@ def value_at_risk_nb(
 ) -> tp.Array1d:
     """Compute the value at risk (VaR) for each column in a 2D returns array.
 
-    Depending on the noarr_mode flag, this function uses either a no-allocation method or
+    Depending on the `noarr_mode` flag, this function uses either a no-allocation method or
     the standard approach to compute VaR.
 
     Args:

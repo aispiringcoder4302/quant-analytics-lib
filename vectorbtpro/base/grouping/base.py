@@ -59,8 +59,8 @@ class Grouper(Configured):
             * `vectorbtpro.base.indexes.ExceptLevel` object (to exclude levels).
             * `vectorbtpro.utils.template.CustomTemplate` object with `index` as context (to substitute levels).
         def_lvl_name (Hashable): Default level name for groups.
-        allow_enable (bool): Indicates if enabling grouping is permitted when group_by is None.
-        allow_disable (bool): Indicates if disabling grouping is permitted when group_by is not None.
+        allow_enable (bool): Indicates if enabling grouping is permitted when `group_by` is None.
+        allow_disable (bool): Indicates if disabling grouping is permitted when `group_by` is not None.
         allow_modify (bool): Indicates if modifying groups is allowed.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
