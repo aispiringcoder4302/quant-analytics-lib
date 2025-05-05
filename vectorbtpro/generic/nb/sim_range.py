@@ -512,7 +512,7 @@ def prepare_sim_start_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Array1d: The prepared simulation start array.
+        Array1d: Prepared simulation start array.
     """
     if sim_start is None:
         return np.full(sim_shape[1], 0, dtype=int_)
@@ -550,7 +550,7 @@ def prepare_sim_end_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Array1d: The prepared simulation end array.
+        Array1d: Prepared simulation end array.
     """
     if sim_end is None:
         return np.full(sim_shape[1], sim_shape[0], dtype=int_)
@@ -625,7 +625,7 @@ def prepare_grouped_sim_start_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Array1d: An array containing the prepared simulation start positions for each group.
+        Array1d: Array containing the prepared simulation start positions for each group.
     """
     if sim_start is None:
         return np.full(len(group_lens), 0, dtype=int_)
@@ -679,7 +679,7 @@ def prepare_grouped_sim_end_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Array1d: An array containing the prepared simulation end positions for each group.
+        Array1d: Array containing the prepared simulation end positions for each group.
     """
     if sim_end is None:
         return np.full(len(group_lens), target_shape[0], dtype=int_)
@@ -772,7 +772,7 @@ def prepare_ungrouped_sim_start_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Array1d: An array containing the prepared simulation start positions for ungrouped data.
+        Array1d: Array containing the prepared simulation start positions for ungrouped data.
     """
     if sim_start is None:
         return np.full(target_shape[1], 0, dtype=int_)
@@ -823,7 +823,7 @@ def prepare_ungrouped_sim_end_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Array1d: An array containing the prepared simulation end positions for ungrouped data.
+        Array1d: Array containing the prepared simulation end positions for ungrouped data.
     """
     if sim_end is None:
         return np.full(target_shape[1], target_shape[0], dtype=int_)

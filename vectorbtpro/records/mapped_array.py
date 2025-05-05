@@ -455,7 +455,7 @@ def combine_mapped_with_other(
             returns an array resulting from their combination.
 
     Returns:
-        MappedArray: A new `MappedArray` instance with the values updated by applying `np_func`.
+        MappedArray: New `MappedArray` instance with the values updated by applying `np_func`.
     """
     if isinstance(other, MappedArray):
         checks.assert_array_equal(self.id_arr, other.id_arr)
@@ -565,7 +565,7 @@ class MappedArray(Analyzable):
                 `MappedArray.resolve_row_stack_kwargs` and `MappedArray.resolve_stack_kwargs`.
 
         Returns:
-            MappedArray: A new instance with rows stacked from the provided `MappedArray` objects.
+            MappedArray: New instance with rows stacked from the provided `MappedArray` objects.
 
         !!! note
             Will produce a column-sorted array.
@@ -674,7 +674,7 @@ class MappedArray(Analyzable):
                 `MappedArray.resolve_column_stack_kwargs` and `MappedArray.resolve_stack_kwargs`.
 
         Returns:
-            MappedArray: A new instance with arrays stacked along columns.
+            MappedArray: New instance with arrays stacked along columns.
 
         !!! note
             Produces a column-sorted array.
@@ -756,7 +756,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured.replace`.
 
         Returns:
-            MappedArray: The updated instance with replaced configuration.
+            MappedArray: Updated instance with replaced configuration.
         """
         if self.config.get("col_mapper", None) is not None:
             if "wrapper" in kwargs:
@@ -779,7 +779,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
-            dict: A dictionary containing:
+            dict: Dictionary containing:
 
                 * `wrapper_meta`: Metadata from the wrapper.
                 * `new_indices`: New indices after selection.
@@ -831,7 +831,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `MappedArray.indexing_func_meta`.
 
         Returns:
-            MappedArray: A new instance reflecting the indexing operation.
+            MappedArray: New instance reflecting the indexing operation.
         """
         if mapped_meta is None:
             mapped_meta = self.indexing_func_meta(*args, **kwargs)
@@ -856,7 +856,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
-            dict: A dictionary containing:
+            dict: Dictionary containing:
 
                 * `wrapper_meta`: Resampling metadata from the wrapper.
                 * `new_idx_arr`: The new index array after resampling, if available.
@@ -887,7 +887,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `MappedArray.resample_meta`.
 
         Returns:
-            MappedArray: A new instance with resampled data.
+            MappedArray: New instance with resampled data.
         """
         if mapped_meta is None:
             mapped_meta = self.resample_meta(*args, **kwargs)
@@ -901,7 +901,7 @@ class MappedArray(Analyzable):
         """Mapped array.
 
         Returns:
-            Array1d: The mapped array.
+            Array1d: Mapped array.
         """
         return self._mapped_arr
 
@@ -910,7 +910,7 @@ class MappedArray(Analyzable):
         """1D array of mapped values.
 
         Returns:
-            Array1d: The mapped values.
+            Array1d: Mapped values.
         """
         return self.mapped_arr
 
@@ -930,7 +930,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `MappedArray.apply_mapping`.
 
         Returns:
-            SeriesFrame: A Pandas Series or DataFrame with human-readable mapped values.
+            SeriesFrame: Pandas Series or DataFrame with human-readable mapped values.
         """
         values = pd.Series(self.apply_mapping(**kwargs).values, name=title)
         if only_values:
@@ -958,7 +958,7 @@ class MappedArray(Analyzable):
         equivalent to calling `MappedArray.to_readable`.
 
         Returns:
-            SeriesFrame: A Pandas Series or DataFrame with human-readable mapped values.
+            SeriesFrame: Pandas Series or DataFrame with human-readable mapped values.
         """
         return self.to_readable()
 
@@ -972,7 +972,7 @@ class MappedArray(Analyzable):
         """Column array of indices corresponding to the mapped array columns.
 
         Returns:
-            Array1d: The column array.
+            Array1d: Column array.
         """
         return self._col_arr
 
@@ -983,7 +983,7 @@ class MappedArray(Analyzable):
         See `vectorbtpro.records.col_mapper.ColumnMapper`.
 
         Returns:
-            ColumnMapper: The column mapper instance.
+            ColumnMapper: Column mapper instance.
         """
         return self._col_mapper
 
@@ -1001,7 +1001,7 @@ class MappedArray(Analyzable):
         """1D array of element identifiers.
 
         Returns:
-            Array1d: The ID array.
+            Array1d: ID array.
         """
         return self._id_arr
 
@@ -1057,7 +1057,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
-            MappedArray: A new sorted mapped array instance, regrouped according to `group_by`.
+            MappedArray: New sorted mapped array instance, regrouped according to `group_by`.
         """
         if idx_arr is None:
             idx_arr = self.idx_arr
@@ -1095,7 +1095,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
-            MappedArray: A new instance of the mapped array filtered by the mask.
+            MappedArray: New instance of the mapped array filtered by the mask.
         """
         if idx_arr is None:
             idx_arr = self.idx_arr
@@ -1196,7 +1196,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
-            MappedArray: A new instance of the mapped array filtered to the top N elements.
+            MappedArray: New instance of the mapped array filtered to the top N elements.
         """
         return self.apply_mask(self.top_n_mask(n, group_by=group_by, jitted=jitted, chunked=chunked), **kwargs)
 
@@ -1224,7 +1224,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
-            MappedArray: A new instance of the mapped array filtered to the bottom N elements.
+            MappedArray: New instance of the mapped array filtered to the bottom N elements.
         """
         return self.apply_mask(self.bottom_n_mask(n, group_by=group_by, jitted=jitted, chunked=chunked), **kwargs)
 
@@ -1276,7 +1276,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
-            MappedArray: A new instance of the mapped array with the mapping applied.
+            MappedArray: New instance of the mapped array with the mapping applied.
         """
         mapping = self.resolve_mapping(mapping)
         new_mapped_arr = apply_mapping(self.values, mapping, **resolve_dict(mapping_kwargs))
@@ -1293,7 +1293,7 @@ class MappedArray(Analyzable):
                 raise an error when -1 is present.
 
         Returns:
-            Index: The resulting index based on the mapped array values.
+            Index: Resulting index based on the mapped array values.
         """
         if np.isin(-1, self.values):
             nan_mask = self.values == -1
@@ -1318,7 +1318,7 @@ class MappedArray(Analyzable):
         """Convert mapped array to columns.
 
         Returns:
-            Index: The columns from the wrapper indexed by the mapped array values.
+            Index: Columns from the wrapper indexed by the mapped array values.
         """
         if np.isin(-1, self.values):
             raise ValueError("Cannot get index at position -1")
@@ -1359,7 +1359,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
-            MappedArray: The new mapped array after applying the function.
+            MappedArray: New mapped array after applying the function.
 
         See:
             * `vectorbtpro.records.nb.apply_nb` for applying a function to each column.
@@ -1432,7 +1432,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `MappedArray.replace`.
 
         Returns:
-            MappedArray: The new mapped array after applying the reduction function.
+            MappedArray: New mapped array after applying the reduction function.
 
         See:
             `vectorbtpro.records.nb.reduce_mapped_segments_nb`
@@ -1524,7 +1524,7 @@ class MappedArray(Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeriesFrame: The reduced output wrapped in an appropriate structure.
+            MaybeSeriesFrame: Reduced output wrapped in an appropriate structure.
 
         See:
             When invoked on a class:
@@ -2237,7 +2237,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
         Returns:
-            SeriesFrame: A Series or DataFrame containing the counts of unique mapped values.
+            SeriesFrame: Series or DataFrame containing the counts of unique mapped values.
 
         See:
             * `vectorbtpro.records.nb.mapped_value_counts_per_row_nb` for `axis=0`.
@@ -2388,7 +2388,7 @@ class MappedArray(Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A Series or DataFrame representing the coverage map.
+            SeriesFrame: Series or DataFrame representing the coverage map.
 
         See:
             `vectorbtpro.records.nb.mapped_coverage_map_nb`
@@ -2462,7 +2462,7 @@ class MappedArray(Analyzable):
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
-            SeriesFrame: A wrapped Series or DataFrame representing the unstacked mapped array.
+            SeriesFrame: Wrapped Series or DataFrame representing the unstacked mapped array.
 
         See:
             * `vectorbtpro.records.nb.ignore_unstack_mapped_nb` if `ignore_index=True`.
@@ -2564,7 +2564,7 @@ class MappedArray(Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A wrapped mask array as a Series or DataFrame.
+            SeriesFrame: Wrapped mask array as a Series or DataFrame.
         """
         if idx_arr is None:
             if self.idx_arr is None:
@@ -2581,7 +2581,7 @@ class MappedArray(Analyzable):
         """Series/DataFrame mask produced by `MappedArray.get_pd_mask` with default arguments.
 
         Returns:
-            SeriesFrame: A wrapped mask array as a Series or DataFrame.
+            SeriesFrame: Wrapped mask array as a Series or DataFrame.
         """
         return self.get_pd_mask()
 
@@ -2675,7 +2675,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.histplot`.
 
         Returns:
-            BaseFigure: The generated histogram figure.
+            BaseFigure: Generated histogram figure.
         """
         return self.to_pd(group_by=group_by, ignore_index=True).vbt.histplot(**kwargs)
 
@@ -2689,7 +2689,7 @@ class MappedArray(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.boxplot`.
 
         Returns:
-            BaseFigure: The generated box plot figure.
+            BaseFigure: Generated box plot figure.
         """
         return self.to_pd(group_by=group_by, ignore_index=True).vbt.boxplot(**kwargs)
 

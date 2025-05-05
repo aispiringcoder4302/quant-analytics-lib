@@ -157,7 +157,7 @@ class _PIVOTINFO(PIVOTINFO):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure with the plotted confirmed and last pivot values.
+            BaseFigure: Updated figure with the plotted confirmed and last pivot values.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -228,7 +228,7 @@ class _PIVOTINFO(PIVOTINFO):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure with the plotted zigzag line.
+            BaseFigure: Updated figure with the plotted zigzag line.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

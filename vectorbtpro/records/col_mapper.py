@@ -55,7 +55,7 @@ class ColumnMapper(Wrapping):
         """Column array.
 
         Returns:
-            Array1d: The column array.
+            Array1d: Column array.
         """
         return self._col_arr
 
@@ -79,7 +79,7 @@ class ColumnMapper(Wrapping):
                 `ColumnMapper.resolve_row_stack_kwargs` and `ColumnMapper.resolve_stack_kwargs`.
 
         Returns:
-            ColumnMapper: A new column mapper instance with row-stacked wrappers and updated column metadata.
+            ColumnMapper: New column mapper instance with row-stacked wrappers and updated column metadata.
 
         !!! note
             Will produce a column-sorted array.
@@ -135,7 +135,7 @@ class ColumnMapper(Wrapping):
                 `ColumnMapper.resolve_column_stack_kwargs` and `ColumnMapper.resolve_stack_kwargs`.
 
         Returns:
-            ColumnMapper: A new column mapper instance with column-stacked wrappers and updated column metadata.
+            ColumnMapper: New column mapper instance with column-stacked wrappers and updated column metadata.
 
         !!! note
             Will produce a column-sorted array.
@@ -217,7 +217,7 @@ class ColumnMapper(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
-            dict: A dictionary with the following keys:
+            dict: Dictionary with the following keys:
 
                 * `wrapper_meta`: Metadata from the wrapper's indexing function.
                 * `new_indices`: Indices after selecting columns.
@@ -248,7 +248,7 @@ class ColumnMapper(Wrapping):
             **kwargs: Keyword arguments for `ColumnMapper.indexing_func_meta`.
 
         Returns:
-            ColumnMapper: A new column mapper instance with indexing applied.
+            ColumnMapper: New column mapper instance with indexing applied.
         """
         if col_mapper_meta is None:
             col_mapper_meta = self.indexing_func_meta(*args, **kwargs)
@@ -267,7 +267,7 @@ class ColumnMapper(Wrapping):
                 See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
-            Array1d: The column array adjusted for grouping.
+            Array1d: Column array adjusted for grouping.
         """
         group_arr = self.wrapper.grouper.get_groups(group_by=group_by)
         if group_arr is not None:

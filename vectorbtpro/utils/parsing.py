@@ -169,7 +169,7 @@ def get_forward_args(func: tp.Callable, local_dict: tp.Kwargs, **kwargs) -> tp.A
         **kwargs: Keyword arguments to match against the function's parameters.
 
     Returns:
-        ArgsKwargs: A tuple where the first element is a tuple of positional arguments
+        ArgsKwargs: Tuple where the first element is a tuple of positional arguments
             and the second is a dictionary of keyword arguments.
     """
     new_args = ()
@@ -268,7 +268,7 @@ def annotate_args(
         flatten (bool): If True, flatten the annotation dictionary before returning.
 
     Returns:
-        AnnArgs: A dictionary of annotated arguments.
+        AnnArgs: Dictionary of annotated arguments.
     """
     kwargs = dict(kwargs)
     signature = inspect.signature(func)
@@ -351,7 +351,7 @@ def ann_args_to_args(ann_args: tp.AnnArgs) -> tp.ArgsKwargs:
             See `vectorbtpro.utils.parsing.annotate_args`.
 
     Returns:
-        ArgsKwargs: A tuple containing positional arguments and keyword arguments.
+        ArgsKwargs: Tuple containing positional arguments and keyword arguments.
     """
     args = ()
     kwargs = {}
@@ -378,7 +378,7 @@ def flat_ann_args_to_args(ann_args: tp.AnnArgs) -> tp.ArgsKwargs:
             See `vectorbtpro.utils.parsing.annotate_args`.
 
     Returns:
-        ArgsKwargs: A tuple containing positional arguments and keyword arguments.
+        ArgsKwargs: Tuple containing positional arguments and keyword arguments.
     """
     return ann_args_to_args(flatten_ann_args(ann_args))
 
@@ -392,7 +392,7 @@ def flatten_ann_args(ann_args: tp.AnnArgs) -> tp.FlatAnnArgs:
             See `vectorbtpro.utils.parsing.annotate_args`.
 
     Returns:
-        FlatAnnArgs: A flattened dictionary representation of the annotated arguments.
+        FlatAnnArgs: Flattened dictionary representation of the annotated arguments.
     """
     flat_ann_args = {}
     for arg_name, ann_arg in ann_args.items():
@@ -498,7 +498,7 @@ def match_flat_ann_arg(
         return_index (bool): If True, return the argument's positional index.
 
     Returns:
-        Any: The matched argument value, or its name/index if specified.
+        Any: Matched argument value, or its name/index if specified.
 
     !!! note
         Only the first matching argument is returned.
@@ -536,7 +536,7 @@ def match_ann_arg(
         return_index (bool): If True, return the argument's positional index.
 
     Returns:
-        Any: The matched argument value, or its name/index if specified.
+        Any: Matched argument value, or its name/index if specified.
 
     !!! note
         Matching logic is equivalent to that of `match_flat_ann_arg`.
@@ -562,7 +562,7 @@ def match_and_set_flat_ann_arg(
         new_value (Any): New value to assign to the matched argument(s).
 
     Returns:
-        None: The function modifies `flat_ann_args` in place.
+        None: Function modifies `flat_ann_args` in place.
 
     !!! note
         All matching arguments are updated.
@@ -588,7 +588,7 @@ def ignore_flat_ann_args(flat_ann_args: tp.FlatAnnArgs, ignore_args: tp.Iterable
         ignore_args (Iterable[AnnArgQuery]): Queries indicating which arguments to ignore.
 
     Returns:
-        FlatAnnArgs: A dictionary of flattened annotated arguments after ignoring specified entries.
+        FlatAnnArgs: Dictionary of flattened annotated arguments after ignoring specified entries.
     """
     new_flat_ann_args = {}
     for i, (arg_name, arg) in enumerate(flat_ann_args.items()):
@@ -670,7 +670,7 @@ def suppress_stdout(func: tp.Callable) -> tp.Callable:
         func (Callable): Function whose printed output will be suppressed.
 
     Returns:
-        Callable: The decorated function with stdout redirection.
+        Callable: Decorated function with stdout redirection.
     """
 
     @wraps(func)

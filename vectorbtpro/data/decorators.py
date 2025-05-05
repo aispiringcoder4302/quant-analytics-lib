@@ -63,7 +63,7 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 **kwargs: Keyword arguments for selection.
                 
             Returns:
-                Any: The selected feature or symbol.
+                Any: Selected feature or symbol.
             
             !!! note
                 If the attribute name ends with "_kwargs", selection is performed using 

@@ -76,8 +76,8 @@ Fields:
     OneMany: One source signal can map to one or more succeeding target signals.
     ManyOne: One or more source signals can map to exactly one succeeding target signal.
     ManyMany: One or more source signals can map to one or more succeeding target signals.
-    Chain: The first source signal maps to the first target signal after it and vice versa.
-    AnyChain: The first signal maps to the first opposite signal after it and vice versa.
+    Chain: First source signal maps to the first target signal after it and vice versa.
+    AnyChain: First signal maps to the first opposite signal after it and vice versa.
 """
 
 

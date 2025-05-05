@@ -48,7 +48,7 @@ class SyntheticData(CustomData):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            KeyData: The generated data and a metadata dictionary.
+            KeyData: Generated data and a metadata dictionary.
         """
         raise NotImplementedError
 
@@ -64,7 +64,7 @@ class SyntheticData(CustomData):
             **kwargs: Keyword arguments for `SyntheticData.generate_key`.
 
         Returns:
-            FeatureData: The generated data and a metadata dictionary.
+            FeatureData: Generated data and a metadata dictionary.
         """
         return cls.generate_key(feature, index, key_is_feature=True, **kwargs)
 
@@ -80,7 +80,7 @@ class SyntheticData(CustomData):
             **kwargs: Keyword arguments for `SyntheticData.generate_key`.
 
         Returns:
-            SymbolData: The generated data and a metadata dictionary.
+            SymbolData: Generated data and a metadata dictionary.
         """
         return cls.generate_key(symbol, index, key_is_feature=False, **kwargs)
 
@@ -124,7 +124,7 @@ class SyntheticData(CustomData):
                 `SyntheticData.generate_symbol`.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         start = cls.resolve_custom_setting(start, "start")
         end = cls.resolve_custom_setting(end, "end")
@@ -160,7 +160,7 @@ class SyntheticData(CustomData):
             **kwargs: Keyword arguments for `SyntheticData.fetch_key`.
 
         Returns:
-            FeatureData: The fetched data and a metadata dictionary.
+            FeatureData: Fetched data and a metadata dictionary.
         """
         return cls.fetch_key(feature, key_is_feature=True, **kwargs)
 
@@ -175,7 +175,7 @@ class SyntheticData(CustomData):
             **kwargs: Keyword arguments for `SyntheticData.fetch_key`.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         return cls.fetch_key(symbol, key_is_feature=False, **kwargs)
 
@@ -191,7 +191,7 @@ class SyntheticData(CustomData):
             **kwargs: Keyword arguments for `SyntheticData.fetch_feature` or `SyntheticData.fetch_symbol`.
 
         Returns:
-            KeyData: The updated data and a metadata dictionary.
+            KeyData: Updated data and a metadata dictionary.
         """
         fetch_kwargs = self.select_fetch_kwargs(key)
         fetch_kwargs["start"] = self.select_last_index(key)
@@ -210,7 +210,7 @@ class SyntheticData(CustomData):
             **kwargs: Keyword arguments for `SyntheticData.update_key`.
 
         Returns:
-            FeatureData: The updated data and a metadata dictionary.
+            FeatureData: Updated data and a metadata dictionary.
         """
         return self.update_key(feature, key_is_feature=True, **kwargs)
 
@@ -224,6 +224,6 @@ class SyntheticData(CustomData):
             **kwargs: Keyword arguments for `SyntheticData.update_key`.
 
         Returns:
-            SymbolData: The updated data and a metadata dictionary.
+            SymbolData: Updated data and a metadata dictionary.
         """
         return self.update_key(symbol, key_is_feature=False, **kwargs)

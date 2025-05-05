@@ -39,7 +39,7 @@ def attach_nb_methods(config: Config) -> tp.ClassWrapper:
                 will be merged with user-supplied values.
 
     Returns:
-        ClassWrapper: The decorated class with the new methods attached.
+        ClassWrapper: Decorated class with the new methods attached.
 
     The decorated class must be a subclass of `vectorbtpro.base.wrapping.Wrapping`.
     """
@@ -126,7 +126,7 @@ def attach_transform_methods(config: Config) -> tp.ClassWrapper:
             * `replace_signature` (bool): Replaces the target method signature with that of the transformer.
 
     Returns:
-        ClassWrapper: The decorated class with the new methods attached.
+        ClassWrapper: Decorated class with the new methods attached.
 
     The decorated class must be a subclass of `vectorbtpro.generic.accessors.GenericAccessor`.
     """

@@ -86,7 +86,7 @@ def insert_argsort_nb(A: tp.Array1d, I: tp.Array1d) -> None:
         I (Array1d): Array of indices to reorder alongside A.
 
     Returns:
-        None: The function modifies the input arrays in place.
+        None: Function modifies the input arrays in place.
     """
     for j in range(1, len(A)):
         A_j = A[j]
@@ -110,7 +110,7 @@ def get_ranges_arr(starts: tp.ArrayLike, ends: tp.ArrayLike) -> tp.Array1d:
         ends (ArrayLike): Ending indices.
 
     Returns:
-        Array1d: A 1-dimensional array of cumulative indices.
+        Array1d: 1-dimensional array of cumulative indices.
     """
     starts_arr = np.asarray(starts)
     if starts_arr.ndim == 0:
@@ -137,7 +137,7 @@ def uniform_summing_to_one_nb(n: int) -> tp.Array1d:
         n (int): Number of random segments to generate.
 
     Returns:
-        Array1d: An array of floats summing to one.
+        Array1d: Array of floats summing to one.
     """
     rand_floats = np.empty(n + 1, dtype=float_)
     rand_floats[0] = 0.0
@@ -161,7 +161,7 @@ def rescale(
         to_range (Tuple[float, float]): Target value range.
 
     Returns:
-        MaybeArray: The rescaled array.
+        MaybeArray: Rescaled array.
     """
     from_min, from_max = from_range
     to_min, to_max = to_range
@@ -185,7 +185,7 @@ def rescale_nb(
         to_range (Tuple[float, float]): Target value range.
 
     Returns:
-        MaybeArray: The rescaled array.
+        MaybeArray: Rescaled array.
     """
     from_min, from_max = from_range
     to_min, to_max = to_range
@@ -204,7 +204,7 @@ def min_rel_rescale(arr: tp.Array, to_range: tp.Tuple[float, float]) -> tp.Array
         to_range (Tuple[float, float]): Target value range.
 
     Returns:
-        Array: The rescaled array with values adjusted relative to the minimum.
+        Array: Rescaled array with values adjusted relative to the minimum.
     """
     a_min = np.min(arr)
     a_max = np.max(arr)
@@ -232,7 +232,7 @@ def max_rel_rescale(arr: tp.Array, to_range: tp.Tuple[float, float]) -> tp.Array
         to_range (Tuple[float, float]): Target value range.
 
     Returns:
-        Array: The rescaled array with values adjusted relative to the maximum.
+        Array: Rescaled array with values adjusted relative to the maximum.
     """
     a_min = np.min(arr)
     a_max = np.max(arr)
@@ -263,7 +263,7 @@ def rescale_float_to_int_nb(floats: tp.Array, int_range: tp.Tuple[float, float],
         total (float): Desired total sum for the integer array.
 
     Returns:
-        Array: The integer array after rescaling.
+        Array: Integer array after rescaling.
     """
     ints = np.floor(rescale_nb(floats, (0.0, 1.0), int_range))
     leftover = int(total - ints.sum())
@@ -280,7 +280,7 @@ def int_digit_count_nb(number: int) -> int:
         number (int): Integer to evaluate.
 
     Returns:
-        int: The count of digits in the integer.
+        int: Count of digits in the integer.
     """
     out = 0
     while number != 0:
@@ -300,7 +300,7 @@ def hash_int_rows_nb(arr: tp.Array2d) -> tp.Array1d:
         arr (Array2d): 2-dimensional input array.
 
     Returns:
-        Array1d: An array of integer hashes for each row.
+        Array1d: Array of integer hashes for each row.
     """
     out = np.full(arr.shape[0], 0, dtype=int_)
     prefix = 1
@@ -324,7 +324,7 @@ def index_repeating_rows_nb(arr: tp.Array2d) -> tp.Array1d:
         arr (Array2d): 2-dimensional input array.
 
     Returns:
-        Array1d: An array of row indices.
+        Array1d: Array of row indices.
     """
     out = np.empty(arr.shape[0], dtype=int_)
     temp = np.copy(arr[0])
@@ -424,7 +424,7 @@ def cast_to_min_precision(
         float_only (bool): If True, applies casting only to floating-point types.
 
     Returns:
-        Array: The input array cast to at least the specified precision if applicable.
+        Array: Input array cast to at least the specified precision if applicable.
     """
     if min_precision is None:
         return arr
@@ -473,7 +473,7 @@ def cast_to_max_precision(
         strict (bool): If True, raises an error when values exceed the bounds of the target precision.
 
     Returns:
-        Array: The input array cast to at most the specified precision if applicable.
+        Array: Input array cast to at most the specified precision if applicable.
     """
     if max_precision is None:
         return arr

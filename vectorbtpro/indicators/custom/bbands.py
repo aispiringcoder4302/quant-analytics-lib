@@ -142,7 +142,7 @@ class _BBANDS(BBANDS):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure with BBANDS traces.
+            BaseFigure: Updated figure with BBANDS traces.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

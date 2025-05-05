@@ -85,7 +85,7 @@ def parse_path_str(path_str: str) -> tp.PathKey:
             May include dot notation or brackets.
 
     Returns:
-        tuple: A tuple of tokens extracted from the path string.
+        tuple: Tuple of tokens extracted from the path string.
     """
     if path_str == "":
         return ()
@@ -128,7 +128,7 @@ def combine_path_str(path_str1: str, path_str2: str) -> str:
         path_str2 (str): Second path string.
 
     Returns:
-        str: The combined path string.
+        str: Combined path string.
     """
     if path_str1 == "":
         return path_str2
@@ -160,7 +160,7 @@ def minimize_pathlike_key(key: tp.PathLikeKey) -> tp.MaybePathKey:
         key (PathLikeKey): Key represented as a sequence of tokens or other formats.
 
     Returns:
-        MaybePathKey: The minimized key, which may be a single token or None if empty.
+        MaybePathKey: Minimized key, which may be a single token or None if empty.
     """
     key = resolve_pathlike_key(key)
     if len(key) == 0:
@@ -178,7 +178,7 @@ def resolve_pathlike_key(key: tp.PathLikeKey, minimize: bool = False) -> tp.Path
         minimize (bool): Whether to minimize the resulting key.
 
     Returns:
-        tuple: A tuple of tokens representing the path.
+        tuple: Tuple of tokens representing the path.
     """
     if key is None:
         key = ()
@@ -200,7 +200,7 @@ def stringify_pathlike_key(key: tp.PathLikeKey) -> str:
         key (PathLikeKey): Key to convert.
 
     Returns:
-        str: A string representation of the path.
+        str: String representation of the path.
     """
     tokens = resolve_pathlike_key(key)
     parts = []
@@ -230,7 +230,7 @@ def combine_pathlike_keys(
         minimize (bool): Whether to minimize the resulting key.
 
     Returns:
-        PathLikeKey: The combined key.
+        PathLikeKey: Combined key.
     """
     if not resolve:
         if isinstance(key1, Path) and isinstance(key2, Path):
@@ -264,7 +264,7 @@ def get_pathlike_key(obj: tp.Any, key: tp.PathLikeKey, keep_path: bool = False) 
             otherwise, returns the value.
 
     Returns:
-        Any: The value found at the specified path, or the nested path dictionary if `keep_path` is True.
+        Any: Value found at the specified path, or the nested path dictionary if `keep_path` is True.
 
     Examples:
         ```pycon
@@ -322,7 +322,7 @@ def set_pathlike_key(
         prev_keys (Optional[PathLikeKeys]): Previously processed keys to optimize copying.
 
     Returns:
-        Any: The modified object with the updated value.
+        Any: Modified object with the updated value.
     """
     tokens = resolve_pathlike_key(key)
     parents = []
@@ -401,7 +401,7 @@ def remove_pathlike_key(
         prev_keys (Optional[PathLikeKeys]): Previously processed keys to optimize copying.
 
     Returns:
-        Any: The modified object with the specified value removed.
+        Any: Modified object with the specified value removed.
     """
     tokens = resolve_pathlike_key(key)
     parents = []
@@ -615,7 +615,7 @@ def find_in_obj(
         **kwargs: Keyword arguments for `match_func`.
 
     Returns:
-        PathDict: A mapping of path-like keys (using tuples for nested levels) to their corresponding values.
+        PathDict: Mapping of path-like keys (using tuples for nested levels) to their corresponding values.
 
     !!! info
         For default settings, see `vectorbtpro._settings.search`.
@@ -701,7 +701,7 @@ def replace_in_obj(obj: tp.Any, path_dct: tp.PathDict, _key: tp.Optional[tp.Hash
         path_dct (PathDict): Mapping of path-like keys to replacement values.
 
     Returns:
-        Any: The updated object with replacements applied.
+        Any: Updated object with replacements applied.
     """
     if len(path_dct) == 0:
         return obj
@@ -788,7 +788,7 @@ def find_and_replace_in_obj(
         **kwargs: Keyword arguments for `match_func` and `replace_func`.
 
     Returns:
-        Any: The modified object with replacements applied.
+        Any: Modified object with replacements applied.
 
     !!! note
         When processing nested structures (e.g., dictionaries or lists), finding a match triggers the creation
@@ -946,7 +946,7 @@ def flatten_obj(
         max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
 
     Returns:
-        PathDict: A mapping of path-like keys (using tuples for nested levels) to their corresponding values.
+        PathDict: Mapping of path-like keys (using tuples for nested levels) to their corresponding values.
 
     !!! info
         For default settings, see `vectorbtpro._settings.search`.
@@ -1035,7 +1035,7 @@ def unflatten_obj(path_dct: tp.PathDict) -> tp.Any:
         path_dct (PathDict): Mapping of path-like keys to corresponding values.
 
     Returns:
-        Any: The reconstructed object.
+        Any: Reconstructed object.
     """
     path_dct = {resolve_pathlike_key(k): v for k, v in path_dct.items()}
 
@@ -1664,7 +1664,7 @@ def replace_fuzzy(
         max_l_dist (Optional[int]): Maximum allowed Levenshtein distance.
 
     Returns:
-        str: The string after performing fuzzy replacement; returns the original string if no match is found.
+        str: String after performing fuzzy replacement; returns the original string if no match is found.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
@@ -1729,7 +1729,7 @@ def replace(
         **kwargs: Keyword arguments for the specific replacement function.
 
     Returns:
-        str: A new string with the specified replacements applied.
+        str: New string with the specified replacements applied.
     """
     if mode.lower() == "exact":
         return replace_exact(target, replacement, string, ignore_case=ignore_case, **kwargs)

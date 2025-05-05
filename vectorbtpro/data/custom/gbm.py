@@ -74,7 +74,7 @@ class GBMData(SyntheticData):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
-            KeyData: The generated data and a metadata dictionary.
+            KeyData: Generated data and a metadata dictionary.
 
         See:
             `vectorbtpro.data.nb.generate_gbm_data_nb`

@@ -81,7 +81,7 @@ class _FMIN(FMIN):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure object with the plotted traces.
+            BaseFigure: Updated figure object with the plotted traces.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

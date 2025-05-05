@@ -62,7 +62,7 @@ def text_to_giphy_url(text: str, api_key: tp.Optional[str] = None, weirdness: tp
         weirdness (Optional[int]): Parameter influencing the uniqueness of the GIF selection.
 
     Returns:
-        str: The URL of the translated GIF.
+        str: URL of the translated GIF.
 
     !!! info
         For default settings, see `giphy` in `vectorbtpro._settings.telegram`.

@@ -90,7 +90,7 @@ class CCXTData(RemoteData):
             **kwargs: Keyword arguments for `CCXTData.get_custom_settings`.
 
         Returns:
-            dict: The custom exchange settings.
+            dict: Custom exchange settings.
         """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
@@ -126,7 +126,7 @@ class CCXTData(RemoteData):
             **kwargs: Keyword arguments for `CCXTData.get_custom_setting`.
 
         Returns:
-            Any: The retrieved custom exchange setting.
+            Any: Retrieved custom exchange setting.
         """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
@@ -162,7 +162,7 @@ class CCXTData(RemoteData):
             **kwargs: Keyword arguments for `CCXTData.resolve_custom_setting`.
 
         Returns:
-            Any: The resolved custom exchange setting.
+            Any: Resolved custom exchange setting.
         """
         if exchange_name is not None:
             sub_path = "exchanges." + exchange_name
@@ -241,7 +241,7 @@ class CCXTData(RemoteData):
             **exchange_config: Additional parameters for configuring the exchange.
 
         Returns:
-            Exchange: The resolved exchange instance.
+            Exchange: Resolved exchange instance.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

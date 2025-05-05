@@ -79,7 +79,7 @@ class MetaBasePreparer(type(Configured)):
         """Class-level argument configuration.
 
         Returns:
-            Config: The class-level argument configuration.
+            Config: Class-level argument configuration.
         """
         return cls._arg_config
 
@@ -114,7 +114,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         ```
 
         Returns:
-            Config: The argument configuration of `BasePreparer`.
+            Config: Argument configuration of `BasePreparer`.
         """
         return self._arg_config
 
@@ -137,7 +137,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
                 `BasePreparer.map_enum_value`.
 
         Returns:
-            ArrayLike: The mapped value(s).
+            ArrayLike: Mapped value(s).
         """
         if look_for_type is not None:
             if isinstance(value, look_for_type):
@@ -172,7 +172,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             old_as_keys (bool): Flag indicating whether to use parameter values as keys if not provided.
 
         Returns:
-            object: The processed timedelta object for broadcasting.
+            object: Processed timedelta object for broadcasting.
         """
         if isinstance(td_obj, Param):
             return td_obj.map_value(cls.prepare_td_obj, old_as_keys=old_as_keys)
@@ -199,7 +199,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             last_before (Optional[bool]): Flag indicating if the last valid index before the target should be used.
 
         Returns:
-            object: The processed datetime object for broadcasting.
+            object: Processed datetime object for broadcasting.
         """
         if isinstance(dt_obj, Param):
             return dt_obj.map_value(cls.prepare_dt_obj, old_as_keys=old_as_keys)
@@ -275,7 +275,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             is_dict (bool): Flag indicating if the argument is expected to be a dictionary.
 
         Returns:
-            Any: The default value for the argument, or an empty dictionary
+            Any: Default value for the argument, or an empty dictionary
                 if `is_dict` is True and no default is set.
         """
         if self._settings_path is None:
@@ -296,7 +296,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             has_default (bool): Flag indicating if a default value should be used when the argument is not present.
 
         Returns:
-            Any: The raw value of the argument, merged with defaults if applicable.
+            Any: Raw value of the argument, merged with defaults if applicable.
         """
         value = self.config.get(arg_name, None)
         if is_dict:
@@ -346,7 +346,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             arg_name (str): Name of the argument.
 
         Returns:
-            Any: The processed default value for the argument.
+            Any: Processed default value for the argument.
         """
         arg_config = self.arg_config[arg_name]
         arg = self.get_raw_arg_default(
@@ -379,7 +379,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
                 if the argument is missing.
 
         Returns:
-            Any: The processed argument value.
+            Any: Processed argument value.
         """
         arg_config = self.arg_config[arg_name]
         if use_idx_setter and self.idx_setters is not None and arg_name in self.idx_setters:
@@ -413,7 +413,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             td_arr (ArrayLike): Input array of timedelta-like elements.
 
         Returns:
-            ArrayLike: The processed timedelta array.
+            ArrayLike: Processed timedelta array.
         """
         if td_arr.dtype == object:
             if td_arr.ndim in (0, 1):
@@ -438,7 +438,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             dt_arr (ArrayLike): Input array of datetime-like elements.
 
         Returns:
-            ArrayLike: The processed datetime array.
+            ArrayLike: Processed datetime array.
         """
         if dt_arr.dtype == object:
             if dt_arr.ndim in (0, 1):
@@ -463,7 +463,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             td_arr (ArrayLike): Input array of timedelta-like elements.
 
         Returns:
-            ArrayLike: The array of nanoseconds.
+            ArrayLike: Array of nanoseconds.
         """
         return dt.to_ns(cls.prepare_td_arr(td_arr))
 
@@ -475,7 +475,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             dt_arr (ArrayLike): Input array of datetime-like elements.
 
         Returns:
-            ArrayLike: The array of nanoseconds.
+            ArrayLike: Array of nanoseconds.
         """
         return dt.to_ns(cls.prepare_dt_arr(dt_arr))
 
@@ -488,7 +488,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
                 the default post-argument is used.
 
         Returns:
-            object: The processed argument.
+            object: Processed argument.
         """
         if value is None:
             if arg_name in self.post_args:
@@ -568,7 +568,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             target_func_name (str): Name of the target function.
 
         Returns:
-            Callable: The found target function.
+            Callable: Found target function.
         """
         raise NotImplementedError
 
@@ -581,7 +581,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
             staticized (KwargsLike): Dictionary with function configuration or a function reference.
 
         Returns:
-            Callable: The resolved target function.
+            Callable: Resolved target function.
         """
         if staticized is None:
             func = cls.find_target_func(target_func_name)
@@ -631,7 +631,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Argument `template_context` before broadcasting.
 
         Returns:
-            Kwargs: The template context before broadcasting.
+            Kwargs: Template context before broadcasting.
         """
         return merge_dicts(dict(preparer=self), self["template_context"])
 
@@ -737,7 +737,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         the post-broadcast arguments and the second element is the array wrapper.
 
         Returns:
-            Any: The result of the broadcasting process.
+            Any: Result of the broadcasting process.
         """
         return broadcast(self.args_to_broadcast, **self.broadcast_kwargs)
 
@@ -779,7 +779,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         Extracts the second element of the broadcasting result.
 
         Returns:
-            ArrayWrapper: The array wrapper containing the broadcasted data.
+            ArrayWrapper: Array wrapper containing the broadcasted data.
         """
         return self.broadcast_result[1]
 
@@ -790,7 +790,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         Uses the 2D shape attribute of the wrapper.
 
         Returns:
-            Shape: The target shape of the array wrapper.
+            Shape: Target shape of the array wrapper.
         """
         return self.wrapper.shape_2d
 
@@ -799,7 +799,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Index in nanosecond format from the array wrapper.
 
         Returns:
-            Array1d: The index of the array wrapper in nanoseconds.
+            Array1d: Index of the array wrapper in nanoseconds.
         """
         return self.wrapper.ns_index
 
@@ -808,7 +808,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Frequency in nanosecond format from the array wrapper.
 
         Returns:
-            int: The frequency of the array wrapper in nanoseconds.
+            int: Frequency of the array wrapper in nanoseconds.
         """
         return self.wrapper.ns_freq
 
@@ -823,7 +823,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         and the pre-template context.
 
         Returns:
-            Kwargs: The complete template context for the preparer.
+            Kwargs: Complete template context for the preparer.
         """
         builtin_args = {}
         for k, v in self.arg_config.items():

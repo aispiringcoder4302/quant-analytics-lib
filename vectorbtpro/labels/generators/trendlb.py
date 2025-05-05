@@ -81,7 +81,7 @@ class _TRENDLB(TRENDLB):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:
-            BaseFigure: A figure object displaying the overlay of the median and heatmap.
+            BaseFigure: Figure object displaying the overlay of the median and heatmap.
 
         Examples:
             ```pycon

@@ -404,7 +404,7 @@ def to_any_array(obj: tp.ArrayLike) -> tp.AnyArray:
         obj (ArrayLike): Object to convert.
 
     Returns:
-        AnyArray: The converted array.
+        AnyArray: Converted array.
     """
     if is_any_array(obj):
         return obj

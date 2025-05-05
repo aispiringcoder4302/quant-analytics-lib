@@ -48,7 +48,7 @@ def generate_random_data_1d_nb(
             reducing their negative impact.
 
     Returns:
-        Array1d: An array of generated data.
+        Array1d: Array of generated data.
     """
     out = np.empty(n_rows, dtype=float_)
 
@@ -93,7 +93,7 @@ def generate_random_data_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array2d: A two-dimensional array of generated data.
+        Array2d: Two-dimensional array of generated data.
     """
     start_value_ = to_1d_array_nb(np.asarray(start_value))
     mean_ = to_1d_array_nb(np.asarray(mean))
@@ -132,7 +132,7 @@ def generate_gbm_data_1d_nb(
         dt (float): Time increment per period.
 
     Returns:
-        Array2d: An array containing the simulated GBM data.
+        Array2d: Array containing the simulated GBM data.
     """
     out = np.empty(n_rows, dtype=float_)
 
@@ -173,7 +173,7 @@ def generate_gbm_data_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array2d: A two-dimensional array containing the simulated GBM data.
+        Array2d: Two-dimensional array containing the simulated GBM data.
     """
     start_value_ = to_1d_array_nb(np.asarray(start_value))
     mean_ = to_1d_array_nb(np.asarray(mean))

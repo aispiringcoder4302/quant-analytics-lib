@@ -42,7 +42,7 @@ def substitute_anchor(wrapper: ArrayWrapper, anchor: tp.Optional[tp.FrequencyLik
             See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
 
     Returns:
-        Array1d: An array containing the group lengths.
+        Array1d: Array containing the group lengths.
     """
     if anchor is None:
         return np.array([wrapper.shape[0]])
@@ -122,7 +122,7 @@ class _VWAP(VWAP):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure containing the plotted traces.
+            BaseFigure: Updated figure containing the plotted traces.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

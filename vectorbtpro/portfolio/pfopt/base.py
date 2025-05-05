@@ -108,7 +108,7 @@ def select_pfopt_func_kwargs(
             multiple functions.
 
     Returns:
-        Kwargs: A dictionary of keyword arguments for `pypfopt_func`.
+        Kwargs: Dictionary of keyword arguments for `pypfopt_func`.
     """
     if kwargs is None:
         return {}
@@ -162,7 +162,7 @@ def resolve_pypfopt_func_kwargs(
         **kwargs: Keyword arguments for parameter resolution.
 
     Returns:
-        Kwargs: A dictionary of resolved keyword arguments for use with `pypfopt_func`.
+        Kwargs: Dictionary of resolved keyword arguments for use with `pypfopt_func`.
 
     !!! note
         When using custom functions, ensure that their parameters are explicitly defined (i.e., avoid variable
@@ -368,7 +368,7 @@ def resolve_pypfopt_func_call(pypfopt_func: tp.Callable, **kwargs) -> tp.Any:
         **kwargs: Keyword arguments for `resolve_pypfopt_func_kwargs`.
 
     Returns:
-        Any: The result of calling `pypfopt_func` with the resolved keyword arguments.
+        Any: Result of calling `pypfopt_func` with the resolved keyword arguments.
     """
     return pypfopt_func(**resolve_pypfopt_func_kwargs(pypfopt_func, **kwargs))
 
@@ -396,7 +396,7 @@ def resolve_pypfopt_expected_returns(
         **kwargs: Keyword arguments for the expected returns function.
 
     Returns:
-        AnyArray: The computed expected returns.
+        AnyArray: Computed expected returns.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
@@ -463,7 +463,7 @@ def resolve_pypfopt_cov_matrix(
         **kwargs: Keyword arguments for the covariance model function.
 
     Returns:
-        AnyArray: The computed covariance matrix.
+        AnyArray: Computed covariance matrix.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
@@ -537,7 +537,7 @@ def resolve_pypfopt_optimizer(
         **kwargs: Keyword arguments for the optimization function.
 
     Returns:
-        BaseOptimizer: An instance of `pypfopt.base_optimizer.BaseOptimizer`.
+        BaseOptimizer: Instance of `pypfopt.base_optimizer.BaseOptimizer`.
 
     !!! note
         Resolution is delegated to `resolve_pypfopt_func_call`.
@@ -896,7 +896,7 @@ def prepare_returns(
         dropna_any (bool): Drop rows where any entry is missing if NaN values are not replaced.
 
     Returns:
-        Frame: A processed DataFrame of return values.
+        Frame: Processed DataFrame of return values.
     """
     returns = to_pd_array(returns)
     if not isinstance(returns, pd.DataFrame):
@@ -946,7 +946,7 @@ def resolve_riskfolio_func_kwargs(
         **kwargs: Keyword arguments to be filtered.
 
     Returns:
-        Kwargs: A dictionary containing the keyword arguments relevant to `riskfolio_func`.
+        Kwargs: Dictionary containing the keyword arguments relevant to `riskfolio_func`.
     """
     func_arg_names = get_func_arg_names(riskfolio_func)
     matched_kwargs = dict()
@@ -982,7 +982,7 @@ def resolve_asset_classes(
         If the columns have a single level or names are not found, the sequence is used
         directly as one asset class set named "Class".
     * Sequence of dicts: Each dictionary becomes a row in the resulting DataFrame.
-    * DataFrame: The first column contains assets and subsequent columns represent asset class sets
+    * DataFrame: First column contains assets and subsequent columns represent asset class sets
         (the target format accepted by Riskfolio-Lib).
 
     Args:
@@ -991,7 +991,7 @@ def resolve_asset_classes(
         col_indices (Optional[Sequence[int]]): Specific indices to select from the asset class data.
 
     Returns:
-        Frame: A DataFrame formatted for Riskfolio-Lib containing asset classes.
+        Frame: DataFrame formatted for Riskfolio-Lib containing asset classes.
 
     !!! note
         If `asset_classes` is neither None nor a DataFrame, the bottom-most level in `columns`
@@ -1037,7 +1037,7 @@ def resolve_assets_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) -> 
             list of dictionaries.
 
     Returns:
-        Frame: A DataFrame structured for asset constraints in Riskfolio-Lib.
+        Frame: DataFrame structured for asset constraints in Riskfolio-Lib.
     """
     if not isinstance(constraints, pd.DataFrame):
         if isinstance(constraints, dict):
@@ -1082,7 +1082,7 @@ def resolve_factors_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) ->
             list of dictionaries.
 
     Returns:
-        Frame: A DataFrame structured for factor constraints in Riskfolio-Lib.
+        Frame: DataFrame structured for factor constraints in Riskfolio-Lib.
     """
     if not isinstance(constraints, pd.DataFrame):
         if isinstance(constraints, dict):
@@ -1123,7 +1123,7 @@ def resolve_assets_views(views: tp.Union[tp.Frame, tp.Sequence]) -> tp.Frame:
             Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
 
     Returns:
-        Frame: A DataFrame structured for asset views in Riskfolio-Lib.
+        Frame: DataFrame structured for asset views in Riskfolio-Lib.
     """
     if not isinstance(views, pd.DataFrame):
         if isinstance(views, dict):
@@ -1166,7 +1166,7 @@ def resolve_factors_views(views: tp.Union[tp.Frame, tp.Sequence]) -> tp.Frame:
             Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
 
     Returns:
-        Frame: The resolved DataFrame formatted for Riskfolio-Lib.
+        Frame: Resolved DataFrame formatted for Riskfolio-Lib.
     """
     if not isinstance(views, pd.DataFrame):
         if isinstance(views, dict):
@@ -1206,7 +1206,7 @@ def resolve_hrp_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) -> tp.
             Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
 
     Returns:
-        Frame: The resolved DataFrame formatted for Riskfolio-Lib.
+        Frame: Resolved DataFrame formatted for Riskfolio-Lib.
     """
     if not isinstance(constraints, pd.DataFrame):
         if isinstance(constraints, dict):
@@ -1892,7 +1892,7 @@ class PortfolioOptimizer(Analyzable):
                 `PortfolioOptimizer.resolve_row_stack_kwargs` and `PortfolioOptimizer.resolve_stack_kwargs`.
 
         Returns:
-            PortfolioOptimizer: A new `PortfolioOptimizer` instance with row-stacked attributes.
+            PortfolioOptimizer: New `PortfolioOptimizer` instance with row-stacked attributes.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -1955,7 +1955,7 @@ class PortfolioOptimizer(Analyzable):
                 `PortfolioOptimizer.resolve_column_stack_kwargs` and `PortfolioOptimizer.resolve_stack_kwargs`.
 
         Returns:
-            PortfolioOptimizer: A new `PortfolioOptimizer` instance with column-stacked attributes.
+            PortfolioOptimizer: New `PortfolioOptimizer` instance with column-stacked attributes.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -2016,7 +2016,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
-            PortfolioOptimizer: A new `PortfolioOptimizer` instance with updated indexing.
+            PortfolioOptimizer: New `PortfolioOptimizer` instance with updated indexing.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(*args, **kwargs)
@@ -2046,7 +2046,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample`.
 
         Returns:
-            PortfolioOptimizer: A new `PortfolioOptimizer` instance with resampled attributes.
+            PortfolioOptimizer: New `PortfolioOptimizer` instance with resampled attributes.
         """
         new_wrapper = self.wrapper.resample(*args, **kwargs)
         new_alloc_records = self.alloc_records.resample(*args, **kwargs)
@@ -2332,7 +2332,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `allocate_func`.
 
         Returns:
-            PortfolioOptimizer: An instance of portfolio optimizer containing allocation points and allocations.
+            PortfolioOptimizer: Instance of portfolio optimizer containing allocation points and allocations.
 
         !!! info
             For default settings, see `vectorbtpro._settings.params`.
@@ -2691,7 +2691,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
-            PortfolioOptimizer: An instance of the portfolio optimizer with the specified allocations.
+            PortfolioOptimizer: Instance of the portfolio optimizer with the specified allocations.
         """
         if isinstance(allocations, pd.Series):
             allocations = allocations.to_dict()
@@ -2754,7 +2754,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocations`.
 
         Returns:
-            PortfolioOptimizer: An instance of the portfolio optimizer with the initial allocation
+            PortfolioOptimizer: Instance of the portfolio optimizer with the initial allocation
                 applied at the first index.
         """
         return cls.from_allocations(wrapper, allocations, on=0, **kwargs)
@@ -2786,7 +2786,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
-            PortfolioOptimizer: An instance of the portfolio optimizer with the filled allocations.
+            PortfolioOptimizer: Instance of the portfolio optimizer with the filled allocations.
         """
         if wrapper is None:
             if checks.is_frame(allocations):
@@ -2825,7 +2825,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
-            PortfolioOptimizer: An instance of the portfolio optimizer with uniform allocations.
+            PortfolioOptimizer: Instance of the portfolio optimizer with uniform allocations.
         """
 
         def _uniform_allocate_func():
@@ -2861,7 +2861,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
-            PortfolioOptimizer: An instance of the portfolio optimizer with random allocations.
+            PortfolioOptimizer: Instance of the portfolio optimizer with random allocations.
         """
         if isinstance(direction, str):
             direction = map_enum_fields(direction, Direction)
@@ -2917,7 +2917,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
 
         Returns:
-            PortfolioOptimizer: An instance of the portfolio optimizer with allocations generated
+            PortfolioOptimizer: Instance of the portfolio optimizer with allocations generated
                 by the universal algorithm.
         """
         from vectorbtpro.utils.module_ import assert_can_import
@@ -3413,7 +3413,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `optimize_func`.
 
         Returns:
-            PortfolioOptimizer: A new instance of `PortfolioOptimizer` with generated allocation results.
+            PortfolioOptimizer: New instance of `PortfolioOptimizer` with generated allocation results.
 
         !!! info
             For default settings, see `vectorbtpro._settings.params`.
@@ -3797,7 +3797,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_optimize_func` and `pypfopt_optimize`.
 
         Returns:
-            PortfolioOptimizer: A portfolio optimizer instance.
+            PortfolioOptimizer: Portfolio optimizer instance.
         """
         if wrapper is None:
             if "prices" in kwargs:
@@ -3832,7 +3832,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `PortfolioOptimizer.from_optimize_func` and `riskfolio_optimize`.
 
         Returns:
-            PortfolioOptimizer: A portfolio optimizer instance.
+            PortfolioOptimizer: Portfolio optimizer instance.
         """
         if wrapper is None:
             if not isinstance(returns, CustomTemplate):
@@ -3864,7 +3864,7 @@ class PortfolioOptimizer(Analyzable):
                 group levels are squeezed in the resulting DataFrame.
 
         Returns:
-            DataFrame: A DataFrame containing the allocation groups.
+            DataFrame: DataFrame containing the allocation groups.
         """
         idx_arr = self.alloc_records.get_field_arr("idx")
         group_arr = self.alloc_records.col_arr
@@ -3887,7 +3887,7 @@ class PortfolioOptimizer(Analyzable):
         """Allocation DataFrame computed using `PortfolioOptimizer.get_allocations` with default arguments.
 
         Returns:
-            Frame: A DataFrame of allocations.
+            Frame: DataFrame of allocations.
         """
         return self.get_allocations()
 
@@ -3896,7 +3896,7 @@ class PortfolioOptimizer(Analyzable):
         """Mean allocation per column.
 
         Returns:
-            Series: A Series representing the mean allocation for each column.
+            Series: Series representing the mean allocation for each column.
         """
         group_level_names = self.wrapper.grouper.get_index().names
         return self.get_allocations(squeeze_groups=False).groupby(group_level_names).mean().transpose()
@@ -3923,7 +3923,7 @@ class PortfolioOptimizer(Analyzable):
                 group levels are squeezed in the resulting DataFrame.
 
         Returns:
-            DataFrame: A DataFrame with filled allocation values.
+            DataFrame: DataFrame with filled allocation values.
         """
         if wrap_kwargs is None:
             wrap_kwargs = {}
@@ -3961,7 +3961,7 @@ class PortfolioOptimizer(Analyzable):
         `PortfolioOptimizer.fill_allocations` with default parameters.
 
         Returns:
-            Frame: A DataFrame of filled allocations.
+            Frame: DataFrame of filled allocations.
         """
         return self.fill_allocations()
 
@@ -3976,7 +3976,7 @@ class PortfolioOptimizer(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.portfolio.base.Portfolio.from_optimizer`.
 
         Returns:
-            Portfolio: A simulated portfolio instance.
+            Portfolio: Simulated portfolio instance.
         """
         from vectorbtpro.portfolio.base import Portfolio
 
@@ -3992,7 +3992,7 @@ class PortfolioOptimizer(Analyzable):
         from `vectorbtpro._settings.pfopt`.
 
         Returns:
-            Kwargs: A dictionary containing default statistical settings.
+            Kwargs: Dictionary containing default statistical settings.
         """
         from vectorbtpro._settings import settings
 
@@ -4082,7 +4082,7 @@ class PortfolioOptimizer(Analyzable):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The figure containing the allocation plot.
+            BaseFigure: Figure containing the allocation plot.
 
         Examples:
             Continuing with the examples under `PortfolioOptimizer.from_optimize_func`:
@@ -4158,7 +4158,7 @@ class PortfolioOptimizer(Analyzable):
         `plots` from `vectorbtpro._settings.pfopt`.
 
         Returns:
-            Kwargs: A dictionary containing the default plotting configuration.
+            Kwargs: Dictionary containing the default plotting configuration.
         """
         from vectorbtpro._settings import settings
 

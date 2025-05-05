@@ -277,7 +277,7 @@ class TVClient(Configured):
         """Generate a unique session identifier for quote sessions.
 
         Returns:
-            str: The generated session identifier.
+            str: Generated session identifier.
         """
         stringLength = 12
         letters = string.ascii_lowercase
@@ -289,7 +289,7 @@ class TVClient(Configured):
         """Generate a unique chart session identifier for chart data.
 
         Returns:
-            str: The generated chart session identifier.
+            str: Generated chart session identifier.
         """
         stringLength = 12
         letters = string.ascii_lowercase
@@ -342,7 +342,7 @@ class TVClient(Configured):
             st (str): Message string.
 
         Returns:
-            str: The message string prefixed with its header.
+            str: Message string prefixed with its header.
         """
         return "~m~" + str(len(st)) + "~m~" + st
 
@@ -355,7 +355,7 @@ class TVClient(Configured):
             param_list (List[str]): List of parameter strings.
 
         Returns:
-            str: A JSON string representing the constructed message.
+            str: JSON string representing the constructed message.
         """
         return json.dumps({"m": func, "p": param_list}, separators=(",", ":"))
 
@@ -367,7 +367,7 @@ class TVClient(Configured):
             param_list (List[str]): List of parameter strings.
 
         Returns:
-            str: The fully formatted message string.
+            str: Fully formatted message string.
         """
         return self.prepend_header(self.construct_message(func, param_list))
 
@@ -393,7 +393,7 @@ class TVClient(Configured):
             symbol (Symbol): Symbol identifier.
 
         Returns:
-            Frame: A DataFrame with columns ['datetime', 'open', 'high', 'low', 'close', 'volume']
+            Frame: DataFrame with columns ['datetime', 'open', 'high', 'low', 'close', 'volume']
                 and an added 'symbol' column, indexed by datetime.
         """
         search_result = re.search(r'"s":\[(.+?)\}\]', raw_data)
@@ -437,7 +437,7 @@ class TVClient(Configured):
                 * 2 for the following contract.
 
         Returns:
-            str: The formatted trading symbol.
+            str: Formatted trading symbol.
         """
         if ":" in symbol:
             pass
@@ -1007,7 +1007,7 @@ class TVData(RemoteData):
             **client_config: Configuration parameters for creating a new client.
 
         Returns:
-            TVClient: The resolved client instance.
+            TVClient: Resolved client instance.
 
         Raises:
             ValueError: If both `client` and `client_config` are provided.
@@ -1078,7 +1078,7 @@ class TVData(RemoteData):
             retries (Optional[int]): Number of retries on failure to fetch data.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         if client_config is None:
             client_config = {}

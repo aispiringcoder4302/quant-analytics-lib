@@ -46,7 +46,7 @@ def send_action(action: str) -> tp.Callable:
         action (str): Telegram chat action to send (e.g., 'typing', 'upload_photo').
 
     Returns:
-        Callable: A decorator that wraps the target command function.
+        Callable: Decorator that wraps the target command function.
     """
 
     def decorator(func: tp.Callable) -> tp.Callable:
@@ -65,11 +65,11 @@ def self_decorator(self, func: tp.Callable) -> tp.Callable:
     """Decorator that injects the bot instance as the first argument to a command function.
 
     Args:
-        self: The bot instance to pass to the command.
+        self: Bot instance to pass to the command.
         func (Callable): Command function to wrap.
 
     Returns:
-        Callable: The decorated command function with the bot instance provided.
+        Callable: Decorated command function with the bot instance provided.
     """
 
     def _command_func(update, context, *args, **kwargs):
@@ -281,7 +281,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Telegram log handler instance for logging incoming user updates.
 
             Returns:
-                LogHandler: An instance of `LogHandler` set up for logging updates.
+                LogHandler: Instance of `LogHandler` set up for logging updates.
             """
             return LogHandler(lambda update, context: None)
 
@@ -475,7 +475,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Override this property to define a custom start message.
 
             Returns:
-                str: The message.
+                str: Message.
             """
             return "Hello!"
 
@@ -502,7 +502,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             Override this property to define a custom help message.
 
             Returns:
-                str: The message.
+                str: Message.
             """
             return "Can't help you here, buddy."
 
@@ -739,7 +739,7 @@ else:
             arguments (except for `defaults`, which is passed as a single argument).
 
             Returns:
-                Application: The constructed application instance.
+                Application: Constructed application instance.
 
             !!! info
                 For default settings, see `bot` in `vectorbtpro._settings.telegram`.
@@ -811,7 +811,7 @@ else:
             """Keyword arguments for GIPHY.
 
             Returns:
-                Kwargs: A dictionary of keyword arguments for configuring GIPHY.
+                Kwargs: Dictionary of keyword arguments for configuring GIPHY.
             """
             return self._giphy_kwargs
 
@@ -820,7 +820,7 @@ else:
             """Application instance.
 
             Returns:
-                Application: The current application instance.
+                Application: Current application instance.
             """
             return self._application
 
@@ -852,7 +852,7 @@ else:
             """Log handler instance.
 
             Returns:
-                LogHandler: An instance of the log handler.
+                LogHandler: Instance of the log handler.
             """
             return LogHandler(self.log_callback)
 
@@ -1000,7 +1000,7 @@ else:
             Message sent to a chat when the `/start` command is received.
 
             Returns:
-                str: The start message.
+                str: Start message.
             """
             return "Hello!"
 
@@ -1029,7 +1029,7 @@ else:
             Message sent to a chat when the `/help` command is received.
 
             Returns:
-                str: The help message.
+                str: Help message.
             """
             return "Can't help you here, buddy."
 

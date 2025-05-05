@@ -404,7 +404,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.apply_mapping`.
 
         Returns:
-            SeriesFrame: The data with the applied mapping.
+            SeriesFrame: Data with the applied mapping.
         """
         mapping = self.resolve_mapping(mapping)
         return apply_mapping(self.obj, mapping, **kwargs)
@@ -427,7 +427,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.fshift`.
 
         Returns:
-            SeriesFrame: The data with the shifted values.
+            SeriesFrame: Data with the shifted values.
         """
         if checks.is_int(n):
             return self.fshift(n, fill_value=fill_value, **kwargs)
@@ -449,7 +449,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.rolling_any`.
 
         Returns:
-            SeriesFrame: A boolean Series/DataFrame indicating if any value is True.
+            SeriesFrame: Boolean Series/DataFrame indicating if any value is True.
         """
         wrap_kwargs = kwargs.pop("wrap_kwargs", {})
         wrap_kwargs = merge_dicts(dict(fillna=False, dtype=bool), wrap_kwargs)
@@ -466,7 +466,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.rolling_all`.
 
         Returns:
-            SeriesFrame: A boolean Series/DataFrame indicating if all values are True.
+            SeriesFrame: Boolean Series/DataFrame indicating if all values are True.
         """
         wrap_kwargs = kwargs.pop("wrap_kwargs", {})
         wrap_kwargs = merge_dicts(dict(fillna=False, dtype=bool), wrap_kwargs)
@@ -504,7 +504,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A Series/DataFrame containing the indices of the minimum values
+            SeriesFrame: Series/DataFrame containing the indices of the minimum values
                 within the rolling windows.
 
         See:
@@ -528,7 +528,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.rolling_idxmin`.
 
         Returns:
-            SeriesFrame: A Series/DataFrame containing the indices of the minimum values
+            SeriesFrame: Series/DataFrame containing the indices of the minimum values
                 within the expanding window.
         """
         return self.rolling_idxmin(None, minp=minp, **kwargs)
@@ -561,7 +561,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A Series/DataFrame containing the indices of the maximum values
+            SeriesFrame: Series/DataFrame containing the indices of the maximum values
                 within the rolling windows.
 
         See:
@@ -585,7 +585,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.rolling_idxmax`.
 
         Returns:
-            SeriesFrame: A Series/DataFrame containing the indices of the maximum values
+            SeriesFrame: Series/DataFrame containing the indices of the maximum values
                 within the expanding window.
         """
         return self.rolling_idxmax(None, minp=minp, **kwargs)
@@ -1142,7 +1142,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The rolling correlation computed over the specified window.
+            SeriesFrame: Rolling correlation computed over the specified window.
 
         See:
             `vectorbtpro.generic.nb.rolling.rolling_corr_nb`
@@ -1164,7 +1164,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.rolling_corr`.
 
         Returns:
-            SeriesFrame: The expanding correlation result.
+            SeriesFrame: Expanding correlation result.
         """
         return self.rolling_corr(other, None, minp=minp, **kwargs)
 
@@ -1267,7 +1267,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The rolling rank result.
+            SeriesFrame: Rolling rank result.
 
         See:
             `vectorbtpro.generic.nb.rolling.rolling_rank_nb`
@@ -1287,7 +1287,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.rolling_rank`.
 
         Returns:
-            SeriesFrame: The expanding rank result.
+            SeriesFrame: Expanding rank result.
         """
         return self.rolling_rank(None, minp=minp, **kwargs)
 
@@ -1369,7 +1369,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The rolling pattern similarity result.
+            SeriesFrame: Rolling pattern similarity result.
 
         See:
             `vectorbtpro.generic.nb.rolling.rolling_pattern_similarity_nb`
@@ -1465,7 +1465,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The result of applying the mapping function to the input data, wrapped appropriately.
+            SeriesFrame: Result of applying the mapping function to the input data, wrapped appropriately.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.map_nb` for regular mapping.
@@ -1616,7 +1616,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The result of applying the function to the input data.
+            SeriesFrame: Result of applying the function to the input data.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.apply_nb` for non-meta operations and `axis=1`.
@@ -1735,7 +1735,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.apply_along_axis`.
 
         Returns:
-            SeriesFrame: The result of applying the function row-wise.
+            SeriesFrame: Result of applying the function row-wise.
         """
         return self.apply_along_axis(*args, axis=0, **kwargs)
 
@@ -1748,7 +1748,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.apply_along_axis`.
 
         Returns:
-            SeriesFrame: The result of applying the function column-wise.
+            SeriesFrame: Result of applying the function column-wise.
         """
         return self.apply_along_axis(*args, axis=1, **kwargs)
 
@@ -1803,7 +1803,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The result of the rolling reduction.
+            SeriesFrame: Result of the rolling reduction.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.rolling_reduce_nb` for integer windows.
@@ -1959,7 +1959,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.rolling_apply`.
 
         Returns:
-            SeriesFrame: The result of the expanding reduction.
+            SeriesFrame: Result of the expanding reduction.
         """
         return cls_or_self.rolling_apply(None, *args, **kwargs)
 
@@ -2015,7 +2015,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            SeriesFrame: The wrapped result after applying the groupby reduction.
+            SeriesFrame: Wrapped result after applying the groupby reduction.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.groupby_reduce_nb` for the standard version.
@@ -2329,7 +2329,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `reduce_func_nb`.
 
         Returns:
-            SeriesFrame: The result of the resampling and reduction.
+            SeriesFrame: Result of the resampling and reduction.
 
         Examples:
             Using regular function:
@@ -2518,7 +2518,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            Series: The result of the apply and reduce operation.
+            Series: Result of the apply and reduce operation.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.apply_and_reduce_nb` for the standard version.
@@ -2693,7 +2693,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeriesFrame: The reduced data as a Series or DataFrame.
+            MaybeSeriesFrame: Reduced data as a Series or DataFrame.
 
         See:
             If the data is grouped and `flatten` is True:
@@ -2972,7 +2972,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Frame: The resulting DataFrame after applying the proximity reduction.
+            Frame: Resulting DataFrame after applying the proximity reduction.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.proximity_reduce_nb` for the standard version.
@@ -3133,7 +3133,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeriesFrame: The squeezed data as a Series or DataFrame.
+            MaybeSeriesFrame: Squeezed data as a Series or DataFrame.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.squeeze_grouped_nb` for the standard version.
@@ -3272,7 +3272,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeriesFrame: The flattened data as a Series or DataFrame.
+            MaybeSeriesFrame: Flattened data as a Series or DataFrame.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.flatten_uniform_grouped_nb` for uniform groups.
@@ -3585,7 +3585,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            SeriesFrame: The resampled data as a Pandas Series or DataFrame.
+            SeriesFrame: Resampled data as a Pandas Series or DataFrame.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.reduce_index_ranges_nb` for standard operations.
@@ -3803,7 +3803,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A resampled Series or DataFrame with aggregated values,
+            SeriesFrame: Resampled Series or DataFrame with aggregated values,
                 wrapped based on the specified parameters.
 
         See:
@@ -4000,7 +4000,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The minimum value computed from non-NaN elements.
+            MaybeSeries: Minimum value computed from non-NaN elements.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.min_reduce_nb` for grouped operations.
@@ -4063,7 +4063,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The maximum value computed from non-NaN elements.
+            MaybeSeries: Maximum value computed from non-NaN elements.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.max_reduce_nb` for grouped operations.
@@ -4126,7 +4126,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The mean value computed from non-NaN elements.
+            MaybeSeries: Mean value computed from non-NaN elements.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.mean_reduce_nb` for grouped operations.
@@ -4189,7 +4189,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The median value computed from non-NaN elements.
+            MaybeSeries: Median value computed from non-NaN elements.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.median_reduce_nb` for grouped operations.
@@ -4254,7 +4254,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The standard deviation computed from non-NaN elements.
+            MaybeSeries: Standard deviation computed from non-NaN elements.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.std_reduce_nb` for grouped operations.
@@ -4318,7 +4318,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The sum computed from non-NaN elements.
+            MaybeSeries: Sum computed from non-NaN elements.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.sum_reduce_nb` for grouped operations.
@@ -4381,7 +4381,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The count computed from non-NaN elements.
+            MaybeSeries: Count computed from non-NaN elements.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.count_reduce_nb` for grouped operations.
@@ -4447,7 +4447,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The covariance computed from non-NaN elements.
+            MaybeSeries: Covariance computed from non-NaN elements.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.cov_reduce_grouped_meta_nb` for grouped operations.
@@ -4505,7 +4505,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The correlation coefficient computed from non-NaN elements.
+            MaybeSeries: Correlation coefficient computed from non-NaN elements.
 
         See:
             * `vectorbtpro.generic.nb.apply_reduce.corr_reduce_grouped_meta_nb` for grouped operations.
@@ -4556,7 +4556,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The rank as a Pandas Series or DataFrame.
+            SeriesFrame: Rank as a Pandas Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.base.rank_nb`
@@ -4594,7 +4594,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            SeriesFrame: The labeled index as a Pandas Series or DataFrame.
+            SeriesFrame: Labeled index as a Pandas Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.apply_reduce.argmin_reduce_nb`
@@ -4649,7 +4649,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            SeriesFrame: The labeled index as a Pandas Series or DataFrame.
+            SeriesFrame: Labeled index as a Pandas Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.apply_reduce.argmax_reduce_nb`
@@ -4713,7 +4713,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The descriptive statistics as a Pandas Series or DataFrame.
+            SeriesFrame: Descriptive statistics as a Pandas Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.apply_reduce.describe_reduce_nb`
@@ -4893,7 +4893,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
         Returns:
-            SeriesFrame: A Series or DataFrame with counts of unique values.
+            SeriesFrame: Series or DataFrame with counts of unique values.
 
         See:
             * `vectorbtpro.generic.nb.base.value_counts_per_row_nb` for `axis=0`.
@@ -5067,7 +5067,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The demeaned data as a Series or DataFrame.
+            SeriesFrame: Demeaned data as a Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.base.demean_nb`
@@ -5096,7 +5096,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for the transformer methods.
 
         Returns:
-            SeriesFrame: The transformed data as a Series or DataFrame.
+            SeriesFrame: Transformed data as a Series or DataFrame.
 
         Examples:
             ```pycon
@@ -5138,7 +5138,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.scale`.
 
         Returns:
-            SeriesFrame: The computed z-score as a Series or DataFrame.
+            SeriesFrame: Computed z-score as a Series or DataFrame.
         """
         return self.scale(with_mean=True, with_std=True, **kwargs)
 
@@ -5167,7 +5167,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The rebased data as a Series or DataFrame.
+            SeriesFrame: Rebased data as a Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.base.fbfill_nb`
@@ -5202,7 +5202,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The drawdown series as a Series or DataFrame.
+            SeriesFrame: Drawdown series as a Series or DataFrame.
 
         See:
             `vectorbtpro.generic.nb.records.drawdown_nb`
@@ -5225,7 +5225,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_array`.
 
         Returns:
-            Ranges: The ranges generated from the data.
+            Ranges: Ranges generated from the data.
         """
         wrapper_kwargs = merge_dicts(self.wrapper.config, wrapper_kwargs)
         return Ranges.from_array(self.obj, *args, wrapper_kwargs=wrapper_kwargs, **kwargs)
@@ -5235,7 +5235,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Range records computed with default arguments by invoking `GenericAccessor.get_ranges`.
 
         Returns:
-            Ranges: The ranges generated from the data.
+            Ranges: Ranges generated from the data.
         """
         return self.get_ranges()
 
@@ -5249,7 +5249,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
 
         Returns:
-            Drawdowns: The drawdowns generated from the data.
+            Drawdowns: Drawdowns generated from the data.
         """
         return Drawdowns.from_price(self.obj, *args, wrapper=self.wrapper, **kwargs)
 
@@ -5282,7 +5282,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`.
 
         Returns:
-            MappedArray: The mapped array.
+            MappedArray: Mapped array.
         """
         mapped_arr = self.to_2d_array().flatten(order="F")
         col_arr = np.repeat(np.arange(self.wrapper.shape_2d[1]), self.wrapper.shape_2d[0])
@@ -5310,7 +5310,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
-            SeriesFrame: The return series as a Series or DataFrame.
+            SeriesFrame: Return series as a Series or DataFrame.
         """
         from vectorbtpro.returns.accessors import ReturnsAccessor
 
@@ -5331,7 +5331,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
-            SeriesFrame: The log return series as a Series or DataFrame.
+            SeriesFrame: Log return series as a Series or DataFrame.
         """
         from vectorbtpro.returns.accessors import ReturnsAccessor
 
@@ -5354,7 +5354,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
-            SeriesFrame: The daily return series as a Series or DataFrame.
+            SeriesFrame: Daily return series as a Series or DataFrame.
         """
         from vectorbtpro.returns.accessors import ReturnsAccessor
 
@@ -5376,7 +5376,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
-            SeriesFrame: The daily log return series as a Series or DataFrame.
+            SeriesFrame: Daily log return series as a Series or DataFrame.
         """
         from vectorbtpro.returns.accessors import ReturnsAccessor
 
@@ -5400,7 +5400,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.PatternRanges.from_pattern_search`.
 
         Returns:
-            PatternRanges: The generated pattern range records.
+            PatternRanges: Generated pattern range records.
         """
         return PatternRanges.from_pattern_search(self.obj, *args, **kwargs)
 
@@ -5564,7 +5564,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
-            GenericAccessor: The resolved instance, possibly a new copy if conditions are met.
+            GenericAccessor: Resolved instance, possibly a new copy if conditions are met.
         """
         if cond_kwargs is None:
             cond_kwargs = {}
@@ -5951,7 +5951,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: A Plotly figure with the main series, comparative lines, and filled areas.
+            BaseFigure: Plotly figure with the main series, comparative lines, and filled areas.
 
         Examples:
             ```pycon
@@ -6102,7 +6102,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: A Plotly figure with the line plot and heatmap overlay.
+            BaseFigure: Plotly figure with the line plot and heatmap overlay.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -6577,7 +6577,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.scatterplot`.
 
         Returns:
-            BaseFigure: The generated probability plot figure with an optional reference line.
+            BaseFigure: Generated probability plot figure with an optional reference line.
 
         Examples:
             ```pycon
@@ -6631,7 +6631,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The generated stacked area chart.
+            BaseFigure: Generated stacked area chart.
 
         Examples:
             ```pycon
@@ -6784,7 +6784,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The figure object with the plotted pattern and error bands.
+            BaseFigure: Figure object with the plotted pattern and error bands.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -6973,7 +6973,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         the generic `plots` settings from `vectorbtpro._settings.generic`.
 
         Returns:
-            Kwargs: A dictionary of default plotting parameters.
+            Kwargs: Dictionary of default plotting parameters.
         """
         from vectorbtpro._settings import settings
 
@@ -7228,7 +7228,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Frame: A DataFrame representing the OHLC Renko bars with columns
+            Frame: DataFrame representing the OHLC Renko bars with columns
                 ["Open", "High", "Low", "Close"].
         """
         func = jit_reg.resolve_option(nb.to_renko_ohlc_1d_nb, jitted)
@@ -7467,7 +7467,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure with plotted projections and bands.
+            BaseFigure: Updated figure with plotted projections and bands.
 
         !!! note
             When using z-scores, the upper band should be positive, the middle computed as "mean", and

@@ -208,7 +208,7 @@ class ProgressBar(Base):
         """Keyword arguments for progress bar initialization.
 
         Returns:
-            Kwargs: A dictionary of keyword arguments used when initializing the progress bar.
+            Kwargs: Dictionary of keyword arguments used when initializing the progress bar.
         """
         return self._kwargs
 
@@ -226,7 +226,7 @@ class ProgressBar(Base):
         """Keyword arguments for setting the progress bar's description.
 
         Returns:
-            Kwargs: A dictionary of keyword arguments for customizing the progress bar's description.
+            Kwargs: Dictionary of keyword arguments for customizing the progress bar's description.
         """
         return self._desc_kwargs
 
@@ -551,7 +551,7 @@ class ProgressBar(Base):
             n (float): Number to format.
 
         Returns:
-            str: A formatted string representation of the number.
+            str: Formatted string representation of the number.
                 If the formatted string is shorter than the original, it is returned;
                 otherwise, the original string is returned.
         """
@@ -570,7 +570,7 @@ class ProgressBar(Base):
             desc (Union[None, str, dict]): Description to prepare.
 
         Returns:
-            str: A formatted description string.
+            str: Formatted description string.
         """
         if desc is None or desc is MISSING:
             return ""
@@ -743,7 +743,7 @@ class ProgressBar(Base):
             **kwargs: Keyword arguments for `ProgressBar.open`.
 
         Returns:
-            Self: The progress bar instance.
+            Self: Progress bar instance.
         """
         if self.show_progress or self.force_open_bar:
             self.open(**kwargs)
@@ -776,7 +776,7 @@ class ProgressBar(Base):
         """Return an iterator over the progress bar's iterable.
 
         Yields:
-            Any: The next object in the iterable.
+            Any: Next object in the iterable.
         """
         for obj in self.iterable:
             yield obj
@@ -843,7 +843,7 @@ class ProgressHidden(Base):
         """Dictionary containing the initial progress settings captured upon entering the context.
 
         Returns:
-            Kwargs: A dictionary of keyword arguments containing the initial progress settings.
+            Kwargs: Dictionary of keyword arguments containing the initial progress settings.
         """
         return self._init_settings
 
@@ -881,7 +881,7 @@ def with_progress_hidden(*args) -> tp.Callable:
         func (Callable): Function to be decorated.
 
     Returns:
-        Callable: A decorated function that executes with progress hidden.
+        Callable: Decorated function that executes with progress hidden.
     """
 
     def decorator(func: tp.Callable) -> tp.Callable:
@@ -938,7 +938,7 @@ class ProgressShown(Base):
         """Dictionary containing the initial progress settings captured upon entering the context.
 
         Returns:
-            Kwargs: A dictionary of keyword arguments containing the initial progress settings.
+            Kwargs: Dictionary of keyword arguments containing the initial progress settings.
         """
         return self._init_settings
 
@@ -976,7 +976,7 @@ def with_progress_shown(*args) -> tp.Callable:
         func (Callable): Function to be decorated.
 
     Returns:
-        Callable: A decorated function that executes with progress shown.
+        Callable: Decorated function that executes with progress shown.
     """
 
     def decorator(func: tp.Callable) -> tp.Callable:

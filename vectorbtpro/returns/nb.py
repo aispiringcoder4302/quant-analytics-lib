@@ -64,7 +64,7 @@ def get_return_nb(
         nan_to_zero (bool): If True, convert a NaN return to 0.
 
     Returns:
-        float: The calculated return value.
+        float: Calculated return value.
     """
     if input_value == 0:
         if output_value == 0:
@@ -100,7 +100,7 @@ def returns_1d_nb(
         log_returns (bool): Flag to compute logarithmic returns.
 
     Returns:
-        Array1d: An array of calculated return values.
+        Array1d: Array of calculated return values.
     """
     out = np.empty(arr.shape, dtype=float_)
     if np.isnan(init_value) and arr.shape[0] > 0:
@@ -151,7 +151,7 @@ def returns_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array2d: A 2-dimensional array containing calculated return values for each column.
+        Array2d: 2-dimensional array containing calculated return values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -192,7 +192,7 @@ def mirror_returns_1d_nb(returns: tp.Array1d, log_returns: bool = False) -> tp.A
         log_returns (bool): Flag indicating whether returns are logarithmic.
 
     Returns:
-        Array1d: An array of mirrored return values.
+        Array1d: Array of mirrored return values.
     """
     out = np.empty(returns.shape, dtype=float_)
     for i in range(returns.shape[0]):
@@ -236,7 +236,7 @@ def mirror_returns_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array2d: A 2-dimensional array of mirrored return values.
+        Array2d: 2-dimensional array of mirrored return values.
 
     !!! tip
         This function is parallelizable.
@@ -275,7 +275,7 @@ def cumulative_returns_1d_nb(
         log_returns (bool): Flag indicating whether returns are logarithmic.
 
     Returns:
-        Array1d: An array of cumulative return values.
+        Array1d: Array of cumulative return values.
     """
     out = np.empty_like(returns, dtype=float_)
     if log_returns:
@@ -1039,7 +1039,7 @@ def max_drawdown_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array1d: An array containing the maximum drawdown for each column.
+        Array1d: Array containing the maximum drawdown for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1097,7 +1097,7 @@ def rolling_max_drawdown_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array2d: A 2-dimensional array of rolling maximum drawdown values.
+        Array2d: 2-dimensional array of rolling maximum drawdown values.
 
     !!! tip
         This function is parallelizable.
@@ -1143,7 +1143,7 @@ def calmar_ratio_1d_nb(
             Defaults to the length of the returns array.
 
     Returns:
-        float: The Calmar ratio of the strategy.
+        float: Calmar ratio of the strategy.
 
             Returns NaN if the maximum drawdown is zero, or infinity when appropriate.
     """
@@ -1203,7 +1203,7 @@ def calmar_ratio_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array1d: An array containing the Calmar ratio for each column.
+        Array1d: Array containing the Calmar ratio for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1274,7 +1274,7 @@ def rolling_calmar_ratio_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array2d: A 2-dimensional array containing the rolling Calmar ratios for each column.
+        Array2d: 2-dimensional array containing the rolling Calmar ratios for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1312,7 +1312,7 @@ def deannualized_return_nb(ret: float, ann_factor: float) -> float:
         ann_factor (float): Annualization factor.
 
     Returns:
-        float: The deannualized return.
+        float: Deannualized return.
     """
     if ann_factor == 1:
         return ret
@@ -1329,7 +1329,7 @@ def omega_ratio_1d_nb(returns: tp.Array1d) -> float:
         returns (Array1d): 1-dimensional array of returns.
 
     Returns:
-        float: The Omega ratio, calculated as the sum of positive returns divided by
+        float: Omega ratio, calculated as the sum of positive returns divided by
             the absolute sum of negative returns.
 
             Returns NaN if both sums are zero, or infinity if there are positive returns
@@ -1939,7 +1939,7 @@ def sortino_ratio_1d_nb(returns: tp.Array1d, ann_factor: float) -> float:
         ann_factor (float): Annualization factor.
 
     Returns:
-        float: The Sortino ratio for the given strategy.
+        float: Sortino ratio for the given strategy.
     """
     avg_annualized_return = np.nanmean(returns) * ann_factor
     downside_risk = downside_risk_1d_nb(returns, ann_factor)
@@ -2077,7 +2077,7 @@ def information_ratio_1d_nb(returns: tp.Array1d, ddof: int = 0) -> float:
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        float: The information ratio, computed as the ratio of the mean to the standard deviation.
+        float: Information ratio, computed as the ratio of the mean to the standard deviation.
     """
     mean = np.nanmean(returns)
     std = generic_nb.nanstd_1d_nb(returns, ddof=ddof)
@@ -2218,7 +2218,7 @@ def beta_1d_nb(
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        float: The beta coefficient computed as covariance divided by variance.
+        float: Beta coefficient computed as covariance divided by variance.
     """
     cov = generic_nb.nancov_1d_nb(returns, bm_returns, ddof=ddof)
     var = generic_nb.nanvar_1d_nb(bm_returns, ddof=ddof)
@@ -2370,7 +2370,7 @@ def alpha_1d_nb(
         ann_factor (float): Annualization factor.
 
     Returns:
-        float: The annualized alpha.
+        float: Annualized alpha.
     """
     beta = beta_1d_nb(returns, bm_returns)
     return (np.nanmean(returns) - beta * np.nanmean(bm_returns) + 1) ** ann_factor - 1
@@ -2677,7 +2677,7 @@ def profit_factor_1d_nb(returns: tp.Array1d) -> float:
         returns (Array1d): Array of returns.
 
     Returns:
-        float: The profit factor.
+        float: Profit factor.
     """
     numer = 0
     denom = 0
@@ -2813,7 +2813,7 @@ def common_sense_ratio_1d_nb(returns: tp.Array1d) -> float:
         returns (Array1d): 1D array of returns.
 
     Returns:
-        float: The common sense ratio calculated as the product of the tail ratio and profit factor.
+        float: Common sense ratio calculated as the product of the tail ratio and profit factor.
     """
     tail_ratio = tail_ratio_1d_nb(returns)
     profit_factor = profit_factor_1d_nb(returns)
@@ -2938,7 +2938,7 @@ def value_at_risk_1d_nb(returns: tp.Array1d, cutoff: float = 0.05) -> float:
         cutoff (float): Fractional cutoff level.
 
     Returns:
-        float: The VaR computed as the 100 * cutoff percentile of the returns.
+        float: VaR computed as the 100 * cutoff percentile of the returns.
     """
     return np.nanpercentile(returns, 100 * cutoff)
 
@@ -2952,7 +2952,7 @@ def value_at_risk_noarr_1d_nb(returns: tp.Array1d, cutoff: float = 0.05) -> floa
         cutoff (float): Fractional cutoff level.
 
     Returns:
-        float: The VaR computed as the 100 * cutoff percentile of the returns.
+        float: VaR computed as the 100 * cutoff percentile of the returns.
     """
     return generic_nb.nanpercentile_noarr_1d_nb(returns, 100 * cutoff)
 
@@ -3289,7 +3289,7 @@ def capture_ratio_1d_nb(
             Defaults to the length of the returns array.
 
     Returns:
-        float: The computed capture ratio.
+        float: Computed capture ratio.
     """
     annualized_return1 = annualized_return_1d_nb(
         returns,
@@ -3478,7 +3478,7 @@ def up_capture_ratio_1d_nb(
             Defaults to the length of the returns array.
 
     Returns:
-        float: The calculated up capture ratio.
+        float: Calculated up capture ratio.
     """
     if periods is None:
         periods = returns.shape[0]
@@ -3684,7 +3684,7 @@ def down_capture_ratio_1d_nb(
             Defaults to the length of the returns array.
 
     Returns:
-        float: The computed down capture ratio.
+        float: Computed down capture ratio.
 
             Returns `np.nan` if no negative returns are found, or `np.inf` if the benchmark's
             annualized negative return is zero while the asset's is non-zero.

@@ -60,7 +60,7 @@ class AssetPipeline(Base):
             **kwargs: Keyword arguments for `vectorbtpro.utils.execution.Task`.
 
         Returns:
-            Task: A callable task resolved from the provided definition.
+            Task: Callable task resolved from the provided definition.
         """
         if isinstance(func, tuple):
             func = Task.from_tuple(func)
@@ -134,7 +134,7 @@ class AssetPipeline(Base):
             d (Any): Data item to be processed.
 
         Returns:
-            Any: The result of executing the pipeline on the data item.
+            Any: Result of executing the pipeline on the data item.
         """
         raise NotImplementedError
 
@@ -208,7 +208,7 @@ class BasicAssetPipeline(AssetPipeline):
             tasks (List[Task]): List of tasks to be composed.
 
         Returns:
-            Callable: A callable that takes a data item and applies the tasks sequentially.
+            Callable: Callable that takes a data item and applies the tasks sequentially.
         """
 
         def _composed(d):
@@ -442,7 +442,7 @@ class ComplexAssetPipeline(AssetPipeline):
         """Processed expression string for the pipeline.
 
         Returns:
-            str: The expression string after processing.
+            str: Expression string after processing.
         """
         return self._expression
 
@@ -451,7 +451,7 @@ class ComplexAssetPipeline(AssetPipeline):
         """Updated context mapping for the pipeline.
 
         Returns:
-            Kwargs: The context mapping used for expression evaluation.
+            Kwargs: Context mapping used for expression evaluation.
         """
         return self._context
 
@@ -462,7 +462,7 @@ class ComplexAssetPipeline(AssetPipeline):
             d (Any): Data item to be processed.
 
         Returns:
-            Any: The result of evaluating the expression with the given data.
+            Any: Result of evaluating the expression with the given data.
         """
         context = merge_dicts({"d": d, "x": d}, self.context)
         return evaluate(self.expression, context=context)

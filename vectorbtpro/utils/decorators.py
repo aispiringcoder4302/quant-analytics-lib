@@ -48,7 +48,7 @@ def memoized_method(func: tp.Callable) -> tp.Callable:
         func (Callable): Function to be decorated.
 
     Returns:
-        Callable: The memoized method.
+        Callable: Memoized method.
     """
     lock = threading.Lock()
     memo = {}
@@ -84,7 +84,7 @@ class class_property(Base):
         Returns the function itself, not the result of calling it.
 
         Returns:
-            Callable: The decorated function.
+            Callable: Decorated function.
         """
         return self._func
 
@@ -114,7 +114,7 @@ class hybrid_property(Base):
         Returns the function itself, not the result of calling it.
 
         Returns:
-            Callable: The decorated function.
+            Callable: Decorated function.
         """
         return self._func
 
@@ -175,7 +175,7 @@ class custom_property(property, Base):
         Returns the function itself, not the result of calling it.
 
         Returns:
-            Callable: The decorated function.
+            Callable: Decorated function.
         """
         return self._func
 
@@ -184,7 +184,7 @@ class custom_property(property, Base):
         """Name of the decorated function.
 
         Returns:
-            str: The name of the decorated function.
+            str: Name of the decorated function.
         """
         return self._name
 
@@ -193,7 +193,7 @@ class custom_property(property, Base):
         """Configuration options provided to the property.
 
         Returns:
-            Kwargs: The configuration options.
+            Kwargs: Configuration options.
         """
         return self._options
 

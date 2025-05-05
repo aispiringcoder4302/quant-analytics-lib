@@ -55,7 +55,7 @@ def ma_1d_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Array1d: The calculated moving average.
+        Array1d: Calculated moving average.
     """
     return generic_nb.ma_1d_nb(close, window, wtype=wtype, minp=minp, adjust=adjust)
 
@@ -97,7 +97,7 @@ def ma_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Array2d: A 2D array of moving average values.
+        Array2d: 2D array of moving average values.
 
     !!! tip
         This function is parallelizable.
@@ -144,7 +144,7 @@ def msd_1d_nb(
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        Array1d: The moving standard deviation.
+        Array1d: Moving standard deviation.
     """
     return generic_nb.msd_1d_nb(close, window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)
 
@@ -189,7 +189,7 @@ def msd_nb(
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        Array2d: A 2D array of moving standard deviation values.
+        Array2d: 2D array of moving standard deviation values.
 
     !!! tip
         This function is parallelizable.
@@ -719,7 +719,7 @@ def stoch_k_1d_nb(
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array1d: The computed %K values.
+        Array1d: Computed %K values.
     """
     lowest_low = generic_nb.rolling_min_1d_nb(low, window, minp=minp)
     highest_high = generic_nb.rolling_max_1d_nb(high, window, minp=minp)
@@ -758,7 +758,7 @@ def stoch_k_nb(
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array2d: The computed %K values for each column.
+        Array2d: Computed %K values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1275,7 +1275,7 @@ def iter_tr_nb(high: float, low: float, prev_close: float) -> float:
         prev_close (float): Previous close price.
 
     Returns:
-        float: The True Range value.
+        float: True Range value.
     """
     tr0 = abs(high - low)
     tr1 = abs(high - prev_close)
@@ -1585,7 +1585,7 @@ def obv_1d_nb(close: tp.Array1d, volume: tp.Array1d) -> tp.Array1d:
         volume (Array1d): Array of trading volumes.
 
     Returns:
-        Array1d: The computed on-balance volume.
+        Array1d: Computed on-balance volume.
     """
     obv = np.empty(close.shape, dtype=float_)
     cumsum = 0.0
@@ -1620,7 +1620,7 @@ def obv_nb(close: tp.Array2d, volume: tp.Array2d) -> tp.Array2d:
         volume (Array2d): 2-dimensional array of trading volumes.
 
     Returns:
-        Array2d: The computed on-balance volume for each column.
+        Array2d: Computed on-balance volume for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1998,7 +1998,7 @@ def vwap_nb(
         group_lens (GroupLens): Array defining the number of columns in each group.
 
     Returns:
-        Array2d: A 2D array containing the calculated VWAP values.
+        Array2d: 2D array containing the calculated VWAP values.
 
     !!! tip
         This function is parallelizable.
@@ -2204,7 +2204,7 @@ def pivot_value_1d_nb(high: tp.Array1d, low: tp.Array1d, last_pivot: tp.Array1d,
         last_idx (Array1d): Array of indices corresponding to the last pivot positions.
 
     Returns:
-        Array1d: A 1D array of pivot prices calculated from `high` or `low` based on the last pivot type.
+        Array1d: 1D array of pivot prices calculated from `high` or `low` based on the last pivot type.
     """
     pivot_value = np.empty(high.shape, dtype=float_)
     for i in range(high.shape[0]):
@@ -2240,7 +2240,7 @@ def pivot_value_nb(high: tp.Array2d, low: tp.Array2d, last_pivot: tp.Array2d, la
         last_idx (Array2d): Array of indices corresponding to the last pivot positions.
 
     Returns:
-        Array2d: A 2D array containing the calculated pivot values for each column.
+        Array2d: 2D array containing the calculated pivot values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -2261,7 +2261,7 @@ def pivots_1d_nb(conf_pivot: tp.Array1d, conf_idx: tp.Array1d, last_pivot: tp.Ar
         last_pivot (Array1d): Array indicating the type of the last pivot.
 
     Returns:
-        Array1d: An array of computed pivot values.
+        Array1d: Array of computed pivot values.
 
     !!! warning
         To be used in plotting only. Do not use it as an indicator!
@@ -2292,7 +2292,7 @@ def pivots_nb(conf_pivot: tp.Array2d, conf_idx: tp.Array2d, last_pivot: tp.Array
         last_pivot (Array2d): Array indicating the type of the last pivot for each element.
 
     Returns:
-        Array2d: An array containing the computed pivot values for each column.
+        Array2d: Array containing the computed pivot values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -2311,7 +2311,7 @@ def modes_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
         pivots (Array1d): Array of pivot values.
 
     Returns:
-        Array1d: An array containing mode values corresponding to each pivot entry.
+        Array1d: Array containing mode values corresponding to each pivot entry.
 
     !!! warning
         To be used in plotting only. Do not use it as an indicator!
@@ -2340,7 +2340,7 @@ def modes_nb(pivots: tp.Array2d) -> tp.Array2d:
         pivots (Array2d): Array of pivot values arranged by columns.
 
     Returns:
-        Array2d: An array of computed mode values for each column.
+        Array2d: Array of computed mode values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -2363,7 +2363,7 @@ def iter_med_price_nb(high: float, low: float) -> float:
         low (float): Low price value.
 
     Returns:
-        float: The computed median price.
+        float: Computed median price.
     """
     return (high + low) / 2
 
@@ -2440,7 +2440,7 @@ def supertrend_acc_nb(in_state: SuperTrendAIS) -> SuperTrendAOS:
             containing price, band, and trend information.
 
     Returns:
-        SuperTrendAOS: The output state of type `vectorbtpro.indicators.enums.SuperTrendAOS`
+        SuperTrendAOS: Output state of type `vectorbtpro.indicators.enums.SuperTrendAOS`
             with updated band and trend values.
     """
     i = in_state.i
@@ -2864,7 +2864,7 @@ def get_standard_hurst_nb(
         stabilize (bool): Flag to enable stabilization in the polynomial fit.
 
     Returns:
-        float: The estimated Hurst exponent.
+        float: Estimated Hurst exponent.
     """
     if max_lag is None:
         lags = np.arange(2, len(close) - 1)
@@ -2885,7 +2885,7 @@ def get_rs_nb(close: tp.Array1d) -> float:
         close (Array1d): Array of close prices.
 
     Returns:
-        float: The computed R/S ratio, or 0 if the range or standard deviation is zero.
+        float: Computed R/S ratio, or 0 if the range or standard deviation is zero.
     """
     incs = close[1:] / close[:-1] - 1.0
     mean_inc = np.sum(incs) / len(incs)
@@ -2914,7 +2914,7 @@ def get_log_rs_hurst_nb(
         log_step (float): Increment for logarithmic window size.
 
     Returns:
-        float: The estimated Hurst exponent.
+        float: Estimated Hurst exponent.
     """
     max_log = min(max_log, np.log10(len(close) - 1))
     log_range = np.arange(min_log, max_log, log_step)
@@ -2963,7 +2963,7 @@ def get_rs_hurst_nb(
         num_chunks (int): Number of chunk sizes to use in the estimation.
 
     Returns:
-        float: The estimated Hurst exponent.
+        float: Estimated Hurst exponent.
     """
     diff = close[1:] - close[:-1]
     N = len(diff)
@@ -3015,7 +3015,7 @@ def get_dma_hurst_nb(
         num_chunks (int): Number of windows to use in the regression.
 
     Returns:
-        float: The estimated Hurst exponent.
+        float: Estimated Hurst exponent.
     """
     max_chunk += 1
     max_chunk = min(max_chunk, len(close) - 1)
@@ -3055,7 +3055,7 @@ def get_dsod_hurst_nb(close: tp.Array1d) -> float:
         close (Array1d): Array of close prices.
 
     Returns:
-        float: The estimated Hurst exponent based on the ratio of variances from second order differences.
+        float: Estimated Hurst exponent based on the ratio of variances from second order differences.
     """
     diff = close[1:] - close[:-1]
     y = np.cumsum(diff)

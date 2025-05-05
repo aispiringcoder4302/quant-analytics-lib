@@ -433,10 +433,10 @@ __pdoc__[
 Specifies the format in which a time delta value is represented.
 
 Fields:
-    Rows: A row-based format where a value of 1 indicates that one simulation step (row) has passed.
+    Rows: Row-based format where a value of 1 indicates that one simulation step (row) has passed.
 
         Does not require an index.
-    Index: An index-based format where a value of 1 indicates that one position in the index has passed. 
+    Index: Index-based format where a value of 1 indicates that one position in the index has passed. 
     
         If the index is datetime-like, 1 corresponds to one nanosecond; the index must be provided.
 """
@@ -832,8 +832,8 @@ __pdoc__[
 ```
 
 Fields:
-    Buy: A buy order.
-    Sell: A sell order.
+    Buy: Buy order.
+    Sell: Sell order.
 """
 
 
@@ -854,8 +854,8 @@ __pdoc__[
 ```
 
 Fields:
-    Market: A market order.
-    Limit: A limit order.
+    Market: Market order.
+    Limit: Limit order.
 """
 
 
@@ -879,11 +879,11 @@ __pdoc__[
 Determines which price to use when executing a limit order.
 
 Fields:
-    Limit: The limit price. 
+    Limit: Limit price. 
     
         If the target price is first reached at the opening, the open price is used.
-    HardLimit: The hard limit price, where the stop price is applied regardless of the open price trigger.
-    Close: The close price.
+    HardLimit: Hard limit price, where the stop price is applied regardless of the open price trigger.
+    Close: Close price.
 
 !!! note
     Each flag is negative; if a positive value is provided, it is used directly as the price.
@@ -907,8 +907,8 @@ __pdoc__[
 ```
 
 Fields:
-    Long: A long trade.
-    Short: A short trade.
+    Long: Long trade.
+    Short: Short trade.
 """
 
 
@@ -929,8 +929,8 @@ __pdoc__[
 ```
 
 Fields:
-    Open: An open trade.
-    Closed: A closed trade.
+    Open: Open trade.
+    Closed: Closed trade.
 """
 
 

@@ -324,7 +324,7 @@ def first_valid_index_1d_nb(arr: tp.Array1d, check_inf: bool = True) -> int:
         check_inf (bool): Whether to treat infinity as an invalid value.
 
     Returns:
-        int: The index of the first valid element, or -1 if no valid element is found.
+        int: Index of the first valid element, or -1 if no valid element is found.
     """
     for i in range(arr.shape[0]):
         if not np.isnan(arr[i]) and (not check_inf or not np.isinf(arr[i])):
@@ -341,7 +341,7 @@ def first_valid_index_nb(arr: tp.Array2d, check_inf: bool = True) -> tp.Array1d:
         check_inf (bool): Whether to treat infinity as an invalid value.
 
     Returns:
-        Array1d: An array of indices where each element represents the first valid value index
+        Array1d: Array of indices where each element represents the first valid value index
             in the corresponding column, or -1 if none is found.
     """
     out = np.empty(arr.shape[1], dtype=int_)
@@ -359,7 +359,7 @@ def last_valid_index_1d_nb(arr: tp.Array1d, check_inf: bool = True) -> int:
         check_inf (bool): Whether to treat infinity as an invalid value.
 
     Returns:
-        int: The index of the last valid element, or -1 if no valid element is found.
+        int: Index of the last valid element, or -1 if no valid element is found.
     """
     for i in range(arr.shape[0] - 1, -1, -1):
         if not np.isnan(arr[i]) and (not check_inf or not np.isinf(arr[i])):
@@ -376,7 +376,7 @@ def last_valid_index_nb(arr: tp.Array2d, check_inf: bool = True) -> tp.Array1d:
         check_inf (bool): Whether to treat infinity as an invalid value.
 
     Returns:
-        Array1d: An array of indices where each element represents the last valid value index
+        Array1d: Array of indices where each element represents the last valid value index
             in the corresponding column, or -1 if none is found.
     """
     out = np.empty(arr.shape[1], dtype=int_)
@@ -396,7 +396,7 @@ def fillna_1d_nb(arr: tp.Array1d, value: tp.Scalar) -> tp.Array1d:
         value (Scalar): Value to use for replacing NaNs.
 
     Returns:
-        Array1d: The resulting array with NaNs replaced.
+        Array1d: Resulting array with NaNs replaced.
     """
     return set_by_mask_1d_nb(arr, np.isnan(arr), value)
 
@@ -415,7 +415,7 @@ def fillna_nb(arr: tp.Array2d, value: tp.Scalar) -> tp.Array2d:
         value (Scalar): Value to use for replacing NaNs.
 
     Returns:
-        Array2d: The resulting array with NaNs replaced.
+        Array2d: Resulting array with NaNs replaced.
 
     !!! tip
         This function is parallelizable.
@@ -436,7 +436,7 @@ def fbfill_nb(arr: tp.Array2d) -> tp.Array2d:
         arr (Array2d): Input 2D array to process.
 
     Returns:
-        Array2d: The array with NaN values filled by forward and backward fill.
+        Array2d: Array with NaN values filled by forward and backward fill.
 
     !!! note
         If there are no NaN (or any) values, will return `arr`.
@@ -517,7 +517,7 @@ def bshift_1d_nb(arr: tp.Array1d, n: int = 1, fill_value: tp.Scalar = np.nan) ->
         fill_value (Scalar): Value used to fill positions that exceed the array boundaries.
 
     Returns:
-        Array1d: The shifted array.
+        Array1d: Shifted array.
 
     !!! warning
         This operation looks ahead.
@@ -569,7 +569,7 @@ def bshift_nb(arr: tp.Array2d, n: int = 1, fill_value: tp.Scalar = np.nan) -> tp
         fill_value (Scalar): Value used to fill positions that exceed the array boundaries.
 
     Returns:
-        Array2d: The resulting 2D array with backward shift applied to each column.
+        Array2d: Resulting 2D array with backward shift applied to each column.
 
     !!! tip
         This function is parallelizable.
@@ -620,7 +620,7 @@ def fshift_1d_nb(arr: tp.Array1d, n: int = 1, fill_value: tp.Scalar = np.nan) ->
         fill_value (Scalar): Value used to fill positions that go out-of-bound.
 
     Returns:
-        Array1d: The shifted array.
+        Array1d: Shifted array.
     """
     return _fshift_1d_nb(arr, n, fill_value)
 
@@ -668,7 +668,7 @@ def fshift_nb(arr: tp.Array2d, n: int = 1, fill_value: tp.Scalar = np.nan) -> tp
         fill_value (Scalar): Value used to fill the newly created empty positions.
 
     Returns:
-        Array2d: The shifted array.
+        Array2d: Shifted array.
 
     !!! tip
         This function is parallelizable.
@@ -687,7 +687,7 @@ def diff_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
         n (int): Interval over which to compute the difference.
 
     Returns:
-        Array1d: An array of discrete differences.
+        Array1d: Array of discrete differences.
     """
     out = np.empty(arr.shape[0], dtype=float_)
     for i in range(out.shape[0]):
@@ -712,7 +712,7 @@ def diff_nb(arr: tp.Array2d, n: int = 1) -> tp.Array2d:
         n (int): Interval over which to compute the difference.
 
     Returns:
-        Array2d: A 2-dimensional array where each column represents the discrete differences
+        Array2d: 2-dimensional array where each column represents the discrete differences
             of the corresponding input column.
 
     !!! tip
@@ -735,7 +735,7 @@ def pct_change_1d_nb(arr: tp.Array1d, n: int = 1) -> tp.Array1d:
         n (int): Period over which to compute the percentage change.
 
     Returns:
-        Array1d: An array of percentage changes.
+        Array1d: Array of percentage changes.
     """
     out = np.empty(arr.shape[0], dtype=float_)
     for i in range(out.shape[0]):
@@ -760,7 +760,7 @@ def pct_change_nb(arr: tp.Array2d, n: int = 1) -> tp.Array2d:
         n (int): Period over which to compute the percentage change.
 
     Returns:
-        Array2d: A 2-dimensional array where each column represents the percentage changes
+        Array2d: 2-dimensional array where each column represents the percentage changes
             of the corresponding input column.
 
     !!! tip
@@ -782,7 +782,7 @@ def bfill_1d_nb(arr: tp.Array1d) -> tp.Array1d:
         arr (Array1d): Input array with potential NaN values.
 
     Returns:
-        Array1d: An array with NaN values filled using backward propagation.
+        Array1d: Array with NaN values filled using backward propagation.
 
     !!! warning
         This operation looks ahead.
@@ -810,7 +810,7 @@ def bfill_nb(arr: tp.Array2d) -> tp.Array2d:
         arr (Array2d): Input 2-dimensional array with potential NaN values.
 
     Returns:
-        Array2d: A 2-dimensional array where each column has been filled using
+        Array2d: 2-dimensional array where each column has been filled using
             backward propagation via `bfill_1d_nb`.
 
     !!! tip
@@ -832,7 +832,7 @@ def ffill_1d_nb(arr: tp.Array1d) -> tp.Array1d:
         arr (Array1d): Input array with potential NaN values.
 
     Returns:
-        Array1d: An array with NaN values filled using forward propagation.
+        Array1d: Array with NaN values filled using forward propagation.
     """
     out = np.empty_like(arr, dtype=arr.dtype)
     lastval = arr[0]
@@ -857,7 +857,7 @@ def ffill_nb(arr: tp.Array2d) -> tp.Array2d:
         arr (Array2d): Input 2-dimensional array with potential NaN values.
 
     Returns:
-        Array2d: A 2-dimensional array where each column has been filled using
+        Array2d: 2-dimensional array where each column has been filled using
             forward propagation via `ffill_1d_nb`.
 
     !!! tip
@@ -906,7 +906,7 @@ def nanprod_nb(arr: tp.Array2d) -> tp.Array1d:
         arr (Array2d): Input 2-dimensional array.
 
     Returns:
-        Array1d: An array containing the product for each column.
+        Array1d: Array containing the product for each column.
 
     !!! tip
         This function is parallelizable.
@@ -951,7 +951,7 @@ def nancumsum_nb(arr: tp.Array2d) -> tp.Array2d:
         arr (Array2d): Input 2-dimensional array.
 
     Returns:
-        Array2d: A 2-dimensional array of cumulative sums computed column-wise.
+        Array2d: 2-dimensional array of cumulative sums computed column-wise.
 
     !!! tip
         This function is parallelizable.
@@ -996,7 +996,7 @@ def nancumprod_nb(arr: tp.Array2d) -> tp.Array2d:
         arr (Array2d): Input 2-dimensional array.
 
     Returns:
-        Array2d: A 2-dimensional array of cumulative products computed column-wise.
+        Array2d: 2-dimensional array of cumulative products computed column-wise.
 
     !!! tip
         This function is parallelizable.
@@ -1040,7 +1040,7 @@ def nansum_nb(arr: tp.Array2d) -> tp.Array1d:
         arr (Array2d): Two-dimensional array containing numerical values with possible NaNs.
 
     Returns:
-        Array1d: A one-dimensional array with the column-wise sums, ignoring NaNs.
+        Array1d: One-dimensional array with the column-wise sums, ignoring NaNs.
 
     !!! tip
         This function is parallelizable.
@@ -1056,7 +1056,7 @@ def nancnt_1d_nb(arr: tp.Array1d) -> int:
         arr (Array1d): One-dimensional array containing numerical values.
 
     Returns:
-        int: The count of non-NaN elements in the array.
+        int: Count of non-NaN elements in the array.
     """
     cnt = 0
     for i in range(arr.shape[0]):
@@ -1078,7 +1078,7 @@ def nancnt_nb(arr: tp.Array2d) -> tp.Array1d:
         arr (Array2d): Two-dimensional array containing numerical values with possible NaNs.
 
     Returns:
-        Array1d: A one-dimensional array where each element is the count of non-NaN values
+        Array1d: One-dimensional array where each element is the count of non-NaN values
             in the corresponding column.
 
     !!! tip
@@ -1103,7 +1103,7 @@ def nanmin_nb(arr: tp.Array2d) -> tp.Array1d:
         arr (Array2d): Two-dimensional array containing numerical values with potential NaNs.
 
     Returns:
-        Array1d: A one-dimensional array with the minimum value from each column.
+        Array1d: One-dimensional array with the minimum value from each column.
 
     !!! tip
         This function is parallelizable.
@@ -1127,7 +1127,7 @@ def nanmax_nb(arr: tp.Array2d) -> tp.Array1d:
         arr (Array2d): Two-dimensional array containing numerical values with possible NaN entries.
 
     Returns:
-        Array1d: A one-dimensional array with the maximum value from each column.
+        Array1d: One-dimensional array with the maximum value from each column.
 
     !!! tip
         This function is parallelizable.
@@ -1151,7 +1151,7 @@ def nanmean_nb(arr: tp.Array2d) -> tp.Array1d:
         arr (Array2d): Two-dimensional array containing numerical values with potential NaNs.
 
     Returns:
-        Array1d: A one-dimensional array with the column-wise means.
+        Array1d: One-dimensional array with the column-wise means.
 
     !!! tip
         This function is parallelizable.
@@ -1175,7 +1175,7 @@ def nanmedian_nb(arr: tp.Array2d) -> tp.Array1d:
         arr (Array2d): Two-dimensional array containing numerical values with possible NaNs.
 
     Returns:
-        Array1d: A one-dimensional array with the median value from each column.
+        Array1d: One-dimensional array with the median value from each column.
 
     !!! tip
         This function is parallelizable.
@@ -1195,7 +1195,7 @@ def nanpercentile_noarr_1d_nb(arr: tp.Array1d, q: float) -> float:
         q (float): Percentile to compute, where 0 represents the minimum and 100 represents the maximum.
 
     Returns:
-        float: The computed percentile value.
+        float: Computed percentile value.
 
     !!! note
         Has worst case time complexity of O(N^2), which makes it much slower than `np.nanpercentile`,
@@ -1273,7 +1273,7 @@ def nanpartition_mean_noarr_1d_nb(arr: tp.Array1d, q: float) -> float:
             where 0 represents the minimum and 100 represents the maximum.
 
     Returns:
-        float: The computed average of the partitioned elements.
+        float: Computed average of the partitioned elements.
 
     !!! note
         Has worst case time complexity of O(N^2), which makes it much slower than `np.partition`,
@@ -1327,7 +1327,7 @@ def nanvar_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        float: The computed variance based on the non-NaN elements.
+        float: Computed variance based on the non-NaN elements.
     """
     cnt = arr.shape[0]
     for i in range(arr.shape[0]):
@@ -1353,7 +1353,7 @@ def nanstd_1d_nb(arr: tp.Array1d, ddof: int = 0) -> float:
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        float: The computed standard deviation based on the non-NaN elements.
+        float: Computed standard deviation based on the non-NaN elements.
     """
     return np.sqrt(nanvar_1d_nb(arr, ddof=ddof))
 
@@ -1372,7 +1372,7 @@ def nanstd_nb(arr: tp.Array2d, ddof: int = 0) -> tp.Array1d:
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        Array1d: A 1-dimensional array of standard deviations computed for each column.
+        Array1d: 1-dimensional array of standard deviations computed for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1393,7 +1393,7 @@ def nancov_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, ddof: int = 0) -> float:
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        float: The covariance between `arr1` and `arr2`, or NaN if there is insufficient valid data.
+        float: Covariance between `arr1` and `arr2`, or NaN if there is insufficient valid data.
     """
     if len(arr1) != len(arr2):
         raise ValueError("Arrays must have the same length")
@@ -1429,7 +1429,7 @@ def nancov_nb(arr1: tp.Array2d, arr2: tp.Array2d, ddof: int = 0) -> tp.Array1d:
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        Array1d: A 1-dimensional array where each element is the covariance of the
+        Array1d: 1-dimensional array where each element is the covariance of the
             corresponding columns in `arr1` and `arr2`.
 
     !!! tip
@@ -1451,7 +1451,7 @@ def nancorr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d) -> float:
         arr2 (Array1d): Second 1-dimensional numerical array.
 
     Returns:
-        float: The correlation coefficient between `arr1` and `arr2`,
+        float: Correlation coefficient between `arr1` and `arr2`,
             or NaN if the calculation cannot be performed.
     """
     if len(arr1) != len(arr2):
@@ -1499,7 +1499,7 @@ def nancorr_nb(arr1: tp.Array2d, arr2: tp.Array2d) -> tp.Array1d:
         arr2 (Array2d): Second 2-dimensional numerical array.
 
     Returns:
-        Array1d: A 1-dimensional array containing the correlation coefficient for each column.
+        Array1d: 1-dimensional array containing the correlation coefficient for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1525,7 +1525,7 @@ def rank_1d_nb(arr: tp.Array1d, argsorted: tp.Optional[tp.Array1d] = None, pct: 
         pct (bool): If True, compute the rank as a percentile.
 
     Returns:
-        Array1d: A 1-dimensional array containing the computed ranks for each element.
+        Array1d: 1-dimensional array containing the computed ranks for each element.
     """
     if argsorted is None:
         argsorted = np.argsort(arr)
@@ -1588,7 +1588,7 @@ def rank_nb(arr: tp.Array2d, argsorted: tp.Optional[tp.Array2d] = None, pct: boo
         pct (bool): If True, compute the rank as a percentile.
 
     Returns:
-        Array2d: A 2-dimensional array containing the computed ranks for each element.
+        Array2d: 2-dimensional array containing the computed ranks for each element.
 
     !!! tip
         This function is parallelizable.
@@ -1648,7 +1648,7 @@ def fir_filter_1d_nb(b: tp.Array1d, x: tp.Array1d) -> tp.Array1d:
         x (Array1d): One-dimensional signal to filter.
 
     Returns:
-        Array1d: The filtered signal.
+        Array1d: Filtered signal.
     """
     n = len(x)
     m = len(b)
@@ -1682,7 +1682,7 @@ def value_counts_nb(codes: tp.Array2d, n_uniques: int, group_map: tp.GroupMap) -
         group_map (GroupMap): Tuple of indices and lengths for each group.
 
     Returns:
-        Array2d: A 2-dimensional array of counts with shape (n_uniques, number of groups).
+        Array2d: 2-dimensional array of counts with shape (n_uniques, number of groups).
 
     !!! tip
         This function is parallelizable.
@@ -1711,7 +1711,7 @@ def value_counts_1d_nb(codes: tp.Array1d, n_uniques: int) -> tp.Array1d:
         n_uniques (int): Number of unique values.
 
     Returns:
-        Array1d: An array of counts for each unique value.
+        Array1d: Array of counts for each unique value.
     """
     out = np.full(n_uniques, 0, dtype=int_)
 
@@ -1734,7 +1734,7 @@ def value_counts_per_row_nb(codes: tp.Array2d, n_uniques: int) -> tp.Array2d:
         n_uniques (int): Number of unique values.
 
     Returns:
-        Array2d: A 2-dimensional array of counts with shape (n_uniques, number of rows).
+        Array2d: 2-dimensional array of counts with shape (n_uniques, number of rows).
 
     !!! tip
         This function is parallelizable.
@@ -1758,7 +1758,7 @@ def repartition_nb(arr: tp.Array2d, counts: tp.Array1d) -> tp.Array1d:
         counts (Array1d): Array of counts specifying the number of valid elements per column.
 
     Returns:
-        Array1d: A 1-dimensional array composed of the valid elements from `arr`.
+        Array1d: 1-dimensional array composed of the valid elements from `arr`.
     """
     if arr.shape[0] == 0:
         return arr.flatten()
@@ -1784,7 +1784,7 @@ def crossed_above_1d_nb(arr1: tp.Array1d, arr2: tp.FlexArray1dLike, wait: int = 
         dropna (bool): If True, treat indices with NaN values as missing, mimicking the removal of rows with NaN.
 
     Returns:
-        Array1d: A boolean array with True at positions where a crossover from below to above occurs.
+        Array1d: Boolean array with True at positions where a crossover from below to above occurs.
     """
     arr2_ = to_1d_array_nb(np.asarray(arr2))
     out = np.empty(arr1.shape, dtype=np.bool_)
@@ -1839,7 +1839,7 @@ def crossed_above_nb(arr1: tp.Array2d, arr2: tp.FlexArray2dLike, wait: int = 0, 
         dropna (bool): If True, treat rows with NaN values as missing in the crossover detection.
 
     Returns:
-        Array2d: A boolean 2-dimensional array with True at positions where the crossover condition is met.
+        Array2d: Boolean 2-dimensional array with True at positions where the crossover condition is met.
 
     !!! tip
         This function is parallelizable.
@@ -1863,7 +1863,7 @@ def crossed_below_1d_nb(arr1: tp.Array1d, arr2: tp.FlexArray1dLike, wait: int = 
         dropna (bool): If True, treat indices with NaN values as missing, mimicking the removal of rows with NaN.
 
     Returns:
-        Array1d: A boolean array with True at positions where a crossover from above to below occurs.
+        Array1d: Boolean array with True at positions where a crossover from above to below occurs.
     """
     arr2_ = to_1d_array_nb(np.asarray(arr2))
     out = np.empty(arr1.shape, dtype=np.bool_)
@@ -1918,7 +1918,7 @@ def crossed_below_nb(arr1: tp.Array2d, arr2: tp.FlexArray2dLike, wait: int = 0, 
         dropna (bool): Whether to bypass NaN values during processing.
 
     Returns:
-        Array2d: A boolean matrix with the same shape as `arr1` indicating cross-below events.
+        Array2d: Boolean matrix with the same shape as `arr1` indicating cross-below events.
 
     !!! tip
         This function is parallelizable.
@@ -1951,7 +1951,7 @@ def demean_nb(arr: tp.Array2d, group_map: tp.GroupMap) -> tp.Array2d:
         group_map (GroupMap): Tuple of indices and lengths for each group.
 
     Returns:
-        Array2d: A 2-dimensional array with each element demeaned by its group's mean.
+        Array2d: 2-dimensional array with each element demeaned by its group's mean.
 
     !!! tip
         This function is parallelizable.
@@ -2334,7 +2334,7 @@ def realign_1d_nb(
         ffill (bool): If True, forward fill missing values.
 
     Returns:
-        Array1d: The realigned 1-dimensional array.
+        Array1d: Realigned 1-dimensional array.
 
     !!! note
         Both index arrays must be increasing. Repeating values are allowed.
@@ -2463,7 +2463,7 @@ def realign_nb(
         ffill (bool): If True, forward fill missing values.
 
     Returns:
-        Array2d: The realigned 2-dimensional array.
+        Array2d: Realigned 2-dimensional array.
 
     !!! tip
         This function is parallelizable.

@@ -37,7 +37,7 @@ def override_field_config(config: Config, merge_configs: bool = True) -> tp.Clas
             If False, replace it entirely.
 
     Returns:
-        ClassWrapper: The decorator function that returns the decorated class.
+        ClassWrapper: Decorator function that returns the decorated class.
     """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
@@ -90,7 +90,7 @@ def attach_fields(*args, on_conflict: str = "raise") -> tp.FlexClassWrapper:
             which can be "raise", "ignore", or "override".
 
     Returns:
-        FlexClassWrapper: A decorator that attaches field properties to the target class.
+        FlexClassWrapper: Decorator that attaches field properties to the target class.
     """
 
     def wrapper(cls: tp.Type[tp.T], config: tp.DictLike = None) -> tp.Type[tp.T]:
@@ -248,7 +248,7 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
             and their corresponding settings.
 
     Returns:
-        ClassWrapper: A class decorator that attaches the configured shortcut properties
+        ClassWrapper: Class decorator that attaches the configured shortcut properties
             to a subclass of `vectorbtpro.records.base.Records`.
     """
 

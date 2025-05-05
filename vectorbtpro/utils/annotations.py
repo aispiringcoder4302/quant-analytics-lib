@@ -51,7 +51,7 @@ except ImportError:
             eval_str (bool): Whether to evaluate string annotations.
 
         Returns:
-            dict: A dictionary containing the annotations.
+            dict: Dictionary containing the annotations.
         """
         if isinstance(obj, type):
             # class
@@ -131,7 +131,7 @@ def get_annotations(*args, **kwargs) -> tp.Annotations:
         **kwargs: Keyword arguments for `get_raw_annotations`.
 
     Returns:
-        Annotations: A dictionary of annotations with union types resolved.
+        Annotations: Dictionary of annotations with union types resolved.
     """
     annotations = get_raw_annotations(*args, **kwargs)
     new_annotations = {}
@@ -282,7 +282,7 @@ class Union(Annotatable, DefineMixin):
         types are encountered during resolution, a ValueError is raised.
 
         Returns:
-            Annotation: The resolved annotation.
+            Annotation: Resolved annotation.
         """
         if self.resolved:
             return self

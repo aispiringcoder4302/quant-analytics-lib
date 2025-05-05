@@ -49,7 +49,7 @@ def records_within_sim_range_nb(
             Provided as a scalar or per column.
 
     Returns:
-        RecordArray: An array of records filtered to lie within the simulation range.
+        RecordArray: Array of records filtered to lie within the simulation range.
     """
     out = np.empty(len(records), dtype=records.dtype)
     k = 0
@@ -86,7 +86,7 @@ def apply_weights_to_orders_nb(
         weights (Array1d): Array of weights used to scale order sizes and fees per column.
 
     Returns:
-        RecordArray: A new array of order records after applying weights and filtering orders with zero size.
+        RecordArray: New array of order records after applying weights and filtering orders with zero size.
     """
     order_records = order_records.copy()
     out = np.empty(len(order_records), dtype=order_records.dtype)
@@ -123,7 +123,7 @@ def weighted_price_reduce_meta_nb(
         price_arr (Array1d): Array of prices corresponding to sizes.
 
     Returns:
-        float: The size-weighted average price, or NaN if no valid data is available.
+        float: Size-weighted average price, or NaN if no valid data is available.
     """
     if len(idxs) == 0:
         return np.nan
@@ -183,7 +183,7 @@ def fill_trade_record_nb(
         parent_id (int): Identifier linking trades to a parent trade.
 
     Returns:
-        None: The function modifies `new_records` in place.
+        None: Function modifies `new_records` in place.
     """
     # Calculate PnL and return
     pnl, ret = get_trade_stats_nb(size, entry_price, entry_fees, exit_price, exit_fees, direction)
@@ -265,7 +265,7 @@ def fill_entry_trades_in_position_nb(
         r (int): Current trade index used as the starting ID.
 
     Returns:
-        int: The next trade ID after filling the entry trades.
+        int: Next trade ID after filling the entry trades.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -1031,7 +1031,7 @@ def fill_position_record_nb(new_records: tp.RecordArray, r: int, trade_records: 
             Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
     Returns:
-        None: The function modifies `new_records` in place.
+        None: Function modifies `new_records` in place.
     """
     # Aggregate trades
     col = trade_records["col"][0]
@@ -1083,7 +1083,7 @@ def copy_trade_record_nb(new_records: tp.RecordArray, r: int, trade_record: tp.R
             Must adhere to the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
     Returns:
-        None: The function modifies `new_records` in place.
+        None: Function modifies `new_records` in place.
     """
     new_records["id"][r] = r
     new_records["col"][r] = trade_record["col"]
@@ -1899,7 +1899,7 @@ def win_rate_reduce_nb(pnl_arr: tp.Array1d) -> float:
         pnl_arr (Array1d): Array of profit and loss values.
 
     Returns:
-        float: The win rate computed as the ratio of winning entries to total valid entries,
+        float: Win rate computed as the ratio of winning entries to total valid entries,
             or NaN if no entries exist.
     """
     if pnl_arr.shape[0] == 0:
@@ -1924,7 +1924,7 @@ def profit_factor_reduce_nb(pnl_arr: tp.Array1d) -> float:
         pnl_arr (Array1d): Array of profit and loss values.
 
     Returns:
-        float: The profit factor computed as the ratio of total profits to total losses,
+        float: Profit factor computed as the ratio of total profits to total losses,
             returning infinity if total losses are zero.
     """
     if pnl_arr.shape[0] == 0:
@@ -1952,7 +1952,7 @@ def expectancy_reduce_nb(pnl_arr: tp.Array1d) -> float:
         pnl_arr (Array1d): Array of profit and loss values.
 
     Returns:
-        float: The expectancy computed as the difference between weighted average win and loss,
+        float: Expectancy computed as the difference between weighted average win and loss,
             or NaN if no valid entries exist.
     """
     if pnl_arr.shape[0] == 0:
@@ -1995,7 +1995,7 @@ def sqn_reduce_nb(pnl_arr: tp.Array1d, ddof: int = 0) -> float:
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        float: The SQN computed as `sqrt(count) * mean / std`, or NaN if the standard deviation is zero.
+        float: SQN computed as `sqrt(count) * mean / std`, or NaN if the standard deviation is zero.
     """
     count = generic_nb.nancnt_1d_nb(pnl_arr)
     mean = np.nanmean(pnl_arr)
@@ -2555,7 +2555,7 @@ def trade_mfe_nb(
         use_returns (bool): Flag indicating whether to compute using return-based values.
 
     Returns:
-        float: The Maximum Favorable Excursion for the trade.
+        float: Maximum Favorable Excursion for the trade.
     """
     if direction == TradeDirection.Long:
         if use_returns:
@@ -2636,7 +2636,7 @@ def trade_mae_nb(
         use_returns (bool): Flag indicating whether to compute using return-based values.
 
     Returns:
-        float: The Maximum Adverse Excursion for the trade.
+        float: Maximum Adverse Excursion for the trade.
     """
     if direction == TradeDirection.Long:
         if use_returns:
@@ -2944,7 +2944,7 @@ def running_edge_ratio_nb(
         incl_shorter (bool): Whether to include trades shorter than the current duration step.
 
     Returns:
-        Array2d: A 2D array with shape (max_duration, number of columns) containing the running edge ratio.
+        Array2d: 2D array with shape (max_duration, number of columns) containing the running edge ratio.
 
     !!! tip
         This function is parallelizable.

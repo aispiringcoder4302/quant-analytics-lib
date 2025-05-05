@@ -58,7 +58,7 @@ class Jitter(Configured):
             tags (Optional[set]): Tags associated with the function.
 
         Returns:
-            Callable: The decorated function.
+            Callable: Decorated function.
         """
         if self.wrapping_disabled:
             return py_func
@@ -180,7 +180,7 @@ class NumbaJitter(Jitter):
         """Dictionary of additional keyword arguments provided to the Numba decorator.
 
         Returns:
-            Kwargs: A dictionary containing extra options for the Numba decorator.
+            Kwargs: Dictionary containing extra options for the Numba decorator.
         """
         return self._options
 
@@ -332,7 +332,7 @@ def resolve_jitted_option(option: tp.JittedOption = None) -> tp.KwargsLike:
             * dict: Interpret the option as a dictionary of keyword arguments for jitting.
 
     Returns:
-        KwargsLike: A dictionary of keyword arguments for jitting, or None if jitting is disabled.
+        KwargsLike: Dictionary of keyword arguments for jitting, or None if jitting is disabled.
 
     !!! info
         For default settings, see `vectorbtpro._settings.jitting`.
@@ -365,7 +365,7 @@ def specialize_jitted_option(option: tp.JittedOption = None, **kwargs) -> tp.Kwa
         **kwargs: Keyword arguments to merge.
 
     Returns:
-        KwargsLike: The merged dictionary of keyword arguments, or None if the option cannot be resolved.
+        KwargsLike: Merged dictionary of keyword arguments, or None if the option cannot be resolved.
     """
     jitted_kwargs = resolve_jitted_option(option)
     if jitted_kwargs is None:
@@ -384,7 +384,7 @@ def resolve_jitted_kwargs(option: tp.JittedOption = None, **kwargs) -> tp.Kwargs
         **kwargs: Keyword arguments to merge.
 
     Returns:
-        KwargsLike: A merged dictionary of keyword arguments with keys from `option` taking precedence.
+        KwargsLike: Merged dictionary of keyword arguments with keys from `option` taking precedence.
 
     !!! note
         Keys in `option` have more priority than in `kwargs`.
@@ -421,7 +421,7 @@ def resolve_jitter(
         **jitter_kwargs: Keyword arguments for configuring the jitter.
 
     Returns:
-        Jitter: A jitter instance based on the resolved configuration.
+        Jitter: Jitter instance based on the resolved configuration.
 
     !!! note
         If `jitter` is already an instance of `Jitter` and there are other keyword arguments, they are discarded.
@@ -444,7 +444,7 @@ def jitted(*args, tags: tp.Optional[set] = None, **jitted_kwargs) -> tp.Callable
         **jitted_kwargs: Keyword arguments to resolve `jitter`.
 
     Returns:
-        Callable: The decorated function with jitting applied.
+        Callable: Decorated function with jitting applied.
 
     Examples:
         ```pycon

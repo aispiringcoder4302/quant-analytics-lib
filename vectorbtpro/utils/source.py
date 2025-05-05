@@ -235,7 +235,7 @@ def suggest_module_path(
             See `vectorbtpro.utils.path_.check_mkdir`.
 
     Returns:
-        Path: The determined file path.
+        Path: Determined file path.
     """
     if path is None:
         path = Path(".")
@@ -271,7 +271,7 @@ def cut_and_save(
         **kwargs: Keyword arguments for `cut_from_source`.
 
     Returns:
-        Path: The file path where the extracted section is saved.
+        Path: File path where the extracted section is saved.
     """
     parsed_source = cut_from_source(source, section_name, **kwargs)
     path = suggest_module_path(section_name, path=path, mkdir_kwargs=mkdir_kwargs)
@@ -293,7 +293,7 @@ def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> P
         **kwargs: Keyword arguments for `cut_and_save`.
 
     Returns:
-        Path: The file path where the extracted module section is saved.
+        Path: File path where the extracted module section is saved.
     """
     if isinstance(module, str):
         module = importlib.import_module(module)
@@ -316,7 +316,7 @@ def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Pat
         **kwargs: Keyword arguments for `cut_and_save`.
 
     Returns:
-        Path: The file path where the extracted function section is saved.
+        Path: File path where the extracted function section is saved.
     """
     if isinstance(func, str):
         module = importlib.import_module(".".join(func.split(".")[:-1]))
@@ -351,7 +351,7 @@ def split_source(
         return_level (bool): Whether to also return the nesting level of each chunk.
 
     Returns:
-        SourceChunks: A list of chunk source codes or tuples of chunk source codes and
+        SourceChunks: List of chunk source codes or tuples of chunk source codes and
             their start line, end line, and/or nesting level.
 
     """
@@ -484,7 +484,7 @@ def get_source_indent(source: str) -> int:
         source (str): Python source code.
 
     Returns:
-        int: The minimum indentation in spaces.
+        int: Minimum indentation in spaces.
     """
     lines = source.splitlines(keepends=True)
     indentations = []
@@ -507,7 +507,7 @@ def remove_source_indent(source: str, indent: int) -> str:
         indent (int): Number of leading spaces to remove from each non-empty line.
 
     Returns:
-        str: The source code with the specified indentation removed.
+        str: Source code with the specified indentation removed.
     """
     dedented_lines = []
     for line in source.splitlines(keepends=True):
@@ -527,7 +527,7 @@ def add_source_indent(source: str, indent: int) -> str:
         indent (int): Number of leading spaces to add to each non-empty line.
 
     Returns:
-        str: The resulting source code with added indentation.
+        str: Resulting source code with added indentation.
     """
     indent_str = " " * indent
     indented_lines = []
@@ -547,7 +547,7 @@ def get_source_imports(source: str, global_only: bool = False) -> str:
         global_only (bool): If True, only extract top-level (global) import statements.
 
     Returns:
-        str: A sorted string of normalized import statements, separated by newlines.
+        str: Sorted string of normalized import statements, separated by newlines.
     """
     try:
         tree = ast.parse(source)
@@ -590,7 +590,7 @@ def get_source_map(source: str) -> dict:
         source (str): Python source code.
 
     Returns:
-        dict: A dictionary summarizing the top-level code structure.
+        dict: Dictionary summarizing the top-level code structure.
     """
     try:
         tree = ast.parse(source)
@@ -1290,7 +1290,7 @@ class Chatable(Configured):
             **kwargs: Keyword arguments for `Contextable.create_chat`.
     
         Returns:
-            MaybeChatOutput: The completion response or a tuple of the response and the chat instance.
+            MaybeChatOutput: Completion response or a tuple of the response and the chat instance.
             
         !!! info
             For default settings, see `chat` in `vectorbtpro._settings.chatting`.
@@ -1332,6 +1332,6 @@ def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
         **kwargs: Keyword arguments for `refine_source`.
 
     Returns:
-        RefineSourceOutput: The result of the refinement process.
+        RefineSourceOutput: Result of the refinement process.
     """
     return refine_source(source, system_prompt=REFINE_DOCSTR_PROMPT, **kwargs)

@@ -37,7 +37,7 @@ def select_nb(
         col (Optional[int]): Column index; if None, uses `c.col`.
 
     Returns:
-        Scalar: The selected element from the array.
+        Scalar: Selected element from the array.
     """
     if i is None:
         _i = c.i
@@ -66,7 +66,7 @@ def select_from_col_nb(
         i (Optional[int]): Row index; if None, uses `c.i`.
 
     Returns:
-        Scalar: The selected element from the array.
+        Scalar: Selected element from the array.
     """
     if i is None:
         _i = c.i

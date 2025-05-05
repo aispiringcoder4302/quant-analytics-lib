@@ -40,7 +40,7 @@ def get_long_size_nb(position_before: float, position_now: float) -> float:
         position_now (float): Asset position after the trade.
 
     Returns:
-        float: The computed change in long size.
+        float: Computed change in long size.
     """
     if position_before <= 0 and position_now <= 0:
         return 0.0
@@ -64,7 +64,7 @@ def get_short_size_nb(position_before: float, position_now: float) -> float:
         position_now (float): Asset position after the trade.
 
     Returns:
-        float: The computed change in short size.
+        float: Computed change in short size.
     """
     if position_before >= 0 and position_now >= 0:
         return 0.0
@@ -797,7 +797,7 @@ def cash_earnings_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array2d: A 2D array with calculated cash earnings per column.
+        Array2d: 2D array with calculated cash earnings per column.
 
     !!! tip
         This function is parallelizable.
@@ -871,7 +871,7 @@ def cash_earnings_grouped_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array2d: A 2D array with aggregated cash earnings per group.
+        Array2d: 2D array with aggregated cash earnings per group.
 
     !!! tip
         This function is parallelizable.

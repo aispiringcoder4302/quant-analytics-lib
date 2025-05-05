@@ -31,7 +31,7 @@ def use_formatwarning(formatwarning: tp.Any) -> tp.Generator[None, None, None]:
         formatwarning (Any): Custom function to format warning messages.
 
     Yields:
-        None: The context manager that temporarily sets the custom formatter.
+        None: Context manager that temporarily sets the custom formatter.
     """
     old_formatter = warnings.formatwarning
     warnings.formatwarning = formatwarning
@@ -58,7 +58,7 @@ def custom_formatwarning(
         line (Optional[str]): Source code line triggering the warning.
 
     Returns:
-        str: A formatted warning message.
+        str: Formatted warning message.
     """
     return f"{filename}:{lineno}: {category.__name__}: {message}\n"
 
@@ -89,7 +89,7 @@ def warn_stdout(func: tp.Callable) -> tp.Callable:
         func (Callable): Function whose standard output is to be captured.
 
     Returns:
-        Callable: The decorated function that emits captured output as a warning.
+        Callable: Decorated function that emits captured output as a warning.
     """
 
     @wraps(func)

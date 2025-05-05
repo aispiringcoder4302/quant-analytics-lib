@@ -100,7 +100,7 @@ class _ATR(ATR):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure with the TR and ATR traces plotted.
+            BaseFigure: Updated figure with the TR and ATR traces plotted.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

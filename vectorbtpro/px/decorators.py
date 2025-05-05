@@ -37,7 +37,7 @@ def attach_px_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         cls (Type): Class to decorate by adding Plotly Express methods.
 
     Returns:
-        Type: The decorated class with Plotly Express methods attached.
+        Type: Decorated class with Plotly Express methods attached.
 
     !!! info
         For default settings, see `vectorbtpro._settings.plotting`.
@@ -98,7 +98,7 @@ def attach_px_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                     **kwargs: Keyword arguments for the Plotly Express function.
 
                 Returns:
-                    BaseFigure: A Plotly figure created by the Plotly Express function.
+                    BaseFigure: Plotly figure created by the Plotly Express function.
                 """
             )
             setattr(cls, px_func_name, plot_method)

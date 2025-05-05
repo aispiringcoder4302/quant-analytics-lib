@@ -380,7 +380,7 @@ def get_func_full_name(func: tp.Callable) -> str:
         func (Callable): Function for which to retrieve the full name.
 
     Returns:
-        str: The full name of the function.
+        str: Full name of the function.
     """
     return func.__module__ + "." + func.__name__
 
@@ -492,7 +492,7 @@ class JITRegistry(Base):
             tags (set): Tags associated with the function.
 
         Returns:
-            JitableSetup: The registered `JitableSetup` instance.
+            JitableSetup: Registered `JitableSetup` instance.
         """
         jitable_setup = JitableSetup(
             task_id=task_id,
@@ -521,7 +521,7 @@ class JITRegistry(Base):
             jitted_func (Callable): Jitted (decorated) version of the function.
 
         Returns:
-            JittedSetup: The registered `JittedSetup` instance.
+            JittedSetup: Registered `JittedSetup` instance.
         """
         jitable_setup_hash = hash(jitable_setup)
         jitted_setup = JittedSetup(jitter=jitter, jitted_func=jitted_func)
@@ -552,7 +552,7 @@ class JITRegistry(Base):
             tags (set): Tags associated with the function.
 
         Returns:
-            Callable: The decorated jitted function.
+            Callable: Decorated jitted function.
         """
         if jitter_kwargs is None:
             jitter_kwargs = {}
@@ -857,7 +857,7 @@ def register_jitted(
         **options: Keyword arguments for configuration.
 
     Returns:
-        Callable: The decorated function.
+        Callable: Decorated function.
 
     !!! info
         For default settings, see `vectorbtpro._settings.jitting`.

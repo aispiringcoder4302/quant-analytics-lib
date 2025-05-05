@@ -30,7 +30,7 @@ class Hashable(Base):
             **kwargs: Keyword arguments for hash computation.
 
         Returns:
-            int: The computed hash value.
+            int: Computed hash value.
         """
         raise NotImplementedError
 
@@ -39,7 +39,7 @@ class Hashable(Base):
         """Unique key used for computing the instance's hash.
 
         Returns:
-            tuple: A unique key for hash computation.
+            tuple: Unique key for hash computation.
         """
         raise NotImplementedError
 
@@ -48,7 +48,7 @@ class Hashable(Base):
         """Computed hash value of the instance based on its hash key.
 
         Returns:
-            int: The computed hash value.
+            int: Computed hash value.
         """
         return hash(self.hash_key)
 
@@ -82,7 +82,7 @@ def hash_args(
         ignore_args (Optional[Iterable[AnnArgQuery]]): Sequence of queries for arguments to ignore.
 
     Returns:
-        int: The computed hash value.
+        int: Computed hash value.
     """
     from vectorbtpro.utils.parsing import annotate_args, flatten_ann_args, ignore_flat_ann_args
     

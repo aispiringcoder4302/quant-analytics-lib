@@ -750,7 +750,7 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
             link (str): Message link to process.
 
         Returns:
-            str: The extracted channel link.
+            str: Extracted channel link.
         """
         if link.startswith("$discord/"):
             link = link[len("$discord/") :]

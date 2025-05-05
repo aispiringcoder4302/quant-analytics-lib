@@ -120,7 +120,7 @@ class BinanceData(RemoteData):
             client_config (KwargsLike): Configuration parameters for creating a new client.
 
         Returns:
-            Client: A resolved or newly created Binance client.
+            Client: Resolved or newly created Binance client.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -230,7 +230,7 @@ class BinanceData(RemoteData):
             **get_klines_kwargs: Keyword arguments for `binance.client.Client.get_klines`.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

@@ -79,7 +79,7 @@ def to_2d_one_nb(a: tp.Array) -> tp.Array2d:
         a (Array): Input array.
 
     Returns:
-        Array2d: The array expanded along axis 1 if it was originally one-dimensional;
+        Array2d: Array expanded along axis 1 if it was originally one-dimensional;
             otherwise, the original array.
     """
     if a.ndim > 1:
@@ -103,7 +103,7 @@ def custom_apply_and_concat_one_nb(
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        Array2d: A 2D array created by horizontally concatenating the arrays returned for each index.
+        Array2d: 2D array created by horizontally concatenating the arrays returned for each index.
     """
     output_0 = to_2d_one_nb(apply_func_nb(indices[0], *args))
     output = np.empty((output_0.shape[0], len(indices) * output_0.shape[1]), dtype=output_0.dtype)
@@ -132,7 +132,7 @@ def apply_and_concat_one_nb(
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        Array2d: A concatenated 2D array of the outputs from each function call.
+        Array2d: Concatenated 2D array of the outputs from each function call.
 
     See:
         `custom_apply_and_concat_one_nb`
@@ -368,7 +368,7 @@ def select_and_combine_nb(
         *args: Positional arguments for `combine_func_nb`.
 
     Returns:
-        AnyArray: The result of combining `obj` with the selected element.
+        AnyArray: Result of combining `obj` with the selected element.
     """
     return combine_func_nb(obj, others[i], *args)
 
@@ -391,7 +391,7 @@ def combine_and_concat_nb(
         *args: Positional arguments for `combine_func_nb`.
 
     Returns:
-        Array2d: The concatenated result obtained by combining the objects.
+        Array2d: Concatenated result obtained by combining the objects.
 
     See:
         `apply_and_concat_one_nb`
@@ -420,7 +420,7 @@ def select_and_combine(
         **kwargs: Keyword arguments for `combine_func`.
 
     Returns:
-        AnyArray: The result of combining `obj` with the element at the specified index.
+        AnyArray: Result of combining `obj` with the element at the specified index.
     """
     return combine_func(obj, others[i], *args, **kwargs)
 
@@ -446,7 +446,7 @@ def combine_and_concat(
         **kwargs: Keyword arguments for `combine_func`.
 
     Returns:
-        Array2d: The concatenated result obtained after combining the objects.
+        Array2d: Concatenated result obtained after combining the objects.
 
     See:
         * `select_and_combine_nb` if `jitted_loop` is True
@@ -483,7 +483,7 @@ def combine_multiple_nb(
         *args: Positional arguments for `combine_func_nb`.
 
     Returns:
-        Any: The result obtained by pairwise combining all objects in the sequence.
+        Any: Result obtained by pairwise combining all objects in the sequence.
     """
     result = objs[0]
     for i in range(1, len(objs)):
@@ -509,7 +509,7 @@ def combine_multiple(
         **kwargs: Keyword arguments for `combine_func`.
 
     Returns:
-        Any: The combined result after pairwise merging of the objects.
+        Any: Combined result after pairwise merging of the objects.
 
     See:
         * `combine_multiple_nb` if `jitted_loop` is True

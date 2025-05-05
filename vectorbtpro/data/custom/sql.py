@@ -100,7 +100,7 @@ class SQLData(DBData):
             **kwargs: Keyword arguments for `SQLData.get_custom_settings`.
 
         Returns:
-            dict: The resolved engine settings.
+            dict: Resolved engine settings.
         """
         if engine_name is not None:
             sub_path = "engines." + engine_name
@@ -136,7 +136,7 @@ class SQLData(DBData):
             **kwargs: Keyword arguments for `SQLData.get_custom_setting`.
 
         Returns:
-            Any: The retrieved engine setting.
+            Any: Retrieved engine setting.
         """
         if engine_name is not None:
             sub_path = "engines." + engine_name
@@ -172,7 +172,7 @@ class SQLData(DBData):
             **kwargs: Keyword arguments for `SQLData.resolve_custom_setting`.
 
         Returns:
-            Any: The resolved engine setting.
+            Any: Resolved engine setting.
         """
         if engine_name is not None:
             sub_path = "engines." + engine_name
@@ -610,7 +610,7 @@ class SQLData(DBData):
             engine_config (KwargsLike): Additional configuration for the engine.
 
         Returns:
-            Table: The last row number retrieved from the table.
+            Table: Last row number retrieved from the table.
         """
         if engine_config is None:
             engine_config = {}
@@ -899,7 +899,7 @@ class SQLData(DBData):
                 See https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for arguments.
 
         Returns:
-            KeyData: The fetched data and a metadata dictionary.
+            KeyData: Fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -1203,7 +1203,7 @@ class SQLData(DBData):
             **kwargs: Keyword arguments for `SQLData.fetch_key`.
 
         Returns:
-            FeatureData: The fetched data and a metadata dictionary.
+            FeatureData: Fetched data and a metadata dictionary.
         """
         return cls.fetch_key(feature, **kwargs)
 
@@ -1216,7 +1216,7 @@ class SQLData(DBData):
             **kwargs: Keyword arguments for `SQLData.fetch_key`.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         return cls.fetch_key(symbol, **kwargs)
 
@@ -1236,7 +1236,7 @@ class SQLData(DBData):
             **kwargs: Keyword arguments for `SQLData.fetch_feature` or `SQLData.fetch_symbol`.
 
         Returns:
-            KeyData: The updated data and a metadata dictionary.
+            KeyData: Updated data and a metadata dictionary.
         """
         fetch_kwargs = self.select_fetch_kwargs(key)
         returned_kwargs = self.select_returned_kwargs(key)
@@ -1283,7 +1283,7 @@ class SQLData(DBData):
             **kwargs: Keyword arguments for `SQLData.update_key`.
 
         Returns:
-            FeatureData: The updated data and a metadata dictionary.
+            FeatureData: Updated data and a metadata dictionary.
         """
         return self.update_key(feature, **kwargs)
 
@@ -1295,6 +1295,6 @@ class SQLData(DBData):
             **kwargs: Keyword arguments for `SQLData.update_key`.
 
         Returns:
-            SymbolData: The updated data and a metadata dictionary.
+            SymbolData: Updated data and a metadata dictionary.
         """
         return self.update_key(symbol, **kwargs)

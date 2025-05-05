@@ -98,7 +98,7 @@ class Resampler(Configured):
         """Source index used for resampling.
 
         Returns:
-            Index: The source index.
+            Index: Source index.
         """
         return self._source_index
 
@@ -107,7 +107,7 @@ class Resampler(Configured):
         """Target index produced by resampling.
 
         Returns:
-            Index: The target index.
+            Index: Target index.
         """
         return self._target_index
 
@@ -116,7 +116,7 @@ class Resampler(Configured):
         """Source index frequency or date offset.
 
         Returns:
-            AnyPandasFrequency: The frequency of the source index.
+            AnyPandasFrequency: Frequency of the source index.
         """
         return self._source_freq
 
@@ -125,7 +125,7 @@ class Resampler(Configured):
         """Target index frequency or date offset.
 
         Returns:
-            AnyPandasFrequency: The frequency of the target index.
+            AnyPandasFrequency: Frequency of the target index.
         """
         return self._target_freq
 
@@ -166,7 +166,7 @@ class Resampler(Configured):
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
-            Resampler: A new `Resampler` instance.
+            Resampler: New `Resampler` instance.
         """
         target_index = pd_resampler.count().index
         return cls(
@@ -199,7 +199,7 @@ class Resampler(Configured):
             **kwargs: Keyword arguments for `pd.Series.resample`.
 
         Returns:
-            Resampler: A new `Resampler` instance.
+            Resampler: New `Resampler` instance.
         """
         pd_resampler = pd.Series(index=source_index, dtype=object).resample(*args, **kwargs)
         return cls.from_pd_resampler(pd_resampler, source_freq=source_freq, silence_warnings=silence_warnings)
@@ -226,7 +226,7 @@ class Resampler(Configured):
             **kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.date_range`.
 
         Returns:
-            Resampler: A new `Resampler` instance.
+            Resampler: New `Resampler` instance.
         """
         target_index = dt.date_range(*args, **kwargs)
         return cls(
@@ -334,7 +334,7 @@ class Resampler(Configured):
         """Left bound of the source datetime index.
 
         Returns:
-            Index: The left bound of the source index.
+            Index: Left bound of the source index.
         """
         return self.get_lbound_index(self.source_index, freq=self.source_freq)
 
@@ -343,7 +343,7 @@ class Resampler(Configured):
         """Right bound of the source datetime index.
 
         Returns:
-            Index: The right bound of the source index.
+            Index: Right bound of the source index.
         """
         return self.get_rbound_index(self.source_index, freq=self.source_freq)
 
@@ -352,7 +352,7 @@ class Resampler(Configured):
         """Left bound of the target datetime index.
 
         Returns:
-            Index: The left bound of the target index.
+            Index: Left bound of the target index.
         """
         return self.get_lbound_index(self.target_index, freq=self.target_freq)
 
@@ -361,7 +361,7 @@ class Resampler(Configured):
         """Right bound of the target datetime index.
 
         Returns:
-            Index: The right bound of the target index.
+            Index: Right bound of the target index.
         """
         return self.get_rbound_index(self.target_index, freq=self.target_freq)
 
@@ -564,7 +564,7 @@ class Resampler(Configured):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            Array1d: A resampled array corresponding to the source mask.
+            Array1d: Resampled array corresponding to the source mask.
 
         See:
             `vectorbtpro.base.resampling.nb.resample_source_mask_nb`
@@ -602,7 +602,7 @@ class Resampler(Configured):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
-            Array1d: An array of indices representing the last element before each target index.
+            Array1d: Array of indices representing the last element before each target index.
 
         See:
             `vectorbtpro.base.resampling.nb.last_before_target_index_nb`

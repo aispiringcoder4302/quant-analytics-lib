@@ -43,7 +43,7 @@ def ohlc_every_1d_nb(price: tp.Array1d, n: tp.FlexArray1dLike) -> tp.Array2d:
             Provided as a scalar or per bar.
 
     Returns:
-        Array2d: A two-dimensional array where each row represents an OHLC bar.
+        Array2d: Two-dimensional array where each row represents an OHLC bar.
     """
     n_ = to_1d_array_nb(np.asarray(n))
     out = np.empty((price.shape[0], 4), dtype=float_)

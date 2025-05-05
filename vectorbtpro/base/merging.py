@@ -45,7 +45,7 @@ def concat_arrays(*arrs: tp.MaybeSequence[tp.AnyArray]) -> tp.Array1d:
         *arrs (MaybeSequence[AnyArray]): Array-like objects to concatenate.
 
     Returns:
-        Array1d: The concatenated one-dimensional array.
+        Array1d: Concatenated one-dimensional array.
     """
     if len(arrs) == 1:
         arrs = arrs[0]
@@ -63,7 +63,7 @@ def row_stack_arrays(*arrs: tp.MaybeSequence[tp.AnyArray], expand_axis: int = 1)
         expand_axis (int): Axis along which to expand the array if necessary.
 
     Returns:
-        Array2d: A two-dimensional array with the input arrays stacked row-wise.
+        Array2d: Two-dimensional array with the input arrays stacked row-wise.
     """
     if len(arrs) == 1:
         arrs = arrs[0]
@@ -84,7 +84,7 @@ def column_stack_arrays(*arrs: tp.MaybeSequence[tp.AnyArray], expand_axis: int =
         expand_axis (int): Axis along which to expand the array if necessary.
 
     Returns:
-        Array2d: A two-dimensional array with the input arrays stacked column-wise.
+        Array2d: Two-dimensional array with the input arrays stacked column-wise.
     """
     if len(arrs) == 1:
         arrs = arrs[0]

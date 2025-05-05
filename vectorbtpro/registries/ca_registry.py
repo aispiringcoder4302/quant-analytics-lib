@@ -591,7 +591,7 @@ class CAQuery(DefineMixin):
             use_base_cls (bool): Flag indicating whether the base class is used in query parsing.
 
         Returns:
-            CAQuery: A new `CAQuery` instance parsed from the input.
+            CAQuery: New `CAQuery` instance parsed from the input.
 
         !!! note
             Not all attribute combinations can be safely parsed by this function.
@@ -1287,7 +1287,7 @@ class CAMetrics(Base):
         A cache hit occurs when a requested object is found in the cache.
 
         Returns:
-            int: The total count of times a cached object was successfully retrieved.
+            int: Total count of times a cached object was successfully retrieved.
         """
         raise NotImplementedError
 
@@ -1298,7 +1298,7 @@ class CAMetrics(Base):
         A cache miss occurs when a requested object is not found in the cache.
 
         Returns:
-            int: The total count of times an object retrieval failed due to absence in the cache.
+            int: Total count of times an object retrieval failed due to absence in the cache.
         """
         raise NotImplementedError
 
@@ -1307,7 +1307,7 @@ class CAMetrics(Base):
         """Total size of all cached objects.
 
         Returns:
-            int: The aggregate memory size in bytes of all objects stored in the cache.
+            int: Aggregate memory size in bytes of all objects stored in the cache.
         """
         raise NotImplementedError
 
@@ -1376,7 +1376,7 @@ class CAMetrics(Base):
         """Dictionary containing all caching metrics.
 
         Returns:
-            dict: A dictionary with keys:
+            dict: Dictionary with keys:
 
                 * `hits`
                 * `misses`
@@ -1427,7 +1427,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """Query used to match this setup.
 
         Returns:
-            CAQuery: A query instance that identifies or filters setups.
+            CAQuery: Query instance that identifies or filters setups.
         """
         raise NotImplementedError
 
@@ -1584,7 +1584,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """UTC time when this setup was created.
 
         Returns:
-            datetime: The UTC datetime representing when the setup was instantiated.
+            datetime: UTC datetime representing when the setup was instantiated.
         """
         return object.__getattribute__(self, "_creation_time")
 
@@ -1637,7 +1637,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """Setups of the same type.
 
         Returns:
-            ValuesView: A collection view of setups that are of the same type as this setup.
+            ValuesView: Collection view of setups that are of the same type as this setup.
         """
         raise NotImplementedError
 
@@ -1646,7 +1646,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """Concise string representation of the setup.
 
         Returns:
-            str: A brief string that summarizes the setup.
+            str: Brief string that summarizes the setup.
         """
         raise NotImplementedError
 
@@ -1655,7 +1655,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """Human-readable name for the object associated with this setup.
 
         Returns:
-            str: A user-friendly name representing the setup's associated object.
+            str: User-friendly name representing the setup's associated object.
         """
         raise NotImplementedError
 
@@ -1680,7 +1680,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """Detailed string representation of the setup.
 
         Returns:
-            str: A descriptive string combining the human-readable name and its position among similar setups.
+            str: Descriptive string combining the human-readable name and its position among similar setups.
         """
         return f"{self.readable_name}:{self.position_among_similar}"
 
@@ -2776,7 +2776,7 @@ class CARunResult(DefineMixin):
         """Memory size of the run result in bytes.
 
         Returns:
-            int: The size in bytes of the cached run result.
+            int: Size in bytes of the cached run result.
         """
         return sys.getsizeof(self.result)
 
@@ -2785,7 +2785,7 @@ class CARunResult(DefineMixin):
         """Timestamp marking when the run was executed.
 
         Returns:
-            datetime: The UTC datetime when the function run was executed.
+            datetime: UTC datetime when the function run was executed.
         """
         return object.__getattribute__(self, "_run_time")
 
@@ -2794,7 +2794,7 @@ class CARunResult(DefineMixin):
         """Total number of cache hits recorded for this run result.
 
         Returns:
-            int: The cumulative count of cache hits for this run result.
+            int: Cumulative count of cache hits for this run result.
         """
         return object.__getattribute__(self, "_hits")
 
@@ -2822,7 +2822,7 @@ class CARunResult(DefineMixin):
         Updates the first and last hit timestamps and increments the hit counter.
 
         Returns:
-            Any: The cached result from the run.
+            Any: Cached result from the run.
         """
         hit_time = datetime.now(timezone.utc)
         if self.first_hit_time is None:
@@ -3109,7 +3109,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
             **kwargs: Keyword arguments for `CARunSetup.cacheable.func`.
 
         Returns:
-            Any: The result returned by `CARunSetup.cacheable.func`.
+            Any: Result returned by `CARunSetup.cacheable.func`.
         """
         if self.instance_obj is not None:
             return self.cacheable.func(self.instance_obj, *args, **kwargs)
@@ -3162,7 +3162,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
             **kwargs: Keyword arguments for `CARunSetup.run_func`.
 
         Returns:
-            Any: The result from executing the function.
+            Any: Result from executing the function.
         """
         args_hash = self.get_args_hash(*args, **kwargs)
         run_result_hash = CARunResult.get_hash(args_hash)
@@ -3187,7 +3187,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
             **kwargs: Keyword arguments for `CARunSetup.run_func`.
 
         Returns:
-            Any: The result of the function execution.
+            Any: Result of the function execution.
         """
         if self.caching_enabled:
             try:
@@ -3280,7 +3280,7 @@ class CAQueryDelegator(CASetupDelegatorMixin):
         """Positional arguments used for querying setups.
 
         Returns:
-            Args: A tuple or list of positional arguments stored in this instance.
+            Args: Tuple or list of positional arguments stored in this instance.
         """
         return self._args
 
@@ -3289,7 +3289,7 @@ class CAQueryDelegator(CASetupDelegatorMixin):
         """Keyword arguments used for querying setups.
 
         Returns:
-            Kwargs: A dictionary of keyword arguments stored in this instance.
+            Kwargs: Dictionary of keyword arguments stored in this instance.
         """
         return self._kwargs
 
@@ -3298,7 +3298,7 @@ class CAQueryDelegator(CASetupDelegatorMixin):
         """Cacheable registry used for matching setups.
 
         Returns:
-            CacheableRegistry: The registry instance used to match and retrieve setups.
+            CacheableRegistry: Registry instance used to match and retrieve setups.
         """
         return self._registry
 
@@ -3531,7 +3531,7 @@ class CachingDisabled(Base):
         """`CacheableRegistry` instance used for caching setups.
 
         Returns:
-            CacheableRegistry: The registry that manages all caching setups.
+            CacheableRegistry: Registry that manages all caching setups.
         """
         return self._registry
 
@@ -3585,7 +3585,7 @@ class CachingDisabled(Base):
         """Initial global caching settings captured upon entering the context.
 
         Returns:
-            Kwargs: A dictionary containing the original global caching settings.
+            Kwargs: Dictionary containing the original global caching settings.
         """
         return self._init_settings
 
@@ -3681,7 +3681,7 @@ def with_caching_disabled(*args, **caching_disabled_kwargs) -> tp.Callable:
         **caching_disabled_kwargs: Keyword arguments used to initialize `CachingDisabled`.
 
     Returns:
-        Callable: The decorated function if a function is provided, or a decorator function.
+        Callable: Decorated function if a function is provided, or a decorator function.
     """
 
     def decorator(func: tp.Callable) -> tp.Callable:
@@ -3813,7 +3813,7 @@ class CachingEnabled(Base):
         """Caching registry of type `CacheableRegistry` used to manage caching setups.
 
         Returns:
-            CacheableRegistry: The registry instance responsible for caching setup management.
+            CacheableRegistry: Registry instance responsible for caching setup management.
         """
         return self._registry
 
@@ -3868,7 +3868,7 @@ class CachingEnabled(Base):
         """Initial global caching settings recorded upon entering the context.
 
         Returns:
-            Kwargs: A dictionary of the global caching settings at the time of context entry.
+            Kwargs: Dictionary of the global caching settings at the time of context entry.
         """
         return self._init_settings
 
@@ -3967,7 +3967,7 @@ def with_caching_enabled(*args, **caching_enabled_kwargs) -> tp.Callable:
         **caching_enabled_kwargs: Keyword arguments for configuring `CachingEnabled`.
 
     Returns:
-        Callable: A decorator that wraps the function to run with caching enabled.
+        Callable: Decorator that wraps the function to run with caching enabled.
     """
 
     def decorator(func: tp.Callable) -> tp.Callable:

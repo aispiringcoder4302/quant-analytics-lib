@@ -192,7 +192,7 @@ class _PATSIM(PATSIM):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated or newly created figure with the similarity line plotted.
+            BaseFigure: Updated or newly created figure with the similarity line plotted.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -253,7 +253,7 @@ class _PATSIM(PATSIM):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated or newly created figure with the heatmap overlay on `PATSIM.close`.
+            BaseFigure: Updated or newly created figure with the heatmap overlay on `PATSIM.close`.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

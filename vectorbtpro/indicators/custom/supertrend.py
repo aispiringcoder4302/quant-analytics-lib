@@ -103,7 +103,7 @@ class _SUPERTREND(SUPERTREND):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The figure containing the plotted indicator traces.
+            BaseFigure: Figure containing the plotted indicator traces.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

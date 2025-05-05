@@ -108,7 +108,7 @@ class NDLData(RemoteData):
             **params: Keyword arguments for Nasdaq Data Link as field/value parameters.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -193,7 +193,7 @@ class NDLData(RemoteData):
             **kwargs: Keyword arguments for `NDLData.fetch_symbol`.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)

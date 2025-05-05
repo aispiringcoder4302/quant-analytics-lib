@@ -39,7 +39,7 @@ def map_enum_fields(
         **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
     Returns:
-        Any: The mapped enum value.
+        Any: Mapped enum value.
     """
     mapping = to_value_mapping(enum, reverse=True, enum_unkval=enum_unkval)
 
@@ -63,7 +63,7 @@ def map_enum_values(
         **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
     Returns:
-        Any: The mapped enum field.
+        Any: Mapped enum field.
     """
     mapping = to_value_mapping(enum, reverse=False, enum_unkval=enum_unkval)
 

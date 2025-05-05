@@ -120,7 +120,7 @@ class BentoData(RemoteData):
             **kwargs: Keyword arguments for `BentoData.fetch_symbol`.
 
         Returns:
-            float: The aggregated cost.
+            float: Aggregated cost.
         """
         if isinstance(symbols, str):
             symbols = [symbols]

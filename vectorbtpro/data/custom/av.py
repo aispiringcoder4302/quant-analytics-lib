@@ -138,7 +138,7 @@ class AVData(RemoteData):
         required and optional parameters for each API function.
 
         Returns:
-            dict: A dictionary containing the parsed API metadata organized by documentation sections.
+            dict: Dictionary containing the parsed API metadata organized by documentation sections.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -268,7 +268,7 @@ class AVData(RemoteData):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
 
         !!! note
             Supports the CSV format only.

@@ -41,7 +41,7 @@ class CustomData(Data):
             **kwargs: Keyword arguments for `CustomData.get_settings`.
 
         Returns:
-            dict: The custom settings.
+            dict: Custom settings.
         """
         return cls.get_settings(*args, path_id="custom", **kwargs)
 
@@ -67,7 +67,7 @@ class CustomData(Data):
             **kwargs: Keyword arguments for `CustomData.get_setting`.
 
         Returns:
-            Any: The requested custom setting.
+            Any: Requested custom setting.
         """
         return cls.get_setting(*args, path_id="custom", **kwargs)
 
@@ -93,7 +93,7 @@ class CustomData(Data):
             **kwargs: Keyword arguments for `CustomData.resolve_setting`.
 
         Returns:
-            Any: The resolved custom setting.
+            Any: Resolved custom setting.
         """
         return cls.resolve_setting(*args, path_id="custom", **kwargs)
 

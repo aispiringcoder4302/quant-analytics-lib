@@ -36,7 +36,7 @@ def rolling_sum_acc_nb(in_state: RollSumAIS) -> RollSumAOS:
             of type `vectorbtpro.generic.enums.RollSumAOS`.
 
     Returns:
-        RollSumAOS: The updated rolling sum accumulator output state
+        RollSumAOS: Updated rolling sum accumulator output state
             of type `vectorbtpro.generic.enums.RollSumAOS`.
     """
     i = in_state.i
@@ -147,7 +147,7 @@ def rolling_prod_acc_nb(in_state: RollProdAIS) -> RollProdAOS:
             of type `vectorbtpro.generic.enums.RollProdAIS`.
 
     Returns:
-        RollProdAOS: The updated rolling product accumulator output state
+        RollProdAOS: Updated rolling product accumulator output state
             of type `vectorbtpro.generic.enums.RollProdAOS`.
     """
     i = in_state.i
@@ -258,7 +258,7 @@ def rolling_mean_acc_nb(in_state: RollMeanAIS) -> RollMeanAOS:
             of type `vectorbtpro.generic.enums.RollMeanAIS`.
 
     Returns:
-        RollMeanAOS: The updated rolling mean accumulator output state
+        RollMeanAOS: Updated rolling mean accumulator output state
             of type `vectorbtpro.generic.enums.RollMeanAOS`.
     """
     i = in_state.i
@@ -593,7 +593,7 @@ def rolling_zscore_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = Non
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        Array2d: A 2D array of computed z-scores.
+        Array2d: 2D array of computed z-scores.
 
     !!! tip
         This function is parallelizable.
@@ -704,7 +704,7 @@ def wm_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> t
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array2d: A 2D array of weighted moving averages computed column-wise.
+        Array2d: 2D array of weighted moving averages computed column-wise.
 
     !!! tip
         This function is parallelizable.
@@ -1146,7 +1146,7 @@ def wwm_std_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, a
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Array1d: An array containing the computed standard deviations.
+        Array1d: Array containing the computed standard deviations.
     """
     if minp is None:
         minp = period
@@ -1169,7 +1169,7 @@ def wwm_std_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adju
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Array2d: A 2-dimensional array containing the computed standard deviations.
+        Array2d: 2-dimensional array containing the computed standard deviations.
 
     !!! tip
         This function is parallelizable.
@@ -1268,7 +1268,7 @@ def vidya_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> 
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array1d: An array containing the computed VIDYA values.
+        Array1d: Array containing the computed VIDYA values.
     """
     if minp is None:
         minp = window
@@ -1317,7 +1317,7 @@ def vidya_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array2d: A 2-dimensional array containing the computed VIDYA values.
+        Array2d: 2-dimensional array containing the computed VIDYA values.
 
     !!! tip
         This function is parallelizable.
@@ -1348,7 +1348,7 @@ def ma_1d_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Array1d: An array containing the computed moving average values.
+        Array1d: Array containing the computed moving average values.
     """
     if wtype == WType.Simple:
         return rolling_mean_1d_nb(arr, window, minp=minp)
@@ -1388,7 +1388,7 @@ def ma_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Array2d: A 2-dimensional array containing the computed moving average values.
+        Array2d: 2-dimensional array containing the computed moving average values.
 
     !!! tip
         This function is parallelizable.
@@ -1953,7 +1953,7 @@ def rolling_rank_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
         pct (bool): If True, compute the rank as a percentile.
 
     Returns:
-        Array1d: An array of rolling ranks.
+        Array1d: Array of rolling ranks.
     """
     if minp is None:
         minp = window
@@ -1996,7 +1996,7 @@ def rolling_rank_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None,
         pct (bool): If True, compute the rank as a percentile.
 
     Returns:
-        Array2d: An array of rolling ranks.
+        Array2d: Array of rolling ranks.
 
     !!! tip
         This function is parallelizable.
@@ -2019,7 +2019,7 @@ def rolling_min_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array1d: An array of rolling minimum values.
+        Array1d: Array of rolling minimum values.
     """
     if minp is None:
         minp = window
@@ -2059,7 +2059,7 @@ def rolling_min_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array2d: An array of rolling minimum values.
+        Array2d: Array of rolling minimum values.
 
     !!! tip
         This function is parallelizable.
@@ -2082,7 +2082,7 @@ def rolling_max_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array1d: An array of rolling maximum values.
+        Array1d: Array of rolling maximum values.
     """
     if minp is None:
         minp = window
@@ -2122,7 +2122,7 @@ def rolling_max_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array2d: An array of rolling maximum values.
+        Array2d: Array of rolling maximum values.
 
     !!! tip
         This function is parallelizable.
@@ -2512,7 +2512,7 @@ def rolling_pattern_similarity_1d_nb(
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array1d: An array containing the computed pattern similarity values.
+        Array1d: Array containing the computed pattern similarity values.
     """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 
@@ -2734,7 +2734,7 @@ def rolling_pattern_similarity_nb(
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array2d: A 2D array where each column contains the computed similarity values.
+        Array2d: 2D array where each column contains the computed similarity values.
 
     !!! tip
         This function is parallelizable.
@@ -2789,7 +2789,7 @@ def expanding_min_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
         minp (int): Minimum number of observations required.
 
     Returns:
-        Array1d: An array containing the expanding minimum values.
+        Array1d: Array containing the expanding minimum values.
     """
     out = np.empty_like(arr, dtype=float_)
     minv = arr[0]
@@ -2822,7 +2822,7 @@ def expanding_min_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
         minp (int): Minimum number of observations required.
 
     Returns:
-        Array2d: A 2D array where each column contains the expanding minimum values.
+        Array2d: 2D array where each column contains the expanding minimum values.
 
     !!! tip
         This function is parallelizable.
@@ -2844,7 +2844,7 @@ def expanding_max_1d_nb(arr: tp.Array1d, minp: int = 1) -> tp.Array1d:
         minp (int): Minimum number of observations required.
 
     Returns:
-        Array1d: An array containing the expanding maximum values computed from `arr`.
+        Array1d: Array containing the expanding maximum values computed from `arr`.
     """
     out = np.empty_like(arr, dtype=float_)
     maxv = arr[0]
@@ -2877,7 +2877,7 @@ def expanding_max_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
         minp (int): Minimum number of observations required.
 
     Returns:
-        Array2d: A two-dimensional array containing the expanding maximum computed column-wise.
+        Array2d: Two-dimensional array containing the expanding maximum computed column-wise.
 
     !!! tip
         This function is parallelizable.

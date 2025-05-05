@@ -34,7 +34,7 @@ def order_not_filled_nb(status: int, status_info: int) -> OrderResult:
             See `vectorbtpro.portfolio.enums.OrderStatusInfo`.
 
     Returns:
-        OrderResult: An order result with NaN size, price, and fees, a side of -1,
+        OrderResult: Order result with NaN size, price, and fees, a side of -1,
             and the provided status and status_info.
     """
     return OrderResult(size=np.nan, price=np.nan, fees=np.nan, side=-1, status=status, status_info=status_info)
@@ -62,7 +62,7 @@ def check_adj_price_nb(
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
 
     Returns:
-        float: The validated and, if necessary, adjusted price.
+        float: Validated and, if necessary, adjusted price.
     """
     if price_area_vio_mode == PriceAreaVioMode.Ignore:
         return adj_price
@@ -96,7 +96,7 @@ def approx_long_buy_value_nb(val_price: float, size: float) -> float:
         size (float): Order size.
 
     Returns:
-        float: A negative value representing spending, or 0.0 if the order size is zero.
+        float: Negative value representing spending, or 0.0 if the order size is zero.
     """
     if size == 0:
         return 0.0
@@ -133,7 +133,7 @@ def apply_size_granularity_nb(size: float, size_granularity: float) -> float:
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
 
     Returns:
-        float: The size rounded down to a multiple of size_granularity.
+        float: Size rounded down to a multiple of size_granularity.
     """
     return size // size_granularity * size_granularity
 
@@ -148,7 +148,7 @@ def cast_account_state_nb(account_state: AccountState) -> AccountState:
             See `vectorbtpro.portfolio.enums.AccountState`.
 
     Returns:
-        AccountState: A new account state instance with all numerical attributes cast to float.
+        AccountState: New account state instance with all numerical attributes cast to float.
     """
     return AccountState(
         cash=float(account_state.cash),
@@ -342,7 +342,7 @@ def approx_long_sell_value_nb(position: float, debt: float, val_price: float, si
         size (float): Requested order size for the long-sell operation.
 
     Returns:
-        float: The approximate value of the long-sell operation.
+        float: Approximate value of the long-sell operation.
     """
     if size == 0 or position == 0:
         return 0.0
@@ -492,7 +492,7 @@ def approx_short_sell_value_nb(val_price: float, size: float) -> float:
         size (float): Size of the short position.
 
     Returns:
-        float: The approximated value of the short-sell operation.
+        float: Approximated value of the short-sell operation.
     """
     if size == 0:
         return 0.0
@@ -658,7 +658,7 @@ def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, 
         size (float): Desired order size for the short-buy operation.
 
     Returns:
-        float: The approximate cash value adjustment, where a positive value signifies spending.
+        float: Approximate cash value adjustment, where a positive value signifies spending.
     """
     if size == 0 or position == 0:
         return 0.0
@@ -1063,7 +1063,7 @@ def approx_sell_value_nb(
             See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
-        float: The approximate value of the sell operation.
+        float: Approximate value of the sell operation.
     """
     if position >= 0 and direction == Direction.LongOnly:
         return approx_long_sell_value_nb(position, debt, val_price, size)
@@ -1428,7 +1428,7 @@ def approx_order_value_nb(
             See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
-        float: The approximate order value.
+        float: Approximate order value.
     """
     size = get_diraware_size_nb(float(size), direction)
     amount_size, _ = resolve_size_nb(
@@ -2110,7 +2110,7 @@ def order_nothing_nb() -> Order:
     """Create an order representing no operation.
 
     Returns:
-        Order: An order that effectively does nothing.
+        Order: Order that effectively does nothing.
     """
     return NoOrder
 
@@ -2699,7 +2699,7 @@ def resolve_stop_exit_price_nb(
             if equal to `StopExitPrice.Close`, the close price is used; otherwise, the provided value is used.
 
     Returns:
-        float: The resolved exit price.
+        float: Resolved exit price.
     """
     if stop_exit_price == StopExitPrice.Stop or stop_exit_price == StopExitPrice.HardStop:
         return float(stop_price)
@@ -2883,7 +2883,7 @@ def resolve_limit_price_nb(
         hit_below (bool): If True, check whether the target price is hit from above.
 
     Returns:
-        float: The computed limit price.
+        float: Computed limit price.
     """
     if delta_format == DeltaFormat.Percent100:
         limit_delta /= 100
@@ -3033,7 +3033,7 @@ def resolve_limit_order_price_nb(
             See `vectorbtpro.portfolio.enums.LimitOrderPrice`.
 
     Returns:
-        float: The resolved limit order price.
+        float: Resolved limit order price.
 
     Raises:
         ValueError: If `limit_order_price` is less than 0.
@@ -3065,7 +3065,7 @@ def resolve_stop_price_nb(
         hit_below (bool): If True, check whether the target price is hit from above.
 
     Returns:
-        float: The computed stop price.
+        float: Computed stop price.
     """
     if delta_format == DeltaFormat.Percent100:
         stop /= 100
@@ -3310,7 +3310,7 @@ def resolve_dyn_limit_price_nb(val_price: float, price: float, limit_price: floa
         limit_price (float): Proposed limit price value; if infinite, selects a bound based on its sign.
 
     Returns:
-        float: The resolved limit price.
+        float: Resolved limit price.
     """
     if np.isinf(limit_price):
         if limit_price < 0:
@@ -3334,7 +3334,7 @@ def resolve_dyn_stop_entry_price_nb(val_price: float, price: float, stop_entry_p
             A negative value selects between valuation and order price.
 
     Returns:
-        float: The resolved stop entry price.
+        float: Resolved stop entry price.
     """
     if np.isinf(stop_entry_price):
         if stop_entry_price < 0:
@@ -3379,7 +3379,7 @@ def get_stop_ladder_exit_size_nb(
         hit_below (bool): If True, check whether the target price is hit from above.
 
     Returns:
-        float: The exit size corresponding to the current ladder step, or NaN if no valid stop is found.
+        float: Exit size corresponding to the current ladder step, or NaN if no valid stop is found.
     """
     if ladder == StopLadderMode.Disabled:
         raise ValueError("Stop ladder must be enabled to select exit size")
@@ -3468,7 +3468,7 @@ def get_time_stop_ladder_exit_size_nb(
         index (Optional[Array1d]): Index array in nanosecond format.
 
     Returns:
-        float: The calculated exit size.
+        float: Calculated exit size.
     """
     if ladder == StopLadderMode.Disabled:
         raise ValueError("Stop ladder must be enabled to select exit size")
@@ -3622,7 +3622,7 @@ def set_limit_info_nb(
             See `vectorbtpro.portfolio.enums.LimitOrderPrice`.
 
     Returns:
-        None: The function modifies the `limit_info` record in place.
+        None: Function modifies the `limit_info` record in place.
     """
     limit_info["signal_idx"] = signal_idx
     limit_info["creation_idx"] = creation_idx if creation_idx is not None else signal_idx
@@ -3651,7 +3651,7 @@ def clear_limit_info_nb(limit_info: tp.Record) -> None:
             Must adhere to the `vectorbtpro.portfolio.enums.limit_info_dt` dtype.
 
     Returns:
-        None: The function modifies the `limit_info` record in place.
+        None: Function modifies the `limit_info` record in place.
     """
     limit_info["signal_idx"] = -1
     limit_info["creation_idx"] = -1
@@ -3722,7 +3722,7 @@ def set_sl_info_nb(
         step_idx (int): Ladder step index.
 
     Returns:
-        None: The function modifies the `sl_info` record in place.
+        None: Function modifies the `sl_info` record in place.
 
     See:
         `vectorbtpro.portfolio.enums.sl_info_dt`
@@ -3753,7 +3753,7 @@ def clear_sl_info_nb(sl_info: tp.Record) -> None:
             Must adhere to the `vectorbtpro.portfolio.enums.sl_info_dt` dtype.
 
     Returns:
-        None: The function modifies the `sl_info` record in place.
+        None: Function modifies the `sl_info` record in place.
     """
     sl_info["init_idx"] = -1
     sl_info["init_price"] = np.nan
@@ -3833,7 +3833,7 @@ def set_tsl_info_nb(
         step_idx (int): Ladder step index.
 
     Returns:
-        None: The function modifies the `tsl_info` record in place.
+        None: Function modifies the `tsl_info` record in place.
 
     See:
         `vectorbtpro.portfolio.enums.tsl_info_dt`
@@ -3867,7 +3867,7 @@ def clear_tsl_info_nb(tsl_info: tp.Record) -> None:
             Must adhere to the `vectorbtpro.portfolio.enums.tsl_info_dt` dtype.
 
     Returns:
-        None: The function modifies the `tsl_info` record in place.
+        None: Function modifies the `tsl_info` record in place.
     """
     tsl_info["init_idx"] = -1
     tsl_info["init_price"] = np.nan
@@ -3940,7 +3940,7 @@ def set_tp_info_nb(
         step_idx (int): Ladder step index.
 
     Returns:
-        None: The function modifies the `tp_info` record in place.
+        None: Function modifies the `tp_info` record in place.
 
     See:
         `vectorbtpro.portfolio.enums.tp_info_dt`
@@ -3971,7 +3971,7 @@ def clear_tp_info_nb(tp_info: tp.Record) -> None:
             Must adhere to the `vectorbtpro.portfolio.enums.tp_info_dt` dtype.
 
     Returns:
-        None: The function modifies the `tp_info` record in place.
+        None: Function modifies the `tp_info` record in place.
     """
     tp_info["init_idx"] = -1
     tp_info["init_price"] = np.nan
@@ -4043,7 +4043,7 @@ def set_time_info_nb(
         step_idx (int): Ladder step index.
 
     Returns:
-        None: The function modifies the `time_info` record in place.
+        None: Function modifies the `time_info` record in place.
 
     See:
         `vectorbtpro.portfolio.enums.time_info_dt`
@@ -4074,7 +4074,7 @@ def clear_time_info_nb(time_info: tp.Record) -> None:
             Must adhere to the `vectorbtpro.portfolio.enums.time_info_dt` dtype.
 
     Returns:
-        None: The function modifies the `time_info` record in place.
+        None: Function modifies the `time_info` record in place.
     """
     time_info["init_idx"] = -1
     time_info["init_position"] = np.nan
@@ -4102,7 +4102,7 @@ def get_limit_info_target_price_nb(limit_info: tp.Record) -> float:
             Must adhere to the `vectorbtpro.portfolio.enums.limit_info_dt` dtype.
 
     Returns:
-        float: The target price if the limit order information is active; otherwise, NaN.
+        float: Target price if the limit order information is active; otherwise, NaN.
     """
     if not is_limit_info_active_nb(limit_info):
         return np.nan
@@ -4129,7 +4129,7 @@ def get_sl_info_target_price_nb(sl_info: tp.Record, position_now: float) -> floa
         position_now (float): Current position size.
 
     Returns:
-        float: The target stop loss price if the SL order is active; otherwise, NaN.
+        float: Target stop loss price if the SL order is active; otherwise, NaN.
     """
     if not is_stop_info_active_nb(sl_info):
         return np.nan
@@ -4153,7 +4153,7 @@ def get_tsl_info_target_price_nb(tsl_info: tp.Record, position_now: float) -> fl
         position_now (float): Current position size.
 
     Returns:
-        float: The computed target price based on TSL information.
+        float: Computed target price based on TSL information.
 
             Returns NaN if the stop information is inactive.
     """
@@ -4179,7 +4179,7 @@ def get_tp_info_target_price_nb(tp_info: tp.Record, position_now: float) -> floa
         position_now (float): Current position size.
 
     Returns:
-        float: The computed target price based on TP information.
+        float: Computed target price based on TP information.
 
             Returns NaN if the stop information is inactive.
     """

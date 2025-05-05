@@ -106,7 +106,7 @@ class Task(DefineMixin):
                     element is a dict of keyword arguments.
 
         Returns:
-            Task: A Task instance constructed from the tuple.
+            Task: Task instance constructed from the tuple.
         """
         if len(tuple_) == 2:
             if isinstance(tuple_[1], tuple):
@@ -128,7 +128,7 @@ class Task(DefineMixin):
         """Run the task by calling its function with the provided arguments.
 
         Returns:
-            Any: The result of executing the function.
+            Any: Result of executing the function.
         """
         return self.func(*self.args, **self.kwargs)
 
@@ -219,7 +219,7 @@ class ExecutionEngine(Configured):
             keys (Optional[IndexLike]): Keys associated with each task.
 
         Returns:
-            ExecResults: The results of executing the tasks.
+            ExecResults: Results of executing the tasks.
         """
         raise NotImplementedError
 
@@ -562,7 +562,7 @@ def pass_kwargs_as_args(func: tp.Callable, args: tp.Args, kwargs: tp.Kwargs) -> 
         kwargs (Kwargs): Keyword arguments for the function.
 
     Returns:
-        Any: The result of executing the function.
+        Any: Result of executing the function.
     """
     return func(*args, **kwargs)
 
@@ -1695,7 +1695,7 @@ class Executor(Configured):
         """Directory for storing chunk cache files.
 
         Returns:
-            PathLike: The directory for chunk cache files.
+            PathLike: Directory for chunk cache files.
         """
         return self._chunk_cache_dir
 
@@ -1989,7 +1989,7 @@ class Executor(Configured):
             **kwargs: Keyword arguments for `Executor.get_setting`.
 
         Returns:
-            Any: The value of the specified engine setting.
+            Any: Value of the specified engine setting.
         """
         if engine_name is not None:
             sub_path = "engines." + engine_name
@@ -2029,7 +2029,7 @@ class Executor(Configured):
             **kwargs: Keyword arguments for `Executor.resolve_setting`.
 
         Returns:
-            Any: The resolved engine setting.
+            Any: Resolved engine setting.
         """
         if engine_name is not None:
             sub_path = "engines." + engine_name
@@ -2049,7 +2049,7 @@ class Executor(Configured):
             **kwargs: Keyword arguments for `Executor.set_settings`.
 
         Returns:
-            None: The function modifies settings in place.
+            None: Function modifies settings in place.
         """
         if engine_name is not None:
             sub_path = "engines." + engine_name
@@ -2199,7 +2199,7 @@ class Executor(Configured):
             tasks (TasksLike): Tasks (i.e., functions with their arguments) to execute.
 
         Returns:
-            Task: A task object representing the serial execution of the provided tasks.
+            Task: Task object representing the serial execution of the provided tasks.
         """
         ref_ids = dict()
         id_objs = dict()
@@ -2413,7 +2413,7 @@ class Executor(Configured):
             template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
-            ExecResults: The updated call results after post-chunk processing.
+            ExecResults: Updated call results after post-chunk processing.
         """
         from vectorbtpro.registries.ca_registry import clear_cache, collect_garbage
 
@@ -3209,7 +3209,7 @@ def execute(
         **kwargs: Keyword arguments for `Executor` or merged into `engine_config`.
 
     Returns:
-        MergeableResults: The merged results from executing the tasks.
+        MergeableResults: Merged results from executing the tasks.
 
     !!! info
         For default settings, see `vectorbtpro._settings.execution`.
@@ -3355,7 +3355,7 @@ def iterated(
         **kwargs: Keyword arguments for `Executor` or the decorated function.
 
     Returns:
-        Callable: The wrapper function that executes the original function iteratively.
+        Callable: Wrapper function that executes the original function iteratively.
 
     !!! info
         For default settings, see `vectorbtpro._settings.execution`.

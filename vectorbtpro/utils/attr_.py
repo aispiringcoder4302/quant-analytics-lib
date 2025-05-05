@@ -106,7 +106,7 @@ class DefineMixin(Hashable):
             field_name (str): Name of the attribute field.
 
         Returns:
-            Attribute: The attribute field object.
+            Attribute: Attribute field object.
         """
         return cls_or_self.fields_dict[field_name]
 
@@ -152,7 +152,7 @@ class DefineMixin(Hashable):
             field_or_name (Union[str, Attribute]): Name or object of the attribute field.
 
         Returns:
-            Any: The resolved value of the field, or `MISSING` if no value is available.
+            Any: Resolved value of the field, or `MISSING` if no value is available.
         """
         if isinstance(field_or_name, str):
             if getattr(self, field_or_name) is not MISSING:
@@ -210,7 +210,7 @@ class DefineMixin(Hashable):
             assert_not_missing (bool): If True, asserts that each field is not missing.
 
         Returns:
-            DefineMixin: A new instance with all field values resolved.
+            DefineMixin: New instance with all field values resolved.
         """
         changes = {}
         for field in self.fields:
@@ -231,7 +231,7 @@ class DefineMixin(Hashable):
             full (bool): If True, include all fields; otherwise, exclude fields with a missing value.
 
         Returns:
-            dict: A dictionary mapping field names to their corresponding values.
+            dict: Dictionary mapping field names to their corresponding values.
         """
         dct = dict()
         for field in self.fields:
@@ -248,7 +248,7 @@ class DefineMixin(Hashable):
             **changes: Keyword arguments specifying field updates.
 
         Returns:
-            DefineMixin: A new instance reflecting the specified changes.
+            DefineMixin: New instance reflecting the specified changes.
         """
         return attr.evolve(self, **changes)
 
@@ -262,7 +262,7 @@ class DefineMixin(Hashable):
             **changes: Keyword arguments specifying field updates.
 
         Returns:
-            DefineMixin: A new instance with merged attribute values.
+            DefineMixin: New instance with merged attribute values.
         """
         from vectorbtpro.utils.config import merge_dicts
 
@@ -279,7 +279,7 @@ class DefineMixin(Hashable):
             **changes: Keyword arguments specifying field updates.
 
         Returns:
-            DefineMixin: A new instance with merged attribute values.
+            DefineMixin: New instance with merged attribute values.
         """
         from vectorbtpro.utils.config import merge_dicts
 
@@ -313,7 +313,7 @@ class define(Base):
             **kwargs: Keyword arguments for `attr.field`.
 
         Returns:
-            Any: The result from `attr.field`.
+            Any: Result from `attr.field`.
         """
         return attr.field(**kwargs)
 
@@ -326,7 +326,7 @@ class define(Base):
             **kwargs: Keyword arguments for `attr.field`.
 
         Returns:
-            Any: The defined field.
+            Any: Defined field.
         """
         return cls.field(default=MISSING, **kwargs)
 
@@ -347,7 +347,7 @@ class define(Base):
             **kwargs: Keyword arguments for `attr.field`.
 
         Returns:
-            Any: The defined field.
+            Any: Defined field.
         """
         if metadata is None:
             metadata = {}
@@ -377,7 +377,7 @@ def get_dict_attr(obj: tp.Union[object, type], attr: str) -> tp.Any:
         attr (str): Name of the attribute to retrieve.
 
     Returns:
-        Any: The attribute value if present.
+        Any: Attribute value if present.
     """
     if inspect.isclass(obj):
         cls = obj
@@ -406,7 +406,7 @@ def default_getattr_func(
         call_attr (bool): Indicates whether to call the attribute if it is callable.
 
     Returns:
-        Any: The attribute's value or the result of calling it if callable.
+        Any: Attribute's value or the result of calling it if callable.
     """
     if args is None:
         args = ()
@@ -436,13 +436,13 @@ def deep_getattr(
             * tuple of string: Call a method without arguments.
             * tuple of string and tuple: Call a method with positional arguments.
             * tuple of string, tuple, and dict: Call a method with positional and keyword arguments.
-            * Iterable: A sequence of any of the above forms.
+            * Iterable: Sequence of any of the above forms.
         getattr_func (Callable): Function used for attribute retrieval, overriding default behavior
             (`default_getattr_func`).
         call_last_attr (bool): Indicates whether to call the final attribute if it is callable.
 
     Returns:
-        Any: The resulting attribute value or the result from calling the attribute.
+        Any: Resulting attribute value or the result from calling the attribute.
 
     !!! hint
         If your attribute chain contains only attributes and methods without arguments,
@@ -528,7 +528,7 @@ class AttrResolverMixin(Base):
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
-            AttrResolverMixin: The resolved self.
+            AttrResolverMixin: Resolved self.
 
         !!! note
             `cond_kwargs` can be modified in-place.
@@ -543,7 +543,7 @@ class AttrResolverMixin(Base):
             final_kwargs (KwargsLike): Dictionary of keyword arguments for resolution.
 
         Returns:
-            str: The processed attribute name.
+            str: Processed attribute name.
         """
         return attr
 
@@ -556,7 +556,7 @@ class AttrResolverMixin(Base):
             final_kwargs (KwargsLike): Dictionary of keyword arguments used during resolution.
 
         Returns:
-            str: The post-processed output.
+            str: Post-processed output.
         """
         return out
 
@@ -578,7 +578,7 @@ class AttrResolverMixin(Base):
             **kwargs: Keyword arguments passed for resolution.
 
         Returns:
-            Any: The resolved attribute value.
+            Any: Resolved attribute value.
         """
         if not attr.startswith("get_"):
             if "get_" + attr not in self.cls_dir or (len(args) == 0 and len(kwargs) == 0):
@@ -628,7 +628,7 @@ class AttrResolverMixin(Base):
             use_shortcuts (bool): Flag indicating whether to apply shortcut resolution.
 
         Returns:
-            Any: The resolved attribute value.
+            Any: Resolved attribute value.
         """
         from vectorbtpro.utils.config import merge_dicts
         from vectorbtpro.utils.parsing import get_func_arg_names
@@ -690,7 +690,7 @@ class AttrResolverMixin(Base):
             **kwargs: Keyword arguments for `deep_getattr`.
 
         Returns:
-            Any: The value of the nested attribute.
+            Any: Value of the nested attribute.
         """
         return deep_getattr(self, *args, **kwargs)
 
@@ -706,7 +706,7 @@ def parse_attrs(obj: tp.Any = None, own_only: bool = False, sort_by: tp.Optional
         sort_by (Optional[str]): Column name used to sort the resulting DataFrame.
 
     Returns:
-        Frame: A DataFrame indexed by attribute names with columns for type and path information.
+        Frame: DataFrame indexed by attribute names with columns for type and path information.
     """
     if obj is None:
         obj = vbt

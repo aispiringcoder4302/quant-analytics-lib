@@ -61,7 +61,7 @@ def future_mean_1d_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Array1d: An array containing the computed rolling averages over future values.
+        Array1d: Array containing the computed rolling averages over future values.
     """
     future_mean = generic_nb.ma_1d_nb(close[::-1], window, wtype=wtype, minp=minp, adjust=adjust)[::-1]
     if wait > 0:
@@ -109,7 +109,7 @@ def future_mean_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Array2d: A 2-D array of computed rolling averages over future values for each column.
+        Array2d: 2-D array of computed rolling averages over future values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -158,7 +158,7 @@ def future_std_1d_nb(
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        Array1d: An array containing the computed rolling standard deviations over future values.
+        Array1d: Array containing the computed rolling standard deviations over future values.
     """
     future_std = generic_nb.msd_1d_nb(close[::-1], window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)[::-1]
     if wait > 0:
@@ -209,7 +209,7 @@ def future_std_nb(
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        Array2d: A 2-D array containing the computed rolling standard deviations
+        Array2d: 2-D array containing the computed rolling standard deviations
             over future values for each column.
 
     !!! tip
@@ -252,7 +252,7 @@ def future_min_1d_nb(
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array1d: An array with the computed rolling minimum values over future values.
+        Array1d: Array with the computed rolling minimum values over future values.
     """
     future_min = generic_nb.rolling_min_1d_nb(close[::-1], window, minp=minp)[::-1]
     if wait > 0:
@@ -290,7 +290,7 @@ def future_min_nb(
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array2d: A 2-D array containing the computed rolling minimum values over future values for each column.
+        Array2d: 2-D array containing the computed rolling minimum values over future values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -328,7 +328,7 @@ def future_max_1d_nb(
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array1d: An array with the computed rolling maximum values over future values.
+        Array1d: Array with the computed rolling maximum values over future values.
     """
     future_max = generic_nb.rolling_max_1d_nb(close[::-1], window, minp=minp)[::-1]
     if wait > 0:
@@ -366,7 +366,7 @@ def future_max_nb(
         minp (Optional[int]): Minimum number of observations required.
 
     Returns:
-        Array2d: A two-dimensional array where each column contains the computed future maximum values.
+        Array2d: Two-dimensional array where each column contains the computed future maximum values.
 
     !!! tip
         This function is parallelizable.
@@ -400,7 +400,7 @@ def fixed_labels_1d_nb(
         n (int): Period offset used for shifting to compute the future value.
 
     Returns:
-        Array1d: An array of percentage changes.
+        Array1d: Array of percentage changes.
     """
     return (generic_nb.bshift_1d_nb(close, n) - close) / close
 
@@ -427,7 +427,7 @@ def fixed_labels_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Array2d: A two-dimensional array where each column contains the computed percentage changes.
+        Array2d: Two-dimensional array where each column contains the computed percentage changes.
 
     !!! tip
         This function is parallelizable.
@@ -474,7 +474,7 @@ def mean_labels_1d_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Array1d: An array of computed percentage changes.
+        Array1d: Array of computed percentage changes.
     """
     future_mean = future_mean_1d_nb(close, window=window, wtype=wtype, wait=wait, minp=minp, adjust=adjust)
     return (future_mean - close) / close
@@ -521,7 +521,7 @@ def mean_labels_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Array2d: A two-dimensional array where each column contains the computed percentage changes.
+        Array2d: Two-dimensional array where each column contains the computed percentage changes.
 
     !!! tip
         This function is parallelizable.
@@ -555,7 +555,7 @@ def iter_symmetric_up_th_nb(down_th: float) -> float:
         down_th (float): Negative threshold value.
 
     Returns:
-        float: The calculated positive threshold.
+        float: Calculated positive threshold.
 
             For example, a 50% drop requires a 100% increase to return to the initial level.
     """
@@ -571,7 +571,7 @@ def iter_symmetric_down_th_nb(up_th: float) -> float:
         up_th (float): Positive threshold value.
 
     Returns:
-        float: The calculated negative threshold.
+        float: Calculated negative threshold.
     """
     return up_th / (1 + up_th)
 
@@ -597,7 +597,7 @@ def pivots_1d_nb(
             Provided as a scalar or per row.
 
     Returns:
-        Array1d: An array of integer values indicating the detected pivot points.
+        Array1d: Array of integer values indicating the detected pivot points.
 
             See `vectorbtpro.indicators.enums.Pivot`.
 

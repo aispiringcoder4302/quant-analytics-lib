@@ -37,7 +37,7 @@ class MetaPlotsBuilderMixin(type):
         """Subplots configuration used by `PlotsBuilderMixin.plots`.
 
         Returns:
-            Config: A dictionary containing the default subplots configuration.
+            Config: Dictionary containing the default subplots configuration.
         """
         return cls._subplots
 
@@ -64,7 +64,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         """Return default keyword arguments for `PlotsBuilderMixin.plots`.
 
         Returns:
-            Kwargs: A dictionary containing default settings, including the wrapper's frequency.
+            Kwargs: Dictionary containing default settings, including the wrapper's frequency.
         """
         return dict(settings=dict(freq=self.wrapper.freq))
 
@@ -82,7 +82,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             merge (bool): Flag indicating whether to merge the default and provided values.
 
         Returns:
-            Any: The resolved setting based on the merge strategy and default configurations.
+            Any: Resolved setting based on the merge strategy and default configurations.
         """
         from vectorbtpro._settings import settings as _settings
 
@@ -115,7 +115,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         to `${cls_name}._subplots` on the instance.
 
         Returns:
-            Config: A hybrid copy of the subplots configuration.
+            Config: Hybrid copy of the subplots configuration.
         """
         return self._subplots
 

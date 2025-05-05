@@ -57,7 +57,7 @@ class Timer(Base):
         """Start time of the timer.
 
         Returns:
-            float: The start time of the timer.
+            float: Start time of the timer.
         """
         return self._start_time
 
@@ -66,7 +66,7 @@ class Timer(Base):
         """End time of the timer. If the timer is still running, returns the current time.
 
         Returns:
-            float: The end time of the timer or the current time if the timer is still running.
+            float: End time of the timer or the current time if the timer is still running.
         """
         if self._end_time is None:
             return default_timer()
@@ -120,7 +120,7 @@ def with_timer(
         print_kwargs (KwargsLike): Keyword arguments for `print_func`.
 
     Returns:
-        Callable: The decorated function.
+        Callable: Decorated function.
     """
 
     if timer_kwargs is None:
@@ -218,7 +218,7 @@ def with_timeit(
         print_kwargs (KwargsLike): Keyword arguments for `print_func`.
 
     Returns:
-        Callable: The decorated function.
+        Callable: Decorated function.
     """
 
     if timeit_kwargs is None:
@@ -343,7 +343,7 @@ def with_memtracer(
         print_kwargs (KwargsLike): Keyword arguments for `print_func`.
 
     Returns:
-        Callable: The decorated function.
+        Callable: Decorated function.
     """
 
     if memtracer_kwargs is None:

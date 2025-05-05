@@ -317,7 +317,7 @@ class SimRangeMixin(Base):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
         Returns:
-            int: The resolved position corresponding to the simulation start.
+            int: Resolved position corresponding to the simulation start.
         """
         if not isinstance(cls_or_self, type):
             if wrapper is None:
@@ -341,7 +341,7 @@ class SimRangeMixin(Base):
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
         Returns:
-            int: The resolved position corresponding to the simulation end.
+            int: Resolved position corresponding to the simulation end.
         """
         if not isinstance(cls_or_self, type):
             if wrapper is None:
@@ -547,7 +547,7 @@ class SimRangeMixin(Base):
         """Simulation start value computed using default parameters from `SimRangeMixin.get_sim_start`.
 
         Returns:
-            Series: The simulation start series.
+            Series: Simulation start series.
         """
         return self.get_sim_start()
 
@@ -602,7 +602,7 @@ class SimRangeMixin(Base):
         """Simulation end value computed using default parameters from `SimRangeMixin.get_sim_end`.
 
         Returns:
-            Series: The simulation end series.
+            Series: Simulation end series.
         """
         return self.get_sim_end()
 
@@ -667,7 +667,7 @@ class SimRangeMixin(Base):
         """Return the simulation start index using default arguments via `SimRangeMixin.get_sim_start_index`.
 
         Returns:
-            Series: The simulation start index series.
+            Series: Simulation start index series.
         """
         return self.get_sim_start_index()
 
@@ -743,7 +743,7 @@ class SimRangeMixin(Base):
         """Return the simulation end index using default arguments via `SimRangeMixin.get_sim_end_index`.
 
         Returns:
-            Series: The simulation end index series.
+            Series: Simulation end index series.
         """
         return self.get_sim_end_index()
 
@@ -799,7 +799,7 @@ class SimRangeMixin(Base):
         """Return the simulation duration using default arguments via `SimRangeMixin.get_sim_duration`.
 
         Returns:
-            Series: The simulation duration series.
+            Series: Simulation duration series.
         """
         return self.get_sim_duration()
 
@@ -830,7 +830,7 @@ class SimRangeMixin(Base):
                 If None, it is inferred from the figure.
 
         Returns:
-            BaseFigure: The updated figure with an adjusted x-axis range.
+            BaseFigure: Updated figure with an adjusted x-axis range.
         """
         if not isinstance(cls_or_self, type):
             if wrapper is None:

@@ -65,7 +65,7 @@ class GroupLensSizer(ArgSizer):
             single_type (Optional[type]): Type of value that is considered single.
 
         Returns:
-            int: The size computed from the object.
+            int: Size computed from the object.
         """
         if single_type is not None:
             if checks.is_instance_of(obj, single_type):
@@ -84,7 +84,7 @@ class GroupLensSizer(ArgSizer):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            int: The computed size.
+            int: Computed size.
         """
         return self.get_obj_size(self.get_arg(ann_args), single_type=self.single_type)
 
@@ -100,7 +100,7 @@ class GroupLensSlicer(ChunkSlicer):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            int: The size computed from the object.
+            int: Size computed from the object.
         """
         return GroupLensSizer.get_obj_size(obj, single_type=self.single_type)
 
@@ -139,7 +139,7 @@ def get_group_lens_slice(group_lens: tp.GroupLens, chunk_meta: ChunkMeta) -> sli
         chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
 
     Returns:
-        slice: A slice object representing the group lengths segment.
+        slice: Slice object representing the group lengths segment.
     """
     group_lens_cumsum = np.cumsum(group_lens[: chunk_meta.end])
     start = group_lens_cumsum[chunk_meta.start] - group_lens[chunk_meta.start]
@@ -272,7 +272,7 @@ class FlexArraySizer(ArraySizer):
             single_type (Optional[type]): Type of value that is considered single.
 
         Returns:
-            int: The computed size along the specified axis.
+            int: Computed size along the specified axis.
         """
         if single_type is not None:
             if checks.is_instance_of(obj, single_type):

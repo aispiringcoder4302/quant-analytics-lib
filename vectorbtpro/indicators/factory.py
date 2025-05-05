@@ -232,7 +232,7 @@ def build_columns(
         **kwargs: Keyword arguments for `vectorbtpro.base.indexes.stack_indexes`.
 
     Returns:
-        dict: A dictionary containing:
+        dict: Dictionary containing:
 
             * `param_indexes`: List of initial parameter indexes.
             * `rep_param_indexes`: List of repeated parameter indexes corresponding to `input_columns`.
@@ -349,7 +349,7 @@ def combine_objs(
         **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor.combine`.
 
     Returns:
-        SeriesFrame: The resulting Series or DataFrame after combining `obj` with `other`.
+        SeriesFrame: Resulting Series or DataFrame after combining `obj` with `other`.
     """
     if allow_multiple and isinstance(other, (tuple, list)):
         if keys is None:
@@ -375,7 +375,7 @@ def combine_indicator_with_other(
             the arrays from `IndicatorBase.main_output` and `other`.
 
     Returns:
-        SeriesFrame: The resulting Series or DataFrame after combining `IndicatorBase.main_output`
+        SeriesFrame: Resulting Series or DataFrame after combining `IndicatorBase.main_output`
             with the other object's data.
     """
     if isinstance(other, IndicatorBase):
@@ -487,7 +487,7 @@ class IndicatorBase(Analyzable):
             k (str): Attribute name to resolve.
 
         Returns:
-            Any: The value of the resolved attribute.
+            Any: Value of the resolved attribute.
         """
         try:
             return object.__getattribute__(self, k)
@@ -544,7 +544,7 @@ class IndicatorBase(Analyzable):
         Otherwise, return the output matching the indicator's short name (case sensitive or lower case).
 
         Returns:
-            SeriesFrame: The main output of the indicator.
+            SeriesFrame: Main output of the indicator.
 
         Raises:
             ValueError: If the indicator has no main output.
@@ -564,7 +564,7 @@ class IndicatorBase(Analyzable):
             dtype (Optional[DTypeLike]): Data type to use for the conversion.
 
         Returns:
-            Array: The NumPy array representation of the main output.
+            Array: NumPy array representation of the main output.
         """
         return np.asarray(self.main_output, dtype=dtype)
 
@@ -1181,7 +1181,7 @@ class IndicatorBase(Analyzable):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            IFRunOutput: The result of running the indicator.
+            IFRunOutput: Result of running the indicator.
         """
         return cls._run(*args, **kwargs)
 
@@ -1200,7 +1200,7 @@ class IndicatorBase(Analyzable):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            IFRunCombsOutput: The result of running the indicator combinations.
+            IFRunCombsOutput: Result of running the indicator combinations.
         """
         return cls._run_combs(*args, **kwargs)
 
@@ -1227,7 +1227,7 @@ class IndicatorBase(Analyzable):
                 `IndicatorBase.resolve_row_stack_kwargs` and `IndicatorBase.resolve_stack_kwargs`.
 
         Returns:
-            IndicatorBase: A new instance with combined data from the provided indicators.
+            IndicatorBase: New instance with combined data from the provided indicators.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -1292,7 +1292,7 @@ class IndicatorBase(Analyzable):
                 `IndicatorBase.resolve_column_stack_kwargs` and `IndicatorBase.resolve_stack_kwargs`.
 
         Returns:
-            IndicatorBase: A new instance with combined data from the provided indicators.
+            IndicatorBase: New instance with combined data from the provided indicators.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -1401,7 +1401,7 @@ class IndicatorBase(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func`.
 
         Returns:
-            IndicatorBase: A new indicator instance with updated indexing.
+            IndicatorBase: New indicator instance with updated indexing.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(*args, **kwargs)
@@ -1470,7 +1470,7 @@ class IndicatorBase(Analyzable):
         """Short name of the indicator.
 
         Returns:
-            str: The short name of the indicator.
+            str: Short name of the indicator.
         """
         return cls_or_self._short_name
 
@@ -1524,7 +1524,7 @@ class IndicatorBase(Analyzable):
         """Dictionary of output flags.
 
         Returns:
-            Kwargs: A dictionary of output flags.
+            Kwargs: Dictionary of output flags.
         """
         return cls_or_self._output_flags
 
@@ -1589,7 +1589,7 @@ class IndicatorBase(Analyzable):
             include_all (bool): Flag to determine whether to include all outputs (regular, in-place, and lazy).
 
         Returns:
-            Frame: A DataFrame combining the outputs with output names as column keys.
+            Frame: DataFrame combining the outputs with output names as column keys.
         """
         out = self.to_dict(include_all=include_all)
         return pd.concat(list(out.values()), axis=1, keys=pd.Index(list(out.keys()), name="output"))
@@ -1617,7 +1617,7 @@ class IndicatorBase(Analyzable):
             **kwargs: Keyword arguments for `pd.Series.dropna` or `pd.DataFrame.dropna`.
 
         Returns:
-            IndicatorBase: A new indicator instance with missing values dropped.
+            IndicatorBase: New indicator instance with missing values dropped.
         """
         df = self.to_frame(include_all=include_all)
         new_df = df.dropna(**kwargs)
@@ -1632,7 +1632,7 @@ class IndicatorBase(Analyzable):
             short_name (str): New short name for the indicator.
 
         Returns:
-            IndicatorBase: A new indicator instance with the updated short name.
+            IndicatorBase: New indicator instance with the updated short name.
         """
         new_level_names = ()
         for level_name in self.level_names:
@@ -1703,7 +1703,7 @@ class IndicatorBase(Analyzable):
             key_as_index (bool): Whether to return the yielded key as an index.
 
         Returns:
-            Items: An iterator over key-value pairs representing each column or group.
+            Items: Iterator over key-value pairs representing each column or group.
         """
         if isinstance(group_by, str):
             if group_by not in self.wrapper.columns.names:
@@ -2122,7 +2122,7 @@ class IndicatorFactory(Configured):
                         **kwargs: Keyword arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
                 
                     Returns:
-                        SeriesFrame: The computed statistics for `{attr_name}`.
+                        SeriesFrame: Computed statistics for `{attr_name}`.
                     """
                 )
                 setattr(Indicator, f"{attr_name}_stats", attr_stats)
@@ -2168,7 +2168,7 @@ class IndicatorFactory(Configured):
                             **kwargs: Keyword arguments for `vectorbtpro.indicators.factory.combine_objs`.
 
                         Returns:
-                            SeriesFrame: The resulting boolean array.
+                            SeriesFrame: Resulting boolean array.
                         """
                     )
                     assign_combine_method(func_name, np_func, def_kwargs, attr_name, method_docstring)
@@ -2188,7 +2188,7 @@ class IndicatorFactory(Configured):
                         **kwargs: Keyword arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
                 
                     Returns:
-                        SeriesFrame: The computed generic statistics for `{attr_name}`.
+                        SeriesFrame: Computed generic statistics for `{attr_name}`.
                     """
                 )
                 setattr(Indicator, f"{attr_name}_stats", attr_stats)
@@ -2215,7 +2215,7 @@ class IndicatorFactory(Configured):
                             **kwargs: Keyword arguments for `vectorbtpro.indicators.factory.combine_objs`.
                     
                         Returns:
-                            SeriesFrame: The resulting boolean array.
+                            SeriesFrame: Resulting boolean array.
                         """
                     )
                     assign_combine_method(func_name, np_func, def_kwargs, attr_name, method_docstring)
@@ -2235,7 +2235,7 @@ class IndicatorFactory(Configured):
                         **kwargs: Keyword arguments for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
                 
                     Returns:
-                        SeriesFrame: The computed signal statistics for `{attr_name}`.
+                        SeriesFrame: Computed signal statistics for `{attr_name}`.
                     """
                 )
                 setattr(Indicator, f"{attr_name}_stats", attr_stats)
@@ -2306,7 +2306,7 @@ class IndicatorFactory(Configured):
         """Name of the created indicator class.
 
         Returns:
-            str: The name of the created indicator class.
+            str: Name of the created indicator class.
         """
         return self._class_name
 
@@ -2315,7 +2315,7 @@ class IndicatorFactory(Configured):
         """Docstring for the created indicator class.
 
         Returns:
-            str: The docstring for the created indicator class.
+            str: Docstring for the created indicator class.
         """
         return self._class_docstring
 
@@ -2324,7 +2324,7 @@ class IndicatorFactory(Configured):
         """Module name from which the class originates.
 
         Returns:
-            str: The module name from which the class originates.
+            str: Module name from which the class originates.
         """
         return self._module_name
 
@@ -2333,7 +2333,7 @@ class IndicatorFactory(Configured):
         """Concise name for the indicator.
 
         Returns:
-            str: The concise name for the indicator.
+            str: Concise name for the indicator.
         """
         return self._short_name
 
@@ -2512,7 +2512,7 @@ class IndicatorFactory(Configured):
                 These can include default values and references using `vectorbtpro.base.reshaping.Ref`.
 
         Returns:
-            Indicator: An instance of the indicator.
+            Indicator: Instance of the indicator.
 
                 If `custom_func` returns more objects than defined in `output_names`,
                 the additional objects are returned as a tuple alongside the indicator instance.
@@ -2786,7 +2786,7 @@ class IndicatorFactory(Configured):
                 **kwargs: Keyword arguments for `{0}.run_pipeline`.
 
             Returns:
-                Indicator: An instance of the `{0}` indicator, or a tuple of additional objects if applicable.
+                Indicator: Instance of the `{0}` indicator, or a tuple of additional objects if applicable.
             """
         ).format(_0, _1)
         run = compile_run_function("run", run_docstring, def_run_kwargs)
@@ -3007,7 +3007,7 @@ class IndicatorFactory(Configured):
                 and ultimately to `vectorbtpro.base.combining.apply_and_concat_each`.
 
         Returns:
-            Indicator: An indicator class constructed around the provided apply function.
+            Indicator: Indicator class constructed around the provided apply function.
 
         !!! note
             If `apply_func` is a Numba-compiled function:
@@ -3519,7 +3519,7 @@ class IndicatorFactory(Configured):
         """Custom indicators keyed by their custom locations.
 
         Returns:
-            Config: A dictionary-like object containing custom indicators.
+            Config: Dictionary-like object containing custom indicators.
         """
         return cls._custom_indicators
 
@@ -3727,7 +3727,7 @@ class IndicatorFactory(Configured):
             return_first (bool): If multiple indicators match, return the first one when True.
 
         Returns:
-            IndicatorBase: The custom indicator class.
+            IndicatorBase: Custom indicator class.
         """
         if location is None:
             location, name = cls.split_indicator_name(name)
@@ -4026,7 +4026,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
-            IndicatorBase: A new indicator class based on the TA-Lib function.
+            IndicatorBase: New indicator class based on the TA-Lib function.
 
         Examples:
             ```pycon
@@ -4180,7 +4180,7 @@ class IndicatorFactory(Configured):
                 **kwargs: Keyword arguments for the plotting function.
     
             Returns:
-                BaseFigure: The figure containing the plotted indicator.
+                BaseFigure: Figure containing the plotted indicator.
             """
         )
         setattr(Indicator, "plot", plot)
@@ -4215,7 +4215,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for the indicator function.
 
         Returns:
-            Kwargs: A dictionary containing the following keys:
+            Kwargs: Dictionary containing the following keys:
 
                 * `class_name`: The uppercase name of the indicator function.
                 * `class_docstring`: The original docstring of the indicator function.
@@ -4468,7 +4468,7 @@ class IndicatorFactory(Configured):
             cls_name (str): Name of the indicator class to find.
 
         Returns:
-            IndicatorMixin: The corresponding TA indicator class.
+            IndicatorMixin: Corresponding TA indicator class.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -4494,7 +4494,7 @@ class IndicatorFactory(Configured):
             ind_cls (IndicatorMixin): TA indicator class to parse.
 
         Returns:
-            dict: A dictionary containing:
+            dict: Dictionary containing:
 
                 * `class_name`: The name of the indicator class.
                 * `class_docstring`: The docstring of the indicator class.
@@ -4626,7 +4626,7 @@ class IndicatorFactory(Configured):
             test_index_len (int): Number of rows in the generated test DataFrame.
 
         Returns:
-            dict: A configuration dictionary containing:
+            dict: Configuration dictionary containing:
 
                 * `class_name`: The uppercase name of the function.
                 * `class_docstring`: The original function docstring.
@@ -4764,7 +4764,7 @@ class IndicatorFactory(Configured):
             func_name (str): Name of the technical indicator function.
 
         Returns:
-            IndicatorMixin: The technical indicator function matching the given name.
+            IndicatorMixin: Technical indicator function matching the given name.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -4797,7 +4797,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
-            Indicator: An indicator class constructed around the given technical function.
+            Indicator: Indicator class constructed around the given technical function.
 
         Examples:
             ```pycon
@@ -4884,7 +4884,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
-            Type: The dynamically created indicator class.
+            Type: Dynamically created indicator class.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -4991,7 +4991,7 @@ class IndicatorFactory(Configured):
                 **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
             Returns:
-                BaseFigure: The updated figure with plotted buy and sell traces.
+                BaseFigure: Updated figure with plotted buy and sell traces.
 
             !!! info
                 For default settings, see `vectorbtpro._settings.plotting`.
@@ -5129,7 +5129,7 @@ class IndicatorFactory(Configured):
             snake_case (bool): Flag to convert names to snake case.
 
         Returns:
-            dict: A dictionary containing the parsed configuration with the following keys:
+            dict: Dictionary containing the parsed configuration with the following keys:
 
                 * `class_name`: The uppercase name of the function.
                 * `class_docstring`: The original docstring of the function.
@@ -5927,7 +5927,7 @@ def indicator(*args, **kwargs) -> tp.Type[IndicatorBase]:
         **kwargs: Keyword arguments for `IndicatorFactory.get_indicator`.
 
     Returns:
-        IndicatorBase: The indicator class.
+        IndicatorBase: Indicator class.
     """
     return IndicatorFactory.get_indicator(*args, **kwargs)
 
@@ -5940,7 +5940,7 @@ def talib(*args, **kwargs) -> tp.Type[IndicatorBase]:
         **kwargs: Keyword arguments for `IndicatorFactory.from_talib`.
 
     Returns:
-        IndicatorBase: The indicator class.
+        IndicatorBase: Indicator class.
     """
     return IndicatorFactory.from_talib(*args, **kwargs)
 
@@ -5953,7 +5953,7 @@ def pandas_ta(*args, **kwargs) -> tp.Type[IndicatorBase]:
         **kwargs: Keyword arguments for `IndicatorFactory.from_pandas_ta`.
 
     Returns:
-        IndicatorBase: The indicator class.
+        IndicatorBase: Indicator class.
     """
     return IndicatorFactory.from_pandas_ta(*args, **kwargs)
 
@@ -5966,7 +5966,7 @@ def ta(*args, **kwargs) -> tp.Type[IndicatorBase]:
         **kwargs: Keyword arguments for `IndicatorFactory.from_ta`.
 
     Returns:
-        IndicatorBase: The indicator class.
+        IndicatorBase: Indicator class.
     """
     return IndicatorFactory.from_ta(*args, **kwargs)
 
@@ -5979,7 +5979,7 @@ def wqa101(*args, **kwargs) -> tp.Type[IndicatorBase]:
         **kwargs: Keyword arguments for `IndicatorFactory.from_wqa101`.
 
     Returns:
-        IndicatorBase: The indicator class.
+        IndicatorBase: Indicator class.
     """
     return IndicatorFactory.from_wqa101(*args, **kwargs)
 
@@ -5992,7 +5992,7 @@ def technical(*args, **kwargs) -> tp.Type[IndicatorBase]:
         **kwargs: Keyword arguments for `IndicatorFactory.from_technical`.
 
     Returns:
-        IndicatorBase: The indicator class.
+        IndicatorBase: Indicator class.
     """
     return IndicatorFactory.from_technical(*args, **kwargs)
 
@@ -6005,7 +6005,7 @@ def techcon(*args, **kwargs) -> tp.Type[IndicatorBase]:
         **kwargs: Keyword arguments for `IndicatorFactory.from_techcon`.
 
     Returns:
-        IndicatorBase: The indicator class.
+        IndicatorBase: Indicator class.
     """
     return IndicatorFactory.from_techcon(*args, **kwargs)
 
@@ -6018,6 +6018,6 @@ def smc(*args, **kwargs) -> tp.Type[IndicatorBase]:
         **kwargs: Keyword arguments for `IndicatorFactory.from_smc`.
 
     Returns:
-        IndicatorBase: The indicator class.
+        IndicatorBase: Indicator class.
     """
     return IndicatorFactory.from_smc(*args, **kwargs)

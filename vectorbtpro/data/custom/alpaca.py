@@ -183,7 +183,7 @@ class AlpacaData(RemoteData):
             **client_config: Configuration parameters for creating a new client.
 
         Returns:
-            RESTClient: An instance of the trading client.
+            RESTClient: Instance of the trading client.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -262,7 +262,7 @@ class AlpacaData(RemoteData):
             limit (Optional[int]): Maximum number of items to return.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

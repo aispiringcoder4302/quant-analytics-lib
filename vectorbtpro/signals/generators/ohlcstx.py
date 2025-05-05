@@ -201,7 +201,7 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated or newly created figure.
+            BaseFigure: Updated or newly created figure.
         """
     ).format(base_cls.__name__, entries_attr)
     if entries_attr == "entries":

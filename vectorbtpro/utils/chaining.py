@@ -49,7 +49,7 @@ class Chainable(Base):
             **kwargs: Keyword arguments for `func`.
 
         Returns:
-            Any: The result of invoking the chainable function.
+            Any: Result of invoking the chainable function.
         """
         if isinstance(func, tuple):
             func, arg_name = func
@@ -94,7 +94,7 @@ class Chainable(Base):
                 * A callable function to be wrapped as a `vectorbtpro.utils.execution.Task`.
 
         Returns:
-            Any: The final result after applying all tasks sequentially.
+            Any: Final result after applying all tasks sequentially.
         """
         from vectorbtpro.utils.execution import Task
 

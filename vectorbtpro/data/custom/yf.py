@@ -111,7 +111,7 @@ class YFData(RemoteData):
             **history_kwargs: Keyword arguments for `yfinance.base.TickerBase.history`.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
 
         !!! warning
             Data from Yahoo Finance may be unstable. Yahoo may modify data, introduce noise, or omit data points

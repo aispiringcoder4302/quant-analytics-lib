@@ -208,7 +208,7 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
         allow_space (bool): Allows splitting by whitespace in addition to commas and semicolons if True.
 
     Returns:
-        str: A space-separated string of normalized frequency parts.
+        str: Space-separated string of normalized frequency parts.
     """
     from pkg_resources import parse_version
 
@@ -414,7 +414,7 @@ def to_offset(freq: tp.FrequencyLike) -> BaseOffset:
             or a convertible frequency string.
 
     Returns:
-        BaseOffset: The corresponding Pandas DateOffset object.
+        BaseOffset: Corresponding Pandas DateOffset object.
     """
     if isinstance(freq, BaseOffset):
         return freq
@@ -434,7 +434,7 @@ def prepare_timedelta_str(timedelta_str: str, allow_space: bool = False) -> str:
         allow_space (bool): Allows splitting by whitespace in addition to commas and semicolons if True.
 
     Returns:
-        str: A normalized frequency string with components separated by spaces.
+        str: Normalized frequency string with components separated by spaces.
     """
     from vectorbtpro.utils import datetime_nb as nb
 
@@ -476,7 +476,7 @@ def offset_to_timedelta(offset: BaseOffset) -> tp.PandasTimedelta:
         offset (BaseOffset): Offset object representing a time duration.
 
     Returns:
-        PandasTimedelta: A timedelta corresponding to the provided offset.
+        PandasTimedelta: Timedelta corresponding to the provided offset.
     """
     from vectorbtpro.utils import datetime_nb as nb
 
@@ -550,7 +550,7 @@ def to_timedelta(freq: tp.FrequencyLike = 1, approximate: bool = False) -> tp.Pa
         approximate (bool): Whether to use approximate conversion for offset objects.
 
     Returns:
-        PandasTimedelta: The corresponding timedelta with nanosecond precision.
+        PandasTimedelta: Corresponding timedelta with nanosecond precision.
     """
     if not isinstance(freq, pd.Timedelta):
         if isinstance(freq, str):
@@ -611,7 +611,7 @@ def to_freq(freq: tp.FrequencyLike, allow_offset: bool = True, keep_offset: bool
         keep_offset (bool): Whether to retain the original offset type if possible.
 
     Returns:
-        PandasFrequency: A frequency as a `pd.DateOffset` or a `pd.Timedelta`.
+        PandasFrequency: Frequency as a `pd.DateOffset` or a `pd.Timedelta`.
     """
     if isinstance(freq, pd.Timedelta):
         return freq
@@ -970,7 +970,7 @@ def time_to_timedelta(t: tp.Union[tp.TimeLike, DTC], **kwargs) -> tp.PandasTimed
         **kwargs: Keyword arguments for `DTC.parse_time_str`.
 
     Returns:
-        PandasTimedelta: A Pandas Timedelta instance.
+        PandasTimedelta: Pandas Timedelta instance.
     """
     if isinstance(t, str):
         t = DTC.parse_time_str(t, **kwargs)
@@ -999,7 +999,7 @@ def get_utc_tz(**kwargs) -> tzinfo:
         **kwargs: Keyword arguments for `to_timezone`.
 
     Returns:
-        tzinfo: A timezone object representing UTC.
+        tzinfo: Timezone object representing UTC.
     """
     from dateutil.tz import tzutc
 
@@ -1013,7 +1013,7 @@ def get_local_tz(**kwargs) -> tzinfo:
         **kwargs: Keyword arguments for `to_timezone`.
 
     Returns:
-        tzinfo: The local timezone.
+        tzinfo: Local timezone.
     """
     from dateutil.tz import tzlocal
 
@@ -1030,7 +1030,7 @@ def convert_tzaware_time(t: time, tz_out: tp.Optional[tzinfo]) -> time:
         tz_out (Optional[tzinfo]): Target timezone for conversion.
 
     Returns:
-        time: The time adjusted to the specified timezone.
+        time: Time adjusted to the specified timezone.
     """
     return datetime.combine(datetime.today(), t).astimezone(tz_out).timetz()
 
@@ -1045,7 +1045,7 @@ def tzaware_to_naive_time(t: time, tz_out: tp.Optional[tzinfo]) -> time:
         tz_out (Optional[tzinfo]): Target timezone for conversion.
 
     Returns:
-        time: A naive time without timezone information.
+        time: Naive time without timezone information.
     """
     return datetime.combine(datetime.today(), t).astimezone(tz_out).time()
 
@@ -1060,7 +1060,7 @@ def naive_to_tzaware_time(t: time, tz_out: tp.Optional[tzinfo]) -> time:
         tz_out (Optional[tzinfo]): Target timezone for conversion.
 
     Returns:
-        time: A time instance with timezone information.
+        time: Time instance with timezone information.
     """
     return datetime.combine(datetime.today(), t).astimezone(tz_out).time().replace(tzinfo=tz_out)
 
@@ -1075,7 +1075,7 @@ def convert_naive_time(t: time, tz_out: tp.Optional[tzinfo]) -> time:
         tz_out (Optional[tzinfo]): Target timezone for conversion.
 
     Returns:
-        time: The converted naive time.
+        time: Converted naive time.
     """
     return datetime.combine(datetime.today(), t).astimezone(tz_out).time()
 
@@ -1115,7 +1115,7 @@ def to_timezone(
         dateparser_kwargs (KwargsLike): Keyword arguments for `dateparser.parse`.
 
     Returns:
-        tzinfo: The parsed timezone object.
+        tzinfo: Parsed timezone object.
 
     !!! info
         For default settings, see `vectorbtpro._settings.datetime`.
@@ -1187,7 +1187,7 @@ def to_timestamp(
         **kwargs: Keyword arguments for `pd.Timestamp`.
 
     Returns:
-        Timestamp: The parsed and timezone-adjusted timestamp.
+        Timestamp: Parsed and timezone-adjusted timestamp.
 
     !!! info
         For default settings, see `vectorbtpro._settings.datetime`.
@@ -1296,7 +1296,7 @@ def to_tzaware_timestamp(
         **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
-        Timestamp: The timezone-aware timestamp.
+        Timestamp: Timezone-aware timestamp.
 
     !!! info
         For default settings, see `vectorbtpro._settings.datetime`.
@@ -1324,7 +1324,7 @@ def to_naive_timestamp(dt: tp.DatetimeLike = "now", **kwargs) -> tp.Timestamp:
         **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
-        Timestamp: The timezone-naive timestamp.
+        Timestamp: Timezone-naive timestamp.
     """
     return to_timestamp(dt, **kwargs).tz_localize(None)
 
@@ -1337,7 +1337,7 @@ def to_datetime(dt: tp.DatetimeLike = "now", **kwargs) -> datetime:
         **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
-        datetime: The resulting datetime object.
+        datetime: Resulting datetime object.
     """
     if "unit" not in kwargs:
         kwargs["unit"] = "ms"
@@ -1360,7 +1360,7 @@ def to_tzaware_datetime(dt: tp.DatetimeLike = "now", **kwargs) -> datetime:
         **kwargs: Keyword arguments for `to_tzaware_timestamp`.
 
     Returns:
-        datetime: The resulting timezone-aware datetime object.
+        datetime: Resulting timezone-aware datetime object.
     """
     if "unit" not in kwargs:
         kwargs["unit"] = "ms"
@@ -1375,7 +1375,7 @@ def to_naive_datetime(dt: tp.DatetimeLike = "now", **kwargs) -> datetime:
         **kwargs: Keyword arguments for `to_naive_timestamp`.
 
     Returns:
-        datetime: The resulting timezone-naive datetime object.
+        datetime: Resulting timezone-naive datetime object.
     """
     if "unit" not in kwargs:
         kwargs["unit"] = "ms"
@@ -1401,7 +1401,7 @@ def get_min_td_component(td: tp.PandasTimedelta) -> int:
         td (PandasTimedelta): Pandas Timedelta object.
 
     Returns:
-        int: The index of the smallest non-zero component, or -1.
+        int: Index of the smallest non-zero component, or -1.
     """
     td_components = td.components
     if td_components.nanoseconds > 0:
@@ -1440,7 +1440,7 @@ def readable_datetime(
         **kwargs: Keyword arguments for `to_naive_timestamp` or `to_timestamp`.
 
     Returns:
-        str: The formatted human-readable datetime string.
+        str: Formatted human-readable datetime string.
 
     !!! info
         For default settings, see `vectorbtpro._settings.datetime`.
@@ -1516,7 +1516,7 @@ def datetime_to_ms(dt: datetime) -> int:
         dt (datetime): Datetime object to convert.
 
     Returns:
-        int: The number of milliseconds since the Unix epoch.
+        int: Number of milliseconds since the Unix epoch.
     """
     epoch = datetime.fromtimestamp(0, dt.tzinfo)
     return int((dt - epoch).total_seconds() * 1000.0)
@@ -1563,7 +1563,7 @@ def to_ns(obj: tp.ArrayLike, tz_naive_ns: tp.Optional[bool] = None) -> tp.ArrayL
         tz_naive_ns (Optional[bool]): Flag indicating whether to enforce a timezone-naive conversion.
 
     Returns:
-        ArrayLike: The nanosecond representation of the input.
+        ArrayLike: Nanosecond representation of the input.
 
     !!! info
         For default settings, see `vectorbtpro._settings.datetime`.
@@ -1656,7 +1656,7 @@ def date_range(
         **kwargs: Keyword arguments for `pd.date_range`.
 
     Returns:
-        DatetimeIndex: The generated datetime index.
+        DatetimeIndex: Generated datetime index.
     """
     if timestamp_kwargs is None:
         timestamp_kwargs = {}
@@ -1726,7 +1726,7 @@ def prepare_dt_index(
         **kwargs: Keyword arguments for `pd.to_datetime`.
 
     Returns:
-        Index: The converted index, which will be a DatetimeIndex if conversion succeeded.
+        Index: Converted index, which will be a DatetimeIndex if conversion succeeded.
 
     !!! info
         For default settings, see `vectorbtpro._settings.datetime`.
@@ -1807,7 +1807,7 @@ def try_align_to_dt_index(source_index: tp.IndexLike, target_index: tp.Index, **
         **kwargs: Keyword arguments for `prepare_dt_index`.
 
     Returns:
-        Index: The aligned source index.
+        Index: Aligned source index.
     """
     source_index = prepare_dt_index(source_index, **kwargs)
     if isinstance(source_index, pd.DatetimeIndex) and isinstance(target_index, pd.DatetimeIndex):
@@ -1827,7 +1827,7 @@ def try_align_dt_to_index(dt: tp.DatetimeLike, target_index: tp.Index, **kwargs)
         **kwargs: Keyword arguments for `to_timestamp`.
 
     Returns:
-        DatetimeLike: The aligned datetime-like object.
+        DatetimeLike: Aligned datetime-like object.
     """
     if not isinstance(target_index, pd.DatetimeIndex):
         return dt
@@ -2040,7 +2040,7 @@ def get_rangebreaks(index: tp.IndexLike, **kwargs) -> list:
         **kwargs: Keyword arguments for `get_dt_index_gaps`.
 
     Returns:
-        list: A list of dictionaries with a `bounds` key for each range break.
+        list: List of dictionaries with a `bounds` key for each range break.
     """
     start_index, end_index = get_dt_index_gaps(index, **kwargs)
     return [dict(bounds=x) for x in zip(start_index, end_index)]

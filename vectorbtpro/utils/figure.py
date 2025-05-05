@@ -110,7 +110,7 @@ class FigureMixin(Base):
             **kwargs: Keyword arguments for `FigureMixin`.
 
         Returns:
-            FigureMixin: A new figure instance copied from the original.
+            FigureMixin: New figure instance copied from the original.
         """
         return type(self)(self, *args, empty_layout=True, **kwargs)
 
@@ -128,7 +128,7 @@ class FigureMixin(Base):
             inplace (bool): Whether to modify the figure in place.
 
         Returns:
-            FigureMixin: The updated figure with data limited to the specified range.
+            FigureMixin: Updated figure with data limited to the specified range.
         """
         if inplace:
             fig = self
@@ -241,7 +241,7 @@ class FigureMixin(Base):
             **kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.get_rangebreaks`.
 
         Returns:
-            FigureMixin: The figure with updated x-axis range breaks.
+            FigureMixin: Figure with updated x-axis range breaks.
         """
         if inplace:
             fig = self
@@ -270,7 +270,7 @@ class FigureMixin(Base):
             inplace (bool): Whether to update the figure in place.
 
         Returns:
-            FigureMixin: The updated figure with the specified index values skipped.
+            FigureMixin: Updated figure with the specified index values skipped.
         """
         if inplace:
             fig = self
@@ -408,7 +408,7 @@ class FigureMixin(Base):
             **kwargs: Keyword arguments for `FigureMixin.write_image`.
 
         Returns:
-            Path: The directory path where SVG files are saved.
+            Path: Directory path where SVG files are saved.
         """
         if not isinstance(dir_path, Path):
             dir_path = Path(dir_path)
@@ -577,7 +577,7 @@ def make_figure(
         **kwargs: Keyword arguments for the Plotly figure constructor.
 
     Returns:
-        BaseFigure: A Plotly figure instance.
+        BaseFigure: Plotly figure instance.
 
     !!! info
         For default settings, see `vectorbtpro._settings.plotting`.
@@ -621,7 +621,7 @@ def make_subplots(
         **kwargs: Keyword arguments for `plotly.subplots.make_subplots`.
 
     Returns:
-        BaseFigure: A Plotly figure containing subplots.
+        BaseFigure: Plotly figure containing subplots.
     """
     return make_figure(_make_subplots(*args, **kwargs), use_widgets=use_widgets, use_resampler=use_resampler)
 

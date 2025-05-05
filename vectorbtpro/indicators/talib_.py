@@ -45,7 +45,7 @@ def talib_func(func_name: str) -> tp.Callable:
             Case is ignored.
 
     Returns:
-        Callable: A function that executes `talib.<FUNC_NAME>` on NumPy arrays, Pandas Series, or DataFrames.
+        Callable: Function that executes `talib.<FUNC_NAME>` on NumPy arrays, Pandas Series, or DataFrames.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
@@ -334,7 +334,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             Case-insensitive identifier.
 
     Returns:
-        Callable: A plotting function for the TA-Lib indicator.
+        Callable: Plotting function for the TA-Lib indicator.
 
     !!! info
         For default settings, see `vectorbtpro._settings.plotting`.
@@ -542,7 +542,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
         
         Returns:
-            BaseFigure: The figure updated with the TA-Lib indicator plots.
+            BaseFigure: Figure updated with the TA-Lib indicator plots.
         """
     )
     return run_talib_plot_func

@@ -161,7 +161,7 @@ def pick_idx_allocate_func_nb(i: int, index_point: int, allocations: tp.Array2d)
         allocations (Array2d): 2D array of allocation values.
 
     Returns:
-        Array1d: The allocation corresponding to the specified absolute index.
+        Array1d: Allocation corresponding to the specified absolute index.
     """
     return allocations[i]
 
@@ -176,7 +176,7 @@ def pick_point_allocate_func_nb(i: int, index_point: int, allocations: tp.Array2
         allocations (Array2d): 2D array of allocation values.
 
     Returns:
-        Array1d: The allocation corresponding to the specified index point.
+        Array1d: Allocation corresponding to the specified index point.
     """
     return allocations[index_point]
 

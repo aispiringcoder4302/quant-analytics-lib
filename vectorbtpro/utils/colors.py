@@ -108,7 +108,7 @@ def adjust_opacity(color: tp.Any, opacity: float) -> str:
         opacity (float): Desired opacity value.
 
     Returns:
-        str: The color in `rgba(r,g,b,a)` format with the updated opacity.
+        str: Color in `rgba(r,g,b,a)` format with the updated opacity.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
@@ -137,7 +137,7 @@ def adjust_lightness(color: tp.Any, amount: float = 0.7) -> str:
             Values less than 1 darken the color, while values greater than 1 lighten it.
 
     Returns:
-        str: The adjusted color in `rgb(r,g,b)` format.
+        str: Adjusted color in `rgb(r,g,b)` format.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 

@@ -92,7 +92,7 @@ class ArgGetter(DefineMixin):
                 See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
-            Any: The argument value.
+            Any: Argument value.
         """
         if self.arg_query is None:
             raise ValueError("Please provide arg_query")
@@ -442,7 +442,7 @@ def get_chunk_meta_key(chunk_meta: ChunkMeta) -> tp.Any:
         chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
 
     Returns:
-        Any: The key representing the chunk metadata.
+        Any: Key representing the chunk metadata.
     """
     if chunk_meta.indices is not None:
         return "{}..{}".format(chunk_meta.indices[0], chunk_meta.indices[-1])
@@ -499,7 +499,7 @@ class ChunkMapper(DefineMixin):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ChunkMeta: The mapped chunk metadata.
+            ChunkMeta: Mapped chunk metadata.
         """
         raise NotImplementedError
 
@@ -543,7 +543,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            int: The size of the object.
+            int: Size of the object.
         """
         raise NotImplementedError
 
@@ -595,7 +595,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
             **kwargs: Keyword arguments for `ChunkTaker.should_take` or `ChunkTaker.take`.
 
         Returns:
-            Any: The resulting object after chunk extraction.
+            Any: Resulting object after chunk extraction.
         """
         if self.mapper is not None:
             chunk_meta = self.mapper.apply(chunk_meta, **kwargs)
@@ -612,7 +612,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Any: The extracted subset of data.
+            Any: Extracted subset of data.
         """
         raise NotImplementedError
 
@@ -859,7 +859,7 @@ class SequenceTaker(ContainerTaker):
             obj (Sequence): Sequence object.
 
         Returns:
-            ContainerTakeSpec: The adapted container take specification.
+            ContainerTakeSpec: Adapted container take specification.
         """
         cont_take_spec = list(self.cont_take_spec)
         if len(cont_take_spec) >= 2:
@@ -951,7 +951,7 @@ class MappingTaker(ContainerTaker):
             obj (Mapping): Mapping object.
 
         Returns:
-            ContainerTakeSpec: The adapted container take specification.
+            ContainerTakeSpec: Adapted container take specification.
         """
         cont_take_spec = dict(self.cont_take_spec)
         ellipsis_take_spec = None
@@ -1091,7 +1091,7 @@ class Chunkable(Evaluable, Annotatable):
         """Return the encapsulated value.
 
         Returns:
-            Any: The encapsulated value.
+            Any: Encapsulated value.
         """
         raise NotImplementedError
 
@@ -1099,7 +1099,7 @@ class Chunkable(Evaluable, Annotatable):
         """Return the associated chunk-taking specification.
 
         Returns:
-            TakeSpec: The chunk-taking specification.
+            TakeSpec: Chunk-taking specification.
         """
         raise NotImplementedError
 
@@ -1180,7 +1180,7 @@ class Chunked(Chunkable, DefineMixin):
         """Return the resolved chunk-taking specification.
 
         Returns:
-            TakeSpec: The chunk-taking strategy determined by the instance configuration.
+            TakeSpec: Chunk-taking strategy determined by the instance configuration.
 
         !!! note
             If `take_spec` is missing, returns `ChunkSelector` when `select` is True,
@@ -1473,7 +1473,7 @@ class Chunker(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: A dictionary representing the template context.
+            Kwargs: Dictionary representing the template context.
         """
         return self._template_context
 
@@ -1493,7 +1493,7 @@ class Chunker(Configured):
         """Keyword arguments for `Chunker.merge_func`.
 
         Returns:
-            Kwargs: A dictionary of keyword arguments for merging results.
+            Kwargs: Dictionary of keyword arguments for merging results.
         """
         return self._merge_kwargs
 
@@ -1522,7 +1522,7 @@ class Chunker(Configured):
         Variables from the context of `Chunker.run` may be included.
 
         Returns:
-            Kwargs: A mapping of keyword arguments for renaming.
+            Kwargs: Mapping of keyword arguments for renaming.
         """
         return self._forward_kwargs_as
 
@@ -1533,7 +1533,7 @@ class Chunker(Configured):
         See `vectorbtpro.utils.execution.execute`.
 
         Returns:
-            Kwargs: The dictionary of execution keyword arguments.
+            Kwargs: Dictionary of execution keyword arguments.
         """
         return self._execute_kwargs
 
@@ -1622,7 +1622,7 @@ class Chunker(Configured):
             take_spec (TakeSpec): Specification for taking chunks.
 
         Returns:
-            TakeSpec: The resolved chunk-taking specification.
+            TakeSpec: Resolved chunk-taking specification.
         """
         if isinstance(take_spec, type) and issubclass(take_spec, Chunked):
             take_spec = take_spec()
@@ -1653,7 +1653,7 @@ class Chunker(Configured):
             **kwargs: Keyword arguments for `ChunkTaker.apply`.
 
         Returns:
-            Any: The result after applying the chunk-taking specification.
+            Any: Result after applying the chunk-taking specification.
         """
         if take_spec is None:
             return arg
@@ -1683,7 +1683,7 @@ class Chunker(Configured):
             arg_take_spec (ArgTakeSpec): Mapping specifying the extraction rules for each argument.
 
         Returns:
-            TakeSpec: The resolved specification for the argument, or `MISSING` if not found.
+            TakeSpec: Resolved specification for the argument, or `MISSING` if not found.
         """
         take_spec_found = False
         found_take_spec = None
@@ -1894,7 +1894,7 @@ class Chunker(Configured):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            ArgTakeSpec: A dictionary mapping parameter names to their chunk-taking specifications.
+            ArgTakeSpec: Dictionary mapping parameter names to their chunk-taking specifications.
         """
         arg_take_spec = {}
         for k, v in annotations.items():
@@ -1928,7 +1928,7 @@ class Chunker(Configured):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            ArgTakeSpec: A dictionary mapping parameter names to chunk-taking specifications.
+            ArgTakeSpec: Dictionary mapping parameter names to chunk-taking specifications.
         """
         annotations = get_annotations(func)
         arg_take_spec = cls.parse_spec_from_annotations(annotations, eval_id=eval_id)
@@ -1991,7 +1991,7 @@ class Chunker(Configured):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            ArgTakeSpec: A dictionary mapping argument names to chunk-taking specifications.
+            ArgTakeSpec: Dictionary mapping argument names to chunk-taking specifications.
         """
         arg_take_spec = {}
         for k, v in ann_args.items():
@@ -2038,7 +2038,7 @@ class Chunker(Configured):
                 See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
-            ArgTakeSpec: The updated chunk-taking specification with missing keys filled with None.
+            ArgTakeSpec: Updated chunk-taking specification with missing keys filled with None.
         """
         arg_take_spec = dict(arg_take_spec)
         for k, v in ann_args.items():
@@ -2057,7 +2057,7 @@ class Chunker(Configured):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            AnnArgs: A new dictionary of annotated arguments with updated values.
+            AnnArgs: New dictionary of annotated arguments with updated values.
         """
         new_ann_args = {}
         for k, v in ann_args.items():
@@ -2093,7 +2093,7 @@ class Chunker(Configured):
         """Suggest a global size based on annotated arguments and a chunk-taking specification.
 
         Args:
-            cls: The class reference.
+            cls: Class reference.
             ann_args (AnnArgs): Annotated arguments.
 
                 See `vectorbtpro.utils.parsing.annotate_args`.
@@ -2135,7 +2135,7 @@ class Chunker(Configured):
             **kwargs: Keyword arguments for `func`.
 
         Returns:
-            Any: The result of executing `func`, either directly or after processing chunks.
+            Any: Result of executing `func`, either directly or after processing chunks.
         """
         size = self.size
         min_size = self.min_size
@@ -2336,7 +2336,7 @@ def chunked(
         **kwargs: Keyword arguments for `Chunker` or the decorated function.
 
     Returns:
-        Callable: The decorated function with chunking capability.
+        Callable: Decorated function with chunking capability.
 
     !!! info
         For default settings, see `vectorbtpro._settings.chunking`.
@@ -2679,7 +2679,7 @@ def resolve_chunked_option(option: tp.ChunkedOption = None) -> tp.KwargsLike:
             * dict: Provide keyword arguments to be passed to `chunked`.
 
     Returns:
-        KwargsLike: A dictionary of keyword arguments for chunking configuration, or None if chunking is disabled.
+        KwargsLike: Dictionary of keyword arguments for chunking configuration, or None if chunking is disabled.
 
     !!! info
         For default settings, see `vectorbtpro._settings.chunking`.
@@ -2712,7 +2712,7 @@ def specialize_chunked_option(option: tp.ChunkedOption = None, **kwargs) -> tp.K
         **kwargs: Keyword arguments to be merged with the resolved chunking option.
 
     Returns:
-        KwargsLike: A dictionary of merged chunking configuration options, or None if chunking is disabled.
+        KwargsLike: Dictionary of merged chunking configuration options, or None if chunking is disabled.
     """
     chunked_kwargs = resolve_chunked_option(option)
     if chunked_kwargs is not None:
@@ -2733,7 +2733,7 @@ def resolve_chunked(func: tp.Callable, option: tp.ChunkedOption = None, **kwargs
             These are merged with the default chunking settings.
 
     Returns:
-        Callable: The decorated function with chunked processing applied if enabled;
+        Callable: Decorated function with chunked processing applied if enabled;
             otherwise, the original function.
 
     !!! info

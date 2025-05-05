@@ -91,7 +91,7 @@ class _FMEAN(FMEAN):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The figure object with the plotted indicators.
+            BaseFigure: Figure object with the plotted indicators.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

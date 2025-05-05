@@ -86,7 +86,7 @@ class FinPyData(RemoteData):
             **market_config: Additional configuration options for the market.
 
         Returns:
-            Market: The resolved market instance.
+            Market: Resolved market instance.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -119,7 +119,7 @@ class FinPyData(RemoteData):
             **config_manager_config: Additional configuration options for the configuration manager.
 
         Returns:
-            ConfigManager: The resolved configuration manager instance.
+            ConfigManager: Resolved configuration manager instance.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -279,7 +279,7 @@ class FinPyData(RemoteData):
             **request_kwargs: Keyword arguments for `findatapy.market.marketdatarequest.MarketDataRequest`.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

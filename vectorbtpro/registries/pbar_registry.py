@@ -35,7 +35,7 @@ class PBarRegistry(Base):
         """Generate a unique progress bar identifier.
 
         Returns:
-            Hashable: A unique identifier for a progress bar.
+            Hashable: Unique identifier for a progress bar.
         """
         return str(uuid.uuid4())
 

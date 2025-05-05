@@ -145,7 +145,7 @@ class Tokenizer(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: The template context.
+            Kwargs: Template context.
         """
         return self._template_context
 
@@ -167,7 +167,7 @@ class Tokenizer(Configured):
             tokens (list): List of tokens to decode.
 
         Returns:
-            str: The decoded text.
+            str: Decoded text.
         """
         raise NotImplementedError
 
@@ -179,7 +179,7 @@ class Tokenizer(Configured):
             text (str): Text to encode.
 
         Returns:
-            Token: The single token representing the input text.
+            Token: Single token representing the input text.
 
         Raises:
             ValueError: If the text contains multiple tokens.
@@ -194,10 +194,10 @@ class Tokenizer(Configured):
         """Return the text decoded from the provided single token.
 
         Args:
-            token: The token to decode.
+            token: Token to decode.
 
         Returns:
-            str: The decoded text.
+            str: Decoded text.
         """
         return self.decode([token])
 
@@ -208,7 +208,7 @@ class Tokenizer(Configured):
             text (str): Text for token counting.
 
         Returns:
-            int: The number of tokens.
+            int: Number of tokens.
         """
         return len(self.encode(text))
 
@@ -219,7 +219,7 @@ class Tokenizer(Configured):
             messages (ChatMessages): List of dictionaries representing the conversation history.
 
         Returns:
-            int: The total token count.
+            int: Total token count.
         """
         raise NotImplementedError
 
@@ -294,7 +294,7 @@ class TikTokenizer(Tokenizer):
         """Token encoding object used for tokenization.
 
         Returns:
-            Encoding: The encoding object.
+            Encoding: Encoding object.
         """
         return self._encoding
 
@@ -303,7 +303,7 @@ class TikTokenizer(Tokenizer):
         """Token count charged per message.
 
         Returns:
-            int: The number of tokens charged per message.
+            int: Number of tokens charged per message.
         """
         return self._tokens_per_message
 
@@ -312,7 +312,7 @@ class TikTokenizer(Tokenizer):
         """Additional token count for message names.
 
         Returns:
-            int: The number of tokens charged for message names.
+            int: Number of tokens charged for message names.
         """
         return self._tokens_per_name
 
@@ -345,7 +345,7 @@ def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokeni
             * "tiktoken" for `TikTokenizer`
 
     Returns:
-        Tokenizer: A resolved tokenizer type or instance.
+        Tokenizer: Resolved tokenizer type or instance.
 
     !!! info
         For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
@@ -385,7 +385,7 @@ def tokenize(text: str, tokenizer: tp.TokenizerLike = None, **kwargs) -> tp.Toke
         **kwargs: Keyword arguments to initialize or update `tokenizer`.
 
     Returns:
-        Tokens: A list of tokens representing the input text.
+        Tokens: List of tokens representing the input text.
     """
     tokenizer = resolve_tokenizer(tokenizer=tokenizer)
     if isinstance(tokenizer, type):
@@ -406,7 +406,7 @@ def detokenize(tokens: tp.Tokens, tokenizer: tp.TokenizerLike = None, **kwargs) 
         **kwargs: Keyword arguments to initialize or update `tokenizer`.
 
     Returns:
-        str: The decoded text.
+        str: Decoded text.
     """
     tokenizer = resolve_tokenizer(tokenizer=tokenizer)
     if isinstance(tokenizer, type):
@@ -495,7 +495,7 @@ class Embeddings(Configured):
         """Keyword arguments for configuring `vectorbtpro.utils.pbar.ProgressBar`.
 
         Returns:
-            Kwargs: The keyword arguments for the progress bar.
+            Kwargs: Keyword arguments for the progress bar.
         """
         return self._pbar_kwargs
 
@@ -504,7 +504,7 @@ class Embeddings(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: The template context.
+            Kwargs: Template context.
         """
         return self._template_context
 
@@ -652,7 +652,7 @@ class OpenAIEmbeddings(Embeddings):
         """OpenAI client instance.
 
         Returns:
-            OpenAI: The OpenAI client instance.
+            OpenAI: OpenAI client instance.
         """
         return self._client
 
@@ -661,7 +661,7 @@ class OpenAIEmbeddings(Embeddings):
         """Keyword arguments for `openai.resources.embeddings.Embeddings.create`.
 
         Returns:
-            Kwargs: The keyword arguments for creating embeddings.
+            Kwargs: Keyword arguments for creating embeddings.
         """
         return self._embeddings_kwargs
 
@@ -737,7 +737,7 @@ class LiteLLMEmbeddings(Embeddings):
         """Keyword arguments for `litellm.embedding`.
 
         Returns:
-            Kwargs: The keyword arguments for creating embeddings.
+            Kwargs: Keyword arguments for creating embeddings.
         """
         return self._embedding_kwargs
 
@@ -870,7 +870,7 @@ class LlamaIndexEmbeddings(Embeddings):
         """Underlying embedding instance.
 
         Returns:
-            BaseEmbedding: The embedding instance.
+            BaseEmbedding: Embedding instance.
         """
         return self._embedding
 
@@ -897,7 +897,7 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
             If None, configuration from `vectorbtpro._settings` is used.
 
     Returns:
-        Embeddings: The resolved embeddings subclass or instance.
+        Embeddings: Resolved embeddings subclass or instance.
 
     !!! info
         For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
@@ -1097,7 +1097,7 @@ class Completions(Configured):
         """Context string to be used as a user message.
 
         Returns:
-            str: The context string used for expression evaluation.
+            str: Context string used for expression evaluation.
         """
         return self._context
 
@@ -1108,7 +1108,7 @@ class Completions(Configured):
         After a response is generated, the assistant message is appended to this history.
 
         Returns:
-            ChatHistory: A list of dictionaries representing the chat history.
+            ChatHistory: List of dictionaries representing the chat history.
         """
         return self._chat_history
 
@@ -1158,7 +1158,7 @@ class Completions(Configured):
         """Keyword arguments to initialize or update `Completions.tokenizer`.
 
         Returns:
-            Kwargs: The keyword arguments for tokenizer initialization or update.
+            Kwargs: Keyword arguments for tokenizer initialization or update.
         """
         return self._tokenizer_kwargs
 
@@ -1169,7 +1169,7 @@ class Completions(Configured):
         This prompt is used to set the system's behavior or context for the conversation.
 
         Returns:
-            str: The system prompt.
+            str: System prompt.
         """
         return self._system_prompt
 
@@ -1193,7 +1193,7 @@ class Completions(Configured):
         This prompt is used to provide context for the conversation.
 
         Returns:
-            str: The context prompt template.
+            str: Context prompt template.
         """
         return self._context_prompt
 
@@ -1215,7 +1215,7 @@ class Completions(Configured):
         """Keyword arguments to initialize or update `Completions.formatter`.
 
         Returns:
-            Kwargs: The keyword arguments for the content formatter.
+            Kwargs: Keyword arguments for the content formatter.
         """
         return self._formatter_kwargs
 
@@ -1251,7 +1251,7 @@ class Completions(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: The template context for substitution.
+            Kwargs: Template context for substitution.
         """
         return self._template_context
 
@@ -1272,7 +1272,7 @@ class Completions(Configured):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Any: The chat response generated from the provided messages.
+            Any: Chat response generated from the provided messages.
         """
         raise NotImplementedError
 
@@ -1295,7 +1295,7 @@ class Completions(Configured):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Any: The streaming response generated from the provided messages.
+            Any: Streaming response generated from the provided messages.
         """
         raise NotImplementedError
 
@@ -1317,7 +1317,7 @@ class Completions(Configured):
             message (str): User message to process.
 
         Returns:
-            ChatMessages: A list of dictionaries representing the conversation history.
+            ChatMessages: List of dictionaries representing the conversation history.
         """
         context = self.context
         chat_history = self.chat_history
@@ -1397,7 +1397,7 @@ class Completions(Configured):
             return_response (bool): Flag to return the raw response along with the file path.
 
         Returns:
-            ChatOutput: A file path for the formatted output; if `return_response` is True,
+            ChatOutput: File path for the formatted output; if `return_response` is True,
                 a tuple containing the file path and raw response.
         """
         chat_history = self.chat_history
@@ -1471,7 +1471,7 @@ class Completions(Configured):
             message (str): User message to complete.
 
         Returns:
-            str: The generated completion text.
+            str: Generated completion text.
         """
         chat_history = self.chat_history
 
@@ -1566,7 +1566,7 @@ class OpenAICompletions(Completions):
         """OpenAI client instance used for API calls.
 
         Returns:
-            OpenAI: The OpenAI client instance.
+            OpenAI: OpenAI client instance.
         """
         return self._client
 
@@ -1575,7 +1575,7 @@ class OpenAICompletions(Completions):
         """Keyword arguments for `openai.Completions.create`.
 
         Returns:
-            Kwargs: The keyword arguments for the completion API call.
+            Kwargs: Keyword arguments for the completion API call.
         """
         return self._completions_kwargs
 
@@ -1662,7 +1662,7 @@ class LiteLLMCompletions(Completions):
         """Keyword arguments for the `litellm.completion` API call.
 
         Returns:
-            Kwargs: The keyword arguments for the completion API call.
+            Kwargs: Keyword arguments for the completion API call.
         """
         return self._completion_kwargs
 
@@ -1813,7 +1813,7 @@ class LlamaIndexCompletions(Completions):
         """Initialized LLM instance used for generating completions.
 
         Returns:
-            LLM: The initialized LLM instance.
+            LLM: Initialized LLM instance.
         """
         return self._llm
 
@@ -1848,7 +1848,7 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
             * "auto" to select the first available option
 
     Returns:
-        Completions: The resolved completions class or instance.
+        Completions: Resolved completions class or instance.
 
     !!! info
         For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
@@ -1899,7 +1899,7 @@ def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> 
         **kwargs: Keyword arguments to initialize or update `completions`.
 
     Returns:
-        ChatOutput: The completion output generated by the resolved completions.
+        ChatOutput: Completion output generated by the resolved completions.
     """
     completions = resolve_completions(completions=completions)
     if isinstance(completions, type):
@@ -1920,7 +1920,7 @@ def completed(message: str, completions: tp.CompletionsLike = None, **kwargs) ->
         **kwargs: Keyword arguments to initialize or update `completions`.
 
     Returns:
-        str: The completion content based on the input message.
+        str: Completion content based on the input message.
     """
     completions = resolve_completions(completions=completions)
     if isinstance(completions, type):
@@ -1979,7 +1979,7 @@ class TextSplitter(Configured):
         The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
 
         Returns:
-            Kwargs: The context mapping used for expression evaluation.
+            Kwargs: Context mapping used for expression evaluation.
         """
         return self._chunk_template
 
@@ -1988,7 +1988,7 @@ class TextSplitter(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: The context mapping used for expression evaluation.
+            Kwargs: Context mapping used for expression evaluation.
         """
         return self._template_context
 
@@ -2012,7 +2012,7 @@ class TextSplitter(Configured):
             text (str): Text to split.
 
         Yields:
-            str: A formatted text chunk.
+            str: Formatted text chunk.
         """
         for chunk_idx, (chunk_start, chunk_end) in enumerate(self.split(text)):
             chunk_text = text[chunk_start:chunk_end]
@@ -2106,7 +2106,7 @@ class TokenSplitter(TextSplitter):
         """Maximum number of tokens per chunk.
 
         Returns:
-            int: The maximum number of tokens allowed in each chunk.
+            int: Maximum number of tokens allowed in each chunk.
         """
         return self._chunk_size
 
@@ -2117,7 +2117,7 @@ class TokenSplitter(TextSplitter):
         If specified as a float between 0 and 1, it is scaled by `TokenSplitter.chunk_size`.
 
         Returns:
-            int: The number of overlapping tokens between chunks.
+            int: Number of overlapping tokens between chunks.
         """
         return self._chunk_overlap
 
@@ -2126,7 +2126,7 @@ class TokenSplitter(TextSplitter):
         """`Tokenizer` instance used to tokenize input text.
 
         Returns:
-            Tokenizer: The tokenizer instance used for encoding and decoding.
+            Tokenizer: Tokenizer instance used for encoding and decoding.
         """
         return self._tokenizer
 
@@ -2247,7 +2247,7 @@ class SegmentSplitter(TokenSplitter):
         `SegmentSplitter.chunk_size`.
 
         Returns:
-            int: The minimum number of tokens required per chunk.
+            int: Minimum number of tokens required per chunk.
         """
         return self._min_chunk_size
 
@@ -2583,7 +2583,7 @@ class LlamaIndexSplitter(TextSplitter):
         """LlamaIndex node parser instance used for splitting text.
 
         Returns:
-            NodeParser: The node parser instance used for splitting text.
+            NodeParser: Node parser instance used for splitting text.
         """
         return self._node_parser
 
@@ -2617,7 +2617,7 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
             * "llama_index" for `LlamaIndexSplitter`
 
     Returns:
-        TextSplitter: The resolved text splitter subclass or instance.
+        TextSplitter: Resolved text splitter subclass or instance.
 
     !!! info
         For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
@@ -2706,7 +2706,7 @@ class StoreData(StoreObject, DefineMixin):
             data (Any): Data from which to generate the identifier.
 
         Returns:
-            str: The MD5 hash of the serialized data.
+            str: MD5 hash of the serialized data.
         """
         from vectorbtpro.utils.pickling import dumps
 
@@ -2727,7 +2727,7 @@ class StoreData(StoreObject, DefineMixin):
             **kwargs: Keyword arguments for `StoreData`.
 
         Returns:
-            StoreData: A new instance of `StoreData`.
+            StoreData: New instance of `StoreData`.
         """
         if id_ is None:
             id_ = cls.id_from_data(data)
@@ -2779,7 +2779,7 @@ def def_metadata_template(metadata_content: str) -> str:
         metadata_content (str): Metadata content to include.
 
     Returns:
-        str: The formatted metadata template string with front matter delimiters.
+        str: Formatted metadata template string with front matter delimiters.
     """
     if metadata_content.endswith("\n"):
         return "---\n{metadata_content}---\n\n".format(metadata_content=metadata_content)
@@ -3039,7 +3039,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         """Store identifier.
 
         Returns:
-            str: The unique identifier of the store.
+            str: Unique identifier of the store.
         """
         return self._store_id
 
@@ -3057,7 +3057,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: A dictionary mapping template keys to their values.
+            Kwargs: Dictionary mapping template keys to their values.
         """
         return self._template_context
 
@@ -3075,7 +3075,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         """Number of times the store has been entered.
 
         Returns:
-            int: The count of how many times the store's context has been entered.
+            int: Count of how many times the store's context has been entered.
         """
         return self._enter_calls
 
@@ -3365,7 +3365,7 @@ class FileStore(DictStore):
         """Compression setting used for file operations.
 
         Returns:
-            CompressionLike: The compression configuration used (e.g., None, True, or a specific compression type).
+            CompressionLike: Compression configuration used (e.g., None, True, or a specific compression type).
         """
         return self._compression
 
@@ -3376,7 +3376,7 @@ class FileStore(DictStore):
         See `vectorbtpro.utils.pickling.save`.
 
         Returns:
-            Kwargs: A dictionary of parameters used when saving objects.
+            Kwargs: Dictionary of parameters used when saving objects.
         """
         return self._save_kwargs
 
@@ -3387,7 +3387,7 @@ class FileStore(DictStore):
         See `vectorbtpro.utils.pickling.load`.
 
         Returns:
-            Kwargs: A dictionary of parameters used when loading objects.
+            Kwargs: Dictionary of parameters used when loading objects.
         """
         return self._load_kwargs
 
@@ -3447,7 +3447,7 @@ class FileStore(DictStore):
         otherwise, it points to a single file.
 
         Returns:
-            Path: The complete filesystem path for the store.
+            Path: Complete filesystem path for the store.
         """
         dir_path = self.dir_path
         if dir_path is None:
@@ -3463,7 +3463,7 @@ class FileStore(DictStore):
         """Return the path for the next patch file to be saved, using an incremented index.
 
         Returns:
-            Path: The path for the next patch file.
+            Path: Path for the next patch file.
         """
         indices = []
         for file in self.store_path.glob("patch_*"):
@@ -3680,7 +3680,7 @@ class LMDBStore(ObjectStore):
         See `vectorbtpro.utils.path_.check_mkdir`.
 
         Returns:
-            Kwargs: A dictionary of parameters for directory creation.
+            Kwargs: Dictionary of parameters for directory creation.
         """
         return self._mkdir_kwargs
 
@@ -3691,7 +3691,7 @@ class LMDBStore(ObjectStore):
         See `vectorbtpro.utils.pickling.dumps`.
 
         Returns:
-            Kwargs: A dictionary of parameters for object serialization.
+            Kwargs: Dictionary of parameters for object serialization.
         """
         return self._dumps_kwargs
 
@@ -3702,7 +3702,7 @@ class LMDBStore(ObjectStore):
         See `vectorbtpro.utils.pickling.loads`.
 
         Returns:
-            Kwargs: A dictionary of parameters for object deserialization.
+            Kwargs: Dictionary of parameters for object deserialization.
         """
         return self._loads_kwargs
 
@@ -3711,7 +3711,7 @@ class LMDBStore(ObjectStore):
         """Keyword arguments used when opening the LMDB database via `Lmdb.open`.
 
         Returns:
-            Kwargs: A dictionary of parameters for opening the LMDB database.
+            Kwargs: Dictionary of parameters for opening the LMDB database.
         """
         return self._open_kwargs
 
@@ -3722,7 +3722,7 @@ class LMDBStore(ObjectStore):
         Constructs the path by combining the directory (defaulting to "." if not set) with the store identifier.
 
         Returns:
-            Path: The complete file system path pointing to the LMDB database.
+            Path: Complete file system path pointing to the LMDB database.
         """
         dir_path = self.dir_path
         if dir_path is None:
@@ -3735,7 +3735,7 @@ class LMDBStore(ObjectStore):
         """Mirror store identifier.
 
         Returns:
-            str: The string representation of the resolved LMDB database path.
+            str: String representation of the resolved LMDB database path.
         """
         return str(self.db_path.resolve())
 
@@ -3775,7 +3775,7 @@ class LMDBStore(ObjectStore):
             obj (StoreObject): Object to encode.
 
         Returns:
-            bytes: The serialized bytes of the object.
+            bytes: Serialized bytes of the object.
         """
         from vectorbtpro.utils.pickling import dumps
 
@@ -3788,7 +3788,7 @@ class LMDBStore(ObjectStore):
             bytes_ (bytes): Byte stream containing the serialized object.
 
         Returns:
-            StoreObject: The deserialized object.
+            StoreObject: Deserialized object.
         """
         from vectorbtpro.utils.pickling import loads
 
@@ -3864,7 +3864,7 @@ class CachedStore(DictStore):
         """Underlying object store.
 
         Returns:
-            ObjectStore: The object store instance being cached.
+            ObjectStore: Object store instance being cached.
         """
         return self._obj_store
 
@@ -3969,7 +3969,7 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
             * "cached" for `CachedStore`
 
     Returns:
-        ObjectStore: The resolved object store.
+        ObjectStore: Resolved object store.
 
     !!! info
         For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
@@ -4284,7 +4284,7 @@ class DocumentRanker(Configured):
         """Instance of `Embeddings`.
 
         Returns:
-            Embeddings: The embeddings engine or class used for processing document embeddings.
+            Embeddings: Embeddings engine or class used for processing document embeddings.
         """
         return self._embeddings
 
@@ -4293,7 +4293,7 @@ class DocumentRanker(Configured):
         """Instance of `ObjectStore` used for documents.
 
         Returns:
-            ObjectStore: The document store instance used for managing documents.
+            ObjectStore: Document store instance used for managing documents.
         """
         return self._doc_store
 
@@ -4302,7 +4302,7 @@ class DocumentRanker(Configured):
         """Instance of `ObjectStore` used for embeddings.
 
         Returns:
-            ObjectStore: The embedding store instance used for managing embeddings.
+            ObjectStore: Embedding store instance used for managing embeddings.
         """
         return self._emb_store
 
@@ -4317,7 +4317,7 @@ class DocumentRanker(Configured):
         * "hybrid"
 
         Returns:
-            str: The search method used for document retrieval.
+            str: Search method used for document retrieval.
         """
         return self._search_method
 
@@ -4335,7 +4335,7 @@ class DocumentRanker(Configured):
         """Keyword arguments for the `tokenize` method of `bm25s.tokenization.Tokenizer`.
 
         Returns:
-            Kwargs: The dictionary of parameters for the tokenization process.
+            Kwargs: Dictionary of parameters for the tokenization process.
         """
         return self._bm25_tokenize_kwargs
 
@@ -4353,7 +4353,7 @@ class DocumentRanker(Configured):
         """Keyword arguments for the `retrieve` method of `bm25s.BM25`.
 
         Returns:
-            Kwargs: The dictionary of parameters for the retrieval process.
+            Kwargs: Dictionary of parameters for the retrieval process.
         """
         return self._bm25_retrieve_kwargs
 
@@ -4365,7 +4365,7 @@ class DocumentRanker(Configured):
         scores normalized to [0, 1].
 
         Returns:
-            float: The BM25 score weight used in the scoring process.
+            float: BM25 score weight used in the scoring process.
         """
         return self._bm25_score_weight
 
@@ -4385,7 +4385,7 @@ class DocumentRanker(Configured):
         """Function used to aggregate scores.
 
         Returns:
-            Callable: The function used for aggregating scores.
+            Callable: Function used for aggregating scores.
         """
         return self._score_agg_func
 
@@ -4414,7 +4414,7 @@ class DocumentRanker(Configured):
         See `vectorbtpro.utils.pbar.ProgressBar`.
 
         Returns:
-            Kwargs: The dictionary of parameters for the progress bar.
+            Kwargs: Dictionary of parameters for the progress bar.
         """
         return self._pbar_kwargs
 
@@ -4423,7 +4423,7 @@ class DocumentRanker(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: The dictionary of context variables for template substitution.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 
@@ -4728,7 +4728,7 @@ class DocumentRanker(Configured):
             return_documents (bool): If True, include original document objects in the output.
 
         Returns:
-            ScoredDocuments: A collection of documents with their computed relevance scores.
+            ScoredDocuments: Collection of documents with their computed relevance scores.
         """
         with self.doc_store, self.emb_store:
             if documents is None:
@@ -4860,7 +4860,7 @@ class DocumentRanker(Configured):
             return_documents (bool): If True, include original document objects in the output.
 
         Returns:
-            ScoredDocuments: The computed BM25 scores for each document, as either numeric scores or
+            ScoredDocuments: Computed BM25 scores for each document, as either numeric scores or
                 `ScoredDocument` objects.
         """
         with self.doc_store, self.emb_store:
@@ -5084,7 +5084,7 @@ class DocumentRanker(Configured):
             scores (Iterable[float]): Iterable of scores to normalize.
 
         Returns:
-            ndarray: An array of normalized scores.
+            ndarray: Array of normalized scores.
         """
         scores = np.array(scores, dtype=float)
         min_score, max_score = np.nanmin(scores), np.nanmax(scores)
@@ -5164,7 +5164,7 @@ class DocumentRanker(Configured):
             doc_pair_scores (Iterable[Tuple[float, float]]): Paired scores (embedding, BM25) to combine.
 
         Returns:
-            ndarray: An array of combined scores.
+            ndarray: Array of combined scores.
         """
         emb_scores, bm25_scores = zip(*doc_pair_scores)
         norm_emb_scores = self.normalize_doc_scores(emb_scores)
@@ -5406,7 +5406,7 @@ def rank_documents(
         **kwargs: Keyword arguments to initialize or update `doc_ranker`.
 
     Returns:
-        RankedDocuments: The ranked documents based on the query relevance.
+        RankedDocuments: Ranked documents based on the query relevance.
     """
     if doc_ranker is None:
         doc_ranker = DocumentRanker
@@ -5498,7 +5498,7 @@ class Rankable(HasSettings):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Rankable: An updated instance with ranked documents.
+            Rankable: Updated instance with ranked documents.
         """
         raise NotImplementedError
 
@@ -5523,7 +5523,7 @@ class Contextable(HasSettings):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            str: The textual context representation.
+            str: Textual context representation.
         """
         raise NotImplementedError
 
@@ -5543,7 +5543,7 @@ class Contextable(HasSettings):
         tokenizer_kwargs (KwargsLike): Keyword arguments to initialize or update `tokenizer`.
 
         Returns:
-            int: The number of tokens in the context.
+            int: Number of tokens in the context.
         """
         to_context_kwargs = self.resolve_setting(to_context_kwargs, "to_context_kwargs", merge=True)
         tokenizer = self.resolve_setting(tokenizer, "tokenizer", default=None)
@@ -5573,7 +5573,7 @@ class Contextable(HasSettings):
             **kwargs: Keyword arguments to initialize or update `completions`.
 
         Returns:
-            Completions: An instance of `Completions` configured with the generated context.
+            Completions: Instance of `Completions` configured with the generated context.
 
         Examples:
             ```pycon
@@ -5613,7 +5613,7 @@ class Contextable(HasSettings):
             **kwargs: Keyword arguments for `Contextable.create_chat`.
 
         Returns:
-            MaybeChatOutput: The completion response or a tuple of the response and the chat instance.
+            MaybeChatOutput: Completion response or a tuple of the response and the chat instance.
 
         !!! note
             Context is recalculated each time this method is invoked. For multiple turns,
@@ -5685,7 +5685,7 @@ class RankContextable(Rankable, Contextable):
             **kwargs: Keyword arguments for `Contextable.chat`.
 
         Returns:
-            MaybeChatOutput: The completion response or a tuple of the response and the chat instance.
+            MaybeChatOutput: Completion response or a tuple of the response and the chat instance.
         """
         if isinstance(cls_or_self, type):
             args, kwargs = get_forward_args(super().chat, locals())

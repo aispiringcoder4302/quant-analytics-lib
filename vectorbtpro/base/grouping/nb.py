@@ -29,7 +29,7 @@ def get_group_lens_nb(groups: tp.Array1d) -> tp.GroupLens:
         groups (Array1d): Array of group identifiers sorted in non-decreasing order.
 
     Returns:
-        GroupLens: An array of counts for each group.
+        GroupLens: Array of counts for each group.
 
     !!! note
         Columns must form monolithic, sorted groups. For unsorted groups, use `get_group_map_nb`.
@@ -164,7 +164,7 @@ def group_by_evenly_nb(n: int, n_splits: int) -> tp.Array1d:
         n_splits (int): Number of groups to split the values into.
 
     Returns:
-        Array1d: An array where each element's value indicates its group assignment.
+        Array1d: Array where each element's value indicates its group assignment.
     """
     out = np.empty(n, dtype=int_)
     for i in range(n):

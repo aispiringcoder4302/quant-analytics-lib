@@ -396,7 +396,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
-            ReturnsAccessor: A new accessor instance with the sliced data,
+            ReturnsAccessor: New accessor instance with the sliced data,
                 benchmark returns, and simulation indices.
         """
         if wrapper_meta is None:
@@ -569,7 +569,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             method_name (Optional[str]): Name of the NumPy method to apply to the annualization factor.
 
         Returns:
-            PandasFrequency: The resulting year frequency.
+            PandasFrequency: Resulting year frequency.
         """
         if method_name not in (None, False):
             if method_name is True:
@@ -743,7 +743,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Annualization factor.
 
         Returns:
-            float: The annualization factor.
+            float: Annualization factor.
         """
         return self.get_ann_factor(raise_error=True)
 
@@ -836,7 +836,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             value (float): Annual return value.
 
         Returns:
-            float: The deannualized return value.
+            float: Deannualized return value.
         """
         return np.power(1 + value, 1.0 / self.ann_factor) - 1.0
 
@@ -884,7 +884,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The mirrored returns.
+            SeriesFrame: Mirrored returns.
 
         See:
             `vectorbtpro.returns.nb.mirror_returns_nb`
@@ -930,7 +930,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The cumulative returns.
+            SeriesFrame: Cumulative returns.
 
         See:
             `vectorbtpro.returns.nb.cumulative_returns_nb`
@@ -967,7 +967,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
-            ReturnsAccessor: A new resampled returns accessor.
+            ReturnsAccessor: New resampled returns accessor.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)
@@ -1023,7 +1023,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             **kwargs: Keyword arguments for `ReturnsAccessor.resample_apply`.
 
         Returns:
-            SeriesFrame: The resampled returns.
+            SeriesFrame: Resampled returns.
 
         See:
             `vectorbtpro.returns.nb.total_return_1d_nb`
@@ -1066,7 +1066,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             **kwargs: Keyword arguments for `ReturnsAccessor.resample_returns`.
 
         Returns:
-            SeriesFrame: The daily returns.
+            SeriesFrame: Daily returns.
         """
         return self.resample_returns("1D", jitted=jitted, chunked=chunked, **kwargs)
 
@@ -1088,7 +1088,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             **kwargs: Keyword arguments for `ReturnsAccessor.resample_returns`.
 
         Returns:
-            SeriesFrame: The annual returns.
+            SeriesFrame: Annual returns.
         """
         return self.resample_returns(self.year_freq, jitted=jitted, chunked=chunked, **kwargs)
 
@@ -1122,7 +1122,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The final cumulative return value.
+            MaybeSeries: Final cumulative return value.
 
         See:
             `vectorbtpro.returns.nb.final_value_nb`
@@ -1181,7 +1181,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The wrapped array of rolling final values.
+            SeriesFrame: Wrapped array of rolling final values.
 
         See:
             `vectorbtpro.returns.nb.rolling_final_value_nb`
@@ -1232,7 +1232,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed total return.
+            MaybeSeries: Computed total return.
 
         See:
             `vectorbtpro.returns.nb.total_return_nb`
@@ -1284,7 +1284,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The wrapped array of rolling total returns.
+            SeriesFrame: Wrapped array of rolling total returns.
 
         See:
             `vectorbtpro.returns.nb.rolling_total_return_nb`
@@ -1336,7 +1336,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed annualized return.
+            MaybeSeries: Computed annualized return.
 
         See:
             `vectorbtpro.returns.nb.annualized_return_nb`
@@ -1391,7 +1391,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The computed rolling annualized return.
+            MaybeSeries: Computed rolling annualized return.
 
         See:
             `vectorbtpro.returns.nb.rolling_annualized_return_nb`
@@ -1448,7 +1448,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed annualized volatility.
+            MaybeSeries: Computed annualized volatility.
 
         See:
             `vectorbtpro.returns.nb.annualized_volatility_nb`
@@ -1514,7 +1514,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: A series of rolling annualized volatility values.
+            MaybeSeries: Series of rolling annualized volatility values.
 
         See:
             `vectorbtpro.returns.nb.rolling_annualized_volatility_nb`
@@ -1572,7 +1572,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: A series of Calmar ratio values.
+            MaybeSeries: Series of Calmar ratio values.
 
         See:
             `vectorbtpro.returns.nb.calmar_ratio_nb`
@@ -1627,7 +1627,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: A series of rolling Calmar ratio values.
+            MaybeSeries: Series of rolling Calmar ratio values.
 
         See:
             `vectorbtpro.returns.nb.rolling_calmar_ratio_nb`
@@ -1684,7 +1684,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: A series of Omega ratio values.
+            MaybeSeries: Series of Omega ratio values.
 
         See:
             `vectorbtpro.returns.nb.omega_ratio_nb`
@@ -1749,7 +1749,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: A series of rolling Omega ratio values.
+            MaybeSeries: Series of rolling Omega ratio values.
 
         See:
             `vectorbtpro.returns.nb.rolling_omega_ratio_nb`
@@ -1812,7 +1812,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: A series of Sharpe ratio values.
+            MaybeSeries: Series of Sharpe ratio values.
 
         See:
             `vectorbtpro.returns.nb.sharpe_ratio_nb`
@@ -1997,7 +1997,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed probabilistic Sharpe ratio.
+            MaybeSeries: Computed probabilistic Sharpe ratio.
         """
         from scipy import stats as scipy_stats
 
@@ -2048,7 +2048,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The deflated Sharpe ratio.
+            MaybeSeries: Deflated Sharpe ratio.
         """
         from scipy import stats as scipy_stats
 
@@ -2106,7 +2106,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The calculated downside risk.
+            MaybeSeries: Calculated downside risk.
 
         See:
             `vectorbtpro.returns.nb.downside_risk_nb`
@@ -2164,7 +2164,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The rolling downside risk series wrapped with the configured wrapper.
+            MaybeSeries: Rolling downside risk series wrapped with the configured wrapper.
 
         See:
             `vectorbtpro.returns.nb.rolling_downside_risk_nb`
@@ -2218,7 +2218,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The sortino ratio values wrapped with the configured wrapper.
+            MaybeSeries: Sortino ratio values wrapped with the configured wrapper.
 
         See:
             `vectorbtpro.returns.nb.sortino_ratio_nb`
@@ -2276,7 +2276,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The rolling sortino ratio series wrapped with the configured wrapper.
+            MaybeSeries: Rolling sortino ratio series wrapped with the configured wrapper.
 
         See:
             `vectorbtpro.returns.nb.rolling_sortino_ratio_nb`
@@ -2334,7 +2334,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The information ratio series wrapped with the configured wrapper.
+            MaybeSeries: Information ratio series wrapped with the configured wrapper.
 
         See:
             `vectorbtpro.returns.nb.information_ratio_nb`
@@ -2400,7 +2400,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The rolling information ratio series wrapped with the configured wrapper.
+            MaybeSeries: Rolling information ratio series wrapped with the configured wrapper.
 
         See:
             `vectorbtpro.returns.nb.rolling_information_ratio_nb`
@@ -2462,7 +2462,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The beta values wrapped with the configured wrapper.
+            MaybeSeries: Beta values wrapped with the configured wrapper.
 
         See:
             `vectorbtpro.returns.nb.beta_nb`
@@ -2529,7 +2529,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The computed rolling beta values.
+            MaybeSeries: Computed rolling beta values.
 
         See:
             `vectorbtpro.returns.nb.rolling_beta_nb`
@@ -2592,7 +2592,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed alpha values.
+            MaybeSeries: Computed alpha values.
 
         See:
             `vectorbtpro.returns.nb.alpha_nb`
@@ -2659,7 +2659,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The computed rolling alpha values.
+            MaybeSeries: Computed rolling alpha values.
 
         See:
             `vectorbtpro.returns.nb.rolling_alpha_nb`
@@ -2716,7 +2716,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed tail ratio values.
+            MaybeSeries: Computed tail ratio values.
 
         See:
             `vectorbtpro.returns.nb.tail_ratio_nb`
@@ -2770,7 +2770,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The computed rolling tail ratio values.
+            MaybeSeries: Computed rolling tail ratio values.
 
         See:
             `vectorbtpro.returns.nb.rolling_tail_ratio_nb`
@@ -2818,7 +2818,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed profit factor values.
+            MaybeSeries: Computed profit factor values.
 
         See:
             `vectorbtpro.returns.nb.profit_factor_nb`
@@ -2869,7 +2869,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The rolling profit factor.
+            MaybeSeries: Rolling profit factor.
 
         See:
             `vectorbtpro.returns.nb.rolling_profit_factor_nb`
@@ -2916,7 +2916,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed Common Sense Ratio.
+            MaybeSeries: Computed Common Sense Ratio.
 
         See:
             `vectorbtpro.returns.nb.common_sense_ratio_nb`
@@ -2967,7 +2967,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The rolling Common Sense Ratio.
+            MaybeSeries: Rolling Common Sense Ratio.
 
         See:
             `vectorbtpro.returns.nb.rolling_common_sense_ratio_nb`
@@ -3020,7 +3020,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed Value at Risk.
+            MaybeSeries: Computed Value at Risk.
 
         See:
             `vectorbtpro.returns.nb.value_at_risk_nb`
@@ -3081,7 +3081,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The rolling Value at Risk.
+            MaybeSeries: Rolling Value at Risk.
 
         See:
             `vectorbtpro.returns.nb.rolling_value_at_risk_nb`
@@ -3138,7 +3138,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed Conditional Value at Risk.
+            MaybeSeries: Computed Conditional Value at Risk.
 
         See:
             `vectorbtpro.returns.nb.cond_value_at_risk_nb`
@@ -3199,7 +3199,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The rolling CVaR values.
+            MaybeSeries: Rolling CVaR values.
 
         See:
             `vectorbtpro.returns.nb.rolling_cond_value_at_risk_nb`
@@ -3258,7 +3258,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed capture ratio.
+            MaybeSeries: Computed capture ratio.
 
         See:
             `vectorbtpro.returns.nb.capture_ratio_nb`
@@ -3322,7 +3322,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The rolling capture ratio values.
+            MaybeSeries: Rolling capture ratio values.
 
         See:
             `vectorbtpro.returns.nb.rolling_capture_ratio_nb`
@@ -3384,7 +3384,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The up-market capture ratio values.
+            MaybeSeries: Up-market capture ratio values.
 
         See:
             `vectorbtpro.returns.nb.up_capture_ratio_nb`
@@ -3448,7 +3448,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeSeries: The rolling up-market capture ratio values.
+            MaybeSeries: Rolling up-market capture ratio values.
 
         See:
             `vectorbtpro.returns.nb.rolling_up_capture_ratio_nb`
@@ -3748,7 +3748,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Drawdowns computed from cumulative returns using default arguments.
 
         Returns:
-            Drawdowns: An instance containing drawdown records.
+            Drawdowns: Instance containing drawdown records.
         """
         return self.get_drawdowns()
 
@@ -3774,7 +3774,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             **kwargs: Keyword arguments for `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
 
         Returns:
-            Drawdowns: An instance containing drawdown records computed from cumulative returns.
+            Drawdowns: Instance containing drawdown records computed from cumulative returns.
         """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
@@ -3797,7 +3797,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Quantstats adapter for performance analysis.
 
         Returns:
-            QSAdapter: An instance of `vectorbtpro.returns.qs_adapter.QSAdapter`.
+            QSAdapter: Instance of `vectorbtpro.returns.qs_adapter.QSAdapter`.
         """
         from vectorbtpro.returns.qs_adapter import QSAdapter
 
@@ -3823,7 +3823,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
-            ReturnsAccessor: The resolved instance.
+            ReturnsAccessor: Resolved instance.
         """
         if cond_kwargs is None:
             cond_kwargs = {}

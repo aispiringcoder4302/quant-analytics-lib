@@ -85,7 +85,7 @@ class RandomOHLCData(SyntheticData):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            KeyData: The generated data and a metadata dictionary.
+            KeyData: Generated data and a metadata dictionary.
 
         See:
             * `vectorbtpro.data.nb.generate_random_data_1d_nb` for generating random data.

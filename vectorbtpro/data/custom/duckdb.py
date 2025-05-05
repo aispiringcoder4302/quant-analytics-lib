@@ -300,7 +300,7 @@ class DuckDBData(DBData):
             connection_config (KwargsLike): Configuration parameters for creating a database connection.
 
         Returns:
-            str: The current schema name.
+            str: Current schema name.
         """
         if connection_config is None:
             connection_config = {}
@@ -549,7 +549,7 @@ class DuckDBData(DBData):
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.db.DBData.pull`.
 
         Returns:
-            DuckDBData: An instance containing the pulled data with resolved keys and connection.
+            DuckDBData: Instance containing the pulled data with resolved keys and connection.
         """
         if share_connection is None:
             if not cls.has_key_dict(connection) and not cls.has_key_dict(connection_config):
@@ -632,7 +632,7 @@ class DuckDBData(DBData):
             option (Any): Write option to format.
 
         Returns:
-            str: The formatted write option.
+            str: Formatted write option.
         """
         if isinstance(option, str):
             return f"'{option}'"
@@ -650,7 +650,7 @@ class DuckDBData(DBData):
             options (Union[str, dict]): Write options to format.
 
         Returns:
-            str: A comma-separated string of formatted write options.
+            str: Comma-separated string of formatted write options.
         """
         if isinstance(options, str):
             return options
@@ -667,7 +667,7 @@ class DuckDBData(DBData):
             option (Any): Read option to format.
 
         Returns:
-            str: The formatted read option.
+            str: Formatted read option.
         """
         if isinstance(option, str):
             return f"'{option}'"
@@ -685,7 +685,7 @@ class DuckDBData(DBData):
             options (Union[str, dict]): Read options to format.
 
         Returns:
-            str: A comma-separated string of formatted read options.
+            str: Comma-separated string of formatted read options.
         """
         if isinstance(options, str):
             return options
@@ -784,7 +784,7 @@ class DuckDBData(DBData):
             **sql_kwargs: Keyword arguments for `connection.execute` to run the SQL query.
 
         Returns:
-            KeyData: The fetched data and a metadata dictionary.
+            KeyData: Fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -1004,7 +1004,7 @@ class DuckDBData(DBData):
             **kwargs: Keyword arguments for `DuckDBData.fetch_key`.
 
         Returns:
-            FeatureData: The fetched data and a metadata dictionary.
+            FeatureData: Fetched data and a metadata dictionary.
         """
         return cls.fetch_key(feature, **kwargs)
 
@@ -1017,7 +1017,7 @@ class DuckDBData(DBData):
             **kwargs: Keyword arguments for `DuckDBData.fetch_key`.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         return cls.fetch_key(symbol, **kwargs)
 
@@ -1037,7 +1037,7 @@ class DuckDBData(DBData):
             **kwargs: Keyword arguments for `DuckDBData.fetch_feature` or `DuckDBData.fetch_symbol`.
 
         Returns:
-            KeyData: The updated data and a metadata dictionary.
+            KeyData: Updated data and a metadata dictionary.
         """
         fetch_kwargs = self.select_fetch_kwargs(key)
         pre_kwargs = merge_dicts(fetch_kwargs, kwargs)
@@ -1061,7 +1061,7 @@ class DuckDBData(DBData):
             **kwargs: Keyword arguments for `DuckDBData.update_key`.
 
         Returns:
-            FeatureData: The updated data and a metadata dictionary.
+            FeatureData: Updated data and a metadata dictionary.
         """
         return self.update_key(feature, **kwargs)
 
@@ -1073,6 +1073,6 @@ class DuckDBData(DBData):
             **kwargs: Keyword arguments for `DuckDBData.update_key`.
 
         Returns:
-            SymbolData: The updated data and a metadata dictionary.
+            SymbolData: Updated data and a metadata dictionary.
         """
         return self.update_key(symbol, **kwargs)

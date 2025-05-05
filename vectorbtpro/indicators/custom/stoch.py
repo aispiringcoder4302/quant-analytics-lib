@@ -138,7 +138,7 @@ class _STOCH(STOCH):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated or newly created figure with the plotted STOCH traces and filled range.
+            BaseFigure: Updated or newly created figure with the plotted STOCH traces and filled range.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

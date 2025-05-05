@@ -77,7 +77,7 @@ class GBMOHLCData(SyntheticData):
             template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
-            SymbolData: The generated data and a metadata dictionary.
+            SymbolData: Generated data and a metadata dictionary.
 
         See:
             * `vectorbtpro.data.nb.generate_gbm_data_1d_nb` for generating ticks.

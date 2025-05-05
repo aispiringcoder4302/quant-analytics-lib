@@ -34,7 +34,7 @@ def evaluate(expr: str, context: tp.KwargsLike = None) -> tp.Any:
         context (KwargsLike): Dictionary representing the execution context.
 
     Returns:
-        Any: The result of evaluating the final expression.
+        Any: Result of evaluating the final expression.
     """
     expr = inspect.cleandoc(expr)
     if context is None:

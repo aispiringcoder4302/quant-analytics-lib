@@ -227,7 +227,7 @@ def make_file(file_path: tp.PathLike, mode: int = 0o666, exist_ok: bool = True, 
         **kwargs: Keyword arguments for `check_mkdir`.
 
     Returns:
-        Path: The path of the created file.
+        Path: Path of the created file.
     """
     file_path = Path(file_path)
     check_mkdir(file_path.parent, **kwargs)
@@ -243,7 +243,7 @@ def make_dir(dir_path: tp.PathLike, **kwargs) -> Path:
         **kwargs: Keyword arguments for `check_mkdir`.
 
     Returns:
-        Path: The path of the created directory.
+        Path: Path of the created directory.
     """
     check_mkdir(dir_path, mkdir=True, **kwargs)
     return dir_path
@@ -294,7 +294,7 @@ def get_common_prefix(paths: tp.Iterable[tp.PathLike]) -> str:
         paths (Iterable[PathLike]): Iterable of URLs or file paths.
 
     Returns:
-        str: The common prefix as a URL or file path string, or an empty string if no common prefix exists.
+        str: Common prefix as a URL or file path string, or an empty string if no common prefix exists.
     """
     if not paths:
         raise ValueError("The path list is empty")
@@ -373,7 +373,7 @@ def dir_tree_from_paths(
         last (str): String for the last node in a branch.
 
     Returns:
-        str: A string representing the visual tree structure.
+        str: String representing the visual tree structure.
     """
     resolved_paths = []
     for p in paths:
@@ -476,7 +476,7 @@ def dir_tree(dir_path: Path, **kwargs) -> str:
         **kwargs: Keyword arguments for `dir_tree_from_paths`.
 
     Returns:
-        str: A string representing the visual tree structure.
+        str: String representing the visual tree structure.
     """
     dir_path = Path(dir_path)
     if not dir_path.exists():

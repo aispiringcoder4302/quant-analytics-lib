@@ -139,7 +139,7 @@ class PolygonData(RemoteData):
             **client_config: Configuration parameters for creating a new client.
 
         Returns:
-            PolygonClient: An instance of `polygon.rest.RESTClient` for API interactions.
+            PolygonClient: Instance of `polygon.rest.RESTClient` for API interactions.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -218,7 +218,7 @@ class PolygonData(RemoteData):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            SymbolData: The updated data and a metadata dictionary.
+            SymbolData: Updated data and a metadata dictionary.
 
         !!! note
             If you're using a free plan with a rate limit of several requests per minute,

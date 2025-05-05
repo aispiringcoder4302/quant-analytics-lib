@@ -36,7 +36,7 @@ def map_1d_nb(arr: tp.Array1d, map_func_nb: tp.MapFunc, *args) -> tp.Array1d:
         *args: Positional arguments for `map_func_nb`.
 
     Returns:
-        Array1d: A 1D array where each element has been processed by `map_func_nb`.
+        Array1d: 1D array where each element has been processed by `map_func_nb`.
     """
     i_0_out = map_func_nb(arr[0], *args)
     out = np.empty_like(arr, dtype=np.asarray(i_0_out).dtype)
@@ -66,7 +66,7 @@ def map_nb(arr: tp.Array2d, map_func_nb: tp.MapFunc, *args) -> tp.Array2d:
         *args: Positional arguments for `map_func_nb`.
 
     Returns:
-        Array2d: A 2D array with each element mapped by `map_func_nb`, preserving the original shape.
+        Array2d: 2D array with each element mapped by `map_func_nb`, preserving the original shape.
 
     !!! tip
         This function is parallelizable.
@@ -91,7 +91,7 @@ def map_1d_meta_nb(n: int, col: int, map_func_nb: tp.MapMetaFunc, *args) -> tp.A
         *args: Positional arguments for `map_func_nb`.
 
     Returns:
-        Array1d: A 1D array with each element computed by `map_func_nb` using the row and column indices.
+        Array1d: 1D array with each element computed by `map_func_nb` using the row and column indices.
     """
     i_0_out = map_func_nb(0, col, *args)
     out = np.empty(n, dtype=np.asarray(i_0_out).dtype)
@@ -121,7 +121,7 @@ def map_meta_nb(target_shape: tp.Shape, map_func_nb: tp.MapMetaFunc, *args) -> t
         *args: Positional arguments for `map_func_nb`.
 
     Returns:
-        Array2d: A 2D array with values computed by `map_func_nb` across columns.
+        Array2d: 2D array with values computed by `map_func_nb` across columns.
 
     !!! tip
         This function is parallelizable.
@@ -155,7 +155,7 @@ def apply_nb(arr: tp.Array2d, apply_func_nb: tp.ApplyFunc, *args) -> tp.Array2d:
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        Array2d: A 2D array with the function applied column-wise.
+        Array2d: 2D array with the function applied column-wise.
 
     !!! tip
         This function is parallelizable.
@@ -189,7 +189,7 @@ def apply_meta_nb(target_shape: tp.Shape, apply_func_nb: tp.ApplyMetaFunc, *args
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        Array2d: A 2D array with the function applied column-wise using the column index.
+        Array2d: 2D array with the function applied column-wise using the column index.
 
     !!! tip
         This function is parallelizable.
@@ -223,7 +223,7 @@ def row_apply_nb(arr: tp.Array2d, apply_func_nb: tp.ApplyFunc, *args) -> tp.Arra
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        Array2d: A 2D array with the function applied row-wise.
+        Array2d: 2D array with the function applied row-wise.
 
     !!! tip
         This function is parallelizable.
@@ -257,7 +257,7 @@ def row_apply_meta_nb(target_shape: tp.Shape, apply_func_nb: tp.ApplyMetaFunc, *
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        Array2d: A 2D array with the function applied row-wise using the row index.
+        Array2d: 2D array with the function applied row-wise using the row index.
 
     !!! tip
         This function is parallelizable.
@@ -289,7 +289,7 @@ def rolling_reduce_1d_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array of rolling reduction results.
+        Array1d: Array of rolling reduction results.
     """
     if minp is None:
         minp = window
@@ -344,7 +344,7 @@ def rolling_reduce_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: An array containing the rolling reduction results applied column-wise.
+        Array2d: Array containing the rolling reduction results applied column-wise.
 
     !!! tip
         This function is parallelizable.
@@ -376,7 +376,7 @@ def rolling_reduce_two_1d_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array with rolling reduction results computed from both arrays.
+        Array1d: Array with rolling reduction results computed from both arrays.
     """
     if minp is None:
         minp = window
@@ -434,7 +434,7 @@ def rolling_reduce_two_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: An array containing the column-wise rolling reduction results.
+        Array2d: Array containing the column-wise rolling reduction results.
 
     !!! tip
         This function is parallelizable.
@@ -466,7 +466,7 @@ def rolling_reduce_1d_meta_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array containing the meta rolling reduction results.
+        Array1d: Array containing the meta rolling reduction results.
     """
     if minp is None:
         minp = window
@@ -512,7 +512,7 @@ def rolling_reduce_meta_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: An array containing the meta rolling reduction results for each column.
+        Array2d: Array containing the meta rolling reduction results for each column.
 
     !!! tip
         This function is parallelizable.
@@ -542,7 +542,7 @@ def rolling_freq_reduce_1d_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array containing frequency-based rolling reduction results.
+        Array1d: Array containing frequency-based rolling reduction results.
     """
     out = np.empty_like(arr, dtype=float_)
     from_i = 0
@@ -588,7 +588,7 @@ def rolling_freq_reduce_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: An array containing frequency-based rolling reduction results applied on each column.
+        Array2d: Array containing frequency-based rolling reduction results applied on each column.
 
     !!! tip
         This function is parallelizable.
@@ -618,7 +618,7 @@ def rolling_freq_reduce_1d_meta_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array of reduced values computed over the rolling window.
+        Array1d: Array of reduced values computed over the rolling window.
     """
     out = np.empty(index.shape[0], dtype=float_)
     from_i = 0
@@ -663,7 +663,7 @@ def rolling_freq_reduce_meta_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: A two-dimensional array of reduced values.
+        Array2d: Two-dimensional array of reduced values.
 
     !!! tip
         This function is parallelizable.
@@ -686,7 +686,7 @@ def groupby_reduce_1d_nb(arr: tp.Array1d, group_map: tp.GroupMap, reduce_func_nb
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array containing the reduced value for each group.
+        Array1d: Array containing the reduced value for each group.
     """
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
@@ -726,7 +726,7 @@ def groupby_reduce_nb(arr: tp.Array2d, group_map: tp.GroupMap, reduce_func_nb: t
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: A two-dimensional array with reduced values computed for each group.
+        Array2d: Two-dimensional array with reduced values computed for each group.
 
     !!! tip
         This function is parallelizable.
@@ -756,7 +756,7 @@ def groupby_reduce_1d_meta_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array of reduced values computed for each group.
+        Array1d: Array of reduced values computed for each group.
     """
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
@@ -800,7 +800,7 @@ def groupby_reduce_meta_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: A two-dimensional array of reduced values.
+        Array2d: Two-dimensional array of reduced values.
 
     !!! tip
         This function is parallelizable.
@@ -831,7 +831,7 @@ def groupby_transform_nb(
         *args: Positional arguments for `transform_func_nb`.
 
     Returns:
-        Array2d: A two-dimensional array with transformed values.
+        Array2d: Two-dimensional array with transformed values.
 
     !!! tip
         This function is parallelizable.
@@ -869,7 +869,7 @@ def groupby_transform_meta_nb(
         *args: Positional arguments for `transform_func_nb`.
 
     Returns:
-        Array2d: A two-dimensional array with transformed values based on group processing.
+        Array2d: Two-dimensional array with transformed values based on group processing.
 
     !!! tip
         This function is parallelizable.
@@ -908,7 +908,7 @@ def reduce_index_ranges_1d_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array containing the reduced value for each index range.
+        Array1d: Array containing the reduced value for each index range.
     """
     out = np.empty(range_starts.shape[0], dtype=float_)
 
@@ -952,7 +952,7 @@ def reduce_index_ranges_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: A two-dimensional array containing the reduced values for each index range per column.
+        Array2d: Two-dimensional array containing the reduced values for each index range per column.
 
     !!! tip
         This function is parallelizable.
@@ -982,7 +982,7 @@ def reduce_index_ranges_1d_meta_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array of reduced values.
+        Array1d: Array of reduced values.
     """
     out = np.empty(range_starts.shape[0], dtype=float_)
 
@@ -1026,7 +1026,7 @@ def reduce_index_ranges_meta_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: A two-dimensional array containing the reduced values for each index range per column.
+        Array2d: Two-dimensional array containing the reduced values for each index range per column.
 
     !!! tip
         This function is parallelizable.
@@ -1057,7 +1057,7 @@ def apply_and_reduce_1d_nb(
         reduce_args (tuple): Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Scalar: The reduced value.
+        Scalar: Reduced value.
     """
     temp = apply_func_nb(arr, *apply_args)
     return reduce_func_nb(temp, *reduce_args)
@@ -1094,7 +1094,7 @@ def apply_and_reduce_nb(
         reduce_args (tuple): Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array of reduced values for each column.
+        Array1d: Array of reduced values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1128,7 +1128,7 @@ def apply_and_reduce_1d_meta_nb(
         reduce_args (tuple): Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Scalar: The reduced value.
+        Scalar: Reduced value.
     """
     temp = apply_func_nb(col, *apply_args)
     return reduce_func_nb(col, temp, *reduce_args)
@@ -1167,7 +1167,7 @@ def apply_and_reduce_meta_nb(
         reduce_args (tuple): Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array of reduced values for each column.
+        Array1d: Array of reduced values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1200,7 +1200,7 @@ def reduce_nb(arr: tp.Array2d, reduce_func_nb: tp.ReduceFunc, *args) -> tp.Array
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array1d: An array containing the reduced values for each column.
+        Array1d: Array containing the reduced values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1514,7 +1514,7 @@ def reduce_grouped_to_array_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: A 2D array with each column corresponding to the reduction result of a group.
+        Array2d: 2D array with each column corresponding to the reduction result of a group.
 
     !!! tip
         This function is parallelizable.
@@ -1562,7 +1562,7 @@ def reduce_grouped_to_array_meta_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: A 2D array with each column representing the reduced result of a group.
+        Array2d: 2D array with each column representing the reduced result of a group.
 
     !!! tip
         This function is parallelizable.
@@ -1616,7 +1616,7 @@ def reduce_flat_grouped_to_array_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: A 2D array where each column is the reduction result of a flattened group.
+        Array2d: 2D array where each column is the reduction result of a flattened group.
 
     !!! tip
         This function is parallelizable.
@@ -1668,7 +1668,7 @@ def squeeze_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, squeeze_func_nb:
         *args: Positional arguments for `squeeze_func_nb`.
 
     Returns:
-        Array2d: A 2D array in which each column is the squeezed result of the corresponding group.
+        Array2d: 2D array in which each column is the squeezed result of the corresponding group.
 
     !!! tip
         This function is parallelizable.
@@ -1722,7 +1722,7 @@ def squeeze_grouped_meta_nb(
         *args: Positional arguments for `squeeze_func_nb`.
 
     Returns:
-        Array2d: A 2D array with the meta squeezed values for each row and group.
+        Array2d: 2D array with the meta squeezed values for each row and group.
 
     !!! tip
         This function is parallelizable.
@@ -1758,7 +1758,7 @@ def flatten_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, in_c_order: bool
         in_c_order (bool): If True, flatten in C order; otherwise, in Fortran order.
 
     Returns:
-        Array2d: A new 2D array with flattened groups.
+        Array2d: New 2D array with flattened groups.
     """
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
@@ -1788,7 +1788,7 @@ def flatten_uniform_grouped_nb(arr: tp.Array2d, group_map: tp.GroupMap, in_c_ord
         in_c_order (bool): If True, flatten in C order; otherwise, in Fortran order.
 
     Returns:
-        Array2d: A new 2D array with flattened groups.
+        Array2d: New 2D array with flattened groups.
     """
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
@@ -1828,7 +1828,7 @@ def proximity_reduce_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: A 2D array containing the reduced values.
+        Array2d: 2D array containing the reduced values.
 
     !!! tip
         This function is parallelizable.
@@ -1862,7 +1862,7 @@ def proximity_reduce_meta_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Array2d: The resulting array after applying the reduction.
+        Array2d: Resulting array after applying the reduction.
 
     !!! tip
         This function is parallelizable.
@@ -1890,7 +1890,7 @@ def nth_reduce_nb(arr: tp.Array1d, n: int) -> float:
         n (int): Index of the element to retrieve.
 
     Returns:
-        float: The element at the specified index.
+        float: Element at the specified index.
     """
     if (n < 0 and abs(n) > arr.shape[0]) or n >= arr.shape[0]:
         raise ValueError("index is out of bounds")
@@ -1905,7 +1905,7 @@ def first_reduce_nb(arr: tp.Array1d) -> float:
         arr (Array1d): Input array.
 
     Returns:
-        float: The first non-NA element, or NaN if no such element exists.
+        float: First non-NA element, or NaN if no such element exists.
     """
     if arr.shape[0] == 0:
         raise ValueError("index is out of bounds")
@@ -1923,7 +1923,7 @@ def last_reduce_nb(arr: tp.Array1d) -> float:
         arr (Array1d): Input array.
 
     Returns:
-        float: The last non-NA element, or NaN if no such element exists.
+        float: Last non-NA element, or NaN if no such element exists.
     """
     if arr.shape[0] == 0:
         raise ValueError("index is out of bounds")
@@ -1941,7 +1941,7 @@ def first_index_reduce_nb(arr: tp.Array1d) -> int:
         arr (Array1d): Input array.
 
     Returns:
-        int: The index of the first non-NA element, or -1 if none exists.
+        int: Index of the first non-NA element, or -1 if none exists.
     """
     if arr.shape[0] == 0:
         raise ValueError("index is out of bounds")
@@ -1959,7 +1959,7 @@ def last_index_reduce_nb(arr: tp.Array1d) -> int:
         arr (Array1d): Input array.
 
     Returns:
-        int: The index of the last non-NA element, or -1 if none exists.
+        int: Index of the last non-NA element, or -1 if none exists.
     """
     if arr.shape[0] == 0:
         raise ValueError("index is out of bounds")
@@ -1978,7 +1978,7 @@ def nth_index_reduce_nb(arr: tp.Array1d, n: int) -> int:
         n (int): Index offset; negative values count from the end.
 
     Returns:
-        int: The calculated index corresponding to the nth element.
+        int: Calculated index corresponding to the nth element.
     """
     if (n < 0 and abs(n) > arr.shape[0]) or n >= arr.shape[0]:
         raise ValueError("index is out of bounds")
@@ -2021,7 +2021,7 @@ def min_reduce_nb(arr: tp.Array1d) -> float:
         arr (Array1d): Input array.
 
     Returns:
-        float: The smallest value among the non-NA entries.
+        float: Smallest value among the non-NA entries.
     """
     return np.nanmin(arr)
 
@@ -2034,7 +2034,7 @@ def max_reduce_nb(arr: tp.Array1d) -> float:
         arr (Array1d): Input array.
 
     Returns:
-        float: The largest value among the non-NA entries.
+        float: Largest value among the non-NA entries.
     """
     return np.nanmax(arr)
 
@@ -2047,7 +2047,7 @@ def mean_reduce_nb(arr: tp.Array1d) -> float:
         arr (Array1d): Input array.
 
     Returns:
-        float: The average of the non-NA values.
+        float: Average of the non-NA values.
     """
     return np.nanmean(arr)
 
@@ -2060,7 +2060,7 @@ def median_reduce_nb(arr: tp.Array1d) -> float:
         arr (Array1d): Input array.
 
     Returns:
-        float: The median value among the non-NA entries.
+        float: Median value among the non-NA entries.
     """
     return np.nanmedian(arr)
 
@@ -2074,7 +2074,7 @@ def std_reduce_nb(arr: tp.Array1d, ddof) -> float:
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        float: The standard deviation computed with the specified ddof.
+        float: Standard deviation computed with the specified ddof.
     """
     return nanstd_1d_nb(arr, ddof=ddof)
 
@@ -2087,7 +2087,7 @@ def sum_reduce_nb(arr: tp.Array1d) -> float:
         arr (Array1d): Input array.
 
     Returns:
-        float: The total sum of the non-NA entries.
+        float: Total sum of the non-NA entries.
     """
     return np.nansum(arr)
 
@@ -2100,7 +2100,7 @@ def prod_reduce_nb(arr: tp.Array1d) -> float:
         arr (Array1d): Input array.
 
     Returns:
-        float: The product computed from the non-NA entries.
+        float: Product computed from the non-NA entries.
     """
     return np.nanprod(arr)
 
@@ -2113,7 +2113,7 @@ def nonzero_prod_reduce_nb(arr: tp.Array1d) -> float:
         arr (Array1d): Input array.
 
     Returns:
-        float: The product of non-zero and non-NA values; returns zero if no such product is computed.
+        float: Product of non-zero and non-NA values; returns zero if no such product is computed.
     """
     prod = 0.0
     for i in range(len(arr)):
@@ -2132,7 +2132,7 @@ def count_reduce_nb(arr: tp.Array1d) -> int:
         arr (Array1d): Input array.
 
     Returns:
-        int: The number of non-NA entries in the array.
+        int: Number of non-NA entries in the array.
     """
     return np.sum(~np.isnan(arr))
 
@@ -2192,7 +2192,7 @@ def describe_reduce_nb(arr: tp.Array1d, perc: tp.Array1d, ddof: int) -> tp.Array
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        Array1d: An array of descriptive statistics.
+        Array1d: Array of descriptive statistics.
 
     !!! note
         This function is a Numba equivalent to `pd.Series(arr).describe(perc)`.

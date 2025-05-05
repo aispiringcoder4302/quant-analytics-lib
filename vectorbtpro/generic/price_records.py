@@ -136,7 +136,7 @@ class PriceRecords(Records):
             **kwargs: Keyword arguments for `PriceRecords`.
 
         Returns:
-            PriceRecords: A new instance of `PriceRecords`.
+            PriceRecords: New instance of `PriceRecords`.
         """
         if open is None and data is not None:
             open = data.open
@@ -259,7 +259,7 @@ class PriceRecords(Records):
             **kwargs: Keyword arguments for `vectorbtpro.records.base.Records.indexing_func_meta`.
 
         Returns:
-            dict: A dictionary containing updated indexing metadata and OHLC arrays.
+            dict: Dictionary containing updated indexing metadata and OHLC arrays.
         """
         if records_meta is None:
             records_meta = Records.indexing_func_meta(self, *args, **kwargs)
@@ -287,7 +287,7 @@ class PriceRecords(Records):
             **kwargs: Keyword arguments for `PriceRecords.indexing_func_meta`.
 
         Returns:
-            PriceRecords: A new `PriceRecords` instance after indexing.
+            PriceRecords: New `PriceRecords` instance after indexing.
         """
         if price_records_meta is None:
             price_records_meta = self.indexing_func_meta(*args, **kwargs)
@@ -318,7 +318,7 @@ class PriceRecords(Records):
             **kwargs: Keyword arguments for `PriceRecords.resample_meta`.
 
         Returns:
-            PriceRecords: A new `PriceRecords` instance after resampling.
+            PriceRecords: New `PriceRecords` instance after resampling.
         """
         if records_meta is None:
             records_meta = self.resample_meta(*args, **kwargs)
@@ -414,7 +414,7 @@ class PriceRecords(Records):
             **kwargs: Keyword arguments for `PriceRecords.map_array`.
 
         Returns:
-            MappedArray: The mapped array of bar open times.
+            MappedArray: Mapped array of bar open times.
         """
         return self.map_array(self.wrapper.index[self.idx_arr], **kwargs)
 
@@ -425,7 +425,7 @@ class PriceRecords(Records):
             **kwargs: Keyword arguments for `PriceRecords.map_array`.
 
         Returns:
-            MappedArray: The mapped array of bar close times.
+            MappedArray: Mapped array of bar close times.
 
         !!! note
             Ensure that `wrapper.freq` is provided, as it is required to compute the closing time.
@@ -443,7 +443,7 @@ class PriceRecords(Records):
             **kwargs: Keyword arguments for `PriceRecords.apply`.
 
         Returns:
-            MappedArray: The mapped array of bar open prices.
+            MappedArray: Mapped array of bar open prices.
         """
         return self.apply(nb.bar_price_nb, self._open, **kwargs)
 
@@ -454,7 +454,7 @@ class PriceRecords(Records):
             **kwargs: Keyword arguments for `PriceRecords.apply`.
 
         Returns:
-            MappedArray: The mapped array of bar high prices.
+            MappedArray: Mapped array of bar high prices.
         """
         return self.apply(nb.bar_price_nb, self._high, **kwargs)
 
@@ -465,7 +465,7 @@ class PriceRecords(Records):
             **kwargs: Keyword arguments for `PriceRecords.apply`.
 
         Returns:
-            MappedArray: The mapped array of bar low prices.
+            MappedArray: Mapped array of bar low prices.
         """
         return self.apply(nb.bar_price_nb, self._low, **kwargs)
 
@@ -476,6 +476,6 @@ class PriceRecords(Records):
             **kwargs: Keyword arguments for `PriceRecords.apply`.
 
         Returns:
-            MappedArray: The mapped array of bar close prices.
+            MappedArray: Mapped array of bar close prices.
         """
         return self.apply(nb.bar_price_nb, self._close, **kwargs)

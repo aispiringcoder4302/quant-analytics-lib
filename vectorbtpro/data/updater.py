@@ -59,7 +59,7 @@ class DataUpdater(Configured):
         """Data instance associated with the updater.
 
         Returns:
-            Data: An instance of `vectorbtpro.data.base.Data`.
+            Data: Instance of `vectorbtpro.data.base.Data`.
         """
         return self._data
 
@@ -68,7 +68,7 @@ class DataUpdater(Configured):
         """Schedule manager instance used for scheduling update jobs.
 
         Returns:
-            ScheduleManager: An instance of `vectorbtpro.utils.schedule_.ScheduleManager`.
+            ScheduleManager: Instance of `vectorbtpro.utils.schedule_.ScheduleManager`.
         """
         return self._schedule_manager
 

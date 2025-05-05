@@ -42,7 +42,7 @@ def flex_choose_i_1d_nb(arr: tp.FlexArray1d, i: int) -> int:
         i (int): Index used for position selection.
 
     Returns:
-        int: The computed index based on the array shape.
+        int: Computed index based on the array shape.
 
     !!! note
         Array must be one-dimensional.
@@ -63,7 +63,7 @@ def flex_select_1d_nb(arr: tp.FlexArray1d, i: int) -> tp.Scalar:
         i (int): Index used for selecting the element.
 
     Returns:
-        Scalar: The element selected from the array.
+        Scalar: Element selected from the array.
 
     !!! note
         Array must be one-dimensional.
@@ -82,7 +82,7 @@ def flex_choose_i_pr_1d_nb(arr: tp.FlexArray1d, i: int, rotate_rows: bool = _rot
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
 
     Returns:
-        int: The computed index considering rotational indexing if enabled.
+        int: Computed index considering rotational indexing if enabled.
 
     !!! note
         Array must be one-dimensional.
@@ -106,7 +106,7 @@ def flex_choose_i_pr_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
 
     Returns:
-        int: The computed row index considering rotational indexing if enabled.
+        int: Computed row index considering rotational indexing if enabled.
 
     !!! note
         Array must be two-dimensional.
@@ -130,7 +130,7 @@ def flex_select_1d_pr_nb(arr: tp.FlexArray1d, i: int, rotate_rows: bool = _rotat
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
 
     Returns:
-        Scalar: The element selected from the array.
+        Scalar: Element selected from the array.
 
     !!! note
         Array must be one-dimensional.
@@ -149,7 +149,7 @@ def flex_choose_i_pc_1d_nb(arr: tp.FlexArray1d, col: int, rotate_cols: bool = _r
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
     Returns:
-        int: The computed column index considering rotational indexing if enabled.
+        int: Computed column index considering rotational indexing if enabled.
 
     !!! note
         Array must be one-dimensional.
@@ -173,7 +173,7 @@ def flex_choose_i_pc_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rota
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
     Returns:
-        int: The computed column index considering rotational indexing if enabled.
+        int: Computed column index considering rotational indexing if enabled.
 
     !!! note
         Array must be two-dimensional.
@@ -197,7 +197,7 @@ def flex_select_1d_pc_nb(arr: tp.FlexArray1d, col: int, rotate_cols: bool = _rot
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
     Returns:
-        Scalar: The element selected from the array.
+        Scalar: Element selected from the array.
 
     !!! note
         Array must be one-dimensional.
@@ -264,7 +264,7 @@ def flex_select_nb(
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
     Returns:
-        Scalar: The element selected from the array.
+        Scalar: Element selected from the array.
 
     !!! note
         Array must be two-dimensional.
@@ -289,7 +289,7 @@ def flex_select_row_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rotate_
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
 
     Returns:
-        Array1d: The selected row as a 1-dimensional array.
+        Array1d: Selected row as a 1-dimensional array.
 
     !!! note
         Array must be two-dimensional.
@@ -308,7 +308,7 @@ def flex_select_col_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _rotat
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
     Returns:
-        Array1d: The selected column as a 1-dimensional array.
+        Array1d: Selected column as a 1-dimensional array.
 
     !!! note
         Array must be two-dimensional.
@@ -327,7 +327,7 @@ def flex_select_2d_row_nb(arr: tp.FlexArray2d, i: int, rotate_rows: bool = _rota
         rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
 
     Returns:
-        Array2d: A 2-dimensional array containing the selected row.
+        Array2d: 2-dimensional array containing the selected row.
 
     !!! note
         Array must be two-dimensional.
@@ -346,7 +346,7 @@ def flex_select_2d_col_nb(arr: tp.FlexArray2d, col: int, rotate_cols: bool = _ro
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
     Returns:
-        Array2d: A 2-dimensional array containing the selected column.
+        Array2d: 2-dimensional array containing the selected column.
 
     !!! note
         Array must be two-dimensional.

@@ -266,7 +266,7 @@ def range_duration_nb(
         freq (int): Frequency increment added to the duration for open range records.
 
     Returns:
-        Array1d: An array containing the computed durations of the range records.
+        Array1d: Array containing the computed durations of the range records.
 
     !!! tip
         This function is parallelizable.
@@ -317,7 +317,7 @@ def range_coverage_nb(
             covered steps (if overlapping is True).
 
     Returns:
-        Array1d: An array containing the computed coverage values for each column.
+        Array1d: Array containing the computed coverage values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -387,7 +387,7 @@ def ranges_to_mask_nb(
         index_len (int): Length of the index for the resulting mask.
 
     Returns:
-        Array2d: A 2-dimensional boolean mask where True indicates that the position is within a range.
+        Array2d: 2-dimensional boolean mask where True indicates that the position is within a range.
 
     !!! tip
         This function is parallelizable.
@@ -1432,7 +1432,7 @@ def dd_recovery_duration_ratio_nb(
         end_idx_arr (Array1d): Array of ending row indices for the recovery period.
 
     Returns:
-        Array1d: An array of recovery duration ratios calculated as (recovery duration)
+        Array1d: Array of recovery duration ratios calculated as (recovery duration)
             divided by (decline duration).
 
             NaN is returned when the decline duration is zero.
@@ -1466,7 +1466,7 @@ def dd_recovery_return_nb(valley_val_arr: tp.Array1d, end_val_arr: tp.Array1d) -
         end_val_arr (Array1d): Array of values at the end of the recovery period.
 
     Returns:
-        Array1d: An array of recovery returns computed as (end value - valley value)
+        Array1d: Array of recovery returns computed as (end value - valley value)
             divided by the valley value.
 
     !!! tip
@@ -1494,7 +1494,7 @@ def bar_price_nb(records: tp.RecordArray, price: tp.Optional[tp.FlexArray2d]) ->
             from using record indices and columns.
 
     Returns:
-        Array1d: An array of bar prices for each record, with NaN for records
+        Array1d: Array of bar prices for each record, with NaN for records
             when the price array is None.
     """
     out = np.empty(len(records), dtype=float_)

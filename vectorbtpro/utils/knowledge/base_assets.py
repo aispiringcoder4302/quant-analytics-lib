@@ -146,7 +146,7 @@ class AssetCacheManager(Configured):
         """Directory path for storing cached assets.
 
         Returns:
-            Path: The path of the cache directory.
+            Path: Path of the cache directory.
         """
         return self._cache_dir
 
@@ -166,7 +166,7 @@ class AssetCacheManager(Configured):
         See `vectorbtpro.utils.pickling.save`.
 
         Returns:
-            Kwargs: The keyword arguments used for saving assets to disk.
+            Kwargs: Keyword arguments used for saving assets to disk.
         """
         return self._save_cache_kwargs
 
@@ -177,7 +177,7 @@ class AssetCacheManager(Configured):
         See `vectorbtpro.utils.pickling.load`.
 
         Returns:
-            Kwargs: The keyword arguments used for loading assets from disk.
+            Kwargs: Keyword arguments used for loading assets from disk.
         """
         return self._load_cache_kwargs
 
@@ -189,7 +189,7 @@ class AssetCacheManager(Configured):
             **kwargs: Additional parameters contributing to the cache key.
 
         Returns:
-            str: The MD5 hash representing the cache key.
+            str: MD5 hash representing the cache key.
         """
         from vectorbtpro._version import __version__
 
@@ -311,7 +311,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 `KnowledgeAsset.merge_dicts` or `KnowledgeAsset`.
 
         Returns:
-            KnowledgeAsset: A new asset containing merged data.
+            KnowledgeAsset: New asset containing merged data.
 
         Examples:
             ```pycon
@@ -378,7 +378,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 `KnowledgeAsset.merge_dicts` or `KnowledgeAsset`.
 
         Returns:
-            KnowledgeAsset: A new asset containing merged data.
+            KnowledgeAsset: New asset containing merged data.
 
         Examples:
             ```pycon
@@ -463,7 +463,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset`.
 
         Returns:
-            KnowledgeAsset: A new asset populated with data from the JSON file.
+            KnowledgeAsset: New asset populated with data from the JSON file.
             
         See:
             `vectorbtpro.utils.pickling.load_bytes`
@@ -491,7 +491,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset`.
 
         Returns:
-            KnowledgeAsset: A new asset containing data from the JSON bytes.
+            KnowledgeAsset: New asset containing data from the JSON bytes.
             
         See:
             `vectorbtpro.utils.pickling.decompress`
@@ -827,7 +827,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             inplace (bool): If True, shuffle the data in place; otherwise, return a new asset instance.
 
         Returns:
-            KnowledgeAsset: A new asset with shuffled data if `inplace` is False; otherwise, None.
+            KnowledgeAsset: New asset with shuffled data if `inplace` is False; otherwise, None.
         """
         import random
 
@@ -969,7 +969,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for the asset pipeline or function.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with processed data if `wrap` is True; otherwise, raw output.
+            MaybeKnowledgeAsset: New asset with processed data if `wrap` is True; otherwise, raw output.
 
         Examples:
             ```pycon
@@ -1101,7 +1101,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset containing the selected data.
+            MaybeKnowledgeAsset: New asset containing the selected data.
 
         Examples:
             ```pycon
@@ -1161,7 +1161,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.get`.
 
         Returns:
-            KnowledgeAsset: A new asset containing the selected data.
+            KnowledgeAsset: New asset containing the selected data.
         """
         return self.get(*args, wrap=True, **kwargs)
 
@@ -1192,7 +1192,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the modified data.
+            MaybeKnowledgeAsset: New asset with the modified data.
 
         Examples:
             ```pycon
@@ -1252,7 +1252,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the specified data items removed.
+            MaybeKnowledgeAsset: New asset with the specified data items removed.
 
         Examples:
             ```pycon
@@ -1310,7 +1310,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the modified data.
+            MaybeKnowledgeAsset: New asset with the modified data.
 
         Examples:
             ```pycon
@@ -1368,7 +1368,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the modified data.
+            MaybeKnowledgeAsset: New asset with the modified data.
 
         Examples:
             ```pycon
@@ -1425,7 +1425,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the reordered data.
+            MaybeKnowledgeAsset: New asset with the reordered data.
 
         Examples:
             ```pycon
@@ -1490,7 +1490,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply` or the query engine.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the matching data items.
+            MaybeKnowledgeAsset: New asset with the matching data items.
 
         Examples:
             ```pycon
@@ -1609,7 +1609,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.query`.
 
         Returns:
-            KnowledgeAsset: A new asset containing the filtered data.
+            KnowledgeAsset: New asset containing the filtered data.
         """
         return self.query(*args, wrap=True, **kwargs)
 
@@ -1674,7 +1674,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the found data items.
+            MaybeKnowledgeAsset: New asset with the found data items.
 
         Examples:
             ```pycon
@@ -1799,7 +1799,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.find`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with segments that match the search criteria.
+            MaybeKnowledgeAsset: New asset with segments that match the search criteria.
 
         !!! info
             For default settings, see `code` in `vectorbtpro._settings.knowledge`.
@@ -1925,7 +1925,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the specified replacements applied.
+            MaybeKnowledgeAsset: New asset with the specified replacements applied.
 
         Examples:
             ```pycon
@@ -2013,7 +2013,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the specified occurrences removed.
+            MaybeKnowledgeAsset: New asset with the specified occurrences removed.
 
         Similar to `KnowledgeAsset.find_replace`.
         """
@@ -2040,7 +2040,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.find_remove`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with empty objects removed.
+            MaybeKnowledgeAsset: New asset with empty objects removed.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
@@ -2069,7 +2069,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.flatten_obj`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with flattened data.
+            MaybeKnowledgeAsset: New asset with flattened data.
 
         Examples:
             ```pycon
@@ -2120,7 +2120,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.unflatten_obj`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with unflattened data.
+            MaybeKnowledgeAsset: New asset with unflattened data.
 
         Examples:
             ```pycon
@@ -2175,7 +2175,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with dumped data.
+            MaybeKnowledgeAsset: New asset with dumped data.
 
         Examples:
             ```pycon
@@ -2216,7 +2216,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc.prepare_and_call`.
 
         Returns:
-            str: The dumped asset data as a string.
+            str: Dumped asset data as a string.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import DumpAssetFunc
 
@@ -2242,7 +2242,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with data items converted to text documents.
+            MaybeKnowledgeAsset: New asset with data items converted to text documents.
         """
         return self.apply("to_docs", **kwargs)
 
@@ -2264,7 +2264,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with its text content split into chunks.
+            MaybeKnowledgeAsset: New asset with its text content split into chunks.
         """
         split_asset = self.apply(
             "split_text",
@@ -2369,7 +2369,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.groupby_reduce` or the reduction function.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the result of reducing the asset data items.
+            MaybeKnowledgeAsset: New asset with the result of reducing the asset data items.
 
         Examples:
             ```pycon
@@ -2517,7 +2517,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.reduce`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with the reduced data items.
+            MaybeKnowledgeAsset: New asset with the reduced data items.
         """
         uniform_groups = self.resolve_setting(uniform_groups, "uniform_groups")
         execute_kwargs = self.resolve_setting(execute_kwargs, "execute_kwargs", merge=True)
@@ -2557,7 +2557,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `vectorbtpro.utils.config.merge_dicts`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with merged dictionary data.
+            MaybeKnowledgeAsset: New asset with merged dictionary data.
         """
         return self.reduce("merge_dicts", **kwargs)
 
@@ -2568,7 +2568,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.reduce`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with merged list data.
+            MaybeKnowledgeAsset: New asset with merged list data.
         """
         return self.reduce("merge_lists", **kwargs)
 
@@ -2584,7 +2584,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.reduce`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset containing collected values for each key.
+            MaybeKnowledgeAsset: New asset containing collected values for each key.
         """
         return self.reduce("collect", sort_keys=sort_keys, **kwargs)
 
@@ -2599,7 +2599,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **describe_kwargs: Keyword arguments for `pd.Series.describe`.
 
         Returns:
-            dict: A dictionary of descriptive statistics with keys prefixed by "len_".
+            dict: Dictionary of descriptive statistics with keys prefixed by "len_".
         """
         len_describe_dict = pd.Series(lengths).describe(**describe_kwargs).to_dict()
         del len_describe_dict["count"]
@@ -2750,7 +2750,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             separator (Optional[str]): Separator to insert between data items.
 
         Returns:
-            str: The resulting concatenated string.
+            str: Resulting concatenated string.
         """
         if len(self.data) == 0:
             return ""
@@ -2863,7 +2863,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.rank_documents`.
 
         Returns:
-            MaybeKnowledgeAsset: A new asset with documents ranked based on similarity to the query.
+            MaybeKnowledgeAsset: New asset with documents ranked based on similarity to the query.
         """
         from vectorbtpro.utils.knowledge.chatting import StoreDocument, ScoredDocument, rank_documents
 
@@ -2939,7 +2939,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for the dump function.
 
         Returns:
-            str: The resulting context string.
+            str: Resulting context string.
         """
         from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, ScoredDocument
 

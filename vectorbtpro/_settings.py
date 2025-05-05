@@ -2904,7 +2904,7 @@ class SettingsConfig(Config):
             default (Any): Default value to return if the key is not found.
 
         Returns:
-            Any: The value associated with the specified key, or the default value if not found.
+            Any: Value associated with the specified key, or the default value if not found.
         """
         from vectorbtpro.utils.search_ import get_pathlike_key
 

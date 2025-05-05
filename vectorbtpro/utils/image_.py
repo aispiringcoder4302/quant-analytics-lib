@@ -97,7 +97,7 @@ def save_animation(
         **kwargs: Keyword arguments for `plot_func`.
 
     Returns:
-        Path: The path to the saved animation file.
+        Path: Path to the saved animation file.
 
     Examples:
         ```pycon

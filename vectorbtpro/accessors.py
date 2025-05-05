@@ -136,7 +136,7 @@ def register_accessor(name: str, cls: tp.Type[DirNamesMixin]) -> tp.Callable:
         cls (Type[DirNamesMixin]): Class extending `DirNamesMixin`.
 
     Returns:
-        Callable: A decorator function to register the accessor.
+        Callable: Decorator function to register the accessor.
 
     !!! info
         For default settings, see `vectorbtpro._settings.caching`.
@@ -170,7 +170,7 @@ def register_index_accessor(name: str) -> tp.Callable:
         name (str): Name to register the accessor under.
 
     Returns:
-        Callable: A decorator function to register the accessor.
+        Callable: Decorator function to register the accessor.
     """
     return register_accessor(name, pd.Index)
 
@@ -182,7 +182,7 @@ def register_series_accessor(name: str) -> tp.Callable:
         name (str): Name to register the accessor under.
 
     Returns:
-        Callable: A decorator function to register the accessor.
+        Callable: Decorator function to register the accessor.
     """
     return register_accessor(name, pd.Series)
 
@@ -194,7 +194,7 @@ def register_dataframe_accessor(name: str) -> tp.Callable:
         name (str): Name to register the accessor under.
 
     Returns:
-        Callable: A decorator function to register the accessor.
+        Callable: Decorator function to register the accessor.
     """
     return register_accessor(name, pd.DataFrame)
 
@@ -306,7 +306,7 @@ def register_vbt_accessor(name: str, parent: tp.Type[DirNamesMixin] = Vbt_Access
         parent (Type[DirNamesMixin]): Parent accessor class to extend (e.g., `Vbt_Accessor`).
 
     Returns:
-        Callable: A decorator function to register the accessor.
+        Callable: Decorator function to register the accessor.
     """
     return register_accessor(name, parent)
 
@@ -319,7 +319,7 @@ def register_idx_vbt_accessor(name: str, parent: tp.Type[DirNamesMixin] = Vbt_ID
         parent (Type[DirNamesMixin]): Parent accessor class to extend (e.g., `Vbt_IDXAccessor`).
 
     Returns:
-        Callable: A decorator function to register the accessor.
+        Callable: Decorator function to register the accessor.
     """
     return register_accessor(name, parent)
 
@@ -332,7 +332,7 @@ def register_sr_vbt_accessor(name: str, parent: tp.Type[DirNamesMixin] = Vbt_SRA
         parent (Type[DirNamesMixin]): Parent accessor class to extend (e.g., `Vbt_SRAccessor`).
 
     Returns:
-        Callable: A decorator function to register the accessor.
+        Callable: Decorator function to register the accessor.
     """
     return register_accessor(name, parent)
 
@@ -345,6 +345,6 @@ def register_df_vbt_accessor(name: str, parent: tp.Type[DirNamesMixin] = Vbt_DFA
         parent (Type[DirNamesMixin]): Parent accessor class to extend (e.g., `Vbt_DFAccessor`).
 
     Returns:
-        Callable: A decorator function to register the accessor.
+        Callable: Decorator function to register the accessor.
     """
     return register_accessor(name, parent)

@@ -30,7 +30,7 @@ def override_arg_config(config: Config, merge_configs: bool = True) -> tp.ClassW
             If False, replace it entirely.
 
     Returns:
-        ClassWrapper: The decorated class with the updated `_arg_config`.
+        ClassWrapper: Decorated class with the updated `_arg_config`.
     """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:

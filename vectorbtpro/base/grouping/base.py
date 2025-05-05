@@ -105,7 +105,7 @@ class Grouper(Configured):
         """Original Pandas Index used for grouping.
 
         Returns:
-            Index: The original Pandas Index.
+            Index: Original Pandas Index.
         """
         return self._index
 
@@ -114,7 +114,7 @@ class Grouper(Configured):
         """Group-by mapping generated from the provided grouping criteria.
 
         Returns:
-            GroupBy: The group-by mapping generated from the provided grouping criteria.
+            GroupBy: Group-by mapping generated from the provided grouping criteria.
         """
         return self._group_by
 
@@ -123,7 +123,7 @@ class Grouper(Configured):
         """Default group level name.
 
         Returns:
-            Hashable: The default level name for groups.
+            Hashable: Default level name for groups.
         """
         return self._def_lvl_name
 
@@ -169,7 +169,7 @@ class Grouper(Configured):
             def_lvl_name (Hashable): Default level name for groups.
 
         Returns:
-            GroupBy: The resulting group-by mapping as a Pandas Index,
+            GroupBy: Resulting group-by mapping as a Pandas Index,
                 or the original `group_by` if it is None or False.
 
         !!! note
@@ -302,7 +302,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper`.
 
         Returns:
-            Grouper: A new instance of `Grouper`.
+            Grouper: New instance of `Grouper`.
         """
         from vectorbtpro.base.merging import concat_arrays
 
@@ -480,7 +480,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.check_group_by`.
 
         Returns:
-            GroupBy: The resolved grouping index.
+            GroupBy: Resolved grouping index.
         """
         if group_by is None:
             group_by = self.group_by
@@ -512,7 +512,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.get_groups_and_index`.
 
         Returns:
-            Array1d: An array representing group labels for each index entry.
+            Array1d: Array representing group labels for each index entry.
         """
         return self.get_groups_and_index(**kwargs)[0]
 
@@ -523,7 +523,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.get_groups_and_index`.
 
         Returns:
-            Index: The grouped index.
+            Index: Grouped index.
         """
         return self.get_groups_and_index(**kwargs)[1]
 
@@ -534,7 +534,7 @@ class Grouper(Configured):
         """Grouped index computed from the current grouping configuration.
 
         Returns:
-            Index: The grouped index obtained via `Grouper.get_grouped_index`.
+            Index: Grouped index obtained via `Grouper.get_grouped_index`.
         """
         return self.get_grouped_index()
 
@@ -545,7 +545,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.get_groups_and_index`.
 
         Returns:
-            Index: The stretched index.
+            Index: Stretched index.
         """
         groups, index = self.get_groups_and_index(**kwargs)
         return index[groups]
@@ -557,7 +557,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.get_index`.
 
         Returns:
-            int: The number of groups.
+            int: Number of groups.
         """
         return len(self.get_index(**kwargs))
 
@@ -597,7 +597,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
 
         Returns:
-            GroupLens: An array containing the length of each group.
+            GroupLens: Array containing the length of each group.
 
         Raises:
             ValueError: If the grouping is not monolithic and sorted.
@@ -621,7 +621,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.get_group_lens`.
 
         Returns:
-            Array1d: An array containing the first index of each group.
+            Array1d: Array containing the first index of each group.
         """
         group_lens = self.get_group_lens(**kwargs)
         return np.cumsum(group_lens) - group_lens
@@ -633,7 +633,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.get_group_lens`.
 
         Returns:
-            Array1d: An array containing the end index for each group.
+            Array1d: Array containing the end index for each group.
         """
         group_lens = self.get_group_lens(**kwargs)
         return np.cumsum(group_lens)
@@ -657,7 +657,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
 
         Returns:
-            GroupMap: A tuple containing the group mapping.
+            GroupMap: Tuple containing the group mapping.
 
         See:
             `vectorbtpro.base.grouping.nb.get_group_map_nb`

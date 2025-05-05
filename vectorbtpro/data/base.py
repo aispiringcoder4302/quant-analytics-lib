@@ -112,7 +112,7 @@ class BaseDataMixin(Base):
         """Column wrapper for feature data.
 
         Returns:
-            ArrayWrapper: The column wrapper for feature data.
+            ArrayWrapper: Column wrapper for feature data.
         """
         raise NotImplementedError
 
@@ -121,7 +121,7 @@ class BaseDataMixin(Base):
         """Column wrapper for symbol data.
 
         Returns:
-            ArrayWrapper: The column wrapper for symbol data.
+            ArrayWrapper: Column wrapper for symbol data.
         """
         raise NotImplementedError
 
@@ -170,7 +170,7 @@ class BaseDataMixin(Base):
             key (Key): Feature or symbol identifier.
 
         Returns:
-            Key: The normalized key.
+            Key: Normalized key.
         """
         if isinstance(key, tuple):
             return tuple([cls.prepare_key(k) for k in key])
@@ -186,7 +186,7 @@ class BaseDataMixin(Base):
             raise_error (bool): Whether to raise an error if the feature is not found.
 
         Returns:
-            int: The index of the feature, or -1 if not found.
+            int: Index of the feature, or -1 if not found.
 
         Raises:
             ValueError: If multiple features match the specified key.
@@ -219,7 +219,7 @@ class BaseDataMixin(Base):
             raise_error (bool): Whether to raise an error if the symbol is not found.
 
         Returns:
-            int: The index of the symbol, or -1 if not found.
+            int: Index of the symbol, or -1 if not found.
 
         Raises:
             ValueError: If multiple symbols match the specified key.
@@ -252,7 +252,7 @@ class BaseDataMixin(Base):
             **kwargs: Keyword arguments for feature selection.
 
         Returns:
-            BaseDataMixin: A new instance with the selected features.
+            BaseDataMixin: New instance with the selected features.
         """
         raise NotImplementedError
 
@@ -264,7 +264,7 @@ class BaseDataMixin(Base):
             **kwargs: Keyword arguments for symbol selection.
 
         Returns:
-            BaseDataMixin: A new instance with the selected symbols.
+            BaseDataMixin: New instance with the selected symbols.
         """
         raise NotImplementedError
 
@@ -276,7 +276,7 @@ class BaseDataMixin(Base):
             **kwargs: Keyword arguments for `BaseDataMixin.select_feature_idxs`.
 
         Returns:
-            BaseDataMixin: A new instance containing the selected features.
+            BaseDataMixin: New instance containing the selected features.
         """
         if self.has_multiple_keys(features):
             feature_idxs = [self.get_feature_idx(k, raise_error=True) for k in features]
@@ -292,7 +292,7 @@ class BaseDataMixin(Base):
             **kwargs: Keyword arguments for `BaseDataMixin.select_symbol_idxs`.
 
         Returns:
-            BaseDataMixin: A new instance containing the selected symbols.
+            BaseDataMixin: New instance containing the selected symbols.
         """
         if self.has_multiple_keys(symbols):
             symbol_idxs = [self.get_symbol_idx(k, raise_error=True) for k in symbols]
@@ -485,7 +485,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Series computed as the arithmetic mean of the high, low, and close prices.
 
         Returns:
-            SeriesFrame: The arithmetic mean of the high, low, and close prices.
+            SeriesFrame: Arithmetic mean of the high, low, and close prices.
         """
         high = self.get_feature("High", raise_error=True)
         low = self.get_feature("Low", raise_error=True)
@@ -497,7 +497,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Series computed as the arithmetic mean of the open, high, low, and close prices.
 
         Returns:
-            SeriesFrame: The arithmetic mean of the open, high, low, and close prices.
+            SeriesFrame: Arithmetic mean of the open, high, low, and close prices.
         """
         open = self.get_feature("Open", raise_error=True)
         high = self.get_feature("High", raise_error=True)
@@ -553,7 +553,7 @@ class OHLCDataMixin(BaseDataMixin):
         """New `OHLCDataMixin` instance containing only OHLC features (open, high, low, and close).
 
         Returns:
-            OHLCDataMixin: A new instance containing only OHLC features.
+            OHLCDataMixin: New instance containing only OHLC features.
         """
         open_idx = self.get_feature_idx("Open", raise_error=True)
         high_idx = self.get_feature_idx("High", raise_error=True)
@@ -566,7 +566,7 @@ class OHLCDataMixin(BaseDataMixin):
         """New `OHLCDataMixin` instance containing only OHLCV features (open, high, low, close, and volume).
 
         Returns:
-            OHLCDataMixin: A new instance containing only OHLCV features.
+            OHLCDataMixin: New instance containing only OHLCV features.
         """
         open_idx = self.get_feature_idx("Open", raise_error=True)
         high_idx = self.get_feature_idx("High", raise_error=True)
@@ -582,7 +582,7 @@ class OHLCDataMixin(BaseDataMixin):
             **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
 
         Returns:
-            ReturnsAccessor: An accessor for return calculations using the close price.
+            ReturnsAccessor: Accessor for return calculations using the close price.
         """
         return ReturnsAccessor.from_value(
             self.get_feature("Close", raise_error=True),
@@ -596,7 +596,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Returns a `ReturnsAccessor` using default parameters from `OHLCDataMixin.get_returns_acc`.
 
         Returns:
-            ReturnsAccessor: An accessor for return calculations using the close price.
+            ReturnsAccessor: Accessor for return calculations using the close price.
         """
         return self.get_returns_acc()
 
@@ -741,7 +741,7 @@ class MetaData(type(Analyzable)):
         """Feature configuration for the `Data` class.
 
         Returns:
-            Config: The feature configuration associated with the class.
+            Config: Feature configuration associated with the class.
         """
         return cls._feature_config
 
@@ -1114,7 +1114,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 required for class method calls.
 
         Returns:
-            Index: A Pandas Index, or a MultiIndex if level names are provided as a tuple.
+            Index: Pandas Index, or a MultiIndex if level names are provided as a tuple.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(keys, arg_name="keys")
@@ -1133,7 +1133,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         A Pandas Index generated from the data keys using `Data.get_key_index`.
 
         Returns:
-            Index: A Pandas Index, or a MultiIndex if level names are provided as a tuple.
+            Index: Pandas Index, or a MultiIndex if level names are provided as a tuple.
         """
         return self.get_key_index()
 
@@ -1220,7 +1220,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.get_settings`.
 
         Returns:
-            dict: The base settings.
+            dict: Base settings.
         """
         return cls.get_settings(*args, path_id="base", **kwargs)
 
@@ -1246,7 +1246,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.get_setting`.
 
         Returns:
-            Any: The requested base setting.
+            Any: Requested base setting.
         """
         return cls.get_setting(*args, path_id="base", **kwargs)
 
@@ -1272,7 +1272,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.resolve_setting`.
 
         Returns:
-            Any: The resolved base setting.
+            Any: Resolved base setting.
         """
         return cls.resolve_setting(*args, path_id="base", **kwargs)
 
@@ -1306,7 +1306,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         instance variable `${cls_name}._feature_config`.
 
         Returns:
-            Config: The feature configuration for the class.
+            Config: Feature configuration for the class.
         """
         return self._feature_config
 
@@ -1419,7 +1419,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data`.
 
         Returns:
-            Data: A new `Data` instance created by stacking the given instances.
+            Data: New `Data` instance created by stacking the given instances.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -1494,7 +1494,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data`.
 
         Returns:
-            Data: A new `Data` instance created by stacking the given instances.
+            Data: New `Data` instance created by stacking the given instances.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -1567,7 +1567,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data`.
 
         Returns:
-            Data: A new `Data` instance with updated index and/or columns.
+            Data: New `Data` instance with updated index and/or columns.
         """
         if "wrapper" in kwargs and "data" not in kwargs:
             wrapper = kwargs["wrapper"]
@@ -1622,7 +1622,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
-            Data: A new `Data` instance after indexing.
+            Data: New `Data` instance after indexing.
         """
         if replace_kwargs is None:
             replace_kwargs = {}
@@ -1687,7 +1687,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             key_as_index (bool): Whether to return the yielded key as an index.
 
         Returns:
-            Items: An iterator yielding pairs of key and corresponding `Data` subsets.
+            Items: Iterator yielding pairs of key and corresponding `Data` subsets.
         """
         if (
             over.lower() == "columns"
@@ -1771,7 +1771,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.replace`.
 
         Returns:
-            ArrayWrapper: A new array wrapper updated with the specified keys and dimensions.
+            ArrayWrapper: New array wrapper updated with the specified keys and dimensions.
         """
         if clean_index_kwargs is None:
             clean_index_kwargs = {}
@@ -1891,7 +1891,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Number of dimensions based on the default symbol wrapper.
 
         Returns:
-            int: The number of dimensions of the default symbol wrapper.
+            int: Number of dimensions of the default symbol wrapper.
         """
         return self.symbol_wrapper.ndim
 
@@ -1900,7 +1900,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Shape determined from the default symbol wrapper.
 
         Returns:
-            Shape: The shape of the default symbol wrapper.
+            Shape: Shape of the default symbol wrapper.
         """
         return self.symbol_wrapper.shape
 
@@ -1909,7 +1909,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Shape as if the object were two-dimensional, based on the default symbol wrapper.
 
         Returns:
-            Shape: The two-dimensional shape of the default symbol wrapper.
+            Shape: Two-dimensional shape of the default symbol wrapper.
         """
         return self.symbol_wrapper.shape_2d
 
@@ -1918,7 +1918,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Column index based on the default symbol wrapper.
 
         Returns:
-            Index: The column index of the default symbol wrapper.
+            Index: Column index of the default symbol wrapper.
         """
         return self.symbol_wrapper.columns
 
@@ -1927,7 +1927,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Index based on the default symbol wrapper.
 
         Returns:
-            Index: The index of the default symbol wrapper.
+            Index: Index of the default symbol wrapper.
         """
         return self.symbol_wrapper.index
 
@@ -2027,7 +2027,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_error (bool): Whether to raise an error if a feature is not found.
 
         Returns:
-            MaybeFeatures: The resolved feature(s), either as a single feature or a list of features.
+            MaybeFeatures: Resolved feature(s), either as a single feature or a list of features.
         """
         if not self.has_multiple_keys(features):
             features = [features]
@@ -2049,7 +2049,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_error (bool): Whether to raise an error if a symbol is not found.
 
         Returns:
-            MaybeSymbols: The resolved symbol(s), either as a single symbol or a list of symbols.
+            MaybeSymbols: Resolved symbol(s), either as a single symbol or a list of symbols.
         """
         if not self.has_multiple_keys(symbols):
             symbols = [symbols]
@@ -2074,7 +2074,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_error (bool): Whether to raise an error if a key is not found.
 
         Returns:
-            MaybeKeys: The resolved key(s), either as a single key or a list of keys.
+            MaybeKeys: Resolved key(s), either as a single key or a list of keys.
         """
         if self.feature_oriented:
             return self.resolve_features(keys, raise_error=raise_error)
@@ -2091,7 +2091,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_error (bool): Whether to raise an error if a column is not found.
 
         Returns:
-            MaybeColumns: The resolved column(s), either as a single column or a list of columns.
+            MaybeColumns: Resolved column(s), either as a single column or a list of columns.
         """
         if self.feature_oriented:
             return self.resolve_symbols(columns, raise_error=raise_error)
@@ -2309,7 +2309,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             remove_tz (bool): Whether to remove timezone information from the index.
 
         Returns:
-            SeriesFrame: The processed datetime index.
+            SeriesFrame: Processed datetime index.
         """
         if parse_dates:
             if not isinstance(index, (pd.DatetimeIndex, pd.MultiIndex)) and index.dtype == object:
@@ -2345,7 +2345,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             remove_tz (bool): Whether to remove timezone information from the index.
 
         Returns:
-            Series: The series with its index converted to a datetime index if applicable,
+            Series: Series with its index converted to a datetime index if applicable,
                 or the original series.
         """
         index = cls.prepare_dt_index(
@@ -2385,7 +2385,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             remove_utc_tz (bool): Indicates whether to remove the timezone after converting to UTC.
 
         Returns:
-            Frame: A Pandas DataFrame or Series with prepared datetime indices and columns.
+            Frame: Pandas DataFrame or Series with prepared datetime indices and columns.
         """
         obj = obj.copy(deep=False)
         made_frame = False
@@ -2471,7 +2471,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Set to False to disable conversion. See `Data.prepare_dt_index`.
 
         Returns:
-            SeriesFrame: The object with a timezone-aware index.
+            SeriesFrame: Object with a timezone-aware index.
 
         !!! info
             For default settings, see `vectorbtpro._settings.data`.
@@ -2517,7 +2517,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            dict: A dictionary with all data reindexed to a common index.
+            dict: Dictionary with all data reindexed to a common index.
 
         !!! info
             For default settings, see `vectorbtpro._settings.data`.
@@ -2571,7 +2571,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            dict: A dictionary with all data reindexed to a common set of columns.
+            dict: Dictionary with all data reindexed to a common set of columns.
         """
         if len(data) == 1:
             return data
@@ -2640,7 +2640,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
-            Data: A new instance with the updated class.
+            Data: New instance with the updated class.
         """
         if clear_fetch_kwargs:
             new_fetch_kwargs = type(self.fetch_kwargs)({k: {} for k in self.symbols})
@@ -2856,7 +2856,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
-            Data: A new `Data` instance constructed from the provided data.
+            Data: New `Data` instance constructed from the provided data.
 
         !!! info
             For default settings, see `vectorbtpro._settings.data`.
@@ -2939,7 +2939,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.replace` for instance configuration.
 
         Returns:
-            Data: A new instance with the inverted data.
+            Data: New instance with the inverted data.
         """
         if key_wrapper_kwargs is None:
             key_wrapper_kwargs = {}
@@ -2970,7 +2970,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.invert`.
 
         Returns:
-            Data: The instance in feature-oriented format.
+            Data: Instance in feature-oriented format.
         """
         if self.feature_oriented:
             if len(kwargs) > 0:
@@ -2985,7 +2985,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.invert`.
 
         Returns:
-            Data: The instance in symbol-oriented format.
+            Data: Instance in symbol-oriented format.
         """
         if self.symbol_oriented:
             if len(kwargs) > 0:
@@ -3069,7 +3069,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             check_dict_type (bool): Flag to validate the type of dictionaries.
 
         Returns:
-            Kwargs: A dictionary containing the filtered keyword arguments.
+            Kwargs: Dictionary containing the filtered keyword arguments.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(dict_type, arg_name="dict_type")
@@ -3104,7 +3104,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs_: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
-            Kwargs: A dictionary containing the filtered keyword arguments.
+            Kwargs: Dictionary containing the filtered keyword arguments.
         """
         return cls.select_key_kwargs(feature, kwargs, dict_type=feature_dict, **kwargs_)
 
@@ -3118,7 +3118,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs_: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
-            Kwargs: A dictionary containing the filtered keyword arguments.
+            Kwargs: Dictionary containing the filtered keyword arguments.
         """
         return cls.select_key_kwargs(symbol, kwargs, dict_type=symbol_dict, **kwargs_)
 
@@ -3143,7 +3143,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             check_dict_type (bool): Flag to validate the type of dictionaries.
 
         Returns:
-            Any: The value associated with the specified key.
+            Any: Value associated with the specified key.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(dict_type, arg_name="dict_type")
@@ -3163,7 +3163,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
-            Any: The value corresponding to the feature.
+            Any: Value corresponding to the feature.
         """
         return cls.select_key_kwargs(feature, dct, dict_type=feature_dict, **kwargs)
 
@@ -3177,7 +3177,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.select_key_kwargs`.
 
         Returns:
-            Any: The value corresponding to the symbol.
+            Any: Value corresponding to the symbol.
         """
         return cls.select_key_kwargs(symbol, dct, dict_type=symbol_dict, **kwargs)
 
@@ -3191,7 +3191,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_error (bool): If True, raises an error when a key is missing.
 
         Returns:
-            dict: A dictionary containing the selected keys and their corresponding values.
+            dict: Dictionary containing the selected keys and their corresponding values.
         """
         if raise_error:
             return type(dct)({k: dct[k] for k in keys})
@@ -3205,7 +3205,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             dct (dict): Source dictionary containing nested dictionaries as values.
 
         Returns:
-            dict: A dictionary of sub-keys with uniform corresponding values across all nested dictionaries.
+            dict: Dictionary of sub-keys with uniform corresponding values across all nested dictionaries.
         """
         dct_values = list(dct.values())
         overlapping_keys = set(dct_values[0].keys())
@@ -3229,7 +3229,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
-            Data: A new `Data` instance with the selected keys.
+            Data: New `Data` instance with the selected keys.
         """
         keys = self.resolve_keys(keys)
         if self.has_multiple_keys(keys):
@@ -3258,7 +3258,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.indexing_func`.
 
         Returns:
-            Data: A new `Data` instance with the selected columns.
+            Data: New `Data` instance with the selected columns.
         """
         columns = self.resolve_columns(columns)
 
@@ -3295,7 +3295,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
-            Data: A new `Data` instance with the selected features or symbols.
+            Data: New `Data` instance with the selected features or symbols.
         """
         if not self.has_multiple_keys(keys):
             keys = [keys]
@@ -3346,7 +3346,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.from_data`.
 
         Returns:
-            Data: A new `Data` instance with the added feature.
+            Data: New `Data` instance with the added feature.
         """
         if run_kwargs is None:
             run_kwargs = {}
@@ -3402,7 +3402,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.from_data`.
 
         Returns:
-            Data: A new `Data` instance with the added symbol.
+            Data: New `Data` instance with the added symbol.
         """
         if pull_kwargs is None:
             pull_kwargs = {}
@@ -3446,7 +3446,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
-            Data: A new `Data` instance with the added key.
+            Data: New `Data` instance with the added key.
         """
         if self.feature_oriented:
             return self.add_feature(key, data=data, **kwargs)
@@ -3468,7 +3468,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
-            Data: A new `Data` instance with the added key.
+            Data: New `Data` instance with the added key.
         """
         if self.feature_oriented:
             return self.add_symbol(column, data=data, **kwargs)
@@ -3491,7 +3491,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
-            Data: A new `Data` instance with the added feature or symbol.
+            Data: New `Data` instance with the added feature or symbol.
 
         Raises:
             ValueError: If the orientation cannot be determined from the data.
@@ -3522,7 +3522,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             rename (Dict[Key, Key]): Mapping from old keys to new keys.
 
         Returns:
-            dict: A new dictionary with keys renamed according to the mapping.
+            dict: New dictionary with keys renamed according to the mapping.
         """
         return type(dct)({rename.get(k, k): v for k, v in dct.items()})
 
@@ -3542,7 +3542,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
-            Data: A new `Data` instance with keys renamed.
+            Data: New `Data` instance with keys renamed.
         """
         if to is not None:
             if self.has_multiple_keys(to):
@@ -3573,7 +3573,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.replace`.
 
         Returns:
-            Data: A new `Data` instance with columns renamed.
+            Data: New `Data` instance with columns renamed.
         """
         if to is not None:
             if self.has_multiple_keys(to):
@@ -3605,7 +3605,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
-            Data: A new `Data` instance with features renamed.
+            Data: New `Data` instance with features renamed.
         """
         if self.feature_oriented:
             return self.rename_keys(rename, to=to, **kwargs)
@@ -3627,7 +3627,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
-            Data: A new `Data` instance with renamed symbols.
+            Data: New `Data` instance with renamed symbols.
         """
         if self.feature_oriented:
             return self.rename_columns(rename, to=to, **kwargs)
@@ -3650,7 +3650,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
-            Data: A new `Data` instance with renamed features or symbols.
+            Data: New `Data` instance with renamed features or symbols.
         """
         if to is not None:
             if self.has_multiple_keys(to):
@@ -3675,7 +3675,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.select_feature_idxs`.
 
         Returns:
-            Data: A new `Data` instance with the remaining features.
+            Data: New `Data` instance with the remaining features.
         """
         if self.has_multiple_keys(features):
             remove_feature_idxs = [self.get_feature_idx(k, raise_error=True) for k in features]
@@ -3694,7 +3694,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.select_symbol_idxs`.
 
         Returns:
-            Data: A new `Data` instance with the remaining symbols.
+            Data: New `Data` instance with the remaining symbols.
         """
         if self.has_multiple_keys(symbols):
             remove_symbol_idxs = [self.get_symbol_idx(k, raise_error=True) for k in symbols]
@@ -3715,7 +3715,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
-            Data: A new `Data` instance with the specified keys removed.
+            Data: New `Data` instance with the specified keys removed.
         """
         if self.feature_oriented:
             return self.remove_features(keys, **kwargs)
@@ -3731,7 +3731,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
-            Data: A new `Data` instance with the remaining columns.
+            Data: New `Data` instance with the remaining columns.
         """
         if self.feature_oriented:
             return self.remove_symbols(columns, **kwargs)
@@ -3748,7 +3748,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the delegated function.
 
         Returns:
-            Data: A new `Data` instance after removal of the specified key(s).
+            Data: New `Data` instance after removal of the specified key(s).
         """
         if not self.has_multiple_keys(keys):
             keys = [keys]
@@ -3780,7 +3780,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.resolve_merge_kwargs` and then `Data.from_data`.
 
         Returns:
-            Data: A merged `Data` instance.
+            Data: Merged `Data` instance.
         """
         if len(datas) == 1 and not isinstance(datas[0], Data):
             datas = datas[0]
@@ -3885,7 +3885,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for fetching the feature.
 
         Returns:
-            FeatureData: The fetched data and (optionally) a metadata dictionary, or None.
+            FeatureData: Fetched data and (optionally) a metadata dictionary, or None.
 
         !!! note
             This is an abstract method and must be overridden with custom logic.
@@ -3909,7 +3909,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_feature`.
 
         Returns:
-            FeatureData: The fetched data and (optionally) a metadata dictionary, or None.
+            FeatureData: Fetched data and (optionally) a metadata dictionary, or None.
         """
         if fetch_kwargs is None:
             fetch_kwargs = {}
@@ -3947,7 +3947,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for fetching the symbol.
 
         Returns:
-            SymbolData: The fetched data and (optionally) a metadata dictionary, or None.
+            SymbolData: Fetched data and (optionally) a metadata dictionary, or None.
 
         !!! note
             This is an abstract method; override it to implement custom symbol fetching logic.
@@ -3971,7 +3971,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_symbol`.
 
         Returns:
-            SymbolData: The fetched data and (optionally) a metadata dictionary, or None.
+            SymbolData: Fetched data and (optionally) a metadata dictionary, or None.
         """
         if fetch_kwargs is None:
             fetch_kwargs = {}
@@ -4366,7 +4366,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 class `vectorbtpro.data.custom.yf.YFData` is used.
 
         Returns:
-            Data: A parsed `Data` instance.
+            Data: Parsed `Data` instance.
         """
         from vectorbtpro.data import custom
 
@@ -4391,7 +4391,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments passed for feature update.
 
         Returns:
-            FeatureData: The updated data and (optionally) a metadata dictionary, or None.
+            FeatureData: Updated data and (optionally) a metadata dictionary, or None.
 
         !!! note
             This is an abstract method and should be overridden with custom logic.
@@ -4414,7 +4414,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             update_kwargs (KwargsLike): Keyword arguments for `Data.update_feature`.
 
         Returns:
-            FeatureData: The updated data and (optionally) a metadata dictionary, or None.
+            FeatureData: Updated data and (optionally) a metadata dictionary, or None.
         """
         if update_kwargs is None:
             update_kwargs = {}
@@ -4444,7 +4444,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments passed for symbol update.
 
         Returns:
-            SymbolData: The updated data and (optionally) a metadata dictionary, or None.
+            SymbolData: Updated data and (optionally) a metadata dictionary, or None.
 
         !!! note
             This is an abstract method and should be overridden with custom logic.
@@ -4467,7 +4467,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             update_kwargs (KwargsLike): Keyword arguments for `Data.update_symbol`.
 
         Returns:
-            SymbolData: The updated data and (optionally) a metadata dictionary, or None.
+            SymbolData: Updated data and (optionally) a metadata dictionary, or None.
         """
         if update_kwargs is None:
             update_kwargs = {}
@@ -4759,7 +4759,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `transform_func`.
 
         Returns:
-            Data: A new instance with the transformed data.
+            Data: New instance with the transformed data.
 
         !!! note
             The returned object retains the same type and dimensionality as the input.
@@ -4916,7 +4916,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `pd.Series.dropna` or `pd.DataFrame.dropna`.
 
         Returns:
-            Data: A new instance with missing values removed.
+            Data: New instance with missing values removed.
         """
 
         def _dropna(df, **_kwargs):
@@ -4946,7 +4946,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Mapped using `vectorbtpro.ohlcv.enums.PriceFeature` if provided as a string.
 
         Returns:
-            Data: A new data instance with mirrored OHLC features.
+            Data: New data instance with mirrored OHLC features.
 
         See:
             `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
@@ -4999,7 +4999,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
-            Data: A new data instance with resampled features.
+            Data: New data instance with resampled features.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)
@@ -5094,7 +5094,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
-            Data: A new data instance with realigned features.
+            Data: New data instance with realigned features.
         """
         if rule is None:
             rule = self.wrapper.freq
@@ -5161,7 +5161,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.run`.
 
         Returns:
-            Any: The result of executing `Data.run`, or `vectorbtpro.utils.execution.NoResult` 
+            Any: Result of executing `Data.run`, or `vectorbtpro.utils.execution.NoResult` 
                 if execution fails without raising an error.
         """
         try:
@@ -5188,7 +5188,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             args (Args): Tuple of positional arguments to search through.
 
         Returns:
-            tuple: A tuple containing the selected arguments corresponding to the given function index or name.
+            tuple: Tuple containing the selected arguments corresponding to the given function index or name.
         """
         _args = ()
         for v in args:
@@ -5217,7 +5217,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 * A direct value if no special type is applicable.
 
         Returns:
-            dict: A dictionary containing the keyword arguments selected based
+            dict: Dictionary containing the keyword arguments selected based
                 on the provided index or function name.
         """
         _kwargs = {}
@@ -5322,7 +5322,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for the function.
 
         Returns:
-            Any: The result of applying the function(s) to the data. If `return_keys` is True,
+            Any: Result of applying the function(s) to the data. If `return_keys` is True,
                 returns a tuple of the results and the corresponding function keys.
         """
         from vectorbtpro.indicators.factory import IndicatorBase, IndicatorFactory
@@ -5600,7 +5600,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             is_kwargs (bool): Specifies if the argument should be handled as keyword arguments.
 
         Returns:
-            Any: The resolved argument with any applicable template substitutions.
+            Any: Resolved argument with any applicable template substitutions.
         """
         if check_dict_type:
             self.check_dict_type(arg, arg_name=arg_name)
@@ -5717,7 +5717,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.csv.CSVData.pull`.
 
         Returns:
-            Data: An instance of the class with the loaded data.
+            Data: Instance of the class with the loaded data.
         """
         from vectorbtpro.data.custom.csv import CSVData
 
@@ -5831,7 +5831,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.hdf.HDFData.pull`.
 
         Returns:
-            Data: An instance of the class with the loaded data.
+            Data: Instance of the class with the loaded data.
         """
         from vectorbtpro.data.custom.hdf import HDFData
 
@@ -5940,7 +5940,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.feather.FeatherData.pull`.
 
         Returns:
-            Data: An instance of the class containing the loaded data.
+            Data: Instance of the class containing the loaded data.
         """
         from vectorbtpro.data.custom.feather import FeatherData
 
@@ -6152,7 +6152,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.parquet.ParquetData.pull`.
 
         Returns:
-            Data: An instance of `cls` with data loaded from Parquet.
+            Data: Instance of `cls` with data loaded from Parquet.
         """
         from vectorbtpro.data.custom.parquet import ParquetData
 
@@ -6391,7 +6391,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.sql.SQLData.pull`.
 
         Returns:
-            Data: An instance of the current class containing the loaded data.
+            Data: Instance of the current class containing the loaded data.
         """
         from vectorbtpro.data.custom.sql import SQLData
 
@@ -6720,7 +6720,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.duckdb.DuckDBData.pull`.
 
         Returns:
-            Data: An instance of the data with updated fetch parameters.
+            Data: Instance of the data with updated fetch parameters.
         """
         from vectorbtpro.data.custom.duckdb import DuckDBData
 
@@ -6769,7 +6769,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.get`.
 
         Returns:
-            SeriesFrame: The query result as a DataFrame or a Series if squeezed.
+            SeriesFrame: Query result as a DataFrame or a Series if squeezed.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -6829,7 +6829,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         `StatsBuilderMixin.stats_defaults` and the `stats` settings from `vectorbtpro._settings.data`.
 
         Returns:
-            Kwargs: A dictionary of default statistics parameters.
+            Kwargs: Dictionary of default statistics parameters.
         """
         return merge_dicts(Analyzable.stats_defaults.__get__(self), self.get_base_settings()["stats"])
 
@@ -6978,7 +6978,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         key in `vectorbtpro._settings.data`.
 
         Returns:
-            Kwargs: A dictionary of default plotting settings.
+            Kwargs: Dictionary of default plotting settings.
         """
         return merge_dicts(Analyzable.plots_defaults.__get__(self), self.get_base_settings()["plots"])
 
@@ -7021,7 +7021,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             source_cls (Optional[type]): Source class providing the original configuration.
 
         Returns:
-            str: The formatted feature configuration documentation.
+            str: Formatted feature configuration documentation.
         """
         if source_cls is None:
             source_cls = Data

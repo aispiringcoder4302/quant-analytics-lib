@@ -115,7 +115,7 @@ class ToMarkdown(Configured):
             text (str): Text to convert to Markdown.
 
         Returns:
-            str: The converted Markdown text.
+            str: Converted Markdown text.
         """
         markdown = text
         if self.remove_code_title:
@@ -158,7 +158,7 @@ def to_markdown(text: str, **kwargs) -> str:
         **kwargs: Keyword arguments for `ToMarkdown`.
 
     Returns:
-        str: The converted Markdown text.
+        str: Converted Markdown text.
     """
     return ToMarkdown(**kwargs).to_markdown(text)
 
@@ -236,7 +236,7 @@ class ToHTML(Configured):
             markdown (str): Markdown text to convert to HTML.
 
         Returns:
-            str: The converted HTML text.
+            str: Converted HTML text.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -292,7 +292,7 @@ def to_html(text: str, **kwargs) -> str:
         **kwargs: Keyword arguments for `ToHTML`.
 
     Returns:
-        str: The converted HTML text.
+        str: Converted HTML text.
     """
     return ToHTML(**kwargs).to_html(text)
 
@@ -428,7 +428,7 @@ class FormatHTML(Configured):
         """Template for HTML formatting, as a string, function, or custom template.
 
         Returns:
-            CustomTemplate: The HTML template used for formatting.
+            CustomTemplate: HTML template used for formatting.
         """
         return self._html_template
 
@@ -437,7 +437,7 @@ class FormatHTML(Configured):
         """Extra CSS rules for the `<style>` element.
 
         Returns:
-            str: The string with additional CSS rules.
+            str: String with additional CSS rules.
         """
         return self._style_extras
 
@@ -446,7 +446,7 @@ class FormatHTML(Configured):
         """Extra HTML elements to inject into the `<head>` section.
 
         Returns:
-            str: The string with additional head extras.
+            str: String with additional head extras.
         """
         return self._head_extras
 
@@ -455,7 +455,7 @@ class FormatHTML(Configured):
         """Extra content to insert at the end of the `<body>` section.
 
         Returns:
-            str: The string with additional body extras.
+            str: String with additional body extras.
         """
         return self._body_extras
 
@@ -464,7 +464,7 @@ class FormatHTML(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: The dictionary with template context.
+            Kwargs: Dictionary with template context.
         """
         return self._template_context
 
@@ -478,7 +478,7 @@ class FormatHTML(Configured):
             **kwargs: Additional parameters to merge into the template context.
 
         Returns:
-            str: The formatted HTML string.
+            str: Formatted HTML string.
         """
         return self.html_template.substitute(
             flat_merge_dicts(
@@ -507,7 +507,7 @@ def format_html(**kwargs) -> str:
         **kwargs: Keyword arguments for `FormatHTML` and `FormatHTML.format_html`.
 
     Returns:
-        str: The resulting formatted HTML string.
+        str: Resulting formatted HTML string.
     """
     from vectorbtpro.utils.parsing import get_func_arg_names
 
@@ -655,7 +655,7 @@ class ContentFormatter(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: A dictionary representing the template substitution context.
+            Kwargs: Dictionary representing the template substitution context.
         """
         return self._template_context
 
@@ -700,7 +700,7 @@ class ContentFormatter(Configured):
         """Indentation used for the current code block.
 
         Returns:
-            str: The indentation string for the current code block.
+            str: Indentation string for the current code block.
         """
         return self._code_block_indent
 
@@ -718,7 +718,7 @@ class ContentFormatter(Configured):
         """Complete formatted content.
 
         Returns:
-            str: The complete formatted content as a single string.
+            str: Complete formatted content as a single string.
         """
         return self._content
 
@@ -737,7 +737,7 @@ class ContentFormatter(Configured):
             line (str): Line to format.
 
         Returns:
-            str: The processed line with updated code block state.
+            str: Processed line with updated code block state.
         """
         start = 0
         while True:
@@ -986,7 +986,7 @@ class IPythonMarkdownFormatter(IPythonFormatter):
         """Keyword arguments forwarded to `to_markdown`.
 
         Returns:
-            Kwargs: The dictionary of keyword arguments for Markdown conversion.
+            Kwargs: Dictionary of keyword arguments for Markdown conversion.
         """
         return self._to_markdown_kwargs
 
@@ -1053,7 +1053,7 @@ class IPythonHTMLFormatter(IPythonFormatter):
         """Keyword arguments for `to_markdown`.
 
         Returns:
-            Kwargs: The dictionary of keyword arguments for Markdown conversion.
+            Kwargs: Dictionary of keyword arguments for Markdown conversion.
         """
         return self._to_markdown_kwargs
 
@@ -1062,7 +1062,7 @@ class IPythonHTMLFormatter(IPythonFormatter):
         """Keyword arguments for `to_html`.
 
         Returns:
-            Kwargs: The dictionary of keyword arguments for HTML conversion.
+            Kwargs: Dictionary of keyword arguments for HTML conversion.
         """
         return self._to_html_kwargs
 
@@ -1207,7 +1207,7 @@ class HTMLFileFormatter(ContentFormatter):
         """Title of the HTML page.
 
         Returns:
-            str: The title text for the HTML page.
+            str: Title text for the HTML page.
         """
         return self._page_title
 
@@ -1236,7 +1236,7 @@ class HTMLFileFormatter(ContentFormatter):
         See `vectorbtpro.utils.path_.check_mkdir`.
 
         Returns:
-            Kwargs: A dictionary of keyword arguments used by the directory creation function.
+            Kwargs: Dictionary of keyword arguments used by the directory creation function.
         """
         return self._mkdir_kwargs
 
@@ -1254,7 +1254,7 @@ class HTMLFileFormatter(ContentFormatter):
         """Number of characters used for the HTML file title prefix.
 
         Returns:
-            int: The maximum length allowed for the truncated title prefix.
+            int: Maximum length allowed for the truncated title prefix.
         """
         return self._file_prefix_len
 
@@ -1263,7 +1263,7 @@ class HTMLFileFormatter(ContentFormatter):
         """Number of characters used for the random hash suffix.
 
         Returns:
-            int: The length of the random suffix appended to the file name.
+            int: Length of the random suffix appended to the file name.
         """
         return self._file_suffix_len
 
@@ -1299,7 +1299,7 @@ class HTMLFileFormatter(ContentFormatter):
         """Keyword arguments passed to the `to_markdown` function.
 
         Returns:
-            Kwargs: A dictionary containing settings for the Markdown conversion.
+            Kwargs: Dictionary containing settings for the Markdown conversion.
         """
         return self._to_markdown_kwargs
 
@@ -1308,7 +1308,7 @@ class HTMLFileFormatter(ContentFormatter):
         """Keyword arguments passed to the `to_html` function.
 
         Returns:
-            Kwargs: A dictionary containing settings for the HTML conversion.
+            Kwargs: Dictionary containing settings for the HTML conversion.
         """
         return self._to_html_kwargs
 
@@ -1317,7 +1317,7 @@ class HTMLFileFormatter(ContentFormatter):
         """Keyword arguments passed to the `format_html` function.
 
         Returns:
-            Kwargs: A dictionary of keyword arguments used during HTML formatting.
+            Kwargs: Dictionary of keyword arguments used during HTML formatting.
         """
         return self._format_html_kwargs
 
@@ -1338,7 +1338,7 @@ class HTMLFileFormatter(ContentFormatter):
             final (bool): Whether the update finalizes the content.
 
         Returns:
-            str: The formatted HTML content.
+            str: Formatted HTML content.
         """
         _format_html_kwargs = dict(self.format_html_kwargs)
         if not final and self.refresh_page:
@@ -1446,7 +1446,7 @@ def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[Conten
             * "html" (`HTMLFileFormatter`): Writes a static HTML page and displays it in a browser
 
     Returns:
-        ContentFormatter: The resolved formatter.
+        ContentFormatter: Resolved formatter.
 
     !!! info
         For default settings, see `formatting` in `vectorbtpro._settings.knowledge`.

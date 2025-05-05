@@ -280,7 +280,7 @@ class HDFData(FileData):
                 See https://pandas.pydata.org/docs/reference/api/pandas.read_hdf.html for arguments.
 
         Returns:
-            KeyData: The fetched data and a metadata dictionary.
+            KeyData: Fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -358,7 +358,7 @@ class HDFData(FileData):
             **kwargs: Keyword arguments for `HDFData.fetch_key`.
 
         Returns:
-            FeatureData: The fetched data and a metadata dictionary.
+            FeatureData: Fetched data and a metadata dictionary.
         """
         return cls.fetch_key(feature, **kwargs)
 
@@ -371,7 +371,7 @@ class HDFData(FileData):
             **kwargs: Keyword arguments for `HDFData.fetch_key`.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         return cls.fetch_key(symbol, **kwargs)
 
@@ -384,7 +384,7 @@ class HDFData(FileData):
             **kwargs: Keyword arguments for `HDFData.fetch_feature` or `HDFData.fetch_symbol`.
 
         Returns:
-            KeyData: The updated data and a metadata dictionary.
+            KeyData: Updated data and a metadata dictionary.
         """
         fetch_kwargs = self.select_fetch_kwargs(key)
         returned_kwargs = self.select_returned_kwargs(key)
@@ -404,7 +404,7 @@ class HDFData(FileData):
             **kwargs: Keyword arguments for `HDFData.update_key`.
 
         Returns:
-            FeatureData: The updated data and a metadata dictionary.
+            FeatureData: Updated data and a metadata dictionary.
         """
         return self.update_key(feature, key_is_feature=True, **kwargs)
 
@@ -418,6 +418,6 @@ class HDFData(FileData):
             **kwargs: Keyword arguments for `HDFData.update_key`.
 
         Returns:
-            SymbolData: The updated data and a metadata dictionary.
+            SymbolData: Updated data and a metadata dictionary.
         """
         return self.update_key(symbol, key_is_feature=False, **kwargs)

@@ -79,7 +79,7 @@ class IndexingBase(Base):
             **kwargs: Keyword arguments for the indexing function.
 
         Returns:
-            IndexingBase: A new instance of the class with the applied indexing function.
+            IndexingBase: New instance of the class with the applied indexing function.
 
         !!! note
             This method should be overridden in subclasses.
@@ -126,7 +126,7 @@ class LocBase(Base):
         """The function used to perform indexing operations on associated Pandas objects.
 
         Returns:
-            Callable: The function used for indexing.
+            Callable: Function used for indexing.
         """
         return self._indexing_func
 
@@ -144,7 +144,7 @@ class LocBase(Base):
         """Keyword arguments for the indexing function.
 
         Returns:
-            dict: A dictionary of keyword arguments for indexing.
+            dict: Dictionary of keyword arguments for indexing.
         """
         return self._indexing_kwargs
 
@@ -171,7 +171,7 @@ class pdLoc(LocBase):
             key (Any): Key to use for indexing.
 
         Returns:
-            MaybeSeriesFrame: The result of the indexing operation.
+            MaybeSeriesFrame: Result of the indexing operation.
         """
         raise NotImplementedError
 
@@ -185,7 +185,7 @@ class pdLoc(LocBase):
             value (Any): Value to assign.
 
         Returns:
-            None: The function modifies the Series or DataFrame in place.
+            None: Function modifies the Series or DataFrame in place.
         """
         raise NotImplementedError
 
@@ -277,7 +277,7 @@ class PandasIndexer(IndexingBase):
         """Indexing keyword arguments used for configuring indexing operations.
 
         Returns:
-            dict: A dictionary of keyword arguments for indexing.
+            dict: Dictionary of keyword arguments for indexing.
         """
         return self._indexing_kwargs
 
@@ -286,7 +286,7 @@ class PandasIndexer(IndexingBase):
         """Property providing integer-location based indexing via Pandas `iloc`.
 
         Returns:
-            iLoc: An instance of the `iLoc` accessor for integer-location based indexing.
+            iLoc: Instance of the `iLoc` accessor for integer-location based indexing.
         """
         return self._iloc
 
@@ -297,7 +297,7 @@ class PandasIndexer(IndexingBase):
         """Property providing label-based indexing via Pandas `loc`.
 
         Returns:
-            Loc: An instance of the `Loc` accessor for label-based indexing.
+            Loc: Instance of the `Loc` accessor for label-based indexing.
         """
         return self._loc
 
@@ -311,7 +311,7 @@ class PandasIndexer(IndexingBase):
             **kwargs: Keyword arguments for the Pandas `xs` method.
 
         Returns:
-            PandasIndexer: A new instance of the class with the result of the `xs` operation.
+            PandasIndexer: New instance of the class with the result of the `xs` operation.
         """
         return self.indexing_func(lambda x: x.xs(*args, **kwargs), **self.indexing_kwargs)
 
@@ -379,7 +379,7 @@ class ExtPandasIndexer(PandasIndexer):
         """Property providing `Idxr`-based indexing functionality via `xLoc`.
 
         Returns:
-            xLoc: An instance of the `xLoc` accessor for `Idxr`-based indexing.
+            xLoc: Instance of the `xLoc` accessor for `Idxr`-based indexing.
         """
         return self._xloc
 
@@ -424,7 +424,7 @@ class ParamLoc(LocBase):
         """Mapper used for linking columns to parameter values.
 
         Returns:
-            Series: The mapping of columns to parameter values.
+            Series: Mapping of columns to parameter values.
         """
         return self._mapper
 
@@ -433,7 +433,7 @@ class ParamLoc(LocBase):
         """Column level name for adjusting the DataFrame after selection.
 
         Returns:
-            Level: The name of the column level.
+            Level: Name of the column level.
         """
         return self._level_name
 
@@ -445,7 +445,7 @@ class ParamLoc(LocBase):
             key (Any): Key to encode.
 
         Returns:
-            str: The encoded key as a string.
+            str: Encoded key as a string.
         """
         if isinstance(key, tuple):
             return str(tuple(map(lambda k: k.item() if isinstance(k, np.generic) else k, key)))
@@ -460,7 +460,7 @@ class ParamLoc(LocBase):
             key (Any): Key used for selecting columns.
 
         Returns:
-            Array1d: An array of indices for the matched columns.
+            Array1d: Array of indices for the matched columns.
         """
         if self.mapper.dtype == "O":
             if isinstance(key, (slice, hslice)):
@@ -683,7 +683,7 @@ class hslice(DefineMixin):
             slice_ (slice): Python slice object.
 
         Returns:
-            hslice: A hashable slice instance.
+            hslice: Hashable slice instance.
         """
         return cls(slice_.start, slice_.stop, slice_.step)
 
@@ -691,7 +691,7 @@ class hslice(DefineMixin):
         """Return a Python slice constructed from the hashable slice attributes.
 
         Returns:
-            slice: A Python slice object with the same start, stop, and step.
+            slice: Python slice object with the same start, stop, and step.
         """
         return slice(self.start, self.stop, self.step)
 
@@ -707,7 +707,7 @@ class IdxrBase(Base):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Any: The computed indices based on the indexer.
+            Any: Computed indices based on the indexer.
         """
         raise NotImplementedError
 
@@ -728,7 +728,7 @@ class IdxrBase(Base):
             closed_end (bool): Whether the end of a slice is inclusive.
 
         Returns:
-            slice: The computed slice object representing the index range.
+            slice: Computed slice object representing the index range.
         """
         start = slice_.start
         end = slice_.stop
@@ -799,7 +799,7 @@ def normalize_idxs(idxs: tp.MaybeIndexArray, target_len: int) -> tp.Array1d:
         target_len (int): Size of the target domain used for normalization.
 
     Returns:
-        Array1d: A one-dimensional NumPy array of integers representing normalized indices.
+        Array1d: One-dimensional NumPy array of integers representing normalized indices.
     """
     if isinstance(idxs, hslice):
         idxs = idxs.to_slice()
@@ -1156,7 +1156,7 @@ class DTCIdxr(UniIdxr, DefineMixin):
             **parse_kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.DTC.parse`.
 
         Returns:
-            DTCNT: A named tuple representing the parsed datetime components.
+            DTCNT: Named tuple representing the parsed datetime components.
         """
         if value is None:
             return dt.DTC().to_namedtuple()
@@ -2631,7 +2631,7 @@ class IdxSetter(DefineMixin):
             v (Any): Value or array of values to assign, which is broadcast to match the target shape.
 
         Returns:
-            None: The function modifies `arr` in place.
+            None: Function modifies `arr` in place.
         """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
@@ -2669,7 +2669,7 @@ class IdxSetter(DefineMixin):
             v (Any): Value or array of values to assign, which is broadcast to match the target shape.
 
         Returns:
-            None: The function modifies `arr` in place.
+            None: Function modifies `arr` in place.
         """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
@@ -2706,7 +2706,7 @@ class IdxSetter(DefineMixin):
             v (Any): Value or array of values to assign, which is broadcast to match the target shape.
 
         Returns:
-            None: The function modifies `arr` in place.
+            None: Function modifies `arr` in place.
         """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
@@ -2786,7 +2786,7 @@ class IdxSetter(DefineMixin):
             template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
-            Kwargs: A dictionary containing:
+            Kwargs: Dictionary containing:
 
                 * `default`: The default value specified in `IdxSetter.idx_items`, if any.
                 * `set_funcs`: A list of partially-applied functions for setting values in the array.
@@ -2883,7 +2883,7 @@ class IdxSetter(DefineMixin):
             **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
 
         Returns:
-            None: The function modifies `arr` in place.
+            None: Function modifies `arr` in place.
         """
         if set_funcs is None:
             set_meta = self.get_set_meta(arr.shape, **kwargs)
@@ -2899,7 +2899,7 @@ class IdxSetter(DefineMixin):
             **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
 
         Returns:
-            None: The function modifies `arr` in place.
+            None: Function modifies `arr` in place.
         """
         from vectorbtpro.base.indexes import get_index
 
@@ -2929,7 +2929,7 @@ class IdxSetter(DefineMixin):
             **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
 
         Returns:
-            Array: The filled and updated NumPy array.
+            Array: Filled and updated NumPy array.
         """
         set_meta = self.get_set_meta(shape, **kwargs)
         if set_meta["default"] is not None:

@@ -137,7 +137,7 @@ class _MACD(MACD):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure with the MACD indicator plots.
+            BaseFigure: Updated figure with the MACD indicator plots.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

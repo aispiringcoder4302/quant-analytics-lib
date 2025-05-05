@@ -75,7 +75,7 @@ class _OBV(OBV):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure displaying the plotted OBV data.
+            BaseFigure: Updated figure displaying the plotted OBV data.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

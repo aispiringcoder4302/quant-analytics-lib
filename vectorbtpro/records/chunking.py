@@ -55,7 +55,7 @@ def fix_field_in_records(
         field (str): Field identifier.
 
     Returns:
-        None: The function modifies the record arrays in place.
+        None: Function modifies the record arrays in place.
     """
     for _chunk_meta in chunk_meta:
         if mapper is None:
@@ -88,7 +88,7 @@ def merge_records(
         mapper (Optional[ChunkMapper]): Mapper to adjust the `col` field in the record arrays.
 
     Returns:
-        RecordArray: The merged record array obtained from concatenating the adjusted record arrays.
+        RecordArray: Merged record array obtained from concatenating the adjusted record arrays.
     """
     if "col" in results[0].dtype.fields:
         fix_field_in_records(results, chunk_meta, ann_args=ann_args, mapper=mapper, field="col")

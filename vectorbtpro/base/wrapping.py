@@ -61,7 +61,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         """Underlying unwrapped object.
 
         Returns:
-            Any: The unwrapped object.
+            Any: Unwrapped object.
         """
         raise NotImplementedError
 
@@ -78,7 +78,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         """Underlying array wrapper of type `ArrayWrapper` used for data manipulation.
 
         Returns:
-            ArrayWrapper: The array wrapper instance.
+            ArrayWrapper: Array wrapper instance.
         """
         raise NotImplementedError
 
@@ -119,7 +119,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             **kwargs: Keyword arguments passed for regrouping.
 
         Returns:
-            HasWrapper: The regrouped instance.
+            HasWrapper: Regrouped instance.
         """
         raise NotImplementedError
 
@@ -130,7 +130,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             **kwargs: Keyword arguments for `HasWrapper.regroup`
 
         Returns:
-            HasWrapper: The ungrouped instance.
+            HasWrapper: Ungrouped instance.
         """
         return self.regroup(False, **kwargs)
 
@@ -152,7 +152,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             **kwargs: Keyword arguments for `HasWrapper.regroup`.
 
         Returns:
-            HasWrapper: The instance narrowed down to a single column or group.
+            HasWrapper: Instance narrowed down to a single column or group.
         """
         _self = self.regroup(group_by, **kwargs)
 
@@ -222,7 +222,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             **kwargs: Keyword arguments for `ArrayWrapper.regroup`.
 
         Returns:
-            MaybeSeries: The selected column or group from the Pandas object.
+            MaybeSeries: Selected column or group from the Pandas object.
         """
         if obj is None:
             return None
@@ -311,7 +311,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
         Returns:
-            Any: The result of the splitting operation.
+            Any: Result of the splitting operation.
         """
         from vectorbtpro.generic.splitting.base import Splitter
 
@@ -342,7 +342,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 
         Returns:
-            Any: The result of applying the function to each split.
+            Any: Result of applying the function to each split.
         """
         from vectorbtpro.generic.splitting.base import Splitter, Takeable
 
@@ -483,7 +483,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                 See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
-            Index: The index containing the keys for iterating over the items.
+            Index: Index containing the keys for iterating over the items.
         """
         _self = self.regroup(group_by=group_by)
         if _self.group_select and _self.wrapper.grouper.is_grouped():
@@ -518,7 +518,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                 with additional functionality.
 
         Yields:
-            Items: A tuple where the first element is a key (column or group identifier)
+            Items: Tuple where the first element is a key (column or group identifier)
                 and the second element is the corresponding sub-instance.
         """
         if wrap is None:
@@ -692,7 +692,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper`.
 
         Returns:
-            ArrayWrapper: A new instance with metadata derived from the input object.
+            ArrayWrapper: New instance with metadata derived from the input object.
         """
         from vectorbtpro.base.reshaping import to_pd_array
         from vectorbtpro.data.base import Data
@@ -734,7 +734,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper`.
 
         Returns:
-            ArrayWrapper: A new instance with metadata derived from the provided shape.
+            ArrayWrapper: New instance with metadata derived from the provided shape.
         """
         shape = reshaping.to_tuple_shape(shape)
         if index is None:
@@ -777,7 +777,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments to override configuration parameters.
 
         Returns:
-            Kwargs: A dictionary of resolved keyword arguments for `ArrayWrapper` initialization.
+            Kwargs: Dictionary of resolved keyword arguments for `ArrayWrapper` initialization.
         """
         if len(wrappers) == 1:
             wrappers = wrappers[0]
@@ -868,7 +868,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper`.
 
         Returns:
-            ArrayWrapper: A new `ArrayWrapper` instance representing the row-stacked result.
+            ArrayWrapper: New `ArrayWrapper` instance representing the row-stacked result.
         """
         if not isinstance(cls_or_self, type):
             wrappers = (cls_or_self, *wrappers)
@@ -1024,7 +1024,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper`.
 
         Returns:
-            ArrayWrapper: A new instance with combined array data and merged configuration.
+            ArrayWrapper: New instance with combined array data and merged configuration.
         """
         if not isinstance(cls_or_self, type):
             wrappers = (cls_or_self, *wrappers)
@@ -1464,7 +1464,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.indexing_func_meta`.
 
         Returns:
-            ArrayWrapper: The new `ArrayWrapper` instance produced by indexing.
+            ArrayWrapper: New `ArrayWrapper` instance produced by indexing.
         """
         return self.indexing_func_meta(*args, **kwargs)["new_wrapper"]
 
@@ -1490,7 +1490,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
         Returns:
-            Array2d: A two-dimensional NumPy array after applying the selection.
+            Array2d: Two-dimensional NumPy array after applying the selection.
         """
         new_arr = arr_2d = reshaping.to_2d_array(arr)
         if row_idxs is not None and rows_changed:
@@ -1544,7 +1544,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.get_resampler`.
 
         Returns:
-            dict: A dictionary containing:
+            dict: Dictionary containing:
 
                 * `resampler`: The resampler object.
                 * `new_wrapper`: The new `ArrayWrapper` instance after resampling.
@@ -1571,7 +1571,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.resample_meta`.
 
         Returns:
-            ArrayWrapper: The new `ArrayWrapper` instance after resampling.
+            ArrayWrapper: New `ArrayWrapper` instance after resampling.
         """
         return self.resample_meta(*args, **kwargs)["new_wrapper"]
 
@@ -1584,7 +1584,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """The index associated with the wrapped array.
 
         Returns:
-            Index: The index of the wrapped array.
+            Index: Index of the wrapped array.
         """
         return self._index
 
@@ -1593,7 +1593,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Index accessor for the `ArrayWrapper`.
 
         Returns:
-            BaseIDXAccessor: An instance of `vectorbtpro.base.accessors.BaseIDXAccessor`
+            BaseIDXAccessor: Instance of `vectorbtpro.base.accessors.BaseIDXAccessor`
                 used for index operations.
         """
         from vectorbtpro.base.accessors import BaseIDXAccessor
@@ -1605,7 +1605,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Nanosecond index representation obtained from `vectorbtpro.base.accessors.BaseIDXAccessor.to_ns`.
 
         Returns:
-            Array1d: The nanosecond index.
+            Array1d: Nanosecond index.
         """
         return self.index_acc.to_ns()
 
@@ -1618,7 +1618,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.to_period_ns`.
 
         Returns:
-            Array1d: The period-based nanosecond index.
+            Array1d: Period-based nanosecond index.
         """
         return self.index_acc.to_period_ns(*args, **kwargs)
 
@@ -1627,7 +1627,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """The columns associated with the wrapped array.
 
         Returns:
-            Index: The columns of the wrapped array.
+            Index: Columns of the wrapped array.
         """
         return self._columns
 
@@ -1640,7 +1640,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
-            Index: The columns index.
+            Index: Columns index.
         """
         return self.resolve(group_by=group_by).columns
 
@@ -1649,7 +1649,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """The name of the `ArrayWrapper` when applicable.
 
         Returns:
-            Any: The name derived from the columns if the instance is one-dimensional; otherwise, None.
+            Any: Name derived from the columns if the instance is one-dimensional; otherwise, None.
         """
         if self.ndim == 1:
             if self.columns[0] == 0:
@@ -1666,7 +1666,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
-            Any: The name for the group-aware `ArrayWrapper`.
+            Any: Name for the group-aware `ArrayWrapper`.
         """
         return self.resolve(group_by=group_by).name
 
@@ -1675,7 +1675,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """The number of dimensions of the wrapped array.
 
         Returns:
-            int: The number of dimensions.
+            int: Number of dimensions.
         """
         return self._ndim
 
@@ -1688,7 +1688,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
-            int: The number of dimensions.
+            int: Number of dimensions.
         """
         return self.resolve(group_by=group_by).ndim
 
@@ -1697,7 +1697,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """The shape of the `ArrayWrapper`.
 
         Returns:
-            Shape: A tuple representing the dimensions of the instance.
+            Shape: Tuple representing the dimensions of the instance.
         """
         if self.ndim == 1:
             return (len(self.index),)
@@ -1712,7 +1712,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
-            Shape: A tuple representing the dimensions.
+            Shape: Tuple representing the dimensions.
         """
         return self.resolve(group_by=group_by).shape
 
@@ -1721,7 +1721,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """The shape of the `ArrayWrapper` as a two-dimensional structure.
 
         Returns:
-            Shape: A tuple representing the 2D dimensions.
+            Shape: Tuple representing the 2D dimensions.
         """
         if self.ndim == 1:
             return self.shape[0], 1
@@ -1736,7 +1736,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
-            Shape: A tuple representing the 2D dimensions.
+            Shape: Tuple representing the 2D dimensions.
         """
         return self.resolve(group_by=group_by).shape_2d
 
@@ -1786,7 +1786,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """The number of periods defined by `vectorbtpro.base.accessors.BaseIDXAccessor.periods`.
 
         Returns:
-            int: The number of periods in the index.
+            int: Number of periods in the index.
         """
         return self.index_acc.periods
 
@@ -1795,7 +1795,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Time-based periods derived from `vectorbtpro.base.accessors.BaseIDXAccessor.dt_periods`.
 
         Returns:
-            float: The number of periods in the index as a float.
+            float: Number of periods in the index as a float.
         """
         return self.index_acc.dt_periods
 
@@ -1861,7 +1861,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """The `vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns.
 
         Returns:
-            Grouper: The grouper instance.
+            Grouper: Grouper instance.
         """
         return self._grouper
 
@@ -1872,7 +1872,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         If not explicitly set, it is derived from the grouper's state.
 
         Returns:
-            int: The number of dimensions after grouping.
+            int: Number of dimensions after grouping.
         """
         if self._grouped_ndim is None:
             if self.grouper.is_grouped():
@@ -1891,7 +1891,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.replace`.
 
         Returns:
-            ArrayWrapper: The updated `ArrayWrapper` instance if grouping has changed;
+            ArrayWrapper: Updated `ArrayWrapper` instance if grouping has changed;
                 otherwise, the original instance.
         """
         if self.grouper.is_grouping_changed(group_by=group_by):
@@ -1912,7 +1912,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.replace`.
 
         Returns:
-            ArrayWrapper: A new `ArrayWrapper` instance with flipped index and columns.
+            ArrayWrapper: New `ArrayWrapper` instance with flipped index and columns.
         """
         if "grouper" not in kwargs:
             kwargs["grouper"] = None
@@ -1929,7 +1929,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.regroup`.
 
         Returns:
-            ArrayWrapper: A resolved `ArrayWrapper` instance.
+            ArrayWrapper: Resolved `ArrayWrapper` instance.
 
         !!! note
             If the grouper indicates a valid grouping, replaces the instance's columns and
@@ -1954,7 +1954,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
 
         Returns:
-            Grouper: The index grouper instance.
+            Grouper: Index grouper instance.
         """
         return self.index_acc.get_grouper(*args, **kwargs)
 
@@ -2015,7 +2015,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            SeriesFrame: The wrapped Pandas Series or DataFrame with applied metadata.
+            SeriesFrame: Wrapped Pandas Series or DataFrame with applied metadata.
 
         !!! info
             For default settings, see `vectorbtpro._settings.wrapping`.
@@ -2258,7 +2258,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.wrap_reduced`.
 
         Returns:
-            AnyArray1d: The stacked one-dimensional array after optional wrapping.
+            AnyArray1d: Stacked one-dimensional array after optional wrapping.
         """
         from vectorbtpro.base.merging import concat_arrays
 
@@ -2294,7 +2294,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
 
         Returns:
-            AnyArray: The stacked array after optional wrapping.
+            AnyArray: Stacked array after optional wrapping.
         """
         from vectorbtpro.base.merging import row_stack_arrays
 
@@ -2337,7 +2337,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
 
         Returns:
-            AnyArray2d: The concatenated two-dimensional array after optional wrapping.
+            AnyArray2d: Concatenated two-dimensional array after optional wrapping.
         """
         from vectorbtpro.base.merging import column_stack_arrays
 
@@ -2375,7 +2375,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A dummy Series or DataFrame.
+            SeriesFrame: Dummy Series or DataFrame.
         """
         _self = self.resolve(group_by=group_by)
         return _self.wrap(np.empty(_self.shape), **kwargs)
@@ -2391,7 +2391,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A Series or DataFrame with all elements filled with the specified value.
+            SeriesFrame: Series or DataFrame with all elements filled with the specified value.
         """
         _self = self.resolve(group_by=group_by)
         return _self.wrap(np.full(_self.shape_2d, fill_value), **kwargs)
@@ -2407,7 +2407,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper.wrap_reduced`.
 
         Returns:
-            SeriesFrame: The reduced Series or DataFrame filled with the specified value.
+            SeriesFrame: Reduced Series or DataFrame filled with the specified value.
         """
         _self = self.resolve(group_by=group_by)
         return _self.wrap_reduced(np.full(_self.shape_2d[1], fill_value), **kwargs)
@@ -2437,7 +2437,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_points`.
 
         Returns:
-            Array1d: An array representing the index points.
+            Array1d: Array representing the index points.
         """
         return self.index_acc.get_points(*args, **kwargs)
 
@@ -2480,7 +2480,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexing.IdxSetter.fill_and_set`.
 
         Returns:
-            AnyArray: The resulting array with updated values, either wrapped or unwrapped
+            AnyArray: Resulting array with updated values, either wrapped or unwrapped
                 depending on `keep_flex`.
 
         Examples:
@@ -2812,7 +2812,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Kwargs: The resolved keyword arguments.
+            Kwargs: Resolved keyword arguments.
         """
         return kwargs
 
@@ -2825,7 +2825,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Kwargs: The resolved keyword arguments.
+            Kwargs: Resolved keyword arguments.
         """
         return kwargs
 
@@ -2838,7 +2838,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             **kwargs: Keyword arguments for `Wrapping.resolve_merge_kwargs`.
 
         Returns:
-            Kwargs: The resolved keyword arguments.
+            Kwargs: Resolved keyword arguments.
 
         !!! note
             Should be called after `Wrapping.resolve_row_stack_kwargs` or `Wrapping.resolve_column_stack_kwargs`.
@@ -2862,7 +2862,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Wrapping: A new wrapping instance resulting from stacking.
+            Wrapping: New wrapping instance resulting from stacking.
 
         !!! note
             Should use `ArrayWrapper.row_stack` for stacking.
@@ -2886,7 +2886,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Wrapping: A new wrapping instance resulting from stacking.
+            Wrapping: New wrapping instance resulting from stacking.
 
         !!! note
             Should use `ArrayWrapper.column_stack` for stacking.
@@ -2901,7 +2901,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             **kwargs: Keyword arguments for `Wrapping.indexing_func`.
 
         Returns:
-            Wrapping: A new wrapping instance resulting from indexing.
+            Wrapping: New wrapping instance resulting from indexing.
         """
         new_wrapper = self.wrapper.indexing_func(
             *args,
@@ -2920,7 +2920,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Wrapping: A new wrapping instance resulting from resampling.
+            Wrapping: New wrapping instance resulting from resampling.
 
         !!! note
             When overriding, pass `*args` and `**kwargs` to `ArrayWrapper.get_resampler` to create a resampler.
@@ -2981,7 +2981,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             **kwargs: Keyword arguments for `ArrayWrapper.regroup`.
 
         Returns:
-            Wrapping: The regrouped instance if grouping has changed, otherwise returns itself.
+            Wrapping: Regrouped instance if grouping has changed, otherwise returns itself.
         """
         if self.wrapper.grouper.is_grouping_changed(group_by=group_by):
             self.wrapper.grouper.check_group_by(group_by=group_by)
@@ -3004,7 +3004,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            AttrResolverMixin: The resolved instance.
+            AttrResolverMixin: Resolved instance.
 
                 A new copy is created if the frequency is altered.
 

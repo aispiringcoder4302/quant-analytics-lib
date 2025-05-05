@@ -182,7 +182,7 @@ class RelRange(DefineMixin):
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
-            slice: A slice object computed based on the relative range parameters.
+            slice: Slice object computed based on the relative range parameters.
         """
         if index is not None:
             index = dt.prepare_dt_index(index)
@@ -416,7 +416,7 @@ class Splitter(Analyzable):
         """Index used for splitting.
 
         Returns:
-            Index: The index used for splitting.
+            Index: Index used for splitting.
         """
         return self._index
 
@@ -429,7 +429,7 @@ class Splitter(Analyzable):
         or a callable returning such.
 
         Returns:
-            SplitsArray: A two-dimensional array representing splits.
+            SplitsArray: Two-dimensional array representing splits.
         """
         return self._splits_arr
 
@@ -480,7 +480,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
         """
         index = dt.prepare_dt_index(index)
         if split_range_kwargs is None:
@@ -597,7 +597,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
         """
         if split_range_kwargs is None:
             split_range_kwargs = {}
@@ -678,7 +678,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
 
         Examples:
             Divide a range into a set of non-overlapping ranges:
@@ -854,7 +854,7 @@ class Splitter(Analyzable):
                 or `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
 
         Examples:
             Roll 10 ranges with 100 elements, and split it into 3/4:
@@ -1029,7 +1029,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
 
         Examples:
             Roll an expanding range with a length of 10 and an offset of 10, and split it into 3/4:
@@ -1157,7 +1157,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
 
         Examples:
             Roll 10 expanding ranges with a minimum length of 100, while reserving 50 elements for test:
@@ -1263,7 +1263,7 @@ class Splitter(Analyzable):
                 and `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
 
         Examples:
             Translate each quarter into a range:
@@ -1374,7 +1374,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
 
         Examples:
             Map each month into a range:
@@ -1513,7 +1513,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
 
         !!! note
             Both choice functions must accept two arguments: the iteration index and the array of
@@ -1718,7 +1718,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
         """
         from sklearn.model_selection import BaseCrossValidator
 
@@ -1764,7 +1764,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
         """
         index = dt.prepare_dt_index(index)
         checks.assert_instance_of(purged_splitter, BasePurgedCV)
@@ -1819,7 +1819,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_purged`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
         """
         index = dt.prepare_dt_index(index)
         purged_splitter = PurgedWalkForwardCV(
@@ -1868,7 +1868,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_purged`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
         """
         index = dt.prepare_dt_index(index)
         purged_splitter = PurgedKFoldCV(
@@ -1940,7 +1940,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.from_splits`.
 
         Returns:
-            Splitter: A new `Splitter` instance.
+            Splitter: New `Splitter` instance.
 
         Examples:
             Rolling window of 30 elements, 20 for train and 10 for test:
@@ -2145,7 +2145,7 @@ class Splitter(Analyzable):
             **var_kwargs: Keyword arguments to be distributed between `splitter_kwargs` and `take_kwargs`.
 
         Returns:
-            Any: The result returned by `Splitter.take`.
+            Any: Result returned by `Splitter.take`.
         """
         if splitter_kwargs is None:
             splitter_kwargs = {}
@@ -2243,7 +2243,7 @@ class Splitter(Analyzable):
             **var_kwargs: Keyword arguments to be distributed between `splitter_kwargs` and `apply_kwargs`.
 
         Returns:
-            Any: The result returned by `Splitter.apply`.
+            Any: Result returned by `Splitter.apply`.
         """
         if splitter_kwargs is None:
             splitter_kwargs = {}
@@ -2381,7 +2381,7 @@ class Splitter(Analyzable):
                 `Splitter.resolve_row_stack_kwargs` and `Splitter.resolve_stack_kwargs`.
 
         Returns:
-            Splitter: A new `Splitter` instance with row-stacked wrappers.
+            Splitter: New `Splitter` instance with row-stacked wrappers.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -2428,7 +2428,7 @@ class Splitter(Analyzable):
                 `Splitter.resolve_column_stack_kwargs` and `Splitter.resolve_stack_kwargs`.
 
         Returns:
-            Splitter: A new `Splitter` instance with column-stacked wrappers.
+            Splitter: New `Splitter` instance with column-stacked wrappers.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -2463,7 +2463,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
-            dict: A dictionary with keys `wrapper_meta` and `new_splits_arr` representing
+            dict: Dictionary with keys `wrapper_meta` and `new_splits_arr` representing
                 the updated metadata and splits array.
         """
         if wrapper_meta is None:
@@ -2492,7 +2492,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.indexing_func_meta`.
 
         Returns:
-            Splitter: A new `Splitter` instance reflecting the indexing operation.
+            Splitter: New `Splitter` instance reflecting the indexing operation.
         """
         if splitter_meta is None:
             splitter_meta = self.indexing_func_meta(*args, **kwargs)
@@ -2506,7 +2506,7 @@ class Splitter(Analyzable):
         """Return the splits array as a DataFrame.
 
         Returns:
-            Frame: A DataFrame representing the splits.
+            Frame: DataFrame representing the splits.
         """
         return self.wrapper.wrap(self._splits_arr, group_by=False)
 
@@ -2515,7 +2515,7 @@ class Splitter(Analyzable):
         """The labels for splits.
 
         Returns:
-            Index: The labels for splits.
+            Index: Labels for splits.
         """
         return self.wrapper.index
 
@@ -2524,7 +2524,7 @@ class Splitter(Analyzable):
         """The labels for sets.
 
         Returns:
-            Index: The labels for sets.
+            Index: Labels for sets.
         """
         return self.wrapper.columns
 
@@ -2533,7 +2533,7 @@ class Splitter(Analyzable):
         """The number of splits.
 
         Returns:
-            int: The number of splits.
+            int: Number of splits.
         """
         return self.splits_arr.shape[0]
 
@@ -2542,7 +2542,7 @@ class Splitter(Analyzable):
         """The number of sets.
 
         Returns:
-            int: The number of sets.
+            int: Number of sets.
         """
         return self.splits_arr.shape[1]
 
@@ -2589,7 +2589,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
 
         Returns:
-            int: The count of splits after applying grouping.
+            int: Count of splits after applying grouping.
         """
         if split_group_by is not None:
             split_group_by = self.get_split_grouper(split_group_by=split_group_by)
@@ -2605,7 +2605,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
 
         Returns:
-            int: The count of sets after applying grouping.
+            int: Count of sets after applying grouping.
         """
         if set_group_by is not None:
             set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -2621,7 +2621,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
 
         Returns:
-            Index: The split labels, potentially modified by the grouper.
+            Index: Split labels, potentially modified by the grouper.
         """
         if split_group_by is not None:
             split_group_by = self.get_split_grouper(split_group_by=split_group_by)
@@ -2637,7 +2637,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
 
         Returns:
-            Index: The set labels, potentially modified by the grouper.
+            Index: Set labels, potentially modified by the grouper.
         """
         if set_group_by is not None:
             set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -2656,7 +2656,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.replace`.
 
         Returns:
-            Splitter: A new `Splitter` instance with fixed ranges.
+            Splitter: New `Splitter` instance with fixed ranges.
         """
         if split_range_kwargs is None:
             split_range_kwargs = {}
@@ -2701,7 +2701,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.replace`.
 
         Returns:
-            Splitter: A new `Splitter` instance with merged ranges.
+            Splitter: New `Splitter` instance with merged ranges.
         """
         if merge_split_kwargs is None:
             merge_split_kwargs = {}
@@ -3069,7 +3069,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
-            FixSplit: A tuple of fixed ranges resulting from splitting `range_` relative to the provided index.
+            FixSplit: Tuple of fixed ranges resulting from splitting `range_` relative to the provided index.
         """
         if index is None:
             if isinstance(cls_or_self, type):
@@ -3250,7 +3250,7 @@ class Splitter(Analyzable):
                 If not provided, `Splitter.index` is used.
 
         Returns:
-            FixRangeLike: The merged fixed range, represented as a mask, slice,
+            FixRangeLike: Merged fixed range, represented as a mask, slice,
                 or integer indices depending on input types.
         """
         if index is None:
@@ -3478,7 +3478,7 @@ class Splitter(Analyzable):
             **select_indices_kwargs: Keyword arguments for `Splitter.select_indices`.
 
         Returns:
-            RangeLike: The selected range, or the merged range if multiple ranges are found.
+            RangeLike: Selected range, or the merged range if multiple ranges are found.
         """
         _, _, split_indices, set_indices = self.select_indices(**select_indices_kwargs)
         ranges = []
@@ -3528,7 +3528,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
-            FixRangeLike: The remapped range corresponding to the target index.
+            FixRangeLike: Remapped range corresponding to the target index.
         """
         if index is None:
             if isinstance(cls_or_self, type):
@@ -3563,7 +3563,7 @@ class Splitter(Analyzable):
             obj (Any): Object with an associated index.
 
         Returns:
-            Index: The extracted index.
+            Index: Extracted index.
         """
         if isinstance(obj, pd.Index):
             return obj
@@ -3619,7 +3619,7 @@ class Splitter(Analyzable):
             return_obj_meta (bool): Whether to return metadata about the object.
 
         Returns:
-            Any: The processed range ready for indexing, or a tuple with object metadata and the range if requested.
+            Any: Processed range ready for indexing, or a tuple with object metadata and the range if requested.
         """
         if index is None:
             if isinstance(cls_or_self, type):
@@ -3670,7 +3670,7 @@ class Splitter(Analyzable):
             point_wise (bool): Whether to perform point-wise range extraction.
 
         Returns:
-            Any: The extracted segment of the object, or a tuple of elements if `point_wise` is True.
+            Any: Extracted segment of the object, or a tuple of elements if `point_wise` is True.
         """
         if isinstance(obj, (pd.Series, pd.DataFrame, PandasIndexer)):
             if point_wise:
@@ -3717,7 +3717,7 @@ class Splitter(Analyzable):
             **ready_obj_range_kwargs: Keyword arguments for `Splitter.get_ready_obj_range`.
 
         Returns:
-            Any: The extracted range from the takeable object, or a tuple containing metadata
+            Any: Extracted range from the takeable object, or a tuple containing metadata
                 and the range if requested.
         """
         takeable.assert_field_not_missing("obj")
@@ -3859,7 +3859,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
-            Any: The extracted range, which may be a single slice, a merged object,
+            Any: Extracted range, which may be a single slice, a merged object,
                 or a Pandas Series depending on the `into` parameter.
 
         Examples:
@@ -4218,7 +4218,7 @@ class Splitter(Analyzable):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            FlatAnnArgs: A dictionary with updated annotated arguments after processing `Takeable` instances.
+            FlatAnnArgs: Dictionary with updated annotated arguments after processing `Takeable` instances.
         """
         new_flat_ann_args = dict()
         for k, v in flat_ann_args.items():
@@ -4356,7 +4356,7 @@ class Splitter(Analyzable):
             **apply_kwargs: Keyword arguments for `apply_func`.
 
         Returns:
-            Any: The result of applying `apply_func` over each range, which may be a merged result,
+            Any: Result of applying `apply_func` over each range, which may be a merged result,
                 a Pandas Series, or a tuple of Pandas objects depending on the processing and
                 output wrapping options.
 
@@ -5119,7 +5119,7 @@ class Splitter(Analyzable):
             **init_kwargs: Keyword arguments for replacing the splitter.
 
         Returns:
-            Splitter: A new splitter instance with the shuffled splits.
+            Splitter: New splitter instance with the shuffled splits.
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -5158,7 +5158,7 @@ class Splitter(Analyzable):
             **split_range_kwargs: Keyword arguments for `Splitter.split_range`.
 
         Returns:
-            Splitter: A new splitter instance with updated splits.
+            Splitter: New splitter instance with updated splits.
 
         !!! note
             Ensure that there is only one set before breaking up splits.
@@ -5234,7 +5234,7 @@ class Splitter(Analyzable):
             **split_range_kwargs: Keyword arguments for `Splitter.split_range`.
 
         Returns:
-            Splitter: A new splitter instance with the updated sets.
+            Splitter: New splitter instance with the updated sets.
 
         !!! note
             The `column` parameter must be provided when multiple sets exist.
@@ -5310,7 +5310,7 @@ class Splitter(Analyzable):
             **merge_split_kwargs: Keyword arguments for `Splitter.merge_split`.
 
         Returns:
-            Splitter: A new Splitter instance with the merged sets and updated splits.
+            Splitter: New Splitter instance with the merged sets and updated splits.
         """
         if self.n_sets < 2:
             raise ValueError("There are no sets to merge")
@@ -5537,7 +5537,7 @@ class Splitter(Analyzable):
             **range_bounds_kwargs: Keyword arguments for `Splitter.get_range_bounds`.
 
         Returns:
-            BoundsArray: A three-dimensional array containing the bounds.
+            BoundsArray: Three-dimensional array containing the bounds.
         """
         if index_bounds:
             dtype = self.index.dtype
@@ -5578,7 +5578,7 @@ class Splitter(Analyzable):
         with default parameters.
 
         Returns:
-            BoundsArray: A three-dimensional array of bounds.
+            BoundsArray: Three-dimensional array of bounds.
         """
         return self.get_bounds_arr()
 
@@ -5614,7 +5614,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_bounds_arr`.
 
         Returns:
-            SeriesFrame: A Pandas Series or DataFrame with index based on
+            SeriesFrame: Pandas Series or DataFrame with index based on
                 grouping and columns ['start', 'end'].
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
@@ -5648,7 +5648,7 @@ class Splitter(Analyzable):
         """Return the bounds by calling `Splitter.get_bounds` with default arguments.
 
         Returns:
-            Frame: A Pandas DataFrame with the bounds.
+            Frame: Pandas DataFrame with the bounds.
         """
         return self.get_bounds()
 
@@ -5658,7 +5658,7 @@ class Splitter(Analyzable):
         with `index_bounds` set to True.
 
         Returns:
-            Frame: A Pandas DataFrame with the index bounds.
+            Frame: Pandas DataFrame with the index bounds.
         """
         return self.get_bounds(index_bounds=True)
 
@@ -5670,7 +5670,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_bounds`.
 
         Returns:
-            Series: A Pandas Series of durations.
+            Series: Pandas Series of durations.
         """
         bounds = self.get_bounds(right_inclusive=False, **kwargs)
         return (bounds["end"] - bounds["start"]).rename("duration")
@@ -5680,7 +5680,7 @@ class Splitter(Analyzable):
         """Return the duration by calling `Splitter.get_duration` with default arguments.
 
         Returns:
-            Series: A Pandas Series of durations.
+            Series: Pandas Series of durations.
         """
         return self.get_duration()
 
@@ -5690,7 +5690,7 @@ class Splitter(Analyzable):
         with `index_bounds` set to True.
 
         Returns:
-            Series: A Pandas Series of durations.
+            Series: Pandas Series of durations.
         """
         return self.get_duration(index_bounds=True)
 
@@ -5713,7 +5713,7 @@ class Splitter(Analyzable):
                 If not provided, uses `Splitter.index`.
 
         Returns:
-            Array1d: A boolean array mask where True indicates positions within the range.
+            Array1d: Boolean array mask where True indicates positions within the range.
         """
         if index is None:
             if isinstance(cls_or_self, type):
@@ -5943,7 +5943,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_iter_split_mask_arrs`.
 
         Returns:
-            SplitsMask: A three-dimensional boolean array representing the split mask.
+            SplitsMask: Three-dimensional boolean array representing the split mask.
         """
         return np.array(
             list(
@@ -5961,7 +5961,7 @@ class Splitter(Analyzable):
         """Return the split mask array computed with default arguments from `Splitter.get_mask_arr`.
 
         Returns:
-            SplitsMask: A three-dimensional boolean array representing the split mask.
+            SplitsMask: Three-dimensional boolean array representing the split mask.
         """
         return self.get_mask_arr()
 
@@ -5993,7 +5993,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_mask_arr`.
 
         Returns:
-            SeriesFrame: A Pandas Series or DataFrame representing the split mask.
+            SeriesFrame: Pandas Series or DataFrame representing the split mask.
 
         !!! warning
             Boolean arrays for a high number of splits may consume substantial memory.
@@ -6022,7 +6022,7 @@ class Splitter(Analyzable):
         """Return the boolean mask computed with default parameters from `Splitter.get_mask`.
 
         Returns:
-            Frame: A Pandas DataFrame representing the split mask.
+            Frame: Pandas DataFrame representing the split mask.
         """
         return self.get_mask()
 
@@ -6060,7 +6060,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_mask_arr`.
 
         Returns:
-            MaybeSeries: The coverage of each split, either as a scalar or as a Series indexed by split labels.
+            MaybeSeries: Coverage of each split, either as a scalar or as a Series indexed by split labels.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
@@ -6089,7 +6089,7 @@ class Splitter(Analyzable):
         """Return the split coverage computed with default parameters from `Splitter.get_split_coverage`.
 
         Returns:
-            Series: A Pandas Series of split coverage.
+            Series: Pandas Series of split coverage.
         """
         return self.get_split_coverage()
 
@@ -6127,7 +6127,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_mask_arr`.
 
         Returns:
-            MaybeSeries: The coverage for each set, either as a scalar or as a Series indexed by set labels.
+            MaybeSeries: Coverage for each set, either as a scalar or as a Series indexed by set labels.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -6156,7 +6156,7 @@ class Splitter(Analyzable):
         """Return the set coverage computed with default parameters from `Splitter.get_set_coverage`.
 
         Returns:
-            Series: A Pandas Series of set coverage.
+            Series: Pandas Series of set coverage.
         """
         return self.get_set_coverage()
 
@@ -6224,7 +6224,7 @@ class Splitter(Analyzable):
         """Range coverage computed using default parameters from `Splitter.get_range_coverage`.
 
         Returns:
-            Series: A Pandas Series of range coverage.
+            Series: Pandas Series of range coverage.
         """
         return self.get_range_coverage()
 
@@ -6305,7 +6305,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_mask_arr`.
 
         Returns:
-            Frame: A DataFrame representing the computed overlap matrix, or a scalar if the result is squeezed.
+            Frame: DataFrame representing the computed overlap matrix, or a scalar if the result is squeezed.
 
         See:
             * `vectorbtpro.generic.splitting.nb.norm_split_overlap_matrix_nb` for `by="split"` and `normalize=True`.
@@ -6365,7 +6365,7 @@ class Splitter(Analyzable):
         """Overlap matrix computed with `get_overlap_matrix` using `by="split"`.
 
         Returns:
-            Frame: A DataFrame representing the split overlap matrix.
+            Frame: DataFrame representing the split overlap matrix.
         """
         return self.get_overlap_matrix(by="split")
 
@@ -6374,7 +6374,7 @@ class Splitter(Analyzable):
         """Overlap matrix computed with `get_overlap_matrix` using `by="set"`.
 
         Returns:
-            Frame: A DataFrame representing the set overlap matrix.
+            Frame: DataFrame representing the set overlap matrix.
         """
         return self.get_overlap_matrix(by="set")
 
@@ -6383,7 +6383,7 @@ class Splitter(Analyzable):
         """Overlap matrix computed with `get_overlap_matrix` using `by="range"`.
 
         Returns:
-            Frame: A DataFrame representing the range overlap matrix.
+            Frame: DataFrame representing the range overlap matrix.
         """
         return self.get_overlap_matrix(by="range")
 
@@ -6397,7 +6397,7 @@ class Splitter(Analyzable):
         and the stats settings from `vectorbtpro._settings.splitter`.
 
         Returns:
-            Kwargs: A dictionary containing the default settings for splitter statistics.
+            Kwargs: Dictionary containing the default settings for splitter statistics.
         """
         from vectorbtpro._settings import settings
 
@@ -6713,7 +6713,7 @@ class Splitter(Analyzable):
         """Default plot settings for Splitter.
 
         Returns:
-            Kwargs: A dictionary of merged plot settings from
+            Kwargs: Dictionary of merged plot settings from
                 `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
                 and settings from `plots` in `vectorbtpro._settings.splitter`.
         """

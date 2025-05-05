@@ -275,7 +275,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges`.
 
         Returns:
-            Ranges: A new instance constructed from the array.
+            Ranges: New instance constructed from the array.
 
         See:
             `vectorbtpro.generic.nb.records.get_ranges_nb`
@@ -331,7 +331,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges`.
 
         Returns:
-            Ranges: A new instance constructed based on the applied delta.
+            Ranges: New instance constructed based on the applied delta.
 
         See:
             `vectorbtpro.generic.nb.records.get_ranges_from_delta_nb`
@@ -396,7 +396,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges.from_delta`.
 
         Returns:
-            Ranges: A new instance resulting from the `from_delta` conversion.
+            Ranges: New instance resulting from the `from_delta` conversion.
         """
         return Ranges.from_delta(self, *args, **kwargs)
 
@@ -407,7 +407,7 @@ class Ranges(PriceRecords):
         one more than the maximum end index.
 
         Returns:
-            Ranges: A new instance containing the cropped data.
+            Ranges: New instance containing the cropped data.
         """
         min_start_idx = np.min(self.get_field_arr("start_idx"))
         max_start_idx = np.max(self.get_field_arr("end_idx")) + 1
@@ -429,7 +429,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges.apply_mask`.
 
         Returns:
-            Ranges: A new instance with ranges meeting the minimum duration criteria.
+            Ranges: New instance with ranges meeting the minimum duration criteria.
         """
         if isinstance(min_duration, int):
             return self.apply_mask(self.duration.values >= min_duration, **kwargs)
@@ -452,7 +452,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges.apply_mask`.
 
         Returns:
-            Ranges: A new instance with ranges meeting the maximum duration criteria.
+            Ranges: New instance with ranges meeting the maximum duration criteria.
         """
         if isinstance(max_duration, int):
             return self.apply_mask(self.duration.values <= max_duration, **kwargs)
@@ -473,7 +473,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges.get_pd_mask`.
 
         Returns:
-            SeriesFrame: A mask indicating the first indices of each range.
+            SeriesFrame: Mask indicating the first indices of each range.
         """
         return self.get_pd_mask(idx_arr=self.first_idx.values, group_by=group_by, **kwargs)
 
@@ -487,7 +487,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges.get_pd_mask`.
 
         Returns:
-            SeriesFrame: A mask indicating the last indices of each range.
+            SeriesFrame: Mask indicating the last indices of each range.
         """
         out = self.get_pd_mask(idx_arr=self.last_idx.values, group_by=group_by, **kwargs)
         return out
@@ -519,7 +519,7 @@ class Ranges(PriceRecords):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A boolean mask representing the ranges.
+            SeriesFrame: Boolean mask representing the ranges.
 
         See:
             `vectorbtpro.generic.nb.records.ranges_to_mask_nb`
@@ -547,7 +547,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges.apply_mask`.
 
         Returns:
-            Ranges: A new instance containing only valid ranges.
+            Ranges: New instance containing only valid ranges.
         """
         filter_mask = (self.get_field_arr("start_idx") != -1) & (self.get_field_arr("end_idx") != -1)
         return self.apply_mask(filter_mask, **kwargs)
@@ -573,7 +573,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges.map_field`.
 
         Returns:
-            MappedArray: The first index in each range as a mapped array.
+            MappedArray: First index in each range as a mapped array.
         """
         return self.map_field("start_idx", **kwargs)
 
@@ -586,7 +586,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges.map_array`.
 
         Returns:
-            MappedArray: The adjusted last index for each range as a mapped array.
+            MappedArray: Adjusted last index for each range as a mapped array.
         """
         last_idx = self.get_field_arr("end_idx", copy=True)
         status = self.get_field_arr("status")
@@ -613,7 +613,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges.map_array`.
 
         Returns:
-            MappedArray: An array of effective durations for each range.
+            MappedArray: Array of effective durations for each range.
 
         See:
             `vectorbtpro.generic.nb.records.range_duration_nb`
@@ -649,7 +649,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `Ranges.map_array`.
 
         Returns:
-            MappedArray: An array of durations for each range expressed as timedelta.
+            MappedArray: Array of durations for each range expressed as timedelta.
 
         See:
             `vectorbtpro.generic.nb.records.range_duration_nb`
@@ -694,7 +694,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
-            MaybeSeries: The average duration of the ranges in timedelta.
+            MaybeSeries: Average duration of the ranges in timedelta.
         """
         if real:
             duration = self.real_duration
@@ -735,7 +735,7 @@ class Ranges(PriceRecords):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
 
         Returns:
-            MaybeSeries: The maximum duration among the ranges in timedelta.
+            MaybeSeries: Maximum duration among the ranges in timedelta.
         """
         if real:
             duration = self.real_duration
@@ -774,7 +774,7 @@ class Ranges(PriceRecords):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The computed coverage of the ranges.
+            MaybeSeries: Computed coverage of the ranges.
 
         See:
             `vectorbtpro.generic.nb.records.range_coverage_nb`
@@ -1146,7 +1146,7 @@ class Ranges(PriceRecords):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: A figure object containing the plotted projections and price data.
+            BaseFigure: Figure object containing the plotted projections and price data.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -1410,7 +1410,7 @@ class Ranges(PriceRecords):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: A figure object containing the plotted shapes.
+            BaseFigure: Figure object containing the plotted shapes.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -1604,7 +1604,7 @@ class Ranges(PriceRecords):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: A figure object containing the plotted ranges.
+            BaseFigure: Figure object containing the plotted ranges.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -2130,7 +2130,7 @@ class PatternRanges(Ranges):
             **kwargs: Keyword arguments for the search configuration.
 
         Returns:
-            PSC: The resolved search configuration.
+            PSC: Resolved search configuration.
         """
         if search_config is None:
             search_config = dict()
@@ -2273,7 +2273,7 @@ class PatternRanges(Ranges):
             **kwargs: Keyword arguments for `PatternRanges`.
 
         Returns:
-            PatternRanges: A new `PatternRanges` instance with found pattern ranges.
+            PatternRanges: New `PatternRanges` instance with found pattern ranges.
 
         See:
             `vectorbtpro.generic.nb.records.find_pattern_1d_nb`
@@ -2451,7 +2451,7 @@ class PatternRanges(Ranges):
                 If 'idx_field_or_arr' is not provided, it defaults to the instance's last index values.
 
         Returns:
-            Ranges: The resulting range object from `Ranges.from_delta`.
+            Ranges: Resulting range object from `Ranges.from_delta`.
         """
         if "idx_field_or_arr" not in kwargs:
             kwargs["idx_field_or_arr"] = self.last_idx.values
@@ -2470,7 +2470,7 @@ class PatternRanges(Ranges):
             **kwargs: Keyword arguments for `Ranges.resolve_row_stack_kwargs`.
 
         Returns:
-            Kwargs: The resolved keyword arguments with an updated 'search_configs' field.
+            Kwargs: Resolved keyword arguments with an updated 'search_configs' field.
         """
         kwargs = Ranges.resolve_row_stack_kwargs(*objs, **kwargs)
         if len(objs) == 1:
@@ -2504,7 +2504,7 @@ class PatternRanges(Ranges):
             **kwargs: Keyword arguments for `Ranges.resolve_column_stack_kwargs`.
 
         Returns:
-            Kwargs: The resolved keyword arguments with an aggregated 'search_configs'
+            Kwargs: Resolved keyword arguments with an aggregated 'search_configs'
                 field from the merged objects.
         """
         kwargs = Ranges.resolve_column_stack_kwargs(*objs, **kwargs)
@@ -2530,7 +2530,7 @@ class PatternRanges(Ranges):
             **kwargs: Keyword arguments for `Ranges.indexing_func_meta`.
 
         Returns:
-            PatternRanges: A new `PatternRanges` instance with updated indexing information.
+            PatternRanges: New `PatternRanges` instance with updated indexing information.
         """
         if ranges_meta is None:
             ranges_meta = Ranges.indexing_func_meta(self, *args, **kwargs)

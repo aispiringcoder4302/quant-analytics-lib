@@ -53,7 +53,7 @@ def delay(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The shifted array reflecting the value from the specified delay.
+        Array2d: Shifted array reflecting the value from the specified delay.
     """
     return fshift_nb(x, math.floor(d))
 
@@ -66,7 +66,7 @@ def delta(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The difference between the current and delayed values.
+        Array2d: Difference between the current and delayed values.
     """
     return diff_nb(x, math.floor(d))
 
@@ -81,7 +81,7 @@ def cs_rescale(x: tp.Array2d) -> tp.Array2d:
         x (Array2d): Input array.
 
     Returns:
-        Array2d: The rescaled array with normalized absolute sum.
+        Array2d: Rescaled array with normalized absolute sum.
     """
     return (x.T / np.abs(x).sum(axis=1)).T
 
@@ -93,7 +93,7 @@ def cs_rank(x: tp.Array2d) -> tp.Array2d:
         x (Array2d): Input array.
 
     Returns:
-        Array2d: The cross-sectional ranks in percentage form.
+        Array2d: Cross-sectional ranks in percentage form.
     """
     return rank_nb(x.T, pct=True).T
 
@@ -107,7 +107,7 @@ def cs_demean(x: tp.Array2d, g: tp.GroupByLike, context: tp.KwargsLike = None) -
         context (KwargsLike): Additional context containing a `wrapper` with column information.
 
     Returns:
-        Array2d: The demeaned array.
+        Array2d: Demeaned array.
     """
     group_map = Grouper(context["wrapper"].columns, g).get_group_map()
     return demean_nb(x, group_map)
@@ -124,7 +124,7 @@ def ts_min(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The rolling minimum values.
+        Array2d: Rolling minimum values.
     """
     return rolling_min_nb(x, math.floor(d))
 
@@ -137,7 +137,7 @@ def ts_max(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The rolling maximum values.
+        Array2d: Rolling maximum values.
     """
     return rolling_max_nb(x, math.floor(d))
 
@@ -151,7 +151,7 @@ def ts_argmin(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The 1-indexed rolling indices of the minimum values,
+        Array2d: 1-indexed rolling indices of the minimum values,
             with missing values represented as NaN.
     """
     argmin = rolling_argmin_nb(x, math.floor(d), local=True)
@@ -169,7 +169,7 @@ def ts_argmax(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The 1-indexed rolling indices of the maximum values,
+        Array2d: 1-indexed rolling indices of the maximum values,
             with missing values represented as NaN.
     """
     argmax = rolling_argmax_nb(x, math.floor(d), local=True)
@@ -187,7 +187,7 @@ def ts_rank(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The rolling ranks as percentages.
+        Array2d: Rolling ranks as percentages.
     """
     return rolling_rank_nb(x, math.floor(d), pct=True)
 
@@ -200,7 +200,7 @@ def ts_sum(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The rolling sum.
+        Array2d: Rolling sum.
     """
     return rolling_sum_nb(x, math.floor(d))
 
@@ -213,7 +213,7 @@ def ts_product(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The rolling product.
+        Array2d: Rolling product.
     """
     return rolling_prod_nb(x, math.floor(d))
 
@@ -226,7 +226,7 @@ def ts_mean(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The rolling mean.
+        Array2d: Rolling mean.
     """
     return rolling_mean_nb(x, math.floor(d))
 
@@ -239,7 +239,7 @@ def ts_wmean(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The weighted moving average.
+        Array2d: Weighted moving average.
     """
     return wm_mean_nb(x, math.floor(d))
 
@@ -252,7 +252,7 @@ def ts_std(x: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The rolling standard deviation.
+        Array2d: Rolling standard deviation.
     """
     return rolling_std_nb(x, math.floor(d))
 
@@ -266,7 +266,7 @@ def ts_corr(x: tp.Array2d, y: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The rolling correlation values.
+        Array2d: Rolling correlation values.
     """
     return rolling_corr_nb(x, y, math.floor(d))
 
@@ -280,7 +280,7 @@ def ts_cov(x: tp.Array2d, y: tp.Array2d, d: float) -> tp.Array2d:
         d (float): Number of days.
 
     Returns:
-        Array2d: The rolling covariance values.
+        Array2d: Rolling covariance values.
     """
     return rolling_cov_nb(x, y, math.floor(d))
 
@@ -294,7 +294,7 @@ def adv(d: float, context: tp.KwargsLike = None) -> tp.Array2d:
             under the key "volume".
 
     Returns:
-        Array2d: The average daily dollar volume.
+        Array2d: Average daily dollar volume.
     """
     return ts_mean(context["volume"], math.floor(d))
 
@@ -310,7 +310,7 @@ def returns(context: tp.KwargsLike = None) -> tp.Array2d:
             under the key "close".
 
     Returns:
-        Array2d: The computed daily returns.
+        Array2d: Computed daily returns.
     """
     return returns_nb(context["close"])
 
@@ -323,7 +323,7 @@ def vwap(context: tp.KwargsLike = None) -> tp.Array2d:
             volume, and wrapper data.
 
     Returns:
-        Array2d: The computed VWAP.
+        Array2d: Computed VWAP.
     """
     if isinstance(context["wrapper"].index, pd.DatetimeIndex):
         group_lens = context["wrapper"].get_index_grouper("D").get_group_lens()
@@ -340,7 +340,7 @@ def cap(context: tp.KwargsLike = None) -> tp.Array2d:
             under the key "close" and volume data under the key "volume".
 
     Returns:
-        Array2d: The market capitalization.
+        Array2d: Market capitalization.
     """
     return context["close"] * context["volume"]
 

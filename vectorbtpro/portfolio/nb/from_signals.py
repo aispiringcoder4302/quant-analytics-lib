@@ -833,7 +833,7 @@ def from_basic_signals_nb(
             reduce memory usage, or higher if multiple logs per timestamp are expected.
 
     Returns:
-        SimulationOutput: The simulation output containing order records, log records, and portfolio results.
+        SimulationOutput: Simulation output containing order records, log records, and portfolio results.
 
     !!! tip
         This function is parallelizable.
@@ -1959,7 +1959,7 @@ def from_signals_nb(
             reduce memory usage, or higher if multiple logs per timestamp are expected.
 
     Returns:
-        SimulationOutput: The simulation output containing order records, log records, and portfolio results.
+        SimulationOutput: Simulation output containing order records, log records, and portfolio results.
 
     !!! tip
         This function is parallelizable.
@@ -4138,7 +4138,7 @@ def init_FSInOutputs_nb(
         save_returns (bool): Flag to record the portfolio returns.
 
     Returns:
-        FSInOutputs: An instance of `vectorbtpro.portfolio.enums.FSInOutputs` with initialized arrays.
+        FSInOutputs: Instance of `vectorbtpro.portfolio.enums.FSInOutputs` with initialized arrays.
     """
     if save_state:
         position = np.full(target_shape, np.nan)
@@ -4823,7 +4823,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         in_outputs (Optional[NamedTuple]): Additional outputs from the simulation.
 
     Returns:
-        SimulationOutput: The simulation output containing order records, log records, and portfolio results.
+        SimulationOutput: Simulation output containing order records, log records, and portfolio results.
 
     !!! tip
         This function is parallelizable.
@@ -7638,7 +7638,7 @@ def save_post_segment_func_nb(  # % line.replace("save_post_segment_func_nb", "p
         save_returns (bool): Flag to record the portfolio returns.
 
     Returns:
-        None: The function modifies the context in place.
+        None: Function modifies the context in place.
     """
     if save_state:
         for col in range(c.from_col, c.to_col):

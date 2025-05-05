@@ -39,7 +39,7 @@ class MetaStatsBuilderMixin(type):
         """Return the performance metrics configuration used by `StatsBuilderMixin.stats`.
 
         Returns:
-            Config: The performance metrics configuration.
+            Config: Performance metrics configuration.
         """
         return cls._metrics
 
@@ -84,7 +84,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
             merge (bool): Indicates whether to merge the provided value with defaults.
 
         Returns:
-            Any: The resolved configuration setting.
+            Any: Resolved configuration setting.
 
         !!! info
             For default settings, see `vectorbtpro._settings.stats_builder`.
@@ -142,7 +142,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         or assign a new value to the instance variable `${cls_name}._metrics`.
 
         Returns:
-            Config: A copy of the metrics configuration for `${cls_name}`.
+            Config: Copy of the metrics configuration for `${cls_name}`.
         """
         return self._metrics
 
@@ -813,7 +813,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
             source_cls (Optional[type]): Source class providing the original configuration.
 
         Returns:
-            str: The generated metrics documentation string with substituted values.
+            str: Generated metrics documentation string with substituted values.
         """
         if source_cls is None:
             source_cls = StatsBuilderMixin

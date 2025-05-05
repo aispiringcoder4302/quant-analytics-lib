@@ -29,7 +29,7 @@ def shuffle_call_seq_nb(call_seq: tp.Array2d, group_lens: tp.GroupLens) -> None:
         group_lens (GroupLens): Array defining the number of columns in each group.
 
     Returns:
-        None: The function modifies `call_seq` in place.
+        None: Function modifies `call_seq` in place.
     """
     from_col = 0
     for group in range(len(group_lens)):
@@ -79,7 +79,7 @@ def require_call_seq(call_seq: tp.Array2d) -> tp.Array2d:
         call_seq (Array2d): Call sequence array to validate.
 
     Returns:
-        Array2d: The validated call sequence array.
+        Array2d: Validated call sequence array.
     """
     return np.require(call_seq, dtype=int_, requirements=["A", "O", "W", "F"])
 

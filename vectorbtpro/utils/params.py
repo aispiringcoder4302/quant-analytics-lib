@@ -60,7 +60,7 @@ def to_typed_list(lst: list) -> List:
         lst (list): Python list to cast.
 
     Returns:
-        List: A Numba-typed List containing the elements of the input list.
+        List: Numba-typed List containing the elements of the input list.
     """
     nb_lst = List()
     for elem in lst:
@@ -75,7 +75,7 @@ def flatten_param_tuples(param_tuples: tp.Sequence) -> tp.Params:
         param_tuples (Sequence): Nested sequence of parameter tuples to be flattened.
 
     Returns:
-        Params: A flattened sequence of parameter values.
+        Params: Flattened sequence of parameter values.
     """
     params = []
     unzipped_tuples = zip(*param_tuples)
@@ -100,7 +100,7 @@ def generate_param_combs(op_tree: tp.Tuple, depth: int = 0) -> tp.Params:
         depth (int): Internal recursion depth indicator.
 
     Returns:
-        Params: A sequence of generated parameter combinations.
+        Params: Sequence of generated parameter combinations.
 
     Examples:
         ```pycon
@@ -148,7 +148,7 @@ def broadcast_params(params_or_dict: tp.ParamsOrDict, to_n: tp.Optional[int] = N
             If not provided, the maximum length among the lists is used.
 
     Returns:
-        ParamsOrDict: The broadcasted parameters with uniform length.
+        ParamsOrDict: Broadcasted parameters with uniform length.
     """
     if isinstance(params_or_dict, dict):
         params = list(params_or_dict.values())
@@ -183,7 +183,7 @@ def create_param_product(params_or_dict: tp.ParamsOrDict) -> tp.ParamsOrDict:
         params_or_dict (ParamsOrDict): Dictionary or sequence of parameter lists.
 
     Returns:
-        ParamsOrDict: The Cartesian product of the input parameters.
+        ParamsOrDict: Cartesian product of the input parameters.
     """
     import itertools
 
@@ -244,7 +244,7 @@ def params_to_list(
         is_array_like (bool): If True, treat array-like objects as single values.
 
     Returns:
-        list: A list of parameter values.
+        list: List of parameter values.
     """
     if is_single_param_value(param_values, is_tuple, is_array_like):
         return [param_values]
@@ -264,7 +264,7 @@ def get_param_grid_len(param_grid: tp.ParamGrid) -> int:
             Each parameter value can be a sequence or an integer indicating the count of values.
 
     Returns:
-        int: The total number of parameter combinations.
+        int: Total number of parameter combinations.
     """
     if isinstance(param_grid, dict):
         params_or_lens = list(param_grid.values())
@@ -415,7 +415,7 @@ class Param(Evaluable, Annotatable, DefineMixin):
             old_as_keys (bool): Flag indicating whether to use parameter values as keys if not provided.
 
         Returns:
-            Param: A new `Param` instance with the updated values.
+            Param: New `Param` instance with the updated values.
         """
         self.assert_field_not_missing("value")
         attr_dct = self.asdict()
@@ -454,7 +454,7 @@ class Itemable(Base):
             **kwargs: Keyword arguments for the underlying implementation.
 
         Returns:
-            Items: The items representation of the instance.
+            Items: Items representation of the instance.
         """
         raise NotImplementedError
 
@@ -469,7 +469,7 @@ class Paramable(Base):
             **kwargs: Keyword arguments for the underlying implementation.
 
         Returns:
-            Param: The parameter representation of the instance.
+            Param: Parameter representation of the instance.
         """
         raise NotImplementedError
 
@@ -1328,7 +1328,7 @@ class Parameterizer(Configured):
         See `Parameterizer.find_params_in_obj`.
 
         Returns:
-            Kwargs: The dictionary of keyword arguments used for parameter search.
+            Kwargs: Dictionary of keyword arguments used for parameter search.
         """
         return self._param_search_kwargs
 
@@ -1346,7 +1346,7 @@ class Parameterizer(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: The context dictionary used for template substitution in parameters.
+            Kwargs: Context dictionary used for template substitution in parameters.
         """
         return self._template_context
 
@@ -1457,7 +1457,7 @@ class Parameterizer(Configured):
         See `vectorbtpro.base.indexes.clean_index`.
 
         Returns:
-            Kwargs: The dictionary of keyword arguments for index cleaning.
+            Kwargs: Dictionary of keyword arguments for index cleaning.
         """
         return self._clean_index_kwargs
 
@@ -1475,7 +1475,7 @@ class Parameterizer(Configured):
         """Mapping to forward keyword arguments.
 
         Returns:
-            Kwargs: The dictionary mapping original keyword arguments to new names.
+            Kwargs: Dictionary mapping original keyword arguments to new names.
         """
         return self._forward_kwargs_as
 
@@ -1541,7 +1541,7 @@ class Parameterizer(Configured):
         """Keyword arguments for `Parameterizer.mono_merge_func`.
 
         Returns:
-            Kwargs: The dictionary of keyword arguments passed to the merging function.
+            Kwargs: Dictionary of keyword arguments passed to the merging function.
         """
         return self._mono_merge_kwargs
 
@@ -1572,7 +1572,7 @@ class Parameterizer(Configured):
         See `vectorbtpro.utils.merging.MergeFunc`.
 
         Returns:
-            MergeFuncLike: The merging function used to aggregate individual results.
+            MergeFuncLike: Merging function used to aggregate individual results.
         """
         return self._merge_func
 
@@ -1581,7 +1581,7 @@ class Parameterizer(Configured):
         """Keyword arguments for `Parameterizer.merge_func`.
 
         Returns:
-            Kwargs: The dictionary of keyword arguments used with the merging function.
+            Kwargs: Dictionary of keyword arguments used with the merging function.
         """
         return self._merge_kwargs
 
@@ -1610,7 +1610,7 @@ class Parameterizer(Configured):
         See `vectorbtpro.utils.execution.execute`.
 
         Returns:
-            Kwargs: The dictionary of keyword arguments passed to the execution function.
+            Kwargs: Dictionary of keyword arguments passed to the execution function.
         """
         return self._execute_kwargs
 
@@ -1626,7 +1626,7 @@ class Parameterizer(Configured):
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.find_in_obj`.
 
         Returns:
-            PathDict: A dictionary containing the paths to `Param` instances found in the object.
+            PathDict: Dictionary containing the paths to `Param` instances found in the object.
         """
         return find_in_obj(obj, lambda k, v: isinstance(v, Param) and v.meets_eval_id(eval_id), **kwargs)
 
@@ -1675,7 +1675,7 @@ class Parameterizer(Configured):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            FlatAnnArgs: A dictionary of flattened annotated arguments with injected `Param` instances.
+            FlatAnnArgs: Dictionary of flattened annotated arguments with injected `Param` instances.
         """
         new_flat_ann_args = dict()
         for k, v in flat_ann_args.items():
@@ -1871,7 +1871,7 @@ class Parameterizer(Configured):
             template_context (KwargsLike): Additional context for template substitution.
 
         Yields:
-            TasksLike: A tuple consisting of the function, its positional arguments, and its keyword arguments.
+            TasksLike: Tuple consisting of the function, its positional arguments, and its keyword arguments.
         """
         for p, param_config in enumerate(param_configs):
             _template_context = dict(template_context)
@@ -1975,7 +1975,7 @@ class Parameterizer(Configured):
             template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
-            Kwargs: The mono-chunk parameter configuration.
+            Kwargs: Mono-chunk parameter configuration.
         """
         if flat_ann_args is None:
             flat_ann_args = flatten_ann_args(ann_args)
@@ -2409,7 +2409,7 @@ def parameterized(
         **kwargs: Keyword arguments for `Parameterizer` or the decorated function.
 
     Returns:
-        Callable: A new function with the same signature as the provided function.
+        Callable: New function with the same signature as the provided function.
 
     !!! info
         For default settings, see `vectorbtpro._settings.params`.

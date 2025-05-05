@@ -183,7 +183,7 @@ class SplitterCV(BaseCrossValidator, Base):
             groups (Any): Group labels.
 
         Returns:
-            Splitter: A splitter object configured with the provided data and splitter parameters.
+            Splitter: Splitter object configured with the provided data and splitter parameters.
 
         !!! note
             If the splitter is provided as a string, it is resolved as
@@ -342,7 +342,7 @@ class SplitterCV(BaseCrossValidator, Base):
             groups (Any): Group labels.
 
         Returns:
-            int: The number of splits provided by the splitter.
+            int: Number of splits provided by the splitter.
         """
         splitter = self.get_splitter(X=X, y=y, groups=groups)
         return splitter.get_n_splits(split_group_by=self.split_group_by)

@@ -314,7 +314,7 @@ def dumps(
         **kwargs: Keyword arguments for the pickling library's `dumps` method.
 
     Returns:
-        bytes: The serialized and optionally compressed byte stream.
+        bytes: Serialized and optionally compressed byte stream.
     """
     from vectorbtpro.utils.module_ import warn_cannot_import
 
@@ -349,7 +349,7 @@ def loads(
         **kwargs: Keyword arguments for the pickling library's `loads` method.
 
     Returns:
-        Any: The deserialized object.
+        Any: Deserialized object.
     """
     from vectorbtpro.utils.module_ import warn_cannot_import
 
@@ -405,7 +405,7 @@ def save_bytes(
         compress_kwargs (KwargsLike): Keyword arguments for compression.
 
     Returns:
-        Path: The path to the written file.
+        Path: Path to the written file.
     """
     path = Path(path)
     file_name = None
@@ -448,7 +448,7 @@ def load_bytes(
         decompress_kwargs (KwargsLike): Keyword arguments for decompression.
 
     Returns:
-        bytes: The read and optionally decompressed byte stream.
+        bytes: Read and optionally decompressed byte stream.
     """
     path = Path(path)
     with open(path, "rb") as f:
@@ -488,7 +488,7 @@ def save(
         **kwargs: Keyword arguments for `dumps`.
 
     Returns:
-        Path: The path to the saved file.
+        Path: Path to the saved file.
     """
     bytes_ = dumps(obj, **kwargs)
     if path is None:
@@ -525,7 +525,7 @@ def load(
         **kwargs: Keyword arguments for `loads`.
 
     Returns:
-        Any: The deserialized object.
+        Any: Deserialized object.
     """
     bytes_ = load_bytes(
         path,
@@ -614,7 +614,7 @@ def get_class_from_id(class_id: str) -> tp.Optional[tp.Type]:
         class_id (str): Reconstruction identifier of the class.
 
     Returns:
-        Type: The class associated with the provided identifier.
+        Type: Class associated with the provided identifier.
     """
     from vectorbtpro.utils.module_ import find_class
 
@@ -639,7 +639,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
             arguments and attribute values.
 
     Returns:
-        Any: The reconstructed instance.
+        Any: Reconstructed instance.
     """
     from vectorbtpro.utils.module_ import find_class
 
@@ -697,7 +697,7 @@ class Pickleable(Base):
             **kwargs: Keyword arguments for `dumps`.
 
         Returns:
-            bytes: The serialized byte stream.
+            bytes: Serialized byte stream.
         """
         if rec_state_only:
             rec_state = self.rec_state
@@ -718,7 +718,7 @@ class Pickleable(Base):
             **kwargs: Keyword arguments for `loads`.
 
         Returns:
-            Pickleable: The unpickled instance.
+            Pickleable: Unpickled instance.
         """
         obj = loads(bytes_, **kwargs)
         if isinstance(obj, RecState):
@@ -736,7 +736,7 @@ class Pickleable(Base):
             **kwargs: Keyword arguments for encoding.
 
         Returns:
-            Any: The encoded configuration node.
+            Any: Encoded configuration node.
         """
         return value
 
@@ -750,7 +750,7 @@ class Pickleable(Base):
             **kwargs: Keyword arguments for decoding.
 
         Returns:
-            Any: The decoded configuration node.
+            Any: Decoded configuration node.
         """
         return value
 
@@ -794,7 +794,7 @@ class Pickleable(Base):
             **kwargs: Keyword arguments for `Pickleable.encode_config_node`.
 
         Returns:
-            str: The encoded configuration string.
+            str: Encoded configuration string.
 
         !!! note
             The initial order of keys can be preserved only by using references.
@@ -973,7 +973,7 @@ class Pickleable(Base):
             **kwargs: Keyword arguments for `Pickleable.decode_config_node`.
 
         Returns:
-            Pickleable: The decoded instance.
+            Pickleable: Decoded instance.
 
         !!! warning
             Unpickling byte streams and running code has important security implications. Don't attempt
@@ -1258,7 +1258,7 @@ class Pickleable(Base):
             files in the current directory.
 
         Returns:
-            Path: The resolved file path with the appropriate extensions.
+            Path: Resolved file path with the appropriate extensions.
 
         !!! info
             For default settings, see `vectorbtpro._settings.pickling`.
@@ -1428,7 +1428,7 @@ class Pickleable(Base):
                 and `Pickleable.encode_config` for config extensions.
 
         Returns:
-            Path: The file path where the instance was saved.
+            Path: File path where the instance was saved.
         """
         if mkdir_kwargs is None:
             mkdir_kwargs = {}
@@ -1475,7 +1475,7 @@ class Pickleable(Base):
                 and `Pickleable.decode_config` for config extensions.
 
         Returns:
-            Pickleable: The deserialized instance.
+            Pickleable: Deserialized instance.
         """
         path = cls.resolve_file_path(path=path, file_format=file_format, compression=compression)
         suffixes = [suffix[1:].lower() for suffix in path.suffixes]
@@ -1529,7 +1529,7 @@ class Pickleable(Base):
             rec_state (RecState): Original reconstruction state.
 
         Returns:
-            RecState: The modified reconstruction state.
+            RecState: Modified reconstruction state.
         """
         return rec_state
 

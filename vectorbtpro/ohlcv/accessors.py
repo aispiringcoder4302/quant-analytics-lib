@@ -166,7 +166,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         Merges default feature settings from `vectorbtpro._settings` with the instance's feature map.
 
         Returns:
-            Kwargs: A dictionary mapping OHLCV feature names to their corresponding column names.
+            Kwargs: Dictionary mapping OHLCV feature names to their corresponding column names.
         """
         from vectorbtpro._settings import settings
 
@@ -260,7 +260,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
                 Mapped using `vectorbtpro.ohlcv.enums.PriceFeature` if provided as a string.
 
         Returns:
-            Frame: A DataFrame with mirrored OHLC features.
+            Frame: DataFrame with mirrored OHLC features.
 
         See:
             `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
@@ -312,7 +312,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
-            OHLCVDFAccessor: A new accessor instance with resampled OHLCV data.
+            OHLCVDFAccessor: New accessor instance with resampled OHLCV data.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)
@@ -361,7 +361,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         from `vectorbtpro._settings.ohlcv`.
 
         Returns:
-            Kwargs: A merged dictionary of default statistics settings.
+            Kwargs: Merged dictionary of default statistics settings.
         """
         from vectorbtpro._settings import settings
 
@@ -468,7 +468,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure containing the OHLC plot.
+            BaseFigure: Updated figure containing the OHLC plot.
 
         !!! info
             For default settings, see `vectorbtpro._settings.ohlcv` and `vectorbtpro._settings.plotting`.
@@ -552,7 +552,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure with the volume bar plot.
+            BaseFigure: Updated figure with the volume bar plot.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -623,7 +623,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure with the OHLC(V) plot.
+            BaseFigure: Updated figure with the OHLC(V) plot.
 
         Examples:
             ```pycon
@@ -692,7 +692,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         with the plot settings defined in `vectorbtpro._settings.ohlcv`.
 
         Returns:
-            Kwargs: A dictionary containing the default plotting configurations.
+            Kwargs: Dictionary containing the default plotting configurations.
         """
         from vectorbtpro._settings import settings
 

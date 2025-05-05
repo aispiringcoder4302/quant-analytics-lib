@@ -34,7 +34,7 @@ def attach_returns_acc_methods(config: Config) -> tp.ClassWrapper:
             * `docstring`: The docstring for the generated method.
 
     Returns:
-        ClassWrapper: A decorator that attaches returns accessor methods to the class.
+        ClassWrapper: Decorator that attaches returns accessor methods to the class.
     """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
@@ -117,7 +117,7 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
             * Keyword arguments for wrapping, indexing, resampling, stacking, etc.
 
     Returns:
-        ClassWrapper: A decorator that attaches shortcut properties to the class.
+        ClassWrapper: Decorator that attaches shortcut properties to the class.
     """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:

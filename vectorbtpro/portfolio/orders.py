@@ -233,7 +233,7 @@ class Orders(PriceRecords):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
 
         Returns:
-            Orders: A new instance with long view orders.
+            Orders: New instance with long view orders.
 
         See:
             `vectorbtpro.portfolio.nb.records.get_long_view_orders_nb`
@@ -269,7 +269,7 @@ class Orders(PriceRecords):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
 
         Returns:
-            Orders: A new instance with short view orders.
+            Orders: New instance with short view orders.
 
         See:
             `vectorbtpro.portfolio.nb.records.get_short_view_orders_nb`
@@ -296,7 +296,7 @@ class Orders(PriceRecords):
             **kwargs: Keyword arguments for `Orders.map_array`.
 
         Returns:
-            MaybeSeries: A series representing the signed sizes.
+            MaybeSeries: Series representing the signed sizes.
         """
         size = self.get_field_arr("size").copy()
         size[self.get_field_arr("side") == OrderSide.Sell] *= -1
@@ -311,7 +311,7 @@ class Orders(PriceRecords):
             **kwargs: Keyword arguments for `Orders.map_array`.
 
         Returns:
-            MaybeSeries: A series representing the computed order values.
+            MaybeSeries: Series representing the computed order values.
         """
         return self.map_array(self.signed_size.values * self.price.values, **kwargs)
 
@@ -343,7 +343,7 @@ class Orders(PriceRecords):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
         Returns:
-            MaybeSeries: A series containing the weighted average prices.
+            MaybeSeries: Series containing the weighted average prices.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="weighted_price"), wrap_kwargs)
         return MappedArray.reduce(
@@ -368,7 +368,7 @@ class Orders(PriceRecords):
             **kwargs: Keyword arguments for `Orders.apply`.
 
         Returns:
-            MappedArray: A mapped array representing the price status of orders.
+            MappedArray: Mapped array representing the price status of orders.
         """
         return self.apply(
             nb.price_status_nb,
@@ -497,7 +497,7 @@ class Orders(PriceRecords):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated Plotly figure with the plotted orders.
+            BaseFigure: Updated Plotly figure with the plotted orders.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -769,7 +769,7 @@ class FSOrders(Orders):
             **kwargs: Keyword arguments for `FSOrders.apply_mask`.
 
         Returns:
-            FSOrders: A filtered orders instance containing only stop orders.
+            FSOrders: Filtered orders instance containing only stop orders.
         """
         return self.apply_mask(self.get_field_arr("stop_type") != -1, **kwargs)
 
@@ -780,7 +780,7 @@ class FSOrders(Orders):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
-            Ranges: A ranges instance representing the signal-to-fill ranges.
+            Ranges: Ranges instance representing the signal-to-fill ranges.
 
                 Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
@@ -807,7 +807,7 @@ class FSOrders(Orders):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
-            Ranges: A ranges instance representing the signal-to-creation ranges.
+            Ranges: Ranges instance representing the signal-to-creation ranges.
 
                 Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
@@ -834,7 +834,7 @@ class FSOrders(Orders):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
-            Ranges: A ranges instance representing the creation-to-fill ranges.
+            Ranges: Ranges instance representing the creation-to-fill ranges.
 
                 Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
@@ -862,7 +862,7 @@ class FSOrders(Orders):
             **kwargs: Keyword arguments for `FSOrders.map_array`.
 
         Returns:
-            MappedArray: A mapped array representing the duration between signal and creation.
+            MappedArray: Mapped array representing the duration between signal and creation.
         """
         duration = self.get_field_arr("creation_idx") - self.get_field_arr("signal_idx")
         return self.map_array(duration, **kwargs)
@@ -875,7 +875,7 @@ class FSOrders(Orders):
             **kwargs: Keyword arguments for `FSOrders.map_array`.
 
         Returns:
-            MappedArray: A mapped array representing the duration between creation and fill.
+            MappedArray: Mapped array representing the duration between creation and fill.
         """
         duration = self.get_field_arr("idx") - self.get_field_arr("creation_idx")
         return self.map_array(duration, **kwargs)
@@ -888,7 +888,7 @@ class FSOrders(Orders):
             **kwargs: Keyword arguments for `FSOrders.map_array`.
 
         Returns:
-            MappedArray: A mapped array representing the duration between signal and fill.
+            MappedArray: Mapped array representing the duration between signal and fill.
         """
         duration = self.get_field_arr("idx") - self.get_field_arr("signal_idx")
         return self.map_array(duration, **kwargs)

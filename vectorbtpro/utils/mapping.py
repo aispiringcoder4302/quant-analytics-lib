@@ -28,7 +28,7 @@ def reverse_mapping(mapping: tp.Mapping) -> dict:
         mapping (Mapping): Mapping to reverse.
 
     Returns:
-        dict: A dictionary with reversed key-value pairs.
+        dict: Dictionary with reversed key-value pairs.
     """
     return {v: k for k, v in mapping.items()}
 
@@ -40,7 +40,7 @@ def to_field_mapping(mapping_like: tp.MappingLike) -> dict:
         mapping_like (MappingLike): Object convertible to a mapping.
 
     Returns:
-        dict: A dictionary representing the field mapping.
+        dict: Dictionary representing the field mapping.
     """
     if isinstance(mapping_like, tp.EnumMeta):
         mapping = {i.name: i.value for i in mapping_like}
@@ -66,7 +66,7 @@ def to_value_mapping(mapping_like: tp.MappingLike, reverse: bool = False, enum_u
         enum_unkval (Any): Value for unknown enumeration items.
 
     Returns:
-        dict: A dictionary representing the value mapping.
+        dict: Dictionary representing the value mapping.
     """
     if isinstance(mapping_like, tp.EnumMeta):
         mapping = {i.value: i.name for i in mapping_like}
@@ -128,7 +128,7 @@ def apply_mapping(
         na_sentinel (Any): Value used to represent a "not found" state.
 
     Returns:
-        Any: The transformed object with the mapping applied.
+        Any: Transformed object with the mapping applied.
     """
     if mapping_like is None:
         return obj

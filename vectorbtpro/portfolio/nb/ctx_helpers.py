@@ -29,7 +29,7 @@ def get_col_position_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Index of the column.
 
     Returns:
-        float: The position value of the specified column.
+        float: Position value of the specified column.
     """
     return c.last_position[col]
 
@@ -50,7 +50,7 @@ def get_position_nb(
             Relevant context.
 
     Returns:
-        float: The position value of the current column.
+        float: Position value of the current column.
     """
     return get_col_position_nb(c, c.col)
 
@@ -185,7 +185,7 @@ def get_n_active_positions_nb(
         all_groups (bool): Flag indicating whether to count active positions across all groups.
 
     Returns:
-        int: The total number of active positions.
+        int: Total number of active positions.
     """
     n_active_positions = 0
     if all_groups:
@@ -211,7 +211,7 @@ def get_col_cash_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Index of the column.
 
     Returns:
-        float: The cash value for the specified column.
+        float: Cash value for the specified column.
 
     Raises:
         ValueError: If cash sharing is enabled, indicating that cash cannot be retrieved for a single column.
@@ -230,7 +230,7 @@ def get_group_cash_nb(c: tp.NamedTuple, group: int) -> float:
         group (int): Index of the group.
 
     Returns:
-        float: The total cash value for the specified group.
+        float: Total cash value for the specified group.
     """
     if c.cash_sharing:
         return c.last_cash[group]
@@ -262,7 +262,7 @@ def get_cash_nb(
             Relevant context.
 
     Returns:
-        float: The cash value of the current column if cash sharing is disabled;
+        float: Cash value of the current column if cash sharing is disabled;
             otherwise, the cash value of the current group.
     """
     if c.cash_sharing:
@@ -282,7 +282,7 @@ def get_col_debt_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Index of the column.
 
     Returns:
-        float: The debt value of the specified column.
+        float: Debt value of the specified column.
     """
     return c.last_debt[col]
 
@@ -303,7 +303,7 @@ def get_debt_nb(
             Relevant context.
 
     Returns:
-        float: The debt value of the current column.
+        float: Debt value of the current column.
     """
     return get_col_debt_nb(c, c.col)
 
@@ -320,7 +320,7 @@ def get_col_locked_cash_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Index of the column.
 
     Returns:
-        float: The locked cash value of the specified column.
+        float: Locked cash value of the specified column.
     """
     return c.last_locked_cash[col]
 
@@ -341,7 +341,7 @@ def get_locked_cash_nb(
             Relevant context.
 
     Returns:
-        float: The locked cash value of the current column.
+        float: Locked cash value of the current column.
     """
     return get_col_locked_cash_nb(c, c.col)
 
@@ -358,7 +358,7 @@ def get_col_free_cash_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Index of the column.
 
     Returns:
-        float: The free cash value of the specified column.
+        float: Free cash value of the specified column.
 
     Raises:
         ValueError: If cash sharing is enabled, indicating that free cash cannot be retrieved
@@ -380,7 +380,7 @@ def get_group_free_cash_nb(c: tp.NamedTuple, group: int) -> float:
         group (int): Index of the group.
 
     Returns:
-        float: The total free cash value for the specified group.
+        float: Total free cash value for the specified group.
     """
     if c.cash_sharing:
         return c.last_free_cash[group]
@@ -412,7 +412,7 @@ def get_free_cash_nb(
             Relevant context.
 
     Returns:
-        float: The free cash value of the current column if cash sharing is disabled;
+        float: Free cash value of the current column if cash sharing is disabled;
             otherwise, the free cash value of the current group.
     """
     if c.cash_sharing:
@@ -483,7 +483,7 @@ def get_col_val_price_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Index of the column.
 
     Returns:
-        float: The valuation price of the specified column.
+        float: Valuation price of the specified column.
     """
     return c.last_val_price[col]
 
@@ -504,7 +504,7 @@ def get_val_price_nb(
             Relevant context.
 
     Returns:
-        float: The valuation price of the current column.
+        float: Valuation price of the current column.
     """
     return get_col_val_price_nb(c, c.col)
 
@@ -521,7 +521,7 @@ def get_col_value_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Index of the column to retrieve the value from.
 
     Returns:
-        float: The value at the specified column.
+        float: Value at the specified column.
 
     Raises:
         ValueError: If cash sharing is enabled, indicating that the value cannot be retrieved
@@ -543,7 +543,7 @@ def get_group_value_nb(c: tp.NamedTuple, group: int) -> float:
         group (int): Index of the group to retrieve the value for.
 
     Returns:
-        float: The total value aggregated from all columns in the specified group.
+        float: Total value aggregated from all columns in the specified group.
     """
     if c.cash_sharing:
         return c.last_value[group]
@@ -575,7 +575,7 @@ def get_value_nb(
             Relevant context.
 
     Returns:
-        float: The value of the current column, or if cash sharing is enabled, the aggregated group value.
+        float: Value of the current column, or if cash sharing is enabled, the aggregated group value.
     """
     if c.cash_sharing:
         return get_group_value_nb(c, c.group)
@@ -594,7 +594,7 @@ def get_col_leverage_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Index of the column for which to calculate leverage.
 
     Returns:
-        float: The leverage computed as debt divided by locked cash, incremented by one if
+        float: Leverage computed as debt divided by locked cash, incremented by one if
             a position exists, or NaN if locked cash is zero.
     """
     position = get_col_position_nb(c, col)
@@ -624,7 +624,7 @@ def get_leverage_nb(
             Relevant context.
 
     Returns:
-        float: The leverage of the current column.
+        float: Leverage of the current column.
     """
     return get_col_leverage_nb(c, c.col)
 
@@ -641,7 +641,7 @@ def get_col_position_value_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Index of the column.
 
     Returns:
-        float: The product of the column's position and its valuation price, or 0.0 if the position is zero.
+        float: Product of the column's position and its valuation price, or 0.0 if the position is zero.
     """
     position = get_col_position_nb(c, col)
     val_price = get_col_val_price_nb(c, col)
@@ -659,7 +659,7 @@ def get_group_position_value_nb(c: tp.NamedTuple, group: int) -> float:
         group (int): Index of the group to calculate the total position value for.
 
     Returns:
-        float: The aggregated position value of the specified group.
+        float: Aggregated position value of the specified group.
     """
     value = 0.0
     from_col = 0
@@ -689,7 +689,7 @@ def get_position_value_nb(
             Relevant context.
 
     Returns:
-        float: The position value of the current column.
+        float: Position value of the current column.
     """
     return get_col_position_value_nb(c, c.col)
 
@@ -706,7 +706,7 @@ def get_col_allocation_nb(c: tp.NamedTuple, col: int, group: tp.Optional[int] = 
             If not provided, the group is determined based on the column index.
 
     Returns:
-        float: The allocation ratio computed as the column's position value divided by
+        float: Allocation ratio computed as the column's position value divided by
             the group's total value, or 0.0 if the position value is zero and NaN if the
             group value is non-positive.
     """
@@ -748,7 +748,7 @@ def get_allocation_nb(
             Relevant context.
 
     Returns:
-        float: The allocation ratio for the current column.
+        float: Allocation ratio for the current column.
     """
     return get_col_allocation_nb(c, c.col, group=c.group)
 
@@ -765,7 +765,7 @@ def get_col_order_count_nb(c: tp.NamedTuple, col: int) -> int:
         col (int): Index of the column.
 
     Returns:
-        int: The number of order records for the specified column.
+        int: Number of order records for the specified column.
     """
     return c.order_counts[col]
 
@@ -786,7 +786,7 @@ def get_order_count_nb(
             Relevant context.
 
     Returns:
-        int: The count of order records for the current column.
+        int: Count of order records for the current column.
     """
     return get_col_order_count_nb(c, c.col)
 
@@ -800,7 +800,7 @@ def get_col_order_records_nb(c: tp.NamedTuple, col: int) -> tp.RecordArray:
         col (int): Index of the column.
 
     Returns:
-        RecordArray: The order records for the specified column.
+        RecordArray: Order records for the specified column.
     """
     order_count = get_col_order_count_nb(c, col)
     return c.order_records[:order_count, col]
@@ -822,7 +822,7 @@ def get_order_records_nb(
             Relevant context.
 
     Returns:
-        RecordArray: The order records for the current column.
+        RecordArray: Order records for the current column.
     """
     return get_col_order_records_nb(c, c.col)
 
@@ -871,7 +871,7 @@ def get_col_last_order_nb(c: tp.NamedTuple, col: int) -> tp.Record:
         col (int): Index of the column.
 
     Returns:
-        Record: The last order record for the specified column.
+        Record: Last order record for the specified column.
 
     Raises:
         ValueError: If there are no orders for the specified column.
@@ -897,7 +897,7 @@ def get_last_order_nb(
             Relevant context.
 
     Returns:
-        Record: The last order record for the current column.
+        Record: Last order record for the current column.
     """
     return get_col_last_order_nb(c, c.col)
 
@@ -1079,7 +1079,7 @@ def get_col_limit_target_price_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Column index for retrieving the limit order target price.
 
     Returns:
-        float: The target price of the limit order or NaN if no active position.
+        float: Target price of the limit order or NaN if no active position.
     """
     if not col_in_position_nb(c, col):
         return np.nan
@@ -1101,7 +1101,7 @@ def get_limit_target_price_nb(
             Relevant context.
 
     Returns:
-        float: The target price of the limit order or NaN if no active position.
+        float: Target price of the limit order or NaN if no active position.
     """
     return get_col_limit_target_price_nb(c, c.col)
 
@@ -1151,7 +1151,7 @@ def get_col_sl_target_price_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Column index for retrieving the SL target price.
 
     Returns:
-        float: The target price of the SL order or NaN if no active position.
+        float: Target price of the SL order or NaN if no active position.
     """
     if not col_in_position_nb(c, col):
         return np.nan
@@ -1174,7 +1174,7 @@ def get_sl_target_price_nb(
             Relevant context.
 
     Returns:
-        float: The target price of the SL order or NaN if no active position.
+        float: Target price of the SL order or NaN if no active position.
     """
     return get_col_sl_target_price_nb(c, c.col)
 
@@ -1221,7 +1221,7 @@ def get_col_tsl_target_price_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Column index for retrieving the TSL/TTP target price.
 
     Returns:
-        float: The target price of the TSL/TTP order or NaN if no active position.
+        float: Target price of the TSL/TTP order or NaN if no active position.
     """
     if not col_in_position_nb(c, col):
         return np.nan
@@ -1244,7 +1244,7 @@ def get_tsl_target_price_nb(
             Relevant context.
 
     Returns:
-        float: The target price of the TSL/TTP order or NaN if no active position.
+        float: Target price of the TSL/TTP order or NaN if no active position.
     """
     return get_col_tsl_target_price_nb(c, c.col)
 
@@ -1291,7 +1291,7 @@ def get_col_tp_target_price_nb(c: tp.NamedTuple, col: int) -> float:
         col (int): Column index for retrieving the TP target price.
 
     Returns:
-        float: The target price of the TP order or NaN if no active position.
+        float: Target price of the TP order or NaN if no active position.
     """
     if not col_in_position_nb(c, col):
         return np.nan
@@ -1314,7 +1314,7 @@ def get_tp_target_price_nb(
             Relevant context.
 
     Returns:
-        float: The target price of the TP order or NaN if no active position.
+        float: Target price of the TP order or NaN if no active position.
     """
     return get_col_tp_target_price_nb(c, c.col)
 
@@ -1568,7 +1568,7 @@ def get_exec_state_nb(
         val_price (Optional[float]): Valuation price of the asset.
 
     Returns:
-        ExecState: The updated execution state with attributes such as cash, position, debt,
+        ExecState: Updated execution state with attributes such as cash, position, debt,
             locked cash, free cash, value price, and overall value.
     """
     if val_price is not None:
@@ -1606,7 +1606,7 @@ def get_price_area_nb(c: tp.NamedTuple) -> PriceArea:
         c (NamedTuple): Context.
 
     Returns:
-        PriceArea: The selected price area with open, high, low, and
+        PriceArea: Selected price area with open, high, low, and
             close values for the current simulation step.
     """
     return PriceArea(
@@ -1641,7 +1641,7 @@ def get_order_size_nb(
         val_price (Optional[float]): Valuation price of the asset.
 
     Returns:
-        float: The computed order size.
+        float: Computed order size.
     """
     exec_state = get_exec_state_nb(c, val_price=val_price)
     if size_type == SizeType.Percent100 or size_type == SizeType.Percent:
@@ -1683,7 +1683,7 @@ def get_order_value_nb(
         val_price (Optional[float]): Valuation price of the asset.
 
     Returns:
-        float: The approximated order value.
+        float: Approximated order value.
     """
     exec_state = get_exec_state_nb(c, val_price=val_price)
     return approx_order_value_nb(

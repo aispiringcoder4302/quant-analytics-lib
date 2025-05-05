@@ -92,7 +92,7 @@ class _MA(MA):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The figure with the plotted moving average and close price traces.
+            BaseFigure: Figure with the plotted moving average and close price traces.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

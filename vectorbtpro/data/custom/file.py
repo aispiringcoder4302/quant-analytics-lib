@@ -132,7 +132,7 @@ class FileData(LocalData):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            str: The resulting key derived from the file path.
+            str: Resulting key derived from the file path.
         """
         return Path(path).stem
 
@@ -192,7 +192,7 @@ class FileData(LocalData):
             **kwargs: Keyword arguments for `vectorbtpro.data.custom.file.FileData.pull`.
 
         Returns:
-            FileData: An instance of `FileData` containing the pulled file data.
+            FileData: Instance of `FileData` containing the pulled file data.
         """
         keys_meta = cls.resolve_keys_meta(
             keys=keys,

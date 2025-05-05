@@ -63,7 +63,7 @@ def get_module(obj: tp.Any) -> ModuleType:
         obj (Any): Object whose module is to be obtained.
 
     Returns:
-        ModuleType: The module where the object is defined.
+        ModuleType: Module where the object is defined.
     """
     return inspect.getmodule(inspect.unwrap(obj))
 
@@ -248,7 +248,7 @@ def get_package_meta(pkg_name: str) -> dict:
         pkg_name (str): Name of the package.
 
     Returns:
-        dict: A dictionary containing metadata such as 'dist_name', 'version', and 'link'.
+        dict: Dictionary containing metadata such as 'dist_name', 'version', and 'link'.
     """
     if pkg_name not in opt_dep_config:
         raise KeyError(f"Package '{pkg_name}' not found in opt_dep_config")
@@ -350,7 +350,7 @@ def import_module_from_path(module_path: tp.PathLike, reload: bool = False) -> M
         reload (bool): Whether to force reloading if the module is already imported.
 
     Returns:
-        ModuleType: The imported module.
+        ModuleType: Imported module.
     """
     module_path = Path(module_path)
     spec = importlib.util.spec_from_file_location(module_path.stem, str(module_path.resolve()))
@@ -423,7 +423,7 @@ def parse_refname(obj: tp.Any) -> str:
         obj (Any): Target object to derive its reference name.
 
     Returns:
-        str: The fully qualified reference name.
+        str: Fully qualified reference name.
     """
     from vectorbtpro.utils.decorators import class_property, hybrid_property, custom_property
 
@@ -629,7 +629,7 @@ def get_refname_obj(refname: str) -> tp.Any:
         refname (str): Dot-separated reference name.
 
     Returns:
-        Any: The object obtained by importing modules and accessing attributes.
+        Any: Object obtained by importing modules and accessing attributes.
     """
     refname_parts = refname.split(".")
     obj = None
@@ -651,7 +651,7 @@ def get_obj(*args, allow_multiple: bool = False, **kwargs) -> tp.MaybeList:
         **kwargs: Keyword arguments for `get_refname`.
 
     Returns:
-        MaybeList: The resolved object or a list of objects if multiple reference names are found.
+        MaybeList: Resolved object or a list of objects if multiple reference names are found.
     """
     refname = get_refname(*args, **kwargs)
     if isinstance(refname, list):
@@ -755,7 +755,7 @@ def get_imlucky_url(query: str) -> str:
         query (str): Search query.
 
     Returns:
-        str: The DuckDuckGo "I'm lucky" URL based on the query.
+        str: DuckDuckGo "I'm lucky" URL based on the query.
     """
     return "https://duckduckgo.com/?q=!ducky+" + urllib.request.pathname2url(query)
 
@@ -788,7 +788,7 @@ def get_api_ref(
         vbt_only (bool): If True, limit resolution to objects within vectorbtpro.
 
     Returns:
-        str: The API reference URL for the given object.
+        str: API reference URL for the given object.
     """
     refname, module, qualname = prepare_refname(
         obj,

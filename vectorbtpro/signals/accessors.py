@@ -259,7 +259,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.empty`.
 
         Returns:
-            SeriesFrame: An empty Series or DataFrame with bool dtype.
+            SeriesFrame: Empty Series or DataFrame with bool dtype.
         """
         return GenericAccessor.empty(*args, fill_value=fill_value, dtype=np.bool_, **kwargs)
 
@@ -273,7 +273,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.empty_like`.
 
         Returns:
-            SeriesFrame: A Series or DataFrame with the same shape and bool dtype.
+            SeriesFrame: Series or DataFrame with the same shape and bool dtype.
         """
         return GenericAccessor.empty_like(*args, fill_value=fill_value, dtype=np.bool_, **kwargs)
 
@@ -336,7 +336,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A wrapped output containing generated signals with bool dtype.
+            SeriesFrame: Wrapped output containing generated signals with bool dtype.
 
         See:
             `vectorbtpro.signals.nb.generate_nb`
@@ -663,7 +663,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A boolean DataFrame or Series indicating the generated exit signals.
+            SeriesFrame: Boolean DataFrame or Series indicating the generated exit signals.
 
         See:
             `vectorbtpro.signals.nb.generate_ex_nb`
@@ -848,7 +848,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.generate`.
 
         Returns:
-            SeriesFrame: A Series or DataFrame containing the generated signals.
+            SeriesFrame: Series or DataFrame containing the generated signals.
 
         See:
             * `vectorbtpro.signals.nb.rand_place_nb` if `n` is provided.
@@ -2259,7 +2259,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
-            SeriesFrame: A wrapped array of signals with `pos_rank == 0`.
+            SeriesFrame: Wrapped array of signals with `pos_rank == 0`.
         """
         pos_rank = self.pos_rank(**kwargs).values
         return self.wrapper.wrap(pos_rank == 0, group_by=False, **resolve_dict(wrap_kwargs))
@@ -2280,7 +2280,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
         Returns:
-            SeriesFrame: A wrapped array of signals with `pos_rank == 0`.
+            SeriesFrame: Wrapped array of signals with `pos_rank == 0`.
         """
         pos_rank = self.pos_rank_after(reset_by, **kwargs).values
         return self.wrapper.wrap(pos_rank == 0, group_by=False, **resolve_dict(wrap_kwargs))
@@ -2301,7 +2301,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
-            SeriesFrame: A wrapped array of signals with `pos_rank == n`.
+            SeriesFrame: Wrapped array of signals with `pos_rank == n`.
         """
         pos_rank = self.pos_rank(**kwargs).values
         return self.wrapper.wrap(pos_rank == n, group_by=False, **resolve_dict(wrap_kwargs))
@@ -2324,7 +2324,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
         Returns:
-            SeriesFrame: A wrapped array of signals with `pos_rank == n`.
+            SeriesFrame: Wrapped array of signals with `pos_rank == n`.
         """
         pos_rank = self.pos_rank_after(reset_by, **kwargs).values
         return self.wrapper.wrap(pos_rank == n, group_by=False, **resolve_dict(wrap_kwargs))
@@ -2345,7 +2345,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
-            SeriesFrame: A wrapped array of signals with `pos_rank >= n`.
+            SeriesFrame: Wrapped array of signals with `pos_rank >= n`.
         """
         pos_rank = self.pos_rank(**kwargs).values
         return self.wrapper.wrap(pos_rank >= n, group_by=False, **resolve_dict(wrap_kwargs))
@@ -2368,7 +2368,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
         Returns:
-            SeriesFrame: A wrapped array of signals with `pos_rank >= n`.
+            SeriesFrame: Wrapped array of signals with `pos_rank >= n`.
         """
         pos_rank = self.pos_rank_after(reset_by, **kwargs).values
         return self.wrapper.wrap(pos_rank >= n, group_by=False, **resolve_dict(wrap_kwargs))
@@ -2389,7 +2389,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
-            SeriesFrame: A wrapped array of signals with `pos_rank < n`.
+            SeriesFrame: Wrapped array of signals with `pos_rank < n`.
         """
         pos_rank = self.pos_rank(**kwargs).values
         return self.wrapper.wrap(pos_rank < n, group_by=False, **resolve_dict(wrap_kwargs))
@@ -2412,7 +2412,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
         Returns:
-            SeriesFrame: A wrapped array of signals with `pos_rank < n`.
+            SeriesFrame: Wrapped array of signals with `pos_rank < n`.
         """
         pos_rank = self.pos_rank_after(reset_by, **kwargs).values
         return self.wrapper.wrap(pos_rank < n, group_by=False, **resolve_dict(wrap_kwargs))
@@ -2427,7 +2427,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
         Returns:
-            MappedArray: A mapped array of signal position ranks.
+            MappedArray: Mapped array of signal position ranks.
         """
         return self.pos_rank(as_mapped=True, group_by=group_by, **kwargs)
 
@@ -2441,7 +2441,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.partition_pos_rank`.
 
         Returns:
-            MappedArray: A mapped array of partition position ranks.
+            MappedArray: Mapped array of partition position ranks.
         """
         return self.partition_pos_rank(as_mapped=True, group_by=group_by, **kwargs)
 
@@ -2469,7 +2469,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A wrapped array representing the distance from the nth last signal.
+            SeriesFrame: Wrapped array representing the distance from the nth last signal.
 
         See:
             `vectorbtpro.signals.nb.distance_from_last_nb`
@@ -2523,7 +2523,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`.
 
         Returns:
-            MappedArray: A regrouped mapped array of signals.
+            MappedArray: Regrouped mapped array of signals.
         """
         mapped_arr = self.to_2d_array().flatten(order="F")
         col_arr = np.repeat(np.arange(self.wrapper.shape_2d[1]), self.wrapper.shape_2d[0])
@@ -2550,7 +2550,7 @@ class SignalsAccessor(GenericAccessor):
                 Mapped using `vectorbtpro.signals.enums.SignalRelation` if provided as a string.
 
         Returns:
-            str: A string indicating the relation direction.
+            str: String indicating the relation direction.
         """
         if isinstance(relation, str):
             relation = map_enum_fields(relation, enums.SignalRelation)
@@ -2585,7 +2585,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_delta`.
 
         Returns:
-            Ranges: A regrouped record array representing the ranges.
+            Ranges: Regrouped record array representing the ranges.
         """
         return Ranges.from_delta(self.to_mapped(), delta=delta, **kwargs).regroup(group_by)
 
@@ -2826,7 +2826,7 @@ class SignalsAccessor(GenericAccessor):
             signal_index_name (str): Name to assign to the signal index.
 
         Returns:
-            Index: A Pandas Index constructed based on the specified signal index type.
+            Index: Pandas Index constructed based on the specified signal index type.
         """
         if signal_index_type.lower() == "range":
             return pd.Index(range_, name=signal_index_name)
@@ -3184,7 +3184,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A wrapped array of raveled signals.
+            SeriesFrame: Wrapped array of raveled signals.
 
         See:
             `vectorbtpro.signals.nb.ravel_nb`
@@ -3240,7 +3240,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: A series with the nth index for each column or group.
+            MaybeSeries: Series with the nth index for each column or group.
 
         See:
             * `vectorbtpro.signals.nb.nth_index_nb` regardless of grouping.
@@ -3321,7 +3321,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: A series with the normalized average index for each column or group.
+            MaybeSeries: Series with the normalized average index for each column or group.
 
         See:
             * `vectorbtpro.signals.nb.norm_avg_index_grouped_nb` if grouping is enabled.
@@ -3363,7 +3363,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.to_mapped`.
 
         Returns:
-            MappedArray: A mapped array of indices where only True values are considered.
+            MappedArray: Mapped array of indices where only True values are considered.
         """
         indices = np.arange(len(self.wrapper.index), dtype=float_)[:, None]
         indices = np.tile(indices, (1, len(self.wrapper.columns)))
@@ -3383,7 +3383,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
-            MaybeSeries: A series with the total count of True signals.
+            MaybeSeries: Series with the total count of True signals.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="total"), wrap_kwargs)
         return self.sum(group_by=group_by, wrap_kwargs=wrap_kwargs)
@@ -3403,7 +3403,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.total`.
 
         Returns:
-            MaybeSeries: A series with the rate of True signals.
+            MaybeSeries: Series with the rate of True signals.
         """
         total = reshaping.to_1d_array(self.total(group_by=group_by, **kwargs))
         wrap_kwargs = merge_dicts(dict(name_or_index="rate"), wrap_kwargs)
@@ -3428,7 +3428,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.partition_ranges`.
 
         Returns:
-            MaybeSeries: A series with the count of True signal partitions.
+            MaybeSeries: Series with the count of True signal partitions.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="total_partitions"), wrap_kwargs)
         return self.partition_ranges(**kwargs).count(group_by=group_by, wrap_kwargs=wrap_kwargs)
@@ -3453,7 +3453,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `SignalsAccessor.total_partitions` and `SignalsAccessor.total`.
 
         Returns:
-            MaybeSeries: A series with the partition rate.
+            MaybeSeries: Series with the partition rate.
         """
         total_partitions = reshaping.to_1d_array(self.total_partitions(group_by=group_by, *kwargs))
         total = reshaping.to_1d_array(self.total(group_by=group_by, *kwargs))
@@ -3470,7 +3470,7 @@ class SignalsAccessor(GenericAccessor):
         `stats` configuration from `vectorbtpro._settings.signals`.
 
         Returns:
-            Kwargs: A dictionary containing the default settings for stats.
+            Kwargs: Dictionary containing the default settings for stats.
         """
         from vectorbtpro._settings import settings
 
@@ -3893,7 +3893,7 @@ class SignalsAccessor(GenericAccessor):
         the plotting configuration from `vectorbtpro._settings.signals`.
 
         Returns:
-            Kwargs: A dictionary containing the default settings for plots.
+            Kwargs: Dictionary containing the default settings for plots.
         """
         from vectorbtpro._settings import settings
 

@@ -33,7 +33,7 @@ def get_init_cash_slicer(ann_args: tp.AnnArgs) -> ArraySlicer:
             See `vectorbtpro.utils.parsing.annotate_args`.
 
     Returns:
-        ArraySlicer: A slicer configured for slicing the initial cash values.
+        ArraySlicer: Slicer configured for slicing the initial cash values.
     """
     cash_sharing = ann_args["cash_sharing"]["value"]
     if cash_sharing:
@@ -50,7 +50,7 @@ def get_cash_deposits_slicer(ann_args: tp.AnnArgs) -> ArraySlicer:
             See `vectorbtpro.utils.parsing.annotate_args`.
 
     Returns:
-        ArraySlicer: A slicer configured for slicing the cash deposit values.
+        ArraySlicer: Slicer configured for slicing the cash deposit values.
     """
     cash_sharing = ann_args["cash_sharing"]["value"]
     if cash_sharing:
@@ -81,7 +81,7 @@ def in_outputs_merge_func(
         mapper (GroupLensMapper): Mapper for grouping and lens mapping.
 
     Returns:
-        NamedTuple: An instance of the same type as `results[0].in_outputs` with merged data.
+        NamedTuple: Instance of the same type as `results[0].in_outputs` with merged data.
     """
     in_outputs = dict()
     for k, v in results[0].in_outputs._asdict().items():
@@ -130,7 +130,7 @@ def merge_sim_outs(
         **kwargs: Keyword arguments for `in_outputs_merge_func`.
 
     Returns:
-        SimulationOutput: A merged simulation output instance.
+        SimulationOutput: Merged simulation output instance.
     """
     order_records = [r.order_records for r in results]
     order_records = merge_records(order_records, chunk_meta, ann_args=ann_args, mapper=mapper)

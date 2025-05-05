@@ -170,7 +170,7 @@ class ChunkableRegistry(Base):
                 These options override the setup's options.
 
         Returns:
-            Callable: The decorated function with chunked processing applied.
+            Callable: Decorated function with chunked processing applied.
         """
         setup = self.get_setup(setup_id_or_func)
         if setup is None:
@@ -206,7 +206,7 @@ class ChunkableRegistry(Base):
                 These options override the setup's options.
 
         Returns:
-            Callable: The function with the resolved chunking applied.
+            Callable: Function with the resolved chunking applied.
         """
         setup = self.get_setup(setup_id_or_func)
         if setup is None:
@@ -261,7 +261,7 @@ def register_chunkable(
         **options: Additional options for configuring the chunkable setup.
 
     Returns:
-        Callable: The registered function, optionally wrapped with chunking.
+        Callable: Registered function, optionally wrapped with chunking.
 
     !!! note
         Calling the `register_chunkable` decorator before (or below) the

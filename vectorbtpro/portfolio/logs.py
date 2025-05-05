@@ -231,7 +231,7 @@ class Logs(PriceRecords):
         the log-specific settings from `vectorbtpro._settings.logs`.
 
         Returns:
-            Kwargs: A dictionary containing the merged default statistics configuration.
+            Kwargs: Dictionary containing the merged default statistics configuration.
         """
         from vectorbtpro._settings import settings
 
@@ -291,7 +291,7 @@ class Logs(PriceRecords):
         the log-specific plot configuration from `vectorbtpro._settings.logs`.
 
         Returns:
-            Kwargs: A dictionary containing the merged default plotting configuration.
+            Kwargs: Dictionary containing the merged default plotting configuration.
         """
         from vectorbtpro._settings import settings
 

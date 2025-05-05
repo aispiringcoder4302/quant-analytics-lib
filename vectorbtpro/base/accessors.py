@@ -82,7 +82,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Pandas Index object.
 
         Returns:
-            Index: The underlying Pandas Index object.
+            Index: Underlying Pandas Index object.
         """
         return self._obj
 
@@ -90,7 +90,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return Pandas Index object.
 
         Returns:
-            Index: The underlying Pandas Index object.
+            Index: Underlying Pandas Index object.
         """
         return self.obj
 
@@ -102,7 +102,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Timestamps are converted to nanoseconds.
 
         Returns:
-            Array1d: The resulting 64-bit integer array.
+            Array1d: Resulting 64-bit integer array.
         """
         return dt.to_ns(self.obj)
 
@@ -114,7 +114,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             shift (bool): If True, shift the resulting period.
 
         Returns:
-            PeriodIndex: The converted PeriodIndex.
+            PeriodIndex: Converted PeriodIndex.
         """
         index = self.obj
         if isinstance(index, pd.DatetimeIndex):
@@ -135,7 +135,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `BaseIDXAccessor.to_period`.
 
         Returns:
-            DatetimeIndex: The resulting timestamp index.
+            DatetimeIndex: Resulting timestamp index.
         """
         new_index = self.to_period(*args, **kwargs).to_timestamp()
         if self.obj.tz is not None:
@@ -153,7 +153,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `BaseIDXAccessor.to_period_ts`.
 
         Returns:
-            Array1d: The resulting 64-bit integer array.
+            Array1d: Resulting 64-bit integer array.
         """
         return dt.to_ns(self.to_period_ts(*args, **kwargs))
 
@@ -166,7 +166,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.index_from_values`.
 
         Returns:
-            Index: The generated index.
+            Index: Generated index.
         """
         return indexes.index_from_values(*args, **kwargs)
 
@@ -178,7 +178,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.repeat_index`.
 
         Returns:
-            Index: The index with repeated values.
+            Index: Index with repeated values.
         """
         return indexes.repeat_index(self.obj, *args, **kwargs)
 
@@ -190,7 +190,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.tile_index`.
 
         Returns:
-            Index: The tiled index.
+            Index: Tiled index.
         """
         return indexes.tile_index(self.obj, *args, **kwargs)
 
@@ -209,7 +209,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.stack_indexes`.
 
         Returns:
-            Index: The stacked index.
+            Index: Stacked index.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
@@ -236,7 +236,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.combine_indexes`.
 
         Returns:
-            Index: The combined index.
+            Index: Combined index.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
@@ -257,7 +257,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.concat_indexes`.
 
         Returns:
-            Index: The concatenated index.
+            Index: Concatenated index.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
@@ -282,7 +282,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.align_index_to`.
 
         Returns:
-            IndexSlice: The aligned index slice.
+            IndexSlice: Aligned index slice.
         """
         return indexes.align_index_to(self.obj, *args, **kwargs)
 
@@ -352,7 +352,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.find_first_occurrence`.
 
         Returns:
-            int: The index of the first occurrence.
+            int: Index of the first occurrence.
         """
         return indexes.find_first_occurrence(self.obj, *args, **kwargs)
 
@@ -445,7 +445,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 If None, the accessor's index is used.
 
         Returns:
-            int: The number of periods in the index.
+            int: Number of periods in the index.
         """
         if not isinstance(cls_or_self, type):
             if index is None:
@@ -459,7 +459,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the number of periods in the index.
 
         Returns:
-            int: The computed number of periods.
+            int: Computed number of periods.
         """
         return len(self.obj)
 
@@ -480,7 +480,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
-            float: The calculated number of periods.
+            float: Calculated number of periods.
 
         !!! info
             For default settings, see `vectorbtpro._settings.wrapping`.
@@ -520,7 +520,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Return the datetime period count in the index using default parameters.
 
         Returns:
-            float: The computed number of datetime periods.
+            float: Computed number of datetime periods.
         """
         return self.get_dt_periods()
 
@@ -585,7 +585,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for initializing `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
-            Grouper: The constructed index grouper.
+            Grouper: Constructed index grouper.
         """
         if groupby_kwargs is None:
             groupby_kwargs = {}
@@ -686,7 +686,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexing.get_index_points`.
 
         Returns:
-            Array1d: An array of index points.
+            Array1d: Array of index points.
         """
         return get_index_points(self.obj, *args, **kwargs)
 
@@ -716,7 +716,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
 
         Returns:
-            Any: The result of the split operation.
+            Any: Result of the split operation.
 
         !!! note
             Splits the Pandas object itself, not the accessor.
@@ -746,7 +746,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
 
         Returns:
-            Any: The result after applying the split and apply operation.
+            Any: Result after applying the split and apply operation.
 
         !!! note
             Splits the Pandas object itself, not the accessor.
@@ -828,7 +828,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `apply_func`.
 
         Returns:
-            MergeableResults: The merged results from applying the function on all chunks.
+            MergeableResults: Merged results from applying the function on all chunks.
 
         !!! note
             Splits the underlying Pandas object, not the accessor.
@@ -1016,7 +1016,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `BaseAccessor.replace`.
 
         Returns:
-            BaseAccessor: A new accessor instance with updated parameters.
+            BaseAccessor: New accessor instance with updated parameters.
         """
         return self.replace(**kwargs)
 
@@ -1090,7 +1090,7 @@ class BaseAccessor(Wrapping):
                 `BaseAccessor.resolve_row_stack_kwargs` and `BaseAccessor.resolve_stack_kwargs`.
 
         Returns:
-            BaseAccessor: A new accessor instance with row-stacked data.
+            BaseAccessor: New accessor instance with row-stacked data.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -1142,7 +1142,7 @@ class BaseAccessor(Wrapping):
                 `BaseAccessor.resolve_column_stack_kwargs` and `BaseAccessor.resolve_stack_kwargs`.
 
         Returns:
-            BaseAccessor: A new accessor instance with column-stacked data.
+            BaseAccessor: New accessor instance with column-stacked data.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -1195,7 +1195,7 @@ class BaseAccessor(Wrapping):
             wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func`.
         Returns:
-            BaseAccessor: A new accessor instance with the selected subset of data.
+            BaseAccessor: New accessor instance with the selected subset of data.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(*args, **kwargs)
@@ -1227,7 +1227,7 @@ class BaseAccessor(Wrapping):
         """Underlying Pandas object.
 
         Returns:
-            SeriesFrame: A Pandas Series or DataFrame that matches the wrapper's configuration,
+            SeriesFrame: Pandas Series or DataFrame that matches the wrapper's configuration,
                 or a wrapped version if it does not.
         """
         if isinstance(self._obj, (pd.Series, pd.DataFrame)):
@@ -1247,7 +1247,7 @@ class BaseAccessor(Wrapping):
             default (Optional[Any]): Default value if the key is not found.
 
         Returns:
-            SeriesFrame: The underlying Pandas object if no key is provided,
+            SeriesFrame: Underlying Pandas object if no key is provided,
                 or the value associated with the key.
         """
         if key is None:
@@ -1308,7 +1308,7 @@ class BaseAccessor(Wrapping):
             shape (ShapeLike): Input shape.
 
         Returns:
-            Shape: The resolved two-dimensional shape.
+            Shape: Resolved two-dimensional shape.
         """
         shape_2d = reshaping.to_2d_shape(shape)
         try:
@@ -1330,7 +1330,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for the Pandas constructor.
 
         Returns:
-            SeriesFrame: An empty Series or DataFrame with the specified shape.
+            SeriesFrame: Empty Series or DataFrame with the specified shape.
         """
         if not isinstance(shape, tuple) or (isinstance(shape, tuple) and len(shape) == 1):
             return pd.Series(np.full(shape, fill_value), **kwargs)
@@ -1346,7 +1346,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for the Pandas constructor.
 
         Returns:
-            SeriesFrame: An empty Series or DataFrame matching the structure of `other`.
+            SeriesFrame: Empty Series or DataFrame matching the structure of `other`.
         """
         if checks.is_series(other):
             return cls.empty(other.shape, fill_value=fill_value, index=other.index, name=other.name, **kwargs)
@@ -1586,7 +1586,7 @@ class BaseAccessor(Wrapping):
         Calls `vectorbtpro.base.reshaping.to_1d` with `raw=True` on the underlying data.
 
         Returns:
-            Array1d: A one-dimensional representation of the data.
+            Array1d: One-dimensional representation of the data.
         """
         return reshaping.to_1d_array(self.obj)
 
@@ -1596,7 +1596,7 @@ class BaseAccessor(Wrapping):
         Calls `vectorbtpro.base.reshaping.to_2d` with `raw=True` on the underlying data.
 
         Returns:
-            Array2d: A two-dimensional representation of the data.
+            Array2d: Two-dimensional representation of the data.
         """
         return reshaping.to_2d_array(self.obj)
 
@@ -1622,7 +1622,7 @@ class BaseAccessor(Wrapping):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The tiled data, with updated index or columns if `keys` is provided.
+            SeriesFrame: Tiled data, with updated index or columns if `keys` is provided.
         """
         tiled = reshaping.tile(self.obj, n, axis=axis)
         if keys is not None:
@@ -1662,7 +1662,7 @@ class BaseAccessor(Wrapping):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The repeated data, with updated index or columns if `keys` is provided.
+            SeriesFrame: Repeated data, with updated index or columns if `keys` is provided.
         """
         repeated = reshaping.repeat(self.obj, n, axis=axis)
         if keys is not None:
@@ -1693,7 +1693,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.align_index_to`.
 
         Returns:
-            SeriesFrame: The aligned object.
+            SeriesFrame: Aligned object.
 
         Example:
             ```pycon
@@ -1791,7 +1791,7 @@ class BaseAccessor(Wrapping):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The cross aligned object.
+            SeriesFrame: Cross aligned object.
 
         Example:
             ```pycon
@@ -1892,7 +1892,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.broadcast`.
 
         Returns:
-            Any: The broadcasted result.
+            Any: Broadcasted result.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
         if isinstance(cls_or_self, type):
@@ -1909,7 +1909,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.broadcast_to`.
 
         Returns:
-            Any: The broadcasted result.
+            Any: Broadcasted result.
         """
         if isinstance(other, BaseAccessor):
             other = other.obj
@@ -1925,7 +1925,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.broadcast_combs`.
 
         Returns:
-            Any: The result of broadcast combinations.
+            Any: Result of broadcast combinations.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
         if isinstance(cls_or_self, type):
@@ -1942,7 +1942,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.make_symmetric`.
 
         Returns:
-            Frame: The symmetric reshaped DataFrame.
+            Frame: Symmetric reshaped DataFrame.
         """
         return reshaping.make_symmetric(self.obj, *args, **kwargs)
 
@@ -1954,7 +1954,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.unstack_to_array`.
 
         Returns:
-            Array: The resulting unstacked array.
+            Array: Resulting unstacked array.
         """
         return reshaping.unstack_to_array(self.obj, *args, **kwargs)
 
@@ -1966,7 +1966,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.unstack_to_df`.
 
         Returns:
-            Frame: The resulting unstacked DataFrame.
+            Frame: Resulting unstacked DataFrame.
         """
         return reshaping.unstack_to_df(self.obj, *args, **kwargs)
 
@@ -1978,7 +1978,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.to_dict`.
 
         Returns:
-            Mapping: A dictionary representation of the data.
+            Mapping: Dictionary representation of the data.
         """
         return reshaping.to_dict(self.obj, *args, **kwargs)
 
@@ -2042,7 +2042,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `apply_func`.
 
         Returns:
-            SeriesFrame: The result after applying the function.
+            SeriesFrame: Result after applying the function.
 
         !!! note
             The resulting array must have the same shape as the original array.
@@ -2118,7 +2118,7 @@ class BaseAccessor(Wrapping):
             keys (Optional[IndexLike]): Keys to label the columns in the resulting DataFrame.
 
         Returns:
-            Frame: The concatenated DataFrame.
+            Frame: Concatenated DataFrame.
 
         Example:
             ```pycon
@@ -2339,7 +2339,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `combine_func`.
 
         Returns:
-            SeriesFrame: The result after combining the objects.
+            SeriesFrame: Result after combining the objects.
 
         !!! note
             If `combine_func` is Numba-compiled, inputs are broadcast using `WRITEABLE` and

@@ -682,7 +682,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
-            Ranges: A new instance of `vectorbtpro.generic.ranges.Ranges` constructed from trade record fields.
+            Ranges: New instance of `vectorbtpro.generic.ranges.Ranges` constructed from trade record fields.
 
                 Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
@@ -711,7 +711,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.apply_mask`.
 
         Returns:
-            Trades: A new instance of trade records containing only long trades.
+            Trades: New instance of trade records containing only long trades.
         """
         filter_mask = self.get_field_arr("direction") == TradeDirection.Long
         return self.apply_mask(filter_mask, **kwargs)
@@ -723,7 +723,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.apply_mask`.
 
         Returns:
-            Trades: A new instance of trade records containing only short trades.
+            Trades: New instance of trade records containing only short trades.
         """
         filter_mask = self.get_field_arr("direction") == TradeDirection.Short
         return self.apply_mask(filter_mask, **kwargs)
@@ -1458,7 +1458,7 @@ class Trades(Ranges):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            SeriesFrame: The computed edge ratio.
+            SeriesFrame: Computed edge ratio.
 
         See:
             `vectorbtpro.portfolio.nb.records.edge_ratio_nb`
@@ -1550,7 +1550,7 @@ class Trades(Ranges):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: The computed running edge ratio.
+            SeriesFrame: Computed running edge ratio.
 
         See:
             `vectorbtpro.portfolio.nb.records.running_edge_ratio_nb`
@@ -1611,7 +1611,7 @@ class Trades(Ranges):
         `vectorbtpro._settings.trades`.
 
         Returns:
-            Kwargs: A dictionary of default trade statistics settings.
+            Kwargs: Dictionary of default trade statistics settings.
         """
         from vectorbtpro._settings import settings
 
@@ -2020,7 +2020,7 @@ class Trades(Ranges):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure with the plotted field against PnL or returns.
+            BaseFigure: Updated figure with the plotted field against PnL or returns.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -2204,7 +2204,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
 
         Returns:
-            BaseFigure: The updated figure with the MFE plot.
+            BaseFigure: Updated figure with the MFE plot.
         """
         return self.plot_against_pnl(
             *args,
@@ -2221,7 +2221,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
 
         Returns:
-            BaseFigure: The figure object with the plotted MFE returns.
+            BaseFigure: Figure object with the plotted MFE returns.
         """
         return self.plot_against_pnl(
             *args,
@@ -2240,7 +2240,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
 
         Returns:
-            BaseFigure: The figure object with the plotted MAE.
+            BaseFigure: Figure object with the plotted MAE.
         """
         return self.plot_against_pnl(
             *args,
@@ -2257,7 +2257,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
 
         Returns:
-            BaseFigure: The figure object with the plotted MAE returns.
+            BaseFigure: Figure object with the plotted MAE returns.
         """
         return self.plot_against_pnl(
             *args,
@@ -2305,7 +2305,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
 
         Returns:
-            BaseFigure: The figure object with the plotted expanding field projections.
+            BaseFigure: Figure object with the plotted expanding field projections.
 
         Examples:
             ```pycon
@@ -2361,7 +2361,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.plot_expanding`.
 
         Returns:
-            BaseFigure: The figure object with the plotted expanding MFE.
+            BaseFigure: Figure object with the plotted expanding MFE.
         """
         return self.plot_expanding(
             *args,
@@ -2378,7 +2378,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.plot_expanding`.
 
         Returns:
-            BaseFigure: The figure object with the plotted expanding MFE returns.
+            BaseFigure: Figure object with the plotted expanding MFE returns.
         """
         return self.plot_expanding(
             *args,
@@ -2396,7 +2396,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.plot_expanding`.
 
         Returns:
-            BaseFigure: The figure object with the plotted expanding MAE.
+            BaseFigure: Figure object with the plotted expanding MAE.
         """
         return self.plot_expanding(
             *args,
@@ -2413,7 +2413,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `Trades.plot_expanding`.
 
         Returns:
-            BaseFigure: The figure object with the plotted expanding MAE returns.
+            BaseFigure: Figure object with the plotted expanding MAE returns.
         """
         return self.plot_expanding(
             *args,
@@ -2468,7 +2468,7 @@ class Trades(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
 
         Returns:
-            BaseFigure: The figure object with the plotted running edge ratio.
+            BaseFigure: Figure object with the plotted running edge ratio.
         """
         from vectorbtpro.utils.figure import get_domain
 
@@ -2571,7 +2571,7 @@ class Trades(Ranges):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated Plotly figure with the plotted trades.
+            BaseFigure: Updated Plotly figure with the plotted trades.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -3052,7 +3052,7 @@ class EntryTrades(Trades):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated or newly created figure.
+            BaseFigure: Updated or newly created figure.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -3341,7 +3341,7 @@ class ExitTrades(Trades):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: A Plotly figure with exit trade signals plotted.
+            BaseFigure: Plotly figure with exit trade signals plotted.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -3560,7 +3560,7 @@ class Positions(Trades):
             **kwargs: Keyword arguments for `Positions.from_records`.
 
         Returns:
-            Positions: A new instance of `Positions` created from the source trades.
+            Positions: New instance of `Positions` created from the source trades.
 
         See:
             `vectorbtpro.portfolio.nb.records.get_positions_nb`

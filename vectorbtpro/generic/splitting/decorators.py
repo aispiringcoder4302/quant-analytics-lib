@@ -92,7 +92,7 @@ def split(
         **var_kwargs: Keyword arguments to be distributed between `splitter_kwargs` and `apply_kwargs`.
 
     Returns:
-        Callable: The wrapper function that executes the original function using the splitter.
+        Callable: Wrapper function that executes the original function using the splitter.
 
     Examples:
         Split a Series and return its sum:
@@ -379,7 +379,7 @@ def cv_split(
         **split_kwargs: Keyword arguments for `split`.
 
     Returns:
-        Callable: A decorated function that applies cross-validation via splitting and parameterized execution.
+        Callable: Decorated function that applies cross-validation via splitting and parameterized execution.
 
     Examples:
         Permutate a series and pick the first value. Make the seed parameterizable.

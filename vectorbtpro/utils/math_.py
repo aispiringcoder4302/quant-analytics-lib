@@ -202,7 +202,7 @@ def add_nb(
         abs_tol (float): Absolute tolerance used for comparing values.
 
     Returns:
-        float: The sum of a and b, or 0.0 if the sum is approximately zero based on the tolerance settings.
+        float: Sum of a and b, or 0.0 if the sum is approximately zero based on the tolerance settings.
     """
     if use_tol and is_addition_zero_nb(a, b, rel_tol=rel_tol, abs_tol=abs_tol):
         return 0.0
@@ -219,7 +219,7 @@ def round_nb(a: float, use_round: bool = _use_round, decimals: int = _decimals) 
         decimals (int): Number of decimals to round to.
 
     Returns:
-        float: The rounded float value if rounding is enabled; otherwise, the original value.
+        float: Rounded float value if rounding is enabled; otherwise, the original value.
     """
     if use_round:
         return round(a, decimals)

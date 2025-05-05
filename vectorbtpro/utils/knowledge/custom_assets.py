@@ -185,7 +185,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `VBTAsset.from_json_file` or `VBTAsset.from_json_bytes`.
 
         Returns:
-            VBTAsset: A new VBT asset built from the downloaded JSON asset.
+            VBTAsset: New VBT asset built from the downloaded JSON asset.
         """
         import requests
 
@@ -408,7 +408,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `VBTAsset.find`.
 
         Returns:
-            MaybeVBTAsset: A new VBT asset with matching asset item(s).
+            MaybeVBTAsset: New VBT asset with matching asset item(s).
         """
 
         def _extend_link(link):
@@ -458,7 +458,7 @@ class VBTAsset(KnowledgeAsset):
             rules (Optional[Dict[str, str]]): Dictionary of regex replacement rules.
 
         Returns:
-            str: The minimized link.
+            str: Minimized link.
         """
         rules = cls.resolve_setting(rules, "minimize_link_rules", merge=True)
 
@@ -473,7 +473,7 @@ class VBTAsset(KnowledgeAsset):
             rules (Optional[Dict[str, str]]): Dictionary of regex replacement rules.
 
         Returns:
-            MaybeVBTAsset: A new VBT asset with minimized links.
+            MaybeVBTAsset: New VBT asset with minimized links.
         """
         rules = self.resolve_setting(rules, "minimize_link_rules", merge=True)
 
@@ -491,7 +491,7 @@ class VBTAsset(KnowledgeAsset):
             links (Optional[bool]): If True, apply link minimization to replace redundant URL prefixes.
 
         Returns:
-            MaybeVBTAsset: A new minimized VBT asset.
+            MaybeVBTAsset: New minimized VBT asset.
         """
         keys = self.resolve_setting(keys, "minimize_keys")
         links = self.resolve_setting(links, "minimize_links")
@@ -511,7 +511,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
-            VBTAsset: A new VBT asset containing the previous data item.
+            VBTAsset: New VBT asset containing the previous data item.
         """
         d = self.find_link(link, wrap=False, **kwargs)
         d_index = self.index(d)
@@ -528,7 +528,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
-            VBTAsset: A new VBT asset containing the next data item.
+            VBTAsset: New VBT asset containing the next data item.
         """
         d = self.find_link(link, wrap=False, **kwargs)
         d_index = self.index(d)
@@ -561,7 +561,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
-            MaybeVBTAsset: A new VBT asset converted to Markdown.
+            MaybeVBTAsset: New VBT asset converted to Markdown.
         """
         return self.apply(
             "to_markdown",
@@ -673,7 +673,7 @@ class VBTAsset(KnowledgeAsset):
                 and forwarded to `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
-            Path: The path to the directory where Markdown files are stored.
+            Path: Path to the directory where Markdown files are stored.
         """
         import tempfile
         from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
@@ -763,7 +763,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Returns:
-            MaybeVBTAsset: A new VBT asset converted into HTML format.
+            MaybeVBTAsset: New VBT asset converted into HTML format.
         """
         return self.apply(
             "to_html",
@@ -813,7 +813,7 @@ class VBTAsset(KnowledgeAsset):
             url_map (dict): Mapping from original URLs to replacement URLs.
 
         Returns:
-            str: The modified HTML with updated anchor tag URLs.
+            str: Modified HTML with updated anchor tag URLs.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -976,7 +976,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `VBTAsset.save_to_html`.
 
         Returns:
-            Path: The directory path where the HTML files are stored.
+            Path: Directory path where the HTML files are stored.
         """
         open_browser = self.resolve_setting(open_browser, "open_browser")
 
@@ -1038,7 +1038,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `VBTAsset.to_html`.
 
         Returns:
-            Path: The file path of the generated HTML file.
+            Path: File path of the generated HTML file.
 
         !!! note
             The file __won't__ be deleted automatically.
@@ -1112,7 +1112,7 @@ class VBTAsset(KnowledgeAsset):
             allow_suffix (bool): If True, do not append a non-word boundary.
 
         Returns:
-            str: The processed mention target.
+            str: Processed mention target.
         """
         if as_regex:
             escaped_target = re.escape(target)
@@ -1417,7 +1417,7 @@ class VBTAsset(KnowledgeAsset):
                 otherwise, escape the targets.
 
         Returns:
-            str: The combined regular expression pattern.
+            str: Combined regular expression pattern.
         """
         if as_regex:
             prefixed_targets = []
@@ -1498,7 +1498,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `VBTAsset.find` or `VBTAsset.find_code`.
 
         Returns:
-            MaybeVBTAsset: A new VBT asset containing the found mentions.
+            MaybeVBTAsset: New VBT asset containing the found mentions.
         """
         as_code = self.resolve_setting(as_code, "as_code")
         as_regex = self.resolve_setting(as_regex, "as_regex")
@@ -1583,7 +1583,7 @@ class VBTAsset(KnowledgeAsset):
         same path with a ".chat" suffix is added under "knowledge.chat".
 
         Returns:
-            dict: A dictionary containing specialized settings paths for 'knowledge' and 'knowledge.chat'.
+            dict: Dictionary containing specialized settings paths for 'knowledge' and 'knowledge.chat'.
         """
         spec_settings_path = {}
         for cls_ in cls.__mro__[::-1]:
@@ -1672,7 +1672,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `replace`.
 
         Returns:
-            PagesAsset: A new pages asset with redundant links removed.
+            PagesAsset: New pages asset with redundant links removed.
         """
         redundant_links = set()
         new_data = {}
@@ -1705,7 +1705,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `replace`.
 
         Returns:
-            PagesAsset: A new pages asset with aggregated links.
+            PagesAsset: New pages asset with aggregated links.
         """
         if aggregate_kwargs is None:
             aggregate_kwargs = {}
@@ -1748,7 +1748,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
-            MaybePagesAsset: A new pages asset with the found pages or headings.
+            MaybePagesAsset: New pages asset with the found pages or headings.
         """
         found = self.find_link(link, single_item=single_item, **kwargs)
         if not isinstance(found, (type(self), list)):
@@ -1780,7 +1780,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
-            MaybePagesAsset: A new pages asset corresponding to the reference name.
+            MaybePagesAsset: New pages asset corresponding to the reference name.
         """
         if isinstance(refname, list):
             link = list(map(lambda x: f"#({re.escape(x)})$", refname))
@@ -1810,7 +1810,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.find_refname`.
 
         Returns:
-            MaybePagesAsset: A new pages asset corresponding to the object or reference name.
+            MaybePagesAsset: New pages asset corresponding to the object or reference name.
         """
         if attr is not None:
             checks.assert_instance_of(attr, str, arg_name="attr")
@@ -2335,7 +2335,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.find_obj_mentions`.
 
         Returns:
-            MaybePagesAsset: A new pages asset with the found documentation pages or headings.
+            MaybePagesAsset: New pages asset with the found documentation pages or headings.
         """
         incl_pages = self.resolve_setting(incl_pages, "incl_pages")
         excl_pages = self.resolve_setting(excl_pages, "excl_pages")
@@ -2490,7 +2490,7 @@ class PagesAsset(VBTAsset):
             append_github_link (Optional[bool]): If True, append the GitHub source link to the heading.
 
         Returns:
-            PagesAsset: A new pages asset with aggregated page content.
+            PagesAsset: New pages asset with aggregated page content.
         """
         append_obj_type = self.resolve_setting(append_obj_type, "append_obj_type")
         append_github_link = self.resolve_setting(append_github_link, "append_github_link")
@@ -2552,7 +2552,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
-            PagesAsset: A new pages asset containing the parent page (and optionally the original page).
+            PagesAsset: New pages asset containing the parent page (and optionally the original page).
         """
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
@@ -2576,7 +2576,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
-            PagesAsset: A new pages asset containing the child pages (and optionally the original page).
+            PagesAsset: New pages asset containing the child pages (and optionally the original page).
         """
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
@@ -2598,7 +2598,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
-            PagesAsset: A new pages asset containing the sibling pages.
+            PagesAsset: New pages asset containing the sibling pages.
         """
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
@@ -2624,7 +2624,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
-            PagesAsset: A new pages asset containing the descendant pages.
+            PagesAsset: New pages asset containing the descendant pages.
         """
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
@@ -2652,7 +2652,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.select_descendants`.
 
         Returns:
-            PagesAsset: A new pages asset containing the branch pages.
+            PagesAsset: New pages asset containing the branch pages.
         """
         return self.select_descendants(link, incl_link=True, **kwargs)
 
@@ -2665,7 +2665,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
-            PagesAsset: A new pages asset containing the ancestor pages.
+            PagesAsset: New pages asset containing the ancestor pages.
         """
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
@@ -2692,7 +2692,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
-            PagesAsset: A new pages asset containing the parent page information.
+            PagesAsset: New pages asset containing the parent page information.
         """
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
@@ -2720,7 +2720,7 @@ class PagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
-            PagesAsset: A new pages asset containing the descendant heading pages.
+            PagesAsset: New pages asset containing the descendant heading pages.
         """
         d = self.find_page(link, wrap=False, **kwargs)
         link_map = {d["link"]: dict(d) for d in self.data}
@@ -2867,7 +2867,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `MessagesAsset.sort`.
 
         Returns:
-            MaybeMessagesAsset: A new messages asset sorted with the latest messages first.
+            MaybeMessagesAsset: New messages asset sorted with the latest messages first.
         """
         return self.sort(keys=self.get("timestamp"), ascending=False, **kwargs)
 
@@ -2903,7 +2903,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
-            MaybeMessagesAsset: A new messages asset with aggregated messages.
+            MaybeMessagesAsset: New messages asset with aggregated messages.
         """
         return self.apply(
             "agg_message",
@@ -2957,7 +2957,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
-            MaybeMessagesAsset: A new messages asset with messages aggregated by block.
+            MaybeMessagesAsset: New messages asset with messages aggregated by block.
         """
         if collect_kwargs is None:
             collect_kwargs = {}
@@ -3019,7 +3019,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
-            MaybeMessagesAsset: A new messages asset with messages aggregated by thread.
+            MaybeMessagesAsset: New messages asset with messages aggregated by thread.
         """
         if collect_kwargs is None:
             collect_kwargs = {}
@@ -3081,7 +3081,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
-            MaybeMessagesAsset: A new messages asset with messages aggregated by channel.
+            MaybeMessagesAsset: New messages asset with messages aggregated by channel.
         """
         if collect_kwargs is None:
             collect_kwargs = {}
@@ -3182,7 +3182,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for the aggregation method.
 
         Returns:
-            MessagesAsset: A new messages asset with aggregated messages.
+            MessagesAsset: New messages asset with aggregated messages.
         """
         if by.lower() == "lowest":
             by = self.lowest_aggregate_by
@@ -3205,7 +3205,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
-            MessagesAsset: A new messages asset containing the reference message.
+            MessagesAsset: New messages asset containing the reference message.
         """
         d = self.find_link(link, wrap=False, **kwargs)
         reference = d.get("reference", None)
@@ -3228,7 +3228,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
-            MessagesAsset: A new messages asset containing the reply messages.
+            MessagesAsset: New messages asset containing the reply messages.
         """
         d = self.find_link(link, wrap=False, **kwargs)
         replies = d.get("replies", [])
@@ -3258,7 +3258,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
-            MessagesAsset: A new messages asset containing messages from the same block.
+            MessagesAsset: New messages asset containing messages from the same block.
         """
         d = self.find_link(link, wrap=False, **kwargs)
         new_data = []
@@ -3280,7 +3280,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
-            MessagesAsset: A new messages asset containing messages from the same thread.
+            MessagesAsset: New messages asset containing messages from the same thread.
         """
         d = self.find_link(link, wrap=False, **kwargs)
         new_data = []
@@ -3302,7 +3302,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
-            MessagesAsset: A new messages asset containing messages from the same channel.
+            MessagesAsset: New messages asset containing messages from the same channel.
         """
         d = self.find_link(link, wrap=False, **kwargs)
         new_data = []
@@ -3333,7 +3333,7 @@ class MessagesAsset(VBTAsset):
             **kwargs: Keyword arguments for `MessagesAsset.find_obj_mentions`.
 
         Returns:
-            MaybeMessagesAsset: A new messages asset containing messages related to the specified object(s).
+            MaybeMessagesAsset: New messages asset containing messages related to the specified object(s).
         """
         return self.find_obj_mentions(obj, attr=attr, module=module, resolve=resolve, **kwargs)
 
@@ -3387,7 +3387,7 @@ def find_api(
         **kwargs: Keyword arguments for `PagesAsset.find_obj_api` or `PagesAsset.rank`.
 
     Returns:
-        MaybePagesAsset: A new pages asset containing API pages and headings relevant to the input.
+        MaybePagesAsset: New pages asset containing API pages and headings relevant to the input.
     """
     if pages_asset is None:
         pages_asset = PagesAsset
@@ -3445,7 +3445,7 @@ def find_docs(
         **kwargs: Keyword arguments for `PagesAsset.find_obj_docs` or `PagesAsset.rank`.
 
     Returns:
-        MaybePagesAsset: A new pages asset containing documentation pages and headings relevant to the input.
+        MaybePagesAsset: New pages asset containing documentation pages and headings relevant to the input.
     """
     if pages_asset is None:
         pages_asset = PagesAsset
@@ -3505,7 +3505,7 @@ def find_messages(
         **kwargs: Keyword arguments for `MessagesAsset.find_obj_messages` or `MessagesAsset.rank`.
 
     Returns:
-        MaybeMessagesAsset: A new messages asset of messages processed according to the specified parameters.
+        MaybeMessagesAsset: New messages asset of messages processed according to the specified parameters.
 
     !!! note
         If `obj_or_query` is provided and not treated as a query, messages are retrieved using
@@ -3587,7 +3587,7 @@ def find_examples(
         **kwargs: Keyword arguments for `VBTAsset.find`, `VBTAsset.find_code`, or `VBTAsset.rank`.
 
     Returns:
-        MaybeVBTAsset: A new VBT asset containing code examples processed according to the specified parameters.
+        MaybeVBTAsset: New VBT asset containing code examples processed according to the specified parameters.
 
     !!! note
         If `obj_or_query` is provided and not treated as a query, examples are retrieved using
@@ -3986,7 +3986,7 @@ def chat_about(
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.chat`.
 
     Returns:
-        MaybeChatOutput: The output of the chat session, which may include the chat history and other information.
+        MaybeChatOutput: Output of the chat session, which may include the chat history and other information.
     """
     if shuffle is not None:
         if shuffle_messages is None:
@@ -4209,7 +4209,7 @@ def chat(
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.chat`.
 
     Returns:
-        MaybeChatOutput: The chat response generated by the asset's chat method.
+        MaybeChatOutput: Chat response generated by the asset's chat method.
     """
     find_arg_names = set(get_func_arg_names(find_assets))
     if find_assets_kwargs is None:
@@ -4300,7 +4300,7 @@ def quick_chat(
         **kwargs: Keyword arguments for `chat`.
 
     Returns:
-        MaybeChatOutput: The chat response generated by `chat`.
+        MaybeChatOutput: Chat response generated by `chat`.
     """
     if rank_kwargs is None:
         rank_kwargs = {}

@@ -79,7 +79,7 @@ class _PIVOTLB(PIVOTLB):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:
-            BaseFigure: A figure object displaying the plot.
+            BaseFigure: Figure object displaying the plot.
 
         Examples:
             ```pycon

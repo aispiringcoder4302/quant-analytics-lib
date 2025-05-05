@@ -63,7 +63,7 @@ def to_tuple_shape(shape: tp.ShapeLike) -> tp.Shape:
         shape (ShapeLike): Shape-like object that can be an integer or iterable.
 
     Returns:
-        Shape: A tuple representation of the input shape.
+        Shape: Tuple representation of the input shape.
     """
     if checks.is_int(shape):
         return (int(shape),)
@@ -77,7 +77,7 @@ def to_1d_shape(shape: tp.ShapeLike) -> tp.Shape:
         shape (ShapeLike): Shape-like object; can be an integer or iterable.
 
     Returns:
-        Shape: A one-dimensional shape tuple.
+        Shape: One-dimensional shape tuple.
     """
     shape = to_tuple_shape(shape)
     if len(shape) == 0:
@@ -97,7 +97,7 @@ def to_2d_shape(shape: tp.ShapeLike, expand_axis: int = 1) -> tp.Shape:
         expand_axis (int): Axis along which to expand the array if necessary.
 
     Returns:
-        Shape: A two-dimensional shape tuple.
+        Shape: Two-dimensional shape tuple.
     """
     shape = to_tuple_shape(shape)
     if len(shape) == 0:
@@ -121,7 +121,7 @@ def repeat_shape(shape: tp.ShapeLike, n: int, axis: int = 1) -> tp.Shape:
         axis (int): Axis along which the shape is repeated.
 
     Returns:
-        Shape: The resulting shape after repetition.
+        Shape: Resulting shape after repetition.
     """
     shape = to_tuple_shape(shape)
     if len(shape) <= axis:
@@ -140,7 +140,7 @@ def tile_shape(shape: tp.ShapeLike, n: int, axis: int = 1) -> tp.Shape:
         axis (int): Axis along which the shape is tiled.
 
     Returns:
-        Shape: The resulting tiled shape.
+        Shape: Resulting tiled shape.
     """
     return repeat_shape(shape, n, axis=axis)
 
@@ -153,7 +153,7 @@ def index_to_series(obj: tp.Index, reset_index: bool = False) -> tp.Series:
         reset_index (bool): Whether to reset the index in the resulting Series.
 
     Returns:
-        Series: A Pandas Series created from the index.
+        Series: Pandas Series created from the index.
     """
     if reset_index:
         return obj.to_series(index=pd.RangeIndex(stop=len(obj)))
@@ -168,7 +168,7 @@ def index_to_frame(obj: tp.Index, reset_index: bool = False) -> tp.Frame:
         reset_index (bool): Whether to reset the index in the resulting DataFrame.
 
     Returns:
-        DataFrame: A Pandas DataFrame representation of the index.
+        DataFrame: Pandas DataFrame representation of the index.
     """
     if not isinstance(obj, pd.MultiIndex):
         return index_to_series(obj, reset_index=reset_index).to_frame()
@@ -184,7 +184,7 @@ def mapping_to_series(obj: tp.MappingLike) -> tp.Series:
         obj (MappingLike): Mapping-like object to convert.
 
     Returns:
-        Series: A Pandas Series constructed from the mapping.
+        Series: Pandas Series constructed from the mapping.
     """
     if checks.is_namedtuple(obj):
         obj = obj._asdict()
@@ -204,7 +204,7 @@ def to_any_array(obj: tp.ArrayLike, raw: bool = False, convert_index: bool = Tru
         convert_index (bool): If True, convert index objects to a Series.
 
     Returns:
-        AnyArray: The converted array.
+        AnyArray: Converted array.
     """
     from vectorbtpro.indicators.factory import IndicatorBase
 
@@ -232,7 +232,7 @@ def to_pd_array(obj: tp.ArrayLike, convert_index: bool = True) -> tp.PandasArray
         convert_index (bool): If True, convert index objects to a Series.
 
     Returns:
-        PandasArray: A Pandas Series or DataFrame representing the array.
+        PandasArray: Pandas Series or DataFrame representing the array.
     """
     from vectorbtpro.indicators.factory import IndicatorBase
 
@@ -267,7 +267,7 @@ def soft_to_ndim(obj: tp.ArrayLike, ndim: int, raw: bool = False) -> tp.AnyArray
         raw (bool): If True, return a raw NumPy array.
 
     Returns:
-        AnyArray: The reshaped array.
+        AnyArray: Reshaped array.
     """
     obj = to_any_array(obj, raw=raw)
     if ndim == 1:
@@ -295,7 +295,7 @@ def to_1d(obj: tp.ArrayLike, raw: bool = False) -> tp.AnyArray1d:
         raw (bool): If True, return a raw NumPy array.
 
     Returns:
-        AnyArray1d: The reshaped one-dimensional array.
+        AnyArray1d: Reshaped one-dimensional array.
     """
     obj = to_any_array(obj, raw=raw)
     if obj.ndim == 2:
@@ -326,7 +326,7 @@ def to_2d(obj: tp.ArrayLike, raw: bool = False, expand_axis: int = 1) -> tp.AnyA
         expand_axis (int): Axis along which to expand the array if necessary.
 
     Returns:
-        AnyArray2d: The reshaped two-dimensional array.
+        AnyArray2d: Reshaped two-dimensional array.
     """
     obj = to_any_array(obj, raw=raw)
     if obj.ndim == 2:
@@ -361,7 +361,7 @@ def to_1d_array_nb(obj: tp.Array) -> tp.Array1d:
         obj (Array): Input array to reshape.
 
     Returns:
-        Array1d: A one-dimensional array.
+        Array1d: One-dimensional array.
     """
     if obj.ndim == 0:
         return np.expand_dims(obj, axis=0)
@@ -384,7 +384,7 @@ def to_2d_array_nb(obj: tp.Array, expand_axis: int = 1) -> tp.Array2d:
         expand_axis (int): Axis along which to expand the array if necessary.
 
     Returns:
-        Array2d: A two-dimensional array.
+        Array2d: Two-dimensional array.
     """
     if obj.ndim == 0:
         return np.expand_dims(np.expand_dims(obj, axis=0), axis=0)
@@ -403,7 +403,7 @@ def to_2d_pr_array_nb(obj: tp.Array) -> tp.Array2d:
         obj (Array): Input array.
 
     Returns:
-        Array2d: A two-dimensional array.
+        Array2d: Two-dimensional array.
     """
     return to_2d_array_nb(obj, expand_axis=1)
 
@@ -416,7 +416,7 @@ def to_2d_pc_array_nb(obj: tp.Array) -> tp.Array2d:
         obj (Array): Input array.
 
     Returns:
-        Array2d: A two-dimensional array.
+        Array2d: Two-dimensional array.
     """
     return to_2d_array_nb(obj, expand_axis=0)
 
@@ -431,7 +431,7 @@ def to_dict(obj: tp.ArrayLike, orient: str = "dict") -> dict:
             Use "index_series" to create a dictionary mapping index to series.
 
     Returns:
-        dict: The converted dictionary.
+        dict: Converted dictionary.
     """
     obj = to_pd_array(obj)
     if orient == "index_series":
@@ -456,7 +456,7 @@ def repeat(
         ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
 
     Returns:
-        AnyArray: The array repeated along the specified axis.
+        AnyArray: Array repeated along the specified axis.
     """
     obj = to_any_array(obj, raw=raw)
     if axis == 0:
@@ -491,7 +491,7 @@ def tile(
         ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
 
     Returns:
-        AnyArray: The tiled array.
+        AnyArray: Tiled array.
     """
     obj = to_any_array(obj, raw=raw)
     if axis == 0:
@@ -597,7 +597,7 @@ def broadcast_array_to(
         expand_axis (Optional[int]): Axis used for array expansion.
 
     Returns:
-        Array: The broadcasted array.
+        Array: Broadcasted array.
 
     !!! info
         For default settings, see `vectorbtpro._settings.broadcasting`.
@@ -824,7 +824,7 @@ def wrap_broadcasted(
         ignore_ranges (Optional[bool]): Whether to disregard indexes of type `pd.RangeIndex`.
 
     Returns:
-        AnyArray: A Pandas DataFrame or Series if `is_pd` is True;
+        AnyArray: Pandas DataFrame or Series if `is_pd` is True;
             otherwise, the unmodified broadcasted array.
     """
     if is_pd:
@@ -1046,7 +1046,7 @@ def resolve_ref(dct: dict, k: tp.Hashable, inside_bco: bool = False, keep_wrap_d
         keep_wrap_default (bool): Whether to wrap the resolved default value with a `Default` instance.
 
     Returns:
-        Any: The fully resolved value.
+        Any: Fully resolved value.
     """
     v = dct[k]
     is_default = False
@@ -1191,7 +1191,7 @@ def broadcast(
         template_context (KwargsLike): Additional context for template substitution.
 
     Returns:
-        Any: The broadcasted object(s) and the associated wrapper if `return_wrapper` is True.
+        Any: Broadcasted object(s) and the associated wrapper if `return_wrapper` is True.
 
     !!! info
         For default settings, see `vectorbtpro._settings.broadcasting`.
@@ -2148,7 +2148,7 @@ def broadcast_to_axis_of(
         require_kwargs (KwargsLike): Keyword arguments for `np.require`.
 
     Returns:
-        Array: The broadcasted array.
+        Array: Broadcasted array.
 
     !!! note
         If `arg2` has fewer dimensions than `axis + 1`, `arg1` is broadcast to a single number.
@@ -2255,7 +2255,7 @@ def get_multiindex_series(obj: tp.SeriesFrame) -> tp.Series:
             If a DataFrame is provided, it must have at most one row or one column.
 
     Returns:
-        Series: The resulting Series with a MultiIndex.
+        Series: Resulting Series with a MultiIndex.
 
     !!! note
         If a DataFrame with more than one row and more than one column is provided, a ValueError is raised.
@@ -2355,7 +2355,7 @@ def make_symmetric(obj: tp.SeriesFrame, sort: bool = True) -> tp.Frame:
             If False, the indexes are concatenated in their original order with duplicates removed.
 
     Returns:
-        Frame: A symmetric DataFrame with matching index and columns.
+        Frame: Symmetric DataFrame with matching index and columns.
 
     Examples:
         ```pycon
@@ -2432,7 +2432,7 @@ def unstack_to_df(
         sort (bool): Whether to sort the level values before reshaping.
 
     Returns:
-        Frame: A DataFrame resulting from unstacking the specified index levels.
+        Frame: DataFrame resulting from unstacking the specified index levels.
 
     Examples:
         ```pycon

@@ -331,7 +331,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `Drawdowns`.
 
         Returns:
-            Drawdowns: A new instance of `Drawdowns` created from the provided price data.
+            Drawdowns: New instance of `Drawdowns` created from the provided price data.
 
         See:
             `vectorbtpro.generic.nb.records.get_drawdowns_nb`
@@ -375,7 +375,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
-            Ranges: An instance of `Ranges` representing peak-to-end records.
+            Ranges: Instance of `Ranges` representing peak-to-end records.
 
                 Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
@@ -402,7 +402,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
-            Ranges: An instance of `Ranges` representing peak-to-valley records.
+            Ranges: Instance of `Ranges` representing peak-to-valley records.
 
                 Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
@@ -429,7 +429,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
-            Ranges: An instance of `Ranges` representing valley-to-end records.
+            Ranges: Instance of `Ranges` representing valley-to-end records.
 
                 Has the `vectorbtpro.generic.enums.range_dt` dtype.
         """
@@ -464,7 +464,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
-            MappedArray: An array of computed drawdown values.
+            MappedArray: Array of computed drawdown values.
 
         See:
             `vectorbtpro.generic.nb.records.dd_drawdown_nb`
@@ -503,7 +503,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
-            MaybeSeries: The average drawdown value.
+            MaybeSeries: Average drawdown value.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="avg_drawdown"), wrap_kwargs)
         return self.drawdown.mean(group_by=group_by, jitted=jitted, chunked=chunked, wrap_kwargs=wrap_kwargs, **kwargs)
@@ -534,7 +534,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.min`.
 
         Returns:
-            MaybeSeries: The maximum drawdown value.
+            MaybeSeries: Maximum drawdown value.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="max_drawdown"), wrap_kwargs)
         return self.drawdown.min(group_by=group_by, jitted=jitted, chunked=chunked, wrap_kwargs=wrap_kwargs, **kwargs)
@@ -562,7 +562,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
-            MappedArray: An array containing the computed recovery return values.
+            MappedArray: Array containing the computed recovery return values.
 
         See:
             `vectorbtpro.generic.nb.records.dd_recovery_return_nb`
@@ -598,7 +598,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
         Returns:
-            MaybeSeries: The average recovery return.
+            MaybeSeries: Average recovery return.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="avg_recovery_return"), wrap_kwargs)
         return self.recovery_return.mean(
@@ -635,7 +635,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
 
         Returns:
-            MaybeSeries: The maximum recovery return.
+            MaybeSeries: Maximum recovery return.
         """
         wrap_kwargs = merge_dicts(dict(name_or_index="max_recovery_return"), wrap_kwargs)
         return self.recovery_return.max(
@@ -666,7 +666,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
-            MappedArray: The computed decline duration.
+            MappedArray: Computed decline duration.
 
         See:
             `vectorbtpro.generic.nb.records.dd_decline_duration_nb`
@@ -697,7 +697,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
-            MappedArray: The computed recovery duration.
+            MappedArray: Computed recovery duration.
 
         See:
             `vectorbtpro.generic.nb.records.dd_recovery_duration_nb`
@@ -729,7 +729,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `Drawdowns.map_array`.
 
         Returns:
-            MappedArray: The computed recovery duration ratio.
+            MappedArray: Computed recovery duration ratio.
 
         See:
             `vectorbtpro.generic.nb.records.dd_recovery_duration_ratio_nb`
@@ -772,7 +772,7 @@ class Drawdowns(Ranges):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The active drawdown.
+            MaybeSeries: Active drawdown.
 
         !!! note
             Grouping is not supported by this method.
@@ -812,7 +812,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
-            MaybeSeries: The duration of the active drawdown.
+            MaybeSeries: Duration of the active drawdown.
 
         !!! note
             Grouping is not supported by this method.
@@ -853,7 +853,7 @@ class Drawdowns(Ranges):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            MaybeSeries: The active recovery.
+            MaybeSeries: Active recovery.
 
         !!! note
             Grouping is not supported by this method.
@@ -894,7 +894,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
-            MaybeSeries: The recovery return of the active drawdown.
+            MaybeSeries: Recovery return of the active drawdown.
 
         !!! note
             Grouping is not supported by this method.
@@ -937,7 +937,7 @@ class Drawdowns(Ranges):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
 
         Returns:
-            MaybeSeries: The recovery duration of the active drawdown.
+            MaybeSeries: Recovery duration of the active drawdown.
 
         !!! note
             Grouping is not supported by this method.
@@ -964,7 +964,7 @@ class Drawdowns(Ranges):
         configuration from `vectorbtpro._settings.drawdowns`.
 
         Returns:
-            Kwargs: The default drawdown statistics settings.
+            Kwargs: Default drawdown statistics settings.
         """
         from vectorbtpro._settings import settings
 
@@ -1156,7 +1156,7 @@ class Drawdowns(Ranges):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: A figure object containing the plotted drawdowns and price data.
+            BaseFigure: Figure object containing the plotted drawdowns and price data.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -1483,7 +1483,7 @@ class Drawdowns(Ranges):
         with the `plots` configuration from `vectorbtpro._settings.drawdowns`.
 
         Returns:
-            Kwargs: The default plot settings.
+            Kwargs: Default plot settings.
         """
         from vectorbtpro._settings import settings
 

@@ -412,7 +412,7 @@ def weekday_diff_nb(weekday1: int, weekday2: int, zero_start: bool = True) -> in
             otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
 
     Returns:
-        int: The number of days from `weekday2` to the next occurrence of `weekday1`.
+        int: Number of days from `weekday2` to the next occurrence of `weekday1`.
     """
     if zero_start:
         if weekday1 > 6 or weekday1 < 0:
@@ -441,7 +441,7 @@ def past_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
             otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
 
     Returns:
-        int: The timestamp corresponding to the past occurrence at midnight of the specified weekday.
+        int: Timestamp corresponding to the past occurrence at midnight of the specified weekday.
     """
     this_weekday = weekday_nb(ts, zero_start=zero_start)
     weekday_diff = weekday_diff_nb(this_weekday, weekday, zero_start=zero_start)
@@ -459,7 +459,7 @@ def future_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
             otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
 
     Returns:
-        int: The timestamp corresponding to the future occurrence at midnight of the specified weekday.
+        int: Timestamp corresponding to the future occurrence at midnight of the specified weekday.
     """
     this_weekday = weekday_nb(ts, zero_start=zero_start)
     weekday_diff = weekday_diff_nb(weekday, this_weekday, zero_start=zero_start)
@@ -474,7 +474,7 @@ def day_of_year_nb(ts: int) -> int:
         ts (int): Timestamp in nanoseconds.
 
     Returns:
-        int: The day of the year, starting at 1.
+        int: Day of the year, starting at 1.
     """
     y, m, d = to_civil_nb(ts)
     y_ts = from_civil_nb(y, 1, 1)
@@ -489,7 +489,7 @@ def week_nb(ts: int) -> int:
         ts (int): Timestamp in nanoseconds.
 
     Returns:
-        int: The week number of the year.
+        int: Week number of the year.
     """
     return day_of_year_nb(ts) // 7
 
@@ -502,7 +502,7 @@ def month_nb(ts: int) -> int:
         ts (int): Timestamp in nanoseconds.
 
     Returns:
-        int: The month number.
+        int: Month number.
     """
     y, m, d = to_civil_nb(ts)
     return m
@@ -516,7 +516,7 @@ def year_nb(ts: int) -> int:
         ts (int): Timestamp in nanoseconds.
 
     Returns:
-        int: The year.
+        int: Year.
     """
     y, m, d = to_civil_nb(ts)
     return y
@@ -544,7 +544,7 @@ def last_day_of_month_nb(y: int, m: int) -> int:
         m (int): Month.
 
     Returns:
-        int: The last day of the month.
+        int: Last day of the month.
     """
     if m == 1:
         return 31
@@ -614,7 +614,7 @@ def index_matches_dtc_nb(index: tp.Array1d, other_dtc: DTCNT) -> tp.Array1d:
         other_dtc (DTCNT): Datetime components to match against.
 
     Returns:
-        Array1d: A boolean mask indicating which elements match.
+        Array1d: Boolean mask indicating which elements match.
     """
     out = np.empty_like(index, dtype=np.bool_)
     for i in range(len(index)):
@@ -1187,7 +1187,7 @@ def index_within_dtc_range_nb(
         closed_end (bool): Whether the end boundary is inclusive.
 
     Returns:
-        Array1d: A boolean mask with True for elements within the range and False otherwise.
+        Array1d: Boolean mask with True for elements within the range and False otherwise.
     """
     out = np.empty_like(index, dtype=np.bool_)
     for i in range(len(index)):

@@ -271,7 +271,7 @@ class QSAdapter(Configured):
             **kwargs: Keyword arguments for `QSAdapter.replace`.
 
         Returns:
-            QSAdapter: A new instance with updated configuration.
+            QSAdapter: New instance with updated configuration.
         """
         return self.replace(**kwargs)
 
@@ -282,7 +282,7 @@ class QSAdapter(Configured):
         This is the main entry point for accessing returns-related methods and properties.
 
         Returns:
-            ReturnsAccessor: The returns accessor instance.
+            ReturnsAccessor: Returns accessor instance.
         """
         return self._returns_acc
 

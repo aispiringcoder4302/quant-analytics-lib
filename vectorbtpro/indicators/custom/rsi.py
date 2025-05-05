@@ -96,7 +96,7 @@ class _RSI(RSI):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: A figure object containing the RSI line plot and
+            BaseFigure: Figure object containing the RSI line plot and
                 the shaded area between the specified limits.
 
         !!! info

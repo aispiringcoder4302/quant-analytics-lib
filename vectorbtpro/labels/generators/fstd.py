@@ -88,7 +88,7 @@ class _FSTD(FSTD):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The updated figure with the `FSTD.fstd` indicator plotted.
+            BaseFigure: Updated figure with the `FSTD.fstd` indicator plotted.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

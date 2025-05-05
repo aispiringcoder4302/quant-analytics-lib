@@ -78,7 +78,7 @@ def attach_binary_magic_methods(
             If not provided, defaults to `binary_magic_config`.
 
     Returns:
-        ClassWrapper: The decorated class with attached binary magic methods.
+        ClassWrapper: Decorated class with attached binary magic methods.
     """
     if config is None:
         config = binary_magic_config
@@ -138,7 +138,7 @@ def attach_unary_magic_methods(
             If not provided, defaults to `unary_magic_config`.
 
     Returns:
-        ClassWrapper: The decorated class with attached unary magic methods.
+        ClassWrapper: Decorated class with attached unary magic methods.
     """
     if config is None:
         config = unary_magic_config

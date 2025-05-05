@@ -59,7 +59,7 @@ def clean_labels(labels: tp.Labels) -> tp.Labels:
         labels (Labels): Sequence of labels, which may be a Pandas MultiIndex, PeriodIndex, or list.
 
     Returns:
-        Labels: A list of labels formatted for Plotly.
+        Labels: List of labels formatted for Plotly.
     """
     if isinstance(labels, pd.MultiIndex):
         labels = labels.to_flat_index()
@@ -79,7 +79,7 @@ def clean_data(data: tp.Any) -> tp.Any:
         data (Any): Input data that may contain NaN values.
 
     Returns:
-        Any: The data with NaN values replaced by None if it's a floating NumPy array;
+        Any: Data with NaN values replaced by None if it's a floating NumPy array;
             otherwise, the original data.
     """
     if isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.floating):
@@ -112,7 +112,7 @@ class TraceUpdater(Base):
         """Plotly figure widget containing the traces.
 
         Returns:
-            BaseFigure: The Plotly figure widget.
+            BaseFigure: Plotly figure widget.
         """
         return self._fig
 
@@ -263,7 +263,7 @@ class Gauge(TraceType, TraceUpdater):
         """The name of the matplotlib-compatible colormap used for the gauge.
 
         Returns:
-            str: The name of the colormap.
+            str: Name of the colormap.
         """
         return self._cmap_name
 
@@ -708,7 +708,7 @@ class Histogram(TraceType, TraceUpdater):
         """Specifies the lower quantile threshold used to filter out data points.
 
         Returns:
-            float: The lower quantile threshold.
+            float: Lower quantile threshold.
         """
         return self._from_quantile
 
@@ -717,7 +717,7 @@ class Histogram(TraceType, TraceUpdater):
         """Specifies the upper quantile threshold used to filter out data points.
 
         Returns:
-            float: The upper quantile threshold.
+            float: Upper quantile threshold.
         """
         return self._to_quantile
 
@@ -911,7 +911,7 @@ class Box(TraceType, TraceUpdater):
         """Specifies the lower quantile threshold; data points below this value are excluded.
 
         Returns:
-            float: The lower quantile threshold.
+            float: Lower quantile threshold.
         """
         return self._from_quantile
 
@@ -920,7 +920,7 @@ class Box(TraceType, TraceUpdater):
         """Specifies the upper quantile threshold; data points above this value are excluded.
 
         Returns:
-            float: The upper quantile threshold.
+            float: Upper quantile threshold.
         """
         return self._to_quantile
 

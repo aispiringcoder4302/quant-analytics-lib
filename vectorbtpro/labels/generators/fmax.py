@@ -81,7 +81,7 @@ class _FMAX(FMAX):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The figure with the indicator traces plotted.
+            BaseFigure: Figure with the indicator traces plotted.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

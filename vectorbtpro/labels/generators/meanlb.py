@@ -75,7 +75,7 @@ class _MEANLB(MEANLB):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:
-            BaseFigure: A figure displaying the overlaid heatmap.
+            BaseFigure: Figure displaying the overlaid heatmap.
 
         Examples:
             ```pycon

@@ -86,7 +86,7 @@ class _BOLB(BOLB):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:
-            BaseFigure: A figure displaying the plotted median with the heatmap overlay.
+            BaseFigure: Figure displaying the plotted median with the heatmap overlay.
 
         Examples:
             ```pycon

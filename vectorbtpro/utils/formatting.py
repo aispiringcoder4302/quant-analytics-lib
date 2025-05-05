@@ -39,7 +39,7 @@ def camel_to_snake_case(camel_str: str) -> str:
         camel_str (str): String formatted in camel case.
 
     Returns:
-        str: The string converted to snake case.
+        str: String converted to snake case.
     """
     snake_str = re.sub(r"(?<!^)(?<![A-Z_])([A-Z])", r"_\1", camel_str).lower()
     if snake_str.startswith("_"):
@@ -54,7 +54,7 @@ class Prettified(Base):
         """Prettify the object.
 
         Returns:
-            str: A prettified representation of the object.
+            str: Prettified representation of the object.
 
         !!! warning
             Calling `prettify` can lead to an infinite recursion.
@@ -70,7 +70,7 @@ class Prettified(Base):
             **kwargs: Keyword arguments for `prettify`.
 
         Returns:
-            str: A prettified representation of the object.
+            str: Prettified representation of the object.
         """
         return self.prettify(repr_=repr_doc, **kwargs)
 
@@ -119,7 +119,7 @@ def prettify_inited(
             Defaults to `repr`.
 
     Returns:
-        str: A prettified string representation of the initialized instance.
+        str: Prettified string representation of the initialized instance.
     """
 
     def _indent_head(content):
@@ -188,7 +188,7 @@ def prettify_dict(
             Defaults to `repr`.
 
     Returns:
-        str: A prettified string representation of the dictionary.
+        str: Prettified string representation of the dictionary.
     """
 
     def _indent_head(content):
@@ -275,7 +275,7 @@ def prettify(
             Defaults to `repr`.
 
     Returns:
-        str: A prettified string representation of the object.
+        str: Prettified string representation of the object.
     """
 
     def _indent_head(content):
@@ -413,7 +413,7 @@ def prettify_doc(*args, **kwargs) -> str:
         **kwargs: Keyword arguments for `prettify`.
 
     Returns:
-        str: A prettified representation of the object.
+        str: Prettified representation of the object.
     """
     return prettify(*args, repr_=repr_doc, **kwargs)
 
@@ -444,7 +444,7 @@ def format_array(array: tp.ArrayLike, tabulate: tp.Optional[bool] = None, html: 
         **kwargs: Keyword arguments for the formatting function.
 
     Returns:
-        str: The formatted array as a string.
+        str: Formatted array as a string.
     """
     from vectorbtpro.base.reshaping import to_pd_array
 
@@ -504,7 +504,7 @@ def format_parameter(param: inspect.Parameter, annotate: bool = False) -> str:
         annotate (bool): Include type annotations if True.
 
     Returns:
-        str: The formatted parameter.
+        str: Formatted parameter.
     """
     kind = param.kind
     formatted = param.name
@@ -543,7 +543,7 @@ def format_signature(
         end (str): String appended after the parameter list.
 
     Returns:
-        str: The formatted signature.
+        str: Formatted signature.
     """
     result = []
     render_pos_only_separator = False
@@ -594,7 +594,7 @@ def format_func(func: tp.Callable, incl_doc: bool = True, **kwargs) -> str:
         **kwargs: Keyword arguments for `format_signature`.
 
     Returns:
-        str: The formatted function description, including its signature and docstring if available.
+        str: Formatted function description, including its signature and docstring if available.
     """
     from vectorbtpro.utils.checks import is_attrs_subclass
     from vectorbtpro.utils.attr_ import DefineMixin
@@ -688,7 +688,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         **kwargs: Keyword arguments for the dump engine.
 
     Returns:
-        str: The dumped object as a string.
+        str: Dumped object as a string.
     """
     if isinstance(obj, str):
         return obj
@@ -791,7 +791,7 @@ def get_dump_language(dump_engine: str) -> str:
             See `vectorbtpro.utils.formatting.dump`.
 
     Returns:
-        str: The corresponding language name, or an empty string if the dump engine is unknown.
+        str: Corresponding language name, or an empty string if the dump engine is unknown.
     """
     if dump_engine.lower() == "repr":
         return "python"

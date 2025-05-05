@@ -454,7 +454,7 @@ class MetaRecords(type(Analyzable)):
         """Field configuration.
 
         Returns:
-            Config: The field configuration for the `Records` class.
+            Config: Field configuration for the `Records` class.
         """
         return cls._field_config
 
@@ -504,7 +504,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         ```
 
         Returns:
-            Config: The field configuration copied for each instance. Changes to this configuration
+            Config: Field configuration copied for each instance. Changes to this configuration
                 do not affect the class-level configuration.
 
         To modify the fields, update the config in-place, override this property,
@@ -554,7 +554,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                 Must include a key "wrapper" representing the wrapper instance.
 
         Returns:
-            RecordArray: The row-stacked record array.
+            RecordArray: Row-stacked record array.
         """
         if len(objs) == 1:
             objs = objs[0]
@@ -605,7 +605,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                 Must include a key "wrapper" representing the wrapper instance.
 
         Returns:
-            Array1d: The concatenated indices mapping the original record arrays to the row-stacked array.
+            Array1d: Concatenated indices mapping the original record arrays to the row-stacked array.
         """
         if len(objs) == 1:
             objs = objs[0]
@@ -656,7 +656,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                 `Records.resolve_row_stack_kwargs` and `Records.resolve_stack_kwargs`.
 
         Returns:
-            Records: A new `Records` instance representing the row-stacked result.
+            Records: New `Records` instance representing the row-stacked result.
 
         !!! note
             Will produce a column-sorted array.
@@ -706,7 +706,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                 Must include a key "wrapper" representing the wrapper instance.
 
         Returns:
-            RecordArray: The column-stacked record array.
+            RecordArray: Column-stacked record array.
         """
         if len(objs) == 1:
             objs = objs[0]
@@ -807,7 +807,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                 `Records.resolve_column_stack_kwargs` and `Records.resolve_stack_kwargs`.
 
         Returns:
-            Records: A new `Records` instance with column-stacked data.
+            Records: New `Records` instance with column-stacked data.
 
         !!! note
             Produces a column-sorted array.
@@ -856,7 +856,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable.replace`.
 
         Returns:
-            Records: A new `Records` instance with the updated configuration.
+            Records: New `Records` instance with the updated configuration.
         """
         if self.config.get("col_mapper", None) is not None:
             if "wrapper" in kwargs:
@@ -917,7 +917,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
 
         Returns:
-            dict: A dictionary containing:
+            dict: Dictionary containing:
 
                 * `wrapper_meta`: Updated metadata from the wrapper.
                 * `new_indices`: Array of new indices after indexing.
@@ -971,7 +971,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.indexing_func_meta`.
 
         Returns:
-            Records: A new `Records` instance with updated indexing.
+            Records: New `Records` instance with updated indexing.
         """
         if records_meta is None:
             records_meta = self.indexing_func_meta(*args, **kwargs)
@@ -988,7 +988,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                 or a Pandas resampler.
 
         Returns:
-            RecordArray: The resampled record array.
+            RecordArray: Resampled record array.
         """
         if isinstance(resampler, Resampler):
             _resampler = resampler
@@ -1011,7 +1011,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
 
         Returns:
-            dict: A dictionary containing:
+            dict: Dictionary containing:
 
                 * `wrapper_meta`: Metadata from the resampling operation on the wrapper.
                 * `new_records_arr`: The new resampled record array.
@@ -1030,7 +1030,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.resample_meta`.
 
         Returns:
-            Records: A new instance of records with resampled data.
+            Records: New instance of records with resampled data.
         """
         if records_meta is None:
             records_meta = self.resample_meta(*args, **kwargs)
@@ -1046,7 +1046,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         The internal array storing the records.
 
         Returns:
-            RecordArray: The record array containing the records.
+            RecordArray: Record array containing the records.
         """
         return self._records_arr
 
@@ -1057,7 +1057,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Provides a mapping of record columns.
 
         Returns:
-            ColumnMapper: An instance of `vectorbtpro.records.col_mapper.ColumnMapper`.
+            ColumnMapper: Instance of `vectorbtpro.records.col_mapper.ColumnMapper`.
         """
         return self._col_mapper
 
@@ -1068,7 +1068,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Alias for `Records.records_arr`.
 
         Returns:
-            RecordArray: The record array containing the records.
+            RecordArray: Record array containing the records.
         """
         return self.records_arr
 
@@ -1082,7 +1082,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Converts the record array into a Pandas DataFrame.
 
         Returns:
-            Frame: A DataFrame representation of the records.
+            Frame: DataFrame representation of the records.
         """
         return pd.DataFrame.from_records(self.values)
 
@@ -1093,7 +1093,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Returns a NumPy recarray that supports accessing fields as attributes.
 
         Returns:
-            RecArray: A NumPy recarray representation of the records.
+            RecArray: NumPy recarray representation of the records.
         """
         return self.values.view(np.recarray)
 
@@ -1115,7 +1115,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             expand_columns (bool): Expand MultiIndex columns into separate columns if present.
 
         Returns:
-            Frame: A DataFrame representing the records in a human-readable format.
+            Frame: DataFrame representing the records in a human-readable format.
         """
         new_columns = list()
         field_settings = self.field_config.get("settings", {})
@@ -1161,7 +1161,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Returns the result of `Records.to_readable` with default arguments.
 
         Returns:
-            Frame: A DataFrame representing the records in a human-readable format.
+            Frame: DataFrame representing the records in a human-readable format.
         """
         return self.to_readable()
 
@@ -1176,7 +1176,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             default (Any): Default value to return if the setting is not present.
 
         Returns:
-            Any: The value of the specified setting or the default value.
+            Any: Value of the specified setting or the default value.
         """
         return self.field_config.get("settings", {}).get(field, {}).get(setting, default)
 
@@ -1187,7 +1187,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             field (str): Field identifier.
 
         Returns:
-            str: The display name for the field as specified in the field configuration
+            str: Display name for the field as specified in the field configuration
                 or the original field name.
         """
         return self.get_field_setting(field, "name", field)
@@ -1199,7 +1199,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             field (str): Field identifier.
 
         Returns:
-            str: The title of the field based on the field configuration,
+            str: Title of the field based on the field configuration,
                 or the field name if not specified.
         """
         return self.get_field_setting(field, "title", field)
@@ -1224,7 +1224,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             copy (bool): Whether to return a copy of the array.
 
         Returns:
-            Array1d: The array corresponding to the specified field.
+            Array1d: Array corresponding to the specified field.
         """
         out = self.values[self.get_field_name(field)]
         if copy:
@@ -1239,7 +1239,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.map_field`.
 
         Returns:
-            MappedArray: The mapped array for the specified field.
+            MappedArray: Mapped array for the specified field.
         """
         mapping = self.get_field_mapping(field)
         if isinstance(mapping, str) and mapping == "ids":
@@ -1256,7 +1256,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
         Returns:
-            Index: The index derived from the mapped field.
+            Index: Index derived from the mapped field.
         """
         return self.get_map_field(field, **kwargs).to_index(minus_one_to_zero=minus_one_to_zero)
 
@@ -1268,7 +1268,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
         Returns:
-            Index: The columns derived from the mapped field.
+            Index: Columns derived from the mapped field.
         """
         return self.get_map_field(field, **kwargs).to_columns()
 
@@ -1283,7 +1283,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
         Returns:
-            Array1d: The array with the applied mapping for the field.
+            Array1d: Array with the applied mapping for the field.
         """
         mapping = self.get_field_mapping(field)
         if isinstance(mapping, str) and mapping == "index":
@@ -1303,7 +1303,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.get_map_field`.
 
         Returns:
-            Array1d: The stringified array with the applied mapping for the field.
+            Array1d: Stringified array with the applied mapping for the field.
         """
         mapping = self.get_field_mapping(field)
         if isinstance(mapping, str) and mapping == "index":
@@ -1319,7 +1319,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Array of IDs extracted from the record array.
 
         Returns:
-            Array1d: The array of IDs.
+            Array1d: Array of IDs.
         """
         return self.values[self.get_field_name("id")]
 
@@ -1330,7 +1330,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Array of column identifiers extracted from the record array.
 
         Returns:
-            Array1d: The array of column identifiers.
+            Array1d: Array of column identifiers.
         """
         return self.values[self.get_field_name("col")]
 
@@ -1384,7 +1384,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.replace`.
 
         Returns:
-            Records: A new instance with sorted records.
+            Records: New instance with sorted records.
 
         !!! note
             Sorting is expensive. It is more efficient to append records that are already in the correct order.
@@ -1410,7 +1410,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.replace`.
 
         Returns:
-            Records: A new instance containing the filtered records.
+            Records: New instance containing the filtered records.
         """
         mask_indices = np.flatnonzero(mask)
         return self.replace(records_arr=np.take(self.values, mask_indices), **kwargs).regroup(group_by)
@@ -1435,7 +1435,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.apply_mask`.
 
         Returns:
-            Records: A new instance containing the first N records per column.
+            Records: New instance containing the first N records per column.
 
         See:
             `vectorbtpro.records.nb.first_n_nb`
@@ -1465,7 +1465,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.apply_mask`.
 
         Returns:
-            Records: A new instance containing the last N records per column.
+            Records: New instance containing the last N records per column.
 
         See:
             `vectorbtpro.records.nb.last_n_nb`
@@ -1497,7 +1497,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.apply_mask`.
 
         Returns:
-            Records: A new instance containing the randomly selected records.
+            Records: New instance containing the randomly selected records.
 
         See:
             `vectorbtpro.records.nb.random_n_nb`
@@ -1535,7 +1535,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`.
 
         Returns:
-            MappedArray: The resulting mapped array.
+            MappedArray: Resulting mapped array.
         """
         if not isinstance(a, np.ndarray):
             a = np.asarray(a)
@@ -1563,7 +1563,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `Records.map_array`.
 
         Returns:
-            MappedArray: The resulting mapped array for the specified field.
+            MappedArray: Resulting mapped array for the specified field.
         """
         mapped_arr = self.values[field]
         return self.map_array(mapped_arr, **kwargs)
@@ -1698,7 +1698,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            SeriesFrame: A Series or DataFrame representing the mask.
+            SeriesFrame: Series or DataFrame representing the mask.
         """
         if idx_arr is None:
             if self.idx_arr is None:
@@ -1718,7 +1718,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         `vectorbtpro.records.mapped_array.MappedArray.get_pd_mask` with default arguments.
 
         Returns:
-            SeriesFrame: A Series or DataFrame representing the mask.
+            SeriesFrame: Series or DataFrame representing the mask.
         """
         return self.get_pd_mask()
 
@@ -1767,7 +1767,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.coverage_map`.
 
         Returns:
-            SeriesFrame: The resulting coverage map.
+            SeriesFrame: Resulting coverage map.
         """
         return self.get_map_field("col").coverage_map(**kwargs)
 
@@ -1781,7 +1781,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         from `vectorbtpro._settings.records`.
 
         Returns:
-            Kwargs: A dictionary of default stats settings.
+            Kwargs: Dictionary of default stats settings.
         """
         from vectorbtpro._settings import settings
 
@@ -1912,7 +1912,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         from `vectorbtpro._settings.records`.
 
         Returns:
-            Kwargs: A dictionary of default plot settings.
+            Kwargs: Dictionary of default plot settings.
         """
         from vectorbtpro._settings import settings
 
@@ -1940,7 +1940,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                 Defaults to `Records` if not provided.
 
         Returns:
-            str: The formatted field configuration documentation.
+            str: Formatted field configuration documentation.
         """
         if source_cls is None:
             source_cls = Records

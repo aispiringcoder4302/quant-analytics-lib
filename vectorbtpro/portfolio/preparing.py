@@ -58,7 +58,7 @@ def valid_price_from_ago_1d_nb(price: tp.Array1d) -> tp.Array1d:
         price (Array1d): 1D array of prices.
 
     Returns:
-        Array1d: An array where each element represents the number of steps since the last non-NaN price.
+        Array1d: Array where each element represents the number of steps since the last non-NaN price.
     """
     from_ago = np.empty(price.shape, dtype=int_)
     for i in range(price.shape[0] - 1, -1, -1):
@@ -114,7 +114,7 @@ class PFPrepResult(Configured):
         """Target arguments from the configuration.
 
         Returns:
-            Kwargs: A dictionary containing target arguments.
+            Kwargs: Dictionary containing target arguments.
         """
         return self.config["target_args"]
 
@@ -123,7 +123,7 @@ class PFPrepResult(Configured):
         """Portfolio arguments from the configuration.
 
         Returns:
-            KwargsLike: A dictionary containing portfolio arguments.
+            KwargsLike: Dictionary containing portfolio arguments.
         """
         return self.config["pf_args"]
 
@@ -224,7 +224,7 @@ class BasePFPreparer(BasePreparer):
         """Grouping specification used for portfolio simulation.
 
         Returns:
-            GroupByLike: The grouping specification, which can be None, a string, or an array-like object.
+            GroupByLike: Grouping specification, which can be None, a string, or an array-like object.
         """
         group_by = self["group_by"]
         if group_by is None and self.cash_sharing:
@@ -288,7 +288,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `open` before broadcasting.
 
         Returns:
-            ArrayLike: The open prices before broadcasting.
+            ArrayLike: Open prices before broadcasting.
         """
         open = self["open"]
         if open is None:
@@ -303,7 +303,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `high` before broadcasting.
 
         Returns:
-            ArrayLike: The high prices before broadcasting.
+            ArrayLike: High prices before broadcasting.
         """
         high = self["high"]
         if high is None:
@@ -318,7 +318,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `low` before broadcasting.
 
         Returns:
-            ArrayLike: The low prices before broadcasting.
+            ArrayLike: Low prices before broadcasting.
         """
         low = self["low"]
         if low is None:
@@ -333,7 +333,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `close` before broadcasting.
 
         Returns:
-            ArrayLike: The close prices before broadcasting.
+            ArrayLike: Close prices before broadcasting.
         """
         close = self["close"]
         if close is None:
@@ -360,7 +360,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `init_cash` before broadcasting.
 
         Returns:
-            ArrayLike: The initial cash before broadcasting.
+            ArrayLike: Initial cash before broadcasting.
         """
         if self.init_cash_mode is not None:
             return np.inf
@@ -371,7 +371,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `init_position` before broadcasting.
 
         Returns:
-            ArrayLike: The initial position before broadcasting.
+            ArrayLike: Initial position before broadcasting.
         """
         return self["init_position"]
 
@@ -380,7 +380,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `init_price` before broadcasting.
 
         Returns:
-            ArrayLike: The initial price before broadcasting.
+            ArrayLike: Initial price before broadcasting.
         """
         return self["init_price"]
 
@@ -389,7 +389,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `cash_deposits` before broadcasting.
 
         Returns:
-            ArrayLike: The cash deposits before broadcasting.
+            ArrayLike: Cash deposits before broadcasting.
         """
         return self["cash_deposits"]
 
@@ -451,7 +451,7 @@ class BasePFPreparer(BasePreparer):
         """Group lengths for portfolio data columns.
 
         Returns:
-            GroupLens: The group lengths corresponding to the wrapper's columns.
+            GroupLens: Group lengths corresponding to the wrapper's columns.
         """
         return self.wrapper.grouper.get_group_lens(group_by=self.group_by)
 
@@ -460,7 +460,7 @@ class BasePFPreparer(BasePreparer):
         """Simulation group lengths identical to group lengths.
 
         Returns:
-            GroupLens: The simulation group lengths.
+            GroupLens: Simulation group lengths.
         """
         return self.group_lens
 
@@ -484,7 +484,7 @@ class BasePFPreparer(BasePreparer):
             arg_name (Optional[str]): Name of the argument for error messaging.
 
         Returns:
-            Array1d: The aligned array with one element per portfolio column.
+            Array1d: Aligned array with one element per portfolio column.
         """
         arr = np.asarray(arr)
         if check_dtype is not None:
@@ -516,7 +516,7 @@ class BasePFPreparer(BasePreparer):
         """Aligned initial cash values computed across portfolio groups.
 
         Returns:
-            Array1d: The initial cash values after alignment.
+            Array1d: Initial cash values after alignment.
         """
         return self.align_pc_arr(
             self.pre__init_cash,
@@ -532,7 +532,7 @@ class BasePFPreparer(BasePreparer):
         """Aligned initial position values for portfolio simulation.
 
         Returns:
-            Array1d: The aligned initial position values.
+            Array1d: Aligned initial position values.
 
         !!! note
             A warning is issued if non-zero positions are detected with undefined initial prices.
@@ -736,7 +736,7 @@ class BasePFPreparer(BasePreparer):
         price information—to be passed to the portfolio.
 
         Returns:
-            KwargsLike: A dictionary containing portfolio parameters.
+            KwargsLike: Dictionary containing portfolio parameters.
         """
         kwargs = dict()
         for k, v in self.config.items():
@@ -767,7 +767,7 @@ class BasePFPreparer(BasePreparer):
         Encapsulates the target function, target arguments, and portfolio configuration used for initialization.
 
         Returns:
-            PFPrepResult: An instance representing the portfolio preparation result.
+            PFPrepResult: Instance representing the portfolio preparation result.
         """
         return PFPrepResult(target_func=self.target_func, target_args=self.target_args, pf_args=self.pf_args)
 
@@ -941,7 +941,7 @@ class FOPreparer(BasePFPreparer):
         """Staticized argument.
 
         Returns:
-            StaticizedOption: The staticized option.
+            StaticizedOption: Staticized option.
 
         Raises:
             ValueError: This method doesn't support staticization.
@@ -955,7 +955,7 @@ class FOPreparer(BasePFPreparer):
         """Argument `from_ago` before broadcasting.
 
         Returns:
-            ArrayLike: The from-ago value before broadcasting.
+            ArrayLike: From-ago value before broadcasting.
         """
         from_ago = self["from_ago"]
         if from_ago is not None:
@@ -1060,7 +1060,7 @@ class FOPreparer(BasePFPreparer):
         """Processed `price` argument derived from `price_and_from_ago`.
 
         Returns:
-            ArrayLike: The processed `price` array.
+            ArrayLike: Processed `price` array.
         """
         return self.price_and_from_ago[0]
 
@@ -1069,7 +1069,7 @@ class FOPreparer(BasePFPreparer):
         """Processed `from_ago` argument derived from `price_and_from_ago`.
 
         Returns:
-            ArrayLike: The processed `from_ago` array.
+            ArrayLike: Processed `from_ago` array.
         """
         return self.price_and_from_ago[1]
 
@@ -1442,7 +1442,7 @@ class FSPreparer(BasePFPreparer):
         `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb` is added.
 
         Returns:
-            StaticizedOption: The pre-resolved value for the `staticized` argument.
+            StaticizedOption: Pre-resolved value for the `staticized` argument.
         """
         staticized = self["staticized"]
         if isinstance(staticized, bool):
@@ -1673,7 +1673,7 @@ class FSPreparer(BasePFPreparer):
         adjustment functions based on the active mode and provided arguments.
 
         Returns:
-            StaticizedOption: The adapted staticized argument.
+            StaticizedOption: Adapted staticized argument.
         """
         staticized = self.pre__staticized
         if isinstance(staticized, dict):
@@ -1706,7 +1706,7 @@ class FSPreparer(BasePFPreparer):
         """Pre-template substituted value for the `chunked` argument.
 
         Returns:
-            ChunkedOption: The pre-template substituted chunked option.
+            ChunkedOption: Pre-template substituted chunked option.
         """
         return self["chunked"]
 
@@ -1719,7 +1719,7 @@ class FSPreparer(BasePFPreparer):
         Defaults to False if `entries` is not provided.
 
         Returns:
-            ArrayLike: The pre-broadcast entries value.
+            ArrayLike: Pre-broadcast entries value.
         """
         return self["entries"] if self["entries"] is not None else False
 
@@ -1730,7 +1730,7 @@ class FSPreparer(BasePFPreparer):
         Defaults to False if `exits` is not provided.
 
         Returns:
-            ArrayLike: The pre-broadcast exits value.
+            ArrayLike: Pre-broadcast exits value.
         """
         return self["exits"] if self["exits"] is not None else False
 
@@ -1741,7 +1741,7 @@ class FSPreparer(BasePFPreparer):
         Defaults to False if `long_entries` is not provided.
 
         Returns:
-            ArrayLike: The pre-broadcast long entries value.
+            ArrayLike: Pre-broadcast long entries value.
         """
         return self["long_entries"] if self["long_entries"] is not None else False
 
@@ -1752,7 +1752,7 @@ class FSPreparer(BasePFPreparer):
         Defaults to False if `long_exits` is not provided.
 
         Returns:
-            ArrayLike: The pre-broadcast long exits value.
+            ArrayLike: Pre-broadcast long exits value.
         """
         return self["long_exits"] if self["long_exits"] is not None else False
 
@@ -1763,7 +1763,7 @@ class FSPreparer(BasePFPreparer):
         Defaults to False if `short_entries` is not provided.
 
         Returns:
-            ArrayLike: The pre-broadcast short entries value.
+            ArrayLike: Pre-broadcast short entries value.
         """
         return self["short_entries"] if self["short_entries"] is not None else False
 
@@ -1774,7 +1774,7 @@ class FSPreparer(BasePFPreparer):
         Defaults to False if `short_exits` is not provided.
 
         Returns:
-            ArrayLike: The pre-broadcast short exits value.
+            ArrayLike: Pre-broadcast short exits value.
         """
         return self["short_exits"] if self["short_exits"] is not None else False
 
@@ -1785,7 +1785,7 @@ class FSPreparer(BasePFPreparer):
         If not provided, defaults to 0.
 
         Returns:
-            ArrayLike: The pre-broadcast from-ago value.
+            ArrayLike: Pre-broadcast from-ago value.
         """
         from_ago = self["from_ago"]
         if from_ago is not None:
@@ -1828,7 +1828,7 @@ class FSPreparer(BasePFPreparer):
             save_returns (bool): Flag to record the portfolio returns.
 
         Returns:
-            FSInOutputs: The initialized `vectorbtpro.portfolio.enums.FSInOutputs` instance.
+            FSInOutputs: Initialized `vectorbtpro.portfolio.enums.FSInOutputs` instance.
         """
         if cash_sharing:
             if group_lens is None:
@@ -1966,7 +1966,7 @@ class FSPreparer(BasePFPreparer):
         """Post-broadcast value for the `long_entries` argument.
 
         Returns:
-            ArrayLike: The broadcasted long entries array.
+            ArrayLike: Broadcasted long entries array.
         """
         return self.signals[0]
 
@@ -1975,7 +1975,7 @@ class FSPreparer(BasePFPreparer):
         """Post-broadcast value for the `long_exits` argument.
 
         Returns:
-            ArrayLike: The broadcasted long exits array.
+            ArrayLike: Broadcasted long exits array.
         """
         return self.signals[1]
 
@@ -1984,7 +1984,7 @@ class FSPreparer(BasePFPreparer):
         """Post-broadcast value for the `short_entries` argument.
 
         Returns:
-            ArrayLike: The broadcasted short entries array.
+            ArrayLike: Broadcasted short entries array.
         """
         return self.signals[2]
 
@@ -1993,7 +1993,7 @@ class FSPreparer(BasePFPreparer):
         """Post-broadcast value for the `short_exits` argument.
 
         Returns:
-            ArrayLike: The broadcasted short exits array.
+            ArrayLike: Broadcasted short exits array.
         """
         return self.signals[3]
 
@@ -2002,7 +2002,7 @@ class FSPreparer(BasePFPreparer):
         """Combined signal mask computed using element-wise OR on all signal arrays.
 
         Returns:
-            Array2d: A 2D array representing the combined signal mask.
+            Array2d: 2D array representing the combined signal mask.
         """
         long_entries = to_2d_array(self.long_entries)
         long_exits = to_2d_array(self.long_exits)
@@ -2054,7 +2054,7 @@ class FSPreparer(BasePFPreparer):
         """Post-broadcast value for the `price` argument.
 
         Returns:
-            ArrayLike: The broadcasted price array.
+            ArrayLike: Broadcasted price array.
         """
         return self.price_and_from_ago[0]
 
@@ -2063,7 +2063,7 @@ class FSPreparer(BasePFPreparer):
         """Post-broadcast value for the `from_ago` argument.
 
         Returns:
-            ArrayLike: The broadcasted from-ago array.
+            ArrayLike: Broadcasted from-ago array.
         """
         return self.price_and_from_ago[1]
 
@@ -2384,7 +2384,7 @@ class FOFPreparer(BasePFPreparer):
         """Pre-resolution value for the `staticized` argument.
 
         Returns:
-            StaticizedOption: The staticized option.
+            StaticizedOption: Staticized option.
         """
         staticized = self["staticized"]
         if isinstance(staticized, bool):
@@ -2421,7 +2421,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` if not set.
 
         Returns:
-            Callable: The pre-simulation function callable.
+            Callable: Pre-simulation function callable.
         """
         pre_sim_func_nb = self["pre_sim_func_nb"]
         if pre_sim_func_nb is None:
@@ -2435,7 +2435,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` if not provided.
 
         Returns:
-            Callable: The post-simulation function callable.
+            Callable: Post-simulation function callable.
         """
         post_sim_func_nb = self["post_sim_func_nb"]
         if post_sim_func_nb is None:
@@ -2451,7 +2451,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` if not provided.
 
         Returns:
-            Callable: The pre-group function callable.
+            Callable: Pre-group function callable.
         """
         pre_group_func_nb = self["pre_group_func_nb"]
         if self.row_wise and pre_group_func_nb is not None:
@@ -2469,7 +2469,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` if not provided.
 
         Returns:
-            Callable: The post-group function callable.
+            Callable: Post-group function callable.
         """
         post_group_func_nb = self["post_group_func_nb"]
         if self.row_wise and post_group_func_nb is not None:
@@ -2487,7 +2487,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` if not provided.
 
         Returns:
-            Callable: The pre-row function callable.
+            Callable: Pre-row function callable.
         """
         pre_row_func_nb = self["pre_row_func_nb"]
         if not self.row_wise and pre_row_func_nb is not None:
@@ -2505,7 +2505,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` if not provided.
 
         Returns:
-            Callable: The post-row function callable.
+            Callable: Post-row function callable.
         """
         post_row_func_nb = self["post_row_func_nb"]
         if not self.row_wise and post_row_func_nb is not None:
@@ -2521,7 +2521,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` if not provided.
 
         Returns:
-            Callable: The pre-segment function callable.
+            Callable: Pre-segment function callable.
         """
         pre_segment_func_nb = self["pre_segment_func_nb"]
         if pre_segment_func_nb is None:
@@ -2535,7 +2535,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` if not provided.
 
         Returns:
-            Callable: The post-segment function callable.
+            Callable: Post-segment function callable.
         """
         post_segment_func_nb = self["post_segment_func_nb"]
         if post_segment_func_nb is None:
@@ -2551,7 +2551,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_order_func_nb` if not set.
 
         Returns:
-            Callable: The order function callable.
+            Callable: Order function callable.
         """
         order_func_nb = self["order_func_nb"]
         if self.flexible and order_func_nb is not None:
@@ -2569,7 +2569,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_flex_order_func_nb` if not set.
 
         Returns:
-            Callable: The flexible order function callable.
+            Callable: Flexible order function callable.
         """
         flex_order_func_nb = self["flex_order_func_nb"]
         if flex_order_func_nb is None:
@@ -2583,7 +2583,7 @@ class FOFPreparer(BasePFPreparer):
         Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` if not provided.
 
         Returns:
-            Callable: The post-order function callable.
+            Callable: Post-order function callable.
         """
         post_order_func_nb = self["post_order_func_nb"]
         if post_order_func_nb is None:
@@ -2595,7 +2595,7 @@ class FOFPreparer(BasePFPreparer):
         """Resolved `staticized` argument after applying adaptations to user-defined functions.
 
         Returns:
-            StaticizedOption: The resolved staticized option.
+            StaticizedOption: Resolved staticized option.
         """
         staticized = self.pre__staticized
         if isinstance(staticized, dict):
@@ -2639,7 +2639,7 @@ class FOFPreparer(BasePFPreparer):
         """Pre-broadcast value for the `segment_mask` argument.
 
         Returns:
-            ArrayLike: The segment mask before broadcasting.
+            ArrayLike: Segment mask before broadcasting.
         """
         return self["segment_mask"]
 
@@ -2668,7 +2668,7 @@ class FOFPreparer(BasePFPreparer):
         Otherwise, the provided mask is broadcast to match the required shape.
 
         Returns:
-            ArrayLike: The post-broadcasted segment mask.
+            ArrayLike: Post-broadcasted segment mask.
         """
         segment_mask = self.pre__segment_mask
         if checks.is_int(segment_mask):
@@ -2816,7 +2816,7 @@ class FDOFPreparer(FOFPreparer):
         * Returns `vectorbtpro.portfolio.nb.from_order_func.def_pre_segment_func_nb` otherwise.
 
         Returns:
-            Callable: The function used to process pre-segment data.
+            Callable: Function used to process pre-segment data.
         """
         pre_segment_func_nb = self["pre_segment_func_nb"]
         if pre_segment_func_nb is None:
@@ -2834,7 +2834,7 @@ class FDOFPreparer(FOFPreparer):
         `vectorbtpro.portfolio.nb.from_order_func.def_order_func_nb` is used.
 
         Returns:
-            Callable: The function used for order processing.
+            Callable: Function used for order processing.
 
         Raises:
             ValueError: If `order_func_nb` is provided when `flexible` is True.
@@ -2854,7 +2854,7 @@ class FDOFPreparer(FOFPreparer):
         `vectorbtpro.portfolio.nb.from_order_func.def_flex_order_func_nb` is used.
 
         Returns:
-            Callable: The function used for processing flexible orders.
+            Callable: Function used for processing flexible orders.
 
         Raises:
             ValueError: If `flex_order_func_nb` is provided when `flexible` is False.
@@ -2871,7 +2871,7 @@ class FDOFPreparer(FOFPreparer):
         """Argument `chunked` before template substitution.
 
         Returns:
-            ChunkedOption: The pre-broadcasted chunked option.
+            ChunkedOption: Pre-broadcasted chunked option.
         """
         return self["chunked"]
 
@@ -2910,7 +2910,7 @@ class FDOFPreparer(FOFPreparer):
         """Tuple of arguments for the pre-segment function used in template substitution.
 
         Returns:
-            Args: The pre-segment function arguments.
+            Args: Pre-segment function arguments.
         """
         return (
             self.val_price,
@@ -2926,7 +2926,7 @@ class FDOFPreparer(FOFPreparer):
         """Either `order_args` or `flex_order_args`.
 
         Returns:
-            Args: The order function arguments.
+            Args: Order function arguments.
         """
         return (
             self.size,
@@ -2956,7 +2956,7 @@ class FDOFPreparer(FOFPreparer):
         otherwise, returns `FDOFPreparer.any_order_args`.
 
         Returns:
-            Args: The order function arguments.
+            Args: Order function arguments.
         """
         if self.flexible:
             return self.post__order_args
@@ -2970,7 +2970,7 @@ class FDOFPreparer(FOFPreparer):
         otherwise, returns `FDOFPreparer.any_order_args`.
 
         Returns:
-            Args: The flexible order function arguments.
+            Args: Flexible order function arguments.
         """
         if not self.flexible:
             return self.post__flex_order_args
@@ -2984,7 +2984,7 @@ class FDOFPreparer(FOFPreparer):
         or `flex_order_args` based on the `flexible` flag, and applied to the `chunked` option.
 
         Returns:
-            ChunkedOption: The specialized chunked configuration.
+            ChunkedOption: Specialized chunked configuration.
         """
         arg_take_spec = dict()
         arg_take_spec["pre_segment_args"] = ch.ArgsTaker(*[base_ch.flex_array_gl_slicer] * 5, None)

@@ -61,12 +61,12 @@ class AssetFunc(Base):
         """Call the asset function.
 
         Args:
-            d: The input data.
+            d: Input data.
             *args: Additional positional arguments.
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Any: The result of the asset function call.
+            Any: Result of the asset function call.
         """
         raise NotImplementedError
 
@@ -75,12 +75,12 @@ class AssetFunc(Base):
         """Prepare arguments and invoke the asset function.
 
         Args:
-            d: The input data.
+            d: Input data.
             *args: Positional arguments for `AssetFunc.prepare` and ultimately to `AssetFunc.call`.
             **kwargs: Keyword arguments for `AssetFunc.prepare` and ultimately to `AssetFunc.call`.
 
         Returns:
-            Any: The result returned by the asset function.
+            Any: Result returned by the asset function.
         """
         args, kwargs = cls.prepare(*args, **kwargs)
         return cls.call(d, *args, **kwargs)
@@ -1202,7 +1202,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.replace`.
 
         Returns:
-            Any: The resulting value after replacement if a match is found; otherwise, the original value.
+            Any: Resulting value after replacement if a match is found; otherwise, the original value.
         """
         if not isinstance(target, list):
             targets = [target]
@@ -1624,7 +1624,7 @@ class DumpAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments to merge with the resolved settings.
 
         Returns:
-            Kwargs: A dictionary containing the resolved dumping-related keyword arguments.
+            Kwargs: Dictionary containing the resolved dumping-related keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1882,7 +1882,7 @@ class CollectAssetFunc(ReduceAssetFunc):
             k (Any): Key to be sorted.
 
         Returns:
-            tuple: A tuple used for sorting, where the first element is 0 if `k` is a string,
+            tuple: Tuple used for sorting, where the first element is 0 if `k` is a string,
                 otherwise 1, and the second element is `k` itself.
         """
         return (0, k) if isinstance(k, str) else (1, k)

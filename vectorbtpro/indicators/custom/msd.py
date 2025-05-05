@@ -89,7 +89,7 @@ class _MSD(MSD):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The figure instance containing the plotted MSD indicator.
+            BaseFigure: Figure instance containing the plotted MSD indicator.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

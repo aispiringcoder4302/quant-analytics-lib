@@ -125,7 +125,7 @@ class _HURST(HURST):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            BaseFigure: The figure updated with the Hurst exponent plot.
+            BaseFigure: Figure updated with the Hurst exponent plot.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

@@ -40,7 +40,7 @@ def date_range_nb(
         incl_right (bool): Include the end datetime if True.
 
     Returns:
-        Array1d: An array of datetime64[ns] values representing the index.
+        Array1d: Array of datetime64[ns] values representing the index.
     """
     values_len = int(np.floor((end - start) / freq)) + 1
     values = np.empty(values_len, dtype="datetime64[ns]")

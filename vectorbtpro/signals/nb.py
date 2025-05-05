@@ -77,7 +77,7 @@ def generate_nb(
         wait (int): Number of ticks to wait before placing the next entry.
 
     Returns:
-        Array2d: A 2-dimensional boolean array with placed signals.
+        Array2d: 2-dimensional boolean array with placed signals.
 
     !!! note
         The first argument is always a 1-dimensional boolean array that contains only those
@@ -164,7 +164,7 @@ def generate_ex_nb(
                 Setting it to True makes it impossible to tell which exit belongs to which entry.
 
     Returns:
-        Array2d: A 2-dimensional boolean array with placed exit signals.
+        Array2d: 2-dimensional boolean array with placed exit signals.
 
     !!! tip
         This function is parallelizable.
@@ -357,7 +357,7 @@ def rand_place_nb(c: tp.Union[GenEnContext, GenExContext, GenEnExContext], n: tp
         n (FlexArray1d): Flexible array indicating the number of signals to place.
 
     Returns:
-        int: The index of the last placed signal.
+        int: Index of the last placed signal.
     """
     size = min(c.to_i - c.from_i, flex_select_1d_pc_nb(n, c.col))
     k = 0
@@ -386,7 +386,7 @@ def rand_by_prob_place_nb(
         pick_first (bool): If True, stop after placing the first signal.
 
     Returns:
-        int: The index (relative to the start of the context's array) of the last placed signal.
+        int: Index (relative to the start of the context's array) of the last placed signal.
     """
     last_i = -1
     for i in range(c.from_i, c.to_i):
@@ -555,7 +555,7 @@ def first_place_nb(c: tp.Union[GenEnContext, GenExContext, GenEnExContext], mask
         mask (Array2d): Boolean array indicating candidate signal positions.
 
     Returns:
-        int: The relative index of the first signal in the mask, or -1 if no signal is found.
+        int: Relative index of the first signal in the mask, or -1 if no signal is found.
     """
     last_i = -1
     for i in range(c.from_i, c.to_i):
@@ -601,7 +601,7 @@ def stop_place_nb(
             Uses flexible indexing. An element set to False disables trailing.
 
     Returns:
-        int: The relative index at which the exit signal was placed, or -1 if no exit signal occurred.
+        int: Relative index at which the exit signal was placed, or -1 if no exit signal occurred.
 
     !!! note
         Waiting time cannot exceed 1.
@@ -931,7 +931,7 @@ def rank_nb(
             * 1 treats it as the last in the previous partition.
 
     Returns:
-        Array2d: An array containing computed signal ranks.
+        Array2d: Array containing computed signal ranks.
 
     !!! tip
         This function is parallelizable.
@@ -1023,7 +1023,7 @@ def sig_pos_rank_nb(c: RankContext, allow_gaps: bool) -> int:
         allow_gaps (bool): Flag to determine whether to allow gaps in ranking.
 
     Returns:
-        int: The computed rank.
+        int: Computed rank.
     """
     if allow_gaps:
         return c.sig_cnt - 1
@@ -1040,7 +1040,7 @@ def part_pos_rank_nb(c: RankContext) -> int:
         c (RankContext): Ranking context.
 
     Returns:
-        int: The computed partition rank.
+        int: Computed partition rank.
     """
     return c.part_cnt - 1
 
@@ -1059,7 +1059,7 @@ def distance_from_last_1d_nb(mask: tp.Array1d, nth: int = 1) -> tp.Array1d:
         nth (int): Index of the last True value to measure the distance from.
 
     Returns:
-        Array1d: An array of distances.
+        Array1d: Array of distances.
     """
     if nth < 0:
         raise ValueError("nth must be at least 0")
@@ -1110,7 +1110,7 @@ def distance_from_last_nb(mask: tp.Array2d, nth: int = 1) -> tp.Array2d:
         nth (int): Index of the last True value to measure the distance from.
 
     Returns:
-        Array2d: A 2D array with computed distances.
+        Array2d: 2D array with computed distances.
 
     !!! tip
         This function is parallelizable.

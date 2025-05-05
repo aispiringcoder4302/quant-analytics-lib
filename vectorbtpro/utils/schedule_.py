@@ -62,7 +62,7 @@ class CustomJob(Job, Base):
         """Job instance with zero offset scheduling enabled.
 
         Returns:
-            CustomJob: The current job instance with zero offset enabled.
+            CustomJob: Current job instance with zero offset enabled.
         """
         self._zero_offset = True
         return self
@@ -72,7 +72,7 @@ class CustomJob(Job, Base):
         """Job instance with forced missed run scheduling enabled.
 
         Returns:
-            CustomJob: The current job instance with forced missed run enabled.
+            CustomJob: Current job instance with forced missed run enabled.
         """
         self._force_missed_run = True
         return self
@@ -82,7 +82,7 @@ class CustomJob(Job, Base):
         """Returns the remainder of the next scheduled run time's corresponding unit divided by the interval.
 
         Returns:
-            int: The remainder computed based on the time unit of the next run.
+            int: Remainder computed based on the time unit of the next run.
         """
         if self.unit == "seconds":
             return self.next_run.second % self.interval
@@ -128,7 +128,7 @@ class AsyncJob(CustomJob):
         Runs the job function, updates the last run timestamp, and schedules the next run.
 
         Returns:
-            Any: The result returned by the job function.
+            Any: Result returned by the job function.
         """
         logger.info("Running job %s", self)
         ret = self.job_func()
@@ -189,7 +189,7 @@ class AsyncScheduler(CustomScheduler):
             interval (int): Interval between job executions.
 
         Returns:
-            AsyncJob: The newly scheduled asynchronous job.
+            AsyncJob: Newly scheduled asynchronous job.
         """
         job = AsyncJob(interval, self)
         return job
@@ -242,7 +242,7 @@ class ScheduleManager(Base):
         """The scheduler instance used for scheduling jobs.
 
         Returns:
-            AsyncScheduler: The scheduler instance.
+            AsyncScheduler: Scheduler instance.
         """
         return self._scheduler
 
@@ -289,7 +289,7 @@ class ScheduleManager(Base):
             tags (Optional[Iterable[Hashable]]): Tags used to identify the scheduled job.
 
         Returns:
-            AsyncJob: The configured asynchronous job.
+            AsyncJob: Configured asynchronous job.
 
         Examples:
             ```pycon

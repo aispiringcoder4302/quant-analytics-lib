@@ -42,7 +42,7 @@ def calc_group_value_nb(
         last_val_price (Array1d): Array of last valuation prices for each column.
 
     Returns:
-        float: The total group value.
+        float: Total group value.
     """
     group_value = cash_now
     group_len = to_col - from_col
@@ -63,7 +63,7 @@ def calc_ctx_group_value_nb(seg_ctx: SegmentContext) -> float:
         seg_ctx (SegmentContext): Simulation segment context.
 
     Returns:
-        float: The calculated group value.
+        float: Calculated group value.
 
     !!! note
         Cash sharing must be enabled.
@@ -105,7 +105,7 @@ def sort_call_seq_out_1d_nb(
         call_seq_out (Array1d): Array containing default call sequence indices, which will be sorted in place.
 
     Returns:
-        None: The function modifies `call_seq_out` in place.
+        None: Function modifies `call_seq_out` in place.
 
     !!! note
         Cash sharing must be enabled and `call_seq_out` must follow `CallSeqType.Default`.
@@ -169,7 +169,7 @@ def sort_call_seq_1d_nb(
         order_value_out (Array1d): Array to hold computed order values; must be empty initially.
 
     Returns:
-        None: The function modifies `call_seq_now` in place.
+        None: Function modifies `call_seq_now` in place.
 
     See:
         `sort_call_seq_out_1d_nb`
@@ -206,7 +206,7 @@ def sort_call_seq_out_nb(
         call_seq_out (Array1d): Array containing default call sequence indices, which will be sorted in place.
 
     Returns:
-        None: The function modifies `call_seq_out` in place.
+        None: Function modifies `call_seq_out` in place.
 
     !!! note
         Cash sharing must be enabled.
@@ -270,7 +270,7 @@ def sort_call_seq_nb(
         order_value_out (Array1d): Array to hold computed order values; must be empty initially.
 
     Returns:
-        None: The function modifies `call_seq_now` in place.
+        None: Function modifies `call_seq_now` in place.
 
     !!! note
         Can only be used in non-flexible simulation functions.
@@ -321,7 +321,7 @@ def no_pre_func_nb(c: tp.NamedTuple, *args) -> tp.Args:
         *args: Additional positional arguments.
 
     Returns:
-        Args: The forwarded positional arguments.
+        Args: Forwarded positional arguments.
     """
     return args
 
@@ -335,7 +335,7 @@ def no_order_func_nb(c: OrderContext, *args) -> Order:
         *args: Additional positional arguments.
 
     Returns:
-        Order: A placeholder order, represented by `vectorbtpro.portfolio.enums.NoOrder`.
+        Order: Placeholder order, represented by `vectorbtpro.portfolio.enums.NoOrder`.
     """
     return NoOrder
 
@@ -369,7 +369,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #         *args: Additional positional arguments.
 #
 #     Returns:
-#         Args: The forwarded positional arguments.
+#         Args: Forwarded positional arguments.
 #     """
 #     return args
 #
@@ -417,7 +417,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #         *args: Additional positional arguments.
 #
 #     Returns:
-#         Args: The forwarded positional arguments.
+#         Args: Forwarded positional arguments.
 #     """
 #     return args
 #
@@ -465,7 +465,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #         *args: Additional positional arguments.
 #
 #     Returns:
-#         Args: The forwarded positional arguments.
+#         Args: Forwarded positional arguments.
 #     """
 #     return args
 #
@@ -513,7 +513,7 @@ def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
 #         *args: Additional positional arguments.
 #
 #     Returns:
-#         Order: The created order.
+#         Order: Created order.
 #
 #           In this placeholder, it returns `vectorbtpro.portfolio.enums.NoOrder`.
 #     """
@@ -820,7 +820,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
 
     Returns:
-        SimulationOutput: The simulation output containing order records, log records, and
+        SimulationOutput: Simulation output containing order records, log records, and
             other simulation results.
 
     !!! note
@@ -1833,7 +1833,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 #         *args: Additional positional arguments.
 #
 #     Returns:
-#         Args: The forwarded positional arguments.
+#         Args: Forwarded positional arguments.
 #     """
 #     return args
 #
@@ -2133,7 +2133,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
         in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
 
     Returns:
-        SimulationOutput: The simulation output containing order records, log records, and
+        SimulationOutput: Simulation output containing order records, log records, and
             other simulation results.
 
     !!! note
@@ -3325,7 +3325,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
 
     Returns:
-        SimulationOutput: The simulation output containing order records, log records, and
+        SimulationOutput: Simulation output containing order records, log records, and
             other simulation results.
 
     !!! note
@@ -4516,7 +4516,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
 
     Returns:
-        SimulationOutput: The simulation output containing order records, log records, and
+        SimulationOutput: Simulation output containing order records, log records, and
             other simulation results.
 
     !!! tip
@@ -5350,7 +5350,7 @@ def set_val_price_nb(c: SegmentContext, val_price: tp.FlexArray2d, price: tp.Fle
         price (FlexArray2d): Array of current market prices.
 
     Returns:
-        None: The function modifies the context in place.
+        None: Function modifies the context in place.
     """
     for col in range(c.from_col, c.to_col):
         _val_price = select_from_col_nb(c, col, val_price)
@@ -5399,7 +5399,7 @@ def def_pre_segment_func_nb(  # % line.replace("def_pre_segment_func_nb", "pre_s
         auto_call_seq (bool): Flag to automatically sort the call sequence.
 
     Returns:
-        Args: An empty tuple.
+        Args: Empty tuple.
     """
     set_val_price_nb(c, val_price, price)
     if auto_call_seq:
@@ -5525,7 +5525,7 @@ def def_flex_pre_segment_func_nb(  # % line.replace("def_flex_pre_segment_func_n
         auto_call_seq (bool): Flag to automatically sort the call sequence.
 
     Returns:
-        Args: A tuple containing a 1D array of indices representing the call sequence.
+        Args: Tuple containing a 1D array of indices representing the call sequence.
     """
     set_val_price_nb(c, val_price, price)
     call_seq_out = np.arange(c.group_len)

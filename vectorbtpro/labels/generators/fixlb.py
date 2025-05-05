@@ -61,7 +61,7 @@ class _FIXLB(FIXLB):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
 
         Returns:
-            BaseFigure: The resulting figure object.
+            BaseFigure: Resulting figure object.
 
         Examples:
             ```pycon

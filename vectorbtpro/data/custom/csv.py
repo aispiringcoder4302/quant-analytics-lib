@@ -144,7 +144,7 @@ class CSVData(FileData):
                 See https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html for arguments.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         from pandas.io.parsers import TextFileReader
         from pandas.api.types import is_object_dtype
@@ -253,7 +253,7 @@ class CSVData(FileData):
             **kwargs: Keyword arguments for `CSVData.fetch_key`.
 
         Returns:
-            FeatureData: The fetched data and a metadata dictionary.
+            FeatureData: Fetched data and a metadata dictionary.
         """
         return cls.fetch_key(feature, **kwargs)
 
@@ -266,7 +266,7 @@ class CSVData(FileData):
             **kwargs: Keyword arguments for `CSVData.fetch_key`.
 
         Returns:
-            SymbolData: The fetched data and a metadata dictionary.
+            SymbolData: Fetched data and a metadata dictionary.
         """
         return cls.fetch_key(symbol, **kwargs)
 
@@ -279,7 +279,7 @@ class CSVData(FileData):
             **kwargs: Keyword arguments for `CSVData.fetch_feature` or `CSVData.fetch_symbol`.
 
         Returns:
-            KeyData: The updated data and a metadata dictionary.
+            KeyData: Updated data and a metadata dictionary.
         """
         fetch_kwargs = self.select_fetch_kwargs(key)
         returned_kwargs = self.select_returned_kwargs(key)
@@ -297,7 +297,7 @@ class CSVData(FileData):
             **kwargs: Keyword arguments for `CSVData.update_key`.
 
         Returns:
-            FeatureData: The updated data and a metadata dictionary.
+            FeatureData: Updated data and a metadata dictionary.
 
         !!! note
             Invokes `CSVData.update_key` with `key_is_feature=True`.
@@ -314,6 +314,6 @@ class CSVData(FileData):
             **kwargs: Keyword arguments for `CSVData.update_key`.
 
         Returns:
-            SymbolData: The updated data and a metadata dictionary.
+            SymbolData: Updated data and a metadata dictionary.
         """
         return self.update_key(symbol, key_is_feature=False, **kwargs)

@@ -148,7 +148,7 @@ class CustomTemplate(Evaluable, DefineMixin):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            Any: The result of the template substitution.
+            Any: Result of the template substitution.
         """
         raise NotImplementedError
 
@@ -192,7 +192,7 @@ class Sub(CustomTemplate):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            Any: The resulting substituted string, or the original instance if substitution is not performed or fails.
+            Any: Resulting substituted string, or the original instance if substitution is not performed or fails.
         """
         if not self.meets_eval_id(eval_id):
             return self
@@ -244,7 +244,7 @@ class SafeSub(CustomTemplate):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            Any: The resulting substituted string, or the original instance if substitution is skipped or fails.
+            Any: Resulting substituted string, or the original instance if substitution is skipped or fails.
         """
         if not self.meets_eval_id(eval_id):
             return self
@@ -284,7 +284,7 @@ class Rep(CustomTemplate):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            Any: The value corresponding to `Rep.template`, or the original instance if replacement is not performed.
+            Any: Value corresponding to `Rep.template`, or the original instance if replacement is not performed.
         """
         if not self.meets_eval_id(eval_id):
             return self
@@ -325,7 +325,7 @@ class RepEval(CustomTemplate):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            Any: The result of the evaluated expression, or the original instance if evaluation is skipped or fails.
+            Any: Result of the evaluated expression, or the original instance if evaluation is skipped or fails.
         """
         if not self.meets_eval_id(eval_id):
             return self
@@ -365,7 +365,7 @@ class RepFunc(CustomTemplate):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            Any: The result of the function call, or the original instance if the call is skipped or fails.
+            Any: Result of the function call, or the original instance if the call is skipped or fails.
         """
         if not self.meets_eval_id(eval_id):
             return self
@@ -400,7 +400,7 @@ def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
         **kwargs: Additional parameters to override default search settings.
 
     Returns:
-        Any: The object containing template instances, or None if none are found.
+        Any: Object containing template instances, or None if none are found.
 
     !!! info
         For default settings, see `vectorbtpro._settings.template`.
@@ -446,7 +446,7 @@ def substitute_templates(
         **kwargs: Additional parameters to override default search settings.
 
     Returns:
-        Any: The object with template instances replaced by their substituted values.
+        Any: Object with template instances replaced by their substituted values.
 
     !!! info
         For default settings, see `vectorbtpro._settings.template`.
