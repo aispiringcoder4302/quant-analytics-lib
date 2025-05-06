@@ -126,7 +126,7 @@ class VBTAsset(KnowledgeAsset):
 
     @property
     def release_name(self) -> tp.Optional[str]:
-        """Return the release name of the asset.
+        """Release name of the asset.
 
         Returns:
             Optional[str]: The release name of the asset, or None if not set.
@@ -540,6 +540,8 @@ class VBTAsset(KnowledgeAsset):
     def to_markdown(
         self,
         root_metadata_key: tp.Optional[tp.Key] = None,
+        minimize_metadata: tp.Optional[bool] = None,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
@@ -551,6 +553,8 @@ class VBTAsset(KnowledgeAsset):
 
         Args:
             root_metadata_key (Optional[Key]): Key under which to nest metadata.
+            minimize_metadata (Optional[bool]): Whether to minimize metadata.
+            minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
@@ -558,7 +562,7 @@ class VBTAsset(KnowledgeAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
             
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+            **kwargs: Keyword arguments for `VBTAsset.apply`.
 
         Returns:
             MaybeVBTAsset: New VBT asset converted to Markdown.
@@ -566,6 +570,8 @@ class VBTAsset(KnowledgeAsset):
         return self.apply(
             "to_markdown",
             root_metadata_key=root_metadata_key,
+            minimize_metadata=minimize_metadata,
+            minimize_keys=minimize_keys,
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
@@ -734,6 +740,8 @@ class VBTAsset(KnowledgeAsset):
     def to_html(
         self: VBTAssetT,
         root_metadata_key: tp.Optional[tp.Key] = None,
+        minimize_metadata: tp.Optional[bool] = None,
+        minimize_keys: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
@@ -747,6 +755,8 @@ class VBTAsset(KnowledgeAsset):
 
         Args:
             root_metadata_key (Optional[Key]): Key under which to nest metadata.
+            minimize_metadata (Optional[bool]): Whether to minimize metadata.
+            minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
             
@@ -768,6 +778,8 @@ class VBTAsset(KnowledgeAsset):
         return self.apply(
             "to_html",
             root_metadata_key=root_metadata_key,
+            minimize_metadata=minimize_metadata,
+            minimize_keys=minimize_keys,
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
@@ -797,7 +809,7 @@ class VBTAsset(KnowledgeAsset):
 
     @property
     def top_parent_links(self) -> tp.List[str]:
-        """Return top-level parent links.
+        """Top-level parent links.
 
         Returns:
             List[str]: The top-level parent links derived from the asset data.
@@ -1599,6 +1611,16 @@ class VBTAsset(KnowledgeAsset):
         return spec_settings_path
 
     def embed(self, *args, template_context: tp.KwargsLike = None, **kwargs) -> tp.Optional[tp.MaybeVBTAsset]:
+        """Embed the instance's documents.
+        
+        Args:
+            *args: Positional arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.embed`.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.embed`.
+
+        Returns:
+            Optional[Rankable]: An updated instance with embedded documents, if available.
+        """
         template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
         spec_settings_path = self.resolve_spec_settings_path()
         if spec_settings_path:
@@ -1607,6 +1629,16 @@ class VBTAsset(KnowledgeAsset):
         return KnowledgeAsset.embed(self, *args, template_context=template_context, **kwargs)
 
     def rank(self, *args, template_context: tp.KwargsLike = None, **kwargs) -> tp.MaybeVBTAsset:
+        """Rank documents based on their relevance to a provided query.
+        
+        Args:
+            *args: Positional arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.rank`.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.rank`.
+
+        Returns:
+            Rankable: Updated instance with ranked documents.
+        """
         template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
         spec_settings_path = self.resolve_spec_settings_path()
         if spec_settings_path:
@@ -1615,6 +1647,17 @@ class VBTAsset(KnowledgeAsset):
         return KnowledgeAsset.rank(self, *args, template_context=template_context, **kwargs)
 
     def create_chat(self, *args, template_context: tp.KwargsLike = None, **kwargs) -> tp.Completions:
+        """Create a chat interface using the generated context.
+        
+        Args:
+            *args: Positional arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.create_chat`.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.create_chat`.
+
+        Returns:
+            Completions: Instance of `vectorbtpro.utils.knowledge.chatting.Completions` 
+                configured with the generated context.
+        """
         template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
         spec_settings_path = self.resolve_spec_settings_path()
         if spec_settings_path:
@@ -1624,6 +1667,16 @@ class VBTAsset(KnowledgeAsset):
 
     @hybrid_method
     def chat(cls_or_self, *args, template_context: tp.KwargsLike = None, **kwargs) -> tp.MaybeChatOutput:
+        """Chat with a language model using the instance as context.
+        
+        Args:
+            *args: Positional arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`.
+        
+        Returns:
+            MaybeChatOutput: Completion response or a tuple of the response and the chat instance.
+        """
         if not isinstance(cls_or_self, type):
             template_context = flat_merge_dicts(dict(release_name=cls_or_self.release_name), template_context)
         spec_settings_path = cls_or_self.resolve_spec_settings_path()
@@ -2445,6 +2498,21 @@ class PagesAsset(VBTAsset):
         aggregate_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> Path:
+        """Browse one or more HTML pages.
+
+        Args:
+            entry_link (Optional[str]): Link of the page to display first.
+
+                If None and there are multiple top-level parents, displays them as an index.
+                If not None, will be matched using `VBTAsset.find_link`.
+            descendants_only (bool): If True, only descendants of the entry page are displayed.
+            aggregate (bool): Whether to aggregate headings into pages.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
+            **kwargs: Keyword arguments for `VBTAsset.browse`.
+
+        Returns:
+            Path: Directory path where the HTML files are stored.
+        """
         new_instance = self
         if entry_link is not None and entry_link != "/" and descendants_only:
             new_instance = new_instance.select_descendants(entry_link, incl_link=True)
@@ -2461,6 +2529,19 @@ class PagesAsset(VBTAsset):
         aggregate_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> Path:
+        """Display page(s) as an HTML page.
+        
+        Args:
+            link (Optional[str]): Link identifier of the page to display.
+
+                If provided, it is used to locate a target page.
+            aggregate (bool): Whether to aggregate headings into pages.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
+            **kwargs: Keyword arguments for `VBTAsset.display`.
+
+        Returns:
+            Path: File path of the generated HTML file.
+        """
         new_instance = self
         if link is not None:
             new_instance = new_instance.find_page(
@@ -2940,7 +3021,7 @@ class MessagesAsset(VBTAsset):
             
                 If not provided, an empty dict with `uniform_groups` set to True is used.
             aggregate_fields (Union[None, bool, Iterable[str]]): Fields to aggregate instead of
-                including in child metadata. True aggregates all lists; False aggregates none.
+                including in child metadata; True aggregates all lists; False aggregates none.
             parent_links_only (Optional[bool]): If True, excludes links from the metadata.
             minimize_metadata (Optional[bool]): Whether to minimize metadata.
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
@@ -3002,7 +3083,7 @@ class MessagesAsset(VBTAsset):
             
                 If not provided, an empty dict with `uniform_groups` set to True is used.
             aggregate_fields (Union[None, bool, Iterable[str]]): Fields to aggregate instead of
-                including in child metadata. True aggregates all lists; False aggregates none.
+                including in child metadata; True aggregates all lists; False aggregates none.
             parent_links_only (Optional[bool]): If True, excludes links from the metadata.
             minimize_metadata (Optional[bool]): Whether to minimize metadata.
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
@@ -3064,7 +3145,7 @@ class MessagesAsset(VBTAsset):
             
                 If not provided, an empty dict with `uniform_groups` set to True is used.
             aggregate_fields (Union[None, bool, Iterable[str]]): Fields to aggregate instead of
-                including in child metadata. True aggregates all lists; False aggregates none.
+                including in child metadata; True aggregates all lists; False aggregates none.
             parent_links_only (Optional[bool]): If True, excludes links from the metadata.
             minimize_metadata (Optional[bool]): Whether to minimize metadata.
             minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
@@ -3104,7 +3185,7 @@ class MessagesAsset(VBTAsset):
 
     @property
     def lowest_aggregate_by(self) -> tp.Optional[str]:
-        """Return the lowest aggregation level for the messages.
+        """Lowest aggregation level for the messages.
 
         Checks the following fields in order:
 
@@ -3140,7 +3221,7 @@ class MessagesAsset(VBTAsset):
 
     @property
     def highest_aggregate_by(self) -> tp.Optional[str]:
-        """Return the highest aggregation level for messages.
+        """Highest aggregation level for messages.
 
         Checks if all messages share a uniform "channel", "thread", or "block" identifier,
         or if messages contain attachments. Returns the corresponding level name if found.

@@ -5599,22 +5599,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     # ############# Grouping ############# #
 
     def regroup(self: PortfolioT, group_by: tp.GroupByLike, **kwargs) -> PortfolioT:
-        """Regroup the portfolio based on a new grouping specification.
-
-        This method reassigns the grouping of the portfolio.
-
-        Args:
-            group_by (GroupByLike): Grouping specification.
-            
-                See `vectorbtpro.base.grouping.base.Grouper`.
-            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping.regroup`.
-
-        Returns:
-            Portfolio: New portfolio instance with the updated grouping.
-
-        !!! note
-            All cached objects will be lost.
-        """
         if self.cash_sharing:
             if self.wrapper.grouper.is_grouping_modified(group_by=group_by):
                 raise ValueError("Cannot modify grouping globally when cash_sharing=True")
@@ -10633,7 +10617,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @property
     def returns_acc(self) -> ReturnsAccessor:
-        """Return the returns accessor computed by `Portfolio.get_returns_acc` with default arguments.
+        """Returns accessor computed by `Portfolio.get_returns_acc` with default arguments.
 
         Returns:
             ReturnsAccessor: Instance of `vectorbtpro.returns.accessors.ReturnsAccessor`.
@@ -10729,7 +10713,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @property
     def qs(self) -> QSAdapterT:
-        """Return the quantstats adapter computed by `Portfolio.get_qs` with default arguments.
+        """Quantstats adapter computed by `Portfolio.get_qs` with default arguments.
 
         Returns:
             QSAdapter: Instance of `vectorbtpro.returns.qs_adapter.QSAdapter`.
@@ -10740,11 +10724,6 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @property
     def self_aliases(self) -> tp.Set[str]:
-        """Names to associate with this object.
-
-        Returns:
-            Set[str]: A set of names that can be used to refer to this object.
-        """
         return {"self", "portfolio", "pf"}
 
     def pre_resolve_attr(self, attr: str, final_kwargs: tp.KwargsLike = None) -> str:
@@ -10870,13 +10849,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Default configuration for portfolio statistics.
+        """Default configuration for `Portfolio.stats`.
 
-        Merges defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
-        with the portfolio statistics settings from `vectorbtpro._settings.portfolio`.
+        Merges the defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.portfolio`.
 
         Returns:
-            Kwargs: Dictionary containing the default configuration for portfolio statistics.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -13049,13 +13028,13 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Portfolio.plot`.
+        """Default configuration for `Portfolio.plots`.
 
-        Merges `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` and
-        `plots` from `vectorbtpro._settings.portfolio`.
+        Merges the defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.portfolio`.
 
         Returns:
-            Kwargs: Merged configuration dictionary for plotting.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

@@ -958,13 +958,13 @@ class Drawdowns(Ranges):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Return the default settings for drawdown statistics.
+        """Default configuration for `Drawdowns.stats`.
 
-        Merges `vectorbtpro.generic.ranges.Ranges.stats_defaults` with the `stats`
-        configuration from `vectorbtpro._settings.drawdowns`.
+        Merges the defaults from `vectorbtpro.generic.ranges.Ranges.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.drawdowns`.
 
         Returns:
-            Kwargs: Default drawdown statistics settings.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -1477,13 +1477,13 @@ class Drawdowns(Ranges):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Return default parameters for `Drawdowns.plots`.
+        """Default configuration for `Drawdowns.plots`.
 
-        Merges defaults from `vectorbtpro.generic.ranges.Ranges.plots_defaults`
+        Merges the defaults from `vectorbtpro.generic.ranges.Ranges.plots_defaults`
         with the `plots` configuration from `vectorbtpro._settings.drawdowns`.
 
         Returns:
-            Kwargs: Default plot settings.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

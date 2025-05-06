@@ -231,20 +231,10 @@ class SignalsAccessor(GenericAccessor):
 
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["SignalsSRAccessor"]:
-        """Accessor class for `pd.Series`.
-
-        Returns:
-            Type[SignalsSRAccessor]: The class of the Series accessor.
-        """
         return SignalsSRAccessor
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["SignalsDFAccessor"]:
-        """Accessor class for `pd.DataFrame`.
-
-        Returns:
-            Type[SignalsDFAccessor]: The class of the DataFrame accessor.
-        """
         return SignalsDFAccessor
 
     # ############# Overriding ############# #
@@ -3464,13 +3454,13 @@ class SignalsAccessor(GenericAccessor):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Default settings for `SignalsAccessor.stats`.
+        """Default configuration for `SignalsAccessor.stats`.
 
         Merges `vectorbtpro.generic.accessors.GenericAccessor.stats_defaults` with the
         `stats` configuration from `vectorbtpro._settings.signals`.
 
         Returns:
-            Kwargs: Dictionary containing the default settings for stats.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -3887,13 +3877,13 @@ class SignalsAccessor(GenericAccessor):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `SignalsAccessor.plots`.
+        """Default configuration for `SignalsAccessor.plots`.
 
-        Merges `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults` with
-        the plotting configuration from `vectorbtpro._settings.signals`.
+        Merges `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults` with the
+        `plots` configuration from `vectorbtpro._settings.signals`.
 
         Returns:
-            Kwargs: Dictionary containing the default settings for plots.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

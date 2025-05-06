@@ -29,7 +29,7 @@ class DataUpdater(Configured):
 
     Args:
         data (Data): Data instance.
-        update_kwargs (KwargsLike): Default keyword arguments for `DataSaver.update`.
+        update_kwargs (KwargsLike): Default configuration for `DataSaver.update`.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 
@@ -74,12 +74,12 @@ class DataUpdater(Configured):
 
     @property
     def update_kwargs(self) -> tp.KwargsLike:
-        """Default keyword arguments for `DataSaver.update`.
+        """Default configuration for `DataSaver.update`.
 
         These arguments are merged with those provided during scheduled updates.
 
         Returns:
-            KwargsLike: Default keyword arguments for data updates.
+            KwargsLike: Default configuration for data updates.
         """
         return self._update_kwargs
 

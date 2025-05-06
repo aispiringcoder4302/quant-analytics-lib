@@ -325,21 +325,20 @@ class FigureMixin(Base):
     def show(self, *args, **kwargs) -> None:
         """Display the figure.
 
-        This method should be overridden by subclasses.
-
         Args:
             *args: Positional arguments for displaying the figure.
             **kwargs: Keyword arguments for displaying the figure.
 
         Returns:
             None
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def write_image(self, *args, **kwargs) -> None:
         """Write the figure to disk.
-
-        This method should be overridden by subclasses.
 
         Args:
             *args: Positional arguments for writing the figure.
@@ -347,13 +346,14 @@ class FigureMixin(Base):
 
         Returns:
             None
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def update_layout(self, *args, **kwargs) -> None:
         """Update layout of the figure.
-
-        This method should be overridden by subclasses.
 
         Args:
             *args: Positional arguments for updating the layout.
@@ -361,6 +361,9 @@ class FigureMixin(Base):
 
         Returns:
             None
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

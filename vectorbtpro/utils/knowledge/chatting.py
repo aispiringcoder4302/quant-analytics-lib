@@ -145,7 +145,7 @@ class Tokenizer(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: Template context.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 
@@ -157,6 +157,9 @@ class Tokenizer(Configured):
 
         Returns:
             list: List of tokens representing the input text.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -168,6 +171,9 @@ class Tokenizer(Configured):
 
         Returns:
             str: Decoded text.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -220,6 +226,9 @@ class Tokenizer(Configured):
 
         Returns:
             int: Total token count.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -504,7 +513,7 @@ class Embeddings(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: Template context.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 
@@ -525,6 +534,9 @@ class Embeddings(Configured):
 
         Returns:
             List[float]: The embedding vector.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1251,7 +1263,7 @@ class Completions(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: Template context for substitution.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 
@@ -1273,6 +1285,9 @@ class Completions(Configured):
 
         Returns:
             Any: Chat response generated from the provided messages.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1284,6 +1299,9 @@ class Completions(Configured):
 
         Returns:
             Optional[str]: The content extracted from the chat response.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1296,10 +1314,13 @@ class Completions(Configured):
 
         Returns:
             Any: Streaming response generated from the provided messages.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
-    def get_delta_content(self, response: tp.Any) -> tp.Optional[str]:
+    def get_delta_content(self, response_chunk: tp.Any) -> tp.Optional[str]:
         """Return the content extracted from a streaming response chunk.
 
         Args:
@@ -1307,6 +1328,9 @@ class Completions(Configured):
 
         Returns:
             Optional[str]: The content extracted from the streaming response chunk.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1988,7 +2012,7 @@ class TextSplitter(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: Context mapping used for expression evaluation.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 
@@ -2000,6 +2024,9 @@ class TextSplitter(Configured):
 
         Yields:
             Tuple[int, int]: A tuple representing the start and end indices of a text chunk.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -2754,6 +2781,9 @@ class StoreDocument(StoreData, DefineMixin):
 
         Returns:
             Optional[str]: The content if available, otherwise None.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -2762,6 +2792,9 @@ class StoreDocument(StoreData, DefineMixin):
 
         Returns:
             List[StoreDocument]: A list of document chunks.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -2940,11 +2973,6 @@ class TextDocument(StoreDocument, DefineMixin):
         return content_template.substitute(template_context, eval_id="content_template")
 
     def split(self: TextDocumentT) -> tp.List[TextDocumentT]:
-        """Return a list of document instances obtained by splitting the text content.
-
-        Returns:
-            List[TextDocument]: A list of document chunks.
-        """
         from vectorbtpro.utils.search_ import set_pathlike_key
 
         text = self.get_text()
@@ -3057,7 +3085,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: Dictionary mapping template keys to their values.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 
@@ -3240,11 +3268,6 @@ class MemoryStore(DictStore):
 
     @property
     def store(self) -> tp.Dict[str, StoreObjectT]:
-        """In-memory dictionary storing the objects.
-
-        Returns:
-            Dict[str, StoreObject]: The dictionary holding the objects.
-        """
         return self._store
 
     def store_exists(self) -> bool:
@@ -3732,11 +3755,6 @@ class LMDBStore(ObjectStore):
 
     @property
     def mirror_store_id(self) -> str:
-        """Mirror store identifier.
-
-        Returns:
-            str: String representation of the resolved LMDB database path.
-        """
         return str(self.db_path.resolve())
 
     @property
@@ -5465,6 +5483,9 @@ class Rankable(HasSettings):
 
         Returns:
             Optional[Rankable]: An updated instance with embedded documents, if available.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -5499,6 +5520,9 @@ class Rankable(HasSettings):
 
         Returns:
             Rankable: Updated instance with ranked documents.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -5524,6 +5548,9 @@ class Contextable(HasSettings):
 
         Returns:
             str: Textual context representation.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

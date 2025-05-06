@@ -3986,13 +3986,13 @@ class PortfolioOptimizer(Analyzable):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Default settings for portfolio statistics.
+        """Default configuration for `PortfolioOptimizer.stats`.
 
-        Merges defaults from `Analyzable.stats_defaults` and additional configuration
-        from `vectorbtpro._settings.pfopt`.
+        Merges the defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.pfopt`.
 
         Returns:
-            Kwargs: Dictionary containing default statistical settings.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -4152,13 +4152,13 @@ class PortfolioOptimizer(Analyzable):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `PortfolioOptimizer.plots`.
+        """Default configuration for `PortfolioOptimizer.plots`.
 
-        Merges `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` and
-        `plots` from `vectorbtpro._settings.pfopt`.
+        Merges the defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.pfopt`.
 
         Returns:
-            Kwargs: Dictionary containing the default plotting configuration.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

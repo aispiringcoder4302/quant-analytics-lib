@@ -380,13 +380,13 @@ class Orders(PriceRecords):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Default statistics settings for orders.
+        """Default configuration for `Orders.stats`.
 
         Merges the defaults from `vectorbtpro.generic.price_records.PriceRecords.stats_defaults`
-        with order-specific settings from `vectorbtpro._settings.orders`.
+        with the `stats` configuration from `vectorbtpro._settings.orders`.
 
         Returns:
-            Kwargs: Merged statistics configuration dictionary.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -635,13 +635,13 @@ class Orders(PriceRecords):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Orders.plots`.
+        """Default configuration for `Orders.plots`.
 
-        Merge default plotting configurations from `PriceRecords.plots_defaults` and
-        `settings["orders"]["plots"]`.
+        Merges the defaults from `vectorbtpro.generic.price_records.PriceRecords.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.orders`.
 
         Returns:
-            Kwargs: Merged plotting configuration dictionary.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

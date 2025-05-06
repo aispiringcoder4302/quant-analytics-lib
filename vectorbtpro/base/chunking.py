@@ -75,17 +75,6 @@ class GroupLensSizer(ArgSizer):
         return len(obj)
 
     def get_size(self, ann_args: tp.AnnArgs, **kwargs) -> int:
-        """Get the size based on the annotated arguments.
-
-        Args:
-            ann_args (AnnArgs): Annotated arguments.
-
-                See `vectorbtpro.utils.parsing.annotate_args`.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            int: Computed size.
-        """
         return self.get_obj_size(self.get_arg(ann_args), single_type=self.single_type)
 
 
@@ -93,28 +82,9 @@ class GroupLensSlicer(ChunkSlicer):
     """Class for slicing a subset of group lengths or a group map based on chunk metadata."""
 
     def get_size(self, obj: tp.Union[tp.GroupLens, tp.GroupMap], **kwargs) -> int:
-        """Get the size of the provided object representing group lengths or a group map.
-
-        Args:
-            obj (Union[GroupLens, GroupMap]): Group lengths array or a group map tuple.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            int: Size computed from the object.
-        """
         return GroupLensSizer.get_obj_size(obj, single_type=self.single_type)
 
     def take(self, obj: tp.Union[tp.GroupLens, tp.GroupMap], chunk_meta: ChunkMeta, **kwargs) -> tp.GroupMap:
-        """Return a slice of group lengths based on the given chunk metadata.
-
-        Args:
-            obj (Union[GroupLens, GroupMap]): Group lengths array or a group map tuple.
-            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            GroupMap: Sliced group lengths.
-        """
         if isinstance(obj, tuple):
             return obj[1][chunk_meta.start : chunk_meta.end]
         return obj[chunk_meta.start : chunk_meta.end]
@@ -155,18 +125,6 @@ class GroupLensMapper(ChunkMapper, ArgGetter, DefineMixin):
     """
 
     def map(self, chunk_meta: ChunkMeta, ann_args: tp.Optional[tp.AnnArgs] = None, **kwargs) -> ChunkMeta:
-        """Map chunk metadata to corresponding per-group column lengths using group lengths data.
-
-        Args:
-            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
-            ann_args (Optional[AnnArgs]): Annotated arguments.
-
-                See `vectorbtpro.utils.parsing.annotate_args`.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            ChunkMeta: Updated chunk metadata with recalculated start, end, and indices.
-        """
         group_lens = self.get_arg(ann_args)
         if isinstance(group_lens, tuple):
             group_lens = group_lens[1]
@@ -188,28 +146,9 @@ class GroupMapSlicer(ChunkSlicer):
     """Class for slicing a subset of a group map based on provided chunk metadata."""
 
     def get_size(self, obj: tp.GroupMap, **kwargs) -> int:
-        """Get the size of the provided group map based on its group lengths.
-
-        Args:
-            obj (GroupMap): Tuple containing group indices and group lengths.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            int: Calculated size derived from the group map.
-        """
         return GroupLensSizer.get_obj_size(obj, single_type=self.single_type)
 
     def take(self, obj: tp.GroupMap, chunk_meta: ChunkMeta, **kwargs) -> tp.GroupMap:
-        """Return a sliced group map based on the given chunk metadata.
-
-        Args:
-            obj (GroupMap): Tuple containing group indices and group lengths.
-            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            GroupMap: Tuple containing new group indices and the sliced group lengths.
-        """
         group_idxs, group_lens = obj
         group_lens = group_lens[chunk_meta.start : chunk_meta.end]
         return np.arange(np.sum(group_lens)), group_lens
@@ -231,18 +170,6 @@ class GroupIdxsMapper(ChunkMapper, ArgGetter, DefineMixin):
     """Class for mapping chunk metadata to per-group column indices using a group map tuple."""
 
     def map(self, chunk_meta: ChunkMeta, ann_args: tp.Optional[tp.AnnArgs] = None, **kwargs) -> ChunkMeta:
-        """Map chunk metadata to per-group column indices based on the provided group map.
-
-        Args:
-            chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
-            ann_args (Optional[AnnArgs]): Annotated arguments.
-
-                See `vectorbtpro.utils.parsing.annotate_args`.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            ChunkMeta: Updated chunk metadata with computed column indices.
-        """
         group_map = self.get_arg(ann_args)
         group_idxs, group_lens = group_map
         group_lens_slice = get_group_lens_slice(group_lens, chunk_meta)
@@ -264,16 +191,6 @@ class FlexArraySizer(ArraySizer):
 
     @classmethod
     def get_obj_size(cls, obj: tp.AnyArray, axis: int, single_type: tp.Optional[type] = None) -> int:
-        """Get the size of a flexible array along the specified axis.
-
-        Args:
-            obj (AnyArray): Array-like object from which to calculate the size.
-            axis (int): Axis along which to determine the size.
-            single_type (Optional[type]): Type of value that is considered single.
-
-        Returns:
-            int: Computed size along the specified axis.
-        """
         if single_type is not None:
             if checks.is_instance_of(obj, single_type):
                 return 1

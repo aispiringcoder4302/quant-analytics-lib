@@ -1267,7 +1267,7 @@ If not provided, this field is set to None.
     To modify the call sequence dynamically, change `SegmentContext.call_seq_now` in place.
     
 Examples:
-    The default call sequence for three data points and two groups with three columns each:
+    Default call sequence for three data points and two groups with three columns each:
     
     ```python
     np.array([

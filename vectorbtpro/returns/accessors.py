@@ -280,15 +280,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         *objs: tp.MaybeSequence[ReturnsAccessorT],
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing a `ReturnsAccessor` after stacking along rows.
-
-        Args:
-            *objs (MaybeSequence[ReturnsAccessor]): Instances of `ReturnsAccessor` to be merged.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            Kwargs: Resolved keyword arguments for creating a new `ReturnsAccessor` instance.
-        """
         kwargs = GenericAccessor.resolve_row_stack_kwargs(*objs, **kwargs)
         if len(objs) == 1:
             objs = objs[0]
@@ -366,20 +357,10 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["ReturnsSRAccessor"]:
-        """Accessor class for `pd.Series`.
-
-        Returns:
-            Type[ReturnsSRAccessor]: The accessor class for Series.
-        """
         return ReturnsSRAccessor
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["ReturnsDFAccessor"]:
-        """Accessor class for `pd.DataFrame`.
-
-        Returns:
-            Type[ReturnsDFAccessor]: The accessor class for DataFrame.
-        """
         return ReturnsDFAccessor
 
     def indexing_func(
@@ -440,7 +421,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def bm_returns(self) -> tp.Optional[tp.SeriesFrame]:
-        """Return benchmark returns wrapped using the assigned array wrapper.
+        """Benchmark returns wrapped using the assigned array wrapper.
 
         Returns:
             Optional[SeriesFrame]: The benchmark returns if available; otherwise, None.
@@ -3743,15 +3724,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         )
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
-    @property
-    def drawdowns(self) -> Drawdowns:
-        """Drawdowns computed from cumulative returns using default arguments.
-
-        Returns:
-            Drawdowns: Instance containing drawdown records.
-        """
-        return self.get_drawdowns()
-
     def get_drawdowns(
         self,
         sim_start: tp.Optional[tp.ArrayLike] = None,
@@ -3810,21 +3782,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         impacts_caching: bool = True,
         silence_warnings: bool = False,
     ) -> ReturnsAccessorT:
-        """Resolve self.
-
-        If `year_freq` is provided in `cond_kwargs` and differs from the current instance,
-        creates and returns a new instance with the updated `year_freq` and disabled caching,
-        while warning the user if warnings are not silenced. Otherwise, returns the resolved instance.
-
-        Args:
-            cond_kwargs (KwargsLike): Keyword arguments for condition overrides.
-            custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
-            impacts_caching (bool): Flag indicating whether the changes impact caching.
-            silence_warnings (bool): Flag to suppress warning messages.
-
-        Returns:
-            ReturnsAccessor: Resolved instance.
-        """
         if cond_kwargs is None:
             cond_kwargs = {}
         if custom_arg_names is None:
@@ -3843,8 +3800,8 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             if self_copy.year_freq != reself.year_freq:
                 if not silence_warnings:
                     warn(
-                        f"Changing the year frequency will create a copy of this object. "
-                        f"Consider setting it upon object creation to re-use existing cache."
+                        "Changing the year frequency will create a copy of this object. "
+                        "Consider setting it upon object creation to re-use existing cache."
                     )
                 for alias in reself.self_aliases:
                     if alias not in custom_arg_names:
@@ -3859,16 +3816,16 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Default settings for `ReturnsAccessor.stats`.
+        """Default configuration for `ReturnsAccessor.stats`.
 
-        Merges defaults from:
+        Merges the defaults from:
 
         * `vectorbtpro.generic.accessors.GenericAccessor.stats_defaults`
         * `ReturnsAccessor.defaults` (acting as settings)
         * `stats` configuration from `vectorbtpro._settings.returns`
 
         Returns:
-            Kwargs: Merged default settings for stats.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -4191,13 +4148,16 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `ReturnsAccessor.plots`.
+        """Default configuration for `ReturnsAccessor.plots`.
 
-        Merges `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults`, defaults from
-        `ReturnsAccessor.defaults` (serving as settings), and `plots` from `vectorbtpro._settings.returns`.
+        Merges the defaults from:
+
+        * `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults`
+        * `ReturnsAccessor.defaults` (acting as settings)
+        * `plots` configuration from `vectorbtpro._settings.returns`
 
         Returns:
-            Kwargs: Merged default settings for plots.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

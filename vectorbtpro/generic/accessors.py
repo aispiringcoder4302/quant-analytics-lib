@@ -264,17 +264,6 @@ GenericAccessorT = tp.TypeVar("GenericAccessorT", bound="GenericAccessor")
 SplitOutputT = tp.Union[tp.MaybeTuple[tp.Tuple[tp.Frame, tp.Index]], tp.BaseFigure]
 
 
-class TransformerT(tp.Protocol):
-    def __init__(self, **kwargs) -> None: ...
-
-    def transform(self, *args, **kwargs) -> tp.Array2d: ...
-
-    def fit_transform(self, *args, **kwargs) -> tp.Array2d: ...
-
-
-__pdoc__["TransformerT"] = False
-
-
 nb_config = ReadonlyConfig(
     {
         "shuffle": dict(func=nb.shuffle_nb, disable_chunked=True),
@@ -342,27 +331,17 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["GenericSRAccessor"]:
-        """Return the accessor class for `pd.Series` objects.
-
-        Returns:
-            Type[GenericSRAccessor]: The accessor class for Series objects.
-        """
         return GenericSRAccessor
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["GenericDFAccessor"]:
-        """Return the accessor class for `pd.DataFrame` objects.
-
-        Returns:
-            Type[GenericDFAccessor]: The accessor class for DataFrame objects.
-        """
         return GenericDFAccessor
 
     # ############# Mapping ############# #
 
     @property
     def mapping(self) -> tp.Optional[tp.MappingLike]:
-        """Return the mapping configuration.
+        """Mapping configuration.
 
         Returns:
             Optional[MappingLike]: The mapping configuration.
@@ -5078,7 +5057,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         out = func(self.to_2d_array(), group_map)
         return self.wrapper.wrap(out, group_by=False, **resolve_dict(wrap_kwargs))
 
-    def transform(self, transformer: TransformerT, wrap_kwargs: tp.KwargsLike = None, **kwargs) -> tp.SeriesFrame:
+    def transform(self, transformer: tp.TransformerT, wrap_kwargs: tp.KwargsLike = None, **kwargs) -> tp.SeriesFrame:
         """Transform the data using the specified transformer.
 
         Applies the given transformer to the dataset. The transformer must be an instance with
@@ -5552,20 +5531,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         impacts_caching: bool = True,
         silence_warnings: bool = False,
     ) -> GenericAccessorT:
-        """Return a resolved instance based on provided condition keyword arguments.
-
-        Relies on `vectorbtpro.base.wrapping.Wrapping.resolve_self` to generate a modified instance.
-        A new instance is created if the `mapping` differs within `cond_kwargs`.
-
-        Args:
-            cond_kwargs (KwargsLike): Keyword arguments that may alter instance conditions.
-            custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
-            impacts_caching (bool): Flag indicating whether the changes impact caching.
-            silence_warnings (bool): Flag to suppress warning messages.
-
-        Returns:
-            GenericAccessor: Resolved instance, possibly a new copy if conditions are met.
-        """
         if cond_kwargs is None:
             cond_kwargs = {}
         if custom_arg_names is None:
@@ -5600,13 +5565,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Return default keyword arguments for `GenericAccessor.stats`.
+        """Default configuration for `GenericAccessor.stats`.
 
-        Merges defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
-        with settings from `vectorbtpro._settings.generic`.
+        Merges the defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.generic`.
 
         Returns:
-            Kwargs: Default keyword arguments for `GenericAccessor.stats`.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -6967,13 +6932,13 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Default plotting parameters.
+        """Default configuration for `GenericAccessor.plots`.
 
-        Merges defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` with
-        the generic `plots` settings from `vectorbtpro._settings.generic`.
+        Merges the defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.generic`.
 
         Returns:
-            Kwargs: Dictionary of default plotting parameters.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

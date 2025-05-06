@@ -152,11 +152,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["OHLCVDFAccessor"]:
-        """Accessor class for Pandas DataFrames.
-
-        Returns:
-            Type[OHLCVDFAccessor]: The accessor class.
-        """
         return OHLCVDFAccessor
 
     @property
@@ -217,15 +212,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
     # ############# Conversion ############# #
 
     def to_data(self, data_cls: tp.Optional[tp.Type[DataT]] = None, **kwargs) -> DataT:
-        """Convert the OHLCV data to a `vectorbtpro.data.base.Data` instance.
-
-        Args:
-            data_cls (Optional[Type[Data]]): Data class to use for conversion.
-            **kwargs: Keyword arguments for `vectorbtpro.data.base.Data.from_data` of `data_cls`.
-
-        Returns:
-            Data: A `vectorbtpro.data.base.Data` instance created from the underlying DataFrame.
-        """
         if data_cls is None:
             from vectorbtpro.data.base import Data
 
@@ -355,13 +341,13 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Return default statistics settings for OHLCV data.
+        """Default configuration for `OHLCVDFAccessor.stats`.
 
-        Merges defaults from `GenericAccessor.stats_defaults` with OHLCV-specific settings
-        from `vectorbtpro._settings.ohlcv`.
+        Merges the defaults from `vectorbtpro.generic.accessors.GenericAccessor.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.ohlcv`.
 
         Returns:
-            Kwargs: Merged dictionary of default statistics settings.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -686,13 +672,13 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Default plotting configurations for `OHLCVDFAccessor.plots`.
+        """Default configuration for `OHLCVDFAccessor.plots`.
 
-        Merges the plots defaults from `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults`
-        with the plot settings defined in `vectorbtpro._settings.ohlcv`.
+        Merges the defaults from `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.ohlcv`.
 
         Returns:
-            Kwargs: Dictionary containing the default plotting configurations.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

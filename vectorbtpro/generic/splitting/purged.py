@@ -500,22 +500,6 @@ class PurgedKFoldCV(BasePurgedCV):
         pred_times: tp.Union[None, tp.Index, tp.Series] = None,
         eval_times: tp.Union[None, tp.Index, tp.Series] = None,
     ) -> tp.Iterable[tp.Tuple[tp.Array1d, tp.Array1d]]:
-        """Split the dataset into training and testing sets for cross-validation.
-
-        Args:
-            X (SeriesFrame): DataFrame or Series containing the input data.
-            y (Optional[Series]): Series containing the target values.
-            pred_times (Union[None, Index, Series]): Indices for prediction times.
-
-                If None, the index of `X` is used.
-            eval_times (Union[None, Index, Series]): Indices for evaluation times.
-
-                If None, the index of `X` is used.
-
-        Returns:
-            Iterable[Tuple[Array1d, Array1d]]: Generator of tuples containing training
-                and test set sample indices for each split.
-        """
         BasePurgedCV.split(self, X, y, pred_times=pred_times, eval_times=eval_times)
 
         fold_bounds = [(fold[0], fold[-1] + 1) for fold in np.array_split(self.indices, self.n_folds)]

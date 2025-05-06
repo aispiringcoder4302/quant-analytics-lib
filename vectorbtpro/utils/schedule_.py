@@ -79,7 +79,7 @@ class CustomJob(Job, Base):
 
     @property
     def modulo(self) -> int:
-        """Returns the remainder of the next scheduled run time's corresponding unit divided by the interval.
+        """Remainder of the next scheduled run time's corresponding unit divided by the interval.
 
         Returns:
             int: Remainder computed based on the time unit of the next run.

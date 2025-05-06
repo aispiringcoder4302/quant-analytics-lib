@@ -396,7 +396,7 @@ class SignalFactory(IndicatorFactory):
             Use `pass_kwargs` in a settings dictionary to pass keyword arguments as positional.
 
         Examples:
-            The simplest signal indicator that places True at the very first index:
+            Simplest signal indicator that places True at the very first index:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -815,7 +815,7 @@ class SignalFactory(IndicatorFactory):
 
             Returns:
                 Union[None, IFCacheOutput, Array2d, List[Array2d]]:
-                    The result of applying `{0}`, which may be:
+                    Result of applying `{0}`, which may be:
 
                     * The cache output if `return_cache` is True.
                     * A 2D array.

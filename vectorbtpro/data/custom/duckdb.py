@@ -1054,25 +1054,7 @@ class DuckDBData(DBData):
         return self.fetch_symbol(key, **kwargs)
 
     def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Update the data table for a feature using the underlying `DuckDBData.update_key` method.
-
-        Args:
-            feature (Feature): Feature identifier.
-            **kwargs: Keyword arguments for `DuckDBData.update_key`.
-
-        Returns:
-            FeatureData: Updated data and a metadata dictionary.
-        """
         return self.update_key(feature, **kwargs)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Update the data table for a symbol using the underlying `DuckDBData.update_key` method.
-
-        Args:
-            symbol (Symbol): Symbol identifier.
-            **kwargs: Keyword arguments for `DuckDBData.update_key`.
-
-        Returns:
-            SymbolData: Updated data and a metadata dictionary.
-        """
         return self.update_key(symbol, **kwargs)

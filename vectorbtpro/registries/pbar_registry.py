@@ -44,7 +44,7 @@ class PBarRegistry(Base):
 
     @property
     def instances(self) -> tp.Dict[tp.Hashable, ProgressBarT]:
-        """Return the dictionary of registered progress bar instances.
+        """Dictionary of registered progress bar instances.
 
         Returns:
             Dict[Hashable, ProgressBar]: A dictionary mapping unique bar ids to their

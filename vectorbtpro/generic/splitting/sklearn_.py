@@ -165,7 +165,7 @@ class SplitterCV(BaseCrossValidator, Base):
         """Additional context for template substitution.
 
         Returns:
-            KwargsLike: Mapping for template substitution in ranges.
+            KwargsLike: Dictionary of context variables for template substitution.
         """
         return self._template_context
 

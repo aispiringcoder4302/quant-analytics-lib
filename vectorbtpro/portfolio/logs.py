@@ -227,11 +227,11 @@ class Logs(PriceRecords):
     def stats_defaults(self) -> tp.Kwargs:
         """Default configuration for `Logs.stats`.
 
-        Merges the default statistics configuration from `PriceRecords.stats_defaults` with
-        the log-specific settings from `vectorbtpro._settings.logs`.
+        Merges the defaults from `vectorbtpro.generic.price_records.PriceRecords.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.logs`.
 
         Returns:
-            Kwargs: Dictionary containing the merged default statistics configuration.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -287,11 +287,11 @@ class Logs(PriceRecords):
     def plots_defaults(self) -> tp.Kwargs:
         """Default configuration for `Logs.plots`.
 
-        Merges the default plotting settings from `PriceRecords.plots_defaults` with
-        the log-specific plot configuration from `vectorbtpro._settings.logs`.
+        Merges the defaults from `vectorbtpro.generic.price_records.PriceRecords.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.logs`.
 
         Returns:
-            Kwargs: Dictionary containing the merged default plotting configuration.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

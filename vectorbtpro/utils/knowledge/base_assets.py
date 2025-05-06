@@ -2066,7 +2066,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
             make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
             changed_only (Optional[bool]): If True, returns only data items that were modified.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.search_.flatten_obj`.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
             MaybeKnowledgeAsset: New asset with flattened data.
@@ -2117,7 +2117,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
             make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
             changed_only (Optional[bool]): If True, returns only data items that were modified.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.search_.unflatten_obj`.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
             MaybeKnowledgeAsset: New asset with unflattened data.
@@ -2228,7 +2228,12 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs,
         )
 
-    def to_documents(self, **kwargs) -> tp.MaybeKnowledgeAsset:
+    def to_documents(
+        self, 
+        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None, 
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.MaybeKnowledgeAsset:
         """Convert asset data items to text documents of type `vectorbtpro.utils.knowledge.chatting.TextDocument`.
 
         Templates provided via keyword arguments can reference:
@@ -2239,16 +2244,26 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         * field names for respective data item fields.
 
         Args:
+            document_cls (Optional[Type[StoreDocument]]): Document class to use for creating documents.
+
+                Defaults to `vectorbtpro.utils.knowledge.chatting.TextDocument`.
+            template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
             MaybeKnowledgeAsset: New asset with data items converted to text documents.
         """
-        return self.apply("to_docs", **kwargs)
+        return self.apply(
+            "to_docs", 
+            document_cls=document_cls, 
+            template_context=template_context, 
+            **kwargs,
+        )
 
     def split_text(
         self,
         text_path: tp.Optional[tp.PathLikeKey] = None,
+        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None, 
         merge_chunks: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
@@ -2260,6 +2275,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             text_path (Optional[PathLikeKey]): Path specifying the location of the text content.
+            document_cls (Optional[Type[StoreDocument]]): Document class to use for creating documents.
+
+                Defaults to `vectorbtpro.utils.knowledge.chatting.TextDocument`.
             merge_chunks (Optional[bool]): If True, merge all text chunks into a single list.
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
@@ -2269,6 +2287,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         split_asset = self.apply(
             "split_text",
             text_path=text_path,
+            document_cls=document_cls,
             **kwargs,
         )
         merge_chunks = self.resolve_setting(merge_chunks, "merge_chunks")

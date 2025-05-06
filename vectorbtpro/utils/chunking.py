@@ -139,6 +139,9 @@ class Sizer(Evaluable, Annotatable, DefineMixin):
 
         Returns:
             int: Retrieved size.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -328,6 +331,9 @@ class ChunkMetaGenerator(Base):
 
         Returns:
             Iterable[ChunkMeta]: The argument value.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -500,6 +506,9 @@ class ChunkMapper(DefineMixin):
 
         Returns:
             ChunkMeta: Mapped chunk metadata.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -544,6 +553,9 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
 
         Returns:
             int: Size of the object.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -613,6 +625,9 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
 
         Returns:
             Any: Extracted subset of data.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1092,6 +1107,9 @@ class Chunkable(Evaluable, Annotatable):
 
         Returns:
             Any: Encapsulated value.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1100,6 +1118,9 @@ class Chunkable(Evaluable, Annotatable):
 
         Returns:
             TakeSpec: Chunk-taking specification.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1473,7 +1494,7 @@ class Chunker(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: Dictionary representing the template context.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 

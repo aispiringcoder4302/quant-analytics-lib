@@ -2229,6 +2229,14 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def chunked(self) -> tp.ChunkedOption:
+        """Chunked option for the `chunked` argument.
+
+        In dynamic mode, it specializes the chunked option for the arguments of the signal function
+        with the appropriate argument taking specifications based on the active mode.
+
+        Returns:
+            ChunkedOption: Chunked option for the signal function.
+        """
         if self.dynamic_mode:
             if self["signal_func_nb"] is None:
                 if self.ls_mode:
@@ -2950,7 +2958,7 @@ class FDOFPreparer(FOFPreparer):
 
     @cachedproperty
     def order_args(self) -> tp.Args:
-        """Return the tuple of arguments for the order function.
+        """Tuple of arguments for the order function.
 
         If `flexible` is True, returns `FDOFPreparer.post__order_args`;
         otherwise, returns `FDOFPreparer.any_order_args`.
@@ -2964,7 +2972,7 @@ class FDOFPreparer(FOFPreparer):
 
     @cachedproperty
     def flex_order_args(self) -> tp.Args:
-        """Return the tuple of arguments for the flexible order function.
+        """Tuple of arguments for the flexible order function.
 
         If `flexible` is False, returns `FDOFPreparer.post__flex_order_args`;
         otherwise, returns `FDOFPreparer.any_order_args`.
@@ -2978,7 +2986,7 @@ class FDOFPreparer(FOFPreparer):
 
     @cachedproperty
     def chunked(self) -> tp.ChunkedOption:
-        """Return the specialized chunked configuration.
+        """Specialized chunked configuration.
 
         An argument taker specification is created for `pre_segment_args` and either `order_args`
         or `flex_order_args` based on the `flexible` flag, and applied to the `chunked` option.

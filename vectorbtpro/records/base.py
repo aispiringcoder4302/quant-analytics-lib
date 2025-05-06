@@ -848,16 +848,6 @@ class Records(Analyzable, metaclass=MetaRecords):
         return cls(**kwargs)
 
     def replace(self: RecordsT, **kwargs) -> RecordsT:
-        """Replace the current `Records` instance with a new one, using the provided keyword arguments.
-
-        Also ensures that `Records.col_mapper` is excluded from the new instance.
-
-        Args:
-            **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable.replace`.
-
-        Returns:
-            Records: New `Records` instance with the updated configuration.
-        """
         if self.config.get("col_mapper", None) is not None:
             if "wrapper" in kwargs:
                 if self.wrapper is not kwargs.get("wrapper"):
@@ -1714,7 +1704,7 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @property
     def pd_mask(self) -> tp.SeriesFrame:
-        """Return the mask as a SeriesFrame produced by invoking
+        """Mask as a SeriesFrame produced by invoking
         `vectorbtpro.records.mapped_array.MappedArray.get_pd_mask` with default arguments.
 
         Returns:
@@ -1775,13 +1765,13 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Return the default configuration settings for `Records.stats`.
+        """Default configuration for `Records.stats`.
 
-        Merges `StatsBuilderMixin.stats_defaults` with the `stats` settings
-        from `vectorbtpro._settings.records`.
+        Merges the defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.records`.
 
         Returns:
-            Kwargs: Dictionary of default stats settings.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -1906,13 +1896,13 @@ class Records(Analyzable, metaclass=MetaRecords):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Return the default configuration settings for `Records.plots`.
+        """Default configuration for `Records.plots`.
 
-        Merges `PlotsBuilderMixin.plots_defaults` with the `plots` settings
-        from `vectorbtpro._settings.records`.
+        Merges the defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.records`.
 
         Returns:
-            Kwargs: Dictionary of default plot settings.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

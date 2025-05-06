@@ -137,6 +137,9 @@ class TraceUpdater(Base):
 
         Returns:
             None
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -149,6 +152,9 @@ class TraceUpdater(Base):
 
         Returns:
             None
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -275,6 +281,19 @@ class Gauge(TraceType, TraceUpdater):
         value_range: tp.Optional[tp.Tuple[float, float]] = None,
         cmap_name: str = "Spectral",
     ) -> None:
+        """Update the gauge trace with a new value and optional range.
+        
+        Args:
+            trace (BaseTraceType): Plotly trace to update.
+            value (float): Value to display on the gauge.
+            value_range (Optional[Tuple[float, float]]): Range of values for the gauge.
+            cmap_name (str): Matplotlib-compatible colormap name.
+
+                See the [list of available colormaps](https://matplotlib.org/tutorials/colors/colormaps.html).
+
+        Returns:
+            None
+        """
         if value_range is not None:
             trace.gauge.axis.range = value_range
             if cmap_name is not None:
@@ -283,6 +302,14 @@ class Gauge(TraceType, TraceUpdater):
         trace.value = value
 
     def update(self, value: float) -> None:
+        """Update all gauge traces with a new value.
+        
+        Args:
+            value (float): Value to display on the gauge.
+        
+        Returns:
+            None
+        """
         if self.value_range is None:
             self._value_range = value, value
         else:
@@ -396,6 +423,18 @@ class Bar(TraceType, TraceUpdater):
 
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, i: int) -> None:
+        """Update a single bar trace with new data.
+        
+        Args:
+            trace (BaseTraceType): Plotly trace to update.
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                Must have shape corresponding to (`x_labels`, `trace_names`).
+            i (int): Index of the trace to update.
+
+        Returns:
+            None
+        """
         data = clean_data(reshaping.to_2d_array(data))
 
         trace.y = data[:, i]
@@ -403,6 +442,16 @@ class Bar(TraceType, TraceUpdater):
             trace.marker.color = data[:, i]
 
     def update(self, data: tp.ArrayLike) -> None:
+        """Update all bar traces with new data.
+
+        Args:
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                Must have shape corresponding to (`x_labels`, `trace_names`).
+        
+        Returns:
+            None
+        """
         data = clean_data(reshaping.to_2d_array(data))
 
         with self.fig.batch_update():
@@ -549,11 +598,33 @@ class Scatter(TraceType, TraceUpdater):
 
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, i: int) -> None:
+        """Update a single scatter trace with new data.
+        
+        Args:
+            trace (BaseTraceType): Plotly trace to update.
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                Must have shape corresponding to (`x_labels`, `trace_names`).
+            i (int): Index of the trace to update.
+
+        Returns:
+            None
+        """
         data = clean_data(reshaping.to_2d_array(data))
 
         trace.y = data[:, i]
 
     def update(self, data: tp.ArrayLike) -> None:
+        """Update all scatter traces with new data.
+        
+        Args:
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                Must have shape corresponding to (`x_labels`, `trace_names`).
+
+        Returns:
+            None
+        """
         data = clean_data(reshaping.to_2d_array(data))
 
         with self.fig.batch_update():
@@ -732,6 +803,26 @@ class Histogram(TraceType, TraceUpdater):
         from_quantile: tp.Optional[float] = None,
         to_quantile: tp.Optional[float] = None,
     ) -> None:
+        """Update a single histogram trace with new data.
+        
+        Args:
+            trace (BaseTraceType): Plotly trace to update.
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                The second axis must correspond to `trace_names`.
+            i (int): Index of the trace to update.
+            horizontal (bool): Flag indicating whether the plot is oriented horizontally.
+            remove_nan (bool): Flag determining whether NaN values are removed from the data.
+            from_quantile (float): Lower quantile threshold used to filter out data points.
+
+                Must be in the range [0, 1].
+            to_quantile (float): Upper quantile threshold used to filter out data points.
+
+                Must be in the range [0, 1].
+
+        Returns:
+            None
+        """
         data = clean_data(reshaping.to_2d_array(data))
 
         d = data[:, i]
@@ -751,6 +842,16 @@ class Histogram(TraceType, TraceUpdater):
             trace.y = None
 
     def update(self, data: tp.ArrayLike) -> None:
+        """Update all histogram traces with new data.
+        
+        Args:
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                The second axis must correspond to `trace_names`.
+
+        Returns:
+            None
+        """
         data = clean_data(reshaping.to_2d_array(data))
 
         with self.fig.batch_update():
@@ -935,6 +1036,26 @@ class Box(TraceType, TraceUpdater):
         from_quantile: tp.Optional[float] = None,
         to_quantile: tp.Optional[float] = None,
     ) -> None:
+        """Update a single box trace with new data.
+        
+        Args:
+            trace (BaseTraceType): Plotly trace to update.
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                The second axis must correspond to `trace_names`.
+            i (int): Index of the trace to update.
+            horizontal (bool): Flag indicating whether the plot is oriented horizontally.
+            remove_nan (bool): Flag determining whether NaN values are removed from the data.
+            from_quantile (Optional[float]): Lower quantile threshold to filter out data.
+
+                Data below this quantile are excluded.
+            to_quantile (Optional[float]): Upper quantile threshold to filter out data.
+
+                Data above this quantile are excluded.
+
+        Returns:
+            None
+        """
         data = clean_data(reshaping.to_2d_array(data))
 
         d = data[:, i]
@@ -954,6 +1075,16 @@ class Box(TraceType, TraceUpdater):
             trace.y = d
 
     def update(self, data: tp.ArrayLike) -> None:
+        """Update all box traces with new data.
+        
+        Args:
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                The second axis must correspond to `trace_names`.
+        
+        Returns:
+            None
+        """
         data = clean_data(reshaping.to_2d_array(data))
 
         with self.fig.batch_update():
@@ -1096,10 +1227,31 @@ class Heatmap(TraceType, TraceUpdater):
         TraceUpdater.__init__(self, fig, (fig.data[-1],))
 
     @classmethod
-    def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, *args, **kwargs) -> None:
+    def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike) -> None:
+        """Update a single heatmap trace with new data.
+        
+        Args:
+            trace (BaseTraceType): Plotly trace to update.
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                Must have shape (`y_labels`, `x_labels`).
+
+        Returns:
+            None
+        """
         trace.z = clean_data(reshaping.to_2d_array(data))
 
     def update(self, data: tp.ArrayLike) -> None:
+        """Update all heatmap traces with new data.
+        
+        Args:
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                Must have shape (`y_labels`, `x_labels`).
+        
+        Returns:
+            None
+        """
         with self.fig.batch_update():
             self.update_trace(self.traces[0], data)
 
@@ -1256,9 +1408,30 @@ class Volume(TraceType, TraceUpdater):
         TraceUpdater.__init__(self, fig, (fig.data[-1],))
 
     @classmethod
-    def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, *args, **kwargs) -> None:
+    def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike) -> None:
+        """Update a single volume trace with new data.
+        
+        Args:
+            trace (BaseTraceType): Plotly trace to update.
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                Must have shape corresponding to (`x_labels`, `y_labels`, `z_labels`).
+        
+        Returns:
+            None
+        """
         trace.value = clean_data(np.asarray(data).flatten())
 
     def update(self, data: tp.ArrayLike) -> None:
+        """Update all volume traces with new data.
+        
+        Args:
+            data (ArrayLike): Data convertible to a NumPy array.
+
+                Must have shape corresponding to (`x_labels`, `y_labels`, `z_labels`).
+        
+        Returns:
+            None
+        """
         with self.fig.batch_update():
             self.update_trace(self.traces[0], data)

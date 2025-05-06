@@ -220,6 +220,9 @@ class ExecutionEngine(Configured):
 
         Returns:
             ExecResults: Results of executing the tasks.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1064,7 +1067,7 @@ class RayEngine(ExecutionEngine):
 
         Returns:
             List[Tuple[RemoteFunction, Tuple[ObjectRef, ...], Dict[str, ObjectRef]]]:
-                A list of tuples, each containing a remote function reference, a tuple of object references
+                List of tuples, each containing a remote function reference, a tuple of object references
                 for positional arguments, and a dictionary mapping keyword argument names to object references.
         """
         from vectorbtpro.utils.module_ import assert_can_import
@@ -1910,7 +1913,7 @@ class Executor(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: Configuration keyword arguments.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 

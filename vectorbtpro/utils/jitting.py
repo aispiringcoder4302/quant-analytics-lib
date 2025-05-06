@@ -59,6 +59,9 @@ class Jitter(Configured):
 
         Returns:
             Callable: Decorated function.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         if self.wrapping_disabled:
             return py_func

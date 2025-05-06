@@ -1605,13 +1605,13 @@ class Trades(Ranges):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Default settings for `Trades.stats`.
+        """Default configuration for `Trades.stats`.
 
-        Merges `vectorbtpro.generic.ranges.Ranges.stats_defaults` with the `stats` settings from
-        `vectorbtpro._settings.trades`.
+        Merges the defaults from `vectorbtpro.generic.ranges.Ranges.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.trades`.
 
         Returns:
-            Kwargs: Dictionary of default trade statistics settings.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -2866,13 +2866,13 @@ class Trades(Ranges):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Trades.plots`.
+        """Default configuration for `Trades.plots`.
 
-        Merges `vectorbtpro.generic.ranges.Ranges.plots_defaults` and the `plots`
-        configuration from `vectorbtpro._settings.trades`.
+        Merges the defaults from `vectorbtpro.generic.ranges.Ranges.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.trades`.
 
         Returns:
-            Kwargs: Merged dictionary containing default keyword arguments for generating trade plots.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

@@ -36,7 +36,7 @@ class MetaStatsBuilderMixin(type):
 
     @property
     def metrics(cls) -> Config:
-        """Return the performance metrics configuration used by `StatsBuilderMixin.stats`.
+        """Performance metrics configuration used by `StatsBuilderMixin.stats`.
 
         Returns:
             Config: Performance metrics configuration.
@@ -63,10 +63,10 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Return default settings for `StatsBuilderMixin.stats`.
+        """Default configuration for `StatsBuilderMixin.stats`.
 
         Returns:
-            Kwargs: Default settings for the stats method.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         return dict(settings=dict(freq=self.wrapper.freq))
 
@@ -129,7 +129,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
     @property
     def metrics(self) -> Config:
-        """Return the metrics configuration for `${cls_name}`.
+        """Metrics configuration for `${cls_name}`.
 
         This property returns a copy of `${cls_name}._metrics` created during instance initialization.
         Modifications to the returned configuration do not affect the class-level settings.

@@ -569,6 +569,9 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
 
         Returns:
             Callable: Found target function.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -823,7 +826,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         and the pre-template context.
 
         Returns:
-            Kwargs: Complete template context for the preparer.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         builtin_args = {}
         for k, v in self.arg_config.items():

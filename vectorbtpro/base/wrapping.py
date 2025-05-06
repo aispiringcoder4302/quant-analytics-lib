@@ -62,6 +62,9 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Returns:
             Any: Unwrapped object.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -79,6 +82,9 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Returns:
             ArrayWrapper: Array wrapper instance.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -88,6 +94,9 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Returns:
             bool: True if indexing is limited to columns, False otherwise.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -97,6 +106,9 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Returns:
             bool: True if row indexing is limited to slices, False otherwise.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -106,6 +118,9 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Returns:
             bool: True if indexing operations can be performed on groups, False otherwise.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -120,6 +135,9 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Returns:
             HasWrapper: Regrouped instance.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1882,18 +1900,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @cached_method(whitelist=True)
     def regroup(self: ArrayWrapperT, group_by: tp.GroupByLike, **kwargs) -> ArrayWrapperT:
-        """Regroup the `ArrayWrapper` instance according to the specified grouping.
-
-        Args:
-            group_by (GroupByLike): Grouping specification.
-
-                See `vectorbtpro.base.grouping.base.Grouper`.
-            **kwargs: Keyword arguments for `ArrayWrapper.replace`.
-
-        Returns:
-            ArrayWrapper: Updated `ArrayWrapper` instance if grouping has changed;
-                otherwise, the original instance.
-        """
         if self.grouper.is_grouping_changed(group_by=group_by):
             self.grouper.check_group_by(group_by=group_by)
             grouped_ndim = None
@@ -2419,6 +2425,19 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         axis: tp.Optional[int] = None,
         **kwargs,
     ) -> ArrayWrapperT:
+        """Apply a function to the index of the `ArrayWrapper`.
+
+        Args:
+            apply_func (Callable): Function to apply to the index.
+            *args: Positional arguments for `apply_func`.
+            axis (Optional[int]): Axis to apply the function to.
+
+                If None, defaults to 0 for one-dimensional arrays and 1 for two-dimensional arrays.
+            **kwargs: Keyword arguments for `apply_func`.
+
+        Returns:
+            ArrayWrapper: New `ArrayWrapper` instance with the modified index.
+        """
         if axis is None:
             axis = 0 if self.ndim == 1 else 1
         if self.ndim == 1 and axis == 1:
@@ -2866,6 +2885,9 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
         !!! note
             Should use `ArrayWrapper.row_stack` for stacking.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -2890,6 +2912,9 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
         !!! note
             Should use `ArrayWrapper.column_stack` for stacking.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -2924,6 +2949,9 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
         !!! note
             When overriding, pass `*args` and `**kwargs` to `ArrayWrapper.get_resampler` to create a resampler.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -2959,6 +2987,19 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         axis: tp.Optional[int] = None,
         **kwargs,
     ) -> ArrayWrapperT:
+        """Apply a function to the index of the `Wrapping`.
+        
+        Args:
+            apply_func (Callable): Function to apply to the index.
+            *args: Positional arguments for `apply_func`.
+            axis (Optional[int]): Axis to apply the function to.
+
+                If None, defaults to 0 for one-dimensional arrays and 1 for two-dimensional arrays.
+            **kwargs: Keyword arguments for `apply_func`.
+
+        Returns:
+            ArrayWrapper: New `Wrapping` instance with the modified index.
+        """
         if axis is None:
             axis = 0 if self.wrapper.ndim == 1 else 1
         if self.wrapper.ndim == 1 and axis == 1:
@@ -2972,17 +3013,6 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         return self.replace(wrapper=new_wrapper)
 
     def regroup(self: WrappingT, group_by: tp.GroupByLike, **kwargs) -> WrappingT:
-        """Regroup the wrapping instance.
-
-        Args:
-            group_by (GroupByLike): Grouping specification.
-
-                See `vectorbtpro.base.grouping.base.Grouper`.
-            **kwargs: Keyword arguments for `ArrayWrapper.regroup`.
-
-        Returns:
-            Wrapping: Regrouped instance if grouping has changed, otherwise returns itself.
-        """
         if self.wrapper.grouper.is_grouping_changed(group_by=group_by):
             self.wrapper.grouper.check_group_by(group_by=group_by)
             return self.replace(wrapper=self.wrapper.regroup(group_by, **kwargs))
@@ -2995,22 +3025,6 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         impacts_caching: bool = True,
         silence_warnings: tp.Optional[bool] = None,
     ) -> AttrResolverMixinT:
-        """Resolve attributes of the instance based on condition keyword arguments.
-
-        Args:
-            cond_kwargs (KwargsLike): Dictionary containing condition parameters,
-            custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
-            impacts_caching (bool): Flag indicating whether the changes impact caching.
-            silence_warnings (Optional[bool]): Flag to suppress warning messages.
-
-        Returns:
-            AttrResolverMixin: Resolved instance.
-
-                A new copy is created if the frequency is altered.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.wrapping`.
-        """
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]

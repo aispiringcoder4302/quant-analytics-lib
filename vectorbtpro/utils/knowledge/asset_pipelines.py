@@ -135,6 +135,9 @@ class AssetPipeline(Base):
 
         Returns:
             Any: Result of executing the pipeline on the data item.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -456,13 +459,5 @@ class ComplexAssetPipeline(AssetPipeline):
         return self._context
 
     def run(self, d: tp.Any) -> tp.Any:
-        """Run the pipeline on a data item.
-
-        Args:
-            d (Any): Data item to be processed.
-
-        Returns:
-            Any: Result of evaluating the expression with the given data.
-        """
         context = merge_dicts({"d": d, "x": d}, self.context)
         return evaluate(self.expression, context=context)

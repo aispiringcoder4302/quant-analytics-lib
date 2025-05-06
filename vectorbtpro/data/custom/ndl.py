@@ -186,15 +186,6 @@ class NDLData(RemoteData):
         return df, dict(tz=tz)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Update a symbol's data using Nasdaq Data Link.
-
-        Args:
-            symbol (Symbol): Symbol identifier.
-            **kwargs: Keyword arguments for `NDLData.fetch_symbol`.
-
-        Returns:
-            SymbolData: Fetched data and a metadata dictionary.
-        """
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

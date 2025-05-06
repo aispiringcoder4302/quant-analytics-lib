@@ -126,10 +126,13 @@ class CustomTemplate(Evaluable, DefineMixin):
         return strict
 
     def get_context_vars(self) -> tp.List[str]:
-        """Return a list of variable names extracted from the template string.
+        """Return a list of variable names extracted from the template.
 
         Returns:
             List[str]: Names of the placeholders in the template.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -149,6 +152,9 @@ class CustomTemplate(Evaluable, DefineMixin):
 
         Returns:
             Any: Result of the template substitution.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -162,11 +168,6 @@ class Sub(CustomTemplate):
     """
 
     def get_context_vars(self) -> tp.List[str]:
-        """Return a list of unique placeholder names found in the template string.
-
-        Returns:
-            List[str]: Unique names of placeholders.
-        """
         tmpl = Template(self.template)
         variables = []
         for match in tmpl.pattern.finditer(tmpl.template):
@@ -184,16 +185,6 @@ class Sub(CustomTemplate):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Perform placeholder substitution on `Sub.template` using the merged context.
-
-        Args:
-            context (KwargsLike): Additional context for substitution.
-            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
-            eval_id (Optional[Hashable]): Evaluation identifier.
-
-        Returns:
-            Any: Resulting substituted string, or the original instance if substitution is not performed or fails.
-        """
         if not self.meets_eval_id(eval_id):
             return self
         context = self.resolve_context(context=context, eval_id=eval_id)
@@ -214,11 +205,6 @@ class SafeSub(CustomTemplate):
     """
 
     def get_context_vars(self) -> tp.List[str]:
-        """Return a list of unique placeholder names found in the template string.
-
-        Returns:
-            List[str]: Unique placeholder names.
-        """
         tmpl = Template(self.template)
         variables = []
         for match in tmpl.pattern.finditer(tmpl.template):
@@ -236,16 +222,6 @@ class SafeSub(CustomTemplate):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Perform safe placeholder substitution on `SafeSub.template` using the merged context.
-
-        Args:
-            context (KwargsLike): Additional context for substitution.
-            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
-            eval_id (Optional[Hashable]): Evaluation identifier.
-
-        Returns:
-            Any: Resulting substituted string, or the original instance if substitution is skipped or fails.
-        """
         if not self.meets_eval_id(eval_id):
             return self
         context = self.resolve_context(context=context, eval_id=eval_id)
@@ -263,11 +239,6 @@ class Rep(CustomTemplate):
     """Class for replacing a template key with its corresponding value from a context mapping."""
 
     def get_context_vars(self) -> tp.List[str]:
-        """Return a single-item list containing the template key to be replaced.
-
-        Returns:
-            List[str]: A list with the template key.
-        """
         return [self.template]
 
     def substitute(
@@ -276,16 +247,6 @@ class Rep(CustomTemplate):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Replace the key defined in `Rep.template` with its corresponding value from the merged context.
-
-        Args:
-            context (KwargsLike): Additional context mapping to retrieve the replacement.
-            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
-            eval_id (Optional[Hashable]): Evaluation identifier.
-
-        Returns:
-            Any: Value corresponding to `Rep.template`, or the original instance if replacement is not performed.
-        """
         if not self.meets_eval_id(eval_id):
             return self
         context = self.resolve_context(context=context, eval_id=eval_id)
@@ -304,11 +265,6 @@ class RepEval(CustomTemplate):
     with a provided context mapping as local variables."""
 
     def get_context_vars(self) -> tp.List[str]:
-        """Return a list of free variable names required by the template expression.
-
-        Returns:
-            List[str]: Free variable names identified in the expression.
-        """
         return get_free_vars(self.template)
 
     def substitute(
@@ -317,16 +273,6 @@ class RepEval(CustomTemplate):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Evaluate the expression defined in `RepEval.template` using the merged context as local variables.
-
-        Args:
-            context (KwargsLike): Additional context for evaluation.
-            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
-            eval_id (Optional[Hashable]): Evaluation identifier.
-
-        Returns:
-            Any: Result of the evaluated expression, or the original instance if evaluation is skipped or fails.
-        """
         if not self.meets_eval_id(eval_id):
             return self
         context = self.resolve_context(context=context, eval_id=eval_id)
@@ -344,11 +290,6 @@ class RepFunc(CustomTemplate):
     """Class for executing a function provided as a template using parameters extracted from a context mapping."""
 
     def get_context_vars(self) -> tp.List[str]:
-        """Return a list of argument names for the function defined in `RepFunc.template`.
-
-        Returns:
-            List[str]: The names of the function parameters.
-        """
         return get_func_arg_names(self.template)
 
     def substitute(
@@ -357,16 +298,6 @@ class RepFunc(CustomTemplate):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Call the function specified in `RepFunc.template` using arguments extracted from the merged context.
-
-        Args:
-            context (KwargsLike): Additional context containing function arguments.
-            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
-            eval_id (Optional[Hashable]): Evaluation identifier.
-
-        Returns:
-            Any: Result of the function call, or the original instance if the call is skipped or fails.
-        """
         if not self.meets_eval_id(eval_id):
             return self
         context = self.resolve_context(context=context, eval_id=eval_id)

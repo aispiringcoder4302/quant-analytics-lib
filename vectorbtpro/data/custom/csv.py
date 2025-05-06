@@ -290,30 +290,7 @@ class CSVData(FileData):
         return self.fetch_symbol(key, **kwargs)
 
     def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Update data of a feature.
-
-        Args:
-            feature (Feature): Feature identifier.
-            **kwargs: Keyword arguments for `CSVData.update_key`.
-
-        Returns:
-            FeatureData: Updated data and a metadata dictionary.
-
-        !!! note
-            Invokes `CSVData.update_key` with `key_is_feature=True`.
-        """
         return self.update_key(feature, key_is_feature=True, **kwargs)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Update data for a symbol.
-
-        Invokes `CSVData.update_key` with `key_is_feature=False`.
-
-        Args:
-            symbol (Symbol): Symbol identifier.
-            **kwargs: Keyword arguments for `CSVData.update_key`.
-
-        Returns:
-            SymbolData: Updated data and a metadata dictionary.
-        """
         return self.update_key(symbol, key_is_feature=False, **kwargs)

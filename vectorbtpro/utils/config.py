@@ -1062,6 +1062,23 @@ class Config(pdict):
         indent_head: bool = True,
         repr_: tp.Optional[tp.Callable] = None,
     ) -> str:
+        """Prettify the configuration.
+
+        Args:
+            with_options (bool): Whether to include options in the prettified output.
+            replace (DictLike): Mapping for value replacement.
+            path (str): Current path in the object hierarchy.
+            htchar (str): String used for horizontal indentation.
+            lfchar (str): Line feed character.
+            indent (int): Current indentation level.
+            indent_head (bool): Whether to indent the head line.
+            repr_ (Optional[Callable]): Function to get the representation of an object.
+
+                Defaults to `repr`.
+
+        Returns:
+            str: Prettified string representation of the configuration.
+        """
         dct = dict(self)
         if with_options:
             dct["options_"] = self.options_
@@ -1096,6 +1113,17 @@ class Config(pdict):
         _key: tp.Optional[str] = None,
         **kwargs,
     ) -> bool:
+        """Check if the current configuration equals another configuration.
+
+        Args:
+            other (Any): Configuration to compare against.
+            check_types (bool): Whether to verify types during comparison.
+            check_options (bool): Whether to compare configuration options.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.checks.is_deep_equal`.
+
+        Returns:
+            bool: True if the configurations are equal, False otherwise.
+        """
         if _key is None:
             _key = type(self).__name__
         if "only_types" in kwargs:

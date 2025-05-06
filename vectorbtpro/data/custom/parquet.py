@@ -287,25 +287,7 @@ class ParquetData(FileData):
         return self.fetch_symbol(key, **kwargs)
 
     def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Update and return the data for the specified feature.
-
-        Args:
-            feature (Feature): Feature identifier.
-            **kwargs: Keyword arguments for `ParquetData.update_key`.
-
-        Returns:
-            FeatureData: Updated data and a metadata dictionary.
-        """
         return self.update_key(feature, key_is_feature=True, **kwargs)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Update and return the data for the specified symbol.
-
-        Args:
-            symbol (Symbol): Symbol identifier.
-            **kwargs: Keyword arguments for `ParquetData.update_key`.
-
-        Returns:
-            SymbolData: Updated data and a metadata dictionary.
-        """
         return self.update_key(symbol, key_is_feature=False, **kwargs)

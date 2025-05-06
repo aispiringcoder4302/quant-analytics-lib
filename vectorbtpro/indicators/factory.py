@@ -725,7 +725,7 @@ class IndicatorBase(Analyzable):
 
         Returns:
             Union[tp.IFCacheOutput, tp.IFRawOutput, tp.IFPipelineOutput]:
-                A tuple containing the following elements:
+                Tuple containing the following elements:
 
                 * An array wrapper.
                 * A list of input arrays (`np.ndarray`).
@@ -2420,10 +2420,10 @@ class IndicatorFactory(Configured):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
+        """Default configuration for `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats`.
 
         Returns:
-            Kwargs: Defaults for the stats builder.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         return self._stats_defaults
 
@@ -2438,10 +2438,10 @@ class IndicatorFactory(Configured):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
+        """Default configuration for `vectorbtpro.generic.plots_builder.StatsBuilderMixin.plots`.
 
         Returns:
-            Kwargs: Defaults for the plots builder.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         return self._plots_defaults
 
@@ -2518,7 +2518,7 @@ class IndicatorFactory(Configured):
                 the additional objects are returned as a tuple alongside the indicator instance.
 
         Examples:
-            The following example produces the same indicator as the `IndicatorFactory.with_apply_func` example.
+            Following example produces the same indicator as the `IndicatorFactory.with_apply_func` example.
 
             ```pycon
             >>> @njit
@@ -3022,7 +3022,7 @@ class IndicatorFactory(Configured):
             `jitted_loop` is True, and as keyword arguments otherwise.
 
         Examples:
-            The following example produces the same indicator as the `IndicatorFactory.with_custom_func` example.
+            Following example produces the same indicator as the `IndicatorFactory.with_custom_func` example.
 
             ```pycon
             >>> @njit
@@ -3193,7 +3193,7 @@ class IndicatorFactory(Configured):
 
             Returns:
                 Union[None, IFCacheOutput, Array2d, List[Array2d]]:
-                    The result of applying `{0}`, which may be:
+                    Result of applying `{0}`, which may be:
 
                     * The cache output if `return_cache` is True.
                     * A 2D array.

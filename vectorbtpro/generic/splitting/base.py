@@ -2317,15 +2317,6 @@ class Splitter(Analyzable):
         *objs: tp.MaybeSequence[SplitterT],
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing a `Splitter` after stacking splits along rows.
-
-        Args:
-            *objs (MaybeSequence[Splitter]): Splitter instances whose `splits` arrays are to be stacked.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            Kwargs: Updated keyword arguments including a `splits_arr` key.
-        """
         if "splits_arr" not in kwargs:
             kwargs["splits_arr"] = kwargs["wrapper"].row_stack_arrs(
                 *[obj.splits for obj in objs],
@@ -2503,7 +2494,7 @@ class Splitter(Analyzable):
 
     @property
     def splits(self) -> tp.Frame:
-        """Return the splits array as a DataFrame.
+        """Splits array as a DataFrame.
 
         Returns:
             Frame: DataFrame representing the splits.
@@ -5645,7 +5636,7 @@ class Splitter(Analyzable):
 
     @property
     def bounds(self) -> tp.Frame:
-        """Return the bounds by calling `Splitter.get_bounds` with default arguments.
+        """Bounds by calling `Splitter.get_bounds` with default arguments.
 
         Returns:
             Frame: Pandas DataFrame with the bounds.
@@ -5654,7 +5645,7 @@ class Splitter(Analyzable):
 
     @property
     def index_bounds(self) -> tp.Frame:
-        """Return the bounds computed using the index by calling `Splitter.get_bounds`
+        """Bounds computed using the index by calling `Splitter.get_bounds`
         with `index_bounds` set to True.
 
         Returns:
@@ -5677,7 +5668,7 @@ class Splitter(Analyzable):
 
     @property
     def duration(self) -> tp.Series:
-        """Return the duration by calling `Splitter.get_duration` with default arguments.
+        """Duration by calling `Splitter.get_duration` with default arguments.
 
         Returns:
             Series: Pandas Series of durations.
@@ -5686,7 +5677,7 @@ class Splitter(Analyzable):
 
     @property
     def index_duration(self) -> tp.Series:
-        """Return the duration computed using index bounds by calling `Splitter.get_duration`
+        """Duration computed using index bounds by calling `Splitter.get_duration`
         with `index_bounds` set to True.
 
         Returns:
@@ -5776,7 +5767,7 @@ class Splitter(Analyzable):
 
     @property
     def iter_split_mask_arrs(self) -> tp.Iterator[tp.Array2d]:
-        """Return an iterator over two-dimensional boolean arrays for splits by calling
+        """Iterator over two-dimensional boolean arrays for splits by calling
         `Splitter.get_iter_split_mask_arrs` with default arguments.
 
         Returns:
@@ -5827,7 +5818,7 @@ class Splitter(Analyzable):
 
     @property
     def iter_set_mask_arrs(self) -> tp.Iterator[tp.Array2d]:
-        """Return an iterator over two-dimensional boolean arrays for sets by calling
+        """Iterator over two-dimensional boolean arrays for sets by calling
         `Splitter.get_iter_set_mask_arrs` with default arguments.
 
         Returns:
@@ -5870,7 +5861,7 @@ class Splitter(Analyzable):
 
     @property
     def iter_split_masks(self) -> tp.Iterator[tp.Frame]:
-        """Return an iterator over boolean DataFrames for splits by calling
+        """Iterator over boolean DataFrames for splits by calling
         `Splitter.get_iter_split_masks` with default arguments.
 
         Returns:
@@ -5913,7 +5904,7 @@ class Splitter(Analyzable):
 
     @property
     def iter_set_masks(self) -> tp.Iterator[tp.Frame]:
-        """Return an iterator over boolean DataFrames for sets by calling
+        """Iterator over boolean DataFrames for sets by calling
         `Splitter.get_iter_set_masks` with default arguments.
 
         Returns:
@@ -5958,7 +5949,7 @@ class Splitter(Analyzable):
 
     @property
     def mask_arr(self) -> tp.SplitsMask:
-        """Return the split mask array computed with default arguments from `Splitter.get_mask_arr`.
+        """Split mask array computed with default arguments from `Splitter.get_mask_arr`.
 
         Returns:
             SplitsMask: Three-dimensional boolean array representing the split mask.
@@ -6019,7 +6010,7 @@ class Splitter(Analyzable):
 
     @property
     def mask(self) -> tp.Frame:
-        """Return the boolean mask computed with default parameters from `Splitter.get_mask`.
+        """Boolean mask computed with default parameters from `Splitter.get_mask`.
 
         Returns:
             Frame: Pandas DataFrame representing the split mask.
@@ -6086,7 +6077,7 @@ class Splitter(Analyzable):
 
     @property
     def split_coverage(self) -> tp.Series:
-        """Return the split coverage computed with default parameters from `Splitter.get_split_coverage`.
+        """Split coverage computed with default parameters from `Splitter.get_split_coverage`.
 
         Returns:
             Series: Pandas Series of split coverage.
@@ -6153,7 +6144,7 @@ class Splitter(Analyzable):
 
     @property
     def set_coverage(self) -> tp.Series:
-        """Return the set coverage computed with default parameters from `Splitter.get_set_coverage`.
+        """Set coverage computed with default parameters from `Splitter.get_set_coverage`.
 
         Returns:
             Series: Pandas Series of set coverage.
@@ -6391,13 +6382,13 @@ class Splitter(Analyzable):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `Splitter.stats`.
+        """Default configuration for `Splitter.stats`.
 
-        Merges defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
-        and the stats settings from `vectorbtpro._settings.splitter`.
+        Merges the defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.splitter`.
 
         Returns:
-            Kwargs: Dictionary containing the default settings for splitter statistics.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -6710,12 +6701,13 @@ class Splitter(Analyzable):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Default plot settings for Splitter.
+        """Default configuration for `Splitter.plots`.
+
+        Merges the defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.splitter`.
 
         Returns:
-            Kwargs: Dictionary of merged plot settings from
-                `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
-                and settings from `plots` in `vectorbtpro._settings.splitter`.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

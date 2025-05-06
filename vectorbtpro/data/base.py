@@ -113,6 +113,9 @@ class BaseDataMixin(Base):
 
         Returns:
             ArrayWrapper: Column wrapper for feature data.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -122,6 +125,9 @@ class BaseDataMixin(Base):
 
         Returns:
             ArrayWrapper: Column wrapper for symbol data.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -253,6 +259,9 @@ class BaseDataMixin(Base):
 
         Returns:
             BaseDataMixin: New instance with the selected features.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -265,6 +274,9 @@ class BaseDataMixin(Base):
 
         Returns:
             BaseDataMixin: New instance with the selected symbols.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -319,6 +331,9 @@ class BaseDataMixin(Base):
 
         Returns:
             MaybeTuple[SeriesFrame]: The retrieved data.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -593,7 +608,7 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def returns_acc(self) -> ReturnsAccessor:
-        """Returns a `ReturnsAccessor` using default parameters from `OHLCDataMixin.get_returns_acc`.
+        """`ReturnsAccessor` using default parameters from `OHLCDataMixin.get_returns_acc`.
 
         Returns:
             ReturnsAccessor: Accessor for return calculations using the close price.
@@ -618,7 +633,7 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def returns(self) -> tp.SeriesFrame:
-        """Returns computed return values using default parameters from `OHLCDataMixin.get_returns`.
+        """Computed return values using default parameters from `OHLCDataMixin.get_returns`.
 
         Returns:
             SeriesFrame: Computed returns from the close price.
@@ -644,7 +659,7 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def log_returns(self) -> tp.SeriesFrame:
-        """Returns logarithmic return values using default parameters from `OHLCDataMixin.get_log_returns`.
+        """Logarithmic return values using default parameters from `OHLCDataMixin.get_log_returns`.
 
         Returns:
             SeriesFrame: Computed logarithmic returns from the close price.
@@ -669,7 +684,7 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def daily_returns(self) -> tp.SeriesFrame:
-        """Returns daily computed returns using default parameters from `OHLCDataMixin.get_daily_returns`.
+        """Daily computed returns using default parameters from `OHLCDataMixin.get_daily_returns`.
 
         Returns:
             SeriesFrame: Daily computed returns from the close price.
@@ -695,7 +710,7 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def daily_log_returns(self) -> tp.SeriesFrame:
-        """Returns daily computed logarithmic returns using default parameters from
+        """Daily computed logarithmic returns using default parameters from
         `OHLCDataMixin.get_daily_log_returns`.
 
         Returns:
@@ -722,7 +737,7 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def drawdowns(self) -> Drawdowns:
-        """Returns drawdown records using default parameters from `OHLCDataMixin.get_drawdowns`.
+        """Drawdown records using default parameters from `OHLCDataMixin.get_drawdowns`.
 
         Returns:
             Drawdowns: Drawdown records generated using open, high, low, and close prices.
@@ -1557,18 +1572,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return cls(**kwargs)
 
     def replace(self: DataT, **kwargs) -> DataT:
-        """Replace the index and/or columns of the `Data` instance when modified by the wrapper.
-
-        This method updates the underlying data to reflect any changes in the index and columns
-        specified by the new wrapper. It adjusts each Pandas Series or DataFrame within the
-        data accordingly and handles renaming of attributes if necessary.
-
-        Args:
-            **kwargs: Keyword arguments for `Data`.
-
-        Returns:
-            Data: New `Data` instance with updated index and/or columns.
-        """
         if "wrapper" in kwargs and "data" not in kwargs:
             wrapper = kwargs["wrapper"]
             if isinstance(wrapper, dict):
@@ -3887,8 +3890,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             FeatureData: Fetched data and (optionally) a metadata dictionary, or None.
 
-        !!! note
-            This is an abstract method and must be overridden with custom logic.
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -3949,8 +3952,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             SymbolData: Fetched data and (optionally) a metadata dictionary, or None.
 
-        !!! note
-            This is an abstract method; override it to implement custom symbol fetching logic.
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -4393,8 +4396,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             FeatureData: Updated data and (optionally) a metadata dictionary, or None.
 
-        !!! note
-            This is an abstract method and should be overridden with custom logic.
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -4446,8 +4449,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             SymbolData: Updated data and (optionally) a metadata dictionary, or None.
 
-        !!! note
-            This is an abstract method and should be overridden with custom logic.
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -6825,11 +6828,13 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Return default statistics parameters for `Data.stats` by merging configurations from
-        `StatsBuilderMixin.stats_defaults` and the `stats` settings from `vectorbtpro._settings.data`.
+        """Default configuration for `Data.stats`.
+
+        Merges the defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.data`.
 
         Returns:
-            Kwargs: Dictionary of default statistics parameters.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         return merge_dicts(Analyzable.stats_defaults.__get__(self), self.get_base_settings()["stats"])
 
@@ -6973,12 +6978,13 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Return default plotting settings for `Data.plots` by merging settings from
-        `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` and the `plots`
-        key in `vectorbtpro._settings.data`.
+        """Default configuration for `Data.plots`.
+
+        Merges the defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.data`.
 
         Returns:
-            Kwargs: Dictionary of default plotting settings.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         return merge_dicts(Analyzable.plots_defaults.__get__(self), self.get_base_settings()["plots"])
 

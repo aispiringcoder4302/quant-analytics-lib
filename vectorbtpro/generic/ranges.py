@@ -959,13 +959,13 @@ class Ranges(PriceRecords):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Return default configuration for `Ranges.stats`.
+        """Default configuration for `Data.stats`.
 
-        Merges default keyword arguments from `vectorbtpro.records.base.Records.stats_defaults`
-        with the `stats` settings from `vectorbtpro._settings.ranges`.
+        Merges the defaults from `vectorbtpro.records.base.Records.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.ranges`.
 
         Returns:
-            Kwargs: Merged keyword arguments for statistics computation.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -1836,13 +1836,13 @@ class Ranges(PriceRecords):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Return default plotting configurations for `Ranges.plots`.
+        """Default configuration for `Data.plots`.
 
-        Merge the defaults from `vectorbtpro.records.base.Records.plots_defaults` with the
-        plotting settings from `vectorbtpro._settings.ranges`.
+        Merges the defaults from `vectorbtpro.records.base.Records.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.ranges`.
 
         Returns:
-            Kwargs: Merged default plotting configurations.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 
@@ -2108,7 +2108,7 @@ class PatternRanges(Ranges):
 
     @property
     def search_configs(self) -> tp.List[PSC]:
-        """Return a list of `PSC` instances, one for each column.
+        """List of `PSC` instances, one for each column.
 
         Returns:
             List[PSC]: List of `PSC` instances.
@@ -2463,15 +2463,6 @@ class PatternRanges(Ranges):
         *objs: tp.MaybeSequence[PatternRangesT],
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing a `PatternRanges` instance after row stacking.
-
-        Args:
-            *objs (MaybeSequence[PatternRanges]): `PatternRanges` instances to be stacked.
-            **kwargs: Keyword arguments for `Ranges.resolve_row_stack_kwargs`.
-
-        Returns:
-            Kwargs: Resolved keyword arguments with an updated 'search_configs' field.
-        """
         kwargs = Ranges.resolve_row_stack_kwargs(*objs, **kwargs)
         if len(objs) == 1:
             objs = objs[0]

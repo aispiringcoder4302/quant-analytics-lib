@@ -455,6 +455,9 @@ class Itemable(Base):
 
         Returns:
             Items: Items representation of the instance.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -470,6 +473,9 @@ class Paramable(Base):
 
         Returns:
             Param: Parameter representation of the instance.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1346,7 +1352,7 @@ class Parameterizer(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: Context dictionary used for template substitution in parameters.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 

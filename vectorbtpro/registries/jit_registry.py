@@ -453,7 +453,7 @@ class JITRegistry(Base):
 
     @property
     def jitable_setups(self) -> tp.Dict[tp.Hashable, tp.Dict[tp.Hashable, JitableSetup]]:
-        """Return the dictionary of registered `JitableSetup` instances by task ID and jitter ID.
+        """Dictionary of registered `JitableSetup` instances by task ID and jitter ID.
 
         Returns:
             Dict[Hashable, Dict[Hashable, JitableSetup]]: Mapping of task ID
@@ -463,7 +463,7 @@ class JITRegistry(Base):
 
     @property
     def jitted_setups(self) -> tp.Dict[int, tp.Dict[int, JittedSetup]]:
-        """Return the nested dictionary of registered `JittedSetup` instances keyed by the hash of
+        """Nested dictionary of registered `JittedSetup` instances keyed by the hash of
         their associated `JitableSetup` instance.
 
         Returns:

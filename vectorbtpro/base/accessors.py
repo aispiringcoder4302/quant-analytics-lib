@@ -403,7 +403,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def freq(self) -> tp.Optional[tp.PandasFrequency]:
-        """Return the index frequency excluding date offsets and numeric frequencies.
+        """Index frequency excluding date offsets and numeric frequencies.
 
         Uses `BaseIDXAccessor.get_freq` with specific restrictions.
 
@@ -414,7 +414,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def ns_freq(self) -> tp.Optional[int]:
-        """Return the frequency of the index as a 64-bit integer in nanoseconds.
+        """Frequency of the index as a 64-bit integer in nanoseconds.
 
         Timestamps are converted to nanoseconds via Timedelta.
 
@@ -428,7 +428,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def any_freq(self) -> tp.Union[None, float, tp.PandasFrequency]:
-        """Return the frequency of the index of any type using `BaseIDXAccessor.get_freq`.
+        """Frequency of the index of any type using `BaseIDXAccessor.get_freq`.
 
         Returns:
             Union[None, float, PandasFrequency]: The frequency of the index, or None if not set.
@@ -456,7 +456,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def periods(self) -> int:
-        """Return the number of periods in the index.
+        """Number of periods in the index.
 
         Returns:
             int: Computed number of periods.
@@ -517,7 +517,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def dt_periods(self) -> float:
-        """Return the datetime period count in the index using default parameters.
+        """Datetime period count in the index using default parameters.
 
         Returns:
             float: Computed number of datetime periods.
@@ -1026,15 +1026,6 @@ class BaseAccessor(Wrapping):
         *objs: BaseAccessorT,
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `BaseAccessor` after stacking along rows.
-
-        Args:
-            *objs (MaybeTuple[BaseAccessor]): Accessor instances to be stacked.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            dict: Resolved keyword arguments for initializing `BaseAccessor`.
-        """
         if "obj" not in kwargs:
             kwargs["obj"] = kwargs["wrapper"].row_stack_arrs(
                 *[obj.obj for obj in objs],
@@ -1211,15 +1202,6 @@ class BaseAccessor(Wrapping):
         return self.replace(cls_=self.df_accessor_cls, wrapper=wrapper_meta["new_wrapper"], obj=new_obj)
 
     def indexing_setter_func(self, pd_indexing_setter_func: tp.Callable, **kwargs) -> None:
-        """Set indexed elements on the accessor instance using the provided Pandas indexing setter.
-
-        Args:
-            pd_indexing_setter_func (Callable): Pandas indexing setter function.
-            **kwargs: Keyword arguments for the setter function.
-
-        Returns:
-            None
-        """
         pd_indexing_setter_func(self._obj)
 
     @property
@@ -1284,6 +1266,9 @@ class BaseAccessor(Wrapping):
 
         Returns:
             bool: True if the underlying object is a Series, False otherwise.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         if isinstance(cls_or_self, type):
             raise NotImplementedError
@@ -1295,6 +1280,9 @@ class BaseAccessor(Wrapping):
 
         Returns:
             bool: True if the underlying object is a DataFrame, False otherwise.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         if isinstance(cls_or_self, type):
             raise NotImplementedError

@@ -81,8 +81,8 @@ class IndexingBase(Base):
         Returns:
             IndexingBase: New instance of the class with the applied indexing function.
 
-        !!! note
-            This method should be overridden in subclasses.
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -96,8 +96,8 @@ class IndexingBase(Base):
         Returns:
             None
 
-        !!! note
-            This method should be overridden in subclasses.
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -172,6 +172,9 @@ class pdLoc(LocBase):
 
         Returns:
             MaybeSeriesFrame: Result of the indexing operation.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -186,6 +189,9 @@ class pdLoc(LocBase):
 
         Returns:
             None: Function modifies the Series or DataFrame in place.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -708,6 +714,9 @@ class IdxrBase(Base):
 
         Returns:
             Any: Computed indices based on the indexer.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -827,6 +836,14 @@ class UniIdxr(IdxrBase):
         index: tp.Optional[tp.Index] = None,
         freq: tp.Optional[tp.FrequencyLike] = None,
     ) -> tp.MaybeIndexArray:
+        """Return indices computed by the indexer.
+        Args:
+            index (Optional[Index]): Index to resolve the indices.
+            freq (Optional[FrequencyLike]): Frequency of the index.
+            
+        Returns:
+            MaybeIndexArray: Computed indices based on the indexer.
+        """
         raise NotImplementedError
 
     def __invert__(self):
@@ -2434,6 +2451,17 @@ class RowIdxr(IdxrBase, DefineMixin):
         freq: tp.Optional[tp.FrequencyLike] = None,
         template_context: tp.KwargsLike = None,
     ) -> tp.MaybeIndexArray:
+        """Return indices computed by the indexer.
+        Args:
+            index (Optional[Index]): Index labels of the array.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            template_context (KwargsLike): Additional context for template substitution.
+            
+        Returns:
+            MaybeIndexArray: Computed indices based on the indexer.
+        """
         idxr = self.idxr
         if isinstance(idxr, CustomTemplate):
             _template_context = merge_dicts(dict(index=index, freq=freq), template_context)
@@ -2472,6 +2500,14 @@ class ColIdxr(IdxrBase, DefineMixin):
         columns: tp.Optional[tp.Index] = None,
         template_context: tp.KwargsLike = None,
     ) -> tp.MaybeIndexArray:
+        """Return indices computed by the indexer.
+        Args:
+            columns (Optional[Index]): Column labels of the array.
+            template_context (KwargsLike): Additional context for template substitution.
+            
+        Returns:
+            MaybeIndexArray: Computed indices based on the indexer.
+        """
         idxr = self.idxr
         if isinstance(idxr, CustomTemplate):
             _template_context = merge_dicts(dict(columns=columns), template_context)
@@ -2520,6 +2556,19 @@ class Idxr(IdxrBase, DefineMixin):
         freq: tp.Optional[tp.FrequencyLike] = None,
         template_context: tp.KwargsLike = None,
     ) -> tp.Tuple[tp.MaybeIndexArray, tp.MaybeIndexArray]:
+        """Return indices computed by the indexer(s).
+
+        Args:
+            index (Optional[Index]): Index labels of the array.
+            columns (Optional[Index]): Column labels of the array.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            template_context (KwargsLike): Additional context for template substitution.
+            
+        Returns:
+            Tuple[MaybeIndexArray, MaybeIndexArray]: Computed row and column indices based on the indexer(s).
+        """
         if len(self.idxrs) == 0:
             raise ValueError("Must provide at least one indexer")
         elif len(self.idxrs) == 1:
@@ -2580,8 +2629,8 @@ def get_idxs(
 
     Args:
         idxr (object): Input indexer.
-        index (Optional[Index]): Optional row index.
-        columns (Optional[Index]): Optional column index.
+        index (Optional[Index]): Index labels of the array.
+        columns (Optional[Index]): Column labels of the array.
         freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
             See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -2959,6 +3008,9 @@ class IdxSetterFactory(Base):
         Returns:
             Union[IdxSetter, Dict[Label, IdxSetter]]: An `IdxSetter` instance or
                 a dictionary of `IdxSetter` instances.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

@@ -889,7 +889,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         ![](/assets/images/api/context_info.svg){: loading=lazy style="width:700px;" }
 
     Examples:
-        The example below demonstrates simulating a portfolio of three assets sharing $100,
+        Example below demonstrates simulating a portfolio of three assets sharing $100,
         rebalanced every second tick, with all processing performed in Numba:
 
         ```pycon
@@ -3358,7 +3358,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         ![](/assets/images/api/from_flex_order_func_nb.svg){: loading=lazy style="width:800px;" }
 
     Examples:
-        The same example as in `from_order_func_nb`:
+        Same example as in `from_order_func_nb`:
 
         ```pycon
         >>> from vectorbtpro import *

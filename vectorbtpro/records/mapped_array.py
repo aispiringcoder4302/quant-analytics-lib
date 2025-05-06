@@ -748,16 +748,6 @@ class MappedArray(Analyzable):
         return cls(**kwargs)
 
     def replace(self: MappedArrayT, **kwargs) -> MappedArrayT:
-        """Call `vectorbtpro.utils.config.Configured.replace` to create a new instance with updated configuration.
-
-        Ensures that `MappedArray.col_mapper` is omitted if the corresponding `wrapper` or `col_arr` differ.
-
-        Args:
-            **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured.replace`.
-
-        Returns:
-            MappedArray: Updated instance with replaced configuration.
-        """
         if self.config.get("col_mapper", None) is not None:
             if "wrapper" in kwargs:
                 if self.wrapper is not kwargs.get("wrapper"):
@@ -2589,13 +2579,13 @@ class MappedArray(Analyzable):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `MappedArray.stats`.
+        """Default configuration for `MappedArray.stats`.
 
-        Merges defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults` with the
-        `stats` settings from `vectorbtpro._settings.mapped_array`.
+        Merges the defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.mapped_array`.
 
         Returns:
-            Kwargs: Merged default statistics configuration.
+            Kwargs: Dictionary containing the default configuration for the stats builder.
         """
         from vectorbtpro._settings import settings
 
@@ -2695,13 +2685,13 @@ class MappedArray(Analyzable):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Return merged default plotting configuration for `MappedArray.plots`.
+        """Default configuration for `MappedArray.plots`.
 
-        Merge plotting defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
-        with settings from `vectorbtpro._settings.mapped_array`.
+        Merges the defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.mapped_array`.
 
         Returns:
-            Kwargs: Merged default plotting configuration.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         from vectorbtpro._settings import settings
 

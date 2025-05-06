@@ -1276,25 +1276,7 @@ class SQLData(DBData):
         return self.fetch_symbol(key, **kwargs)
 
     def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Update data for a feature.
-
-        Args:
-            feature (Feature): Feature identifier.
-            **kwargs: Keyword arguments for `SQLData.update_key`.
-
-        Returns:
-            FeatureData: Updated data and a metadata dictionary.
-        """
         return self.update_key(feature, **kwargs)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Update data for a symbol.
-
-        Args:
-            symbol (Symbol): Symbol identifier.
-            **kwargs: Keyword arguments for `SQLData.update_key`.
-
-        Returns:
-            SymbolData: Updated data and a metadata dictionary.
-        """
         return self.update_key(symbol, **kwargs)

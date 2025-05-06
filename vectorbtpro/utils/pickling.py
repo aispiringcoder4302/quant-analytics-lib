@@ -1568,12 +1568,6 @@ class pdict(Comparable, Pickleable, Prettified, dict):
 
     @property
     def rec_state(self) -> tp.Optional[RecState]:
-        """Reconstruction state for recreating this dictionary instance.
-
-        Returns:
-            Optional[RecState]: The reconstruction state with initialization arguments and keyword arguments
-                derived from the dictionary contents.
-        """
         init_args = ()
         init_kwargs = dict(self)
         for k in list(init_kwargs):

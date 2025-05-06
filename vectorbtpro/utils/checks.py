@@ -49,6 +49,9 @@ class Comparable(Base):
 
         !!! note
             This method should accept all keyword arguments supported by `is_deep_equal`.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

@@ -31,6 +31,9 @@ class Hashable(Base):
 
         Returns:
             int: Computed hash value.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -40,6 +43,9 @@ class Hashable(Base):
 
         Returns:
             tuple: Unique key for hash computation.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 

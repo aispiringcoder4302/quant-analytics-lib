@@ -368,6 +368,13 @@ AnyProximityReduceFunc = Union[ReduceFunc, ProximityReduceMetaFunc]
 AnyGroupSqueezeFunc = Union[ReduceFunc, GroupSqueezeMetaFunc]
 AnyRangeReduceFunc = Union[ReduceFunc, RangeReduceMetaFunc]
 
+
+class TransformerT(Protocol):
+    def __init__(self, **kwargs) -> None: ...
+    def transform(self, *args, **kwargs) -> Array2d: ...
+    def fit_transform(self, *args, **kwargs) -> Array2d: ...
+
+
 # Signals
 PlaceFunc = Callable[[NamedTuple, VarArg()], int]
 RankFunc = Callable[[NamedTuple, VarArg()], int]

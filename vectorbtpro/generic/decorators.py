@@ -132,8 +132,6 @@ def attach_transform_methods(config: Config) -> tp.ClassWrapper:
     """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
-        from vectorbtpro.generic.accessors import TransformerT
-
         checks.assert_subclass_of(cls, "GenericAccessor")
 
         for target_name, settings in config.items():
@@ -144,7 +142,7 @@ def attach_transform_methods(config: Config) -> tp.ClassWrapper:
             def new_method(
                 self,
                 _target_name: str = target_name,
-                _transformer: tp.MaybeType[TransformerT] = transformer,
+                _transformer: tp.MaybeType[tp.TransformerT] = transformer,
                 **kwargs,
             ) -> tp.SeriesFrame:
                 if inspect.isclass(_transformer):

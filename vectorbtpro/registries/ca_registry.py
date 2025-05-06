@@ -1288,6 +1288,9 @@ class CAMetrics(Base):
 
         Returns:
             int: Total count of times a cached object was successfully retrieved.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1299,6 +1302,9 @@ class CAMetrics(Base):
 
         Returns:
             int: Total count of times an object retrieval failed due to absence in the cache.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1308,6 +1314,9 @@ class CAMetrics(Base):
 
         Returns:
             int: Aggregate memory size in bytes of all objects stored in the cache.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1318,6 +1327,9 @@ class CAMetrics(Base):
         Returns:
             Optional[timedelta]: The sum of execution durations for all cached function runs,
                 or None if the metric is not available.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1328,6 +1340,9 @@ class CAMetrics(Base):
         Returns:
             Optional[timedelta]: The total time saved by fetching results from the cache
                 instead of executing the function, or None if not determined.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1338,6 +1353,9 @@ class CAMetrics(Base):
         Returns:
             Optional[datetime]: The datetime when the function was first executed,
                 or None if it has never been run.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1348,6 +1366,9 @@ class CAMetrics(Base):
         Returns:
             Optional[datetime]: The datetime of the most recent function run,
                 or None if the function has not been executed.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1358,6 +1379,9 @@ class CAMetrics(Base):
         Returns:
             Optional[datetime]: The datetime when the cache was hit for the first time,
                 or None if there have been no cache hits.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1368,6 +1392,9 @@ class CAMetrics(Base):
         Returns:
             Optional[datetime]: The datetime when the cache was hit most recently,
                 or None if no cache hit has occurred.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1428,6 +1455,9 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
         Returns:
             CAQuery: Query instance that identifies or filters setups.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1629,6 +1659,9 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
         Returns:
             None
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1638,6 +1671,9 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
         Returns:
             ValuesView: Collection view of setups that are of the same type as this setup.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1647,6 +1683,9 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
         Returns:
             str: Brief string that summarizes the setup.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1656,6 +1695,9 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
         Returns:
             str: User-friendly name representing the setup's associated object.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1798,6 +1840,9 @@ class CASetupDelegatorMixin(CAMetrics):
 
         Returns:
             Set[CABaseSetup]: A set of child setups associated with this setup.
+
+        !!! abstract
+            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -2077,85 +2122,29 @@ class CABaseDelegatorSetup(CABaseSetup, CASetupDelegatorMixin):
 
     @property
     def child_setups(self) -> tp.Set[CABaseSetup]:
-        """Set of child setups that match the `query` of `CABaseDelegatorSetup`.
-
-        Returns:
-            Set[CABaseSetup]: A set of child setups that match the query.
-        """
         return self.registry.match_setups(self.query, collapse=True)
 
     def deregister(self, **kwargs) -> None:
-        """Delegate deregistration to child setups and then deregister this setup.
-
-        Args:
-            **kwargs: Keyword arguments for `CASetupDelegatorMixin.deregister`.
-
-        Returns:
-            None
-        """
         CASetupDelegatorMixin.deregister(self, **kwargs)
         CABaseSetup.deregister(self)
 
     def enable_whitelist(self, **kwargs) -> None:
-        """Delegate enabling whitelist to child setups and then enable it on this setup.
-
-        Args:
-            **kwargs: Keyword arguments for `CASetupDelegatorMixin.enable_whitelist`.
-
-        Returns:
-            None
-        """
         CASetupDelegatorMixin.enable_whitelist(self, **kwargs)
         CABaseSetup.enable_whitelist(self)
 
     def disable_whitelist(self, **kwargs) -> None:
-        """Delegate disabling whitelist to child setups and then disable it on this setup.
-
-        Args:
-            **kwargs: Keyword arguments for `CASetupDelegatorMixin.disable_whitelist`.
-
-        Returns:
-            None
-        """
         CASetupDelegatorMixin.disable_whitelist(self, **kwargs)
         CABaseSetup.disable_whitelist(self)
 
     def enable_caching(self, force: bool = False, silence_warnings: tp.Optional[bool] = None, **kwargs) -> None:
-        """Delegate enabling caching to child setups and then enable caching on this setup.
-
-        Args:
-            force (bool): Flag to force the enabling of caching.
-            silence_warnings (Optional[bool]): Flag to suppress warning messages.
-            **kwargs: Keyword arguments for `CASetupDelegatorMixin.enable_caching`.
-
-        Returns:
-            None
-        """
         CASetupDelegatorMixin.enable_caching(self, force=force, silence_warnings=silence_warnings, **kwargs)
         CABaseSetup.enable_caching(self, force=force, silence_warnings=silence_warnings)
 
     def disable_caching(self, clear_cache: bool = True, **kwargs) -> None:
-        """Delegate disabling caching to child setups and then disable caching on this setup.
-
-        Args:
-            clear_cache (bool): Indicates whether to clear the cache when disabling caching.
-            **kwargs: Keyword arguments for `CASetupDelegatorMixin.disable_caching`.
-
-        Returns:
-            None
-        """
         CASetupDelegatorMixin.disable_caching(self, clear_cache=clear_cache, **kwargs)
         CABaseSetup.disable_caching(self, clear_cache=False)
 
     def clear_cache(self, **kwargs) -> None:
-        """Delegate clearing the cache to all child setups.
-
-        Args:
-            **kwargs: Keyword arguments for `CASetupDelegatorMixin.clear_cache`.
-
-        Returns:
-            None
-        """
         CASetupDelegatorMixin.clear_cache(self, **kwargs)
 
 
@@ -3197,11 +3186,6 @@ class CARunSetup(CABaseSetup, DefineMixin):
         return self.run_func(*args, **kwargs)
 
     def clear_cache(self) -> None:
-        """Clear all cached results in this setup's cache.
-
-        Returns:
-            None
-        """
         self.cache.clear()
 
     @property
@@ -3304,11 +3288,6 @@ class CAQueryDelegator(CASetupDelegatorMixin):
 
     @property
     def child_setups(self) -> tp.Set[CABaseSetup]:
-        """Child setups that match the query using the registry.
-
-        Returns:
-            Set[CABaseSetup]: A set of child setups that satisfy the query parsed from `args` and `kwargs`.
-        """
         return self.registry.match_setups(*self.args, **self.kwargs)
 
 

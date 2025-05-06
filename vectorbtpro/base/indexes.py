@@ -1226,6 +1226,9 @@ class IndexApplier(Base):
 
         Returns:
             IndexApplier: New instance with the updated index.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

@@ -70,7 +70,7 @@ class DefineMixin(Hashable):
 
     @hybrid_property
     def fields(cls_or_self) -> tp.Optional[tp.Tuple[attr.Attribute]]:
-        """Return a tuple of attribute fields for the class or instance.
+        """Tuple of attribute fields for the class or instance.
 
         Returns:
             Optional[Tuple[Attribute]]: Tuple of attribute fields if available, otherwise None.
@@ -85,7 +85,7 @@ class DefineMixin(Hashable):
 
     @hybrid_property
     def fields_dict(cls_or_self) -> tp.Optional[tp.Dict[str, attr.Attribute]]:
-        """Return a dictionary mapping field names to attribute fields for the class or instance.
+        """Dictionary mapping field names to attribute fields for the class or instance.
 
         Returns:
             Optional[Dict[str, Attribute]]: Dictionary of attribute fields if available, otherwise None.

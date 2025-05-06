@@ -61,10 +61,10 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Return default keyword arguments for `PlotsBuilderMixin.plots`.
+        """Default configuration for `PlotsBuilderMixin.plots`.
 
         Returns:
-            Kwargs: Dictionary containing default settings, including the wrapper's frequency.
+            Kwargs: Dictionary containing the default configuration for the plots builder.
         """
         return dict(settings=dict(freq=self.wrapper.freq))
 
@@ -102,7 +102,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
 
     @property
     def subplots(self) -> Config:
-        """Return the subplots configuration for `${cls_name}`.
+        """Subplots configuration for `${cls_name}`.
 
         ```python
         ${subplots}

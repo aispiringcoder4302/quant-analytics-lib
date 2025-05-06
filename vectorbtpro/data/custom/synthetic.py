@@ -49,6 +49,9 @@ class SyntheticData(CustomData):
 
         Returns:
             KeyData: Generated data and a metadata dictionary.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -201,29 +204,7 @@ class SyntheticData(CustomData):
         return self.fetch_symbol(key, **kwargs)
 
     def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Update synthetic data for a feature.
-
-        Calls `SyntheticData.update_key` with `key_is_feature=True`.
-
-        Args:
-            feature (Feature): Feature identifier.
-            **kwargs: Keyword arguments for `SyntheticData.update_key`.
-
-        Returns:
-            FeatureData: Updated data and a metadata dictionary.
-        """
         return self.update_key(feature, key_is_feature=True, **kwargs)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Update synthetic data for a symbol.
-
-        Calls `SyntheticData.update_key` with `key_is_feature=False`.
-
-        Args:
-            symbol (Symbol): Symbol identifier.
-            **kwargs: Keyword arguments for `SyntheticData.update_key`.
-
-        Returns:
-            SymbolData: Updated data and a metadata dictionary.
-        """
         return self.update_key(symbol, key_is_feature=False, **kwargs)

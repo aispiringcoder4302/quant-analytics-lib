@@ -277,7 +277,7 @@ class QSAdapter(Configured):
 
     @property
     def returns_acc(self) -> ReturnsAccessor:
-        """Returns accessor instance.
+        """Accessor instance.
 
         This is the main entry point for accessing returns-related methods and properties.
 

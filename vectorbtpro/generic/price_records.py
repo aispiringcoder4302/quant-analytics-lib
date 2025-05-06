@@ -162,15 +162,6 @@ class PriceRecords(Records):
         *objs: tp.MaybeSequence[PriceRecordsT],
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `PriceRecords` after stacking along columns.
-
-        Args:
-            *objs (MaybeSequence[PriceRecords]): `PriceRecords` instances to be stacked.
-            **kwargs: Keyword arguments for `PriceRecords`.
-
-        Returns:
-            Kwargs: Resolved keyword arguments.
-        """
         kwargs = Records.resolve_row_stack_kwargs(*objs, **kwargs)
         if len(objs) == 1:
             objs = objs[0]

@@ -57,8 +57,10 @@ class Prettified(Base):
             str: Prettified representation of the object.
 
         !!! warning
-            Calling `prettify` can lead to an infinite recursion.
-            Make sure to pre-process this object.
+            Calling `prettify` can lead to an infinite recursion. Make sure to pre-process this object.
+
+        !!! abstract
+            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

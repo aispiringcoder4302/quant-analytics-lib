@@ -129,20 +129,6 @@ class HDFData(FileData):
         recursive: bool = True,
         **kwargs,
     ) -> tp.List[Path]:
-        """Return a list of HDF paths matching the provided path.
-
-        Overrides `vectorbtpro.data.custom.file.FileData.match_path` to locate HDF files and extract HDF keys.
-
-        Args:
-            path (PathLike): Base path to search for HDF files.
-            match_regex (Optional[str]): Regular expression for filtering paths.
-            sort_paths (bool): Flag indicating whether to sort the resulting paths.
-            recursive (bool): Whether to search subdirectories recursively.
-            **kwargs: Keyword arguments for `HDFData.match_path`.
-
-        Returns:
-            List[Path]: A list of HDF paths, where each path represents a file with its HDF key appended.
-        """
         path = Path(path)
         if path.exists():
             if path.is_dir() and not cls.is_dir_match(path):
@@ -395,29 +381,7 @@ class HDFData(FileData):
         return self.fetch_symbol(key, **kwargs)
 
     def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Update the HDF data for a feature.
-
-        Uses `HDFData.update_key` with `key_is_feature=True`.
-
-        Args:
-            feature (Feature): Feature identifier.
-            **kwargs: Keyword arguments for `HDFData.update_key`.
-
-        Returns:
-            FeatureData: Updated data and a metadata dictionary.
-        """
         return self.update_key(feature, key_is_feature=True, **kwargs)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Update the HDF data for a symbol.
-
-        Uses `HDFData.update_key` with `key_is_feature=False`.
-
-        Args:
-            symbol (Symbol): Symbol identifier.
-            **kwargs: Keyword arguments for `HDFData.update_key`.
-
-        Returns:
-            SymbolData: Updated data and a metadata dictionary.
-        """
         return self.update_key(symbol, key_is_feature=False, **kwargs)

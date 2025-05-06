@@ -464,7 +464,7 @@ class FormatHTML(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: Dictionary with template context.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 
@@ -655,7 +655,7 @@ class ContentFormatter(Configured):
         """Additional context for template substitution.
 
         Returns:
-            Kwargs: Dictionary representing the template substitution context.
+            Kwargs: Dictionary of context variables for template substitution.
         """
         return self._template_context
 
@@ -991,11 +991,6 @@ class IPythonMarkdownFormatter(IPythonFormatter):
         return self._to_markdown_kwargs
 
     def update_display(self) -> None:
-        """Update the IPython display with Markdown-rendered content.
-
-        Returns:
-            None
-        """
         from IPython.display import Markdown
 
         markdown_content = to_markdown(self.content, **self.to_markdown_kwargs)
@@ -1067,11 +1062,6 @@ class IPythonHTMLFormatter(IPythonFormatter):
         return self._to_html_kwargs
 
     def update_display(self) -> None:
-        """Update the IPython display with HTML-rendered content.
-
-        Returns:
-            None
-        """
         from IPython.display import HTML
 
         markdown_content = to_markdown(self.content, **self.to_markdown_kwargs)
@@ -1411,14 +1401,6 @@ class HTMLFileFormatter(ContentFormatter):
             webbrowser.open("file://" + str(Path(self.file_handle.name).resolve()))
 
     def update(self, final: bool = False) -> None:
-        """Update the HTML file with new content.
-
-        Args:
-            final (bool): Whether the update finalizes the content.
-
-        Returns:
-            None
-        """
         ContentFormatter.update(self, final=final)
 
         markdown_content = to_markdown(self.content, **self.to_markdown_kwargs)
