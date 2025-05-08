@@ -126,7 +126,6 @@ pfopt-base = [
 ]
 pfopt = [
     "vectorbtpro[pfopt-base]",
-    "universal-portfolios"
 ]
 stats-base = [
     "quantstats>=0.0.37"

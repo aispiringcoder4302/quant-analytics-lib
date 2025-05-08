@@ -2438,7 +2438,7 @@ class IndicatorFactory(Configured):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Default configuration for `vectorbtpro.generic.plots_builder.StatsBuilderMixin.plots`.
+        """Default configuration for `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots`.
 
         Returns:
             Kwargs: Dictionary containing the default configuration for the plots builder.

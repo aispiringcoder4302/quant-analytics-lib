@@ -871,7 +871,7 @@ class FindAssetFunc(AssetFunc):
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
                 Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
-            **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search.find_in_obj` 
+            **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search_.find_in_obj` 
                 and `vectorbtpro.utils.search_.find`.
                 
         Returns:
@@ -1300,7 +1300,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
                 Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
-            **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search.find_in_obj` 
+            **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search_.find_in_obj` 
                 and `vectorbtpro.utils.search_.replace`.
 
         Returns:
@@ -1543,7 +1543,7 @@ class FindRemoveAssetFunc(FindAssetFunc):
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
                 Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
-            **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search.find_in_obj`
+            **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search_.find_in_obj`
                 and `vectorbtpro.utils.search_.find`.
 
         Returns:
