@@ -18,19 +18,16 @@ RUN rm -R ta-lib-0.6.4 ta-lib-0.6.4-src.tar.gz
 
 USER ${NB_UID}
 
-RUN pip install --quiet --no-cache-dir 'pybind11'
-RUN pip install --quiet --no-cache-dir --ignore-installed 'llvmlite'
+RUN pip install uv
 
 ADD ./vectorbtpro ./vectorbtpro
 ADD pyproject.toml ./
 ADD LICENSE ./
 ADD README.md ./
-RUN pip install --quiet --no-cache-dir ".[all]"
+RUN uv pip install --system --no-cache-dir ".[all]"
+RUN uv pip install --system --no-cache-dir --no-deps 'universal-portfolios'
 
-RUN pip install --quiet --no-cache-dir --no-deps 'universal-portfolios'
-RUN pip install --quiet --no-cache-dir 'pandas_datareader'
-RUN conda install --quiet --yes -c conda-forge cvxopt
-
+# https://github.com/plotly/dash/issues/2580
 RUN jupyter lab build --minimize=False
 
 WORKDIR "$HOME/work"
