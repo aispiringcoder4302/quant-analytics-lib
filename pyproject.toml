@@ -68,7 +68,7 @@ data = [
     "duckdb-engine",
     "fastparquet",
     "python-binance>=1.0.16",
-    "alpaca-py",
+    "alpaca-py>=0.40.0",
     "ccxt>=1.89.14",
     "polygon-api-client>=1.0.0",
     "beautifulsoup4",

@@ -151,7 +151,7 @@ class BentoData(RemoteData):
         df_kwargs: tp.KwargsLike = None,
         **params,
     ) -> tp.Union[float, tp.SymbolData]:
-        """Fetch a symbol from Databento by overriding `vectorbtpro.data.base.Data.fetch_symbol`.
+        """Fetch a symbol from Databento.
 
         Args:
             symbol (Symbol): Symbol identifier.

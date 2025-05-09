@@ -84,6 +84,7 @@ opt_dep_config = HybridConfig(
         alpaca=dict(
             dist_name="alpaca-py",
             link="https://pypi.org/project/alpaca-py/",
+            version=">=0.40.0",
         ),
         polygon=dict(
             dist_name="polygon-api-client",
