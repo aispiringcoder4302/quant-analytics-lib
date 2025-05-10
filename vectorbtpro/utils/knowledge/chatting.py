@@ -3672,7 +3672,7 @@ class LMDBStore(ObjectStore):
         loads_kwargs = self.resolve_setting(loads_kwargs, "loads_kwargs", merge=True)
         lmdb_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         for arg_name in get_func_arg_names(ObjectStore.__init__) + get_func_arg_names(type(self).__init__):
-            if arg_name in open_kwargs:
+            if arg_name in lmdb_config:
                 del lmdb_config[arg_name]
         if "mirror" in lmdb_config:
             del lmdb_config["mirror"]

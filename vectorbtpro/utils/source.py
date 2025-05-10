@@ -629,11 +629,13 @@ def get_source_map(source: str) -> dict:
 
 REFINE_SRC_PROMPT = """You are a code-refinement assistant. 
 
-Present the refactored version of the given chunk of Python code to address 
+Present the refined version of the given chunk of Python code to address 
 any detected code smells or issues. You must:
 
 1. **Return the entire code block** in your output.
 2. **Never enclose your output in triple backticks**, and return no other text or explanation.
+3. **Do not add any comments** to the code, unless explicitly requested.
+4. If the code contains a TODO or FIXME comment, **follow the instructions in the comment**.
 """
 """Default system prompt for `refine_source`."""
 
@@ -650,6 +652,9 @@ def refine_source(
     attach_metadata: bool = True,
     attach_imports: tp.Optional[bool] = True,
     attach_map: tp.Optional[bool] = True,
+    attach_knowledge: bool = False,
+    search_kwargs: tp.KwargsLike = None,
+    to_context_kwargs: tp.KwargsLike = None,
     dump_engine: str = "yaml",
     dump_kwargs: tp.KwargsLike = None,
     chunk_size: tp.Optional[int] = 2000,
@@ -659,14 +664,15 @@ def refine_source(
     max_split_level: tp.Optional[int] = None,
     uniform_chunks: bool = True,
     tokenize_kwargs: tp.KwargsLike = None,
-    show_progress: tp.Optional[bool] = True,
+    show_progress: tp.Optional[bool] = None,
     pbar_kwargs: tp.KwargsLike = None,
     mult_show_progress: tp.Optional[bool] = None,
     mult_pbar_kwargs: tp.KwargsLike = None,
     modify: bool = False,
     copy_to_clipboard: bool = False,
-    show_diff: bool = True,
+    show_diff: bool = False,
     open_browser: bool = True,
+    return_path: bool = False,
     **kwargs,
 ) -> tp.Union[tp.RefineSourceOutput, tp.RefineSourceOutputs]:
     """Refine the source code by splitting it into manageable chunks and applying completion methods.
@@ -678,6 +684,8 @@ def refine_source(
 
             * a string containing code (e.g. "import vectorbtpro as vbt ..."),
             * a file path (e.g. "strategies/sma_crossover.py"),
+            * a package name or object (e.g. `vectorbtpro`),
+            * a module name or object (e.g. `vectorbtpro.utils`),
             * a Python object (e.g. `pipeline_nb`), or
             * an iterable of the above.
 
@@ -703,6 +711,14 @@ def refine_source(
         attach_map (Optional[bool]): Whether to attach (dumped) source map to the context.
 
             If None, becomes True if `split` is True.
+        attach_knowledge (bool): Whether to attach relevant knowledge to the context.
+        search_kwargs (KwargsLike): Keyword arguments for searching for knowledge.
+
+            By default, uses the source code as the search query and top 20 results.
+            See `vectorbtpro.utils.knowledge.custom_assets.search`.
+        to_context_kwargs (KwargsLike): Keyword arguments for converting the search results to context.
+        
+            See `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_context`.
         dump_engine (str): Name of the dump engine.
 
             See `vectorbtpro.utils.formatting.dump`.
@@ -742,6 +758,7 @@ def refine_source(
         open_browser (bool): Whether to open the HTML diff in a web browser.
 
             Does not apply when processing multiple sources.
+        return_path (bool): Whether to return the path to the updated source file or the HTML diff file.
         **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.completed`.
 
     Returns:
@@ -758,6 +775,7 @@ def refine_source(
     from vectorbtpro.utils.path_ import get_common_prefix
     from vectorbtpro.utils.pbar import ProgressBar
     from vectorbtpro.utils.knowledge.chatting import tokenize, completed
+    from vectorbtpro.utils.knowledge.custom_assets import search
 
     pbar_kwargs = merge_dicts(
         dict(desc_kwargs=dict(refresh=True)),
@@ -798,7 +816,7 @@ def refine_source(
                 except Exception as e:
                     pass
             if isinstance(source, str):
-                source_name = f"<string>"
+                source_name = "<string>"
                 all_paths = False
             elif isinstance(source, Path):
                 source_name = source.name
@@ -827,6 +845,8 @@ def refine_source(
         outputs = []
         if mult_show_progress is None:
             mult_show_progress = show_progress
+        if mult_show_progress is None:
+            mult_show_progress = True
         mult_pbar_kwargs = merge_dicts(pbar_kwargs, mult_pbar_kwargs)
         with ProgressBar(total=len(source_names), show_progress=mult_show_progress, **mult_pbar_kwargs) as pbar:
             for i, source in enumerate(sources):
@@ -842,6 +862,9 @@ def refine_source(
                     attach_metadata=attach_metadata,
                     attach_imports=attach_imports,
                     attach_map=attach_map,
+                    attach_knowledge=attach_knowledge,
+                    search_kwargs=search_kwargs,
+                    to_context_kwargs=to_context_kwargs,
                     dump_engine=dump_engine,
                     dump_kwargs=dump_kwargs,
                     chunk_size=chunk_size,
@@ -857,6 +880,7 @@ def refine_source(
                     copy_to_clipboard=False,
                     show_diff=False,
                     open_browser=False,
+                    return_path=return_path,
                     **kwargs,
                 )
                 outputs.append(output)
@@ -920,7 +944,7 @@ def refine_source(
         source_metadata = dump(source_metadata, dump_engine=dump_engine, **dump_kwargs).strip()
         source_metadata_language = get_dump_language(dump_engine=dump_engine)
         if context:
-            context += "\n\n---\n\n"
+            context += "\n\n====\n\n"
         context += f"""Metadata of the current code context:
 
 ```{source_metadata_language}
@@ -933,7 +957,7 @@ def refine_source(
         source_imports = get_source_imports(source, global_only=True)
         if source_imports:
             if context:
-                context += "\n\n---\n\n"
+                context += "\n\n====\n\n"
             context += f"""Complete list of global imports available to the current code context:
 
 ```python
@@ -948,12 +972,29 @@ def refine_source(
             source_map = dump(source_map, dump_engine=dump_engine, **dump_kwargs).strip()
             source_map_language = get_dump_language(dump_engine=dump_engine)
             if context:
-                context += "\n\n---\n\n"
+                context += "\n\n====\n\n"
             context += f"""High-level map of top-level objects available to the current code context:
 
 ```{source_map_language}
 {source_map}
 ```
+"""
+    if attach_knowledge:
+        if search_kwargs is None:
+            search_kwargs = {}
+        if to_context_kwargs is None:
+            to_context_kwargs = {}
+        if "query" not in search_kwargs:
+            search_kwargs["query"] = source
+        if "top_k" not in search_kwargs:
+            search_kwargs["top_k"] = 20
+        asset = search(display=False, **search_kwargs)
+        if asset:
+            if context:
+                context += "\n\n====\n\n"
+            context += f"""Related knowledge:
+
+{asset.to_context(**to_context_kwargs)}
 """
     if tokenize_kwargs is None:
         tokenize_kwargs = {}
@@ -1047,6 +1088,8 @@ def refine_source(
 
     processed = []
     chunk_start_line = source_start_line
+    if show_progress is None:
+        show_progress = len(source_chunks) > 1
     with ProgressBar(total=len(source_chunks), show_progress=show_progress, **pbar_kwargs) as pbar:
         for i in range(len(source_chunks)):
             chunk = source_chunks[i]
@@ -1108,16 +1151,24 @@ def refine_source(
             suffix=".html",
         ) as f:
             f.write(html_diff)
-            file_path = Path(f.name)
+            diff_path = Path(f.name)
         if open_browser:
-            webbrowser.open("file://" + str(file_path.resolve()))
+            webbrowser.open("file://" + str(diff_path.resolve()))
         if modify and source_path:
-            return source_path, file_path
+            if not return_path:
+                return None
+            return source_path, diff_path
         if copy_to_clipboard:
-            return file_path
-        return new_source, file_path
+            if not return_path:
+                return None
+            return diff_path
+        if not return_path:
+            return new_source
+        return new_source, diff_path
 
     if modify and source_path:
+        if not return_path:
+            return None
         return source_path
     if copy_to_clipboard:
         return None
