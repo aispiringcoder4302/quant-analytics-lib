@@ -4259,12 +4259,11 @@ class DocumentRanker(Configured):
                     if bm25_memory_store.store_exists():
                         bm25_tokenizer = bm25_memory_store["bm25_tokenizer"].data
                         bm25_retriever = bm25_memory_store["bm25_retriever"].data
-                bm25_tokenizer, bm25_tokenize_kwargs = self.resolve_bm25_tokenizer(
-                    bm25_tokenizer=bm25_tokenizer, **bm25_tokenizer_kwargs
-                )
+            bm25_tokenizer, bm25_tokenize_kwargs = self.resolve_bm25_tokenizer(
+                bm25_tokenizer=bm25_tokenizer, **bm25_tokenizer_kwargs
+            )
             bm25_retriever, bm25_retrieve_kwargs = self.resolve_bm25_retriever(
-                bm25_retriever=bm25_retriever,
-                **bm25_retriever_kwargs,
+                bm25_retriever=bm25_retriever, **bm25_retriever_kwargs
             )
             if bm25_mirror_store_id is not None:
                 with MemoryStore(store_id=bm25_mirror_store_id) as bm25_memory_store:
@@ -4974,7 +4973,7 @@ class DocumentRanker(Configured):
                 show_progress=False,
                 **bm25_tokenize_kwargs,
             )
-            _, scores = bm25_retriever.retrieve(
+            indices, scores = bm25_retriever.retrieve(
                 tokenized_queries,
                 k=len(documents),
                 sorted=False,
@@ -4982,7 +4981,7 @@ class DocumentRanker(Configured):
             )
             obj_scores = {}
             for i in range(scores.shape[1]):
-                obj_scores[documents[i].id_] = scores[0, i]
+                obj_scores[documents[indices[0, i]].id_] = scores[0, i]
 
             scores = []
             for document in documents:
