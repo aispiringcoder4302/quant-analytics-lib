@@ -65,7 +65,7 @@ class Hashable(Base):
         if isinstance(other, type(self)):
             return self.hash_key == other.hash_key
         raise NotImplementedError
-    
+
 
 class UnhashableArgsError(Exception):
     """Exception raised for unhashable arguments."""
@@ -91,7 +91,7 @@ def hash_args(
         int: Computed hash value.
     """
     from vectorbtpro.utils.parsing import annotate_args, flatten_ann_args, ignore_flat_ann_args
-    
+
     if ignore_args is None:
         ignore_args = []
     ann_args = annotate_args(func, args, kwargs, only_passed=True)

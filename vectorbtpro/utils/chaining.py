@@ -38,7 +38,7 @@ class Chainable(Base):
 
         Args:
             func (PipeFunc): Function to apply.
-            
+
                 It can be:
 
                 * A callable function.

@@ -95,15 +95,15 @@ def future_mean_nb(
     Args:
         close (Array2d): 2-D array of input values.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Waiting period.
-        
+
             Provided as a scalar or per column.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -194,15 +194,15 @@ def future_std_nb(
     Args:
         close (Array2d): 2-D array of input values.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Waiting period.
-        
+
             Provided as a scalar or per column.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -282,10 +282,10 @@ def future_min_nb(
     Args:
         close (Array2d): 2-D array of input values.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wait (FlexArray1dLike): Waiting period.
-        
+
             Provided as a scalar or per column.
         minp (Optional[int]): Minimum number of observations required.
 
@@ -358,10 +358,10 @@ def future_max_nb(
     Args:
         close (Array2d): Two-dimensional array containing close prices.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wait (FlexArray1dLike): Number of periods to wait before starting computation.
-        
+
             Provided as a scalar or per column.
         minp (Optional[int]): Minimum number of observations required.
 
@@ -423,7 +423,7 @@ def fixed_labels_nb(
     Args:
         close (Array2d): Two-dimensional array of close prices.
         n (FlexArray1dLike): Period offset for computing future values.
-        
+
             Provided as a scalar or per column.
 
     Returns:
@@ -460,15 +460,15 @@ def mean_labels_1d_nb(
     Args:
         close (Array2d): Array of close prices.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Number of periods to wait before applying the window.
-        
+
             Provided as a scalar or per column.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -507,15 +507,15 @@ def mean_labels_nb(
     Args:
         close (Array2d): Two-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         wait (FlexArray1dLike): Number of periods to wait before applying the window.
-        
+
             Provided as a scalar or per column.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -590,10 +590,10 @@ def pivots_1d_nb(
         high (Array1d): One-dimensional array of high prices.
         low (Array1d): One-dimensional array of low prices.
         up_th (FlexArray1dLike): Upper threshold for detecting peaks.
-        
+
             Provided as a scalar or per row.
         down_th (FlexArray1dLike): Lower threshold for detecting valleys.
-        
+
             Provided as a scalar or per row.
 
     Returns:
@@ -688,10 +688,10 @@ def pivots_nb(
         high (Array2d): Two-dimensional array of high values.
         low (Array2d): Two-dimensional array of low values.
         up_th (FlexArray2dLike): Upper threshold for detecting peaks.
-        
+
             Provided as a scalar, or per row, column, or element.
         down_th (FlexArray2dLike): Lower threshold for detecting valleys.
-        
+
             Provided as a scalar, or per row, column, or element.
 
     Returns:
@@ -849,10 +849,10 @@ def bincs_trend_labels_1d_nb(
         low (Array1d): One-dimensional array of low values.
         pivots (Array1d): One-dimensional array of pivot indicators.
         up_th (FlexArray1dLike): Upper threshold for detecting peaks.
-        
+
             Provided as a scalar or per row.
         down_th (FlexArray1dLike): Lower threshold for detecting valleys.
-        
+
             Provided as a scalar or per row.
 
     Returns:
@@ -925,10 +925,10 @@ def bincs_trend_labels_nb(
         low (Array2d): Two-dimensional array of low values.
         pivots (Array2d): Two-dimensional array of pivot signals.
         up_th (FlexArray2dLike): Upper threshold for detecting peaks.
-        
+
             Provided as a scalar, or per row, column, or element.
         down_th (FlexArray2dLike): Lower threshold for detecting valleys.
-        
+
             Provided as a scalar, or per row, column, or element.
 
     Returns:
@@ -1052,13 +1052,13 @@ def trend_labels_1d_nb(
         high (Array1d): 1D array of high prices.
         low (Array1d): 1D array of low prices.
         up_th (FlexArray1dLike): Upper threshold for detecting peaks.
-        
+
             Provided as a scalar or per row.
         down_th (FlexArray1dLike): Lower threshold for detecting valleys.
-        
+
             Provided as a scalar or per row.
         mode (int): Trend mode.
-        
+
             See `vectorbtpro.labels.enums.TrendLabelMode`.
 
     Returns:
@@ -1103,15 +1103,15 @@ def trend_labels_nb(
         high (Array2d): 2D array of high prices.
         low (Array2d): 2D array of low prices.
         up_th (FlexArray2dLike): Upper threshold for detecting peaks.
-        
+
             Provided as a scalar, or per row, column, or element.
         down_th (FlexArray2dLike): Lower threshold for detecting valleys.
-        
+
             Provided as a scalar, or per row, column, or element.
         mode (FlexArray1dLike): Trend mode.
-        
+
             Provided as a scalar or per column.
-            
+
             See `vectorbtpro.labels.enums.TrendLabelMode`.
 
     Returns:
@@ -1161,10 +1161,10 @@ def breakout_labels_1d_nb(
         low (Array1d): 1D array of low prices.
         window (int): Window size.
         up_th (FlexArray1dLike): Upper threshold for detecting peaks.
-        
+
             Provided as a scalar or per row.
         down_th (FlexArray1dLike): Lower threshold for detecting valleys.
-        
+
             Provided as a scalar or per row.
         wait (int): Number of periods to delay before starting the breakout search.
 
@@ -1222,16 +1222,16 @@ def breakout_labels_nb(
         high (Array2d): 2D array of high prices.
         low (Array2d): 2D array of low prices.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         up_th (FlexArray2dLike): Upper threshold for detecting peaks.
-        
+
             Provided as a scalar, or per row, column, or element.
         down_th (FlexArray2dLike): Lower threshold for detecting valleys.
-        
+
             Provided as a scalar, or per row, column, or element.
         wait (FlexArray1dLike): Number of periods to delay before starting the breakout search.
-        
+
             Provided as a scalar or per column.
 
     Returns:

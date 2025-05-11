@@ -329,7 +329,7 @@ class Orders(PriceRecords):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -338,7 +338,7 @@ class Orders(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
@@ -754,7 +754,7 @@ FSOrdersT = tp.TypeVar("FSOrdersT", bound="FSOrders")
 @override_field_config(fs_orders_field_config)
 class FSOrders(Orders):
     """Class extending `Orders` for working with order records generated from signals.
-    
+
     Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.fs_order_dt`.
     """
 

@@ -64,7 +64,7 @@ PATSIM = IndicatorFactory(
     generic_nb.rolling_pattern_similarity_nb,
     param_settings=dict(
         pattern=dict(
-            is_array_like=True, 
+            is_array_like=True,
             min_one_dim=True,
             doc="Pattern to compare against.",
         ),
@@ -116,7 +116,7 @@ PATSIM = IndicatorFactory(
             doc="Distance measure (see `vectorbtpro.generic.enums.DistanceMeasure`).",
         ),
         max_error=dict(
-            is_array_like=True, 
+            is_array_like=True,
             min_one_dim=True,
             doc="Maximum error threshold.",
         ),

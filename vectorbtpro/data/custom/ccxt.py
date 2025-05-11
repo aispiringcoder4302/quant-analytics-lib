@@ -340,9 +340,9 @@ class CCXTData(RemoteData):
 
     @classmethod
     def find_earliest_date(
-        cls, 
-        symbol: tp.Symbol, 
-        for_internal_use: bool = False, 
+        cls,
+        symbol: tp.Symbol,
+        for_internal_use: bool = False,
         **kwargs,
     ) -> tp.Optional[tp.Timestamp]:
         """Find the earliest timestamp for a symbol using binary search.

@@ -1148,7 +1148,7 @@ class CacheableRegistry(Base):
                 They are parsed with `CAQuery.parse`.
             collapse (bool): If True, remove child setups belonging to any matched parent setup.
             kind (Optional[MaybeIterable[str]]): Specifies the expected kind(s) of setup to match.
-                
+
                 Supported values:
 
                 * "class": Matches class setups (instances of `CAClassSetup`).

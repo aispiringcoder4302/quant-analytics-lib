@@ -128,7 +128,7 @@ class DataUpdater(Configured):
             replace (bool): If True, remove existing jobs with matching tags.
             start (bool): If True, start the job immediately after scheduling.
             start_kwargs (KwargsLike): Keyword arguments for starting the scheduler.
-            
+
                 See `vectorbtpro.utils.schedule_.ScheduleManager.start`.
             **update_kwargs: Keyword arguments for `vectorbtpro.utils.schedule_.AsyncJob.do`.
 

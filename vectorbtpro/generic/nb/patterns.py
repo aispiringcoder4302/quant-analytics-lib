@@ -229,7 +229,7 @@ def fit_pattern_nb(
 
             See `vectorbtpro.generic.enums.ErrorType`.
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
-        
+
             Provided as a scalar or per element in the pattern.
         max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
 
@@ -351,7 +351,7 @@ def pattern_similarity_nb(
 
             See `vectorbtpro.generic.enums.DistanceMeasure`.
         max_error (FlexArray1dLike): Maximum error threshold for normalization.
-        
+
             Provided as a scalar or per element in the pattern.
         max_error_interp_mode (Optional[int]): Interpolation mode for `max_error`.
 

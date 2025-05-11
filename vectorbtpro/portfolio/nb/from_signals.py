@@ -635,16 +635,16 @@ def from_basic_signals_nb(
             !!! note
                 Should be grouped only if cash sharing is enabled.
         open (FlexArray2dLike): Open price.
-        
+
             Provided as a scalar, or per row, column, or element.
         high (FlexArray2dLike): High price.
-        
+
             Provided as a scalar, or per row, column, or element.
         low (FlexArray2dLike): Low price.
-        
+
             Provided as a scalar, or per row, column, or element.
         close (FlexArray2dLike): Close price.
-        
+
             Provided as a scalar, or per row, column, or element.
         init_cash (FlexArray1dLike): Initial cash amount.
 
@@ -656,28 +656,28 @@ def from_basic_signals_nb(
 
             Provided as a scalar or per column.
         cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
-        
+
             Provided as a scalar, or per row, group, or element.
         cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
-        
+
             Provided as a scalar, or per row, column, or element.
         cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
-        
+
             Provided as a scalar, or per row, column, or element.
         long_entries (FlexArray2dLike): Boolean array indicating long entry signals.
-        
+
             Provided as a scalar, or per row, column, or element.
         long_exits (FlexArray2dLike): Boolean array indicating long exit signals.
-        
+
             Provided as a scalar, or per row, column, or element.
         short_entries (FlexArray2dLike): Boolean array indicating short entry signals.
-        
+
             Provided as a scalar, or per row, column, or element.
         short_exits (FlexArray2dLike): Boolean array indicating short exit signals.
-        
+
             Provided as a scalar, or per row, column, or element.
         size (FlexArray2dLike): Order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size`.
@@ -685,12 +685,12 @@ def from_basic_signals_nb(
             !!! note
                 Negative size is not allowed; use signals to express direction.
         price (FlexArray2dLike): Order price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.price`.
         size_type (FlexArray2dLike): Order size type.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_type`.
@@ -698,27 +698,27 @@ def from_basic_signals_nb(
             Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
             `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
         fees (FlexArray2dLike): Transaction fee rate.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.fees`.
         fixed_fees (FlexArray2dLike): Fixed fee amount.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
         slippage (FlexArray2dLike): Slippage amount.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.slippage`.
         min_size (FlexArray2dLike): Minimum allowable order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.min_size`.
         max_size (FlexArray2dLike): Maximum allowable order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.max_size`.
@@ -726,49 +726,49 @@ def from_basic_signals_nb(
             !!! note
                 With accumulation enabled, a very low `max_size` might hinder proper position closure.
         size_granularity (FlexArray2dLike): Granularity for order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity`.
         leverage (FlexArray2dLike): Leverage factor.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.leverage`.
         leverage_mode (FlexArray2dLike): Mode for leverage calculation.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.leverage_mode`.
         reject_prob (FlexArray2dLike): Probability of order rejection.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.reject_prob`.
         price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
         allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.allow_partial`.
 
             Does not apply when the order size is `np.inf`.
         raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.raise_reject`.
         log (FlexArray2dLike): Logging flag.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.log`.
         val_price (FlexArray2dLike): Valuation price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.ValPriceType`.
@@ -777,32 +777,32 @@ def from_basic_signals_nb(
                 (using `open` or a previously known value if `ffill_val_price` is True).
             * Any `np.inf` element is replaced by the current order price.
         accumulate (FlexArray2dLike): Order accumulation mode.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
         upon_long_conflict (FlexArray2dLike): Conflict resolution mode for long signals.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_short_conflict (FlexArray2dLike): Conflict resolution mode for short signals.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_dir_conflict (FlexArray2dLike): Signal direction conflict mode.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.DirectionConflictMode`.
         upon_opposite_entry (FlexArray2dLike): Mode for handling opposite entry signals.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.OppositeEntryMode`.
         from_ago (FlexArray2dLike): Lookback offset for price selection.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Negative values are converted to positive to avoid look-ahead bias.
@@ -1612,22 +1612,22 @@ def from_signals_nb(
             !!! note
                 Should be grouped only if cash sharing is enabled.
         open (FlexArray2dLike): Open price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             For stop signals, `np.nan` is replaced with the corresponding close price.
         high (FlexArray2dLike): High price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             For stop signals, `np.nan` is replaced with the maximum of open and close prices.
         low (FlexArray2dLike): Low price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             For stop signals, `np.nan` is replaced with the minimum of open and close prices.
         close (FlexArray2dLike): Close price.
-        
+
             Provided as a scalar, or per row, column, or element.
         init_cash (FlexArray1dLike): Initial cash amount.
 
@@ -1639,28 +1639,28 @@ def from_signals_nb(
 
             Provided as a scalar or per column.
         cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
-        
+
             Provided as a scalar, or per row, group, or element.
         cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
-        
+
             Provided as a scalar, or per row, column, or element.
         cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
-        
+
             Provided as a scalar, or per row, column, or element.
         long_entries (FlexArray2dLike): Boolean array indicating long entry signals.
-        
+
             Provided as a scalar, or per row, column, or element.
         long_exits (FlexArray2dLike): Boolean array indicating long exit signals.
-        
+
             Provided as a scalar, or per row, column, or element.
         short_entries (FlexArray2dLike): Boolean array indicating short entry signals.
-        
+
             Provided as a scalar, or per row, column, or element.
         short_exits (FlexArray2dLike): Boolean array indicating short exit signals.
-        
+
             Provided as a scalar, or per row, column, or element.
         size (FlexArray2dLike): Order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size`.
@@ -1668,12 +1668,12 @@ def from_signals_nb(
             !!! note
                 Negative size is not allowed; use signals to express direction.
         price (FlexArray2dLike): Order price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.price`.
         size_type (FlexArray2dLike): Order size type.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_type`.
@@ -1681,27 +1681,27 @@ def from_signals_nb(
             Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
             `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
         fees (FlexArray2dLike): Transaction fee rate.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.fees`.
         fixed_fees (FlexArray2dLike): Fixed fee amount.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
         slippage (FlexArray2dLike): Slippage amount.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.slippage`.
         min_size (FlexArray2dLike): Minimum allowable order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.min_size`.
         max_size (FlexArray2dLike): Maximum allowable order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.max_size`.
@@ -1709,49 +1709,49 @@ def from_signals_nb(
             !!! note
                 With accumulation enabled, a very low `max_size` might hinder proper position closure.
         size_granularity (FlexArray2dLike): Granularity for order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity`.
         leverage (FlexArray2dLike): Leverage factor.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.leverage`.
         leverage_mode (FlexArray2dLike): Mode for leverage calculation.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.leverage_mode`.
         reject_prob (FlexArray2dLike): Probability of order rejection.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.reject_prob`.
         price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
         allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.allow_partial`.
 
             Does not apply when the order size is `np.inf`.
         raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.raise_reject`.
         log (FlexArray2dLike): Logging flag.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.log`.
         val_price (FlexArray2dLike): Valuation price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.ValPriceType`.
@@ -1760,32 +1760,32 @@ def from_signals_nb(
                 (using `open` or a previously known value if `ffill_val_price` is True).
             * Any `np.inf` element is replaced by the current order price.
         accumulate (FlexArray2dLike): Order accumulation mode.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
         upon_long_conflict (FlexArray2dLike): Conflict resolution mode for long signals.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_short_conflict (FlexArray2dLike): Conflict resolution mode for short signals.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_dir_conflict (FlexArray2dLike): Signal direction conflict mode.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.DirectionConflictMode`.
         upon_opposite_entry (FlexArray2dLike): Mode for handling opposite entry signals.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.OppositeEntryMode`.
         order_type (FlexArray2dLike): Order type.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
@@ -1793,7 +1793,7 @@ def from_signals_nb(
             !!! note
                 Only one active limit order is allowed at a time.
         limit_delta (FlexArray2dLike): Delta to compute the limit price from `price`.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             If NaN, `price` is used directly. The delta adjusts based on trade direction:
@@ -1804,133 +1804,133 @@ def from_signals_nb(
             Delta may be negative. Set an element to `np.nan` to disable.
             Use `delta_format` to specify the format.
         limit_tif (FlexArray2dLike): Time in force for limit orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Measured as the duration from the signal bar's open time.
             Set an element to -1 to disable. Use `time_delta_format` to specify the format.
         limit_expiry (FlexArray2dLike): Expiration time for limit orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to -1 to disable. Use `time_delta_format` to specify the format.
         limit_reverse (FlexArray2dLike): Flag to reverse price hit detection.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             If True, a buy/sell limit is compared against high/low (instead of low/high) and
             the limit delta is inverted.
         limit_order_price (FlexArray2dLike): Price for limit orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.LimitOrderPrice`. Positive values
             are used directly, while negative values are interpreted as enumerated options.
         upon_adj_limit_conflict (FlexArray2dLike): Conflict mode for adjacent limit and signal conflicts.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         upon_opp_limit_conflict (FlexArray2dLike): Conflict mode for opposite limit and signal conflicts.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         use_stops (bool): Flag indicating whether to enable stop orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             If None, becomes True if any stop parameters are set or a non-default adjustment
             function is used. Disable to speed up simple simulations.
         stop_ladder (int): Indicates whether to use stop laddering.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
             If enabled, rows in the provided arrays become ladder steps.
             For price-based stops, pad with `np.nan`; for time-based stops, pad with -1.
         sl_stop (FlexArray2dLike): Stop loss level.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to `np.nan` to disable. Use `delta_format` for formatting.
         tsl_stop (FlexArray2dLike): Trailing stop loss level.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to `np.nan` to disable. Use `delta_format` for formatting.
         tsl_th (FlexArray2dLike): Threshold for triggering trailing stop adjustments.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to `np.nan` to disable. Use `delta_format` for formatting.
         tp_stop (FlexArray2dLike): Take profit stop level.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to `np.nan` to disable. Use `delta_format` for formatting.
         td_stop (FlexArray2dLike): Timedelta-based stop value.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to -1 to disable. Use `time_delta_format` for formatting.
         dt_stop (FlexArray2dLike): Datetime-based stop value.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to -1 to disable. Use `time_delta_format` for formatting.
         stop_entry_price (FlexArray2dLike): Entry price reference for stop orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.StopEntryPrice`.
         stop_exit_price (FlexArray2dLike): Exit price reference for stop orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.StopExitPrice`.
         stop_exit_type (FlexArray2dLike): Type of stop order exit.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.StopExitType`.
         stop_order_type (FlexArray2dLike): Order type used for stops.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
         stop_limit_delta (FlexArray2dLike): Delta to compute the limit price for stop orders,
             analogous to `limit_delta`.
-        
+
             Provided as a scalar, or per row, column, or element.
         upon_stop_update (FlexArray2dLike): Conditions triggering stop updates.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.StopUpdateMode`.
             Effective only if accumulation is enabled.
         upon_adj_stop_conflict (FlexArray2dLike): Resolution mode for adjacent stop conflicts.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         upon_opp_stop_conflict (FlexArray2dLike): Resolution mode for opposite stop conflicts.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         delta_format (FlexArray2dLike): Format specification for delta values.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         time_delta_format (FlexArray2dLike): Format specification for time delta values.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         from_ago (FlexArray2dLike): Lookback offset for price selection.
-        
+
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 
@@ -4476,25 +4476,25 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
         index (Optional[Array1d]): Index array in nanosecond format.
         freq (Optional[int]): Frequency in nanosecond format.
         open (FlexArray2dLike): Open price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             For stop signals, `np.nan` is replaced with the corresponding close price.
         high (FlexArray2dLike): High price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             For stop signals, `np.nan` is replaced with the maximum of open and close prices.
         low (FlexArray2dLike): Low price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             For stop signals, `np.nan` is replaced with the minimum of open and close prices.
         close (FlexArray2dLike): Close price.
-        
+
             Provided as a scalar, or per row, column, or element.
         init_cash (FlexArray1dLike): Initial cash amount.
-        
+
             Provided as a scalar or per column or group with cash sharing.
         init_position (FlexArray1dLike): Initial position.
 
@@ -4503,31 +4503,31 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             Provided as a scalar or per column.
         cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
-        
+
             Provided as a scalar, or per row, column or group with cash sharing, or element.
         cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
-        
+
             Provided as a scalar, or per row, column, or element.
         cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
-        
+
             Provided as a scalar, or per row, column, or element.
         signal_func_nb (SignalFunc): Callback function to be called to generate signals.
 
-            Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*signal_args`, 
+            Accepts `vectorbtpro.portfolio.enums.SignalContext` and `*signal_args`,
             and returns four signals: long entry, long exit, short entry, and short exit.
         signal_args (ArgsLike): Positional arguments for `signal_func_nb`
         post_signal_func_nb (PostSignalFunc): Callback function to be called after processing an order.
 
-            Accepts `vectorbtpro.portfolio.enums.PostSignalContext` and `*post_signal_args`, 
+            Accepts `vectorbtpro.portfolio.enums.PostSignalContext` and `*post_signal_args`,
             and returns nothing.
         post_signal_args (ArgsLike): Positional arguments for `post_signal_func_nb`
         post_segment_func_nb (PostSignalSegmentFunc): Callback function to be called after processing a segment.
 
-            Accepts `vectorbtpro.portfolio.enums.SignalSegmentContext` and `*post_segment_args`, 
+            Accepts `vectorbtpro.portfolio.enums.SignalSegmentContext` and `*post_segment_args`,
             and returns nothing.
         post_segment_args (ArgsLike): Positional arguments for `post_segment_func_nb`.
         size (FlexArray2dLike): Order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size`.
@@ -4535,12 +4535,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             !!! note
                 Negative size is not allowed; use signals to express direction.
         price (FlexArray2dLike): Order price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.price`.
         size_type (FlexArray2dLike): Order size type.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_type`.
@@ -4548,27 +4548,27 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             Valid options include `SizeType.Amount`, `SizeType.Value`, `SizeType.Percent(100)`, and
             `SizeType.ValuePercent(100)`. Other types are incompatible with signals.
         fees (FlexArray2dLike): Transaction fee rate.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.fees`.
         fixed_fees (FlexArray2dLike): Fixed fee amount.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
         slippage (FlexArray2dLike): Slippage amount.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.slippage`.
         min_size (FlexArray2dLike): Minimum allowable order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.min_size`.
         max_size (FlexArray2dLike): Maximum allowable order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.max_size`.
@@ -4576,49 +4576,49 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             !!! note
                 With accumulation enabled, a very low `max_size` might hinder proper position closure.
         size_granularity (FlexArray2dLike): Granularity for order size.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity`.
         leverage (FlexArray2dLike): Leverage factor.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.leverage`.
         leverage_mode (FlexArray2dLike): Mode for leverage calculation.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.leverage_mode`.
         reject_prob (FlexArray2dLike): Probability of order rejection.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.reject_prob`.
         price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
         allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.allow_partial`.
 
             Does not apply when the order size is `np.inf`.
         raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.raise_reject`.
         log (FlexArray2dLike): Logging flag.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.log`.
         val_price (FlexArray2dLike): Valuation price.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.ValPriceType`.
@@ -4627,32 +4627,32 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                 (using `open` or a previously known value if `ffill_val_price` is True).
             * Any `np.inf` element is replaced by the current order price.
         accumulate (FlexArray2dLike): Order accumulation mode.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
         upon_long_conflict (FlexArray2dLike): Conflict resolution mode for long signals.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_short_conflict (FlexArray2dLike): Conflict resolution mode for short signals.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.ConflictMode`.
         upon_dir_conflict (FlexArray2dLike): Signal direction conflict mode.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.DirectionConflictMode`.
         upon_opposite_entry (FlexArray2dLike): Mode for handling opposite entry signals.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.OppositeEntryMode`.
         order_type (FlexArray2dLike): Order type.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
@@ -4660,7 +4660,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             !!! note
                 Only one active limit order is allowed at a time.
         limit_delta (FlexArray2dLike): Delta to compute the limit price from `price`.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             If NaN, `price` is used directly. The delta adjusts based on trade direction:
@@ -4671,133 +4671,133 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
             Delta may be negative. Set an element to `np.nan` to disable.
             Use `delta_format` to specify the format.
         limit_tif (FlexArray2dLike): Time in force for limit orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Measured as the duration from the signal bar's open time.
             Set an element to -1 to disable. Use `time_delta_format` to specify the format.
         limit_expiry (FlexArray2dLike): Expiration time for limit orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to -1 to disable. Use `time_delta_format` to specify the format.
         limit_reverse (FlexArray2dLike): Flag to reverse price hit detection.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             If True, a buy/sell limit is compared against high/low (instead of low/high) and
             the limit delta is inverted.
         limit_order_price (FlexArray2dLike): Price for limit orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.LimitOrderPrice`. Positive values
             are used directly, while negative values are interpreted as enumerated options.
         upon_adj_limit_conflict (FlexArray2dLike): Conflict mode for adjacent limit and signal conflicts.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         upon_opp_limit_conflict (FlexArray2dLike): Conflict mode for opposite limit and signal conflicts.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         use_stops (bool): Flag indicating whether to enable stop orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             If None, becomes True if any stop parameters are set or a non-default adjustment
             function is used. Disable to speed up simple simulations.
         stop_ladder (int): Indicates whether to use stop laddering.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.StopLadderMode`.
             If enabled, rows in the provided arrays become ladder steps.
             For price-based stops, pad with `np.nan`; for time-based stops, pad with -1.
         sl_stop (FlexArray2dLike): Stop loss level.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to `np.nan` to disable. Use `delta_format` for formatting.
         tsl_stop (FlexArray2dLike): Trailing stop loss level.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to `np.nan` to disable. Use `delta_format` for formatting.
         tsl_th (FlexArray2dLike): Threshold for triggering trailing stop adjustments.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to `np.nan` to disable. Use `delta_format` for formatting.
         tp_stop (FlexArray2dLike): Take profit stop level.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to `np.nan` to disable. Use `delta_format` for formatting.
         td_stop (FlexArray2dLike): Timedelta-based stop value.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to -1 to disable. Use `time_delta_format` for formatting.
         dt_stop (FlexArray2dLike): Datetime-based stop value.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             Set an element to -1 to disable. Use `time_delta_format` for formatting.
         stop_entry_price (FlexArray2dLike): Entry price reference for stop orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.StopEntryPrice`.
         stop_exit_price (FlexArray2dLike): Exit price reference for stop orders.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.StopExitPrice`.
         stop_exit_type (FlexArray2dLike): Type of stop order exit.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.StopExitType`.
         stop_order_type (FlexArray2dLike): Order type used for stops.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.OrderType`.
         stop_limit_delta (FlexArray2dLike): Delta to compute the limit price for stop orders,
             analogous to `limit_delta`.
-        
+
             Provided as a scalar, or per row, column, or element.
         upon_stop_update (FlexArray2dLike): Conditions triggering stop updates.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.StopUpdateMode`.
             Effective only if accumulation is enabled.
         upon_adj_stop_conflict (FlexArray2dLike): Resolution mode for adjacent stop conflicts.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         upon_opp_stop_conflict (FlexArray2dLike): Resolution mode for opposite stop conflicts.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.PendingConflictMode`.
         delta_format (FlexArray2dLike): Format specification for delta values.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.DeltaFormat`.
         time_delta_format (FlexArray2dLike): Format specification for time delta values.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.TimeDeltaFormat`.
         from_ago (FlexArray2dLike): Lookback offset for price selection.
-        
+
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
 

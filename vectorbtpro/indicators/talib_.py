@@ -517,7 +517,9 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             plot_trace_name = "plotly.graph_objects.Bar"
         else:
             plot_trace_name = "plotly.graph_objects.Scatter"
-        arg_line = f"{output_name}_trace_kwargs (KwargsLike): Keyword arguments for `{plot_trace_name}` for `{output_name}`."
+        arg_line = (
+            f"{output_name}_trace_kwargs (KwargsLike): Keyword arguments for `{plot_trace_name}` for `{output_name}`."
+        )
         output_trace_arg_lines.append(arg_line)
     output_trace_kwargs_docstring = "\n            ".join(output_trace_arg_lines)
     run_talib_plot_func.__name__ = "plot_" + func_name.lower()

@@ -404,7 +404,7 @@ class FigureMixin(Base):
             figure_name (str): Base name for the saved SVG files (without extension).
             dir_path (PathLike): Directory where SVG files will be saved.
             mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
-            
+
                 See `vectorbtpro.utils.path_.check_mkdir`.
             show (bool): Whether to display the SVG after saving.
             show_kwargs (KwargsLike): Keyword arguments for `FigureMixin.show_svg`.
@@ -462,6 +462,20 @@ class Figure(_Figure, FigureMixin):
         _Figure.show(self, *args, **kwargs)
 
 
+if _Figure.__init__.__doc__:
+    Figure.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.Figure`:
+```text
+{inspect.cleandoc(_Figure.__init__.__doc__)}
+```
+"""
+if _Figure.show.__doc__:
+    Figure.show.__doc__ = f"""Docstring of `plotly.graph_objects.Figure.show`:
+```text
+{inspect.cleandoc(_Figure.show.__doc__)}
+```
+"""
+
+
 class FigureWidget(_FigureWidget, FigureMixin):
     """Class for Plotly figure widgets.
 
@@ -491,6 +505,20 @@ class FigureWidget(_FigureWidget, FigureMixin):
     def show(self, *args, **kwargs) -> None:
         args, kwargs = self.resolve_show_args(*args, **kwargs)
         _FigureWidget.show(self, *args, **kwargs)
+
+
+if _FigureWidget.__init__.__doc__:
+    FigureWidget.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.FigureWidget`:
+```text
+{inspect.cleandoc(_FigureWidget.__init__.__doc__)}
+```
+"""
+if _FigureWidget.show.__doc__:
+    FigureWidget.show.__doc__ = f"""Docstring of `plotly.graph_objects.FigureWidget.show`:
+```text
+{inspect.cleandoc(_FigureWidget.show.__doc__)}
+```
+"""
 
 
 try:
@@ -526,6 +554,19 @@ try:
             args, kwargs = self.resolve_show_args(*args, **kwargs)
             _FigureResampler.show(self, *args, **kwargs)
 
+    if _FigureResampler.__init__.__doc__:
+        FigureResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureResampler`:
+```text
+{inspect.cleandoc(_FigureResampler.__init__.__doc__)}
+```
+"""
+    if _FigureResampler.show.__doc__:
+        FigureResampler.show.__doc__ = f"""Docstring of `plotly_resampler.FigureResampler.show`:
+```text
+{inspect.cleandoc(_FigureResampler.show.__doc__)}
+```
+"""
+
     class FigureWidgetResampler(_FigureWidgetResampler, FigureMixin):
         """Class for resampling Plotly figure widgets.
 
@@ -555,6 +596,19 @@ try:
         def show(self, *args, **kwargs) -> None:
             args, kwargs = self.resolve_show_args(*args, **kwargs)
             _FigureWidgetResampler.show(self, *args, **kwargs)
+
+    if _FigureWidgetResampler.__init__.__doc__:
+        FigureWidgetResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureWidgetResampler`:
+```text
+{inspect.cleandoc(_FigureWidgetResampler.__init__.__doc__)}
+```
+"""
+    if _FigureWidgetResampler.show.__doc__:
+        FigureWidgetResampler.show.__doc__ = f"""Docstring of `plotly_resampler.FigureWidgetResampler.show`:
+```text
+{inspect.cleandoc(_FigureWidgetResampler.show.__doc__)}
+```
+"""
 
 except ImportError:
     FigureResampler = Figure
@@ -627,53 +681,3 @@ def make_subplots(
         BaseFigure: Plotly figure containing subplots.
     """
     return make_figure(_make_subplots(*args, **kwargs), use_widgets=use_widgets, use_resampler=use_resampler)
-
-
-if _Figure.__init__.__doc__:
-    Figure.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.Figure`:
-```text
-{inspect.cleandoc(_Figure.__init__.__doc__)}
-```
-"""
-if _Figure.show.__doc__:
-    Figure.show.__doc__ = f"""Docstring of `plotly.graph_objects.Figure.show`:
-```text
-{inspect.cleandoc(_Figure.show.__doc__)}
-```
-"""
-if _FigureWidget.__init__.__doc__:
-    FigureWidget.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.FigureWidget`:
-```text
-{inspect.cleandoc(_FigureWidget.__init__.__doc__)}
-```
-"""
-if _FigureWidget.show.__doc__:
-    FigureWidget.show.__doc__ = f"""Docstring of `plotly.graph_objects.FigureWidget.show`:
-```text
-{inspect.cleandoc(_FigureWidget.show.__doc__)}
-```
-"""
-if _FigureResampler.__init__.__doc__:
-    FigureResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureResampler`:
-```text
-{inspect.cleandoc(_FigureResampler.__init__.__doc__)}
-```
-"""
-if _FigureResampler.show.__doc__:
-    FigureResampler.show.__doc__ = f"""Docstring of `plotly_resampler.FigureResampler.show`:
-```text
-{inspect.cleandoc(_FigureResampler.show.__doc__)}
-```
-"""
-if _FigureWidgetResampler.__init__.__doc__:
-    FigureWidgetResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureWidgetResampler`:
-```text
-{inspect.cleandoc(_FigureWidgetResampler.__init__.__doc__)}
-```
-"""
-if _FigureWidgetResampler.show.__doc__:
-    FigureWidgetResampler.show.__doc__ = f"""Docstring of `plotly_resampler.FigureWidgetResampler.show`:
-```text
-{inspect.cleandoc(_FigureWidgetResampler.show.__doc__)}
-```
-"""

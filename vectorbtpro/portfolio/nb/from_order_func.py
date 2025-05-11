@@ -694,30 +694,30 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         cash_sharing (bool): See `vectorbtpro.portfolio.enums.SimulationContext.cash_sharing`.
         call_seq (Optional[Array2d]): See `vectorbtpro.portfolio.enums.SimulationContext.call_seq`.
         init_cash (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_cash`.
-        
+
             Provided as a scalar or per column or group with cash sharing.
         init_position (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_position`.
-        
+
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_price`.
-        
+
             Provided as a scalar or per column.
         cash_deposits (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_deposits`.
-        
+
             Provided as a scalar, or per row, column or group with cash sharing, or element.
         cash_earnings (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_earnings`.
-        
+
             Provided as a scalar, or per row, column, or element.
         segment_mask (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.segment_mask`.
-        
+
             Provided as a scalar, or per row, group, or element.
         call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
         call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
         pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
 
             This function is used for creating global arrays and setting the seed.
-            
-            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`, 
+
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
             and returns a tuple that is passed to `pre_group_func_nb` and `post_group_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
         post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
@@ -728,7 +728,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         pre_group_func_nb (PreGroupFunc): Callback function to be called before processing a group.
 
             Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
-            `pre_sim_func_nb`, and `*pre_group_args`, and returns a tuple that is passed to 
+            `pre_sim_func_nb`, and `*pre_group_args`, and returns a tuple that is passed to
             `pre_segment_func_nb` and `post_segment_func_nb`.
         pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
         post_group_func_nb (PostGroupFunc): Callback function to be called after processing a group.
@@ -757,20 +757,20 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                 You can override elements of `last_val_price` to influence group valuation.
                 See `vectorbtpro.portfolio.enums.SimulationContext.last_val_price`.
         pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
-        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment 
+        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment
             if `segment_mask` or `call_post_segment` is True.
 
             Handles the addition of `cash_earnings`, final group re-valuation, and the final update
-            of open position stats. 
-            
-            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
+            of open position stats.
+
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
             `pre_group_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
         order_func_nb (OrderFunc): Callback function to be called to generate an order.
 
-            Used for generating or skipping an order. 
-            
-            Accepts `vectorbtpro.portfolio.enums.OrderContext`, the unpacked output from 
+            Used for generating or skipping an order.
+
+            Accepts `vectorbtpro.portfolio.enums.OrderContext`, the unpacked output from
             `pre_segment_func_nb`, and `*order_args`, and returns `vectorbtpro.portfolio.enums.Order`.
 
             !!! note
@@ -785,25 +785,25 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         index (Optional[Array1d]): See `vectorbtpro.portfolio.enums.SimulationContext.index`.
         freq (Optional[int]): See `vectorbtpro.portfolio.enums.SimulationContext.freq`.
         open (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.open`.
-        
+
             Provided as a scalar, or per row, column, or element.
         high (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.high`.
-        
+
             Provided as a scalar, or per row, column, or element.
         low (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.low`.
-        
+
             Provided as a scalar, or per row, column, or element.
         close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.close`.
-        
+
             Provided as a scalar, or per row, column, or element.
         bm_close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.bm_close`.
-        
+
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_start`.
-        
+
             Provided as a scalar or per group.
         sim_end (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_end`.
-        
+
             Provided as a scalar or per group.
         ffill_val_price (bool): See `vectorbtpro.portfolio.enums.SimulationContext.ffill_val_price`.
         update_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.update_value`.
@@ -2007,30 +2007,30 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
         cash_sharing (bool): See `vectorbtpro.portfolio.enums.SimulationContext.cash_sharing`.
         call_seq (Optional[Array2d]): See `vectorbtpro.portfolio.enums.SimulationContext.call_seq`.
         init_cash (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_cash`.
-        
+
             Provided as a scalar or per column or group with cash sharing.
         init_position (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_position`.
-        
+
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_price`.
-        
+
             Provided as a scalar or per column.
         cash_deposits (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_deposits`.
-        
+
             Provided as a scalar, or per row, column or group with cash sharing, or element.
         cash_earnings (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_earnings`.
-        
+
             Provided as a scalar, or per row, column, or element.
         segment_mask (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.segment_mask`.
-        
+
             Provided as a scalar, or per row, group, or element.
         call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
         call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
         pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
 
-            This function is used for creating global arrays and setting the seed. 
-            
-            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`, 
+            This function is used for creating global arrays and setting the seed.
+
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
             and returns a tuple that is passed to `pre_row_func_nb` and `post_row_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
         post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
@@ -2049,7 +2049,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
             `pre_sim_func_nb`, and `*post_row_args`, and returns nothing.
         post_row_args (Args): Positional arguments for `post_row_func_nb`.
-        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment 
+        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment
             if `segment_mask` or `call_pre_segment` is True.
 
             Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
@@ -2070,20 +2070,20 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                 You can override elements of `last_val_price` to influence group valuation.
                 See `vectorbtpro.portfolio.enums.SimulationContext.last_val_price`.
         pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
-        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment 
+        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment
             if `segment_mask` or `call_post_segment` is True.
 
             Handles the addition of `cash_earnings`, final group re-valuation, and the final update
             of open position stats.
-            
-            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
+
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
             `pre_row_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
         order_func_nb (OrderFunc): Callback function to be called to generate an order.
 
             Used for generating or skipping an order.
-            
-            Accepts `vectorbtpro.portfolio.enums.OrderContext`, the unpacked output from 
+
+            Accepts `vectorbtpro.portfolio.enums.OrderContext`, the unpacked output from
             `pre_segment_func_nb`, and `*order_args`, and returns `vectorbtpro.portfolio.enums.Order`.
 
             !!! note
@@ -2098,25 +2098,25 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
         index (Optional[Array1d]): See `vectorbtpro.portfolio.enums.SimulationContext.index`.
         freq (Optional[int]): See `vectorbtpro.portfolio.enums.SimulationContext.freq`.
         open (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.open`.
-        
+
             Provided as a scalar, or per row, column, or element.
         high (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.high`.
-        
+
             Provided as a scalar, or per row, column, or element.
         low (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.low`.
-        
+
             Provided as a scalar, or per row, column, or element.
         close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.close`.
-        
+
             Provided as a scalar, or per row, column, or element.
         bm_close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.bm_close`.
-        
+
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_start`.
-        
+
             Provided as a scalar or per group.
         sim_end (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_end`.
-        
+
             Provided as a scalar or per group.
         ffill_val_price (bool): See `vectorbtpro.portfolio.enums.SimulationContext.ffill_val_price`.
         update_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.update_value`.
@@ -3202,30 +3202,30 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         cash_sharing (bool): See `vectorbtpro.portfolio.enums.SimulationContext.cash_sharing`.
         call_seq (Optional[Array2d]): See `vectorbtpro.portfolio.enums.SimulationContext.call_seq`.
         init_cash (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_cash`.
-        
+
             Provided as a scalar or per column or group with cash sharing.
         init_position (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_position`.
-        
+
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_price`.
-        
+
             Provided as a scalar or per column.
         cash_deposits (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_deposits`.
-        
+
             Provided as a scalar, or per row, column or group with cash sharing, or element.
         cash_earnings (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_earnings`.
-        
+
             Provided as a scalar, or per row, column, or element.
         segment_mask (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.segment_mask`.
-        
+
             Provided as a scalar, or per row, group, or element.
         call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
         call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
         pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
 
             This function is used for creating global arrays and setting the seed.
-            
-            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`, 
+
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
             and returns a tuple that is passed to `pre_group_func_nb` and `post_group_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
         post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
@@ -3270,16 +3270,16 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
 
             Handles the addition of `cash_earnings`, final group re-valuation, and the final update
             of open position stats.
-            
-            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
+
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
             `pre_group_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
         flex_order_func_nb (FlexOrderFunc): Callback function to be called to generate a flexible order.
 
             Used for generating an order in a column.
-            
-            Accepts `vectorbtpro.portfolio.enums.FlexOrderContext`, the unpacked output from 
-            `pre_segment_func_nb`, and `*order_args`, and returns a tuple of 
+
+            Accepts `vectorbtpro.portfolio.enums.FlexOrderContext`, the unpacked output from
+            `pre_segment_func_nb`, and `*order_args`, and returns a tuple of
             (column, `vectorbtpro.portfolio.enums.Order`).
         flex_order_args (Args): Positional arguments for `flex_order_func_nb`.
         post_order_func_nb (PostOrderFunc): Callback function to be called after processing an order.
@@ -3290,25 +3290,25 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         index (Optional[Array1d]): See `vectorbtpro.portfolio.enums.SimulationContext.index`.
         freq (Optional[int]): See `vectorbtpro.portfolio.enums.SimulationContext.freq`.
         open (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.open`.
-        
+
             Provided as a scalar, or per row, column, or element.
         high (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.high`.
-        
+
             Provided as a scalar, or per row, column, or element.
         low (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.low`.
-        
+
             Provided as a scalar, or per row, column, or element.
         close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.close`.
-        
+
             Provided as a scalar, or per row, column, or element.
         bm_close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.bm_close`.
-        
+
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_start`.
-        
+
             Provided as a scalar or per group.
         sim_end (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_end`.
-        
+
             Provided as a scalar or per group.
         ffill_val_price (bool): See `vectorbtpro.portfolio.enums.SimulationContext.ffill_val_price`.
         update_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.update_value`.
@@ -4393,29 +4393,29 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         cash_sharing (bool): See `vectorbtpro.portfolio.enums.SimulationContext.cash_sharing`.
         call_seq (Optional[Array2d]): See `vectorbtpro.portfolio.enums.SimulationContext.call_seq`.
         init_cash (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_cash`.
-        
+
             Provided as a scalar or per column or group with cash sharing.
         init_position (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_position`.
-        
+
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_price`.
-        
+
             Provided as a scalar or per column.
         cash_deposits (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_deposits`.
-        
+
             Provided as a scalar, or per row, column or group with cash sharing, or element.
         cash_earnings (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_earnings`.
-        
+
             Provided as a scalar, or per row, column, or element.
         segment_mask (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.segment_mask`.
-        
+
             Provided as a scalar, or per row, group, or element.
         call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
         call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
         pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
 
             This function is used for creating global arrays and setting the seed.
-        
+
             Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
             and returns a tuple that is passed to `pre_row_func_nb` and `post_row_func_nb`.
         pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
@@ -4427,7 +4427,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         pre_row_func_nb (PreRowFunc): Callback function to be called before processing a row.
 
             Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
-            `pre_sim_func_nb`, and `*pre_row_args`, and returns a tuple that is passed to 
+            `pre_sim_func_nb`, and `*pre_row_args`, and returns a tuple that is passed to
             `pre_segment_func_nb` and `post_segment_func_nb`.
         pre_row_args (Args): Positional arguments for `pre_row_func_nb`.
         post_row_func_nb (PostRowFunc): Callback function to be called after processing a row.
@@ -4461,16 +4461,16 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
 
             Handles the addition of `cash_earnings`, final group re-valuation, and the final update
             of open position stats.
-            
-            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
+
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
             `pre_row_func_nb`, and `*post_segment_args`, and returns nothing.
         post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
         flex_order_func_nb (FlexOrderFunc): Callback function to be called to generate a flexible order.
 
-            Used for generating an order in a column. 
-            
-            Accepts `vectorbtpro.portfolio.enums.FlexOrderContext`, the unpacked output from 
-            `pre_segment_func_nb`, and `*order_args`, and returns a tuple of 
+            Used for generating an order in a column.
+
+            Accepts `vectorbtpro.portfolio.enums.FlexOrderContext`, the unpacked output from
+            `pre_segment_func_nb`, and `*order_args`, and returns a tuple of
             (column, `vectorbtpro.portfolio.enums.Order`).
         flex_order_args (Args): Positional arguments for `flex_order_func_nb`.
         post_order_func_nb (PostOrderFunc): Callback function to be called after processing an order.
@@ -4481,25 +4481,25 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         index (Optional[Array1d]): See `vectorbtpro.portfolio.enums.SimulationContext.index`.
         freq (Optional[int]): See `vectorbtpro.portfolio.enums.SimulationContext.freq`.
         open (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.open`.
-        
+
             Provided as a scalar, or per row, column, or element.
         high (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.high`.
-        
+
             Provided as a scalar, or per row, column, or element.
         low (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.low`.
-        
+
             Provided as a scalar, or per row, column, or element.
         close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.close`.
-        
+
             Provided as a scalar, or per row, column, or element.
         bm_close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.bm_close`.
-        
+
             Provided as a scalar, or per row, column, or element.
         sim_start (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_start`.
-        
+
             Provided as a scalar or per group.
         sim_end (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_end`.
-        
+
             Provided as a scalar or per group.
         ffill_val_price (bool): See `vectorbtpro.portfolio.enums.SimulationContext.ffill_val_price`.
         update_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.update_value`.

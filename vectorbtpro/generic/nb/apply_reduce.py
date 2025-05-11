@@ -86,7 +86,7 @@ def map_1d_meta_nb(n: int, col: int, map_func_nb: tp.MapMetaFunc, *args) -> tp.A
     Args:
         n (int): Length of the output array.
         col (int): Column index used in the mapping.
-        map_func_nb (MapMetaFunc): Callback function that accepts a row index, column index, 
+        map_func_nb (MapMetaFunc): Callback function that accepts a row index, column index,
             and additional arguments, and returns a single value.
         *args: Positional arguments for `map_func_nb`.
 
@@ -116,7 +116,7 @@ def map_meta_nb(target_shape: tp.Shape, map_func_nb: tp.MapMetaFunc, *args) -> t
 
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
-        map_func_nb (MapMetaFunc): Callback function that accepts a row index, column index, 
+        map_func_nb (MapMetaFunc): Callback function that accepts a row index, column index,
             and additional arguments, and returns a single value.
         *args: Positional arguments for `map_func_nb`.
 
@@ -826,7 +826,7 @@ def groupby_transform_nb(
         arr (Array2d): Input 2D array to transform.
         group_map (GroupMap): Tuple of indices and lengths for each group.
         transform_func_nb (GroupByTransformFunc): Callback function that accepts a group as a 2D array
-            and additional arguments, and returns a single value or an array that broadcasts 
+            and additional arguments, and returns a single value or an array that broadcasts
             to the group's shape.
         *args: Positional arguments for `transform_func_nb`.
 
@@ -864,7 +864,7 @@ def groupby_transform_meta_nb(
         target_shape (Shape): Base dimensions (rows, columns).
         group_map (GroupMap): Tuple of indices and lengths for each group.
         transform_func_nb (GroupByTransformMetaFunc): Callback function that accepts a group as a 2D array
-            and additional arguments, and returns a single value or an array that broadcasts 
+            and additional arguments, and returns a single value or an array that broadcasts
             to the group's shape.
         *args: Positional arguments for `transform_func_nb`.
 
@@ -1052,7 +1052,7 @@ def apply_and_reduce_1d_nb(
         apply_func_nb (ApplyFunc): Callback function that accepts `arr` and additional arguments,
             and returns a 1D array.
         apply_args (tuple): Positional arguments for `apply_func_nb`.
-        reduce_func_nb (ReduceFunc): Callback function that accepts the result of `apply_func_nb` 
+        reduce_func_nb (ReduceFunc): Callback function that accepts the result of `apply_func_nb`
             as a 1D array and additional arguments, and returns a single value.
         reduce_args (tuple): Positional arguments for `reduce_func_nb`.
 
@@ -1119,11 +1119,11 @@ def apply_and_reduce_1d_meta_nb(
 
     Args:
         col (int): Column index.
-        apply_func_nb (ApplyMetaFunc): Callback function that accepts the column index and 
+        apply_func_nb (ApplyMetaFunc): Callback function that accepts the column index and
             additional arguments, and returns a 1D array.
         apply_args (tuple): Positional arguments for `apply_func_nb`.
-        reduce_func_nb (ReduceMetaFunc): Callback function that accepts the column index, 
-            the result of `apply_func_nb` as a 1D array, and additional arguments, and 
+        reduce_func_nb (ReduceMetaFunc): Callback function that accepts the column index,
+            the result of `apply_func_nb` as a 1D array, and additional arguments, and
             returns a single value.
         reduce_args (tuple): Positional arguments for `reduce_func_nb`.
 
@@ -1158,11 +1158,11 @@ def apply_and_reduce_meta_nb(
 
     Args:
         n_cols (int): Number of columns.
-        apply_func_nb (ApplyMetaFunc): Callback function that accepts the column index and 
+        apply_func_nb (ApplyMetaFunc): Callback function that accepts the column index and
             additional arguments, and returns a 1D array.
         apply_args (tuple): Positional arguments for `apply_func_nb`.
-        reduce_func_nb (ReduceMetaFunc): Callback function that accepts the column index, 
-            the result of `apply_func_nb` as a 1D array, and additional arguments, and 
+        reduce_func_nb (ReduceMetaFunc): Callback function that accepts the column index,
+            the result of `apply_func_nb` as a 1D array, and additional arguments, and
             returns a single value.
         reduce_args (tuple): Positional arguments for `reduce_func_nb`.
 
@@ -1228,7 +1228,7 @@ def reduce_meta_nb(n_cols: int, reduce_func_nb: tp.ReduceMetaFunc, *args) -> tp.
 
     Args:
         n_cols (int): Number of columns.
-        reduce_func_nb (ReduceMetaFunc): Callback function that accepts a column index and 
+        reduce_func_nb (ReduceMetaFunc): Callback function that accepts a column index and
             additional arguments, and returns a single value.
         *args: Positional arguments for `reduce_func_nb`.
 
@@ -1823,7 +1823,7 @@ def proximity_reduce_nb(
     Args:
         arr (Array2d): Input 2D array.
         window (int): Window size.
-        reduce_func_nb (ProximityReduceMetaFunc): Callback function that accepts the flattened 
+        reduce_func_nb (ProximityReduceMetaFunc): Callback function that accepts the flattened
             surrounding window as a 1D array and additional arguments, and returns a single value.
         *args: Positional arguments for `reduce_func_nb`.
 

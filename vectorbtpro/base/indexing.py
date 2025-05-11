@@ -840,7 +840,7 @@ class UniIdxr(IdxrBase):
         Args:
             index (Optional[Index]): Index to resolve the indices.
             freq (Optional[FrequencyLike]): Frequency of the index.
-            
+
         Returns:
             MaybeIndexArray: Computed indices based on the indexer.
         """
@@ -2458,7 +2458,7 @@ class RowIdxr(IdxrBase, DefineMixin):
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
             template_context (KwargsLike): Additional context for template substitution.
-            
+
         Returns:
             MaybeIndexArray: Computed indices based on the indexer.
         """
@@ -2504,7 +2504,7 @@ class ColIdxr(IdxrBase, DefineMixin):
         Args:
             columns (Optional[Index]): Column labels of the array.
             template_context (KwargsLike): Additional context for template substitution.
-            
+
         Returns:
             MaybeIndexArray: Computed indices based on the indexer.
         """
@@ -2565,7 +2565,7 @@ class Idxr(IdxrBase, DefineMixin):
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
             template_context (KwargsLike): Additional context for template substitution.
-            
+
         Returns:
             Tuple[MaybeIndexArray, MaybeIndexArray]: Computed row and column indices based on the indexer(s).
         """

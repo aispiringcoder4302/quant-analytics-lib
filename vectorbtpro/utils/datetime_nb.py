@@ -372,7 +372,7 @@ def weekday_from_days_nb(days: int, zero_start: bool = True) -> int:
 
     Args:
         days (int): Total number of days.
-        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday); 
+        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday);
             otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
 
     Returns:
@@ -392,7 +392,7 @@ def weekday_nb(ts: int, zero_start: bool = True) -> int:
 
     Args:
         ts (int): Timestamp in nanoseconds.
-        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday); 
+        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday);
             otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
 
     Returns:
@@ -408,7 +408,7 @@ def weekday_diff_nb(weekday1: int, weekday2: int, zero_start: bool = True) -> in
     Args:
         weekday1 (int): Target weekday index.
         weekday2 (int): Starting weekday index.
-        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday); 
+        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday);
             otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
 
     Returns:
@@ -437,7 +437,7 @@ def past_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
     Args:
         ts (int): Timestamp in nanoseconds.
         weekday (int): Target weekday index.
-        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday); 
+        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday);
             otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
 
     Returns:
@@ -455,7 +455,7 @@ def future_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
     Args:
         ts (int): Timestamp in nanoseconds.
         weekday (int): Target weekday index.
-        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday); 
+        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday);
             otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
 
     Returns:

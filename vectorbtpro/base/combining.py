@@ -37,7 +37,7 @@ def custom_apply_and_concat_none_nb(
 
     Args:
         indices (Array1d): 1D array of indices to iterate over.
-        apply_func_nb (R0ApplyFunc): Callback function that accepts an index and additional arguments, 
+        apply_func_nb (R0ApplyFunc): Callback function that accepts an index and additional arguments,
             and returns nothing.
         *args: Positional arguments for `apply_func_nb`.
 
@@ -58,7 +58,7 @@ def apply_and_concat_none_nb(
 
     Args:
         ntimes (int): Number of times to execute `apply_func_nb`.
-        apply_func_nb (R0ApplyFunc): Callback function that accepts an index and additional arguments, 
+        apply_func_nb (R0ApplyFunc): Callback function that accepts an index and additional arguments,
             and returns nothing.
         *args: Positional arguments for `apply_func_nb`.
 
@@ -98,7 +98,7 @@ def custom_apply_and_concat_one_nb(
 
     Args:
         indices (Array1d): 1D array of indices to iterate over.
-        apply_func_nb (R1ApplyFunc): Callback function that accepts an index and additional arguments, 
+        apply_func_nb (R1ApplyFunc): Callback function that accepts an index and additional arguments,
             and returns an array.
         *args: Positional arguments for `apply_func_nb`.
 
@@ -127,7 +127,7 @@ def apply_and_concat_one_nb(
 
     Args:
         ntimes (int): Number of times to execute `apply_func_nb`.
-        apply_func_nb (R1ApplyFunc): Callback function that accepts an index and additional arguments, 
+        apply_func_nb (R1ApplyFunc): Callback function that accepts an index and additional arguments,
             and returns an array.
         *args: Positional arguments for `apply_func_nb`.
 
@@ -167,7 +167,7 @@ def custom_apply_and_concat_multiple_nb(
 
     Args:
         indices (Array1d): 1D array of indices to iterate over.
-        apply_func_nb (RMApplyFunc): Callback function that accepts an index and additional arguments, 
+        apply_func_nb (RMApplyFunc): Callback function that accepts an index and additional arguments,
             and returns multiple arrays.
         *args: Positional arguments for `apply_func_nb`.
 

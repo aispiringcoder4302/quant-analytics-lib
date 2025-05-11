@@ -1260,11 +1260,11 @@ class Executor(Configured):
 
             * "tasks": Distributes tasks within each chunk.
             * "chunks": Distributes chunks.
-        warmup (Optional[bool]): Flag indicating whether to execute the first task 
+        warmup (Optional[bool]): Flag indicating whether to execute the first task
             as a warmup before distribution.
 
             This is useful for engines that require a warmup run to optimize performance.
-        in_chunk_order (Optional[bool]): Flag that determines whether results are returned 
+        in_chunk_order (Optional[bool]): Flag that determines whether results are returned
             in the order specified by `chunk_meta`.
 
             Otherwise, results follow the order of `tasks`.
@@ -1274,17 +1274,17 @@ class Executor(Configured):
 
             See `vectorbtpro.utils.pickling.save`.
         chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading chunk cache.
-        
+
             See `vectorbtpro.utils.pickling.load`.
-        pre_clear_chunk_cache (Optional[bool]): Flag indicating if the chunk cache directory should 
+        pre_clear_chunk_cache (Optional[bool]): Flag indicating if the chunk cache directory should
             be removed before execution.
-        post_clear_chunk_cache (Optional[bool]): Flag indicating if the chunk cache directory should 
+        post_clear_chunk_cache (Optional[bool]): Flag indicating if the chunk cache directory should
             be removed after execution.
-        release_chunk_cache (Optional[bool]): Flag that replaces the chunk cache with dummy objects 
+        release_chunk_cache (Optional[bool]): Flag that replaces the chunk cache with dummy objects
             after execution and loads the full cache after all chunks complete.
-        chunk_clear_cache (Union[None, bool, int]): Specifies whether the global cache should 
+        chunk_clear_cache (Union[None, bool, int]): Specifies whether the global cache should
             be cleared after each chunk or every n chunks.
-        chunk_collect_garbage (Union[None, bool, int]): Specifies whether garbage collection should 
+        chunk_collect_garbage (Union[None, bool, int]): Specifies whether garbage collection should
             be performed after each chunk or every n chunks.
         chunk_delay (Optional[float]): Delay in seconds after processing each chunk.
         pre_execute_func (Optional[Callable]): Function to be called before executing all tasks.
@@ -1303,17 +1303,17 @@ class Executor(Configured):
 
             If it returns None, the default results are preserved; otherwise, its return value replaces them.
         post_execute_kwargs (KwargsLike): Keyword arguments for `post_execute_func`.
-        post_execute_on_sorted (Optional[bool]): Flag indicating whether `post_execute_func` should 
+        post_execute_on_sorted (Optional[bool]): Flag indicating whether `post_execute_func` should
             be invoked after sorting call indices.
         filter_results (Optional[bool]): Flag indicating whether to filter
             `NoResult` results after execution.
-        raise_no_results (Optional[bool]): Flag indicating whether to raise a 
+        raise_no_results (Optional[bool]): Flag indicating whether to raise a
                 `NoResultsException` exception if no results remain.
 
             This flag applies only when `filter_results` is True and is forwarded to the merging
             function if pre-configured.
         merge_func (MergeFuncLike): Function to merge the results.
-        
+
             See `vectorbtpro.utils.merging.MergeFunc`.
         merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
         template_context (KwargsLike): Additional context for template substitution.
@@ -1891,7 +1891,7 @@ class Executor(Configured):
     @property
     def merge_func(self) -> tp.Optional[tp.MergeFuncLike]:
         """Function to merge the results.
-        
+
         See `vectorbtpro.utils.merging.MergeFunc`.
 
         Returns:
@@ -2289,7 +2289,7 @@ class Executor(Configured):
             cache_chunks (bool): Flag indicating whether chunk caching is enabled.
             chunk_cache_dir (Optional[PathLike]): Directory for cached chunks; required if caching is enabled.
             chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading chunk cache.
-            
+
                 See `vectorbtpro.utils.pickling.load`.
             release_chunk_cache (bool): If True, release the chunk cache by substituting dummy data after loading.
             pre_chunk_func (Optional[Callable]): Function to be called before executing each chunk.
@@ -2399,7 +2399,7 @@ class Executor(Configured):
             chunk_cache_dir (Optional[PathLike]): Directory for saving or loading cached chunks;
                 required if caching is enabled.
             chunk_cache_save_kwargs (KwargsLike): Keyword arguments for saving chunk cache.
-            
+
                 See `vectorbtpro.utils.pickling.save`.
             release_chunk_cache (bool): If True, release the chunk cache by substituting dummy data after saving.
             chunk_clear_cache (Union[bool, int]): Determines whether to clear the cache immediately or
@@ -2493,7 +2493,7 @@ class Executor(Configured):
             cache_chunks (bool): Flag indicating whether chunk caching is enabled.
             chunk_cache_dir (Optional[PathLike]): Directory for cached chunks; required if caching is enabled.
             chunk_cache_load_kwargs (KwargsLike): Keyword arguments for loading chunk cache.
-            
+
                 See `vectorbtpro.utils.pickling.load`.
             post_clear_chunk_cache (bool): If True, clear the chunk cache directory after loading cached results.
             release_chunk_cache (bool): If True, release cached chunk data by replacing with dummy values.
@@ -2563,10 +2563,10 @@ class Executor(Configured):
             results (ExecResults): Execution results from tasks.
             keys (Optional[IndexLike]): Index or keys associated with the results.
             filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
-            raise_no_results (bool): Flag indicating whether to raise a 
+            raise_no_results (bool): Flag indicating whether to raise a
                 `NoResultsException` exception if no results remain.
             merge_func (MergeFuncLike): Function to merge the results.
-        
+
                 See `vectorbtpro.utils.merging.MergeFunc`.
             merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
             template_context (KwargsLike): Additional context for template substitution.

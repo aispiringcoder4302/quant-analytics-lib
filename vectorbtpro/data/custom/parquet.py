@@ -186,7 +186,7 @@ class ParquetData(FileData):
         Args:
             key (Key): Feature or symbol identifier.
             path (Any): File path to the Parquet file.
-            
+
                 If None, uses `key` as the path to the Parquet file.
             tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 

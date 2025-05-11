@@ -590,7 +590,7 @@ def format_func(func: tp.Callable, incl_doc: bool = True, **kwargs) -> str:
 
     Args:
         func (Callable): Function or class to format.
-        
+
             If a class, its `__init__` method is used.
         incl_doc (bool): If True, include the function's docstring in the output if available.
         **kwargs: Keyword arguments for `format_signature`.
@@ -677,7 +677,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         dump_engine (str): Name of the dump engine.
 
             Options include:
-    
+
             * "repr": Python's `repr` function
             * "repr_doc": `repr_doc`
             * "prettify": `prettify`

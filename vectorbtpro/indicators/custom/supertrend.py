@@ -52,7 +52,7 @@ SUPERTREND = IndicatorFactory(
         ),
     ),
 ).with_apply_func(
-    nb.supertrend_nb, 
+    nb.supertrend_nb,
     param_settings=dict(
         period=dict(
             doc="Period for the Supertrend calculation.",
@@ -61,7 +61,7 @@ SUPERTREND = IndicatorFactory(
             doc="Multiplier for the ATR calculation.",
         ),
     ),
-    period=7, 
+    period=7,
     multiplier=3,
 )
 

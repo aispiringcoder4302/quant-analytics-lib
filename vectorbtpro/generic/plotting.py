@@ -282,7 +282,7 @@ class Gauge(TraceType, TraceUpdater):
         cmap_name: str = "Spectral",
     ) -> None:
         """Update the gauge trace with a new value and optional range.
-        
+
         Args:
             trace (BaseTraceType): Plotly trace to update.
             value (float): Value to display on the gauge.
@@ -303,10 +303,10 @@ class Gauge(TraceType, TraceUpdater):
 
     def update(self, value: float) -> None:
         """Update all gauge traces with a new value.
-        
+
         Args:
             value (float): Value to display on the gauge.
-        
+
         Returns:
             None
         """
@@ -424,7 +424,7 @@ class Bar(TraceType, TraceUpdater):
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, i: int) -> None:
         """Update a single bar trace with new data.
-        
+
         Args:
             trace (BaseTraceType): Plotly trace to update.
             data (ArrayLike): Data convertible to a NumPy array.
@@ -448,7 +448,7 @@ class Bar(TraceType, TraceUpdater):
             data (ArrayLike): Data convertible to a NumPy array.
 
                 Must have shape corresponding to (`x_labels`, `trace_names`).
-        
+
         Returns:
             None
         """
@@ -599,7 +599,7 @@ class Scatter(TraceType, TraceUpdater):
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, i: int) -> None:
         """Update a single scatter trace with new data.
-        
+
         Args:
             trace (BaseTraceType): Plotly trace to update.
             data (ArrayLike): Data convertible to a NumPy array.
@@ -616,7 +616,7 @@ class Scatter(TraceType, TraceUpdater):
 
     def update(self, data: tp.ArrayLike) -> None:
         """Update all scatter traces with new data.
-        
+
         Args:
             data (ArrayLike): Data convertible to a NumPy array.
 
@@ -804,7 +804,7 @@ class Histogram(TraceType, TraceUpdater):
         to_quantile: tp.Optional[float] = None,
     ) -> None:
         """Update a single histogram trace with new data.
-        
+
         Args:
             trace (BaseTraceType): Plotly trace to update.
             data (ArrayLike): Data convertible to a NumPy array.
@@ -843,7 +843,7 @@ class Histogram(TraceType, TraceUpdater):
 
     def update(self, data: tp.ArrayLike) -> None:
         """Update all histogram traces with new data.
-        
+
         Args:
             data (ArrayLike): Data convertible to a NumPy array.
 
@@ -887,7 +887,7 @@ class Box(TraceType, TraceUpdater):
 
             Data above this quantile are excluded.
         trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Box`.
-        
+
             Can be provided per trace as a sequence of dictionaries.
         add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
             for example, `dict(row=1, col=1)`.
@@ -1037,7 +1037,7 @@ class Box(TraceType, TraceUpdater):
         to_quantile: tp.Optional[float] = None,
     ) -> None:
         """Update a single box trace with new data.
-        
+
         Args:
             trace (BaseTraceType): Plotly trace to update.
             data (ArrayLike): Data convertible to a NumPy array.
@@ -1076,12 +1076,12 @@ class Box(TraceType, TraceUpdater):
 
     def update(self, data: tp.ArrayLike) -> None:
         """Update all box traces with new data.
-        
+
         Args:
             data (ArrayLike): Data convertible to a NumPy array.
 
                 The second axis must correspond to `trace_names`.
-        
+
         Returns:
             None
         """
@@ -1229,7 +1229,7 @@ class Heatmap(TraceType, TraceUpdater):
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike) -> None:
         """Update a single heatmap trace with new data.
-        
+
         Args:
             trace (BaseTraceType): Plotly trace to update.
             data (ArrayLike): Data convertible to a NumPy array.
@@ -1243,12 +1243,12 @@ class Heatmap(TraceType, TraceUpdater):
 
     def update(self, data: tp.ArrayLike) -> None:
         """Update all heatmap traces with new data.
-        
+
         Args:
             data (ArrayLike): Data convertible to a NumPy array.
 
                 Must have shape (`y_labels`, `x_labels`).
-        
+
         Returns:
             None
         """
@@ -1410,13 +1410,13 @@ class Volume(TraceType, TraceUpdater):
     @classmethod
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike) -> None:
         """Update a single volume trace with new data.
-        
+
         Args:
             trace (BaseTraceType): Plotly trace to update.
             data (ArrayLike): Data convertible to a NumPy array.
 
                 Must have shape corresponding to (`x_labels`, `y_labels`, `z_labels`).
-        
+
         Returns:
             None
         """
@@ -1424,12 +1424,12 @@ class Volume(TraceType, TraceUpdater):
 
     def update(self, data: tp.ArrayLike) -> None:
         """Update all volume traces with new data.
-        
+
         Args:
             data (ArrayLike): Data convertible to a NumPy array.
 
                 Must have shape corresponding to (`x_labels`, `y_labels`, `z_labels`).
-        
+
         Returns:
             None
         """

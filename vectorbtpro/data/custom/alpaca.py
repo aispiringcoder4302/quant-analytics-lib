@@ -216,7 +216,7 @@ class AlpacaData(RemoteData):
 
         assert_can_import("alpaca")
         from alpaca.data.historical import (
-            CryptoHistoricalDataClient, 
+            CryptoHistoricalDataClient,
             StockHistoricalDataClient,
             OptionHistoricalDataClient,
         )
@@ -316,7 +316,7 @@ class AlpacaData(RemoteData):
 
         assert_can_import("alpaca")
         from alpaca.data.historical import (
-            CryptoHistoricalDataClient, 
+            CryptoHistoricalDataClient,
             StockHistoricalDataClient,
             OptionHistoricalDataClient,
         )
@@ -502,7 +502,7 @@ class AlpacaData(RemoteData):
                 "volume": "Volume",
                 "trade_count": "Trade count",
                 "vwap": "VWAP",
-                "bid_price": "Bid price", 
+                "bid_price": "Bid price",
                 "bid_size": "Bid size",
                 "bid_exchange": "Bid exchange",
                 "ask_price": "Ask price",

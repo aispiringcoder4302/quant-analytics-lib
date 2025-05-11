@@ -1318,15 +1318,15 @@ class Chunker(Configured):
         prepend_chunk_meta (Optional[bool]): Determines whether to prepend a `ChunkMeta` instance to the arguments.
 
             If set to None, prepending occurs automatically when the first argument is named `chunk_meta`.
-        skip_single_chunk (Optional[bool]): Specifies whether to bypass chunking and execute the function 
+        skip_single_chunk (Optional[bool]): Specifies whether to bypass chunking and execute the function
             directly when only one chunk is present.
         arg_take_spec (Optional[ArgTakeSpecLike]): Specification for selecting function arguments during chunking.
         template_context (KwargsLike): Additional context for template substitution.
         merge_func (MergeFuncLike): Function to merge the results.
-        
+
             See `vectorbtpro.utils.merging.MergeFunc`.
         merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
-        return_raw_chunks (Optional[bool]): Determines whether to return raw chunk data instead 
+        return_raw_chunks (Optional[bool]): Determines whether to return raw chunk data instead
             of post-processed results.
         silence_warnings (Optional[bool]): Flag to suppress warning messages.
         forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments when forwarding them.
@@ -1501,7 +1501,7 @@ class Chunker(Configured):
     @property
     def merge_func(self) -> tp.Optional[tp.MergeFuncLike]:
         """Function to merge the results.
-        
+
         See `vectorbtpro.utils.merging.MergeFunc`.
 
         Returns:

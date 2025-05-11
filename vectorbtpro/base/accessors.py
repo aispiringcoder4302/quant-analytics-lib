@@ -580,7 +580,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 * Pandas `GroupBy` instance
                 * Pandas `Resampler` instance
                 * An instruction for any of the above
-            groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and 
+            groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and
                 `pandas.Series.resample` methods.
             **kwargs: Keyword arguments for initializing `vectorbtpro.base.grouping.base.Grouper`.
 
@@ -1541,7 +1541,7 @@ class BaseAccessor(Wrapping):
         if inplace:
             return None
         return obj
-    
+
     # ############# Splitting ############# #
 
     def split(
@@ -1559,11 +1559,7 @@ class BaseAccessor(Wrapping):
             wrap = self.should_wrap()
         wrapped_self = self if wrap else self.unwrapped
         return splitter_cls.split_and_take(
-            self.wrapper.index, 
-            wrapped_self, 
-            *args, 
-            _take_kwargs=dict(into="reset_stacked"),
-            **kwargs
+            self.wrapper.index, wrapped_self, *args, _take_kwargs=dict(into="reset_stacked"), **kwargs
         )
 
     # ############# Reshaping ############# #

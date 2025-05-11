@@ -69,7 +69,7 @@ def get_index(obj: tp.SeriesFrame, axis: int) -> tp.Index:
 
     Returns:
         Index: Row index if axis is 0, or the columns if axis is 1.
-        
+
             For a Series on axis 1, returns an index containing the series name if available,
             otherwise an index with a single element 0.
     """

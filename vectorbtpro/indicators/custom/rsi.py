@@ -48,7 +48,7 @@ RSI = IndicatorFactory(
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
             doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
-        )
+        ),
     ),
     window=14,
     wtype="wilder",

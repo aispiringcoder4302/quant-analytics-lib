@@ -714,7 +714,7 @@ class IndicatorBase(Analyzable):
             use_raw (Optional[IFRawOutput]): If True, uses the raw results obtained previously
                 instead of executing `custom_func`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             seed (Optional[int]): Random seed for deterministic output.
             **kwargs: Keyword arguments for `custom_func`.
@@ -1221,7 +1221,7 @@ class IndicatorBase(Analyzable):
         Args:
             *objs (MaybeSequence[IndicatorBase]): (Additional) indicator instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `IndicatorBase` through
                 `IndicatorBase.resolve_row_stack_kwargs` and `IndicatorBase.resolve_stack_kwargs`.
@@ -1285,7 +1285,7 @@ class IndicatorBase(Analyzable):
         Args:
             *objs (MaybeSequence[IndicatorBase]): (Additional) indicator instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
             **kwargs: Keyword arguments for `IndicatorBase` through
@@ -1681,23 +1681,23 @@ class IndicatorBase(Analyzable):
         """Iterate over columns or groups.
 
         Iterates over columns or groups based on the specified grouping criteria. When grouping is enabled via
-        `vectorbtpro.base.wrapping.Wrapping.group_select`, groups are returned instead of individual columns. 
-        The `group_by` parameter can be provided as a column name present in the wrapper, the string "all_params" 
+        `vectorbtpro.base.wrapping.Wrapping.group_select`, groups are returned instead of individual columns.
+        The `group_by` parameter can be provided as a column name present in the wrapper, the string "all_params"
         for full parameter mapping, "params" for only visible parameters, or as a specific parameter name.
 
         Args:
             group_by (GroupByLike): Grouping specification.
 
-                If a string, valid options include: 
-                
-                * a column name in the wrapper, 
-                * "all_params" for the full parameter mapper, 
-                * "params" for only visible parameters, or 
+                If a string, valid options include:
+
+                * a column name in the wrapper,
+                * "all_params" for the full parameter mapper,
+                * "params" for only visible parameters, or
                 * a parameter name.
-                
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             apply_group_by (bool): If True, applies the grouping to both iteration and the final output.
-            
+
                 If False, `group_by` is used solely as an iteration instruction.
             keep_2d (bool): Whether to maintain the output data in a two-dimensional format.
             key_as_index (bool): Whether to return the yielded key as an index.
@@ -2495,7 +2495,7 @@ class IndicatorFactory(Configured):
 
                 See `IndicatorBase.run_pipeline`.
             in_output_settings (KwargsLike): Dictionary of in-place output settings keyed by name.
-            
+
                 See `IndicatorBase.run_pipeline`.
             hide_params (Union[None, bool, Sequence[str]]): Either a boolean to hide all parameter column
                 levels or a list of parameter names for which the column levels should be hidden.
@@ -2752,7 +2752,7 @@ class IndicatorFactory(Configured):
             code = compile(func_str, filename, "single")
             exec(code, scope)
             return scope[func_name]
-        
+
         def _prepare_name(name: str) -> str:
             if self.attr_settings.get(name, {}).get("doc", None):
                 return f"\n    * `{name}`: {self.attr_settings[name]['doc']}"

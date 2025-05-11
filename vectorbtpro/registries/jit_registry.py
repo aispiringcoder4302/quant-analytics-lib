@@ -487,7 +487,7 @@ class JITRegistry(Base):
             jitter_id (Hashable): Unique identifier for the jitter type.
             py_func (Callable): Python function to decorate.
             jitter_kwargs (KwargsLike): Keyword arguments for configuring the jitter.
-            
+
                 See `vectorbtpro.utils.jitting.resolve_jitter`.
             tags (set): Tags associated with the function.
 
@@ -547,7 +547,7 @@ class JITRegistry(Base):
             py_func (Callable): Python function to decorate.
             jitter (JitterLike): Jitter specification used for resolving the jitter.
             jitter_kwargs (KwargsLike): Keyword arguments for configuring the jitter.
-            
+
                 See `vectorbtpro.utils.jitting.resolve_jitter`.
             tags (set): Tags associated with the function.
 

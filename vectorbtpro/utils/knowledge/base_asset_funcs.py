@@ -348,7 +348,7 @@ class RemoveAssetFunc(AssetFunc):
 
         Args:
             path (MaybeList[PathLikeKey]): Path or list of paths indicating the element(s) to remove.
-            
+
                 If an integer is provided, the entire data item at that index is removed.
             skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
             make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
@@ -427,7 +427,7 @@ class MoveAssetFunc(AssetFunc):
         """Prepare positional and keyword arguments for an asset function call.
 
         Args:
-            path (Union[PathMoveDict, MaybeList[PathLikeKey]]): Mapping or path(s) within the data item 
+            path (Union[PathMoveDict, MaybeList[PathLikeKey]]): Mapping or path(s) within the data item
                 to move (e.g. "x.y[0].z").
 
                 When provided as a dictionary, keys are source paths and values are the corresponding new tokens.
@@ -525,7 +525,7 @@ class RenameAssetFunc(MoveAssetFunc):
         """Prepare positional and keyword arguments for an asset function call.
 
         Args:
-            path (Union[PathMoveDict, MaybeList[PathLikeKey]]): Mapping or path(s) within the data item 
+            path (Union[PathMoveDict, MaybeList[PathLikeKey]]): Mapping or path(s) within the data item
                 to move (e.g. "x.y[0].z").
 
                 When provided as a dictionary, keys are source paths and values are the corresponding new tokens.
@@ -871,9 +871,9 @@ class FindAssetFunc(AssetFunc):
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
                 Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
-            **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search_.find_in_obj` 
+            **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search_.find_in_obj`
                 and `vectorbtpro.utils.search_.find`.
-                
+
         Returns:
             ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
         """
@@ -1300,7 +1300,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
                 Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
-            **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search_.find_in_obj` 
+            **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search_.find_in_obj`
                 and `vectorbtpro.utils.search_.replace`.
 
         Returns:

@@ -910,7 +910,7 @@ def buy_nb(
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
-        
+
             See `vectorbtpro.portfolio.enums.LeverageMode`.
         price_area_vio_mode (int): Mode for handling price area violations.
 

@@ -734,7 +734,7 @@ def reduce_mapped_meta_nb(
     Args:
         col_map (GroupMap): Tuple of indices and lengths for each column.
         fill_value (float): Fill value used to initialize the output array.
-        reduce_func_nb (MappedReduceMetaFunc): Callback function that accepts mapped indices for a column 
+        reduce_func_nb (MappedReduceMetaFunc): Callback function that accepts mapped indices for a column
             as a 1D array, the column index, and additional arguments, and returns a single value.
         *args: Positional arguments for `reduce_func_nb`.
 
