@@ -794,7 +794,7 @@ class Trades(Ranges):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -803,7 +803,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
@@ -834,7 +834,7 @@ class Trades(Ranges):
         Args:
             use_returns (bool): Whether to use trade returns instead of profit and loss.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -843,7 +843,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
@@ -878,7 +878,7 @@ class Trades(Ranges):
         Args:
             use_returns (bool): Whether to use trade returns instead of profit and loss.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -887,7 +887,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
@@ -924,7 +924,7 @@ class Trades(Ranges):
             ddof (int): Delta degrees of freedom.
             use_returns (bool): Whether to use trade returns instead of profit and loss.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -933,7 +933,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
 
@@ -1119,7 +1119,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.base.indexes.clean_index`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1178,7 +1178,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.base.indexes.clean_index`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1435,7 +1435,7 @@ class Trades(Ranges):
         Args:
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
-                If None, an ATR is computed when high and low are available; 
+                If None, an ATR is computed when high and low are available;
                 otherwise, a rolling standard deviation is used.
             window (int): Window size for the volatility calculation.
             wtype (Union[int, str]): Weighting type.
@@ -1445,7 +1445,7 @@ class Trades(Ranges):
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -1454,7 +1454,7 @@ class Trades(Ranges):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -1529,7 +1529,7 @@ class Trades(Ranges):
         Args:
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
-                If None, an ATR is computed when high and low are available; 
+                If None, an ATR is computed when high and low are available;
                 otherwise, a rolling standard deviation is used.
             window (int): Window size for the volatility calculation.
             wtype (Union[int, str]): Weighting type.
@@ -1540,13 +1540,13 @@ class Trades(Ranges):
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             incl_shorter (bool): Whether to include trades shorter than the current duration step.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -2290,7 +2290,7 @@ class Trades(Ranges):
             field_label (Optional[str]): Label for the field.
             column (Optional[Column]): Identifier of the column or group to plot.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             plot_bands (bool): Plot computed bands if True.
 
@@ -2446,7 +2446,7 @@ class Trades(Ranges):
             column (Optional[Column]): Identifier of the column to plot.
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
-                If None, an ATR is computed when high and low are available; 
+                If None, an ATR is computed when high and low are available;
                 otherwise, a rolling standard deviation is used.
             window (int): Window size for the volatility calculation.
             wtype (Union[int, str]): Weighting type.
@@ -2457,7 +2457,7 @@ class Trades(Ranges):
             max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
             incl_shorter (bool): Whether to include trades shorter than the current duration step.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 

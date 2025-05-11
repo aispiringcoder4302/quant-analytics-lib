@@ -1429,7 +1429,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             *objs (MaybeSequence[Data]): (Additional) `Data` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Data`.
 
@@ -1504,7 +1504,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             *objs (MaybeSequence[Data]): (Additional) `Data` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Data`.
 
@@ -1681,7 +1681,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             apply_group_by (bool): If True, applies the grouping to both iteration and the final output.
-            
+
                 If False, `group_by` is used solely as an iteration instruction.
 
                 !!! note
@@ -2171,7 +2171,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Args:
             features (Optional[MaybeFeatures]): Feature identifier(s).
-            
+
                 If not provided, uses `Data.features`.
             symbols (Optional[MaybeSymbols]): Symbol identifier(s).
 
@@ -3343,7 +3343,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             reuse_fetch_kwargs (bool): Whether to reuse fetch kwargs from the current instance.
             run_kwargs (KwargsLike): Keyword arguments for `Data.run`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             merge_kwargs (KwargsLike): Keyword arguments for `Data.merge`.
             **kwargs: Keyword arguments for `Data.from_data`.
@@ -5164,7 +5164,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.run`.
 
         Returns:
-            Any: Result of executing `Data.run`, or `vectorbtpro.utils.execution.NoResult` 
+            Any: Result of executing `Data.run`, or `vectorbtpro.utils.execution.NoResult`
                 if execution fails without raising an error.
         """
         try:
@@ -5314,10 +5314,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
                 See `vectorbtpro.utils.execution.execute`.
             filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
-            raise_no_results (bool): Flag indicating whether to raise a 
+            raise_no_results (bool): Flag indicating whether to raise a
                 `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
             merge_func (MergeFuncLike): Function to merge the results.
-            
+
                 See `vectorbtpro.utils.merging.MergeFunc`.
             merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
             template_context (KwargsLike): Additional context for template substitution.
@@ -5643,7 +5643,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 File extension to use for CSV files when saving multiple files.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
                 Keyword arguments for directory creation.
-            
+
                 See `vectorbtpro.utils.path_.check_mkdir`.
             check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
@@ -5758,7 +5758,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 If None, the key defaults to the string representation of the feature or symbol.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
                 Keyword arguments for directory creation.
-            
+
                 See `vectorbtpro.utils.path_.check_mkdir`.
             format (str): File format for HDF storage.
             check_dict_type (bool): Flag to validate the type of dictionaries.
@@ -5867,7 +5867,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 the key is appended with a ".feather" extension to form the file name.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
                 Keyword arguments for directory creation.
-            
+
                 See `vectorbtpro.utils.path_.check_mkdir`.
             check_dict_type (bool): Flag to validate the type of dictionaries.
             template_context (KwargsLike): Additional context for template substitution.
@@ -5982,7 +5982,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 If a directory is provided, each feature or symbol is saved in a separate file.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
                 Keyword arguments for directory creation.
-            
+
                 See `vectorbtpro.utils.path_.check_mkdir`.
             partition_cols (Union[None, List[str], feature_dict, symbol_dict, CustomTemplate]):
                 Column names for partitioning the data.
@@ -6202,7 +6202,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Specifies whether to localize or convert datetime fields to UTC.
 
                 See `Data.prepare_dt`.
-            remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]): 
+            remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
                 Indicates whether to remove the timezone after converting to UTC.
 
                 See `Data.prepare_dt`.
@@ -6483,13 +6483,13 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 Provide these as a dictionary or a preformatted string.
             mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
                 Keyword arguments for directory creation.
-            
+
                 See `vectorbtpro.utils.path_.check_mkdir`.
             to_utc (Union[None, bool, str, Sequence[str], feature_dict, symbol_dict, CustomTemplate]):
                 Specifies whether to localize or convert datetime fields to UTC.
 
                 See `Data.prepare_dt`.
-            remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]): 
+            remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
                 Indicates whether to remove the timezone after converting to UTC.
 
                 See `Data.prepare_dt`.

@@ -433,7 +433,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 text (str): Text from which to generate a GIPHY URL.
                 *args: Positional arguments for `TelegramBot.send`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
-                
+
                     If not provided, defaults to `TelegramBot.giphy_kwargs`.
                     See `vectorbtpro.utils.requests_.text_to_giphy_url`.
                 **kwargs: Keyword arguments for `TelegramBot.send`.
@@ -454,7 +454,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                 text (str): Text from which to generate a GIPHY URL.
                 *args: Positional arguments for `TelegramBot.send_to_all`.
                 giphy_kwargs (KwargsLike): Keyword arguments for generating the GIPHY URL.
-                
+
                     If not provided, defaults to `TelegramBot.giphy_kwargs`.
                     See `vectorbtpro.utils.requests_.text_to_giphy_url`.
                 **kwargs: Keyword arguments for `TelegramBot.send_to_all`.

@@ -182,7 +182,7 @@ def map_index_to_source_ranges_nb(
         source_index (Array1d): Array of source indices in increasing order.
         target_index (Array1d): Array of target indices, which must be strictly increasing.
         target_freq (Optional[Scalar]): Frequency offset for the target index.
-        before (bool): If True, include source indices preceding or equal to the target; 
+        before (bool): If True, include source indices preceding or equal to the target;
             otherwise, include those following or equal.
 
     Returns:

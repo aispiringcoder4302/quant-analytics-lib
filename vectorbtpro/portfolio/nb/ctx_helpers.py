@@ -1335,10 +1335,10 @@ def get_col_entry_trade_records_nb(
         c (NamedTuple): Context.
         col (int): Column index for which to retrieve entry trade records.
         init_position (FlexArray1dLike): Initial position.
-        
+
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): Initial position price.
-        
+
             Provided as a scalar or per column.
 
     Returns:
@@ -1374,10 +1374,10 @@ def get_entry_trade_records_nb(
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Relevant context.
         init_position (FlexArray1dLike): Initial position.
-        
+
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): Initial position price.
-        
+
             Provided as a scalar or per column.
 
     Returns:
@@ -1399,10 +1399,10 @@ def get_col_exit_trade_records_nb(
         c (NamedTuple): Context.
         col (int): Column index for which to retrieve exit trade records.
         init_position (FlexArray1dLike): Initial position.
-        
+
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): Initial position price.
-        
+
             Provided as a scalar or per column.
 
     Returns:
@@ -1438,10 +1438,10 @@ def get_exit_trade_records_nb(
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Relevant context.
         init_position (FlexArray1dLike): Initial position.
-        
+
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): Initial position price.
-        
+
             Provided as a scalar or per column.
 
     Returns:
@@ -1463,10 +1463,10 @@ def get_col_position_records_nb(
         c (NamedTuple): Context.
         col (int): Column index for which to retrieve position records.
         init_position (FlexArray1dLike): Initial position.
-        
+
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): Initial position price.
-        
+
             Provided as a scalar or per column.
 
     Returns:
@@ -1495,10 +1495,10 @@ def get_position_records_nb(
         c (Union[OrderContext, PostOrderContext, SignalContext, PostSignalContext]):
             Relevant context.
         init_position (FlexArray1dLike): Initial position.
-        
+
             Provided as a scalar or per column.
         init_price (FlexArray1dLike): Initial position price.
-        
+
             Provided as a scalar or per column.
 
     Returns:
@@ -1636,7 +1636,7 @@ def get_order_size_nb(
             Relevant context.
         size (float): Order size.
         size_type (int): Type of order size.
-        
+
             Percent sizes are not supported. See `vectorbtpro.portfolio.enums.SizeType`.
         val_price (Optional[float]): Valuation price of the asset.
 
@@ -1678,7 +1678,7 @@ def get_order_value_nb(
 
             See `vectorbtpro.portfolio.enums.SizeType`.
         direction (int): Order direction.
-        
+
             See `vectorbtpro.portfolio.enums.Direction`.
         val_price (Optional[float]): Valuation price of the asset.
 

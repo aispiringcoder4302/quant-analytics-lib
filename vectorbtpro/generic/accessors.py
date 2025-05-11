@@ -479,7 +479,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -536,7 +536,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -591,7 +591,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -644,7 +644,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -697,7 +697,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -745,7 +745,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -781,7 +781,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -818,7 +818,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -854,7 +854,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -891,7 +891,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -926,7 +926,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -966,7 +966,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1011,7 +1011,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1058,7 +1058,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1117,7 +1117,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1175,7 +1175,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1242,7 +1242,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1321,8 +1321,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             pmin (float): Minimum value used for rescaling `pattern`.
             pmax (float): Maximum value used for rescaling `pattern`.
             invert (bool): Invert the pattern by reflecting its values.
-            error_type (Union[int, str]): Error calculation type. 
-            
+            error_type (Union[int, str]): Error calculation type.
+
                 Mapped using `vectorbtpro.generic.enums.ErrorType` if provided as a string.
             distance_measure (Union[int, str]): Distance measure for error computation.
 
@@ -1344,7 +1344,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1440,7 +1440,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1591,7 +1591,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -2493,7 +2493,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -2947,7 +2947,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -3247,7 +3247,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -3333,7 +3333,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             index (AnyRuleLike): Target index for resampling.
-            freq (Union[None, bool, FrequencyLike]): Frequency of the target index 
+            freq (Union[None, bool, FrequencyLike]): Frequency of the target index
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -3354,7 +3354,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
@@ -3975,7 +3975,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4038,7 +4038,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4101,7 +4101,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4164,7 +4164,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4229,7 +4229,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4293,7 +4293,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4356,7 +4356,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4422,7 +4422,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4480,7 +4480,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4531,7 +4531,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -4569,7 +4569,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4624,7 +4624,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -4688,7 +4688,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -4766,7 +4766,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             return_mapping (bool): Whether to return a mapping of bin indices to bin
                 intervals along with the digitized data.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -4867,7 +4867,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
 
@@ -5042,7 +5042,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 If provided, the data is demeaned separately for each group.
                 See `vectorbtpro.base.grouping.base.Grouper`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -5070,7 +5070,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         Args:
             transformer (Transformer): Instance with `transform` and `fit_transform` methods.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for the transformer methods.
 
@@ -5142,7 +5142,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -5177,7 +5177,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -5411,7 +5411,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -5494,7 +5494,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -6716,23 +6716,23 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         Args:
             pattern (ArrayLike): Reference pattern array for similarity comparison.
-            interp_mode (Union[int, str]): Interpolation mode. 
-            
+            interp_mode (Union[int, str]): Interpolation mode.
+
                 Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
-            rescale_mode (Union[int, str]): Rescaling mode. 
-            
+            rescale_mode (Union[int, str]): Rescaling mode.
+
                 Mapped using `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
             vmin (float): Minimum value used for rescaling `arr`.
             vmax (float): Maximum value used for rescaling `arr`.
             pmin (float): Minimum value used for rescaling `pattern`.
             pmax (float): Maximum value used for rescaling `pattern`.
             invert (bool): Invert the pattern by reflecting its values.
-            error_type (Union[int, str]): Error calculation type. 
-            
+            error_type (Union[int, str]): Error calculation type.
+
                 Mapped using `vectorbtpro.generic.enums.ErrorType` if provided as a string.
             max_error (ArrayLike): Maximum allowed error.
             max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`.
-            
+
                 Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
             column (Optional[Column]): Identifier of the column to plot.
             plot_obj (bool): If True, includes the original object data in the plot.
@@ -7055,19 +7055,19 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
 
         Args:
             pattern (ArrayLike): Reference pattern array for similarity comparison.
-            interp_mode (Union[int, str]): Interpolation mode. 
-            
+            interp_mode (Union[int, str]): Interpolation mode.
+
                 Mapped using `vectorbtpro.generic.enums.InterpMode` if provided as a string.
-            rescale_mode (Union[int, str]): Rescaling mode. 
-            
+            rescale_mode (Union[int, str]): Rescaling mode.
+
                 Mapped using `vectorbtpro.generic.enums.RescaleMode` if provided as a string.
             vmin (float): Minimum value used for rescaling `arr`.
             vmax (float): Maximum value used for rescaling `arr`.
             pmin (float): Minimum value used for rescaling `pattern`.
             pmax (float): Maximum value used for rescaling `pattern`.
             invert (bool): Invert the pattern by reflecting its values.
-            error_type (Union[int, str]): Error calculation type. 
-            
+            error_type (Union[int, str]): Error calculation type.
+
                 Mapped using `vectorbtpro.generic.enums.ErrorType` if provided as a string.
             max_error (ArrayLike): Maximum allowed error.
             max_error_interp_mode (Union[None, int, str]): Interpolation mode for `max_error`.
@@ -7137,7 +7137,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -7189,7 +7189,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:

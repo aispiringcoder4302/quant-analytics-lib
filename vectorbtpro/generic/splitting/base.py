@@ -454,7 +454,7 @@ class Splitter(Analyzable):
         Args:
             index (IndexLike): Index used to align the splits.
             splits (Splits): Iterable of splits supporting both absolute and relative ranges.
-            
+
                 Enable `fix_ranges` to convert relative ranges to absolute ranges.
             squeeze (bool): Flag indicating whether to convert a single-column DataFrame to a Series.
             fix_ranges (bool): Whether to convert relative ranges (`RelRange`) into fixed (`FixRange`).
@@ -462,7 +462,7 @@ class Splitter(Analyzable):
 
                 If a range is an array, it is wrapped to avoid creating a 3D array.
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             split_check_template (Optional[CustomTemplate]): Template to validate each split.
 
@@ -475,7 +475,7 @@ class Splitter(Analyzable):
 
                 Can be provided as a template.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Splitter`.
 
@@ -591,7 +591,7 @@ class Splitter(Analyzable):
                 If None, the entire range is treated as a single split;
                 otherwise, `Splitter.split_range` is used.
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `Splitter.from_splits`.
@@ -666,10 +666,10 @@ class Splitter(Analyzable):
                 If None, the entire range is treated as a single split;
                 otherwise, `Splitter.split_range` is used.
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             range_bounds_kwargs (KwargsLike): Keyword arguments for getting range bounds.
-            
+
                 See `Splitter.get_range_bounds`.
             template_context (KwargsLike): Additional context for template substitution.
             freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
@@ -844,7 +844,7 @@ class Splitter(Analyzable):
                 If None, the entire range is treated as a single split;
                 otherwise, `Splitter.split_range` is used.
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
             freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
@@ -1017,10 +1017,10 @@ class Splitter(Analyzable):
                 If None, the entire range is treated as a single split;
                 otherwise, `Splitter.split_range` is used.
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             range_bounds_kwargs (KwargsLike): Keyword arguments for getting range bounds.
-            
+
                 See `Splitter.get_range_bounds`.
             template_context (KwargsLike): Additional context for template substitution.
             freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
@@ -1148,7 +1148,7 @@ class Splitter(Analyzable):
                 If None, the entire range is treated as a single split;
                 otherwise, `Splitter.split_range` is used.
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
             freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
@@ -1256,7 +1256,7 @@ class Splitter(Analyzable):
                 If None, the entire range is treated as a single split;
                 otherwise, `Splitter.split_range` is used.
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments distributed between `vectorbtpro.base.indexing.get_index_ranges`
@@ -1354,7 +1354,7 @@ class Splitter(Analyzable):
             by (AnyGroupByLike): Grouper-like specification.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
-            groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and 
+            groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and
                 `pandas.Series.resample` methods.
 
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
@@ -1364,7 +1364,7 @@ class Splitter(Analyzable):
                 If None, the entire range is treated as a single split;
                 otherwise, `Splitter.split_range` is used.
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
             split_labels (Optional[IndexLike]): Labels for the splits.
@@ -1504,7 +1504,7 @@ class Splitter(Analyzable):
                 If None, the entire range is treated as a single split;
                 otherwise, `Splitter.split_range` is used.
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             template_context (KwargsLike): Additional context for template substitution.
             freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
@@ -1928,10 +1928,10 @@ class Splitter(Analyzable):
                 If None, the entire range is treated as a single split;
                 otherwise, `Splitter.split_range` is used.
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             range_bounds_kwargs (KwargsLike): Keyword arguments for getting range bounds.
-            
+
                 See `Splitter.get_range_bounds`.
             template_context (KwargsLike): Additional context for template substitution.
             freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
@@ -2159,7 +2159,7 @@ class Splitter(Analyzable):
             _splitter_kwargs = {}
         if _take_kwargs is None:
             _take_kwargs = {}
-            
+
         if len(var_kwargs) > 0:
             var_splitter_kwargs = {}
             var_take_kwargs = {}
@@ -2257,7 +2257,7 @@ class Splitter(Analyzable):
             _splitter_kwargs = {}
         if _apply_kwargs is None:
             _apply_kwargs = {}
-            
+
         if len(var_kwargs) > 0:
             var_splitter_kwargs = {}
             var_apply_kwargs = {}
@@ -2366,7 +2366,7 @@ class Splitter(Analyzable):
         Args:
             *objs (MaybeSequence[Splitter]): (Additional) `Splitter` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Splitter` through
                 `Splitter.resolve_row_stack_kwargs` and `Splitter.resolve_stack_kwargs`.
@@ -2413,7 +2413,7 @@ class Splitter(Analyzable):
         Args:
             *objs (MaybeSequence[Splitter]): (Additional) `Splitter` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Splitter` through
                 `Splitter.resolve_column_stack_kwargs` and `Splitter.resolve_stack_kwargs`.
@@ -2642,7 +2642,7 @@ class Splitter(Analyzable):
 
         Args:
             split_range_kwargs (KwargsLike): Keyword arguments for range splitting.
-            
+
                 See `Splitter.split_range`.
             **kwargs: Keyword arguments for `Splitter.replace`.
 
@@ -3504,7 +3504,7 @@ class Splitter(Analyzable):
         Args:
             range_ (FixRangeLike): Input range to be remapped.
             target_index (IndexLike): Target index to which the range is mapped.
-            target_freq (Optional[FrequencyLike]): Frequency of the target index 
+            target_freq (Optional[FrequencyLike]): Frequency of the target index
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -3592,7 +3592,7 @@ class Splitter(Analyzable):
             range_ (FixRangeLike): Input range to be processed.
             remap_to_obj (bool): Whether to remap the range to the object's index.
             obj_index (Optional[IndexLike]): Target index for remapping, if available.
-            obj_freq (Optional[FrequencyLike]): Frequency of the target index 
+            obj_freq (Optional[FrequencyLike]): Frequency of the target index
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -3602,7 +3602,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             silence_warnings (bool): Flag to suppress warning messages.
             index (Optional[IndexLike]): Source index associated with the range.
-            freq (Optional[FrequencyLike]): Frequency of the source index 
+            freq (Optional[FrequencyLike]): Frequency of the source index
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -3697,7 +3697,7 @@ class Splitter(Analyzable):
             range_ (FixRangeLike): Original range to be processed.
             remap_to_obj (bool): Whether to remap the range to the object's index.
             obj_index (Optional[IndexLike]): Target index for remapping, if available.
-            obj_freq (Optional[FrequencyLike]): Frequency of the target index 
+            obj_freq (Optional[FrequencyLike]): Frequency of the target index
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -4308,7 +4308,7 @@ class Splitter(Analyzable):
             squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             remap_to_obj (bool): Whether to remap the range to the object's index.
             obj_index (Optional[IndexLike]): Target index for remapping, if available.
-            obj_freq (Optional[FrequencyLike]): Frequency of the target index 
+            obj_freq (Optional[FrequencyLike]): Frequency of the target index
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -4323,7 +4323,7 @@ class Splitter(Analyzable):
             template_context (KwargsLike): Additional context for template substitution.
             silence_warnings (bool): Flag to suppress warning messages.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
-            
+
                 See `vectorbtpro.base.indexes.combine_indexes`.
             freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
@@ -4335,7 +4335,7 @@ class Splitter(Analyzable):
 
                 See `vectorbtpro.utils.execution.execute`.
             filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
-            raise_no_results (bool): Flag indicating whether to raise a 
+            raise_no_results (bool): Flag indicating whether to raise a
                 `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
             merge_func (MergeFuncLike): Function to merge the results.
 
@@ -5105,7 +5105,7 @@ class Splitter(Analyzable):
             p (Optional[Array1d]): Probabilities associated with each split.
             seed (Optional[int]): Random seed for deterministic output.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **init_kwargs: Keyword arguments for replacing the splitter.
 
@@ -5143,7 +5143,7 @@ class Splitter(Analyzable):
             sort (bool): Whether to sort the resulting splits by their starting boundaries.
             template_context (KwargsLike): Additional context for template substitution.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             init_kwargs (KwargsLike): Keyword arguments for updating the splitter.
             **split_range_kwargs: Keyword arguments for `Splitter.split_range`.
@@ -5219,7 +5219,7 @@ class Splitter(Analyzable):
 
                 Must match the number of new ranges.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             init_kwargs (KwargsLike): Keyword arguments for updating the splitter.
             **split_range_kwargs: Keyword arguments for `Splitter.split_range`.
@@ -5295,7 +5295,7 @@ class Splitter(Analyzable):
                 If not provided, a label is derived.
             insert_at_last (bool): If True, insert the merged set at the position of the last specified column.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             init_kwargs (KwargsLike): Keyword arguments for updating the splitter.
             **merge_split_kwargs: Keyword arguments for `Splitter.merge_split`.
@@ -5459,7 +5459,7 @@ class Splitter(Analyzable):
             freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
-                
+
         Returns:
             Tuple[Any, Any]: A tuple with the calculated left and right bounds.
 
@@ -5600,7 +5600,7 @@ class Splitter(Analyzable):
             squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
             squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
-            
+
                 See `vectorbtpro.base.indexes.combine_indexes`.
             **kwargs: Keyword arguments for `Splitter.get_bounds_arr`.
 
@@ -5979,7 +5979,7 @@ class Splitter(Analyzable):
             squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
             squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
-            
+
                 See `vectorbtpro.base.indexes.combine_indexes`.
             **kwargs: Keyword arguments for `Splitter.get_mask_arr`.
 
@@ -6178,7 +6178,7 @@ class Splitter(Analyzable):
             squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
             squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
-            
+
                 See `vectorbtpro.base.indexes.combine_indexes`.
             **kwargs: Keyword arguments for `Splitter.get_mask_arr`.
 
@@ -6291,7 +6291,7 @@ class Splitter(Analyzable):
             squeeze_one_split (bool): Whether to squeeze the output if only one split exists.
             squeeze_one_set (bool): Whether to squeeze the output if only one set exists.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
-            
+
                 See `vectorbtpro.base.indexes.combine_indexes`.
             **kwargs: Keyword arguments for `Splitter.get_mask_arr`.
 

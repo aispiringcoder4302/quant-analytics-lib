@@ -322,7 +322,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -459,7 +459,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -649,7 +649,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -756,7 +756,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -996,7 +996,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper (Optional[ArrayWrapper]): Array wrapper instance.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -1164,7 +1164,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.generate_exits`.
 
@@ -1328,7 +1328,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.generate_both` or
                 `SignalsAccessor.generate_exits`.
@@ -1974,7 +1974,7 @@ class SignalsAccessor(GenericAccessor):
             after_false (bool): If True, disregards the first True partition with no preceding False.
             after_reset (bool): If True, disregards the first True partition before a reset signal.
             reset_wait (int): Offset to treat reset signals.
-            
+
                 * 0 treats the signal at reset as the first in the next partition.
                 * 1 treats it as the last in the previous partition.
             as_mapped (bool): If True, return the result as a
@@ -1994,7 +1994,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.to_mapped`.
 
@@ -2244,7 +2244,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
@@ -2265,7 +2265,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             reset_by (ArrayLike): Array used to reset the ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
@@ -2286,7 +2286,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): Specific position rank that signals must equal.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
@@ -2309,7 +2309,7 @@ class SignalsAccessor(GenericAccessor):
             n (int): Specific position rank value.
             reset_by (ArrayLike): Array used to reset the ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
@@ -2330,7 +2330,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): Lower bound for the position rank.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
@@ -2353,7 +2353,7 @@ class SignalsAccessor(GenericAccessor):
             n (int): Lower bound for the position rank.
             reset_by (ArrayLike): Array used to reset the ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
@@ -2374,7 +2374,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): Upper bound for the position rank (exclusive).
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
@@ -2397,7 +2397,7 @@ class SignalsAccessor(GenericAccessor):
             n (int): Upper bound for the position rank (exclusive).
             reset_by (ArrayLike): Array used to reset the ranking.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank_after`.
 
@@ -2412,7 +2412,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `SignalsAccessor.pos_rank`.
 
@@ -2426,7 +2426,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `SignalsAccessor.partition_pos_rank`.
 
@@ -2455,7 +2455,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -2508,7 +2508,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray`.
 
@@ -2570,7 +2570,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             delta (Union[str, int, FrequencyLike]): Delta value applied relative to each signal.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_delta`.
 
@@ -2603,7 +2603,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.base.reshaping.broadcast`.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             attach_target (bool): If True, the target array is attached to the result.
             jitted (JittedOption): Option to control JIT compilation.
@@ -2716,7 +2716,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2758,7 +2758,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2859,7 +2859,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.base.indexes.clean_index`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -2959,7 +2959,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.base.indexes.clean_index`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -3164,13 +3164,13 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -3217,7 +3217,7 @@ class SignalsAccessor(GenericAccessor):
         Args:
             n (int): Index offset to select the nth signal.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -3226,7 +3226,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -3298,7 +3298,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -3307,7 +3307,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -3348,7 +3348,7 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.to_mapped`.
 
@@ -3366,10 +3366,10 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
@@ -3385,10 +3385,10 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `SignalsAccessor.total`.
 
@@ -3410,10 +3410,10 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `SignalsAccessor.partition_ranges`.
 
@@ -3435,10 +3435,10 @@ class SignalsAccessor(GenericAccessor):
 
         Args:
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
             group_by (GroupByLike): Grouping specification.
-            
+
                 See `vectorbtpro.base.grouping.base.Grouper`.
             **kwargs: Keyword arguments for `SignalsAccessor.total_partitions` and `SignalsAccessor.total`.
 

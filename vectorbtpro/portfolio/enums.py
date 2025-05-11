@@ -1123,11 +1123,15 @@ class SimulationOutput(tp.NamedTuple):
 
 
 __pdoc__["SimulationOutput"] = "A named tuple representing the output of a simulation."
-__pdoc__["SimulationOutput.order_records"] = """Flattened order records.
+__pdoc__[
+    "SimulationOutput.order_records"
+] = """Flattened order records.
 
 Must adhere to the `order_dt` dtype.
 """
-__pdoc__["SimulationOutput.log_records"] = """Flattened log records.
+__pdoc__[
+    "SimulationOutput.log_records"
+] = """Flattened log records.
 
 Must adhere to the `log_dt` dtype.
 """

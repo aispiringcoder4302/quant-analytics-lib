@@ -270,7 +270,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `Ranges`.
 
@@ -515,7 +515,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
@@ -689,7 +689,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
 
@@ -730,7 +730,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
 
@@ -770,7 +770,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
@@ -853,7 +853,7 @@ class Ranges(PriceRecords):
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
@@ -1081,25 +1081,25 @@ class Ranges(PriceRecords):
             random_n (Optional[int]): Number of range records to select randomly.
             seed (Optional[int]): Random seed for deterministic output.
             proj_start (Union[None, str, int, FrequencyLike]): Defines when to start the projection.
-            
+
                 See `Ranges.get_projections`.
 
                 Allows an option "current_or_{value}", which sets `proj_start` to the duration
                 of the current open range or to the specified value if no open range exists.
             proj_period (Union[None, str, int, FrequencyLike]): Defines the projection length.
-            
+
                 See `Ranges.get_projections`.
 
                 Allows options such as "current_or_{option}", "mean", "min", "max", "median",
                 or a percentage like "50%" representing a quantile derived from closed ranges.
             incl_end_idx (bool): Whether the end index of a range is inclusive.
-            
+
                 See `Ranges.get_projections`.
             extend (bool): Whether to extend the projection to a fixed length (beyond the end).
-            
+
                 See `Ranges.get_projections`.
             ffill (bool): Forward fill NaN values in the projection, even if they are NaN in `close`.
-            
+
                 See `Ranges.get_projections`.
             plot_past_period (Union[None, str, int, FrequencyLike]): Past period for plotting.
 
@@ -2268,7 +2268,7 @@ class PatternRanges(Ranges):
 
                 See `vectorbtpro.base.indexes.clean_index`.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper`.
             **kwargs: Keyword arguments for `PatternRanges`.
 

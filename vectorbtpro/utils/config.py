@@ -178,7 +178,7 @@ def copy_dict(dct: tp.DictLike, copy_mode: str = "shallow", nested: bool = True)
     Args:
         dct (DictLike): Input configuration dictionary.
         copy_mode (str): Copying mode.
-        
+
             Supported modes are:
 
             * 'none': No copy is performed.

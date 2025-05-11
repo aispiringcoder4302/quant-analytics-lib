@@ -231,7 +231,7 @@ def suggest_module_path(
         section_name (str): Name of the section.
         path (Optional[PathLike]): Base directory or file path.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
-            
+
             See `vectorbtpro.utils.path_.check_mkdir`.
 
     Returns:
@@ -266,7 +266,7 @@ def cut_and_save(
         section_name (str): Name of the section to extract.
         path (Optional[PathLike]): File path or directory in which to save the extracted section.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
-            
+
             See `vectorbtpro.utils.path_.check_mkdir`.
         **kwargs: Keyword arguments for `cut_from_source`.
 
@@ -679,7 +679,7 @@ def refine_source(
 
     Args:
         source (Any): Source(s) or object(s) from which to extract the source code.
-        
+
             A source may be:
 
             * a string containing code (e.g. "import vectorbtpro as vbt ..."),
@@ -717,7 +717,7 @@ def refine_source(
             By default, uses the source code as the search query and top 20 results.
             See `vectorbtpro.utils.knowledge.custom_assets.search`.
         to_context_kwargs (KwargsLike): Keyword arguments for converting the search results to context.
-        
+
             See `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_context`.
         dump_engine (str): Name of the dump engine.
 
@@ -736,14 +736,14 @@ def refine_source(
 
             If nested chunks (with level > base) are present, includes them only if they fit as a whole.
         tokenize_kwargs (KwargsLike): Keyword arguments for tokenization.
-        
+
             See `vectorbtpro.utils.knowledge.chatting.tokenize`.
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
             See `vectorbtpro.utils.pbar.ProgressBar`.
         mult_show_progress (Optional[bool]): Whether to display progress during processing multiple sources.
-        
+
             If not provided, defaults to `show_progress`.
         mult_pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar for multiple sources.
 

@@ -27,7 +27,7 @@ def match_tags(tags: tp.MaybeIterable[str], in_tags: tp.MaybeIterable[str]) -> b
 
     Args:
         tags (MaybeIterable[str]): Tag or collection of tags to match.
-        
+
             If a tag is not a valid identifier, it is evaluated as a boolean expression.
         in_tags (MaybeIterable[str]): Identifier or collection of identifiers to search for matches.
 

@@ -454,7 +454,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             apply_func (Union[str, Callable]): Function or method name to apply to each chunk.
             *args: Positional arguments for `apply_func`.
             chunk_kwargs (KwargsLike): Keyword arguments for the chunking handler.
-            
+
                 See `HasWrapper.chunk`.
             execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
@@ -868,7 +868,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             columns (Optional[IndexLike]): Custom columns for the stacked result.
 
                 If not provided, columns are derived from the wrappers.
-            freq (Optional[FrequencyLike]): Custom frequency for the stacked result 
+            freq (Optional[FrequencyLike]): Custom frequency for the stacked result
                 (e.g., "daily", "15 min", "index_mean").
 
                 If not provided, frequency is derived from the wrappers.
@@ -1004,7 +1004,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         This function performs the following:
 
         * Determines the final index. If all wrappers share the same index, that index is used.
-        
+
             Otherwise, if `union_index` is True, the union of the indexes is computed.
             The merged index must contain no duplicates, have a consistent data type,
             and be monotonically increasing. A custom index can be provided via the `index` parameter.
@@ -1022,7 +1022,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             columns (Optional[IndexLike]): Custom columns for the stacked result.
 
                 If not provided, columns are derived from the wrappers.
-            freq (Optional[FrequencyLike]): Custom frequency for the stacked result 
+            freq (Optional[FrequencyLike]): Custom frequency for the stacked result
                 (e.g., "daily", "15 min", "index_mean").
 
                 If not provided, frequency is derived from the wrappers.
@@ -2988,7 +2988,7 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         **kwargs,
     ) -> ArrayWrapperT:
         """Apply a function to the index of the `Wrapping`.
-        
+
         Args:
             apply_func (Callable): Function to apply to the index.
             *args: Positional arguments for `apply_func`.

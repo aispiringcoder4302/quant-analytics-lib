@@ -26,7 +26,7 @@ def split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 
     Args:
         mask_arr (Array3d): 3-dimensional boolean array representing split masks.
-        
+
             Each split is defined by a set of columns that are marked active if any
             element in the corresponding sub-array (across the second axis) is True.
 
@@ -58,7 +58,7 @@ def norm_split_overlap_matrix_nb(mask_arr: tp.Array3d) -> tp.Array2d:
 
     Args:
         mask_arr (Array3d): 3-dimensional boolean array representing split masks.
-        
+
             Each split is identified by active columns determined by any True value
             along the second axis.
 

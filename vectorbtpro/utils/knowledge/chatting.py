@@ -389,7 +389,7 @@ def tokenize(text: str, tokenizer: tp.TokenizerLike = None, **kwargs) -> tp.Toke
     Args:
         text (str): Text to tokenize.
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
-        
+
             Resolved using `resolve_tokenizer`.
         **kwargs: Keyword arguments to initialize or update `tokenizer`.
 
@@ -410,7 +410,7 @@ def detokenize(tokens: tp.Tokens, tokenizer: tp.TokenizerLike = None, **kwargs) 
     Args:
         tokens (Tokens): List of tokens to decode.
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
-        
+
             Resolved using `resolve_tokenizer`.
         **kwargs: Keyword arguments to initialize or update `tokenizer`.
 
@@ -433,7 +433,7 @@ class Embeddings(Configured):
 
     Args:
         batch_size (Optional[int]): Batch size for processing queries.
-        
+
             Use None to disable batching.
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
@@ -955,7 +955,7 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
     Args:
         query (MaybeList[str]): Query string or a list of query strings to embed.
         embeddings (EmbeddingsLike): Identifier, subclass, or instance of `Embeddings`.
-            
+
             Resolved using `resolve_embeddings`.
         **kwargs: Keyword arguments to initialize or update `embeddings`.
 
@@ -989,7 +989,7 @@ class Completions(Configured):
             the entire message is displayed.
         max_tokens (Optional[int]): Maximum token limit configured for messages.
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
-        
+
             Resolved using `resolve_tokenizer`.
         tokenizer_kwargs (KwargsLike): Keyword arguments to initialize or update `tokenizer`.
         system_prompt (Optional[str]): System prompt that precedes the context prompt.
@@ -1003,9 +1003,9 @@ class Completions(Configured):
             The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
 
             This prompt is used to provide context for the conversation.
-        formatter (ContentFormatterLike): Identifier, subclass, or instance of 
+        formatter (ContentFormatterLike): Identifier, subclass, or instance of
             `vectorbtpro.utils.knowledge.formatting.ContentFormatter`.
-        
+
             Resolved using `vectorbtpro.utils.knowledge.formatting.resolve_formatter`.
 
             This formatter is used to format the content of the response.
@@ -1157,7 +1157,7 @@ class Completions(Configured):
     @property
     def tokenizer(self) -> tp.MaybeType[Tokenizer]:
         """Subclass or instance of `Tokenizer`.
-        
+
         Resolved using `resolve_tokenizer`.
 
         Returns:
@@ -1211,8 +1211,8 @@ class Completions(Configured):
 
     @property
     def formatter(self) -> tp.MaybeType[ContentFormatter]:
-        """Content formatter subclass or instance. 
-        
+        """Content formatter subclass or instance.
+
         Resolved using `vectorbtpro.utils.knowledge.formatting.resolve_formatter`.
 
         This formatter is used to format the content of the response.
@@ -1918,7 +1918,7 @@ def complete(message: str, completions: tp.CompletionsLike = None, **kwargs) -> 
     Args:
         message (str): Input message for which to generate a completion.
         completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
-        
+
             Resolved using `resolve_completions`.
         **kwargs: Keyword arguments to initialize or update `completions`.
 
@@ -1939,7 +1939,7 @@ def completed(message: str, completions: tp.CompletionsLike = None, **kwargs) ->
     Args:
         message (str): Input message.
         completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
-        
+
             Resolved using `resolve_completions`.
         **kwargs: Keyword arguments to initialize or update `completions`.
 
@@ -2679,7 +2679,7 @@ def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -
     Args:
         text (str): Input text to be split.
         text_splitter (TextSplitterLike): Identifier, subclass, or instance of `TextSplitter`.
-        
+
             Resolved using `resolve_text_splitter`.
         **kwargs: Keyword arguments to initialize or update `text_splitter`.
 
@@ -3303,13 +3303,13 @@ class FileStore(DictStore):
     Args:
         dir_path (Optional[PathLike]): Directory path used for file storage.
         compression (CompressionLike): Compression algorithm.
-        
+
             See `vectorbtpro.utils.pickling.compress`.
         save_kwargs (KwargsLike): Keyword arguments for saving objects.
-        
+
             See `vectorbtpro.utils.pickling.save`.
         load_kwargs (KwargsLike): Keyword arguments for loading objects.
-        
+
             See `vectorbtpro.utils.pickling.load`.
         use_patching (Optional[bool]): Whether patch files are used instead of a single file.
         consolidate (Optional[bool]): Whether patch files should be consolidated.
@@ -3395,7 +3395,7 @@ class FileStore(DictStore):
     @property
     def save_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for saving objects.
-        
+
         See `vectorbtpro.utils.pickling.save`.
 
         Returns:
@@ -3406,7 +3406,7 @@ class FileStore(DictStore):
     @property
     def load_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for loading objects.
-        
+
         See `vectorbtpro.utils.pickling.load`.
 
         Returns:
@@ -3609,13 +3609,13 @@ class LMDBStore(ObjectStore):
     Args:
         dir_path (Optional[PathLike]): Directory path used for the LMDB store.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
-            
+
             See `vectorbtpro.utils.path_.check_mkdir`.
         dumps_kwargs (KwargsLike): Keyword arguments used for serializing objects.
-        
+
             See `vectorbtpro.utils.pickling.dumps`.
         loads_kwargs (KwargsLike): Keyword arguments used for deserializing objects.
-        
+
             See `vectorbtpro.utils.pickling.loads`.
         open_kwargs (KwargsLike): Keyword arguments used when opening the LMDB database via `Lmdb.open`.
         **kwargs: Keyword arguments for `ObjectStore`.
@@ -3699,7 +3699,7 @@ class LMDBStore(ObjectStore):
     @property
     def mkdir_kwargs(self) -> tp.Kwargs:
         """Keyword arguments used for directory creation.
-        
+
         See `vectorbtpro.utils.path_.check_mkdir`.
 
         Returns:
@@ -3710,7 +3710,7 @@ class LMDBStore(ObjectStore):
     @property
     def dumps_kwargs(self) -> tp.Kwargs:
         """Keyword arguments used for serializing objects.
-        
+
         See `vectorbtpro.utils.pickling.dumps`.
 
         Returns:
@@ -3721,7 +3721,7 @@ class LMDBStore(ObjectStore):
     @property
     def loads_kwargs(self) -> tp.Kwargs:
         """Keyword arguments used for deserializing objects.
-        
+
         See `vectorbtpro.utils.pickling.loads`.
 
         Returns:
@@ -4053,32 +4053,32 @@ class DocumentRanker(Configured):
     Args:
         dataset_id (Optional[str]): Identifier for the dataset.
         embeddings (EmbeddingsLike): Identifier, subclass, or instance of `Embeddings`.
-            
+
             Resolved using `resolve_embeddings`.
         embeddings_kwargs (KwargsLike): Keyword arguments to initialize or update `embeddings`.
         doc_store (ObjectStoreLike): Identifier, subclass, or instance of `ObjectStore` for documents.
-            
+
             Resolved using `resolve_obj_store`.
         doc_store_kwargs (KwargsLike): Keyword arguments to initialize or update `doc_store`.
         cache_doc_store (Optional[bool]): Flag to indicate if `doc_store` should be cached.
         emb_store (ObjectStoreLike): Identifier, subclass, or instance of `ObjectStore` for embeddings.
-            
+
             Resolved using `resolve_obj_store`.
         emb_store_kwargs (KwargsLike): Keyword arguments to initialize or update `emb_store`.
         cache_emb_store (Optional[bool]): Flag to indicate if `emb_store` should be cached.
         search_method (Optional[str]): Strategy for document search.
 
-            Supported strategies: 
-            
+            Supported strategies:
+
             * "embeddings"
             * "bm25"
             * "hybrid"
         bm25_tokenizer (Optional[BM25Tokenizer]): BM25 tokenizer instance or type for processing text.
-        
+
             Resolved using `DocumentRanker.resolve_bm25_tokenizer`.
         bm25_tokenizer_kwargs (KwargsLike): Keyword arguments to initialize `bm25_tokenizer`.
         bm25_retriever (Optional[MaybeType[BM25]]): BM25 retriever instance or type for document retrieval.
-        
+
             Resolved using `DocumentRanker.resolve_bm25_retriever`.
         bm25_retriever_kwargs (KwargsLike): Keyword arguments to initialize `bm25_retriever`.
         bm25_mirror_store_id (Optional[str]): Identifier for the BM25 mirror store.
@@ -4087,7 +4087,7 @@ class DocumentRanker(Configured):
             The embedding score weight is computed as 1 minus this value and is applied to
             scores normalized to [0, 1].
         score_func (Union[None, str, Callable]): Function or identifier for scoring documents.
-        
+
             See `DocumentRanker.compute_score`.
         score_agg_func (Union[None, str, Callable]): Function or identifier for aggregating scores.
         normalize_scores (Optional[bool]): Whether scores should be normalized before filtering.
@@ -4327,8 +4327,8 @@ class DocumentRanker(Configured):
     def search_method(self) -> str:
         """Strategy for document search.
 
-        Supported strategies: 
-        
+        Supported strategies:
+
         * "embeddings"
         * "bm25"
         * "hybrid"
@@ -4736,7 +4736,7 @@ class DocumentRanker(Configured):
         Args:
             query (str): Query string for scoring relevance.
             documents (Optional[Iterable[StoreDocument]]): Collection of documents to score.
-            
+
                 If None, documents from the document store are used.
             refresh (bool): Flag to refresh both documents and embeddings.
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
@@ -5564,7 +5564,7 @@ class Contextable(HasSettings):
         Args:
             to_context_kwargs (KwargsLike): Keyword arguments for `Contextable.to_context`.
             tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
-            
+
                 Resolved using `resolve_tokenizer`.
         tokenizer_kwargs (KwargsLike): Keyword arguments to initialize or update `tokenizer`.
 

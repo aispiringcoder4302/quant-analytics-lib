@@ -373,7 +373,7 @@ def cv_split(
             and returns both. Otherwise, returns only the selection.
         skip_errored (bool): If True, skips the current iteration upon encountering
             an error or `NoResultsException`, omitting it from the final results.
-        raise_no_results (bool): Flag indicating whether to raise a 
+        raise_no_results (bool): Flag indicating whether to raise a
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         template_context (KwargsLike): Additional context for template substitution.
         **split_kwargs: Keyword arguments for `split`.

@@ -45,10 +45,10 @@ class ToMarkdown(Configured):
     """Class for converting text to Markdown.
 
     Args:
-        remove_code_title (Optional[bool]): Whether to remove the `title` attribute from a code block 
+        remove_code_title (Optional[bool]): Whether to remove the `title` attribute from a code block
             and display it above the block.
         even_indentation (Optional[bool]): Whether a newline should be inserted before list items.
-        newline_before_list (Optional[bool]): Whether leading spaces should be adjusted to 
+        newline_before_list (Optional[bool]): Whether leading spaces should be adjusted to
             even numbers (e.g., converting 3 spaces to 4).
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
@@ -305,7 +305,7 @@ class FormatHTML(Configured):
     in the `<head>`, and JavaScript or inline scripts in the `<body>`.
 
     Args:
-        html_template (Optional[CustomTemplateLike]): Template for HTML formatting, 
+        html_template (Optional[CustomTemplateLike]): Template for HTML formatting,
             as a string, function, or custom template.
         style_extras (Optional[MaybeList[str]]): Extra CSS rules for the `<style>` element.
         head_extras (Optional[MaybeList[str]]): Extra HTML elements to inject into the `<head>` section.
@@ -1078,7 +1078,7 @@ class HTMLFileFormatter(ContentFormatter):
         refresh_page (Optional[bool]): Determines whether the HTML page should refresh.
         dir_path (Optional[PathLike]): Directory path for saving HTML files.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
-            
+
             See `vectorbtpro.utils.path_.check_mkdir`.
         temp_files (Optional[bool]): Indicates if HTML content is saved as temporary files.
         file_prefix_len (Optional[int]): Number of characters for the truncated title prefix.
@@ -1222,7 +1222,7 @@ class HTMLFileFormatter(ContentFormatter):
     @property
     def mkdir_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for directory creation.
-            
+
         See `vectorbtpro.utils.path_.check_mkdir`.
 
         Returns:

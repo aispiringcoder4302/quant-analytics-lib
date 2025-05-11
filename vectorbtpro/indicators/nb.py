@@ -86,10 +86,10 @@ def ma_nb(
     Args:
         close (Array2d): 2D array where each column represents a data series.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -177,10 +177,10 @@ def msd_nb(
     Args:
         close (Array2d): 2D array where each column represents a data series.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -279,15 +279,15 @@ def bbands_nb(
     Args:
         close (Array2d): 2D array where each column is a data series.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         alpha (FlexArray1dLike): Multiplier for the standard deviation.
-        
+
             Provided as a scalar or per column.
         minp (Optional[int]): Minimum number of observations required.
         adjust (bool): Flag indicating whether to adjust weights.
@@ -484,10 +484,10 @@ def avg_gain_nb(
     Args:
         close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -581,10 +581,10 @@ def avg_loss_nb(
     Args:
         close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -667,10 +667,10 @@ def rsi_nb(
     Args:
         close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -753,7 +753,7 @@ def stoch_k_nb(
         low (Array2d): Two-dimensional array of low prices.
         close (Array2d): Two-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         minp (Optional[int]): Minimum number of observations required.
 
@@ -921,26 +921,26 @@ def stoch_nb(
         low (Array2d): Two-dimensional array of low prices.
         close (Array2d): Two-dimensional array of close prices.
         fast_k_window (FlexArray1dLike): Window size for fast %K calculation.
-        
+
             Provided as a scalar or per column.
         slow_k_window (FlexArray1dLike): Window size for the slow %K moving average.
-        
+
             Provided as a scalar or per column.
         slow_d_window (FlexArray1dLike): Window size for the slow %D moving average.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         slow_k_wtype (Optional[FlexArray1dLike]): Weighting type for the slow %K moving average.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`. Uses `wtype` if not provided.
         slow_d_wtype (Optional[FlexArray1dLike]): Weighting type for the slow %D moving average.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`. Uses `wtype` if not provided.
@@ -1137,26 +1137,26 @@ def macd_nb(
     Args:
         close (Array2d): 2-D array of close prices.
         fast_window (FlexArray1dLike): Window size for computing the fast moving average.
-        
+
             Provided as a scalar or per column.
         slow_window (FlexArray1dLike): Window size for computing the slow moving average.
-        
+
             Provided as a scalar or per column.
         signal_window (FlexArray1dLike): Window size for computing the signal moving average.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
         macd_wtype (Optional[FlexArray1dLike]): Weighting type for MACD computation.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`. Uses `wtype` if not provided.
         signal_wtype (Optional[FlexArray1dLike]): Weighting type for signal computation.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`. Uses `wtype` if not provided.
@@ -1405,10 +1405,10 @@ def atr_nb(
         low (Array2d): 2-dimensional array of low prices.
         close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -1535,10 +1535,10 @@ def adx_nb(
         low (Array2d): 2-dimensional array of low prices.
         close (Array2d): 2-dimensional array of close prices.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         wtype (FlexArray1dLike): Weighting type.
-        
+
             Provided as a scalar or per column.
 
             See `vectorbtpro.generic.enums.WType`.
@@ -1707,10 +1707,10 @@ def ols_nb(
         x (Array2d): 2-dimensional array of independent variable values.
         y (Array2d): 2-dimensional array of dependent variable values.
         window (FlexArray1dLike): Window size.
-        
+
             Provided as a scalar or per column.
         norm_window (Optional[FlexArray1dLike]): Window size for error normalization.
-        
+
             Provided as a scalar or per column.
 
             Defaults to `window` if None.
@@ -2033,10 +2033,10 @@ def pivot_info_1d_nb(
         high (Array1d): Array of high prices.
         low (Array1d): Array of low prices.
         up_th (FlexArray1dLike): Upper threshold for detecting peaks.
-        
+
             Provided as a scalar or per row.
         down_th (FlexArray1dLike): Lower threshold for detecting valleys.
-        
+
             Provided as a scalar or per row.
 
     Returns:
@@ -2157,10 +2157,10 @@ def pivot_info_nb(
         high (Array2d): Array of high prices.
         low (Array2d): Array of low prices.
         up_th (FlexArray2dLike): Upper threshold for detecting peaks.
-        
+
             Provided as a scalar, or per row, column, or element.
         down_th (FlexArray2dLike): Lower threshold for detecting valleys.
-        
+
             Provided as a scalar, or per row, column, or element.
 
     Returns:
@@ -2592,10 +2592,10 @@ def supertrend_nb(
         low (Array2d): Array of low prices.
         close (Array2d): Array of close prices.
         period (FlexArray1dLike): Period for the indicator calculation.
-        
+
             Provided as a scalar or per column.
         multiplier (FlexArray1dLike): Multiplier used to determine the volatility threshold.
-        
+
             Provided as a scalar or per column.
 
     Returns:
@@ -2648,28 +2648,28 @@ def signal_detection_1d_nb(
 
         lag (int): Window size for computing moving averages and standard deviations.
         factor (FlexArray1dLike): Factor to determine the threshold for signal detection.
-        
+
             Provided as a scalar or per row.
         influence (FlexArray1dLike): Influence factor for updating the filtering process.
-        
+
             Provided as a scalar or per row.
         up_factor (Optional[FlexArray1dLike]): Factor for the upward threshold.
-        
+
             Provided as a scalar or per row.
 
             If None, uses `factor`.
         down_factor (Optional[FlexArray1dLike]): Factor for the downward threshold.
-        
+
             Provided as a scalar or per row.
 
             If None, uses `factor`.
         mean_influence (Optional[FlexArray1dLike]): Influence factor for updating the moving average filter.
-        
+
             Provided as a scalar or per column.
 
             If None, uses `influence`.
         std_influence (Optional[FlexArray1dLike]): Influence factor for updating the standard deviation filter.
-        
+
             Provided as a scalar or per column.
 
             If None, uses `influence`.
@@ -2774,31 +2774,31 @@ def signal_detection_nb(
     Args:
         close (Array2d): Array of close prices.
         lag (FlexArray1dLike): Window size for computing moving averages and standard deviations.
-        
+
             Provided as a scalar or per column.
         factor (FlexArray2dLike): Factor to determine the threshold for signal detection.
-        
+
             Provided as a scalar, or per row, column, or element.
         influence (FlexArray2dLike): Influence factor for updating the filtering process.
-        
+
             Provided as a scalar, or per row, column, or element.
         up_factor (Optional[FlexArray2dLike]): Factor for the upward threshold.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             If None, uses `factor`.
         down_factor (Optional[FlexArray2dLike]): Factor for the downward threshold.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             If None, uses `factor`.
         mean_influence (Optional[FlexArray2dLike]): Influence factor for updating the moving average filter.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             If None, uses `influence`.
         std_influence (Optional[FlexArray2dLike]): Influence factor for updating the standard deviation filter.
-        
+
             Provided as a scalar, or per row, column, or element.
 
             If None, uses `influence`.

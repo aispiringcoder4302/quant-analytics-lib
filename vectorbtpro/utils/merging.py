@@ -37,7 +37,7 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
 
     Args:
         merge_func (MergeFuncLike): Function to merge the results.
-        
+
             Resolved using `MergeFunc.resolve_merge_func`.
         merge_kwargs (KwargsLike): Keyword arguments for `MergeFunc.merge_func`.
         context (KwargsLike): Context for template substitution in `MergeFunc.merge_func`
@@ -87,7 +87,7 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
 
     def resolve_merge_func(self) -> tp.Optional[tp.Callable]:
         """Return the merging function with pre-bound keyword arguments after applying template substitutions.
-        
+
         Uses `vectorbtpro.base.merging.resolve_merge_func` for resolving the merging function.
         Uses `MergeFunc.context` for template substitution in `MergeFunc.merge_func` and `MergeFunc.merge_kwargs`.
 

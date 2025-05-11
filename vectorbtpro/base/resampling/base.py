@@ -35,13 +35,13 @@ class Resampler(Configured):
     Args:
         source_index (IndexLike): Source index to be resampled.
         target_index (IndexLike): Target index produced by resampling.
-        source_freq (Union[None, bool, FrequencyLike]): Frequency of the source index 
+        source_freq (Union[None, bool, FrequencyLike]): Frequency of the source index
             (e.g., "daily", "15 min", "index_mean").
 
             See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
             Set to False to disable automatic frequency inference.
-        target_freq (Union[None, bool, FrequencyLike]): Frequency of the target index 
+        target_freq (Union[None, bool, FrequencyLike]): Frequency of the target index
             (e.g., "daily", "15 min", "index_mean").
 
             See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -159,7 +159,7 @@ class Resampler(Configured):
 
         Args:
             pd_resampler (pandas.core.resample.Resampler): Pandas resampler object.
-            source_freq (Optional[FrequencyLike]): Frequency of the source index 
+            source_freq (Optional[FrequencyLike]): Frequency of the source index
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -191,7 +191,7 @@ class Resampler(Configured):
         Args:
             source_index (IndexLike): Source index to be resampled.
             *args: Positional arguments for `pd.Series.resample`.
-            source_freq (Optional[FrequencyLike]): Frequency of the source index 
+            source_freq (Optional[FrequencyLike]): Frequency of the source index
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -218,7 +218,7 @@ class Resampler(Configured):
         Args:
             source_index (IndexLike): Source index to be resampled.
             *args: Positional arguments for `vectorbtpro.utils.datetime_.date_range`.
-            source_freq (Optional[FrequencyLike]): Frequency of the source index 
+            source_freq (Optional[FrequencyLike]): Frequency of the source index
                 (e.g., "daily", "15 min", "index_mean").
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
@@ -451,7 +451,7 @@ class Resampler(Configured):
         """Return the mapping of source index ranges corresponding to the target index.
 
         Args:
-            before (bool): If True, include source indices preceding or equal to the target; 
+            before (bool): If True, include source indices preceding or equal to the target;
                 otherwise, include those following or equal.
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -587,7 +587,7 @@ class Resampler(Configured):
         )
 
     def last_before_target_index(
-        self, 
+        self,
         incl_source: bool = True,
         incl_target: bool = False,
         jitted: tp.JittedOption = None,
@@ -609,8 +609,8 @@ class Resampler(Configured):
         """
         func = jit_reg.resolve_option(nb.last_before_target_index_nb, jitted)
         return func(
-            self.source_index.values, 
-            self.target_index.values, 
+            self.source_index.values,
+            self.target_index.values,
             incl_source=incl_source,
             incl_target=incl_target,
         )

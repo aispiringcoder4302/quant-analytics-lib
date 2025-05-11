@@ -1119,7 +1119,7 @@ def find_exact(
         string (str): String to check for an exact match.
         ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format.
-        
+
             Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1162,7 +1162,7 @@ def find_start(
         string (str): String to check.
         ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format.
-        
+
             Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1205,7 +1205,7 @@ def find_end(
         string (str): String to check.
         ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format.
-        
+
             Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1248,7 +1248,7 @@ def find_substring(
         string (str): String in which to search.
         ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format.
-        
+
             Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1303,7 +1303,7 @@ def find_regex(
         flags (int): Additional flags for compiling the regular expression.
         group (Union[int, str, None]): Specific regex group to extract.
         return_type (str): Return result format.
-        
+
             Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1371,7 +1371,7 @@ def find_fuzzy(
         max_deletions (Optional[int]): Maximum number of allowed deletions.
         max_l_dist (Optional[int]): Maximum allowed Levenshtein distance.
         return_type (str): Return result format.
-        
+
             Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1468,7 +1468,7 @@ def find(
         target (str): Target substring or pattern.
         string (str): String in which to search.
         mode (str): Search mode.
-        
+
             Accepted values:
 
             * "exact": Use `find_exact`
@@ -1480,7 +1480,7 @@ def find(
             * "rapidfuzz": Use `find_rapidfuzz`
         ignore_case (bool): Whether to ignore case when matching.
         return_type (str): Return result format.
-        
+
             Accepted values:
 
             * "bool": Returns a boolean indicating if the strings are exactly equal.
@@ -1716,7 +1716,7 @@ def replace(
         replacement (str): String to substitute for the target.
         string (str): Source string in which to perform the replacement.
         mode (str): Search and replacement mode.
-        
+
             Accepted values:
 
             * "exact": Use `replace_exact`

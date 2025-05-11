@@ -55,7 +55,7 @@ def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[st
 
     Args:
         cls_name (Optional[str]): Class name to retrieve specific serialization extensions.
-        
+
             If omitted, returns a union of all serialization extensions.
 
     Returns:
@@ -78,7 +78,7 @@ def get_compression_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]
 
     Args:
         cls_name (Optional[str]): Class name to retrieve specific compression extensions.
-        
+
             If omitted, returns a union of all compression extensions.
 
     Returns:
@@ -107,7 +107,7 @@ def compress(
     Args:
         bytes_ (bytes): Byte stream to be compressed.
         compression (CompressionLike): Compression algorithm.
-        
+
             If `True`, uses the default compression algorithm from settings.
             For options, see `extensions.compression` in `vectorbtpro._settings.pickling`.
         file_name (Optional[str]): Name of the file in the archive when using archive-based compression.
@@ -397,7 +397,7 @@ def save_bytes(
         bytes_ (bytes): Byte stream containing the serialized object.
         path (PathLike): Destination file path.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
-            
+
             See `vectorbtpro.utils.path_.check_mkdir`.
         compression (CompressionLike): Compression algorithm.
 
@@ -479,7 +479,7 @@ def save(
 
             If a directory is provided, the file name is derived from the object's class name.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
-            
+
             See `vectorbtpro.utils.path_.check_mkdir`.
         compression (CompressionLike): Compression algorithm.
 
@@ -1422,7 +1422,7 @@ class Pickleable(Base):
 
                 See `compress`.
             mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
-            
+
                 See `vectorbtpro.utils.path_.check_mkdir`.
             **kwargs: Keyword arguments for `Pickleable.dumps` for pickle extensions
                 and `Pickleable.encode_config` for config extensions.

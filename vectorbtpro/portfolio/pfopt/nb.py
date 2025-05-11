@@ -93,8 +93,8 @@ def optimize_meta_nb(
         n_cols (int): Number of columns for the output allocation.
         range_starts (Array1d): Array of starting indices for each range.
         range_ends (Array1d): Array of ending indices for each range.
-        optimize_func_nb (OptimizeFunc): Callback function that accepts an index, 
-            start row index, end row index, and additional arguments, and returns the optimized 
+        optimize_func_nb (OptimizeFunc): Callback function that accepts an index,
+            start row index, end row index, and additional arguments, and returns the optimized
             allocation as a single value or an array that broadcasts to the number of columns.
         *args: Positional arguments for `optimize_func_nb`.
 

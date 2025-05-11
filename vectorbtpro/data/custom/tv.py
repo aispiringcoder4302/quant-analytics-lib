@@ -1046,7 +1046,7 @@ class TVData(RemoteData):
 
         Args:
             symbol (Symbol): Symbol identifier.
-            
+
                 Must be in the `EXCHANGE:SYMBOL` format if `exchange` is not provided.
             client (Optional[TVClient]): Instance of `TVClient`.
 

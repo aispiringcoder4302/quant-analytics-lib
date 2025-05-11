@@ -59,10 +59,10 @@ class AssetCacheManager(Configured):
         clear_cache (Optional[bool]): Remove the cache directory before operation if True.
         max_cache_count (Optional[int]): Maximum number of assets to retain, evicting older ones.
         save_cache_kwargs (KwargsLike): Keyword arguments for saving assets to disk.
-        
+
             See `vectorbtpro.utils.pickling.save`.
         load_cache_kwargs (KwargsLike): Keyword arguments for loading assets from disk.
-        
+
             See `vectorbtpro.utils.pickling.load`.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
@@ -162,7 +162,7 @@ class AssetCacheManager(Configured):
     @property
     def save_cache_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for saving assets to disk.
-        
+
         See `vectorbtpro.utils.pickling.save`.
 
         Returns:
@@ -173,7 +173,7 @@ class AssetCacheManager(Configured):
     @property
     def load_cache_kwargs(self) -> tp.Kwargs:
         """Keyword arguments for loading assets from disk.
-        
+
         See `vectorbtpro.utils.pickling.load`.
 
         Returns:
@@ -372,7 +372,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             *objs (MaybeSequence[KnowledgeAsset]): (Additional) `KnowledgeAsset` instances to merge.
             flatten_kwargs (KwargsLike): Keyword arguments for flattening data items.
-            
+
                 See `vectorbtpro.utils.search_.flatten_obj`.
             **kwargs: Keyword arguments for `KnowledgeAsset.merge_lists` or
                 `KnowledgeAsset.merge_dicts` or `KnowledgeAsset`.
@@ -457,14 +457,14 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             path (PathLike): Path to the JSON file.
             compression (CompressionLike): Compression algorithm.
-        
+
                 See `vectorbtpro.utils.pickling.compress`.
             decompress_kwargs (KwargsLike): Keyword arguments for decompression.
             **kwargs: Keyword arguments for `KnowledgeAsset`.
 
         Returns:
             KnowledgeAsset: New asset populated with data from the JSON file.
-            
+
         See:
             `vectorbtpro.utils.pickling.load_bytes`
         """
@@ -485,14 +485,14 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             bytes_ (bytes): Byte stream containing the JSON object.
             compression (CompressionLike): Compression algorithm.
-        
+
                 See `vectorbtpro.utils.pickling.compress`.
             decompress_kwargs (KwargsLike): Keyword arguments for decompression.
             **kwargs: Keyword arguments for `KnowledgeAsset`.
 
         Returns:
             KnowledgeAsset: New asset containing data from the JSON bytes.
-            
+
         See:
             `vectorbtpro.utils.pickling.decompress`
         """
@@ -787,7 +787,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             *args: Positional arguments for `KnowledgeAsset.get`.
             keys (Optional[Iterable[Key]]): Iterable of keys to sort by.
-            
+
                 If None, keys are obtained by calling `KnowledgeAsset.get`.
             ascending (bool): True for ascending order, False for descending.
             inplace (bool): If True, sort the data in place.
@@ -1244,7 +1244,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Args:
             path (MaybeList[PathLikeKey]): Path or list of paths indicating the element(s) to remove.
-            
+
                 If an integer is provided, the entire data item at that index is removed.
             skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
             make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
@@ -1298,7 +1298,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         paths to new tokens.
 
         Args:
-            path (Union[PathMoveDict, MaybeList[PathLikeKey]]): Mapping or path(s) within the data item 
+            path (Union[PathMoveDict, MaybeList[PathLikeKey]]): Mapping or path(s) within the data item
                 to move (e.g. "x.y[0].z").
 
                 When provided as a dictionary, keys are source paths and values are the corresponding new tokens.
@@ -2229,8 +2229,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def to_documents(
-        self, 
-        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None, 
+        self,
+        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
@@ -2254,16 +2254,16 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             MaybeKnowledgeAsset: New asset with data items converted to text documents.
         """
         return self.apply(
-            "to_docs", 
-            document_cls=document_cls, 
-            template_context=template_context, 
+            "to_docs",
+            document_cls=document_cls,
+            template_context=template_context,
             **kwargs,
         )
 
     def split_text(
         self,
         text_path: tp.Optional[tp.PathLikeKey] = None,
-        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None, 
+        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None,
         merge_chunks: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:

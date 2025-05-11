@@ -468,11 +468,11 @@ def generate_rand_enex_nb(
                 min_total_range = min_range * (_n - 1)
                 if target_shape[0] < min_total_range + exit_wait + 1:
                     raise ValueError("Cannot take a larger sample than population")
-                
+
                 max_free_space = target_shape[0] - min_total_range - 1
                 free_space = min(max_free_space, 3 * target_shape[0] // (_n + 1))
                 free_space -= exit_wait
-                
+
                 rand_floats = uniform_summing_to_one_nb(6)
                 chosen_spaces = rescale_float_to_int_nb(rand_floats, (0, free_space), free_space)
                 first_idx = chosen_spaces[0]
@@ -926,7 +926,7 @@ def rank_nb(
         after_false (bool): If True, disregards the first True partition with no preceding False.
         after_reset (bool): If True, disregards the first True partition before a reset signal.
         reset_wait (int): Offset to treat reset signals.
-        
+
             * 0 treats the signal at reset as the first in the next partition.
             * 1 treats it as the last in the previous partition.
 

@@ -71,7 +71,7 @@ PIVOTINFO = IndicatorFactory(
             doc="Low price series.",
         ),
         conf_pivot=dict(
-            dtype=Pivot, 
+            dtype=Pivot,
             enum_unkval=0,
             doc="Type of the latest confirmed pivot (running, see `vectorbtpro.indicators.enums.Pivot`).",
         ),
@@ -79,7 +79,7 @@ PIVOTINFO = IndicatorFactory(
             doc="Index of the latest confirmed pivot (running).",
         ),
         last_pivot=dict(
-            dtype=Pivot, 
+            dtype=Pivot,
             enum_unkval=0,
             doc="Type of the latest pivot (running, see `vectorbtpro.indicators.enums.Pivot`).",
         ),
@@ -93,12 +93,12 @@ PIVOTINFO = IndicatorFactory(
             doc="High/low value under the latest pivot (running).",
         ),
         pivots=dict(
-            dtype=Pivot, 
+            dtype=Pivot,
             enum_unkval=0,
             doc="Confirmed pivots stored by their indices (looking ahead, see `vectorbtpro.indicators.enums.Pivot`).",
         ),
         modes=dict(
-            dtype=TrendMode, 
+            dtype=TrendMode,
             enum_unkval=0,
             doc="Trend modes between confirmed pivot points (looking ahead, see `vectorbtpro.indicators.enums.TrendMode`).",
         ),

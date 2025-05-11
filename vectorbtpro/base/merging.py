@@ -124,11 +124,11 @@ def concat_merge(
     Args:
         *objs (MaybeSequence[MaybeTuple[Any]]): Array-like objects to merge.
 
-            This function supports passing a sequence of tuples, where each element 
+            This function supports passing a sequence of tuples, where each element
             in the tuple is merged separately.
         keys (Optional[Index]): Index or sequence of index objects to assign to the merged result.
         filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
-        raise_no_results (bool): Flag indicating whether to raise a 
+        raise_no_results (bool): Flag indicating whether to raise a
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         wrap (Optional[bool]): If True, wrap each array with a Pandas Series using `pd.concat`.
 
@@ -136,7 +136,7 @@ def concat_merge(
         wrapper (Optional[ArrayWrapper]): Array wrapper instance.
         wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
             can be a dictionary or a list of dictionaries.
-            
+
             See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
         clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
@@ -280,11 +280,11 @@ def row_stack_merge(
     Args:
         *objs (MaybeSequence[MaybeTuple[Any]]): Array-like or wrapping objects to merge.
 
-            This function supports passing a sequence of tuples, where each element 
+            This function supports passing a sequence of tuples, where each element
             in the tuple is merged separately.
         keys (Optional[Index]): Keys used for concatenating arrays along the row axis.
         filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
-        raise_no_results (bool): Flag indicating whether to raise a 
+        raise_no_results (bool): Flag indicating whether to raise a
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         wrap (Union[None, str, bool]): Determines wrapping behavior for each object.
 
@@ -297,7 +297,7 @@ def row_stack_merge(
         wrapper (Optional[ArrayWrapper]): Array wrapper instance.
         wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
             can be a dictionary or a list of dictionaries.
-            
+
             See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
         clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning MultiIndex levels.
 
@@ -443,7 +443,7 @@ def column_stack_merge(
     Args:
         *objs (MaybeSequence[MaybeTuple[Any]]): Array-like or wrapping objects to merge.
 
-            This function supports passing a sequence of tuples, where each element 
+            This function supports passing a sequence of tuples, where each element
             in the tuple is merged separately.
         reset_index (Union[None, bool, str]): Option to reset indexes in each object.
 
@@ -456,7 +456,7 @@ def column_stack_merge(
         fill_value (Scalar): Value to use for filling missing entries when arrays have different row counts.
         keys (Optional[Index]): Keys used to label columns in the merged result.
         filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
-        raise_no_results (bool): Flag indicating whether to raise a 
+        raise_no_results (bool): Flag indicating whether to raise a
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         wrap (Union[None, str, bool]): Determines wrapping behavior for each object.
 
@@ -469,7 +469,7 @@ def column_stack_merge(
         wrapper (Optional[ArrayWrapper]): Array wrapper instance.
         wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
             can be a dictionary or a list of dictionaries.
-            
+
             See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
         clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning MultiIndex levels.
 
@@ -679,11 +679,11 @@ def imageio_merge(
     Args:
         *objs (MaybeSequence[MaybeTuple[Any]]): Figure-like objects to merge.
 
-            This function supports passing a sequence of tuples, where each element 
+            This function supports passing a sequence of tuples, where each element
             in the tuple is merged separately.
         keys (Optional[Index]): Not used.
         filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
-        raise_no_results (bool): Flag indicating whether to raise a 
+        raise_no_results (bool): Flag indicating whether to raise a
             `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
         to_image_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Figure.to_image`.
         imread_kwargs (KwargsLike): Keyword arguments for `imageio.imread`.
@@ -839,7 +839,7 @@ def resolve_merge_func(merge_func: tp.MergeFuncLike) -> tp.Optional[tp.Callable]
 
     Args:
         merge_func (MergeFuncLike): Merging function to resolve.
-        
+
             * If provided as a string, it is looked up in `merge_func_config`.
             * If provided as a sequence, a partial application of `mixed_merge` with
                 `merge_funcs=merge_func` is returned.
