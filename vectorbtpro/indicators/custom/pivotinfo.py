@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `PIVOTINFO`."""
+"""Module defining the `PIVOTINFO` indicator class for analyzing pivot points."""
 
 import pandas as pd
 
@@ -64,55 +64,105 @@ PIVOTINFO = IndicatorFactory(
         ),
     ),
     attr_settings=dict(
-        conf_pivot=dict(dtype=Pivot, enum_unkval=0),
-        last_pivot=dict(dtype=Pivot, enum_unkval=0),
-        pivots=dict(dtype=Pivot, enum_unkval=0),
-        modes=dict(dtype=TrendMode, enum_unkval=0),
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        conf_pivot=dict(
+            dtype=Pivot, 
+            enum_unkval=0,
+            doc="Type of the latest confirmed pivot (running, see `vectorbtpro.indicators.enums.Pivot`).",
+        ),
+        conf_idx=dict(
+            doc="Index of the latest confirmed pivot (running).",
+        ),
+        last_pivot=dict(
+            dtype=Pivot, 
+            enum_unkval=0,
+            doc="Type of the latest pivot (running, see `vectorbtpro.indicators.enums.Pivot`).",
+        ),
+        last_idx=dict(
+            doc="Index of the latest pivot (running).",
+        ),
+        conf_value=dict(
+            doc="High/low value under the latest confirmed pivot (running).",
+        ),
+        last_value=dict(
+            doc="High/low value under the latest pivot (running).",
+        ),
+        pivots=dict(
+            dtype=Pivot, 
+            enum_unkval=0,
+            doc="Confirmed pivots stored by their indices (looking ahead, see `vectorbtpro.indicators.enums.Pivot`).",
+        ),
+        modes=dict(
+            dtype=TrendMode, 
+            enum_unkval=0,
+            doc="Trend modes between confirmed pivot points (looking ahead, see `vectorbtpro.indicators.enums.TrendMode`).",
+        ),
     ),
 ).with_apply_func(
     nb.pivot_info_nb,
     param_settings=dict(
-        up_th=flex_elem_param_config,
-        down_th=flex_elem_param_config,
+        up_th=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Threshold for identifying a peak (high) pivot point, as a scalar or an array.",
+            ),
+        ),
+        down_th=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Threshold for identifying a trough (low) pivot point, as a scalar or an array.",
+            ),
+        ),
     ),
 )
 
 
 class _PIVOTINFO(PIVOTINFO):
-    """Indicator that returns various information on pivots identified based on thresholds.
+    """Class representing the indicator returning various pivot analysis metrics based on predefined thresholds.
 
-    * `conf_pivot` (`vectorbtpro.indicators.enums.Pivot`): the type of the latest confirmed pivot (running)
-    * `conf_idx`: the index of the latest confirmed pivot (running)
-    * `conf_value`: the high/low value under the latest confirmed pivot (running)
-    * `last_pivot` (`vectorbtpro.indicators.enums.Pivot`): the type of the latest pivot (running)
-    * `last_idx`: the index of the latest pivot (running)
-    * `last_value`: the high/low value under the latest pivot (running)
-    * `pivots` (`vectorbtpro.indicators.enums.Pivot`): confirmed pivots stored under their indices
-        (looking ahead - use only for plotting!)
-    * `modes` (`vectorbtpro.indicators.enums.TrendMode`): modes between confirmed pivot points
-        (looking ahead - use only for plotting!)
+    See:
+        * `PIVOTINFO.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.pivot_info_nb` for the underlying implementation.
+        * `vectorbtpro.indicators.nb.pivot_value_nb` for the underlying implementation of
+            the `PIVOTINFO.conf_value` and `PIVOTINFO.last_value` properties.
+        * `vectorbtpro.indicators.nb.pivots_nb` for the underlying implementation of
+            the `PIVOTINFO.pivots` property.
+        * `vectorbtpro.indicators.nb.modes_nb` for the underlying implementation of
+            the `PIVOTINFO.modes` property.
     """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         conf_value_trace_kwargs: tp.KwargsLike = None,
         last_value_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `PIVOTINFO.conf_value` and `PIVOTINFO.last_value`.
+        """Plot the confirmed and last pivot value lines on a figure.
 
         Args:
-            column (str): Name of the column to plot.
-            conf_value_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `PIVOTINFO.conf_value` line.
-            last_value_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `PIVOTINFO.last_value` line.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            conf_value_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PIVOTINFO.conf_value`.
+            last_value_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PIVOTINFO.last_value`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated figure with the plotted confirmed and last pivot values.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> fig = ohlcv.vbt.ohlcv.plot()
             >>> vbt.PIVOTINFO.run(ohlcv['High'], ohlcv['Low'], 0.1, 0.1).plot(fig=fig).show()
@@ -126,7 +176,7 @@ class _PIVOTINFO(PIVOTINFO):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()
@@ -160,22 +210,30 @@ class _PIVOTINFO(PIVOTINFO):
 
     def plot_zigzag(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         zigzag_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot zig-zag line.
+        """Plot the zigzag line based on pivot data.
 
         Args:
-            column (str): Name of the column to plot.
-            zigzag_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for zig-zag line.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
 
-        Usage:
+            zigzag_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the zigzag line.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
+
+        Returns:
+            BaseFigure: Updated figure with the plotted zigzag line.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> fig = ohlcv.vbt.ohlcv.plot()
             >>> vbt.PIVOTINFO.run(ohlcv['High'], ohlcv['Low'], 0.1, 0.1).plot_zigzag(fig=fig).show()
@@ -189,7 +247,7 @@ class _PIVOTINFO(PIVOTINFO):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

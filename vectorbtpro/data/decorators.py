@@ -8,7 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Class decorators for data."""
+"""Module providing class decorators for data classes."""
+
+import inspect
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
@@ -18,8 +20,16 @@ __all__ = []
 
 
 def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
-    """Class decorator to attach methods for updating symbol dictionaries."""
+    """Attach methods for selecting and updating symbol dictionaries to a subclass of `Data`.
 
+    Args:
+        cls (Type[T]): Class to decorate.
+
+            Must be a subclass of `Data` that defines `_key_dict_attrs` and `_updatable_attrs`.
+
+    Returns:
+        Type[T]: The decorated class with the attached methods.
+    """
     checks.assert_subclass_of(cls, "Data")
 
     DataT = tp.TypeVar("DataT", bound="Data")
@@ -44,7 +54,22 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         select_method.__name__ = "select_" + target_name
         select_method.__module__ = cls.__module__
         select_method.__qualname__ = f"{cls.__name__}.{select_method.__name__}"
-        select_method.__doc__ = f"""Select a feature or symbol from `Data.{target_name}`."""
+        select_method.__doc__ = inspect.cleandoc(
+            f"""
+            Select a feature or symbol from the attribute `{cls.__name__}.{target_name}`.
+            
+            Args:
+                key (Key): Feature or symbol identifier.
+                **kwargs: Keyword arguments for selection.
+                
+            Returns:
+                Any: Selected feature or symbol.
+            
+            !!! note
+                If the attribute name ends with "_kwargs", selection is performed using 
+                `{cls.__name__}.select_key_kwargs`, otherwise `{cls.__name__}.select_key_from_dict` is used.
+            """
+        )
         setattr(cls, select_method.__name__, select_method)
 
     for target_name in cls._updatable_attrs:
@@ -70,7 +95,18 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         update_method.__name__ = "update_" + target_name
         update_method.__module__ = cls.__module__
         update_method.__qualname__ = f"{cls.__name__}.{update_method.__name__}"
-        update_method.__doc__ = f"""Update `Data.{target_name}`. Returns a new instance."""
+        update_method.__doc__ = inspect.cleandoc(
+            f"""
+            Update the attribute `{cls.__name__}.{target_name}` by merging provided updates and return a new instance.
+            
+            Args:
+                check_dict_type (bool): Flag indicating whether to validate the type of provided updates.
+                **kwargs: Keyword arguments representing update values for each symbol key.
+            
+            Returns:
+                {cls.__name__}: A new instance with the updated attribute.
+            """
+        )
         setattr(cls, update_method.__name__, update_method)
 
     return cls

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Classes for preparing portfolio simulations."""
+"""Module providing classes for preparing portfolio simulations."""
 
 from collections import namedtuple
 from functools import cached_property as cachedproperty
@@ -52,7 +52,14 @@ __pdoc__ = {}
 
 @register_jitted(cache=True)
 def valid_price_from_ago_1d_nb(price: tp.Array1d) -> tp.Array1d:
-    """Parse from_ago from a valid price."""
+    """Compute the `from_ago` values for a price array.
+
+    Args:
+        price (Array1d): 1D array of prices.
+
+    Returns:
+        Array1d: Array where each element represents the number of steps since the last non-NaN price.
+    """
     from_ago = np.empty(price.shape, dtype=int_)
     for i in range(price.shape[0] - 1, -1, -1):
         if i > 0 and not np.isnan(price[i]):
@@ -69,13 +76,20 @@ PFPrepResultT = tp.TypeVar("PFPrepResultT", bound="PFPrepResult")
 
 
 class PFPrepResult(Configured):
-    """Result of preparation."""
+    """Class representing the result of portfolio preparation.
+
+    Args:
+        target_func (Optional[Callable]): Target function.
+        target_args (KwargsLike): Dictionary of arguments for the target function.
+        pf_args (KwargsLike): Dictionary of portfolio configuration arguments.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
+    """
 
     def __init__(
         self,
         target_func: tp.Optional[tp.Callable] = None,
-        target_args: tp.Optional[tp.Kwargs] = None,
-        pf_args: tp.Optional[tp.Kwargs] = None,
+        target_args: tp.KwargsLike = None,
+        pf_args: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
@@ -88,17 +102,29 @@ class PFPrepResult(Configured):
 
     @cachedproperty
     def target_func(self) -> tp.Optional[tp.Callable]:
-        """Target function."""
+        """Target function from the configuration.
+
+        Returns:
+            Optional[Callable]: The target function.
+        """
         return self.config["target_func"]
 
     @cachedproperty
     def target_args(self) -> tp.Kwargs:
-        """Target arguments."""
+        """Target arguments from the configuration.
+
+        Returns:
+            Kwargs: Dictionary containing target arguments.
+        """
         return self.config["target_args"]
 
     @cachedproperty
-    def pf_args(self) -> tp.Optional[tp.Kwargs]:
-        """Portfolio arguments."""
+    def pf_args(self) -> tp.KwargsLike:
+        """Portfolio arguments from the configuration.
+
+        Returns:
+            KwargsLike: Dictionary containing portfolio arguments.
+        """
         return self.config["pf_args"]
 
 
@@ -154,10 +180,10 @@ base_arg_config = ReadonlyConfig(
 
 __pdoc__[
     "base_arg_config"
-] = f"""Argument config for `BasePFPreparer`.
+] = f"""Argument configuration for `BasePFPreparer`.
 
 ```python
-{base_arg_config.prettify()}
+{base_arg_config.prettify_doc()}
 ```
 """
 
@@ -165,7 +191,13 @@ __pdoc__[
 @attach_arg_properties
 @override_arg_config(base_arg_config)
 class BasePFPreparer(BasePreparer):
-    """Base class for preparing portfolio simulations."""
+    """Base class for preparing portfolio simulations.
+
+    This class preprocesses and aligns simulation parameters for portfolio analysis.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.portfolio`.
+    """
 
     _settings_path: tp.SettingsPath = "portfolio"
 
@@ -177,7 +209,11 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def init_cash_mode(self) -> tp.Optional[int]:
-        """Initial cash mode."""
+        """Initial cash mode value used in portfolio simulation.
+
+        Returns:
+            Optional[int]: The initial cash mode if valid, otherwise None.
+        """
         init_cash = self["init_cash"]
         if checks.is_int(init_cash) and init_cash in enums.InitCashMode:
             return init_cash
@@ -185,7 +221,11 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def group_by(self) -> tp.GroupByLike:
-        """Argument `group_by`."""
+        """Grouping specification used for portfolio simulation.
+
+        Returns:
+            GroupByLike: Grouping specification, which can be None, a string, or an array-like object.
+        """
         group_by = self["group_by"]
         if group_by is None and self.cash_sharing:
             return True
@@ -193,7 +233,11 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def auto_call_seq(self) -> bool:
-        """Whether automatic call sequence is enabled."""
+        """Flag indicating whether automatic call sequence is enabled.
+
+        Returns:
+            bool: True if automatic call sequence is enabled, otherwise False.
+        """
         call_seq = self["call_seq"]
         return checks.is_int(call_seq) and call_seq == enums.CallSeqType.Auto
 
@@ -203,7 +247,17 @@ class BasePFPreparer(BasePreparer):
         data: tp.Union[None, OHLCDataMixin, str, tp.ArrayLike],
         all_ohlc: bool = False,
     ) -> tp.Optional[OHLCDataMixin]:
-        """Parse an instance with OHLC features."""
+        """Parse a data input into an OHLC data instance.
+
+        Args:
+            data (Union[None, OHLCDataMixin, str, ArrayLike]): Input data to parse.
+
+                Can be an OHLC data instance, a string identifier, or an array-like object.
+            all_ohlc (bool): Flag indicating whether to require all OHLC attributes.
+
+        Returns:
+            Optional[OHLCDataMixin]: An instance with OHLC data if parsing succeeds, otherwise None.
+        """
         if data is None:
             return None
         if isinstance(data, OHLCDataMixin):
@@ -220,14 +274,22 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def data(self) -> tp.Optional[OHLCDataMixin]:
-        """Argument `data`."""
+        """OHLC data used for portfolio simulation.
+
+        Returns:
+            Optional[OHLCDataMixin]: An instance with OHLC data if available, otherwise None.
+        """
         return self.parse_data(self["data"])
 
     # ############# Before broadcasting ############# #
 
     @cachedproperty
-    def _pre_open(self) -> tp.ArrayLike:
-        """Argument `open` before broadcasting."""
+    def pre__open(self) -> tp.ArrayLike:
+        """Argument `open` before broadcasting.
+
+        Returns:
+            ArrayLike: Open prices before broadcasting.
+        """
         open = self["open"]
         if open is None:
             if self.data is not None:
@@ -237,8 +299,12 @@ class BasePFPreparer(BasePreparer):
         return open
 
     @cachedproperty
-    def _pre_high(self) -> tp.ArrayLike:
-        """Argument `high` before broadcasting."""
+    def pre__high(self) -> tp.ArrayLike:
+        """Argument `high` before broadcasting.
+
+        Returns:
+            ArrayLike: High prices before broadcasting.
+        """
         high = self["high"]
         if high is None:
             if self.data is not None:
@@ -248,8 +314,12 @@ class BasePFPreparer(BasePreparer):
         return high
 
     @cachedproperty
-    def _pre_low(self) -> tp.ArrayLike:
-        """Argument `low` before broadcasting."""
+    def pre__low(self) -> tp.ArrayLike:
+        """Argument `low` before broadcasting.
+
+        Returns:
+            ArrayLike: Low prices before broadcasting.
+        """
         low = self["low"]
         if low is None:
             if self.data is not None:
@@ -259,8 +329,12 @@ class BasePFPreparer(BasePreparer):
         return low
 
     @cachedproperty
-    def _pre_close(self) -> tp.ArrayLike:
-        """Argument `close` before broadcasting."""
+    def pre__close(self) -> tp.ArrayLike:
+        """Argument `close` before broadcasting.
+
+        Returns:
+            ArrayLike: Close prices before broadcasting.
+        """
         close = self["close"]
         if close is None:
             if self.data is not None:
@@ -270,53 +344,85 @@ class BasePFPreparer(BasePreparer):
         return close
 
     @cachedproperty
-    def _pre_bm_close(self) -> tp.Optional[tp.ArrayLike]:
-        """Argument `bm_close` before broadcasting."""
+    def pre__bm_close(self) -> tp.Optional[tp.ArrayLike]:
+        """Argument `bm_close` before broadcasting.
+
+        Returns:
+            Optional[ArrayLike]: The benchmark close prices before broadcasting if available, otherwise None.
+        """
         bm_close = self["bm_close"]
         if bm_close is not None and not isinstance(bm_close, bool):
             return bm_close
         return np.nan
 
     @cachedproperty
-    def _pre_init_cash(self) -> tp.ArrayLike:
-        """Argument `init_cash` before broadcasting."""
+    def pre__init_cash(self) -> tp.ArrayLike:
+        """Argument `init_cash` before broadcasting.
+
+        Returns:
+            ArrayLike: Initial cash before broadcasting.
+        """
         if self.init_cash_mode is not None:
             return np.inf
         return self["init_cash"]
 
     @cachedproperty
-    def _pre_init_position(self) -> tp.ArrayLike:
-        """Argument `init_position` before broadcasting."""
+    def pre__init_position(self) -> tp.ArrayLike:
+        """Argument `init_position` before broadcasting.
+
+        Returns:
+            ArrayLike: Initial position before broadcasting.
+        """
         return self["init_position"]
 
     @cachedproperty
-    def _pre_init_price(self) -> tp.ArrayLike:
-        """Argument `init_price` before broadcasting."""
+    def pre__init_price(self) -> tp.ArrayLike:
+        """Argument `init_price` before broadcasting.
+
+        Returns:
+            ArrayLike: Initial price before broadcasting.
+        """
         return self["init_price"]
 
     @cachedproperty
-    def _pre_cash_deposits(self) -> tp.ArrayLike:
-        """Argument `cash_deposits` before broadcasting."""
+    def pre__cash_deposits(self) -> tp.ArrayLike:
+        """Argument `cash_deposits` before broadcasting.
+
+        Returns:
+            ArrayLike: Cash deposits before broadcasting.
+        """
         return self["cash_deposits"]
 
     @cachedproperty
-    def _pre_freq(self) -> tp.Optional[tp.FrequencyLike]:
-        """Argument `freq` before casting to nanosecond format."""
+    def pre__freq(self) -> tp.Optional[tp.FrequencyLike]:
+        """Argument `freq` before casting to nanosecond format.
+
+        Returns:
+            Optional[FrequencyLike]: The frequency before broadcasting.
+        """
         freq = self["freq"]
         if freq is None and self.data is not None:
             return self.data.symbol_wrapper.freq
         return freq
 
     @cachedproperty
-    def _pre_call_seq(self) -> tp.Optional[tp.ArrayLike]:
-        """Argument `call_seq` before broadcasting."""
+    def pre__call_seq(self) -> tp.Optional[tp.ArrayLike]:
+        """Argument `call_seq` before broadcasting.
+
+        Returns:
+            Optional[ArrayLike]: The call sequence before broadcasting.
+        """
         if self.auto_call_seq:
             return None
         return self["call_seq"]
 
     @cachedproperty
-    def _pre_in_outputs(self) -> tp.Union[None, tp.NamedTuple, CustomTemplate]:
-        """Argument `in_outputs` before broadcasting."""
+    def pre__in_outputs(self) -> tp.Union[None, tp.NamedTuple, CustomTemplate]:
+        """Argument `in_outputs` before broadcasting.
+
+        Returns:
+            Union[None, NamedTuple, CustomTemplate]: The in-place outputs before broadcasting.
+        """
         in_outputs = self["in_outputs"]
         if (
             in_outputs is not None
@@ -331,19 +437,31 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def cs_group_lens(self) -> tp.GroupLens:
-        """Cash sharing aware group lengths."""
+        """Cash sharing aware group lengths.
+
+        Returns:
+            GroupLens: Group lengths adjusted for cash sharing.
+        """
         cs_group_lens = self.wrapper.grouper.get_group_lens(group_by=None if self.cash_sharing else False)
         checks.assert_subdtype(cs_group_lens, np.integer, arg_name="cs_group_lens")
         return cs_group_lens
 
     @cachedproperty
     def group_lens(self) -> tp.GroupLens:
-        """Group lengths."""
+        """Group lengths for portfolio data columns.
+
+        Returns:
+            GroupLens: Group lengths corresponding to the wrapper's columns.
+        """
         return self.wrapper.grouper.get_group_lens(group_by=self.group_by)
 
     @cachedproperty
     def sim_group_lens(self) -> tp.GroupLens:
-        """Simulation group lengths."""
+        """Simulation group lengths identical to group lengths.
+
+        Returns:
+            GroupLens: Simulation group lengths.
+        """
         return self.group_lens
 
     def align_pc_arr(
@@ -355,7 +473,19 @@ class BasePFPreparer(BasePreparer):
         reduce_func: tp.Union[None, str, tp.Callable] = None,
         arg_name: tp.Optional[str] = None,
     ) -> tp.Array1d:
-        """Align a per-column array."""
+        """Align an array to match the portfolio's column structure.
+
+        Args:
+            arr (ArrayLike): Input array to align.
+            group_lens (Optional[GroupLens]): Array defining the number of columns in each group.
+            check_dtype (Optional[DTypeLike]): Data type to validate the array elements.
+            cast_to_dtype (Optional[DTypeLike]): Target data type for casting.
+            reduce_func (Union[None, str, Callable]): Reduction function to apply on groups, if applicable.
+            arg_name (Optional[str]): Name of the argument for error messaging.
+
+        Returns:
+            Array1d: Aligned array with one element per portfolio column.
+        """
         arr = np.asarray(arr)
         if check_dtype is not None:
             checks.assert_subdtype(arr, check_dtype, arg_name=arg_name)
@@ -383,9 +513,13 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def init_cash(self) -> tp.Array1d:
-        """Argument `init_cash`."""
+        """Aligned initial cash values computed across portfolio groups.
+
+        Returns:
+            Array1d: Initial cash values after alignment.
+        """
         return self.align_pc_arr(
-            self._pre_init_cash,
+            self.pre__init_cash,
             group_lens=self.cs_group_lens,
             check_dtype=np.number,
             cast_to_dtype=float_,
@@ -395,9 +529,16 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def init_position(self) -> tp.Array1d:
-        """Argument `init_position`."""
+        """Aligned initial position values for portfolio simulation.
+
+        Returns:
+            Array1d: Aligned initial position values.
+
+        !!! note
+            A warning is issued if non-zero positions are detected with undefined initial prices.
+        """
         init_position = self.align_pc_arr(
-            self._pre_init_position,
+            self.pre__init_position,
             check_dtype=np.number,
             cast_to_dtype=float_,
             arg_name="init_position",
@@ -408,9 +549,13 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def init_price(self) -> tp.Array1d:
-        """Argument `init_price`."""
+        """Initial price array aligned with portfolio configuration.
+
+        Returns:
+            Array1d: Aligned initial price values.
+        """
         return self.align_pc_arr(
-            self._pre_init_price,
+            self.pre__init_price,
             check_dtype=np.number,
             cast_to_dtype=float_,
             arg_name="init_price",
@@ -418,7 +563,11 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def cash_deposits(self) -> tp.ArrayLike:
-        """Argument `cash_deposits`."""
+        """Cash deposits array broadcasted to match portfolio groups.
+
+        Returns:
+            ArrayLike: Cash deposits broadcasted to the required shape.
+        """
         cash_deposits = self["cash_deposits"]
         checks.assert_subdtype(cash_deposits, np.number, arg_name="cash_deposits")
         return broadcast(
@@ -432,17 +581,32 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def auto_sim_start(self) -> tp.Optional[tp.ArrayLike]:
-        """Get automatic `sim_start`"""
+        """Automatically computed simulation start values.
+
+        Returns:
+            Optional[ArrayLike]: Automatic simulation start values, or None.
+        """
         return None
 
     @cachedproperty
     def auto_sim_end(self) -> tp.Optional[tp.ArrayLike]:
-        """Get automatic `sim_end`"""
+        """Automatically computed simulation end values.
+
+        Returns:
+            Optional[ArrayLike]: Automatic simulation end values, or None.
+        """
         return None
 
     @cachedproperty
     def sim_start(self) -> tp.Optional[tp.ArrayLike]:
-        """Argument `sim_start`."""
+        """Simulation start indices for the simulation range.
+
+        If `sim_start` is set to "auto" (case-insensitive), the value is derived from
+        automatic simulation start settings.
+
+        Returns:
+            Optional[ArrayLike]: An array of simulation start indices, or None.
+        """
         sim_start = self["sim_start"]
         if sim_start is None:
             return None
@@ -472,7 +636,14 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def sim_end(self) -> tp.Optional[tp.ArrayLike]:
-        """Argument `sim_end`."""
+        """Simulation end indices for the simulation range.
+
+        If `sim_end` is set to "auto" (case-insensitive), the value is derived from
+        automatic simulation end settings.
+
+        Returns:
+            Optional[ArrayLike]: An array of simulation end indices, or None.
+        """
         sim_end = self["sim_end"]
         if sim_end is None:
             return None
@@ -502,8 +673,14 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def call_seq(self) -> tp.Optional[tp.ArrayLike]:
-        """Argument `call_seq`."""
-        call_seq = self._pre_call_seq
+        """Call sequence array for portfolio operations.
+
+        Determines the order of method calls for portfolio updates.
+
+        Returns:
+            Optional[ArrayLike]: The computed call sequence, or None.
+        """
+        call_seq = self.pre__call_seq
         if call_seq is None and self.attach_call_seq:
             call_seq = enums.CallSeqType.Default
         if call_seq is not None:
@@ -533,30 +710,43 @@ class BasePFPreparer(BasePreparer):
                 call_seq=self.call_seq,
                 auto_call_seq=self.auto_call_seq,
                 attach_call_seq=self.attach_call_seq,
-                in_outputs=self._pre_in_outputs,
+                in_outputs=self.pre__in_outputs,
             ),
             BasePreparer.template_context.func(self),
         )
 
     @cachedproperty
     def in_outputs(self) -> tp.Optional[tp.NamedTuple]:
-        """Argument `in_outputs`."""
-        return substitute_templates(self._pre_in_outputs, self.template_context, eval_id="in_outputs")
+        """Template-substituted in-place outputs.
+
+        Substitutes templates in the input outputs using the template context.
+
+        Returns:
+            Optional[NamedTuple]: The outputs after template substitution.
+        """
+        return substitute_templates(self.pre__in_outputs, self.template_context, eval_id="in_outputs")
 
     # ############# Result ############# #
 
     @cachedproperty
-    def pf_args(self) -> tp.Optional[tp.Kwargs]:
-        """Arguments to be passed to the portfolio."""
+    def pf_args(self) -> tp.KwargsLike:
+        """Portfolio arguments for initialization.
+
+        Constructs a dictionary of parameters—including market data arrays, cash, and
+        price information—to be passed to the portfolio.
+
+        Returns:
+            KwargsLike: Dictionary containing portfolio parameters.
+        """
         kwargs = dict()
         for k, v in self.config.items():
             if k not in self.arg_config and k != "arg_config":
                 kwargs[k] = v
         return dict(
             wrapper=self.wrapper,
-            open=self.open if self._pre_open is not np.nan else None,
-            high=self.high if self._pre_high is not np.nan else None,
-            low=self.low if self._pre_low is not np.nan else None,
+            open=self.open if self.pre__open is not np.nan else None,
+            high=self.high if self.pre__high is not np.nan else None,
+            low=self.low if self.pre__low is not np.nan else None,
             close=self.close,
             cash_sharing=self.cash_sharing,
             init_cash=self.init_cash if self.init_cash_mode is None else self.init_cash_mode,
@@ -572,7 +762,13 @@ class BasePFPreparer(BasePreparer):
 
     @cachedproperty
     def result(self) -> PFPrepResult:
-        """Result as an instance of `PFPrepResult`."""
+        """Portfolio preparation result.
+
+        Encapsulates the target function, target arguments, and portfolio configuration used for initialization.
+
+        Returns:
+            PFPrepResult: Instance representing the portfolio preparation result.
+        """
         return PFPrepResult(target_func=self.target_func, target_args=self.target_args, pf_args=self.pf_args)
 
 
@@ -677,10 +873,10 @@ order_arg_config = ReadonlyConfig(
 
 __pdoc__[
     "order_arg_config"
-] = f"""Argument config for order-related information.
+] = f"""Configuration for order-related arguments.
 
 ```python
-{order_arg_config.prettify()}
+{order_arg_config.prettify_doc()}
 ```
 """
 
@@ -716,10 +912,10 @@ fo_arg_config = ReadonlyConfig(
 
 __pdoc__[
     "fo_arg_config"
-] = f"""Argument config for `FOPreparer`.
+] = f"""Configuration for `FOPreparer` arguments.
 
 ```python
-{fo_arg_config.prettify()}
+{fo_arg_config.prettify_doc()}
 ```
 """
 
@@ -728,7 +924,13 @@ __pdoc__[
 @override_arg_config(fo_arg_config)
 @override_arg_config(order_arg_config)
 class FOPreparer(BasePFPreparer):
-    """Class for preparing `vectorbtpro.portfolio.base.Portfolio.from_orders`."""
+    """Class for preparing `vectorbtpro.portfolio.base.Portfolio.from_orders`.
+
+    This class processes and configures input arguments necessary for constructing a portfolio from orders.
+
+    !!! info
+        For default settings, see `from_orders` in `vectorbtpro._settings.portfolio`.
+    """
 
     _settings_path: tp.SettingsPath = "portfolio.from_orders"
 
@@ -736,27 +938,46 @@ class FOPreparer(BasePFPreparer):
 
     @cachedproperty
     def staticized(self) -> tp.StaticizedOption:
-        """Argument `staticized`."""
+        """Staticized argument.
+
+        Returns:
+            StaticizedOption: Staticized option.
+
+        Raises:
+            ValueError: This method doesn't support staticization.
+        """
         raise ValueError("This method doesn't support staticization")
 
     # ############# Before broadcasting ############# #
 
     @cachedproperty
-    def _pre_from_ago(self) -> tp.ArrayLike:
-        """Argument `from_ago` before broadcasting."""
+    def pre__from_ago(self) -> tp.ArrayLike:
+        """Argument `from_ago` before broadcasting.
+
+        Returns:
+            ArrayLike: From-ago value before broadcasting.
+        """
         from_ago = self["from_ago"]
         if from_ago is not None:
             return from_ago
         return 0
 
     @cachedproperty
-    def _pre_max_order_records(self) -> tp.Optional[int]:
-        """Argument `max_order_records` before broadcasting."""
+    def pre__max_order_records(self) -> tp.Optional[int]:
+        """Argument `max_order_records` before broadcasting.
+
+        Returns:
+            Optional[int]: The maximum order records before broadcasting.
+        """
         return self["max_order_records"]
 
     @cachedproperty
-    def _pre_max_log_records(self) -> tp.Optional[int]:
-        """Argument `max_log_records` before broadcasting."""
+    def pre__max_log_records(self) -> tp.Optional[int]:
+        """Argument `max_log_records` before broadcasting.
+
+        Returns:
+            Optional[int]: The maximum log records before broadcasting.
+        """
         return self["max_log_records"]
 
     # ############# After broadcasting ############# #
@@ -785,9 +1006,14 @@ class FOPreparer(BasePFPreparer):
 
     @cachedproperty
     def price_and_from_ago(self) -> tp.Tuple[tp.ArrayLike, tp.ArrayLike]:
-        """Arguments `price` and `from_ago` after broadcasting."""
-        price = self._post_price
-        from_ago = self._post_from_ago
+        """Processed `price` and `from_ago` arguments after broadcasting.
+
+        Returns:
+            Tuple[ArrayLike, ArrayLike]: A tuple where the first element is the processed `price` array and
+                the second element is the corresponding `from_ago` array.
+        """
+        price = self.post__price
+        from_ago = self.post__from_ago
         if self["from_ago"] is None:
             if price.size == 1 or price.shape[0] == 1:
                 next_open_mask = price == enums.PriceType.NextOpen
@@ -831,20 +1057,33 @@ class FOPreparer(BasePFPreparer):
 
     @cachedproperty
     def price(self) -> tp.ArrayLike:
-        """Argument `price`."""
+        """Processed `price` argument derived from `price_and_from_ago`.
+
+        Returns:
+            ArrayLike: Processed `price` array.
+        """
         return self.price_and_from_ago[0]
 
     @cachedproperty
     def from_ago(self) -> tp.ArrayLike:
-        """Argument `from_ago`."""
+        """Processed `from_ago` argument derived from `price_and_from_ago`.
+
+        Returns:
+            ArrayLike: Processed `from_ago` array.
+        """
         return self.price_and_from_ago[1]
 
     @cachedproperty
     def max_order_records(self) -> tp.Optional[int]:
-        """Argument `max_order_records`."""
-        max_order_records = self._pre_max_order_records
+        """Maximum number of order records.
+
+        Returns:
+            Optional[int]: The maximum order records calculated based on the data shape and
+                target configuration.
+        """
+        max_order_records = self.pre__max_order_records
         if max_order_records is None:
-            _size = self._post_size
+            _size = self.post__size
             if _size.size == 1:
                 max_order_records = self.target_shape[0] * int(not np.isnan(_size.item(0)))
             else:
@@ -856,10 +1095,15 @@ class FOPreparer(BasePFPreparer):
 
     @cachedproperty
     def max_log_records(self) -> tp.Optional[int]:
-        """Argument `max_log_records`."""
-        max_log_records = self._pre_max_log_records
+        """Maximum number of log records.
+
+        Returns:
+            Optional[int]: The maximum log records determined based on the provided log data and
+                target configuration.
+        """
+        max_log_records = self.pre__max_log_records
         if max_log_records is None:
-            _log = self._post_log
+            _log = self.post__log
             if _log.size == 1:
                 max_log_records = self.target_shape[0] * int(_log.item(0))
             else:
@@ -1165,10 +1409,10 @@ fs_arg_config = ReadonlyConfig(
 
 __pdoc__[
     "fs_arg_config"
-] = f"""Argument config for `FSPreparer`.
+] = f"""Argument configuration for `FSPreparer`.
 
 ```python
-{fs_arg_config.prettify()}
+{fs_arg_config.prettify_doc()}
 ```
 """
 
@@ -1177,15 +1421,29 @@ __pdoc__[
 @override_arg_config(fs_arg_config)
 @override_arg_config(order_arg_config)
 class FSPreparer(BasePFPreparer):
-    """Class for preparing `vectorbtpro.portfolio.base.Portfolio.from_signals`."""
+    """Class for preparing `vectorbtpro.portfolio.base.Portfolio.from_signals`.
+
+    This class processes and configures input arguments necessary for constructing a portfolio from signals.
+
+    !!! info
+        For default settings, see `from_signals` in `vectorbtpro._settings.portfolio`.
+    """
 
     _settings_path: tp.SettingsPath = "portfolio.from_signals"
 
     # ############# Mode resolution ############# #
 
     @cachedproperty
-    def _pre_staticized(self) -> tp.StaticizedOption:
-        """Argument `staticized` before its resolution."""
+    def pre__staticized(self) -> tp.StaticizedOption:
+        """Pre-resolution value for the `staticized` argument.
+
+        If `staticized` is a boolean, it is converted to a dict if True or set to None if False.
+        If it is a dict and does not include a `"func"` key, a default function
+        `vectorbtpro.portfolio.nb.from_signals.from_signal_func_nb` is added.
+
+        Returns:
+            StaticizedOption: Pre-resolved value for the `staticized` argument.
+        """
         staticized = self["staticized"]
         if isinstance(staticized, bool):
             if staticized:
@@ -1200,72 +1458,141 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def order_mode(self) -> bool:
-        """Argument `order_mode`."""
+        """Processed value of the `order_mode` argument.
+
+        If not set, defaults to False.
+
+        Returns:
+            bool: True if order mode is enabled, False otherwise.
+        """
         order_mode = self["order_mode"]
         if order_mode is None:
             order_mode = False
         return order_mode
 
     @cachedproperty
-    def dynamic_mode(self) -> tp.StaticizedOption:
-        """Whether the dynamic mode is enabled."""
+    def dynamic_mode(self) -> bool:
+        """Indicates whether dynamic mode is enabled.
+
+        It is enabled if any of the adjustment, signal, post-signal, or post-segment functions are provided,
+        or if order mode or a non-None staticized configuration is set.
+
+        Returns:
+            bool: True if dynamic mode is enabled, False otherwise.
+        """
         return (
             self["adjust_func_nb"] is not None
             or self["signal_func_nb"] is not None
             or self["post_signal_func_nb"] is not None
             or self["post_segment_func_nb"] is not None
             or self.order_mode
-            or self._pre_staticized is not None
+            or self.pre__staticized is not None
         )
 
     @cachedproperty
     def implicit_mode(self) -> bool:
-        """Whether the explicit mode is enabled."""
+        """Indicates whether implicit signals mode is enabled.
+
+        This is determined by the presence of the `entries` or `exits` arguments.
+
+        Returns:
+            bool: True if implicit signals mode is enabled, False otherwise.
+        """
         return self["entries"] is not None or self["exits"] is not None
 
     @cachedproperty
     def explicit_mode(self) -> bool:
-        """Whether the explicit mode is enabled."""
+        """Indicates whether explicit mode is enabled.
+
+        This is determined by the presence of the `long_entries` or `long_exits` arguments.
+
+        Returns:
+            bool: True if explicit mode is enabled, False otherwise.
+        """
         return self["long_entries"] is not None or self["long_exits"] is not None
 
     @cachedproperty
-    def _pre_ls_mode(self) -> bool:
-        """Whether direction-aware mode is enabled before resolution."""
+    def pre__ls_mode(self) -> bool:
+        """Indicates whether direction-aware mode is enabled before resolution.
+
+        This is based on explicit mode or if `short_entries` or `short_exits` are provided.
+
+        Returns:
+            bool: True if pre-resolution direction-aware mode is enabled, False otherwise.
+        """
         return self.explicit_mode or self["short_entries"] is not None or self["short_exits"] is not None
 
     @cachedproperty
-    def _pre_signals_mode(self) -> bool:
-        """Whether signals mode is enabled before resolution."""
-        return self.implicit_mode or self._pre_ls_mode
+    def pre__signals_mode(self) -> bool:
+        """Indicates whether signals mode is enabled before resolution.
+
+        It is enabled if either implicit signals mode or direction-aware mode is active.
+
+        Returns:
+            bool: True if pre-resolution signals mode is enabled, False otherwise.
+        """
+        return self.implicit_mode or self.pre__ls_mode
 
     @cachedproperty
     def ls_mode(self) -> bool:
-        """Whether direction-aware mode is enabled."""
-        if not self._pre_signals_mode and not self.order_mode and self["signal_func_nb"] is None:
+        """Indicates whether direction-aware mode is enabled after resolution.
+
+        If no pre-resolution signals mode, order mode, or signal function is detected, returns True.
+
+        Returns:
+            bool: True if direction-aware mode is enabled, False otherwise.
+
+        Raises:
+            ValueError: If both direction and short signal arrays are used together.
+        """
+        if not self.pre__signals_mode and not self.order_mode and self["signal_func_nb"] is None:
             return True
-        ls_mode = self._pre_ls_mode
+        ls_mode = self.pre__ls_mode
         if self.config.get("direction", None) is not None and ls_mode:
             raise ValueError("Direction and short signal arrays cannot be used together")
         return ls_mode
 
     @cachedproperty
     def signals_mode(self) -> bool:
-        """Whether signals mode is enabled."""
-        if not self._pre_signals_mode and not self.order_mode and self["signal_func_nb"] is None:
+        """Indicates whether signals mode is enabled after resolution.
+
+        If no pre-resolution signals mode, order mode, or signal function is provided, returns True.
+
+        Returns:
+            bool: True if signals mode is enabled, False otherwise.
+
+        Raises:
+            ValueError: If both signals mode and order mode are activated simultaneously.
+        """
+        if not self.pre__signals_mode and not self.order_mode and self["signal_func_nb"] is None:
             return True
-        signals_mode = self._pre_signals_mode
+        signals_mode = self.pre__signals_mode
         if signals_mode and self.order_mode:
             raise ValueError("Signal arrays and order mode cannot be used together")
         return signals_mode
 
     @cachedproperty
     def signal_func_mode(self) -> bool:
-        """Whether signal function mode is enabled."""
+        """Indicates whether signal function mode is enabled.
+
+        This is active when dynamic mode is enabled but neither signals mode nor order mode is active.
+
+        Returns:
+            bool: True if signal function mode is enabled, False otherwise.
+        """
         return self.dynamic_mode and not self.signals_mode and not self.order_mode
 
     @cachedproperty
     def adjust_func_nb(self) -> tp.Optional[tp.Callable]:
-        """Argument `adjust_func_nb`."""
+        """Processed `adjust_func_nb` argument.
+
+        In dynamic mode, if `adjust_func_nb` is not provided, it returns
+        `vectorbtpro.portfolio.nb.from_signals.no_adjust_func_nb`; otherwise,
+        the provided callable is returned. If dynamic mode is inactive, returns None.
+
+        Returns:
+            Optional[Callable]: The adjustment function callable or None.
+        """
         if self.dynamic_mode:
             if self["adjust_func_nb"] is None:
                 return nb.no_adjust_func_nb
@@ -1274,7 +1601,19 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def signal_func_nb(self) -> tp.Optional[tp.Callable]:
-        """Argument `signal_func_nb`."""
+        """Processed `signal_func_nb` argument.
+
+        In dynamic mode, if not explicitly provided, returns a default signal function based on the active mode:
+
+        * `vectorbtpro.portfolio.nb.from_signals.ls_signal_func_nb` if direction-aware mode is active.
+        * `vectorbtpro.portfolio.nb.from_signals.dir_signal_func_nb` if signals mode is active.
+        * `vectorbtpro.portfolio.nb.from_signals.order_signal_func_nb` if order mode is active.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: The signal function callable or None.
+        """
         if self.dynamic_mode:
             if self["signal_func_nb"] is None:
                 if self.ls_mode:
@@ -1289,7 +1628,16 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def post_signal_func_nb(self) -> tp.Optional[tp.Callable]:
-        """Argument `post_signal_func_nb`."""
+        """Processed `post_signal_func_nb` argument.
+
+        In dynamic mode, if not provided, a default `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`
+        is returned; otherwise, the provided callable is used.
+
+        If dynamic mode is inactive, returns None.
+
+        Returns:
+            Optional[Callable]: The post signal function callable or None.
+        """
         if self.dynamic_mode:
             if self["post_signal_func_nb"] is None:
                 return nb.no_post_func_nb
@@ -1298,7 +1646,17 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def post_segment_func_nb(self) -> tp.Optional[tp.Callable]:
-        """Argument `post_segment_func_nb`."""
+        """Processed `post_segment_func_nb` argument.
+
+        In dynamic mode, if not provided, returns `vectorbtpro.portfolio.nb.from_signals.save_post_segment_func_nb`
+        if saving state, value, or returns is enabled; otherwise, returns
+        `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb`.
+
+        If a value is provided, it is returned. Outside dynamic mode, returns None.
+
+        Returns:
+            Optional[Callable]: The post segment function callable or None.
+        """
         if self.dynamic_mode:
             if self["post_segment_func_nb"] is None:
                 if self.save_state or self.save_value or self.save_returns:
@@ -1309,8 +1667,15 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def staticized(self) -> tp.StaticizedOption:
-        """Argument `staticized`."""
-        staticized = self._pre_staticized
+        """Processed `staticized` argument.
+
+        If dynamic mode is active, adapts the staticized dictionary by setting appropriate signal and
+        adjustment functions based on the active mode and provided arguments.
+
+        Returns:
+            StaticizedOption: Adapted staticized argument.
+        """
+        staticized = self.pre__staticized
         if isinstance(staticized, dict):
             staticized = dict(staticized)
             if self.dynamic_mode:
@@ -1337,53 +1702,103 @@ class FSPreparer(BasePFPreparer):
         return staticized
 
     @cachedproperty
-    def _pre_chunked(self) -> tp.ChunkedOption:
-        """Argument `chunked` before template substitution."""
+    def pre__chunked(self) -> tp.ChunkedOption:
+        """Pre-template substituted value for the `chunked` argument.
+
+        Returns:
+            ChunkedOption: Pre-template substituted chunked option.
+        """
         return self["chunked"]
 
     # ############# Before broadcasting ############# #
 
     @cachedproperty
-    def _pre_entries(self) -> tp.ArrayLike:
-        """Argument `entries` before broadcasting."""
+    def pre__entries(self) -> tp.ArrayLike:
+        """Pre-broadcast value for the `entries` argument.
+
+        Defaults to False if `entries` is not provided.
+
+        Returns:
+            ArrayLike: Pre-broadcast entries value.
+        """
         return self["entries"] if self["entries"] is not None else False
 
     @cachedproperty
-    def _pre_exits(self) -> tp.ArrayLike:
-        """Argument `exits` before broadcasting."""
+    def pre__exits(self) -> tp.ArrayLike:
+        """Pre-broadcast value for the `exits` argument.
+
+        Defaults to False if `exits` is not provided.
+
+        Returns:
+            ArrayLike: Pre-broadcast exits value.
+        """
         return self["exits"] if self["exits"] is not None else False
 
     @cachedproperty
-    def _pre_long_entries(self) -> tp.ArrayLike:
-        """Argument `long_entries` before broadcasting."""
+    def pre__long_entries(self) -> tp.ArrayLike:
+        """Pre-broadcast value for the `long_entries` argument.
+
+        Defaults to False if `long_entries` is not provided.
+
+        Returns:
+            ArrayLike: Pre-broadcast long entries value.
+        """
         return self["long_entries"] if self["long_entries"] is not None else False
 
     @cachedproperty
-    def _pre_long_exits(self) -> tp.ArrayLike:
-        """Argument `long_exits` before broadcasting."""
+    def pre__long_exits(self) -> tp.ArrayLike:
+        """Pre-broadcast value for the `long_exits` argument.
+
+        Defaults to False if `long_exits` is not provided.
+
+        Returns:
+            ArrayLike: Pre-broadcast long exits value.
+        """
         return self["long_exits"] if self["long_exits"] is not None else False
 
     @cachedproperty
-    def _pre_short_entries(self) -> tp.ArrayLike:
-        """Argument `short_entries` before broadcasting."""
+    def pre__short_entries(self) -> tp.ArrayLike:
+        """Pre-broadcast value for the `short_entries` argument.
+
+        Defaults to False if `short_entries` is not provided.
+
+        Returns:
+            ArrayLike: Pre-broadcast short entries value.
+        """
         return self["short_entries"] if self["short_entries"] is not None else False
 
     @cachedproperty
-    def _pre_short_exits(self) -> tp.ArrayLike:
-        """Argument `short_exits` before broadcasting."""
+    def pre__short_exits(self) -> tp.ArrayLike:
+        """Pre-broadcast value for the `short_exits` argument.
+
+        Defaults to False if `short_exits` is not provided.
+
+        Returns:
+            ArrayLike: Pre-broadcast short exits value.
+        """
         return self["short_exits"] if self["short_exits"] is not None else False
 
     @cachedproperty
-    def _pre_from_ago(self) -> tp.ArrayLike:
-        """Argument `from_ago` before broadcasting."""
+    def pre__from_ago(self) -> tp.ArrayLike:
+        """Pre-broadcast value for the `from_ago` argument.
+
+        If not provided, defaults to 0.
+
+        Returns:
+            ArrayLike: Pre-broadcast from-ago value.
+        """
         from_ago = self["from_ago"]
         if from_ago is not None:
             return from_ago
         return 0
 
     @cachedproperty
-    def _pre_max_log_records(self) -> tp.Optional[int]:
-        """Argument `max_log_records` before broadcasting."""
+    def pre__max_log_records(self) -> tp.Optional[int]:
+        """Pre-resolution value for the `max_log_records` argument.
+
+        Returns:
+            Optional[int]: The pre-broadcast `max_log_records` value.
+        """
         return self["max_log_records"]
 
     @classmethod
@@ -1396,7 +1811,25 @@ class FSPreparer(BasePFPreparer):
         save_value: bool = True,
         save_returns: bool = True,
     ) -> enums.FSInOutputs:
-        """Initialize `vectorbtpro.portfolio.enums.FSInOutputs`."""
+        """Initialize a `vectorbtpro.portfolio.enums.FSInOutputs` instance.
+
+        Args:
+            wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            group_lens (Optional[GroupLens]): Array defining the number of columns in each group.
+
+                If None and `cash_sharing` is True, they are computed from the wrapper.
+            cash_sharing (bool): Flag indicating whether cash is shared among assets of the same group.
+            save_state (bool): Flag to record the account state.
+
+                See `vectorbtpro.portfolio.enums.AccountState`.
+            save_value (bool): Flag to record the portfolio value.
+            save_returns (bool): Flag to record the portfolio returns.
+
+        Returns:
+            FSInOutputs: Initialized `vectorbtpro.portfolio.enums.FSInOutputs` instance.
+        """
         if cash_sharing:
             if group_lens is None:
                 group_lens = wrapper.grouper.get_group_lens()
@@ -1410,12 +1843,12 @@ class FSPreparer(BasePFPreparer):
         )
 
     @cachedproperty
-    def _pre_in_outputs(self) -> tp.Union[None, tp.NamedTuple, CustomTemplate]:
+    def pre__in_outputs(self) -> tp.Union[None, tp.NamedTuple, CustomTemplate]:
         if self.dynamic_mode:
             if self["post_segment_func_nb"] is None:
                 if self.save_state or self.save_value or self.save_returns:
                     return RepFunc(self.init_in_outputs)
-            return BasePFPreparer._pre_in_outputs.func(self)
+            return BasePFPreparer.pre__in_outputs.func(self)
         if self["in_outputs"] is not None:
             raise ValueError("Argument in_outputs cannot be used in fixed mode")
         return None
@@ -1472,11 +1905,20 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def signals(self) -> tp.Tuple[tp.ArrayLike, tp.ArrayLike, tp.ArrayLike, tp.ArrayLike]:
-        """Arguments `entries`, `exits`, `short_entries`, and `short_exits` after broadcasting."""
+        """Post-broadcast value for the signal arrays.
+
+        Returns:
+            Tuple[ArrayLike, ArrayLike, ArrayLike, ArrayLike]: A tuple containing:
+
+                * `long_entries`: Broadcasted long entry signals.
+                * `long_exits`: Broadcasted long exit signals.
+                * `short_entries`: Broadcasted short entry signals.
+                * `short_exits`: Broadcasted short exit signals.
+        """
         if not self.dynamic_mode and not self.ls_mode:
-            entries = self._post_entries
-            exits = self._post_exits
-            direction = self._post_direction
+            entries = self.post__entries
+            exits = self.post__exits
+            direction = self.post__direction
             if direction.size == 1:
                 _direction = direction.item(0)
                 if _direction == enums.Direction.LongOnly:
@@ -1503,45 +1945,65 @@ class FSPreparer(BasePFPreparer):
                 )
         else:
             if self.explicit_mode and self.implicit_mode:
-                long_entries = self._post_entries | self._post_long_entries
-                long_exits = self._post_exits | self._post_long_exits
-                short_entries = self._post_entries | self._post_short_entries
-                short_exits = self._post_exits | self._post_short_exits
+                long_entries = self.post__entries | self.post__long_entries
+                long_exits = self.post__exits | self.post__long_exits
+                short_entries = self.post__entries | self.post__short_entries
+                short_exits = self.post__exits | self.post__short_exits
             elif self.explicit_mode:
-                long_entries = self._post_long_entries
-                long_exits = self._post_long_exits
-                short_entries = self._post_short_entries
-                short_exits = self._post_short_exits
+                long_entries = self.post__long_entries
+                long_exits = self.post__long_exits
+                short_entries = self.post__short_entries
+                short_exits = self.post__short_exits
             else:
-                long_entries = self._post_entries
-                long_exits = self._post_exits
-                short_entries = self._post_short_entries
-                short_exits = self._post_short_exits
+                long_entries = self.post__entries
+                long_exits = self.post__exits
+                short_entries = self.post__short_entries
+                short_exits = self.post__short_exits
         return long_entries, long_exits, short_entries, short_exits
 
     @cachedproperty
     def long_entries(self) -> tp.ArrayLike:
-        """Argument `long_entries`."""
+        """Post-broadcast value for the `long_entries` argument.
+
+        Returns:
+            ArrayLike: Broadcasted long entries array.
+        """
         return self.signals[0]
 
     @cachedproperty
     def long_exits(self) -> tp.ArrayLike:
-        """Argument `long_exits`."""
+        """Post-broadcast value for the `long_exits` argument.
+
+        Returns:
+            ArrayLike: Broadcasted long exits array.
+        """
         return self.signals[1]
 
     @cachedproperty
     def short_entries(self) -> tp.ArrayLike:
-        """Argument `short_entries`."""
+        """Post-broadcast value for the `short_entries` argument.
+
+        Returns:
+            ArrayLike: Broadcasted short entries array.
+        """
         return self.signals[2]
 
     @cachedproperty
     def short_exits(self) -> tp.ArrayLike:
-        """Argument `short_exits`."""
+        """Post-broadcast value for the `short_exits` argument.
+
+        Returns:
+            ArrayLike: Broadcasted short exits array.
+        """
         return self.signals[3]
 
     @cachedproperty
     def combined_mask(self) -> tp.Array2d:
-        """Signals combined using the OR rule into a mask."""
+        """Combined signal mask computed using element-wise OR on all signal arrays.
+
+        Returns:
+            Array2d: 2D array representing the combined signal mask.
+        """
         long_entries = to_2d_array(self.long_entries)
         long_exits = to_2d_array(self.long_exits)
         short_entries = to_2d_array(self.short_entries)
@@ -1564,9 +2026,16 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def price_and_from_ago(self) -> tp.Tuple[tp.ArrayLike, tp.ArrayLike]:
-        """Arguments `price` and `from_ago` after broadcasting."""
-        price = self._post_price
-        from_ago = self._post_from_ago
+        """Post-broadcast value for the `price` and `from_ago` arguments.
+
+        Returns:
+            Tuple[ArrayLike, ArrayLike]: A tuple containing:
+
+                * `price`: The broadcasted price array.
+                * `from_ago`: The broadcasted from-ago array.
+        """
+        price = self.post__price
+        from_ago = self.post__from_ago
         if self["from_ago"] is None:
             if price.size == 1 or price.shape[0] == 1:
                 next_open_mask = price == enums.PriceType.NextOpen
@@ -1582,20 +2051,32 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def price(self) -> tp.ArrayLike:
-        """Argument `price`."""
+        """Post-broadcast value for the `price` argument.
+
+        Returns:
+            ArrayLike: Broadcasted price array.
+        """
         return self.price_and_from_ago[0]
 
     @cachedproperty
     def from_ago(self) -> tp.ArrayLike:
-        """Argument `from_ago`."""
+        """Post-broadcast value for the `from_ago` argument.
+
+        Returns:
+            ArrayLike: Broadcasted from-ago array.
+        """
         return self.price_and_from_ago[1]
 
     @cachedproperty
     def max_log_records(self) -> tp.Optional[int]:
-        """Argument `max_log_records`."""
-        max_log_records = self._pre_max_log_records
+        """Post-broadcast value for the `max_log_records` argument.
+
+        Returns:
+            Optional[int]: The calculated number of maximum log records.
+        """
+        max_log_records = self.pre__max_log_records
         if max_log_records is None:
-            _log = self._post_log
+            _log = self.post__log
             if _log.size == 1:
                 max_log_records = self.target_shape[0] * int(_log.item(0))
             else:
@@ -1607,7 +2088,13 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def use_stops(self) -> bool:
-        """Argument `use_stops`."""
+        """Post-broadcast value for the `use_stops` argument.
+
+        Indicates whether stop orders are enabled based on configuration and signal conditions.
+
+        Returns:
+            bool: True if stop orders should be used; otherwise, False.
+        """
         if self["use_stops"] is None:
             if self.stop_ladder:
                 use_stops = True
@@ -1631,7 +2118,11 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def use_limit_orders(self) -> bool:
-        """Whether to use limit orders."""
+        """Indicates whether limit orders are active based on order types and stop order settings.
+
+        Returns:
+            bool: True if limit orders are used; otherwise, False.
+        """
         if np.any(self.order_type == enums.OrderType.Limit):
             return True
         if self.use_stops and np.any(self.stop_order_type == enums.OrderType.Limit):
@@ -1640,7 +2131,11 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def basic_mode(self) -> bool:
-        """Whether the basic mode is enabled."""
+        """Indicates whether basic mode is active by verifying that neither stop orders nor limit orders are applied.
+
+        Returns:
+            bool: True if basic mode is enabled; otherwise, False.
+        """
         return not self.use_stops and not self.use_limit_orders
 
     # ############# Template substitution ############# #
@@ -1653,13 +2148,13 @@ class FSPreparer(BasePFPreparer):
                 use_stops=self.use_stops,
                 stop_ladder=self.stop_ladder,
                 adjust_func_nb=self.adjust_func_nb,
-                adjust_args=self._pre_adjust_args,
+                adjust_args=self.pre__adjust_args,
                 signal_func_nb=self.signal_func_nb,
-                signal_args=self._pre_signal_args,
+                signal_args=self.pre__signal_args,
                 post_signal_func_nb=self.post_signal_func_nb,
-                post_signal_args=self._pre_post_signal_args,
+                post_signal_args=self.pre__post_signal_args,
                 post_segment_func_nb=self.post_segment_func_nb,
-                post_segment_args=self._pre_post_segment_args,
+                post_segment_args=self.pre__post_segment_args,
                 ffill_val_price=self.ffill_val_price,
                 update_value=self.update_value,
                 fill_pos_info=self.fill_pos_info,
@@ -1674,7 +2169,11 @@ class FSPreparer(BasePFPreparer):
 
     @cachedproperty
     def signal_args(self) -> tp.Args:
-        """Argument `signal_args`."""
+        """Tuple of arguments for the signal function configured based on the strategy mode.
+
+        Returns:
+            Args: Arguments to be passed to the signal function.
+        """
         if self.dynamic_mode:
             if self["signal_func_nb"] is None:
                 if self.ls_mode:
@@ -1709,11 +2208,15 @@ class FSPreparer(BasePFPreparer):
                         *((self.adjust_func_nb,) if self.staticized is None else ()),
                         self.adjust_args,
                     )
-        return self._post_signal_args
+        return self.post__signal_args
 
     @cachedproperty
     def post_segment_args(self) -> tp.Args:
-        """Argument `post_segment_args`."""
+        """Tuple of arguments for the post-segment processing function based on configuration.
+
+        Returns:
+            Args: Arguments to be used for post-segment processing.
+        """
         if self.dynamic_mode:
             if self["post_segment_func_nb"] is None:
                 if self.save_state or self.save_value or self.save_returns:
@@ -1722,15 +2225,23 @@ class FSPreparer(BasePFPreparer):
                         self.save_value,
                         self.save_returns,
                     )
-        return self._post_post_segment_args
+        return self.post__post_segment_args
 
     @cachedproperty
     def chunked(self) -> tp.ChunkedOption:
+        """Chunked option for the `chunked` argument.
+
+        In dynamic mode, it specializes the chunked option for the arguments of the signal function
+        with the appropriate argument taking specifications based on the active mode.
+
+        Returns:
+            ChunkedOption: Chunked option for the signal function.
+        """
         if self.dynamic_mode:
             if self["signal_func_nb"] is None:
                 if self.ls_mode:
                     return ch.specialize_chunked_option(
-                        self._pre_chunked,
+                        self.pre__chunked,
                         arg_take_spec=dict(
                             signal_args=ch.ArgsTaker(
                                 base_ch.flex_array_gl_slicer,
@@ -1745,7 +2256,7 @@ class FSPreparer(BasePFPreparer):
                     )
                 if self.signals_mode:
                     return ch.specialize_chunked_option(
-                        self._pre_chunked,
+                        self.pre__chunked,
                         arg_take_spec=dict(
                             signal_args=ch.ArgsTaker(
                                 base_ch.flex_array_gl_slicer,
@@ -1759,7 +2270,7 @@ class FSPreparer(BasePFPreparer):
                     )
                 if self.order_mode:
                     return ch.specialize_chunked_option(
-                        self._pre_chunked,
+                        self.pre__chunked,
                         arg_take_spec=dict(
                             signal_args=ch.ArgsTaker(
                                 base_ch.flex_array_gl_slicer,
@@ -1775,7 +2286,7 @@ class FSPreparer(BasePFPreparer):
                             )
                         ),
                     )
-        return self._pre_chunked
+        return self.pre__chunked
 
     # ############# Result ############# #
 
@@ -1804,7 +2315,7 @@ class FSPreparer(BasePFPreparer):
         return target_arg_map
 
     @cachedproperty
-    def pf_args(self) -> tp.Optional[tp.Kwargs]:
+    def pf_args(self) -> tp.KwargsLike:
         pf_args = dict(BasePFPreparer.pf_args.func(self))
         pf_args["orders_cls"] = FSOrders
         return pf_args
@@ -1852,10 +2363,10 @@ fof_arg_config = ReadonlyConfig(
 
 __pdoc__[
     "fof_arg_config"
-] = f"""Argument config for `FOFPreparer`.
+] = f"""Readonly argument configuration for `FOFPreparer`.
 
 ```python
-{fof_arg_config.prettify()}
+{fof_arg_config.prettify_doc()}
 ```
 """
 
@@ -1863,15 +2374,26 @@ __pdoc__[
 @attach_arg_properties
 @override_arg_config(fof_arg_config)
 class FOFPreparer(BasePFPreparer):
-    """Class for preparing `vectorbtpro.portfolio.base.Portfolio.from_order_func`."""
+    """Class for preparing `vectorbtpro.portfolio.base.Portfolio.from_order_func`.
+
+    Configures order processing functions including simulation preparation and execution,
+    staticizing user-defined functions while ensuring compatibility with flexible and row-wise modes.
+
+    !!! info
+        For default settings, see `from_order_func` in `vectorbtpro._settings.portfolio`.
+    """
 
     _settings_path: tp.SettingsPath = "portfolio.from_order_func"
 
     # ############# Mode resolution ############# #
 
     @cachedproperty
-    def _pre_staticized(self) -> tp.StaticizedOption:
-        """Argument `staticized` before its resolution."""
+    def pre__staticized(self) -> tp.StaticizedOption:
+        """Pre-resolution value for the `staticized` argument.
+
+        Returns:
+            StaticizedOption: Staticized option.
+        """
         staticized = self["staticized"]
         if isinstance(staticized, bool):
             if staticized:
@@ -1893,12 +2415,22 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def flexible(self) -> bool:
-        """Whether the flexible mode is enabled."""
+        """Indicates whether flexible mode is enabled.
+
+        Returns:
+            bool: True if flexible mode is enabled; otherwise, False.
+        """
         return self["flex_order_func_nb"] is not None
 
     @cachedproperty
     def pre_sim_func_nb(self) -> tp.Callable:
-        """Argument `pre_sim_func_nb`."""
+        """Function for simulation preprocessing.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` if not set.
+
+        Returns:
+            Callable: Pre-simulation function callable.
+        """
         pre_sim_func_nb = self["pre_sim_func_nb"]
         if pre_sim_func_nb is None:
             pre_sim_func_nb = nb.no_pre_func_nb
@@ -1906,7 +2438,13 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def post_sim_func_nb(self) -> tp.Callable:
-        """Argument `post_sim_func_nb`."""
+        """Function for simulation postprocessing.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` if not provided.
+
+        Returns:
+            Callable: Post-simulation function callable.
+        """
         post_sim_func_nb = self["post_sim_func_nb"]
         if post_sim_func_nb is None:
             post_sim_func_nb = nb.no_post_func_nb
@@ -1914,7 +2452,15 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def pre_group_func_nb(self) -> tp.Callable:
-        """Argument `pre_group_func_nb`."""
+        """Function for simulation group preprocessing.
+
+        Ensures it is not used in row-wise simulations.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` if not provided.
+
+        Returns:
+            Callable: Pre-group function callable.
+        """
         pre_group_func_nb = self["pre_group_func_nb"]
         if self.row_wise and pre_group_func_nb is not None:
             raise ValueError("Cannot use pre_group_func_nb in a row-wise simulation")
@@ -1924,7 +2470,15 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def post_group_func_nb(self) -> tp.Callable:
-        """Argument `post_group_func_nb`."""
+        """Function for simulation group postprocessing.
+
+        Ensures it is not used in row-wise simulations.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` if not provided.
+
+        Returns:
+            Callable: Post-group function callable.
+        """
         post_group_func_nb = self["post_group_func_nb"]
         if self.row_wise and post_group_func_nb is not None:
             raise ValueError("Cannot use post_group_func_nb in a row-wise simulation")
@@ -1934,7 +2488,15 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def pre_row_func_nb(self) -> tp.Callable:
-        """Argument `pre_row_func_nb`."""
+        """Function for simulation row preprocessing.
+
+        Ensures it is only used in row-wise simulations.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` if not provided.
+
+        Returns:
+            Callable: Pre-row function callable.
+        """
         pre_row_func_nb = self["pre_row_func_nb"]
         if not self.row_wise and pre_row_func_nb is not None:
             raise ValueError("Cannot use pre_row_func_nb in a column-wise simulation")
@@ -1944,7 +2506,15 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def post_row_func_nb(self) -> tp.Callable:
-        """Argument `post_row_func_nb`."""
+        """Function for simulation row postprocessing.
+
+        Ensures it is only used in row-wise simulations.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` if not provided.
+
+        Returns:
+            Callable: Post-row function callable.
+        """
         post_row_func_nb = self["post_row_func_nb"]
         if not self.row_wise and post_row_func_nb is not None:
             raise ValueError("Cannot use post_row_func_nb in a column-wise simulation")
@@ -1954,7 +2524,13 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def pre_segment_func_nb(self) -> tp.Callable:
-        """Argument `pre_segment_func_nb`."""
+        """Function for simulation segment preprocessing.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_pre_func_nb` if not provided.
+
+        Returns:
+            Callable: Pre-segment function callable.
+        """
         pre_segment_func_nb = self["pre_segment_func_nb"]
         if pre_segment_func_nb is None:
             pre_segment_func_nb = nb.no_pre_func_nb
@@ -1962,7 +2538,13 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def post_segment_func_nb(self) -> tp.Callable:
-        """Argument `post_segment_func_nb`."""
+        """Function for simulation segment postprocessing.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` if not provided.
+
+        Returns:
+            Callable: Post-segment function callable.
+        """
         post_segment_func_nb = self["post_segment_func_nb"]
         if post_segment_func_nb is None:
             post_segment_func_nb = nb.no_post_func_nb
@@ -1970,7 +2552,15 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def order_func_nb(self) -> tp.Callable:
-        """Argument `order_func_nb`."""
+        """Function for processing orders.
+
+        Expects one of `order_func_nb` or `flex_order_func_nb` to be provided based on the flexible mode.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_order_func_nb` if not set.
+
+        Returns:
+            Callable: Order function callable.
+        """
         order_func_nb = self["order_func_nb"]
         if self.flexible and order_func_nb is not None:
             raise ValueError("Must provide either order_func_nb or flex_order_func_nb")
@@ -1982,7 +2572,13 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def flex_order_func_nb(self) -> tp.Callable:
-        """Argument `flex_order_func_nb`."""
+        """Flexible function for processing orders.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_flex_order_func_nb` if not set.
+
+        Returns:
+            Callable: Flexible order function callable.
+        """
         flex_order_func_nb = self["flex_order_func_nb"]
         if flex_order_func_nb is None:
             flex_order_func_nb = nb.no_flex_order_func_nb
@@ -1990,7 +2586,13 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def post_order_func_nb(self) -> tp.Callable:
-        """Argument `post_order_func_nb`."""
+        """Function for postprocessing orders.
+
+        Defaults to `vectorbtpro.portfolio.nb.from_order_func.no_post_func_nb` if not provided.
+
+        Returns:
+            Callable: Post-order function callable.
+        """
         post_order_func_nb = self["post_order_func_nb"]
         if post_order_func_nb is None:
             post_order_func_nb = nb.no_post_func_nb
@@ -1998,8 +2600,12 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def staticized(self) -> tp.StaticizedOption:
-        """Argument `staticized`."""
-        staticized = self._pre_staticized
+        """Resolved `staticized` argument after applying adaptations to user-defined functions.
+
+        Returns:
+            StaticizedOption: Resolved staticized option.
+        """
+        staticized = self.pre__staticized
         if isinstance(staticized, dict):
             staticized = dict(staticized)
             if self["pre_sim_func_nb"] is not None:
@@ -2029,7 +2635,7 @@ class FOFPreparer(BasePFPreparer):
     # ############# Before broadcasting ############# #
 
     @cachedproperty
-    def _pre_call_seq(self) -> tp.Optional[tp.ArrayLike]:
+    def pre__call_seq(self) -> tp.Optional[tp.ArrayLike]:
         if self.auto_call_seq:
             raise ValueError(
                 "CallSeqType.Auto must be implemented manually. Use sort_call_seq_nb in pre_segment_func_nb."
@@ -2037,8 +2643,12 @@ class FOFPreparer(BasePFPreparer):
         return self["call_seq"]
 
     @cachedproperty
-    def _pre_segment_mask(self) -> tp.ArrayLike:
-        """Argument `segment_mask` before broadcasting."""
+    def pre__segment_mask(self) -> tp.ArrayLike:
+        """Pre-broadcast value for the `segment_mask` argument.
+
+        Returns:
+            ArrayLike: Segment mask before broadcasting.
+        """
         return self["segment_mask"]
 
     # ############# After broadcasting ############# #
@@ -2059,8 +2669,16 @@ class FOFPreparer(BasePFPreparer):
 
     @cachedproperty
     def segment_mask(self) -> tp.ArrayLike:
-        """Argument `segment_mask`."""
-        segment_mask = self._pre_segment_mask
+        """Segment mask array indicating segment boundaries in the target data.
+
+        If `FOFPreparer.pre__segment_mask` is an integer, a boolean mask with evenly spaced
+        True values is generated based on the target shape and group lengths.
+        Otherwise, the provided mask is broadcast to match the required shape.
+
+        Returns:
+            ArrayLike: Post-broadcasted segment mask.
+        """
+        segment_mask = self.pre__segment_mask
         if checks.is_int(segment_mask):
             if self.keep_inout_flex:
                 _segment_mask = np.full((self.target_shape[0], 1), False)
@@ -2090,27 +2708,27 @@ class FOFPreparer(BasePFPreparer):
                 call_pre_segment=self.call_pre_segment,
                 call_post_segment=self.call_post_segment,
                 pre_sim_func_nb=self.pre_sim_func_nb,
-                pre_sim_args=self._pre_pre_sim_args,
+                pre_sim_args=self.pre__pre_sim_args,
                 post_sim_func_nb=self.post_sim_func_nb,
-                post_sim_args=self._pre_post_sim_args,
+                post_sim_args=self.pre__post_sim_args,
                 pre_group_func_nb=self.pre_group_func_nb,
-                pre_group_args=self._pre_pre_group_args,
+                pre_group_args=self.pre__pre_group_args,
                 post_group_func_nb=self.post_group_func_nb,
-                post_group_args=self._pre_post_group_args,
+                post_group_args=self.pre__post_group_args,
                 pre_row_func_nb=self.pre_row_func_nb,
-                pre_row_args=self._pre_pre_row_args,
+                pre_row_args=self.pre__pre_row_args,
                 post_row_func_nb=self.post_row_func_nb,
-                post_row_args=self._pre_post_row_args,
+                post_row_args=self.pre__post_row_args,
                 pre_segment_func_nb=self.pre_segment_func_nb,
-                pre_segment_args=self._pre_pre_segment_args,
+                pre_segment_args=self.pre__pre_segment_args,
                 post_segment_func_nb=self.post_segment_func_nb,
-                post_segment_args=self._pre_post_segment_args,
+                post_segment_args=self.pre__post_segment_args,
                 order_func_nb=self.order_func_nb,
-                order_args=self._pre_order_args,
+                order_args=self.pre__order_args,
                 flex_order_func_nb=self.flex_order_func_nb,
-                flex_order_args=self._pre_flex_order_args,
+                flex_order_args=self.pre__flex_order_args,
                 post_order_func_nb=self.post_order_func_nb,
-                post_order_args=self._pre_post_order_args,
+                post_order_args=self.pre__post_order_args,
                 ffill_val_price=self.ffill_val_price,
                 update_value=self.update_value,
                 fill_pos_info=self.fill_pos_info,
@@ -2173,7 +2791,7 @@ __pdoc__[
 ] = f"""Argument config for `FDOFPreparer`.
 
 ```python
-{fdof_arg_config.prettify()}
+{fdof_arg_config.prettify_doc()}
 ```
 """
 
@@ -2182,7 +2800,11 @@ __pdoc__[
 @override_arg_config(fdof_arg_config)
 @override_arg_config(order_arg_config)
 class FDOFPreparer(FOFPreparer):
-    """Class for preparing `vectorbtpro.portfolio.base.Portfolio.from_def_order_func`."""
+    """Class for preparing the portfolio using `vectorbtpro.portfolio.base.Portfolio.from_def_order_func`.
+
+    !!! info
+        For default settings, see `from_def_order_func` in `vectorbtpro._settings.portfolio`.
+    """
 
     _settings_path: tp.SettingsPath = "portfolio.from_def_order_func"
 
@@ -2194,7 +2816,16 @@ class FDOFPreparer(FOFPreparer):
 
     @cachedproperty
     def pre_segment_func_nb(self) -> tp.Callable:
-        """Argument `pre_segment_func_nb`."""
+        """Pre-segment processing function.
+
+        If not specified in the configuration, the default function is selected based on the `flexible` flag:
+
+        * Returns `vectorbtpro.portfolio.nb.from_order_func.def_flex_pre_segment_func_nb` if `flexible` is True.
+        * Returns `vectorbtpro.portfolio.nb.from_order_func.def_pre_segment_func_nb` otherwise.
+
+        Returns:
+            Callable: Function used to process pre-segment data.
+        """
         pre_segment_func_nb = self["pre_segment_func_nb"]
         if pre_segment_func_nb is None:
             if self.flexible:
@@ -2205,7 +2836,17 @@ class FDOFPreparer(FOFPreparer):
 
     @cachedproperty
     def order_func_nb(self) -> tp.Callable:
-        """Argument `order_func_nb`."""
+        """Order processing function.
+
+        If `order_func_nb` is not provided in the configuration, the default
+        `vectorbtpro.portfolio.nb.from_order_func.def_order_func_nb` is used.
+
+        Returns:
+            Callable: Function used for order processing.
+
+        Raises:
+            ValueError: If `order_func_nb` is provided when `flexible` is True.
+        """
         order_func_nb = self["order_func_nb"]
         if self.flexible and order_func_nb is not None:
             raise ValueError("Argument order_func_nb cannot be provided when flexible=True")
@@ -2215,7 +2856,17 @@ class FDOFPreparer(FOFPreparer):
 
     @cachedproperty
     def flex_order_func_nb(self) -> tp.Callable:
-        """Argument `flex_order_func_nb`."""
+        """Flexible order processing function.
+
+        If `flex_order_func_nb` is not provided, the default
+        `vectorbtpro.portfolio.nb.from_order_func.def_flex_order_func_nb` is used.
+
+        Returns:
+            Callable: Function used for processing flexible orders.
+
+        Raises:
+            ValueError: If `flex_order_func_nb` is provided when `flexible` is False.
+        """
         flex_order_func_nb = self["flex_order_func_nb"]
         if not self.flexible and flex_order_func_nb is not None:
             raise ValueError("Argument flex_order_func_nb cannot be provided when flexible=False")
@@ -2224,8 +2875,12 @@ class FDOFPreparer(FOFPreparer):
         return flex_order_func_nb
 
     @cachedproperty
-    def _pre_chunked(self) -> tp.ChunkedOption:
-        """Argument `chunked` before template substitution."""
+    def pre__chunked(self) -> tp.ChunkedOption:
+        """Argument `chunked` before template substitution.
+
+        Returns:
+            ChunkedOption: Pre-broadcasted chunked option.
+        """
         return self["chunked"]
 
     @cachedproperty
@@ -2243,8 +2898,8 @@ class FDOFPreparer(FOFPreparer):
     # ############# Before broadcasting ############# #
 
     @cachedproperty
-    def _pre_call_seq(self) -> tp.Optional[tp.ArrayLike]:
-        return BasePFPreparer._pre_call_seq.func(self)
+    def pre__call_seq(self) -> tp.Optional[tp.ArrayLike]:
+        return BasePFPreparer.pre__call_seq.func(self)
 
     # ############# After broadcasting ############# #
 
@@ -2260,7 +2915,11 @@ class FDOFPreparer(FOFPreparer):
 
     @cachedproperty
     def pre_segment_args(self) -> tp.Args:
-        """Argument `pre_segment_args`."""
+        """Tuple of arguments for the pre-segment function used in template substitution.
+
+        Returns:
+            Args: Pre-segment function arguments.
+        """
         return (
             self.val_price,
             self.price,
@@ -2271,8 +2930,12 @@ class FDOFPreparer(FOFPreparer):
         )
 
     @cachedproperty
-    def _order_args(self) -> tp.Args:
-        """Either `order_args` or `flex_order_args`."""
+    def any_order_args(self) -> tp.Args:
+        """Either `order_args` or `flex_order_args`.
+
+        Returns:
+            Args: Order function arguments.
+        """
         return (
             self.size,
             self.price,
@@ -2295,24 +2958,46 @@ class FDOFPreparer(FOFPreparer):
 
     @cachedproperty
     def order_args(self) -> tp.Args:
-        """Argument `order_args`."""
+        """Tuple of arguments for the order function.
+
+        If `flexible` is True, returns `FDOFPreparer.post__order_args`;
+        otherwise, returns `FDOFPreparer.any_order_args`.
+
+        Returns:
+            Args: Order function arguments.
+        """
         if self.flexible:
-            return self._post_order_args
-        return self._order_args
+            return self.post__order_args
+        return self.any_order_args
 
     @cachedproperty
     def flex_order_args(self) -> tp.Args:
-        """Argument `flex_order_args`."""
+        """Tuple of arguments for the flexible order function.
+
+        If `flexible` is False, returns `FDOFPreparer.post__flex_order_args`;
+        otherwise, returns `FDOFPreparer.any_order_args`.
+
+        Returns:
+            Args: Flexible order function arguments.
+        """
         if not self.flexible:
-            return self._post_flex_order_args
-        return self._order_args
+            return self.post__flex_order_args
+        return self.any_order_args
 
     @cachedproperty
     def chunked(self) -> tp.ChunkedOption:
+        """Specialized chunked configuration.
+
+        An argument taker specification is created for `pre_segment_args` and either `order_args`
+        or `flex_order_args` based on the `flexible` flag, and applied to the `chunked` option.
+
+        Returns:
+            ChunkedOption: Specialized chunked configuration.
+        """
         arg_take_spec = dict()
         arg_take_spec["pre_segment_args"] = ch.ArgsTaker(*[base_ch.flex_array_gl_slicer] * 5, None)
         if self.flexible:
             arg_take_spec["flex_order_args"] = ch.ArgsTaker(*[base_ch.flex_array_gl_slicer] * 17)
         else:
             arg_take_spec["order_args"] = ch.ArgsTaker(*[base_ch.flex_array_gl_slicer] * 17)
-        return ch.specialize_chunked_option(self._pre_chunked, arg_take_spec=arg_take_spec)
+        return ch.specialize_chunked_option(self.pre__chunked, arg_take_spec=arg_take_spec)

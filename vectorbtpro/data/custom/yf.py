@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `YFData`."""
+"""Module providing the `YFData` class for fetching financial data from Yahoo Finance."""
 
 import pandas as pd
 
@@ -27,13 +27,16 @@ __pdoc__ = {}
 
 
 class YFData(RemoteData):
-    """Data class for fetching from Yahoo Finance.
+    """Data class for fetching financial data from Yahoo Finance.
 
-    See https://github.com/ranaroussi/yfinance for API.
+    See:
+        * https://github.com/ranaroussi/yfinance for the `yfinance` library.
+        * `YFData.fetch_symbol` for argument details.
 
-    See `YFData.fetch_symbol` for arguments.
+    !!! info
+        For default settings, see `custom.yf` in `vectorbtpro._settings.data`.
 
-    Usage:
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -78,39 +81,41 @@ class YFData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         period: tp.Optional[str] = None,
         start: tp.Optional[tp.DatetimeLike] = None,
         end: tp.Optional[tp.DatetimeLike] = None,
         timeframe: tp.Optional[str] = None,
         tz: tp.TimezoneLike = None,
+        ticker_kwargs: tp.KwargsLike = None,
         **history_kwargs,
     ) -> tp.SymbolData:
         """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Yahoo Finance.
 
         Args:
-            symbol (str): Symbol.
-            period (str): Period.
-            start (any): Start datetime.
+            symbol (Symbol): Symbol identifier.
+            period (Optional[str]): Period string.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): End datetime.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str): Timeframe.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
-                Allows human-readable strings such as "15 minutes".
-            tz (any): Timezone.
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            **history_kwargs: Keyword arguments passed to `yfinance.base.TickerBase.history`.
+            ticker_kwargs (KwargsLike): Keyword arguments for `yfinance.ticker.Ticker`.
+            **history_kwargs: Keyword arguments for `yfinance.base.TickerBase.history`.
 
-        For defaults, see `custom.yf` in `vectorbtpro._settings.data`.
+        Returns:
+            SymbolData: Fetched data and a metadata dictionary.
 
         !!! warning
-            Data coming from Yahoo is not the most stable data out there. Yahoo may manipulate data
-            how they want, add noise, return missing data points (see volume in the example below), etc.
-            It's only used in vectorbt for demonstration purposes.
+            Data from Yahoo Finance may be unstable. Yahoo may modify data, introduce noise, or omit data points
+            (e.g., volume in the example). It is primarily intended for demonstration purposes.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -122,14 +127,12 @@ class YFData(RemoteData):
         end = cls.resolve_custom_setting(end, "end")
         timeframe = cls.resolve_custom_setting(timeframe, "timeframe")
         tz = cls.resolve_custom_setting(tz, "tz")
+        ticker_kwargs = cls.resolve_custom_setting(ticker_kwargs, "ticker_kwargs", merge=True)
         history_kwargs = cls.resolve_custom_setting(history_kwargs, "history_kwargs", merge=True)
 
-        ticker = yf.Ticker(symbol)
+        ticker = yf.Ticker(symbol, **ticker_kwargs)
         def_history_kwargs = get_func_kwargs(yf.Tickers.history)
-        ticker_tz = ticker._get_ticker_tz(
-            history_kwargs.get("proxy", def_history_kwargs["proxy"]),
-            history_kwargs.get("timeout", def_history_kwargs["timeout"]),
-        )
+        ticker_tz = ticker._get_ticker_tz(history_kwargs.get("timeout", def_history_kwargs["timeout"]))
         if tz is None:
             tz = ticker_tz
         if start is not None:
@@ -161,7 +164,7 @@ class YFData(RemoteData):
                     df = df[df.index < end]
         return df, dict(tz=tz, freq=freq)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

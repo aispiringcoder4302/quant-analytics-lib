@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules with classes and utilities for resampling."""
+"""Package providing classes and utilities for resampling.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.resampling`.
+"""
 
 from typing import TYPE_CHECKING
 

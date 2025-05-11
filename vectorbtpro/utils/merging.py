@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for merging."""
+"""Module providing utilities for merging."""
 
 from functools import partial
 
@@ -30,25 +30,37 @@ MergeFuncT = tp.TypeVar("MergeFuncT", bound="MergeFunc")
 
 @define
 class MergeFunc(Evaluable, Annotatable, DefineMixin):
-    """Class representing a merging function and its keyword arguments.
+    """Class for representing a merging function with pre-bound keyword arguments.
 
-    Can be directly called to call the underlying (already resolved and with keyword
-    arguments attached) merging function."""
+    This class supports template substitution in both the merging function and its keyword arguments,
+    allowing dynamic resolution and execution when the instance is called.
+
+    Args:
+        merge_func (MergeFuncLike): Function to merge the results.
+        
+            Resolved using `MergeFunc.resolve_merge_func`.
+        merge_kwargs (KwargsLike): Keyword arguments for `MergeFunc.merge_func`.
+        context (KwargsLike): Context for template substitution in `MergeFunc.merge_func`
+            and `MergeFunc.merge_kwargs`.
+        eval_id_prefix (str): Prefix for the substitution identifier.
+        eval_id (Optional[MaybeSequence[Hashable]]): Identifier(s) used for evaluation.
+        **kwargs: Keyword arguments acting as `merge_kwargs`.
+    """
 
     merge_func: tp.MergeFuncLike = define.field()
-    """Merging function."""
+    """Merging function used to perform merging operations."""
 
     merge_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to the merging function."""
+    """Keyword arguments for `MergeFunc.merge_func`."""
 
     context: tp.KwargsLike = define.field(default=None)
-    """Context for substituting templates in `MergeFunc.merge_func` and `MergeFunc.merge_kwargs`."""
+    """Context for performing template substitutions in `MergeFunc.merge_func` and `MergeFunc.merge_kwargs`."""
 
     eval_id_prefix: str = define.field(default="")
-    """Prefix for the substitution id."""
+    """Prefix for the substitution identifier used during template substitution."""
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
-    """One or more identifiers at which to evaluate this instance."""
+    """One or more evaluation identifiers."""
 
     def __init__(self, *args, **kwargs) -> None:
         attr_names = [a.name for a in self.fields]
@@ -74,7 +86,15 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
         DefineMixin.__init__(self, *args, **kwargs)
 
     def resolve_merge_func(self) -> tp.Optional[tp.Callable]:
-        """Get the merging function where keyword arguments are hard-coded."""
+        """Return the merging function with pre-bound keyword arguments after applying template substitutions.
+        
+        Uses `vectorbtpro.base.merging.resolve_merge_func` for resolving the merging function.
+        Uses `MergeFunc.context` for template substitution in `MergeFunc.merge_func` and `MergeFunc.merge_kwargs`.
+
+        Returns:
+            Optional[Callable]: The merging function with pre-bound keyword arguments,
+                or None if the merging function cannot be resolved.
+        """
         from vectorbtpro.base.merging import resolve_merge_func
 
         merge_func = resolve_merge_func(self.merge_func)
@@ -98,7 +118,16 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
 
 
 def parse_merge_func(func: tp.Callable, eval_id: tp.Optional[tp.Hashable] = None) -> tp.Optional[MergeFunc]:
-    """Parser the merging function from the function's annotations."""
+    """Parse the merging function from the provided function's annotations.
+
+    Args:
+        func (Callable): Function from which to parse the merging function annotation.
+        eval_id (Optional[Hashable]): Evaluation identifier.
+
+    Returns:
+        Optional[MergeFunc]: The merging function(s) extracted from the annotations,
+            or None if not found.
+    """
     annotations = get_annotations(func)
     merge_func = None
     for k, v in annotations.items():

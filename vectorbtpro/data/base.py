@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for working with data sources."""
+"""Module providing base classes and dictionary types for working with data sources."""
 
 import inspect
 import string
@@ -46,18 +46,14 @@ from vectorbtpro.utils.warnings_ import warn
 from vectorbtpro.registries.ch_registry import ch_reg
 from vectorbtpro.registries.jit_registry import jit_reg
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from sqlalchemy import Engine as EngineT
-except ImportError:
-    EngineT = "Engine"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+else:
+    EngineT = "sqlalchemy.Engine"
+if tp.TYPE_CHECKING:
     from duckdb import DuckDBPyConnection as DuckDBPyConnectionT
-except ImportError:
-    DuckDBPyConnectionT = "DuckDBPyConnection"
+else:
+    DuckDBPyConnectionT = "duckdb.DuckDBPyConnection"
 
 __all__ = [
     "key_dict",
@@ -72,31 +68,31 @@ __pdoc__ = {}
 
 
 class key_dict(pdict):
-    """Dict that contains features or symbols as keys."""
+    """Class for a dictionary that uses features or symbols as keys."""
 
     pass
 
 
 class feature_dict(key_dict):
-    """Dict that contains features as keys."""
+    """Class for a dictionary that uses features as keys."""
 
     pass
 
 
 class symbol_dict(key_dict):
-    """Dict that contains symbols as keys."""
+    """Class for a dictionary that uses symbols as keys."""
 
     pass
 
 
 class run_func_dict(pdict):
-    """Dict that contains function names as keys for `Data.run`."""
+    """Class for a dictionary that uses function names as keys for `Data.run`."""
 
     pass
 
 
 class run_arg_dict(pdict):
-    """Dict that contains argument names as keys for `Data.run`."""
+    """Class for a dictionary that uses argument names as keys for `Data.run`."""
 
     pass
 
@@ -105,31 +101,64 @@ BaseDataMixinT = tp.TypeVar("BaseDataMixinT", bound="BaseDataMixin")
 
 
 class BaseDataMixin(Base):
-    """Base mixin class for working with data."""
+    """Base mixin class for working with data.
+
+    This class provides helper properties and methods for managing feature and symbol data,
+    including key normalization and index lookup.
+    """
 
     @property
     def feature_wrapper(self) -> ArrayWrapper:
-        """Column wrapper."""
+        """Column wrapper for feature data.
+
+        Returns:
+            ArrayWrapper: Column wrapper for feature data.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def symbol_wrapper(self) -> ArrayWrapper:
-        """Symbol wrapper."""
+        """Column wrapper for symbol data.
+
+        Returns:
+            ArrayWrapper: Column wrapper for symbol data.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def features(self) -> tp.List[tp.Feature]:
-        """List of features."""
+        """List of features obtained from the feature wrapper columns.
+
+        Returns:
+            List[Feature]: The list of features.
+        """
         return self.feature_wrapper.columns.tolist()
 
     @property
     def symbols(self) -> tp.List[tp.Symbol]:
-        """List of symbols."""
+        """List of symbols obtained from the symbol wrapper columns.
+
+        Returns:
+            List[Symbol]: The list of symbols.
+        """
         return self.symbol_wrapper.columns.tolist()
 
     @classmethod
     def has_multiple_keys(cls, keys: tp.MaybeKeys) -> bool:
-        """Check whether there are one or multiple keys."""
+        """Check whether the provided keys represent multiple keys.
+
+        Args:
+            keys (MaybeKeys): Feature or symbol identifier(s).
+
+        Returns:
+            bool: True if the keys are a sequence, False if they are hashable.
+        """
         if checks.is_hashable(keys):
             return False
         elif checks.is_sequence(keys):
@@ -138,7 +167,17 @@ class BaseDataMixin(Base):
 
     @classmethod
     def prepare_key(cls, key: tp.Key) -> tp.Key:
-        """Prepare a key."""
+        """Prepare a key by normalizing it.
+
+        Transforms string keys to lowercase, strips whitespace, and replaces spaces with underscores.
+        Tuples are processed recursively.
+
+        Args:
+            key (Key): Feature or symbol identifier.
+
+        Returns:
+            Key: Normalized key.
+        """
         if isinstance(key, tuple):
             return tuple([cls.prepare_key(k) for k in key])
         if isinstance(key, str):
@@ -146,7 +185,18 @@ class BaseDataMixin(Base):
         return key
 
     def get_feature_idx(self, feature: tp.Feature, raise_error: bool = False) -> int:
-        """Return the index of a feature."""
+        """Return the index of the specified feature.
+
+        Args:
+            feature (Feature): Feature identifier.
+            raise_error (bool): Whether to raise an error if the feature is not found.
+
+        Returns:
+            int: Index of the feature, or -1 if not found.
+
+        Raises:
+            ValueError: If multiple features match the specified key.
+        """
         # shortcut
         columns = self.feature_wrapper.columns
         if not columns.has_duplicates:
@@ -168,7 +218,18 @@ class BaseDataMixin(Base):
         raise ValueError(f"Multiple features match the feature '{str(feature)}'")
 
     def get_symbol_idx(self, symbol: tp.Symbol, raise_error: bool = False) -> int:
-        """Return the index of a symbol."""
+        """Return the index of the specified symbol.
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+            raise_error (bool): Whether to raise an error if the symbol is not found.
+
+        Returns:
+            int: Index of the symbol, or -1 if not found.
+
+        Raises:
+            ValueError: If multiple symbols match the specified key.
+        """
         # shortcut
         columns = self.symbol_wrapper.columns
         if not columns.has_duplicates:
@@ -190,21 +251,45 @@ class BaseDataMixin(Base):
         raise ValueError(f"Multiple symbols match the symbol '{str(symbol)}'")
 
     def select_feature_idxs(self: BaseDataMixinT, idxs: tp.MaybeSequence[int], **kwargs) -> BaseDataMixinT:
-        """Select one or more features by index.
+        """Select one or more features by their index positions.
 
-        Returns a new instance."""
+        Args:
+            idxs (MaybeSequence[int]): Index or indices of the features to select.
+            **kwargs: Keyword arguments for feature selection.
+
+        Returns:
+            BaseDataMixin: New instance with the selected features.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def select_symbol_idxs(self: BaseDataMixinT, idxs: tp.MaybeSequence[int], **kwargs) -> BaseDataMixinT:
-        """Select one or more symbols by index.
+        """Select one or more symbols by their index positions.
 
-        Returns a new instance."""
+        Args:
+            idxs (MaybeSequence[int]): Index or indices of the symbols to select.
+            **kwargs: Keyword arguments for symbol selection.
+
+        Returns:
+            BaseDataMixin: New instance with the selected symbols.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def select_features(self: BaseDataMixinT, features: tp.MaybeFeatures, **kwargs) -> BaseDataMixinT:
-        """Select one or more features.
+        """Select one or more features using label(s).
 
-        Returns a new instance."""
+        Args:
+            features (MaybeFeatures): Feature identifier(s).
+            **kwargs: Keyword arguments for `BaseDataMixin.select_feature_idxs`.
+
+        Returns:
+            BaseDataMixin: New instance containing the selected features.
+        """
         if self.has_multiple_keys(features):
             feature_idxs = [self.get_feature_idx(k, raise_error=True) for k in features]
         else:
@@ -212,9 +297,15 @@ class BaseDataMixin(Base):
         return self.select_feature_idxs(feature_idxs, **kwargs)
 
     def select_symbols(self: BaseDataMixinT, symbols: tp.MaybeSymbols, **kwargs) -> BaseDataMixinT:
-        """Select one or more symbols.
+        """Select one or more symbols using label(s).
 
-        Returns a new instance."""
+        Args:
+            symbols (MaybeSymbols): Symbol identifier(s).
+            **kwargs: Keyword arguments for `BaseDataMixin.select_symbol_idxs`.
+
+        Returns:
+            BaseDataMixin: New instance containing the selected symbols.
+        """
         if self.has_multiple_keys(symbols):
             symbol_idxs = [self.get_symbol_idx(k, raise_error=True) for k in symbols]
         else:
@@ -229,25 +320,67 @@ class BaseDataMixin(Base):
         symbol: tp.Optional[tp.Symbol] = None,
         **kwargs,
     ) -> tp.MaybeTuple[tp.SeriesFrame]:
-        """Get one or more features of one or more symbols of data."""
+        """Retrieve data for specified features and symbols.
+
+        Args:
+            features (Optional[MaybeFeatures]): Feature identifier(s).
+            symbols (Optional[MaybeSymbols]): Symbol identifier(s).
+            feature (Optional[Feature]): Feature identifier.
+            symbol (Optional[Symbol]): Symbol identifier.
+            **kwargs: Keyword arguments for data retrieval.
+
+        Returns:
+            MaybeTuple[SeriesFrame]: The retrieved data.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def has_feature(self, feature: tp.Feature) -> bool:
-        """Whether feature exists."""
+        """Check whether the specified feature exists.
+
+        Args:
+            feature (Feature): Feature identifier.
+
+        Returns:
+            bool: True if the feature exists, False otherwise.
+        """
         feature_idx = self.get_feature_idx(feature, raise_error=False)
         return feature_idx != -1
 
     def has_symbol(self, symbol: tp.Symbol) -> bool:
-        """Whether symbol exists."""
+        """Check whether the specified symbol exists.
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+
+        Returns:
+            bool: True if the symbol exists, False otherwise.
+        """
         symbol_idx = self.get_symbol_idx(symbol, raise_error=False)
         return symbol_idx != -1
 
     def assert_has_feature(self, feature: tp.Feature) -> None:
-        """Assert that feature exists."""
+        """Assert that the specified feature exists.
+
+        Args:
+            feature (Feature): Feature identifier.
+
+        Returns:
+            None
+        """
         self.get_feature_idx(feature, raise_error=True)
 
     def assert_has_symbol(self, symbol: tp.Symbol) -> None:
-        """Assert that symbol exists."""
+        """Assert that the specified symbol exists.
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+
+        Returns:
+            None
+        """
         self.get_symbol_idx(symbol, raise_error=True)
 
     def get_feature(
@@ -255,7 +388,15 @@ class BaseDataMixin(Base):
         feature: tp.Union[int, tp.Feature],
         raise_error: bool = False,
     ) -> tp.Optional[tp.SeriesFrame]:
-        """Get feature that match a feature index or label."""
+        """Retrieve data for a feature by its index or label.
+
+        Args:
+            feature (Union[int, Feature]): Index or label of the feature.
+            raise_error (bool): Whether to raise an error if the feature is not found.
+
+        Returns:
+            Optional[SeriesFrame]: The data corresponding to the specified feature, or None if not found.
+        """
         if checks.is_int(feature):
             return self.get(features=self.features[feature])
         feature_idx = self.get_feature_idx(feature, raise_error=raise_error)
@@ -268,7 +409,15 @@ class BaseDataMixin(Base):
         symbol: tp.Union[int, tp.Symbol],
         raise_error: bool = False,
     ) -> tp.Optional[tp.SeriesFrame]:
-        """Get symbol that match a symbol index or label."""
+        """Retrieve data for a symbol by its index or label.
+
+        Args:
+            symbol (Union[int, Symbol]): Index or label of the symbol.
+            raise_error (bool): Whether to raise an error if the symbol is not found.
+
+        Returns:
+            Optional[SeriesFrame]: The data corresponding to the specified symbol, or None if not found.
+        """
         if checks.is_int(symbol):
             return self.get(symbol=self.symbols[symbol])
         symbol_idx = self.get_symbol_idx(symbol, raise_error=raise_error)
@@ -281,46 +430,78 @@ OHLCDataMixinT = tp.TypeVar("OHLCDataMixinT", bound="OHLCDataMixin")
 
 
 class OHLCDataMixin(BaseDataMixin):
-    """Mixin class for working with OHLC data."""
+    """Mixin class for handling OHLC data properties and calculations for financial time series."""
 
     @property
     def open(self) -> tp.Optional[tp.SeriesFrame]:
-        """Open."""
+        """Series representing the open prices.
+
+        Returns:
+            Optional[SeriesFrame]: The open prices for the data if available; otherwise, None.
+        """
         return self.get_feature("Open")
 
     @property
     def high(self) -> tp.Optional[tp.SeriesFrame]:
-        """High."""
+        """Series representing the high prices.
+
+        Returns:
+            Optional[SeriesFrame]: The high prices for the data if available; otherwise, None.
+        """
         return self.get_feature("High")
 
     @property
     def low(self) -> tp.Optional[tp.SeriesFrame]:
-        """Low."""
+        """Series representing the low prices.
+
+        Returns:
+            Optional[SeriesFrame]: The low prices for the data if available; otherwise, None.
+        """
         return self.get_feature("Low")
 
     @property
     def close(self) -> tp.Optional[tp.SeriesFrame]:
-        """Close."""
+        """Series representing the close prices.
+
+        Returns:
+            Optional[SeriesFrame]: The close prices for the data if available; otherwise, None.
+        """
         return self.get_feature("Close")
 
     @property
     def volume(self) -> tp.Optional[tp.SeriesFrame]:
-        """Volume."""
+        """Series representing the volume data.
+
+        Returns:
+            Optional[SeriesFrame]: The volume data for the data if available; otherwise, None.
+        """
         return self.get_feature("Volume")
 
     @property
     def trade_count(self) -> tp.Optional[tp.SeriesFrame]:
-        """Trade count."""
+        """Series representing the trade count.
+
+        Returns:
+            Optional[SeriesFrame]: The trade count for the data if available; otherwise, None.
+        """
         return self.get_feature("Trade count")
 
     @property
     def vwap(self) -> tp.Optional[tp.SeriesFrame]:
-        """VWAP."""
+        """Series representing the volume-weighted average price (VWAP) data.
+
+        Returns:
+            Optional[SeriesFrame]: The volume-weighted average price for the data if available; otherwise, None.
+        """
         return self.get_feature("VWAP")
 
     @property
     def hlc3(self) -> tp.SeriesFrame:
-        """HLC/3."""
+        """Series computed as the arithmetic mean of the high, low, and close prices.
+
+        Returns:
+            SeriesFrame: Arithmetic mean of the high, low, and close prices.
+        """
         high = self.get_feature("High", raise_error=True)
         low = self.get_feature("Low", raise_error=True)
         close = self.get_feature("Close", raise_error=True)
@@ -328,7 +509,11 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def ohlc4(self) -> tp.SeriesFrame:
-        """OHLC/4."""
+        """Series computed as the arithmetic mean of the open, high, low, and close prices.
+
+        Returns:
+            SeriesFrame: Arithmetic mean of the open, high, low, and close prices.
+        """
         open = self.get_feature("Open", raise_error=True)
         high = self.get_feature("High", raise_error=True)
         low = self.get_feature("Low", raise_error=True)
@@ -337,14 +522,22 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def has_any_ohlc(self) -> bool:
-        """Whether the instance has any of the OHLC features."""
+        """Boolean flag indicating if any OHLC feature (open, high, low, or close) is present.
+
+        Returns:
+            bool: True if any OHLC feature is present, False otherwise.
+        """
         return (
             self.has_feature("Open") or self.has_feature("High") or self.has_feature("Low") or self.has_feature("Close")
         )
 
     @property
     def has_ohlc(self) -> bool:
-        """Whether the instance has all the OHLC features."""
+        """Boolean flag indicating if all OHLC features (open, high, low, and close) are present.
+
+        Returns:
+            bool: True if all OHLC features are present, False otherwise.
+        """
         return (
             self.has_feature("Open")
             and self.has_feature("High")
@@ -354,17 +547,29 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def has_any_ohlcv(self) -> bool:
-        """Whether the instance has any of the OHLCV features."""
+        """Boolean flag indicating if any OHLCV feature (OHLC or volume) is available.
+
+        Returns:
+            bool: True if any OHLCV feature is present, False otherwise.
+        """
         return self.has_any_ohlc or self.has_feature("Volume")
 
     @property
     def has_ohlcv(self) -> bool:
-        """Whether the instance has all the OHLCV features."""
+        """Boolean flag indicating if all OHLCV features (open, high, low, close, and volume) are present.
+
+        Returns:
+            bool: True if all OHLCV features are present, False otherwise.
+        """
         return self.has_ohlc and self.has_feature("Volume")
 
     @property
     def ohlc(self: OHLCDataMixinT) -> OHLCDataMixinT:
-        """Return a `OHLCDataMixin` instance with the OHLC features only."""
+        """New `OHLCDataMixin` instance containing only OHLC features (open, high, low, and close).
+
+        Returns:
+            OHLCDataMixin: New instance containing only OHLC features.
+        """
         open_idx = self.get_feature_idx("Open", raise_error=True)
         high_idx = self.get_feature_idx("High", raise_error=True)
         low_idx = self.get_feature_idx("Low", raise_error=True)
@@ -373,7 +578,11 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def ohlcv(self: OHLCDataMixinT) -> OHLCDataMixinT:
-        """Return a `OHLCDataMixin` instance with the OHLCV features only."""
+        """New `OHLCDataMixin` instance containing only OHLCV features (open, high, low, close, and volume).
+
+        Returns:
+            OHLCDataMixin: New instance containing only OHLCV features.
+        """
         open_idx = self.get_feature_idx("Open", raise_error=True)
         high_idx = self.get_feature_idx("High", raise_error=True)
         low_idx = self.get_feature_idx("Low", raise_error=True)
@@ -382,7 +591,14 @@ class OHLCDataMixin(BaseDataMixin):
         return self.select_feature_idxs([open_idx, high_idx, low_idx, close_idx, volume_idx])
 
     def get_returns_acc(self, **kwargs) -> ReturnsAccessor:
-        """Return accessor of type `vectorbtpro.returns.accessors.ReturnsAccessor`."""
+        """Return a `vectorbtpro.returns.accessors.ReturnsAccessor` constructed from the close price data.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+
+        Returns:
+            ReturnsAccessor: Accessor for return calculations using the close price.
+        """
         return ReturnsAccessor.from_value(
             self.get_feature("Close", raise_error=True),
             wrapper=self.symbol_wrapper,
@@ -392,11 +608,22 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def returns_acc(self) -> ReturnsAccessor:
-        """`OHLCDataMixin.get_returns_acc` with default arguments."""
+        """`ReturnsAccessor` using default parameters from `OHLCDataMixin.get_returns_acc`.
+
+        Returns:
+            ReturnsAccessor: Accessor for return calculations using the close price.
+        """
         return self.get_returns_acc()
 
     def get_returns(self, **kwargs) -> tp.SeriesFrame:
-        """Returns."""
+        """Return computed return values derived from the close price data.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+
+        Returns:
+            SeriesFrame: Computed returns from the close price.
+        """
         return ReturnsAccessor.from_value(
             self.get_feature("Close", raise_error=True),
             wrapper=self.symbol_wrapper,
@@ -406,11 +633,22 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def returns(self) -> tp.SeriesFrame:
-        """`OHLCDataMixin.get_returns` with default arguments."""
+        """Computed return values using default parameters from `OHLCDataMixin.get_returns`.
+
+        Returns:
+            SeriesFrame: Computed returns from the close price.
+        """
         return self.get_returns()
 
     def get_log_returns(self, **kwargs) -> tp.SeriesFrame:
-        """Log returns."""
+        """Return computed logarithmic return values derived from the close price data.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+
+        Returns:
+            SeriesFrame: Computed logarithmic returns from the close price.
+        """
         return ReturnsAccessor.from_value(
             self.get_feature("Close", raise_error=True),
             wrapper=self.symbol_wrapper,
@@ -421,11 +659,22 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def log_returns(self) -> tp.SeriesFrame:
-        """`OHLCDataMixin.get_log_returns` with default arguments."""
+        """Logarithmic return values using default parameters from `OHLCDataMixin.get_log_returns`.
+
+        Returns:
+            SeriesFrame: Computed logarithmic returns from the close price.
+        """
         return self.get_log_returns()
 
     def get_daily_returns(self, **kwargs) -> tp.SeriesFrame:
-        """Daily returns."""
+        """Return daily returns computed from the close price data.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+
+        Returns:
+            SeriesFrame: Daily returns computed from the close price.
+        """
         return ReturnsAccessor.from_value(
             self.get_feature("Close", raise_error=True),
             wrapper=self.symbol_wrapper,
@@ -435,11 +684,22 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def daily_returns(self) -> tp.SeriesFrame:
-        """`OHLCDataMixin.get_daily_returns` with default arguments."""
+        """Daily computed returns using default parameters from `OHLCDataMixin.get_daily_returns`.
+
+        Returns:
+            SeriesFrame: Daily computed returns from the close price.
+        """
         return self.get_daily_returns()
 
     def get_daily_log_returns(self, **kwargs) -> tp.SeriesFrame:
-        """Daily log returns."""
+        """Return daily logarithmic returns computed from the close price data.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.returns.accessors.ReturnsAccessor.from_value`.
+
+        Returns:
+            SeriesFrame: Daily logarithmic returns computed from the close price.
+        """
         return ReturnsAccessor.from_value(
             self.get_feature("Close", raise_error=True),
             wrapper=self.symbol_wrapper,
@@ -450,13 +710,23 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def daily_log_returns(self) -> tp.SeriesFrame:
-        """`OHLCDataMixin.get_daily_log_returns` with default arguments."""
+        """Daily computed logarithmic returns using default parameters from
+        `OHLCDataMixin.get_daily_log_returns`.
+
+        Returns:
+            SeriesFrame: Daily computed logarithmic returns from the close price.
+        """
         return self.get_daily_log_returns()
 
     def get_drawdowns(self, **kwargs) -> Drawdowns:
-        """Generate drawdown records.
+        """Generate drawdown records from the OHLC price data.
 
-        See `vectorbtpro.generic.drawdowns.Drawdowns`."""
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.generic.drawdowns.Drawdowns.from_price`.
+
+        Returns:
+            Drawdowns: Drawdown records generated using open, high, low, and close prices.
+        """
         return Drawdowns.from_price(
             open=self.get_feature("Open", raise_error=True),
             high=self.get_feature("High", raise_error=True),
@@ -467,7 +737,11 @@ class OHLCDataMixin(BaseDataMixin):
 
     @property
     def drawdowns(self) -> Drawdowns:
-        """`OHLCDataMixin.get_drawdowns` with default arguments."""
+        """Drawdown records using default parameters from `OHLCDataMixin.get_drawdowns`.
+
+        Returns:
+            Drawdowns: Drawdown records generated using open, high, low, and close prices.
+        """
         return self.get_drawdowns()
 
 
@@ -475,17 +749,56 @@ DataT = tp.TypeVar("DataT", bound="Data")
 
 
 class MetaData(type(Analyzable)):
-    """Metaclass for `Data`."""
+    """Metaclass for the `Data` class, providing custom feature configuration."""
 
     @property
     def feature_config(cls) -> Config:
-        """Feature config."""
+        """Feature configuration for the `Data` class.
+
+        Returns:
+            Config: Feature configuration associated with the class.
+        """
         return cls._feature_config
 
 
 @attach_symbol_dict_methods
 class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
-    """Class that downloads, updates, and manages data coming from a data source."""
+    """Class for downloading, updating, and managing data from a data source.
+
+    Args:
+        wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
+        data (Union[feature_dict, symbol_dict]): Data dictionary structured as feature-oriented
+            (`feature_dict`) or symbol-oriented (`symbol_dict`).
+        single_key (bool): Specifies whether the instance should be treated as having a single key.
+
+            Automatically set to False when multiple keys are present.
+        classes (Union[None, feature_dict, symbol_dict]): Class definitions for keys.
+        level_name (Union[None, bool, MaybeIterable[Hashable]]): Name(s) of levels for keys.
+        fetch_kwargs (Union[None, feature_dict, symbol_dict]): Additional parameters for data fetching.
+        returned_kwargs (Union[None, feature_dict, symbol_dict]): Keyword arguments returned from data fetching.
+        last_index (Union[None, feature_dict, symbol_dict]): Container to record
+            the last datetime index for each key.
+        delisted (Union[None, feature_dict, symbol_dict]): Container to track
+            delisted status for each key.
+        tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
+
+            Set to False to disable localization. See `Data.prepare_dt_index`.
+        tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+
+            Set to False to disable conversion. See `Data.prepare_dt_index`.
+        missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
+
+            See `Data.align_index`.
+        missing_columns (Optional[str]): Specifies how to handle missing columns when aligning data.
+
+            See `Data.align_columns`.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.data`.
+    """
 
     _settings_path: tp.SettingsPath = dict(base="data")
 
@@ -513,215 +826,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         "classes",
     ]
     """Attributes that have a method for updating."""
-
-    @property
-    def feature_config(self) -> Config:
-        """Column config of `${cls_name}`.
-
-        ```python
-        ${feature_config}
-        ```
-
-        Returns `${cls_name}._feature_config`, which gets (hybrid-) copied upon creation of each instance.
-        Thus, changing this config won't affect the class.
-
-        To change fields, you can either change the config in-place, override this property,
-        or overwrite the instance variable `${cls_name}._feature_config`.
-        """
-        return self._feature_config
-
-    def use_feature_config_of(self, cls: tp.Type[DataT]) -> None:
-        """Copy feature config from another `Data` class."""
-        self._feature_config = cls.feature_config.copy()
-
-    @classmethod
-    def modify_state(cls, rec_state: RecState) -> RecState:
-        # Ensure backward compatibility
-        if "_column_config" in rec_state.attr_dct and "_feature_config" not in rec_state.attr_dct:
-            new_attr_dct = dict(rec_state.attr_dct)
-            new_attr_dct["_feature_config"] = new_attr_dct.pop("_column_config")
-            rec_state = RecState(
-                init_args=rec_state.init_args,
-                init_kwargs=rec_state.init_kwargs,
-                attr_dct=new_attr_dct,
-            )
-        if "single_symbol" in rec_state.init_kwargs and "single_key" not in rec_state.init_kwargs:
-            new_init_kwargs = dict(rec_state.init_kwargs)
-            new_init_kwargs["single_key"] = new_init_kwargs.pop("single_symbol")
-            rec_state = RecState(
-                init_args=rec_state.init_args,
-                init_kwargs=new_init_kwargs,
-                attr_dct=rec_state.attr_dct,
-            )
-        if "symbol_classes" in rec_state.init_kwargs and "classes" not in rec_state.init_kwargs:
-            new_init_kwargs = dict(rec_state.init_kwargs)
-            new_init_kwargs["classes"] = new_init_kwargs.pop("symbol_classes")
-            rec_state = RecState(
-                init_args=rec_state.init_args,
-                init_kwargs=new_init_kwargs,
-                attr_dct=rec_state.attr_dct,
-            )
-        return rec_state
-
-    @classmethod
-    def fix_data_dict_type(cls, data: dict) -> tp.Union[feature_dict, symbol_dict]:
-        """Fix dict type for data."""
-        checks.assert_instance_of(data, dict, arg_name="data")
-        if not isinstance(data, key_dict):
-            data = symbol_dict(data)
-        return data
-
-    @classmethod
-    def fix_dict_types_in_kwargs(
-        cls,
-        data_type: tp.Type[tp.Union[feature_dict, symbol_dict]],
-        **kwargs: tp.Kwargs,
-    ) -> tp.Kwargs:
-        """Fix dict types in keyword arguments."""
-        for attr in cls._key_dict_attrs:
-            if attr in kwargs:
-                attr_value = kwargs[attr]
-                if attr_value is None:
-                    attr_value = {}
-                checks.assert_instance_of(attr_value, dict, arg_name=attr)
-                if not isinstance(attr_value, key_dict):
-                    attr_value = data_type(attr_value)
-                if attr in cls._data_dict_type_attrs:
-                    checks.assert_instance_of(attr_value, data_type, arg_name=attr)
-                kwargs[attr] = attr_value
-        return kwargs
-
-    @hybrid_method
-    def row_stack(
-        cls_or_self: tp.MaybeType[DataT],
-        *objs: tp.MaybeTuple[DataT],
-        wrapper_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> DataT:
-        """Stack multiple `Data` instances along rows.
-
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
-        if not isinstance(cls_or_self, type):
-            objs = (cls_or_self, *objs)
-            cls = type(cls_or_self)
-        else:
-            cls = cls_or_self
-        if len(objs) == 1:
-            objs = objs[0]
-        objs = list(objs)
-        for obj in objs:
-            if not checks.is_instance_of(obj, Data):
-                raise TypeError("Each object to be merged must be an instance of Data")
-        if "wrapper" not in kwargs:
-            if wrapper_kwargs is None:
-                wrapper_kwargs = {}
-            kwargs["wrapper"] = ArrayWrapper.row_stack(*[obj.wrapper for obj in objs], **wrapper_kwargs)
-
-        keys = set()
-        for obj in objs:
-            keys = keys.union(set(obj.data.keys()))
-        data_type = None
-        for obj in objs:
-            if len(keys.difference(set(obj.data.keys()))) > 0:
-                if isinstance(obj.data, feature_dict):
-                    raise ValueError("Objects to be merged must have the same features")
-                else:
-                    raise ValueError("Objects to be merged must have the same symbols")
-            if data_type is None:
-                data_type = type(obj.data)
-            elif not isinstance(obj.data, data_type):
-                raise TypeError("Objects to be merged must have the same dict type for data")
-        if "data" not in kwargs:
-            new_data = data_type()
-            for k in objs[0].data.keys():
-                new_data[k] = kwargs["wrapper"].row_stack_arrs(*[obj.data[k] for obj in objs], group_by=False)
-            kwargs["data"] = new_data
-        kwargs["data"] = cls.fix_data_dict_type(kwargs["data"])
-        for attr in cls._key_dict_attrs:
-            if attr not in kwargs:
-                attr_data_type = None
-                for obj in objs:
-                    v = getattr(obj, attr)
-                    if attr_data_type is None:
-                        attr_data_type = type(v)
-                    elif not isinstance(v, attr_data_type):
-                        raise TypeError(f"Objects to be merged must have the same dict type for '{attr}'")
-                kwargs[attr] = getattr(objs[-1], attr)
-
-        kwargs = cls.resolve_row_stack_kwargs(*objs, **kwargs)
-        kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
-        kwargs = cls.fix_dict_types_in_kwargs(type(kwargs["data"]), **kwargs)
-        return cls(**kwargs)
-
-    @hybrid_method
-    def column_stack(
-        cls_or_self: tp.MaybeType[DataT],
-        *objs: tp.MaybeTuple[DataT],
-        wrapper_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> DataT:
-        """Stack multiple `Data` instances along columns.
-
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
-        if not isinstance(cls_or_self, type):
-            objs = (cls_or_self, *objs)
-            cls = type(cls_or_self)
-        else:
-            cls = cls_or_self
-        if len(objs) == 1:
-            objs = objs[0]
-        objs = list(objs)
-        for obj in objs:
-            if not checks.is_instance_of(obj, Data):
-                raise TypeError("Each object to be merged must be an instance of Data")
-        if "wrapper" not in kwargs:
-            if wrapper_kwargs is None:
-                wrapper_kwargs = {}
-            kwargs["wrapper"] = ArrayWrapper.column_stack(
-                *[obj.wrapper for obj in objs],
-                **wrapper_kwargs,
-            )
-
-        keys = set()
-        for obj in objs:
-            keys = keys.union(set(obj.data.keys()))
-        data_type = None
-        for obj in objs:
-            if len(keys.difference(set(obj.data.keys()))) > 0:
-                if isinstance(obj.data, feature_dict):
-                    raise ValueError("Objects to be merged must have the same features")
-                else:
-                    raise ValueError("Objects to be merged must have the same symbols")
-            if data_type is None:
-                data_type = type(obj.data)
-            elif not isinstance(obj.data, data_type):
-                raise TypeError("Objects to be merged must have the same dict type for data")
-        if "data" not in kwargs:
-            new_data = data_type()
-            for k in objs[0].data.keys():
-                new_data[k] = kwargs["wrapper"].column_stack_arrs(*[obj.data[k] for obj in objs], group_by=False)
-            kwargs["data"] = new_data
-        kwargs["data"] = cls.fix_data_dict_type(kwargs["data"])
-        for attr in cls._key_dict_attrs:
-            if attr not in kwargs:
-                attr_data_type = None
-                for obj in objs:
-                    v = getattr(obj, attr)
-                    if attr_data_type is None:
-                        attr_data_type = type(v)
-                    elif not isinstance(v, attr_data_type):
-                        raise TypeError(f"Objects to be merged must have the same dict type for '{attr}'")
-                if (issubclass(data_type, feature_dict) and issubclass(attr_data_type, symbol_dict)) or (
-                    issubclass(data_type, symbol_dict) and issubclass(attr_data_type, feature_dict)
-                ):
-                    kwargs[attr] = attr_data_type()
-                    for obj in objs:
-                        kwargs[attr].update(**getattr(obj, attr))
-
-        kwargs = cls.resolve_column_stack_kwargs(*objs, **kwargs)
-        kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
-        kwargs = cls.fix_dict_types_in_kwargs(type(kwargs["data"]), **kwargs)
-        return cls(**kwargs)
 
     def __init__(
         self,
@@ -785,10 +889,689 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         # Copy writeable attrs
         self._feature_config = type(self)._feature_config.copy()
 
-    def replace(self: DataT, **kwargs) -> DataT:
-        """See `vectorbtpro.utils.config.Configured.replace`.
+    @property
+    def data(self) -> tp.Union[feature_dict, symbol_dict]:
+        """Data dictionary.
 
-        Replaces the data's index and/or columns if they were changed in the wrapper."""
+        Either feature-oriented (`feature_dict`) or symbol-oriented (`symbol_dict`).
+
+        Returns:
+            Union[feature_dict, symbol_dict]: The data dictionary.
+        """
+        return self._data
+
+    @property
+    def dict_type(self) -> tp.Type[tp.Union[feature_dict, symbol_dict]]:
+        """Data dictionary type.
+
+        Indicates whether the data dictionary is feature-oriented (`feature_dict`) or
+        symbol-oriented (`symbol_dict`).
+
+        Returns:
+            Type[Union[feature_dict, symbol_dict]]: The type of the data dictionary.
+        """
+        return type(self.data)
+
+    @property
+    def column_type(self) -> tp.Type[tp.Union[feature_dict, symbol_dict]]:
+        """Column type.
+
+        If the data is feature-oriented (`feature_dict`), returns `symbol_dict`;
+        otherwise, returns `feature_dict`.
+
+        Returns:
+            Type[Union[feature_dict, symbol_dict]]: The column type.
+        """
+        if isinstance(self.data, feature_dict):
+            return symbol_dict
+        return feature_dict
+
+    @property
+    def feature_oriented(self) -> bool:
+        """Feature-oriented flag.
+
+        Indicates whether the data is feature-oriented, meaning keys represent features.
+
+        Returns:
+            bool: True if the data is feature-oriented, False otherwise.
+        """
+        return issubclass(self.dict_type, feature_dict)
+
+    @property
+    def symbol_oriented(self) -> bool:
+        """Symbol-oriented flag.
+
+        Indicates whether the data is symbol-oriented, meaning keys represent symbols.
+
+        Returns:
+            bool: True if the data is symbol-oriented, False otherwise.
+        """
+        return issubclass(self.dict_type, symbol_dict)
+
+    def get_keys(self, dict_type: tp.Type[tp.Union[feature_dict, symbol_dict]]) -> tp.List[tp.Key]:
+        """Return keys based on the provided dictionary type.
+
+        Args:
+            dict_type (Type[Union[feature_dict, symbol_dict]]): Data dictionary type used to
+                determine which keys to return.
+
+        Returns:
+            List[Key]: List of keys corresponding to the specified dictionary type.
+        """
+        checks.assert_subclass_of(dict_type, (feature_dict, symbol_dict), arg_name="dict_type")
+        if issubclass(dict_type, feature_dict):
+            return self.features
+        return self.symbols
+
+    @property
+    def keys(self) -> tp.List[tp.Union[tp.Feature, tp.Symbol]]:
+        """List of keys in the data dictionary.
+
+        These represent features for `feature_dict` data or symbols for `symbol_dict` data.
+
+        Returns:
+            List[Union[Feature, Symbol]]: List of keys in the data dictionary.
+        """
+        return list(self.data.keys())
+
+    @property
+    def single_key(self) -> bool:
+        """Single key flag.
+
+        Indicates whether the underlying data dictionary contains only one key.
+
+        Returns:
+            bool: True if the data dictionary has only one key, False otherwise.
+        """
+        return self._single_key
+
+    @property
+    def single_feature(self) -> bool:
+        """Single feature flag.
+
+        Indicates whether there is only one feature in the data. For feature-oriented data,
+        this is equivalent to `single_key`; otherwise, it is determined by the dimensionality of the wrapper.
+
+        Returns:
+            bool: True if there is only one feature, False otherwise.
+        """
+        if self.feature_oriented:
+            return self.single_key
+        return self.wrapper.ndim == 1
+
+    @property
+    def single_symbol(self) -> bool:
+        """Single symbol flag.
+
+        Indicates whether there is only one symbol in the data. For symbol-oriented data,
+        this equals `single_key`; otherwise, it is determined by the dimensionality of the wrapper.
+
+        Returns:
+            bool: True if there is only one symbol, False otherwise.
+        """
+        if self.symbol_oriented:
+            return self.single_key
+        return self.wrapper.ndim == 1
+
+    @property
+    def classes(self) -> tp.Union[feature_dict, symbol_dict]:
+        """Class definitions for the keys in the data dictionary.
+
+        Returns:
+            Type[Union[feature_dict, symbol_dict]]: The type of the data dictionary.
+        """
+        return self._classes
+
+    @property
+    def feature_classes(self) -> tp.Optional[feature_dict]:
+        """Feature classes.
+
+        Returns:
+            Optional[feature_dict]: The key classes if the data is feature-oriented; otherwise, returns None.
+        """
+        if self.feature_oriented:
+            return self.classes
+        return None
+
+    @property
+    def symbol_classes(self) -> tp.Optional[symbol_dict]:
+        """Symbol classes.
+
+        Returns:
+            Optional[symbol_dict]: The key classes if the data is symbol-oriented; otherwise, returns None.
+        """
+        if self.symbol_oriented:
+            return self.classes
+        return None
+
+    @hybrid_method
+    def get_level_name(
+        cls_or_self,
+        keys: tp.Optional[tp.Keys] = None,
+        level_name: tp.Union[None, bool, tp.MaybeIterable[tp.Hashable]] = None,
+        feature_oriented: tp.Optional[bool] = None,
+    ) -> tp.Optional[tp.MaybeIterable[tp.Hashable]]:
+        """Determine level name(s) for data keys.
+
+        Args:
+            keys (Optional[Keys]): List of keys; required for class method calls.
+            level_name (Union[None, bool, MaybeIterable[Hashable]]): Specification for level name(s).
+
+                If a boolean, `False` returns None and `True` resets the level name.
+            feature_oriented (Optional[bool]): Indicates whether the data is feature-oriented;
+                required for class method calls.
+
+        Returns:
+            Optional[MaybeIterable[Hashable]]: Level name(s) for the keys.
+
+                Returns a tuple when keys are multi-level.
+
+        !!! note
+            If `level_name` is boolean `False`, no level names are applied.
+        """
+        if isinstance(cls_or_self, type):
+            checks.assert_not_none(keys, arg_name="keys")
+            checks.assert_not_none(feature_oriented, arg_name="feature_oriented")
+        else:
+            if keys is None:
+                keys = cls_or_self.keys
+            if level_name is None:
+                level_name = cls_or_self._level_name
+            if feature_oriented is None:
+                feature_oriented = cls_or_self.feature_oriented
+        first_key = keys[0]
+        if isinstance(level_name, bool):
+            if level_name:
+                level_name = None
+            else:
+                return None
+        if feature_oriented:
+            key_prefix = "feature"
+        else:
+            key_prefix = "symbol"
+        if isinstance(first_key, tuple):
+            if level_name is None:
+                level_name = ["%s_%d" % (key_prefix, i) for i in range(len(first_key))]
+            if not checks.is_iterable(level_name) or isinstance(level_name, str):
+                raise TypeError("Level name should be list-like for a MultiIndex")
+            return tuple(level_name)
+        if level_name is None:
+            level_name = key_prefix
+        return level_name
+
+    @property
+    def level_name(self) -> tp.Optional[tp.MaybeIterable[tp.Hashable]]:
+        """Level name(s) property.
+
+        Specifies the name(s) for the keys in the data dictionary.
+        For multi-level keys, it is a sequence of names; for single-level keys, it is a hashable.
+        If set to `False`, no level names are used.
+
+        Returns:
+            Optional[MaybeIterable[Hashable]]: The level name(s) for the keys.
+        """
+        return self.get_level_name()
+
+    @hybrid_method
+    def get_key_index(
+        cls_or_self,
+        keys: tp.Optional[tp.Keys] = None,
+        level_name: tp.Union[None, bool, tp.MaybeIterable[tp.Hashable]] = None,
+        feature_oriented: tp.Optional[bool] = None,
+    ) -> tp.Index:
+        """Generate Pandas Index for the data keys.
+
+        Args:
+            keys (Optional[Keys]): List of keys; required for class method calls.
+            level_name (Union[None, bool, MaybeIterable[Hashable]]): Specification for level name(s)
+                to be used in the Index.
+            feature_oriented (Optional[bool]): Indicates whether the data is feature-oriented;
+                required for class method calls.
+
+        Returns:
+            Index: Pandas Index, or a MultiIndex if level names are provided as a tuple.
+        """
+        if isinstance(cls_or_self, type):
+            checks.assert_not_none(keys, arg_name="keys")
+        else:
+            if keys is None:
+                keys = cls_or_self.keys
+        level_name = cls_or_self.get_level_name(keys=keys, level_name=level_name, feature_oriented=feature_oriented)
+        if isinstance(level_name, tuple):
+            return pd.MultiIndex.from_tuples(keys, names=level_name)
+        return pd.Index(keys, name=level_name)
+
+    @property
+    def key_index(self) -> tp.Index:
+        """Key index property.
+
+        A Pandas Index generated from the data keys using `Data.get_key_index`.
+
+        Returns:
+            Index: Pandas Index, or a MultiIndex if level names are provided as a tuple.
+        """
+        return self.get_key_index()
+
+    @property
+    def fetch_kwargs(self) -> tp.Union[feature_dict, symbol_dict]:
+        """Keyword arguments originally passed to `Data.fetch_symbol`, maintained as a `symbol_dict`.
+
+        Returns:
+            Union[feature_dict, symbol_dict]: The keyword arguments for fetching data.
+        """
+        return self._fetch_kwargs
+
+    @property
+    def returned_kwargs(self) -> tp.Union[feature_dict, symbol_dict]:
+        """Keyword arguments returned by `Data.fetch_symbol`, stored as a `symbol_dict`.
+
+        Returns:
+            Union[feature_dict, symbol_dict]: The keyword arguments returned from fetching data.
+        """
+        return self._returned_kwargs
+
+    @property
+    def last_index(self) -> tp.Union[feature_dict, symbol_dict]:
+        """Last fetched index for each symbol, maintained as a `symbol_dict`.
+
+        Returns:
+            Union[feature_dict, symbol_dict]: The last index for each symbol.
+        """
+        return self._last_index
+
+    @property
+    def delisted(self) -> tp.Union[feature_dict, symbol_dict]:
+        """Delisting status for each symbol, stored as a `symbol_dict`.
+
+        Returns:
+            Union[feature_dict, symbol_dict]: The delisting status for each symbol.
+        """
+        return self._delisted
+
+    @property
+    def tz_localize(self) -> tp.Union[None, bool, tp.TimezoneLike]:
+        """Timezone for localizing a datetime-naive index, initially provided to `Data.pull`.
+
+        Returns:
+            Union[None, bool, TimezoneLike]: The timezone for localizing the index.
+        """
+        return self._tz_localize
+
+    @property
+    def tz_convert(self) -> tp.Union[None, bool, tp.TimezoneLike]:
+        """Timezone for converting a datetime-aware index, initially provided to `Data.pull`.
+
+        Returns:
+            Union[None, bool, TimezoneLike]: The timezone for converting the index.
+        """
+        return self._tz_convert
+
+    @property
+    def missing_index(self) -> tp.Optional[str]:
+        """The `missing` argument provided to `Data.align_index`.
+
+        Returns:
+            Optional[str]: The missing index argument.
+        """
+        return self._missing_index
+
+    @property
+    def missing_columns(self) -> tp.Optional[str]:
+        """The `missing` argument provided to `Data.align_columns`.
+
+        Returns:
+            Optional[str]: The missing columns argument.
+        """
+        return self._missing_columns
+
+    # ############# Settings ############# #
+
+    @classmethod
+    def get_base_settings(cls, *args, **kwargs) -> dict:
+        """Retrieve base settings using `CustomData.get_settings` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments for `Data.get_settings`.
+            **kwargs: Keyword arguments for `Data.get_settings`.
+
+        Returns:
+            dict: Base settings.
+        """
+        return cls.get_settings(*args, path_id="base", **kwargs)
+
+    @classmethod
+    def has_base_settings(cls, *args, **kwargs) -> bool:
+        """Determine whether base settings exist by invoking `CustomData.has_settings` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments for `Data.has_settings`.
+            **kwargs: Keyword arguments for `Data.has_settings`.
+
+        Returns:
+            bool: True if base settings exist, False otherwise.
+        """
+        return cls.has_settings(*args, path_id="base", **kwargs)
+
+    @classmethod
+    def get_base_setting(cls, *args, **kwargs) -> tp.Any:
+        """Fetch a base setting using `CustomData.get_setting` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments for `Data.get_setting`.
+            **kwargs: Keyword arguments for `Data.get_setting`.
+
+        Returns:
+            Any: Requested base setting.
+        """
+        return cls.get_setting(*args, path_id="base", **kwargs)
+
+    @classmethod
+    def has_base_setting(cls, *args, **kwargs) -> bool:
+        """Check for the presence of a base setting by using `CustomData.has_setting` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments for `Data.has_setting`.
+            **kwargs: Keyword arguments for `Data.has_setting`.
+
+        Returns:
+            bool: True if the base setting exists, False otherwise.
+        """
+        return cls.has_setting(*args, path_id="base", **kwargs)
+
+    @classmethod
+    def resolve_base_setting(cls, *args, **kwargs) -> tp.Any:
+        """Resolve a base setting by calling `CustomData.resolve_setting` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments for `Data.resolve_setting`.
+            **kwargs: Keyword arguments for `Data.resolve_setting`.
+
+        Returns:
+            Any: Resolved base setting.
+        """
+        return cls.resolve_setting(*args, path_id="base", **kwargs)
+
+    @classmethod
+    def set_base_settings(cls, *args, **kwargs) -> None:
+        """Apply base settings by invoking `CustomData.set_settings` with `path_id="base"`.
+
+        Args:
+            *args: Positional arguments for `Data.set_settings`.
+            **kwargs: Keyword arguments for `Data.set_settings`.
+
+        Returns:
+            None
+        """
+        cls.set_settings(*args, path_id="base", **kwargs)
+
+    # ############# Config ############# #
+
+    @property
+    def feature_config(self) -> Config:
+        """Feature configuration for `${cls_name}`.
+
+        ```python
+        ${feature_config}
+        ```
+
+        This property returns `${cls_name}._feature_config`, which is (hybrid-) copied during instance
+        creation. Modifying this configuration does not affect the class-level configuration.
+
+        To change fields, modify the configuration in-place, override this property, or replace the
+        instance variable `${cls_name}._feature_config`.
+
+        Returns:
+            Config: Feature configuration for the class.
+        """
+        return self._feature_config
+
+    def use_feature_config_of(self, cls: tp.Type[DataT]) -> None:
+        """Copy the feature configuration from another `Data` class.
+
+        Args:
+            cls (Type[Data]): Class from which to copy the feature configuration.
+
+        Returns:
+            None
+        """
+        self._feature_config = cls.feature_config.copy()
+
+    @classmethod
+    def modify_state(cls, rec_state: RecState) -> RecState:
+        # Ensure backward compatibility
+        if "_column_config" in rec_state.attr_dct and "_feature_config" not in rec_state.attr_dct:
+            new_attr_dct = dict(rec_state.attr_dct)
+            new_attr_dct["_feature_config"] = new_attr_dct.pop("_column_config")
+            rec_state = RecState(
+                init_args=rec_state.init_args,
+                init_kwargs=rec_state.init_kwargs,
+                attr_dct=new_attr_dct,
+            )
+        if "single_symbol" in rec_state.init_kwargs and "single_key" not in rec_state.init_kwargs:
+            new_init_kwargs = dict(rec_state.init_kwargs)
+            new_init_kwargs["single_key"] = new_init_kwargs.pop("single_symbol")
+            rec_state = RecState(
+                init_args=rec_state.init_args,
+                init_kwargs=new_init_kwargs,
+                attr_dct=rec_state.attr_dct,
+            )
+        if "symbol_classes" in rec_state.init_kwargs and "classes" not in rec_state.init_kwargs:
+            new_init_kwargs = dict(rec_state.init_kwargs)
+            new_init_kwargs["classes"] = new_init_kwargs.pop("symbol_classes")
+            rec_state = RecState(
+                init_args=rec_state.init_args,
+                init_kwargs=new_init_kwargs,
+                attr_dct=rec_state.attr_dct,
+            )
+        return rec_state
+
+    @classmethod
+    def fix_data_dict_type(cls, data: dict) -> tp.Union[feature_dict, symbol_dict]:
+        """Ensure that the data dictionary conforms to the proper key dictionary type.
+
+        If `data` is not an instance of `key_dict`, convert it using `symbol_dict`.
+
+        Args:
+            data (dict): Data dictionary.
+
+        Returns:
+            Union[feature_dict, symbol_dict]: Wrapped data dictionary.
+        """
+        checks.assert_instance_of(data, dict, arg_name="data")
+        if not isinstance(data, key_dict):
+            data = symbol_dict(data)
+        return data
+
+    @classmethod
+    def fix_dict_types_in_kwargs(
+        cls,
+        data_type: tp.Type[tp.Union[feature_dict, symbol_dict]],
+        **kwargs: tp.Kwargs,
+    ) -> tp.Kwargs:
+        """Adjust dictionary-type keyword arguments to conform to the specified `data_type`.
+
+        For each attribute in `_key_dict_attrs` present in `kwargs`, replace None with an empty
+        dictionary and convert the value to the proper type if necessary.
+
+        Args:
+            data_type (Type[Union[feature_dict, symbol_dict]]): Data dictionary type.
+            **kwargs: Keyword arguments.
+
+        Returns:
+            Kwargs: Adjusted keyword arguments.
+        """
+        for attr in cls._key_dict_attrs:
+            if attr in kwargs:
+                attr_value = kwargs[attr]
+                if attr_value is None:
+                    attr_value = {}
+                checks.assert_instance_of(attr_value, dict, arg_name=attr)
+                if not isinstance(attr_value, key_dict):
+                    attr_value = data_type(attr_value)
+                if attr in cls._data_dict_type_attrs:
+                    checks.assert_instance_of(attr_value, data_type, arg_name=attr)
+                kwargs[attr] = attr_value
+        return kwargs
+
+    @hybrid_method
+    def row_stack(
+        cls_or_self: tp.MaybeType[DataT],
+        *objs: tp.MaybeSequence[DataT],
+        wrapper_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> DataT:
+        """Stack multiple `Data` instances along rows.
+
+        This method uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to combine
+        the wrappers from each instance, validates that all instances share consistent data
+        keys and dictionary types, and merges their data along with related attributes.
+
+        Args:
+            *objs (MaybeSequence[Data]): (Additional) `Data` instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `Data`.
+
+        Returns:
+            Data: New `Data` instance created by stacking the given instances.
+        """
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
+        if len(objs) == 1:
+            objs = objs[0]
+        objs = list(objs)
+        for obj in objs:
+            if not checks.is_instance_of(obj, Data):
+                raise TypeError("Each object to be merged must be an instance of Data")
+        if "wrapper" not in kwargs:
+            if wrapper_kwargs is None:
+                wrapper_kwargs = {}
+            kwargs["wrapper"] = ArrayWrapper.row_stack(*[obj.wrapper for obj in objs], **wrapper_kwargs)
+
+        keys = set()
+        for obj in objs:
+            keys = keys.union(set(obj.data.keys()))
+        data_type = None
+        for obj in objs:
+            if len(keys.difference(set(obj.data.keys()))) > 0:
+                if isinstance(obj.data, feature_dict):
+                    raise ValueError("Objects to be merged must have the same features")
+                else:
+                    raise ValueError("Objects to be merged must have the same symbols")
+            if data_type is None:
+                data_type = type(obj.data)
+            elif not isinstance(obj.data, data_type):
+                raise TypeError("Objects to be merged must have the same dict type for data")
+        if "data" not in kwargs:
+            new_data = data_type()
+            for k in objs[0].data.keys():
+                new_data[k] = kwargs["wrapper"].row_stack_arrs(*[obj.data[k] for obj in objs], group_by=False)
+            kwargs["data"] = new_data
+        kwargs["data"] = cls.fix_data_dict_type(kwargs["data"])
+        for attr in cls._key_dict_attrs:
+            if attr not in kwargs:
+                attr_data_type = None
+                for obj in objs:
+                    v = getattr(obj, attr)
+                    if attr_data_type is None:
+                        attr_data_type = type(v)
+                    elif not isinstance(v, attr_data_type):
+                        raise TypeError(f"Objects to be merged must have the same dict type for '{attr}'")
+                kwargs[attr] = getattr(objs[-1], attr)
+
+        kwargs = cls.resolve_row_stack_kwargs(*objs, **kwargs)
+        kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
+        kwargs = cls.fix_dict_types_in_kwargs(type(kwargs["data"]), **kwargs)
+        return cls(**kwargs)
+
+    @hybrid_method
+    def column_stack(
+        cls_or_self: tp.MaybeType[DataT],
+        *objs: tp.MaybeSequence[DataT],
+        wrapper_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> DataT:
+        """Stack multiple `Data` instances along columns.
+
+        This method concatenates multiple `Data` instances by stacking their underlying arrays
+        along the column axis. It relies on `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`
+        to merge the wrappers.
+
+        Args:
+            *objs (MaybeSequence[Data]): (Additional) `Data` instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `Data`.
+
+        Returns:
+            Data: New `Data` instance created by stacking the given instances.
+        """
+        if not isinstance(cls_or_self, type):
+            objs = (cls_or_self, *objs)
+            cls = type(cls_or_self)
+        else:
+            cls = cls_or_self
+        if len(objs) == 1:
+            objs = objs[0]
+        objs = list(objs)
+        for obj in objs:
+            if not checks.is_instance_of(obj, Data):
+                raise TypeError("Each object to be merged must be an instance of Data")
+        if "wrapper" not in kwargs:
+            if wrapper_kwargs is None:
+                wrapper_kwargs = {}
+            kwargs["wrapper"] = ArrayWrapper.column_stack(
+                *[obj.wrapper for obj in objs],
+                **wrapper_kwargs,
+            )
+
+        keys = set()
+        for obj in objs:
+            keys = keys.union(set(obj.data.keys()))
+        data_type = None
+        for obj in objs:
+            if len(keys.difference(set(obj.data.keys()))) > 0:
+                if isinstance(obj.data, feature_dict):
+                    raise ValueError("Objects to be merged must have the same features")
+                else:
+                    raise ValueError("Objects to be merged must have the same symbols")
+            if data_type is None:
+                data_type = type(obj.data)
+            elif not isinstance(obj.data, data_type):
+                raise TypeError("Objects to be merged must have the same dict type for data")
+        if "data" not in kwargs:
+            new_data = data_type()
+            for k in objs[0].data.keys():
+                new_data[k] = kwargs["wrapper"].column_stack_arrs(*[obj.data[k] for obj in objs], group_by=False)
+            kwargs["data"] = new_data
+        kwargs["data"] = cls.fix_data_dict_type(kwargs["data"])
+        for attr in cls._key_dict_attrs:
+            if attr not in kwargs:
+                attr_data_type = None
+                for obj in objs:
+                    v = getattr(obj, attr)
+                    if attr_data_type is None:
+                        attr_data_type = type(v)
+                    elif not isinstance(v, attr_data_type):
+                        raise TypeError(f"Objects to be merged must have the same dict type for '{attr}'")
+                if (issubclass(data_type, feature_dict) and issubclass(attr_data_type, symbol_dict)) or (
+                    issubclass(data_type, symbol_dict) and issubclass(attr_data_type, feature_dict)
+                ):
+                    kwargs[attr] = attr_data_type()
+                    for obj in objs:
+                        kwargs[attr].update(**getattr(obj, attr))
+
+        kwargs = cls.resolve_column_stack_kwargs(*objs, **kwargs)
+        kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
+        kwargs = cls.fix_dict_types_in_kwargs(type(kwargs["data"]), **kwargs)
+        return cls(**kwargs)
+
+    def replace(self: DataT, **kwargs) -> DataT:
         if "wrapper" in kwargs and "data" not in kwargs:
             wrapper = kwargs["wrapper"]
             if isinstance(wrapper, dict):
@@ -829,7 +1612,21 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return Analyzable.replace(self, **kwargs)
 
     def indexing_func(self: DataT, *args, replace_kwargs: tp.KwargsLike = None, **kwargs) -> DataT:
-        """Perform indexing on `Data`."""
+        """Perform indexing on the `Data` instance.
+
+        This method applies positional and keyword arguments to index the underlying data.
+        It retrieves indexing metadata via `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`,
+        applies the specified indexing to each element in the data, and then constructs a new
+        `Data` instance with an updated wrapper and modified data.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
+            replace_kwargs (KwargsLike): Keyword arguments for `Data.replace`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
+
+        Returns:
+            Data: New `Data` instance after indexing.
+        """
         if replace_kwargs is None:
             replace_kwargs = {}
         wrapper_meta = self.wrapper.indexing_func_meta(*args, **kwargs)
@@ -858,230 +1655,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                         attr_dicts[attr] = self.select_from_dict(attr_value, new_symbols)
         return self.replace(wrapper=new_wrapper, data=new_data, **attr_dicts, **replace_kwargs)
 
-    @property
-    def data(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Data dictionary.
-
-        Has the type `feature_dict` for feature-oriented data or `symbol_dict` for symbol-oriented data."""
-        return self._data
-
-    @property
-    def dict_type(self) -> tp.Type[tp.Union[feature_dict, symbol_dict]]:
-        """Return the dict type."""
-        return type(self.data)
-
-    @property
-    def column_type(self) -> tp.Type[tp.Union[feature_dict, symbol_dict]]:
-        """Return the column type."""
-        if isinstance(self.data, feature_dict):
-            return symbol_dict
-        return feature_dict
-
-    @property
-    def feature_oriented(self) -> bool:
-        """Whether data has features as keys."""
-        return issubclass(self.dict_type, feature_dict)
-
-    @property
-    def symbol_oriented(self) -> bool:
-        """Whether data has symbols as keys."""
-        return issubclass(self.dict_type, symbol_dict)
-
-    def get_keys(self, dict_type: tp.Type[tp.Union[feature_dict, symbol_dict]]) -> tp.List[tp.Key]:
-        """Get keys depending on the provided dict type."""
-        checks.assert_subclass_of(dict_type, (feature_dict, symbol_dict), arg_name="dict_type")
-        if issubclass(dict_type, feature_dict):
-            return self.features
-        return self.symbols
-
-    @property
-    def keys(self) -> tp.List[tp.Union[tp.Feature, tp.Symbol]]:
-        """Keys in data.
-
-        Features if `feature_dict` and symbols if `symbol_dict`."""
-        return list(self.data.keys())
-
-    @property
-    def single_key(self) -> bool:
-        """Whether there is only one key in `Data.data`."""
-        return self._single_key
-
-    @property
-    def single_feature(self) -> bool:
-        """Whether there is only one feature in `Data.data`."""
-        if self.feature_oriented:
-            return self.single_key
-        return self.wrapper.ndim == 1
-
-    @property
-    def single_symbol(self) -> bool:
-        """Whether there is only one symbol in `Data.data`."""
-        if self.symbol_oriented:
-            return self.single_key
-        return self.wrapper.ndim == 1
-
-    @property
-    def classes(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Key classes."""
-        return self._classes
-
-    @property
-    def feature_classes(self) -> tp.Optional[feature_dict]:
-        """Feature classes."""
-        if self.feature_oriented:
-            return self.classes
-        return None
-
-    @property
-    def symbol_classes(self) -> tp.Optional[symbol_dict]:
-        """Symbol classes."""
-        if self.symbol_oriented:
-            return self.classes
-        return None
-
-    @hybrid_method
-    def get_level_name(
-        cls_or_self,
-        keys: tp.Optional[tp.Keys] = None,
-        level_name: tp.Union[None, bool, tp.MaybeIterable[tp.Hashable]] = None,
-        feature_oriented: tp.Optional[bool] = None,
-    ) -> tp.Optional[tp.MaybeIterable[tp.Hashable]]:
-        """Get level name(s) for keys."""
-        if isinstance(cls_or_self, type):
-            checks.assert_not_none(keys, arg_name="keys")
-            checks.assert_not_none(feature_oriented, arg_name="feature_oriented")
-        else:
-            if keys is None:
-                keys = cls_or_self.keys
-            if level_name is None:
-                level_name = cls_or_self._level_name
-            if feature_oriented is None:
-                feature_oriented = cls_or_self.feature_oriented
-        first_key = keys[0]
-        if isinstance(level_name, bool):
-            if level_name:
-                level_name = None
-            else:
-                return None
-        if feature_oriented:
-            key_prefix = "feature"
-        else:
-            key_prefix = "symbol"
-        if isinstance(first_key, tuple):
-            if level_name is None:
-                level_name = ["%s_%d" % (key_prefix, i) for i in range(len(first_key))]
-            if not checks.is_iterable(level_name) or isinstance(level_name, str):
-                raise TypeError("Level name should be list-like for a MultiIndex")
-            return tuple(level_name)
-        if level_name is None:
-            level_name = key_prefix
-        return level_name
-
-    @property
-    def level_name(self) -> tp.Optional[tp.MaybeIterable[tp.Hashable]]:
-        """Level name(s) for keys.
-
-        Keys are symbols or features depending on the data dict type.
-
-        Must be a sequence if keys are tuples, otherwise a hashable.
-        If False, no level names will be used."""
-        return self.get_level_name()
-
-    @hybrid_method
-    def get_key_index(
-        cls_or_self,
-        keys: tp.Optional[tp.Keys] = None,
-        level_name: tp.Union[None, bool, tp.MaybeIterable[tp.Hashable]] = None,
-        feature_oriented: tp.Optional[bool] = None,
-    ) -> tp.Index:
-        """Get key index."""
-        if isinstance(cls_or_self, type):
-            checks.assert_not_none(keys, arg_name="keys")
-        else:
-            if keys is None:
-                keys = cls_or_self.keys
-        level_name = cls_or_self.get_level_name(keys=keys, level_name=level_name, feature_oriented=feature_oriented)
-        if isinstance(level_name, tuple):
-            return pd.MultiIndex.from_tuples(keys, names=level_name)
-        return pd.Index(keys, name=level_name)
-
-    @property
-    def key_index(self) -> tp.Index:
-        """Key index."""
-        return self.get_key_index()
-
-    @property
-    def fetch_kwargs(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Keyword arguments of type `symbol_dict` initially passed to `Data.fetch_symbol`."""
-        return self._fetch_kwargs
-
-    @property
-    def returned_kwargs(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Keyword arguments of type `symbol_dict` returned by `Data.fetch_symbol`."""
-        return self._returned_kwargs
-
-    @property
-    def last_index(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Last fetched index per symbol of type `symbol_dict`."""
-        return self._last_index
-
-    @property
-    def delisted(self) -> tp.Union[feature_dict, symbol_dict]:
-        """Delisted flag per symbol of type `symbol_dict`."""
-        return self._delisted
-
-    @property
-    def tz_localize(self) -> tp.Union[None, bool, tp.TimezoneLike]:
-        """Timezone to localize a datetime-naive index to, which is initially passed to `Data.pull`."""
-        return self._tz_localize
-
-    @property
-    def tz_convert(self) -> tp.Union[None, bool, tp.TimezoneLike]:
-        """Timezone to convert a datetime-aware to, which is initially passed to `Data.pull`."""
-        return self._tz_convert
-
-    @property
-    def missing_index(self) -> tp.Optional[str]:
-        """Argument `missing` passed to `Data.align_index`."""
-        return self._missing_index
-
-    @property
-    def missing_columns(self) -> tp.Optional[str]:
-        """Argument `missing` passed to `Data.align_columns`."""
-        return self._missing_columns
-
-    # ############# Settings ############# #
-
-    @classmethod
-    def get_base_settings(cls, *args, **kwargs) -> dict:
-        """`CustomData.get_settings` with `path_id="base"`."""
-        return cls.get_settings(*args, path_id="base", **kwargs)
-
-    @classmethod
-    def has_base_settings(cls, *args, **kwargs) -> bool:
-        """`CustomData.has_settings` with `path_id="base"`."""
-        return cls.has_settings(*args, path_id="base", **kwargs)
-
-    @classmethod
-    def get_base_setting(cls, *args, **kwargs) -> tp.Any:
-        """`CustomData.get_setting` with `path_id="base"`."""
-        return cls.get_setting(*args, path_id="base", **kwargs)
-
-    @classmethod
-    def has_base_setting(cls, *args, **kwargs) -> bool:
-        """`CustomData.has_setting` with `path_id="base"`."""
-        return cls.has_setting(*args, path_id="base", **kwargs)
-
-    @classmethod
-    def resolve_base_setting(cls, *args, **kwargs) -> tp.Any:
-        """`CustomData.resolve_setting` with `path_id="base"`."""
-        return cls.resolve_setting(*args, path_id="base", **kwargs)
-
-    @classmethod
-    def set_base_settings(cls, *args, **kwargs) -> None:
-        """`CustomData.set_settings` with `path_id="base"`."""
-        cls.set_settings(*args, path_id="base", **kwargs)
-
     # ############# Iteration ############# #
 
     def items(
@@ -1092,11 +1665,33 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         keep_2d: bool = False,
         key_as_index: bool = False,
     ) -> tp.Items:
-        """Iterate over columns (or groups if grouped and `Wrapping.group_select` is True), keys,
-        features, or symbols. The respective mode can be selected with `over`.
+        """Iterate over specific aspects of the `Data` instance.
 
-        See `vectorbtpro.base.wrapping.Wrapping.items` for iteration over columns.
-        Iteration over keys supports `group_by` but doesn't support `apply_group_by`."""
+        Depending on the value of `over`, this method iterates over different components of the data:
+
+        * If `over` is "columns", "symbols", or "features" (depending on data orientation),
+            it yields pairs of key and corresponding `Data` subsets.
+        * If `over` is "keys", it iterates over keys with optional grouping.
+
+        Args:
+            over (str): Iteration mode.
+
+                Allowed values include "columns", "symbols", "features", or "keys".
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            apply_group_by (bool): If True, applies the grouping to both iteration and the final output.
+            
+                If False, `group_by` is used solely as an iteration instruction.
+
+                !!! note
+                    Grouping is not supported when iterating over keys.
+            keep_2d (bool): Whether to maintain the output data in a two-dimensional format.
+            key_as_index (bool): Whether to return the yielded key as an index.
+
+        Returns:
+            Items: Iterator yielding pairs of key and corresponding `Data` subsets.
+        """
         if (
             over.lower() == "columns"
             or (over.lower() == "symbols" and self.feature_oriented)
@@ -1160,12 +1755,27 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         group_by: tp.GroupByLike = None,
         **kwargs,
     ) -> ArrayWrapper:
-        """Get wrapper with keys as columns.
+        """Return a new `vectorbtpro.base.wrapping.ArrayWrapper` instance with keys as columns.
 
-        If `attach_classes` is True, attaches `Data.classes` by stacking them over
-        the keys using `vectorbtpro.base.indexes.stack_indexes`.
+        If `attach_classes` is True, this method stacks `Data.classes` over the keys using
+        `vectorbtpro.base.indexes.stack_indexes`.
 
-        Other keyword arguments are passed to the constructor of the wrapper."""
+        Args:
+            keys (Optional[MaybeKeys]): Feature or symbol identifier(s) to use as columns.
+
+                If None, defaults to the object's keys.
+            attach_classes (bool): Whether to attach classes from `Data.classes`.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index`.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.replace`.
+
+        Returns:
+            ArrayWrapper: New array wrapper updated with the specified keys and dimensions.
+        """
         if clean_index_kwargs is None:
             clean_index_kwargs = {}
         if keys is None:
@@ -1221,11 +1831,29 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @cached_property
     def key_wrapper(self) -> ArrayWrapper:
-        """Key wrapper."""
+        """Key-based array wrapper.
+
+        This property returns an `vectorbtpro.base.wrapping.ArrayWrapper` instance with columns
+        determined by the object's keys via `get_key_wrapper`.
+
+        Returns:
+            ArrayWrapper: The `vectorbtpro.base.wrapping.ArrayWrapper` instance with keys as columns.
+        """
         return self.get_key_wrapper()
 
     def get_feature_wrapper(self, features: tp.Optional[tp.MaybeFeatures] = None, **kwargs) -> ArrayWrapper:
-        """Get wrapper with features as columns."""
+        """Return an array wrapper with features as columns.
+
+        Args:
+            features (Optional[MaybeFeatures]): Feature identifier(s) to use as columns.
+
+                If None, defaults to a full selection.
+            **kwargs: Keyword arguments for `Data.get_key_wrapper` when applicable.
+
+        Returns:
+            ArrayWrapper: The `vectorbtpro.base.wrapping.ArrayWrapper` instance updated to
+                have features as columns.
+        """
         if self.feature_oriented:
             return self.get_key_wrapper(keys=features, **kwargs)
         wrapper = self.wrapper
@@ -1238,7 +1866,18 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return self.get_feature_wrapper()
 
     def get_symbol_wrapper(self, symbols: tp.Optional[tp.MaybeSymbols] = None, **kwargs) -> ArrayWrapper:
-        """Get wrapper with symbols as columns."""
+        """Return an array wrapper with symbols as columns.
+
+        Args:
+            symbols (Optional[MaybeSymbols]): Symbol identifier(s) to use as columns.
+
+                If None, defaults to a full selection.
+            **kwargs: Keyword arguments for `Data.get_key_wrapper` when applicable.
+
+        Returns:
+            ArrayWrapper: The `vectorbtpro.base.wrapping.ArrayWrapper` instance updated to
+                have symbols as columns.
+        """
         if self.symbol_oriented:
             return self.get_key_wrapper(keys=symbols, **kwargs)
         wrapper = self.wrapper
@@ -1252,44 +1891,56 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @property
     def ndim(self) -> int:
-        """Number of dimensions.
+        """Number of dimensions based on the default symbol wrapper.
 
-        Based on the default symbol wrapper."""
+        Returns:
+            int: Number of dimensions of the default symbol wrapper.
+        """
         return self.symbol_wrapper.ndim
 
     @property
     def shape(self) -> tp.Shape:
-        """Shape.
+        """Shape determined from the default symbol wrapper.
 
-        Based on the default symbol wrapper."""
+        Returns:
+            Shape: Shape of the default symbol wrapper.
+        """
         return self.symbol_wrapper.shape
 
     @property
     def shape_2d(self) -> tp.Shape:
-        """Shape as if the object was two-dimensional.
+        """Shape as if the object were two-dimensional, based on the default symbol wrapper.
 
-        Based on the default symbol wrapper."""
+        Returns:
+            Shape: Two-dimensional shape of the default symbol wrapper.
+        """
         return self.symbol_wrapper.shape_2d
 
     @property
     def columns(self) -> tp.Index:
-        """Columns.
+        """Column index based on the default symbol wrapper.
 
-        Based on the default symbol wrapper."""
+        Returns:
+            Index: Column index of the default symbol wrapper.
+        """
         return self.symbol_wrapper.columns
 
     @property
     def index(self) -> tp.Index:
-        """Index.
+        """Index based on the default symbol wrapper.
 
-        Based on the default symbol wrapper."""
+        Returns:
+            Index: Index of the default symbol wrapper.
+        """
         return self.symbol_wrapper.index
 
     @property
     def freq(self) -> tp.Optional[tp.PandasFrequency]:
-        """Frequency.
+        """Frequency based on the default symbol wrapper.
 
-        Based on the default symbol wrapper."""
+        Returns:
+            Optional[PandasFrequency]: The frequency of the default symbol wrapper.
+        """
         return self.symbol_wrapper.freq
 
     @property
@@ -1305,33 +1956,82 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return self.keys
 
     def resolve_feature(self, feature: tp.Feature, raise_error: bool = False) -> tp.Optional[tp.Feature]:
-        """Return the feature of this instance that matches the provided feature."""
+        """Return the feature from the instance that matches the provided feature.
+
+        Args:
+            feature (Feature): Feature identifier.
+            raise_error (bool): Whether to raise an error if the feature is not found.
+
+        Returns:
+            Optional[Feature]: The matching feature if found; otherwise, None.
+        """
         feature_idx = self.get_feature_idx(feature, raise_error=raise_error)
         if feature_idx == -1:
             return None
         return self.features[feature_idx]
 
-    def resolve_symbol(self, symbol: tp.Feature, raise_error: bool = False) -> tp.Optional[tp.Feature]:
-        """Return the symbol of this instance that matches the provided symbol."""
+    def resolve_symbol(self, symbol: tp.Symbol, raise_error: bool = False) -> tp.Optional[tp.Symbol]:
+        """Return the symbol from the instance that matches the provided symbol.
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+            raise_error (bool): Whether to raise an error if the symbol is not found.
+
+        Returns:
+            Optional[Symbol]: The matching symbol if found; otherwise, None.
+        """
         symbol_idx = self.get_symbol_idx(symbol, raise_error=raise_error)
         if symbol_idx == -1:
             return None
         return self.symbols[symbol_idx]
 
     def resolve_key(self, key: tp.Key, raise_error: bool = False) -> tp.Optional[tp.Key]:
-        """Return the key of this instance that matches the provided key."""
+        """Return the key from the instance that matches the provided key.
+
+        If the instance is feature-oriented, the key is resolved as a feature;
+        otherwise, it is resolved as a symbol.
+
+        Args:
+            key (Key): Feature or symbol identifier.
+            raise_error (bool): Whether to raise an error if the key is not found.
+
+        Returns:
+            Optional[Key]: The matching key if found; otherwise, None.
+        """
         if self.feature_oriented:
             return self.resolve_feature(key, raise_error=raise_error)
         return self.resolve_symbol(key, raise_error=raise_error)
 
     def resolve_column(self, column: tp.Column, raise_error: bool = False) -> tp.Optional[tp.Column]:
-        """Return the column of this instance that matches the provided column."""
+        """Return the column from the instance that matches the provided column.
+
+        If the instance is feature-oriented, the column is resolved as a symbol;
+        otherwise, it is resolved as a feature.
+
+        Args:
+            column (Column): Column identifier.
+            raise_error (bool): Whether to raise an error if the column is not found.
+
+        Returns:
+            Optional[Column]: The matching column if found; otherwise, None.
+        """
         if self.feature_oriented:
             return self.resolve_symbol(column, raise_error=raise_error)
         return self.resolve_feature(column, raise_error=raise_error)
 
     def resolve_features(self, features: tp.MaybeFeatures, raise_error: bool = True) -> tp.MaybeFeatures:
-        """Return the features of this instance that match the provided features."""
+        """Return the feature(s) from the instance that match the provided input.
+
+        If a single feature is provided, a single feature is returned;
+        otherwise, a list of features is returned.
+
+        Args:
+            features (MaybeFeatures): Feature identifier(s).
+            raise_error (bool): Whether to raise an error if a feature is not found.
+
+        Returns:
+            MaybeFeatures: Resolved feature(s), either as a single feature or a list of features.
+        """
         if not self.has_multiple_keys(features):
             features = [features]
             single_feature = True
@@ -1345,7 +2045,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return new_features
 
     def resolve_symbols(self, symbols: tp.MaybeSymbols, raise_error: bool = True) -> tp.MaybeSymbols:
-        """Return the symbols of this instance that match the provided symbols."""
+        """Return the symbol(s) from the instance that match the provided input.
+
+        Args:
+            symbols (MaybeSymbols): Symbol identifier(s).
+            raise_error (bool): Whether to raise an error if a symbol is not found.
+
+        Returns:
+            MaybeSymbols: Resolved symbol(s), either as a single symbol or a list of symbols.
+        """
         if not self.has_multiple_keys(symbols):
             symbols = [symbols]
             single_symbol = True
@@ -1359,13 +2067,35 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return new_symbols
 
     def resolve_keys(self, keys: tp.MaybeKeys, raise_error: bool = True) -> tp.MaybeKeys:
-        """Return the keys of this instance that match the provided keys."""
+        """Return the key(s) from the instance that match the provided input.
+
+        For a feature-oriented instance, keys are resolved as features; otherwise,
+        they are resolved as symbols.
+
+        Args:
+            keys (MaybeKeys): Feature or symbol identifier(s).
+            raise_error (bool): Whether to raise an error if a key is not found.
+
+        Returns:
+            MaybeKeys: Resolved key(s), either as a single key or a list of keys.
+        """
         if self.feature_oriented:
             return self.resolve_features(keys, raise_error=raise_error)
         return self.resolve_symbols(keys, raise_error=raise_error)
 
     def resolve_columns(self, columns: tp.MaybeColumns, raise_error: bool = True) -> tp.MaybeColumns:
-        """Return the columns of this instance that match the provided columns."""
+        """Return the column(s) from the instance that match the provided input.
+
+        If the instance is feature-oriented, columns are resolved as symbols;
+        otherwise, they are resolved as features.
+
+        Args:
+            columns (MaybeColumns): Column identifier(s).
+            raise_error (bool): Whether to raise an error if a column is not found.
+
+        Returns:
+            MaybeColumns: Resolved column(s), either as a single column or a list of columns.
+        """
         if self.feature_oriented:
             return self.resolve_symbols(columns, raise_error=raise_error)
         return self.resolve_features(columns, raise_error=raise_error)
@@ -1377,7 +2107,21 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         clean_index_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Union[feature_dict, symbol_dict]:
-        """Concatenate keys along columns."""
+        """Concatenate data associated with the specified keys along columns.
+
+        Args:
+            keys (Optional[Symbols]): Keys to select the data for concatenation.
+
+                If not provided, uses `Data.keys`.
+            attach_classes (bool): Whether to attach classes to the data using the key wrapper.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index`.
+            **kwargs: Keyword arguments for `Data.get_key_wrapper`.
+
+        Returns:
+            Union[feature_dict, symbol_dict]: A dictionary-like structure containing the concatenated data.
+        """
         key_wrapper = self.get_key_wrapper(
             keys=keys,
             attach_classes=attach_classes,
@@ -1423,7 +2167,32 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         as_dict: bool = False,
         **kwargs,
     ) -> tp.Union[tp.MaybeTuple[tp.SeriesFrame], dict]:
-        """Get one or more features of one or more symbols of data."""
+        """Retrieve one or more features and symbols from the data.
+
+        Args:
+            features (Optional[MaybeFeatures]): Feature identifier(s).
+            
+                If not provided, uses `Data.features`.
+            symbols (Optional[MaybeSymbols]): Symbol identifier(s).
+
+                If not provided, uses `Data.symbols`.
+            feature (Optional[Feature]): Feature identifier.
+
+                Cannot be used with `features`.
+            symbol (Optional[Symbol]): Symbol identifier.
+
+                Cannot be used with `symbols`.
+            squeeze_features (bool): Whether to squeeze the features when only one element is present.
+            squeeze_symbols (bool): Whether to squeeze the symbols when only one element is present.
+            per (str): Grouping specification for data concatenation,
+                such as "feature", "symbol", "column", or "key".
+            as_dict (bool): If True, returns the data as a dictionary mapping keys to the data.
+            **kwargs: Keyword arguments for `Data.concat`.
+
+        Returns:
+            Union[MaybeTuple[SeriesFrame], dict]: The retrieved data as a tuple or dictionary
+                based on the provided parameters.
+        """
         if features is not None and feature is not None:
             raise ValueError("Must provide either features or feature, not both")
         if symbols is not None and symbol is not None:
@@ -1532,15 +2301,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         force_tz_convert: bool = False,
         remove_tz: bool = False,
     ) -> tp.SeriesFrame:
-        """Prepare datetime index.
+        """Prepare a datetime index.
 
-        If `parse_dates` is True, will try to convert the index with an object data type
-        into a datetime format using `vectorbtpro.utils.datetime_.prepare_dt_index`.
+        Args:
+            index (Index): Index to be processed.
+            parse_dates (bool): If True, convert to a datetime index using `vectorbtpro.utils.datetime_.prepare_dt_index`.
+            tz_localize (TimezoneLike): Timezone to localize a datetime-naive index.
+            tz_convert (TimezoneLike): Timezone to convert a datetime-aware index.
+            force_tz_convert (bool): If True, convert the timezone even if the index is not timezone-aware.
+            remove_tz (bool): Whether to remove timezone information from the index.
 
-        If `tz_localize` is not None, will localize a datetime-naive index into this timezone.
-
-        If `tz_convert` is not None, will convert a datetime-aware index into this timezone.
-        If `force_tz_convert` is True, will convert regardless of whether the index is datetime-aware."""
+        Returns:
+            SeriesFrame: Processed datetime index.
+        """
         if parse_dates:
             if not isinstance(index, (pd.DatetimeIndex, pd.MultiIndex)) and index.dtype == object:
                 index = dt.prepare_dt_index(index)
@@ -1564,9 +2337,20 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         force_tz_convert: bool = False,
         remove_tz: bool = False,
     ) -> tp.Series:
-        """Prepare datetime column.
+        """Prepare a datetime column.
 
-        See `Data.prepare_dt_index` for arguments."""
+        Args:
+            sr (Series): Series to be processed.
+            parse_dates (bool): If True, convert to a datetime index using `vectorbtpro.utils.datetime_.prepare_dt_index`.
+            tz_localize (TimezoneLike): Timezone to localize a datetime-naive index.
+            tz_convert (TimezoneLike): Timezone to convert a datetime-aware index.
+            force_tz_convert (bool): If True, convert the timezone even if the index is not timezone-aware.
+            remove_tz (bool): Whether to remove timezone information from the index.
+
+        Returns:
+            Series: Series with its index converted to a datetime index if applicable,
+                or the original series.
+        """
         index = cls.prepare_dt_index(
             pd.Index(sr),
             parse_dates=parse_dates,
@@ -1589,15 +2373,23 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Frame:
         """Prepare datetime index and columns.
 
-        If `parse_dates` is True, will try to convert any index and column with object data type
-        into a datetime format using `vectorbtpro.utils.datetime_.prepare_dt_index`.
-        If `parse_dates` is a list or dict, will first check whether the name of the column
-        is among the names that are in `parse_dates`.
+        Args:
+            obj (SeriesFrame): Pandas Series or DataFrame.
+            parse_dates (Union[None, bool, Sequence[str]]): Specifies whether to parse dates.
 
-        If `to_utc` is True or `to_utc` is "index" or `to_utc` is a sequence and index name is in this
-        sequence, will localize/convert any datetime index to the UTC timezone. If `to_utc` is True or
-        `to_utc` is "columns" or `to_utc` is a sequence and column name is in this sequence, will
-        localize/convert any datetime column to the UTC timezone."""
+                If True, converts any index or column with an object data type to datetime.
+                If a sequence of strings, converts only fields whose name is in the sequence.
+            to_utc (Union[None, bool, str, Sequence[str]]): Specifies whether to localize or convert
+                datetime fields to UTC.
+
+                If True, converts both index and columns.
+                If a string equal to "index" or "columns", converts only the corresponding field.
+                If a sequence, converts fields whose names are in the sequence.
+            remove_utc_tz (bool): Indicates whether to remove the timezone after converting to UTC.
+
+        Returns:
+            Frame: Pandas DataFrame or Series with prepared datetime indices and columns.
+        """
         obj = obj.copy(deep=False)
         made_frame = False
         if isinstance(obj, pd.Series):
@@ -1670,11 +2462,23 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         tz_localize: tp.Union[None, bool, tp.TimezoneLike] = None,
         tz_convert: tp.Union[None, bool, tp.TimezoneLike] = None,
     ) -> tp.SeriesFrame:
-        """Prepare a timezone-aware index of a Pandas object.
+        """Prepare a timezone-aware index for a Pandas object.
 
-        Uses `Data.prepare_dt_index` with `parse_dates=True` and `force_tz_convert=True`.
+        Args:
+            obj (SeriesFrame): Pandas Series or DataFrame.
+            tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
 
-        For defaults, see `vectorbtpro._settings.data`."""
+                Set to False to disable localization. See `Data.prepare_dt_index`.
+            tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+
+                Set to False to disable conversion. See `Data.prepare_dt_index`.
+
+        Returns:
+            SeriesFrame: Object with a timezone-aware index.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+        """
         obj = obj.copy(deep=False)
         tz_localize = cls.resolve_base_setting(tz_localize, "tz_localize")
         if isinstance(tz_localize, bool):
@@ -1704,15 +2508,23 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         missing: tp.Optional[str] = None,
         silence_warnings: tp.Optional[bool] = None,
     ) -> dict:
-        """Align data to have the same index.
+        """Align data to share a common index.
 
-        The argument `missing` accepts the following values:
+        Args:
+            data (dict): Data dictionary.
+            missing (Optional[str]): Specifies how to handle missing indices when aligning data.
 
-        * 'nan': set missing data points to NaN
-        * 'drop': remove missing data points
-        * 'raise': raise an error
+                * 'nan': Set missing data points to NaN.
+                * 'drop': Remove missing data points.
+                * 'raise': Raise an error.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
-        For defaults, see `vectorbtpro._settings.data`."""
+        Returns:
+            dict: Dictionary with all data reindexed to a common index.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+        """
         missing = cls.resolve_base_setting(missing, "missing_index")
         silence_warnings = cls.resolve_base_setting(silence_warnings, "silence_warnings")
 
@@ -1750,9 +2562,20 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         missing: tp.Optional[str] = None,
         silence_warnings: tp.Optional[bool] = None,
     ) -> dict:
-        """Align data to have the same columns.
+        """Align data to share a common set of columns.
 
-        See `Data.align_index` for `missing`."""
+        Args:
+            data (dict): Data dictionary.
+            missing (Optional[str]): Specifies how to handle missing columns when aligning data.
+
+                * 'nan': Set missing data points to NaN.
+                * 'drop': Remove missing data points.
+                * 'raise': Raise an error.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            dict: Dictionary with all data reindexed to a common set of columns.
+        """
         if len(data) == 1:
             return data
 
@@ -1811,7 +2634,17 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         clear_returned_kwargs: bool = False,
         **kwargs,
     ) -> DataT:
-        """Switch the class of the data instance."""
+        """Switch the class of the data instance.
+
+        Args:
+            new_cls (Type[Data]): New class to assign to the data instance.
+            clear_fetch_kwargs (bool): If True, reset fetch keyword arguments for each symbol.
+            clear_returned_kwargs (bool): If True, reset returned keyword arguments for each symbol.
+            **kwargs: Keyword arguments for `Data.replace`.
+
+        Returns:
+            Data: New instance with the updated class.
+        """
         if clear_fetch_kwargs:
             new_fetch_kwargs = type(self.fetch_kwargs)({k: {} for k in self.symbols})
         else:
@@ -1829,7 +2662,16 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def invert_data(cls, dct: tp.Dict[tp.Key, tp.SeriesFrame]) -> tp.Dict[tp.Key, tp.SeriesFrame]:
-        """Invert data by swapping keys and columns."""
+        """Invert data by swapping keys and columns.
+
+        Args:
+            dct (Dict[Key, SeriesFrame]): Dictionary mapping keys to Pandas Series or DataFrame.
+
+        Returns:
+            Dict[Key, SeriesFrame]: Inverted dictionary where keys and columns are swapped.
+                If `dct` is an instance of `symbol_dict`, returns a `feature_dict`;
+                if `dct` is an instance of `feature_dict`, returns a `symbol_dict`.
+        """
         if len(dct) == 0:
             return dct
         new_dct = dict()
@@ -1868,9 +2710,34 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         missing_columns: tp.Optional[str] = None,
         silence_warnings: tp.Optional[bool] = None,
     ) -> dict:
-        """Align data.
+        """Align data by preparing indices and columns.
 
-        Removes any index duplicates, prepares the datetime index, and aligns the index and columns."""
+        Removes duplicate indices, prepares timezone-aware datetime indices,
+        and aligns both indices and columns.
+
+        Args:
+            data (dict): Data dictionary.
+            last_index (Union[None, feature_dict, symbol_dict]): Container to record
+                the last datetime index for each key.
+            delisted (Union[None, feature_dict, symbol_dict]): Container to track
+                delisted status for each key.
+            tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
+
+                Set to False to disable localization. See `Data.prepare_dt_index`.
+            tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+
+                Set to False to disable conversion. See `Data.prepare_dt_index`.
+            missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
+
+                See `Data.align_index`.
+            missing_columns (Optional[str]): Specifies how to handle missing columns when aligning data.
+
+                See `Data.align_columns`.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            dict: Aligned data dictionary with cleaned and ordered indices and columns.
+        """
         if last_index is None:
             last_index = {}
         if delisted is None:
@@ -1952,28 +2819,51 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         silence_warnings: tp.Optional[bool] = None,
         **kwargs,
     ) -> DataT:
-        """Create a new `Data` instance from data.
+        """Create a new `Data` instance from provided data.
 
         Args:
-            data (dict): Dictionary of array-like objects keyed by symbol.
-            columns_are_symbols (bool): Whether columns in each DataFrame are symbols.
-            invert_data (bool): Whether to invert the data dictionary with `Data.invert_data`.
-            single_key (bool): See `Data.single_key`.
-            classes (feature_dict or symbol_dict): See `Data.classes`.
-            level_name (bool, hashable or iterable of hashable): See `Data.level_name`.
-            tz_localize (timezone_like): See `Data.prepare_tzaware_index`.
-            tz_convert (timezone_like): See `Data.prepare_tzaware_index`.
-            missing_index (str): See `Data.align_index`.
-            missing_columns (str): See `Data.align_columns`.
-            wrapper_kwargs (dict): Keyword arguments passed to `vectorbtpro.base.wrapping.ArrayWrapper`.
-            fetch_kwargs (feature_dict or symbol_dict): Keyword arguments initially passed to `Data.fetch_symbol`.
-            returned_kwargs (feature_dict or symbol_dict): Keyword arguments returned by `Data.fetch_symbol`.
-            last_index (feature_dict or symbol_dict): Last fetched index per symbol.
-            delisted (feature_dict or symbol_dict): Whether symbol has been delisted.
-            silence_warnings (bool): Whether to silence all warnings.
-            **kwargs: Keyword arguments passed to the `__init__` method.
+            data (Union[dict, SeriesFrame]): Dictionary or DataFrame/Series used to construct the instance.
+            columns_are_symbols (bool): Flag indicating whether the columns represent symbols.
+            invert_data (bool): Determines if the data dictionary should be inverted using `Data.invert_data`.
+            single_key (bool): Specifies whether the instance should be treated as having a single key.
 
-        For defaults, see `vectorbtpro._settings.data`."""
+                Automatically set to False when multiple keys are present.
+            classes (Optional[dict]): Mapping defining classes for data handling.
+
+                See `Data.classes`.
+            level_name (Union[None, bool, MaybeIterable[Hashable]]): Level name(s) for indexing.
+
+                See `Data.level_name`.
+            tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
+
+                Set to False to disable localization. See `Data.prepare_dt_index`.
+            tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+
+                Set to False to disable conversion. See `Data.prepare_dt_index`.
+            missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
+
+                See `Data.align_index`.
+            missing_columns (Optional[str]): Specifies how to handle missing columns when aligning data.
+
+                See `Data.align_columns`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            fetch_kwargs (Optional[dict]): Additional keyword arguments
+                initially passed to `Data.fetch_symbol`.
+            returned_kwargs (Optional[dict]): Additional keyword arguments
+                returned by `Data.fetch_symbol`.
+            last_index (Optional[dict]): Last fetched index per symbol.
+            delisted (Optional[dict]): Indicator dictionary for delisted symbols.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+            **kwargs: Keyword arguments for `Data.replace`.
+
+        Returns:
+            Data: New `Data` instance constructed from the provided data.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+        """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
         if classes is None:
@@ -2045,7 +2935,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         )
 
     def invert(self: DataT, key_wrapper_kwargs: tp.KwargsLike = None, **kwargs) -> DataT:
-        """Invert data and return a new instance."""
+        """Invert the data and return a new instance.
+
+        Args:
+            key_wrapper_kwargs (KwargsLike): Keyword arguments for `Data.get_key_wrapper`.
+            **kwargs: Keyword arguments for `Data.replace` for instance configuration.
+
+        Returns:
+            Data: New instance with the inverted data.
+        """
         if key_wrapper_kwargs is None:
             key_wrapper_kwargs = {}
         new_data = self.concat(attach_classes=False)
@@ -2069,9 +2967,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return self.replace(data=new_data, **kwargs)
 
     def to_feature_oriented(self: DataT, **kwargs) -> DataT:
-        """Convert this instance to the feature-oriented format.
+        """Convert the instance to the feature-oriented format.
 
-        Returns self if the data is already properly formatted."""
+        Args:
+            **kwargs: Keyword arguments for `Data.invert`.
+
+        Returns:
+            Data: Instance in feature-oriented format.
+        """
         if self.feature_oriented:
             if len(kwargs) > 0:
                 return self.replace(**kwargs)
@@ -2079,9 +2982,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return self.invert(**kwargs)
 
     def to_symbol_oriented(self: DataT, **kwargs) -> DataT:
-        """Convert this instance to the symbol-oriented format.
+        """Convert the instance to the symbol-oriented format.
 
-        Returns self if the data is already properly formatted."""
+        Args:
+            **kwargs: Keyword arguments for `Data.invert`.
+
+        Returns:
+            Data: Instance in symbol-oriented format.
+        """
         if self.symbol_oriented:
             if len(kwargs) > 0:
                 return self.replace(**kwargs)
@@ -2094,7 +3002,17 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         arg: tp.Any,
         dict_type: tp.Optional[tp.Type[tp.Union[feature_dict, symbol_dict]]] = None,
     ) -> bool:
-        """Check whether the argument contains any data dictionary."""
+        """Check if the provided argument contains any data dictionary.
+
+        Args:
+            arg (Any): Argument to check for a data dictionary.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
+
+                Defaults to `key_dict` if not specified.
+
+        Returns:
+            bool: True if the argument contains a data dictionary, False otherwise.
+        """
         if dict_type is None:
             dict_type = key_dict
         if isinstance(arg, dict_type):
@@ -2112,7 +3030,18 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         arg_name: tp.Optional[str] = None,
         dict_type: tp.Optional[tp.Type[tp.Union[feature_dict, symbol_dict]]] = None,
     ) -> None:
-        """Check whether the argument conforms to a data dictionary."""
+        """Check if the provided argument conforms to a data dictionary type.
+
+        Args:
+            arg (Any): Argument to be validated.
+            arg_name (Optional[str]): Name of the argument for error messaging.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
+
+                Defaults to `Data.dict_type` if not specified.
+
+        Returns:
+            None
+        """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(dict_type, arg_name="dict_type")
         if dict_type is None:
@@ -2131,7 +3060,20 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         dict_type: tp.Optional[tp.Type[tp.Union[feature_dict, symbol_dict]]] = None,
         check_dict_type: bool = True,
     ) -> tp.Kwargs:
-        """Select the keyword arguments belonging to a feature or symbol."""
+        """Select the keyword arguments corresponding to a given key from a collection.
+
+        Args:
+            key (Key): Feature or symbol identifier.
+            kwargs (KwargsLike): Dictionary of keyword arguments.
+            kwargs_name (str): Name of the keyword arguments dictionary.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
+
+                Defaults to `Data.dict_type` if not specified.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
+
+        Returns:
+            Kwargs: Dictionary containing the filtered keyword arguments.
+        """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(dict_type, arg_name="dict_type")
         if dict_type is None:
@@ -2157,12 +3099,30 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def select_feature_kwargs(cls, feature: tp.Feature, kwargs: tp.KwargsLike, **kwargs_) -> tp.Kwargs:
-        """Select the keyword arguments belonging to a feature."""
+        """Select the keyword arguments associated with a feature.
+
+        Args:
+            feature (Feature): Feature identifier.
+            kwargs (KwargsLike): Dictionary of keyword arguments.
+            **kwargs_: Keyword arguments for `Data.select_key_kwargs`.
+
+        Returns:
+            Kwargs: Dictionary containing the filtered keyword arguments.
+        """
         return cls.select_key_kwargs(feature, kwargs, dict_type=feature_dict, **kwargs_)
 
     @classmethod
     def select_symbol_kwargs(cls, symbol: tp.Symbol, kwargs: tp.KwargsLike, **kwargs_) -> tp.Kwargs:
-        """Select the keyword arguments belonging to a symbol."""
+        """Select the keyword arguments associated with a symbol.
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+            kwargs (KwargsLike): Dictionary of keyword arguments.
+            **kwargs_: Keyword arguments for `Data.select_key_kwargs`.
+
+        Returns:
+            Kwargs: Dictionary containing the filtered keyword arguments.
+        """
         return cls.select_key_kwargs(symbol, kwargs, dict_type=symbol_dict, **kwargs_)
 
     @hybrid_method
@@ -2174,7 +3134,20 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         dict_type: tp.Optional[tp.Type[tp.Union[feature_dict, symbol_dict]]] = None,
         check_dict_type: bool = True,
     ) -> tp.Any:
-        """Select the dictionary value belonging to a feature or symbol."""
+        """Select the value corresponding to a specified key in a dictionary.
+
+        Args:
+            key (Key): Feature or symbol identifier.
+            dct (key_dict): Dictionary to search for the key.
+            dct_name (str): Name of the dictionary.
+            dict_type (Optional[Type[Union[feature_dict, symbol_dict]]]): Dictionary type to validate against.
+
+                Defaults to `Data.dict_type` if not specified.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
+
+        Returns:
+            Any: Value associated with the specified key.
+        """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(dict_type, arg_name="dict_type")
         if dict_type is None:
@@ -2185,24 +3158,58 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def select_feature_from_dict(cls, feature: tp.Feature, dct: feature_dict, **kwargs) -> tp.Any:
-        """Select the dictionary value belonging to a feature."""
+        """Select the value associated with a feature in the given dictionary.
+
+        Args:
+            feature (Feature): Feature identifier.
+            dct (feature_dict): Dictionary containing feature values.
+            **kwargs: Keyword arguments for `Data.select_key_kwargs`.
+
+        Returns:
+            Any: Value corresponding to the feature.
+        """
         return cls.select_key_kwargs(feature, dct, dict_type=feature_dict, **kwargs)
 
     @classmethod
     def select_symbol_from_dict(cls, symbol: tp.Symbol, dct: symbol_dict, **kwargs) -> tp.Any:
-        """Select the dictionary value belonging to a symbol."""
+        """Select the value associated with a symbol in the given dictionary.
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+            dct (symbol_dict): Dictionary containing symbol values.
+            **kwargs: Keyword arguments for `Data.select_key_kwargs`.
+
+        Returns:
+            Any: Value corresponding to the symbol.
+        """
         return cls.select_key_kwargs(symbol, dct, dict_type=symbol_dict, **kwargs)
 
     @classmethod
     def select_from_dict(cls, dct: dict, keys: tp.Keys, raise_error: bool = False) -> dict:
-        """Select keys from a dict."""
+        """Create a new dictionary by selecting specified keys from the given dictionary.
+
+        Args:
+            dct (dict): Source dictionary.
+            keys (Keys): Collection of keys to select.
+            raise_error (bool): If True, raises an error when a key is missing.
+
+        Returns:
+            dict: Dictionary containing the selected keys and their corresponding values.
+        """
         if raise_error:
             return type(dct)({k: dct[k] for k in keys})
         return type(dct)({k: dct[k] for k in keys if k in dct})
 
     @classmethod
     def get_intersection_dict(cls, dct: dict) -> dict:
-        """Get sub-keys and corresponding sub-values that are the same for all keys."""
+        """Retrieve a dictionary of sub-keys and values that are common and identical across all entries.
+
+        Args:
+            dct (dict): Source dictionary containing nested dictionaries as values.
+
+        Returns:
+            dict: Dictionary of sub-keys with uniform corresponding values across all nested dictionaries.
+        """
         dct_values = list(dct.values())
         overlapping_keys = set(dct_values[0].keys())
         for d in dct_values[1:]:
@@ -2218,7 +3225,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return new_dct
 
     def select_keys(self: DataT, keys: tp.MaybeKeys, **kwargs) -> DataT:
-        """Create a new `Data` instance with one or more keys selected from this instance."""
+        """Create a new `Data` instance containing only the selected keys.
+
+        Args:
+            keys (MaybeKeys): Feature or symbol identifier(s).
+            **kwargs: Keyword arguments for `Data.replace`.
+
+        Returns:
+            Data: New `Data` instance with the selected keys.
+        """
         keys = self.resolve_keys(keys)
         if self.has_multiple_keys(keys):
             single_key = False
@@ -2239,7 +3254,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         )
 
     def select_columns(self: DataT, columns: tp.MaybeColumns, **kwargs) -> DataT:
-        """Create a new `Data` instance with one or more columns selected from this instance."""
+        """Create a new `Data` instance containing only the selected columns.
+
+        Args:
+            columns (MaybeColumns): Column identifier(s).
+            **kwargs: Keyword arguments for `Data.indexing_func`.
+
+        Returns:
+            Data: New `Data` instance with the selected columns.
+        """
         columns = self.resolve_columns(columns)
 
         def _pd_indexing_func(obj):
@@ -2266,9 +3289,17 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return self.select_keys(symbols, **kwargs)
 
     def select(self: DataT, keys: tp.MaybeKeys, **kwargs) -> DataT:
-        """Create a new `Data` instance with one or more features or symbols selected from this instance.
+        """Create a new `Data` instance with selected features or symbols based on the provided keys.
 
-        Will try to determine the orientation automatically."""
+        Depending on the data orientation, delegates to either `Data.select_features` or `Data.select_symbols`.
+
+        Args:
+            keys (MaybeKeys): Feature or symbol identifier(s).
+            **kwargs: Keyword arguments for the delegated function.
+
+        Returns:
+            Data: New `Data` instance with the selected features or symbols.
+        """
         if not self.has_multiple_keys(keys):
             keys = [keys]
             single_key = True
@@ -2302,7 +3333,24 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> DataT:
         """Create a new `Data` instance with a new feature added to this instance.
 
-        If `data` is None, uses `Data.run`. If in addition `pull_feature` is True, uses `Data.pull` instead."""
+        Args:
+            feature (Feature): Feature identifier.
+            data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the feature.
+
+                If None, data is retrieved using `Data.run` or, if `pull_feature` is True, via `Data.pull`.
+            pull_feature (bool): Whether to use `Data.pull` to retrieve data when `data` is None.
+            pull_kwargs (KwargsLike): Keyword arguments for `Data.pull`.
+            reuse_fetch_kwargs (bool): Whether to reuse fetch kwargs from the current instance.
+            run_kwargs (KwargsLike): Keyword arguments for `Data.run`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            merge_kwargs (KwargsLike): Keyword arguments for `Data.merge`.
+            **kwargs: Keyword arguments for `Data.from_data`.
+
+        Returns:
+            Data: New `Data` instance with the added feature.
+        """
         if run_kwargs is None:
             run_kwargs = {}
         if wrap_kwargs is None:
@@ -2346,7 +3394,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> DataT:
         """Create a new `Data` instance with a new symbol added to this instance.
 
-        If `data` is None, uses `Data.pull`."""
+        Args:
+            symbol (Symbol): Symbol identifier.
+            data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the symbol.
+
+                If None, data is retrieved using `Data.pull`.
+            pull_kwargs (KwargsLike): Keyword arguments for `Data.pull`.
+            reuse_fetch_kwargs (bool): Whether to reuse fetch kwargs from the current instance.
+            merge_kwargs (KwargsLike): Keyword arguments for `Data.merge`.
+            **kwargs: Keyword arguments for `Data.from_data`.
+
+        Returns:
+            Data: New `Data` instance with the added symbol.
+        """
         if pull_kwargs is None:
             pull_kwargs = {}
         if data is None:
@@ -2379,7 +3439,18 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         data: tp.Union[None, tp.SeriesFrame, CustomTemplate] = None,
         **kwargs,
     ) -> DataT:
-        """Create a new `Data` instance with a new key added to this instance."""
+        """Create a new `Data` instance with a new key added to the current instance.
+
+        Depending on the data orientation, delegates to either `Data.add_feature` or `Data.add_symbol`.
+
+        Args:
+            key (Key): Feature or symbol identifier.
+            data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the key.
+            **kwargs: Keyword arguments for the delegated function.
+
+        Returns:
+            Data: New `Data` instance with the added key.
+        """
         if self.feature_oriented:
             return self.add_feature(key, data=data, **kwargs)
         return self.add_symbol(key, data=data, **kwargs)
@@ -2390,7 +3461,18 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         data: tp.Union[None, tp.SeriesFrame, CustomTemplate] = None,
         **kwargs,
     ) -> DataT:
-        """Create a new `Data` instance with a new column added to this instance."""
+        """Create a new `Data` instance with a new column added to the current instance.
+
+        Depending on the data orientation, delegates to either `Data.add_symbol` or `Data.add_feature`.
+
+        Args:
+            column (Column): Column identifier.
+            data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the column.
+            **kwargs: Keyword arguments for the delegated function.
+
+        Returns:
+            Data: New `Data` instance with the added key.
+        """
         if self.feature_oriented:
             return self.add_symbol(column, data=data, **kwargs)
         return self.add_feature(column, data=data, **kwargs)
@@ -2401,9 +3483,22 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         data: tp.Union[None, tp.SeriesFrame, CustomTemplate] = None,
         **kwargs,
     ) -> DataT:
-        """Create a new `Data` instance with a new feature or symbol added to this instance.
+        """Create a new `Data` instance with a new feature or symbol based on the data's orientation.
 
-        Will try to determine the orientation automatically."""
+        Depending on the data orientation, delegates to either `Data.add_symbol` or `Data.add_feature`.
+        The orientation is automatically determined by comparing data columns with existing features and symbols.
+
+        Args:
+            key (Key): Feature or symbol identifier.
+            data (Union[None, SeriesFrame, CustomTemplate]): Data corresponding to the key.
+            **kwargs: Keyword arguments for the delegated function.
+
+        Returns:
+            Data: New `Data` instance with the added feature or symbol.
+
+        Raises:
+            ValueError: If the orientation cannot be determined from the data.
+        """
         if data is not None:
             if isinstance(data, CustomTemplate):
                 data = data.substitute(dict(data=self), eval_id="data")
@@ -2423,7 +3518,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def rename_in_dict(cls, dct: dict, rename: tp.Dict[tp.Key, tp.Key]) -> dict:
-        """Rename keys in a dict."""
+        """Rename keys in the given dictionary using a provided mapping.
+
+        Args:
+            dct (dict): Dictionary whose keys will be renamed.
+            rename (Dict[Key, Key]): Mapping from old keys to new keys.
+
+        Returns:
+            dict: New dictionary with keys renamed according to the mapping.
+        """
         return type(dct)({rename.get(k, k): v for k, v in dct.items()})
 
     def rename_keys(
@@ -2432,7 +3535,18 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         to: tp.Optional[tp.MaybeKeys] = None,
         **kwargs,
     ) -> DataT:
-        """Create a new `Data` instance with keys renamed."""
+        """Create a new `Data` instance with keys renamed based on a provided mapping.
+
+        If a value for `to` is provided, a one-to-one mapping is constructed.
+
+        Args:
+            rename (Union[MaybeKeys, Dict[Key, Key]]): Feature or symbol identifier(s) or a mapping.
+            to (Optional[MaybeKeys]): New feature or symbol identifier(s) corresponding to the old one(s).
+            **kwargs: Keyword arguments for `Data.replace`.
+
+        Returns:
+            Data: New `Data` instance with keys renamed.
+        """
         if to is not None:
             if self.has_multiple_keys(to):
                 rename = dict(zip(rename, to))
@@ -2452,7 +3566,18 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         to: tp.Optional[tp.MaybeColumns] = None,
         **kwargs,
     ) -> DataT:
-        """Create a new `Data` instance with columns renamed."""
+        """Create a new `Data` instance with columns renamed based on a provided mapping.
+
+        If a value for `to` is provided, a one-to-one mapping is constructed.
+
+        Args:
+            rename (Union[MaybeColumns, Dict[Column, Column]]): Column identifier(s) or a mapping.
+            to (Optional[MaybeColumns]): New column identifier(s) corresponding to the old one(s).
+            **kwargs: Keyword arguments for `Data.replace`.
+
+        Returns:
+            Data: New `Data` instance with columns renamed.
+        """
         if to is not None:
             if self.has_multiple_keys(to):
                 rename = dict(zip(rename, to))
@@ -2473,7 +3598,18 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         to: tp.Optional[tp.MaybeFeatures] = None,
         **kwargs,
     ) -> DataT:
-        """Create a new `Data` instance with features renamed."""
+        """Create a new `Data` instance with features renamed based on a provided mapping.
+
+        Depending on the data orientation, delegates to either `Data.rename_keys` or `Data.rename_columns`.
+
+        Args:
+            rename (Union[MaybeFeatures, Dict[Feature, Feature]]): Feature identifier(s) or a mapping.
+            to (Optional[MaybeFeatures]): New feature identifier(s) corresponding to the old one(s).
+            **kwargs: Keyword arguments for the delegated function.
+
+        Returns:
+            Data: New `Data` instance with features renamed.
+        """
         if self.feature_oriented:
             return self.rename_keys(rename, to=to, **kwargs)
         return self.rename_columns(rename, to=to, **kwargs)
@@ -2484,7 +3620,18 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         to: tp.Optional[tp.MaybeSymbols] = None,
         **kwargs,
     ) -> DataT:
-        """Create a new `Data` instance with symbols renamed."""
+        """Create a new `Data` instance with symbols renamed.
+
+        Depending on the data orientation, delegates to either `Data.rename_columns` or `Data.rename_keys`.
+
+        Args:
+            rename (Union[MaybeSymbols, Dict[Symbol, Symbol]]): Symbol identifier(s) or a mapping.
+            to (Optional[MaybeSymbols]): New symbol identifier(s) corresponding to the old one(s).
+            **kwargs: Keyword arguments for the delegated function.
+
+        Returns:
+            Data: New `Data` instance with renamed symbols.
+        """
         if self.feature_oriented:
             return self.rename_columns(rename, to=to, **kwargs)
         return self.rename_keys(rename, to=to, **kwargs)
@@ -2495,9 +3642,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         to: tp.Optional[tp.MaybeKeys] = None,
         **kwargs,
     ) -> DataT:
-        """Create a new `Data` instance with features or symbols renamed.
+        """Create a new `Data` instance with features or symbols renamed by automatically determining orientation.
 
-        Will try to determine the orientation automatically."""
+        Depending on the data orientation, delegates to either `Data.rename_features` or `Data.rename_symbols`.
+        The orientation is automatically determined by comparing data columns with existing features and symbols.
+
+        Args:
+            rename (Union[MaybeKeys, Dict[Key, Key]]): Feature or symbol identifier(s) or a mapping.
+            to (Optional[MaybeKeys]): New feature or symbol identifier(s) corresponding to the old one(s).
+            **kwargs: Keyword arguments for the delegated function.
+
+        Returns:
+            Data: New `Data` instance with renamed features or symbols.
+        """
         if to is not None:
             if self.has_multiple_keys(to):
                 rename = dict(zip(rename, to))
@@ -2514,7 +3671,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         raise ValueError("Cannot determine orientation. Use rename_features or rename_symbols.")
 
     def remove_features(self: DataT, features: tp.MaybeFeatures, **kwargs) -> DataT:
-        """Create a new `Data` instance with one or more features removed from this instance."""
+        """Create a new `Data` instance with the specified feature(s) removed.
+
+        Args:
+            features (MaybeFeatures): Feature identifier(s).
+            **kwargs: Keyword arguments for `Data.select_feature_idxs`.
+
+        Returns:
+            Data: New `Data` instance with the remaining features.
+        """
         if self.has_multiple_keys(features):
             remove_feature_idxs = [self.get_feature_idx(k, raise_error=True) for k in features]
         else:
@@ -2524,8 +3689,16 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise ValueError("No features will be left after this operation")
         return self.select_feature_idxs(keep_feature_idxs, **kwargs)
 
-    def remove_symbols(self: DataT, symbols: tp.MaybeFeatures, **kwargs) -> DataT:
-        """Create a new `Data` instance with one or more symbols removed from this instance."""
+    def remove_symbols(self: DataT, symbols: tp.MaybeSymbols, **kwargs) -> DataT:
+        """Create a new `Data` instance with the specified symbol(s) removed.
+
+        Args:
+            symbols (MaybeSymbols): Symbol identifier(s).
+            **kwargs: Keyword arguments for `Data.select_symbol_idxs`.
+
+        Returns:
+            Data: New `Data` instance with the remaining symbols.
+        """
         if self.has_multiple_keys(symbols):
             remove_symbol_idxs = [self.get_symbol_idx(k, raise_error=True) for k in symbols]
         else:
@@ -2536,21 +3709,50 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return self.select_symbol_idxs(keep_symbol_idxs, **kwargs)
 
     def remove_keys(self: DataT, keys: tp.MaybeKeys, **kwargs) -> DataT:
-        """Create a new `Data` instance with one or more keys removed from this instance."""
+        """Create a new `Data` instance with the specified key(s) removed.
+
+        Depending on the data orientation, delegates to either `Data.remove_features` or `Data.remove_symbols`.
+
+        Args:
+            keys (MaybeKeys): Feature or symbol identifier(s).
+            **kwargs: Keyword arguments for the delegated function.
+
+        Returns:
+            Data: New `Data` instance with the specified keys removed.
+        """
         if self.feature_oriented:
             return self.remove_features(keys, **kwargs)
         return self.remove_symbols(keys, **kwargs)
 
     def remove_columns(self: DataT, columns: tp.MaybeColumns, **kwargs) -> DataT:
-        """Create a new `Data` instance with one or more columns removed from this instance."""
+        """Create a new `Data` instance with the specified column(s) removed.
+
+        Depending on the data orientation, delegates to either `Data.remove_symbols` or `Data.remove_features`.
+
+        Args:
+            columns (MaybeColumns): Column identifier(s).
+            **kwargs: Keyword arguments for the delegated function.
+
+        Returns:
+            Data: New `Data` instance with the remaining columns.
+        """
         if self.feature_oriented:
             return self.remove_symbols(columns, **kwargs)
         return self.remove_features(columns, **kwargs)
 
     def remove(self: DataT, keys: tp.MaybeKeys, **kwargs) -> DataT:
-        """Create a new `Data` instance with one or more features or symbols removed from this instance.
+        """Create a new `Data` instance with the specified key(s) removed by automatically determining orientation.
 
-        Will try to determine the orientation automatically."""
+        Depending on the data orientation, delegates to either `Data.remove_features` or `Data.remove_symbols`.
+        The orientation is automatically determined by comparing data columns with existing features and symbols.
+
+        Args:
+            keys (MaybeKeys): Feature or symbol identifier(s).
+            **kwargs: Keyword arguments for the delegated function.
+
+        Returns:
+            Data: New `Data` instance after removal of the specified key(s).
+        """
         if not self.has_multiple_keys(keys):
             keys = [keys]
         feature_keys = set(self.resolve_features(keys, raise_error=False))
@@ -2566,13 +3768,23 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     @hybrid_method
     def merge(
         cls_or_self: tp.MaybeType[DataT],
-        *datas: DataT,
+        *datas: tp.MaybeSequence[DataT],
         rename: tp.Optional[tp.Dict[tp.Key, tp.Key]] = None,
         **kwargs,
     ) -> DataT:
-        """Merge multiple `Data` instances.
+        """Merge multiple `Data` instances into a single instance.
 
-        Can merge both symbols and features. Data is overridden in the order as provided in `datas`."""
+        Data from later instances overrides earlier instances. This method supports
+        merging both symbols and features.
+
+        Args:
+            *datas (MaybeSequence[Data]): (Additional) data instances to merge.
+            rename (Optional[Dict[Key, Key]]): Optional mapping for renaming keys during merging.
+            **kwargs: Keyword arguments for `Data.resolve_merge_kwargs` and then `Data.from_data`.
+
+        Returns:
+            Data: Merged `Data` instance.
+        """
         if len(datas) == 1 and not isinstance(datas[0], Data):
             datas = datas[0]
         datas = list(datas)
@@ -2665,13 +3877,22 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         feature: tp.Feature,
         **kwargs,
     ) -> tp.FeatureData:
-        """Fetch a feature.
+        """Fetch a feature from the data.
 
-        Can also return a dictionary that will be accessible in `Data.returned_kwargs`.
-        If there are keyword arguments `tz_localize`, `tz_convert`, or `freq` in this dict,
-        will pop them and use them to override global settings.
+        This method may also return a dictionary that is stored in `Data.returned_kwargs`. If the
+        returned dictionary includes the keyword arguments `tz_localize`, `tz_convert`, or `freq`, they
+        will be used to override global settings.
 
-        This is an abstract method - override it to define custom logic."""
+        Args:
+            feature (Feature): Feature identifier.
+            **kwargs: Keyword arguments for fetching the feature.
+
+        Returns:
+            FeatureData: Fetched data and (optionally) a metadata dictionary, or None.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @classmethod
@@ -2682,7 +3903,17 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         silence_warnings: bool = False,
         fetch_kwargs: tp.KwargsLike = None,
     ) -> tp.FeatureData:
-        """Try to fetch a feature using `Data.fetch_feature`."""
+        """Attempt to fetch a feature by calling `Data.fetch_feature`.
+
+        Args:
+            feature (Feature): Feature identifier.
+            skip_on_error (bool): If True, do not raise an exception on error.
+            silence_warnings (bool): Flag to suppress warning messages.
+            fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_feature`.
+
+        Returns:
+            FeatureData: Fetched data and (optionally) a metadata dictionary, or None.
+        """
         if fetch_kwargs is None:
             fetch_kwargs = {}
         try:
@@ -2707,11 +3938,23 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.SymbolData:
         """Fetch a symbol.
 
-        Can also return a dictionary that will be accessible in `Data.returned_kwargs`.
-        If there are keyword arguments `tz_localize`, `tz_convert`, or `freq` in this dict,
-        will pop them and use them to override global settings.
+        The method can return a dictionary accessible from `Data.returned_kwargs`. If the returned
+        dictionary includes any of the following keyword arguments, they are used to override global settings:
 
-        This is an abstract method - override it to define custom logic."""
+        * `tz_localize`
+        * `tz_convert`
+        * `freq`
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+            **kwargs: Keyword arguments for fetching the symbol.
+
+        Returns:
+            SymbolData: Fetched data and (optionally) a metadata dictionary, or None.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @classmethod
@@ -2722,7 +3965,17 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         silence_warnings: bool = False,
         fetch_kwargs: tp.KwargsLike = None,
     ) -> tp.SymbolData:
-        """Try to fetch a symbol using `Data.fetch_symbol`."""
+        """Attempt to fetch a symbol by calling `Data.fetch_symbol`.
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+            skip_on_error (bool): If True, do not raise an exception on error.
+            silence_warnings (bool): Flag to suppress warning messages.
+            fetch_kwargs (KwargsLike): Keyword arguments for `Data.fetch_symbol`.
+
+        Returns:
+            SymbolData: Fetched data and (optionally) a metadata dictionary, or None.
+        """
         if fetch_kwargs is None:
             fetch_kwargs = {}
         try:
@@ -2747,7 +4000,38 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         features: tp.Union[None, dict, tp.MaybeFeatures] = None,
         symbols: tp.Union[None, dict, tp.MaybeSymbols] = None,
     ) -> tp.Kwargs:
-        """Resolve metadata for keys."""
+        """Resolve metadata for keys.
+
+        The method validates that only one of `keys`, `features`, or `symbols` is provided and
+        determines whether the keys represent features. It also sets the corresponding dictionary type.
+        The resolved metadata is returned as a dictionary with the keys, a flag for features, and the
+        determined dictionary type.
+
+        Args:
+            keys (Union[None, dict, MaybeKeys]): Feature or symbol identifier(s).
+
+                Depending on `keys_are_features`, these keys will be treated as features or symbols.
+            keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
+            features (Union[None, dict, MaybeFeatures]): Feature identifier(s).
+
+                If provided as a dictionary, keys are treated as features and values as keyword arguments.
+
+                !!! note
+                    Tuple is interpreted as a single feature.
+            symbols (Union[None, dict, MaybeSymbols]): Symbol identifier(s).
+
+                If provided as a dictionary, keys are treated as symbols and values as keyword arguments.
+
+                !!! note
+                    Tuple is interpreted as a single symbol.
+
+        Returns:
+            Kwargs: Dictionary with metadata:
+
+                * `keys`: A mapping of keys to use.
+                * `keys_are_features`: Flag indicating whether the keys represent features.
+                * `dict_type`: Dictionary type.
+        """
         if keys is not None and features is not None:
             raise ValueError("Must provide either keys or features, not both")
         if keys is not None and symbols is not None:
@@ -2811,56 +4095,72 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         execute_kwargs: tp.KwargsLike = None,
         return_raw: bool = False,
         **kwargs,
-    ) -> tp.Union[DataT, tp.List[tp.Any]]:
+    ) -> tp.PullOutput:
         """Pull data.
 
-        Fetches each feature/symbol with `Data.fetch_feature`/`Data.fetch_symbol` and prepares it with `Data.from_data`.
+        Fetch each feature or symbol using `Data.fetch_feature`/`Data.fetch_symbol`
+        and prepare it with `Data.from_data`.
 
-        Iteration over features/symbols is done using `vectorbtpro.utils.execution.execute`.
-        That is, it can be distributed and parallelized when needed.
+        Iteration over features or symbols is performed using `vectorbtpro.utils.execution.execute`
+        to allow parallelized execution.
 
         Args:
-            keys (hashable, sequence of hashable, or dict): One or multiple keys.
+            keys (Union[None, dict, MaybeKeys]): Feature or symbol identifier(s).
 
-                Depending on `keys_are_features` will be set to `features` or `symbols`.
-            keys_are_features (bool): Whether `keys` are considered features.
-            features (hashable, sequence of hashable, or dict): One or multiple features.
+                Depending on `keys_are_features`, these keys will be treated as features or symbols.
+            keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
+            features (Union[None, dict, MaybeFeatures]): Feature identifier(s).
 
-                If provided as a dictionary, will use keys as features and values as keyword arguments.
-
-                !!! note
-                    Tuple is considered as a single feature (tuple is a hashable).
-            symbols (hashable, sequence of hashable, or dict): One or multiple symbols.
-
-                If provided as a dictionary, will use keys as symbols and values as keyword arguments.
+                If provided as a dictionary, keys are treated as features and values as keyword arguments.
 
                 !!! note
-                    Tuple is considered as a single symbol (tuple is a hashable).
-            classes (feature_dict or symbol_dict): See `Data.classes`.
+                    Tuple is interpreted as a single feature.
+            symbols (Union[None, dict, MaybeSymbols]): Symbol identifier(s).
 
-                Can be a hashable (single value), a dictionary (class names as keys and
-                class values as values), or a sequence of such.
+                If provided as a dictionary, keys are treated as symbols and values as keyword arguments.
 
                 !!! note
-                    Tuple is considered as a single class (tuple is a hashable).
-            level_name (bool, hashable or iterable of hashable): See `Data.level_name`.
-            tz_localize (any): See `Data.from_data`.
-            tz_convert (any): See `Data.from_data`.
-            missing_index (str): See `Data.from_data`.
-            missing_columns (str): See `Data.from_data`.
-            wrapper_kwargs (dict): See `Data.from_data`.
-            skip_on_error (bool): Whether to skip the feature/symbol when an exception is raised.
-            silence_warnings (bool): Whether to silence all warnings.
+                    Tuple is interpreted as a single symbol.
+            classes (Optional[MaybeSequence[Union[Hashable, dict]]]): See `Data.classes`.
 
-                Will also forward this argument to `Data.fetch_feature`/`Data.fetch_symbol` if in the signature.
-            execute_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.execution.execute`.
-            return_raw (bool): Whether to return the raw outputs.
-            **kwargs: Passed to `Data.fetch_feature`/`Data.fetch_symbol`.
+                Can be a single hashable, a dictionary with class names as keys, or a sequence of such.
 
-                If two features/symbols require different keyword arguments, pass
-                `key_dict` or `feature_dict`/`symbol_dict` for each argument.
+                !!! note
+                    Tuple is interpreted as a single class.
+            level_name (Union[None, bool, MaybeIterable[Hashable]]): Used as in `Data.level_name`.
+            tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
 
-        For defaults, see `vectorbtpro._settings.data`.
+                Set to False to disable localization. See `Data.prepare_dt_index`.
+            tz_convert (Union[None, bool, TimezoneLike]): Flag or specification for timezone conversion.
+
+                Set to False to disable conversion. See `Data.prepare_dt_index`.
+            missing_index (Optional[str]): Specifies how to handle missing indices when aligning data.
+
+                See `Data.align_index`.
+            missing_columns (Optional[str]): Specifies how to handle missing columns when aligning data.
+
+                See `Data.align_columns`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            skip_on_error (Optional[bool]): Whether to skip pulling a feature or symbol if an exception occurs.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+                This flag is also forwarded to `Data.fetch_feature`/`Data.fetch_symbol` if applicable.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
+
+                See `vectorbtpro.utils.execution.execute`.
+            return_raw (bool): Return the raw outputs if True.
+            **kwargs: Keyword arguments for `Data.fetch_feature`/`Data.fetch_symbol`.
+
+                For features or symbols that require distinct keyword arguments, pass `key_dict` or
+                `feature_dict`/`symbol_dict` for each.
+
+        Returns:
+            PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
         """
         keys_meta = cls.resolve_keys_meta(
             keys=keys,
@@ -3030,21 +4330,47 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         )
 
     @classmethod
-    def download(cls: tp.Type[DataT], *args, **kwargs) -> tp.Union[DataT, tp.List[tp.Any]]:
-        """Exists for backward compatibility. Use `Data.pull` instead."""
+    def download(cls: tp.Type[DataT], *args, **kwargs) -> tp.PullOutput:
+        """Return a Data instance by calling `Data.pull` with the provided arguments.
+
+        This method exists for backward compatibility; use `Data.pull` in new code.
+
+        Args:
+            *args: Positional arguments for `Data.pull`.
+            **kwargs: Keyword arguments for `Data.pull`.
+
+        Returns:
+            PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
+        """
         return cls.pull(*args, **kwargs)
 
     @classmethod
-    def fetch(cls: tp.Type[DataT], *args, **kwargs) -> tp.Union[DataT, tp.List[tp.Any]]:
-        """Exists for backward compatibility. Use `Data.pull` instead."""
+    def fetch(cls: tp.Type[DataT], *args, **kwargs) -> tp.PullOutput:
+        """Return a Data instance by calling `Data.pull` with the provided arguments.
+
+        This method exists for backward compatibility; use `Data.pull` in new code.
+
+        Args:
+            *args: Positional arguments for `Data.pull`.
+            **kwargs: Keyword arguments for `Data.pull`.
+
+        Returns:
+            PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
+        """
         return cls.pull(*args, **kwargs)
 
     @classmethod
     def from_data_str(cls: tp.Type[DataT], data_str: str) -> DataT:
         """Parse a `Data` instance from a string.
 
-        For example: `YFData:BTC-USD` or just `BTC-USD` where the data class is
-        `vectorbtpro.data.custom.yf.YFData` by default."""
+        Args:
+            data_str (str): String representing the data instance, formatted as either
+                "Class:Symbol" (e.g. "YFData:BTC-USD") or "Symbol". In the latter case, the default
+                class `vectorbtpro.data.custom.yf.YFData` is used.
+
+        Returns:
+            Data: Parsed `Data` instance.
+        """
         from vectorbtpro.data import custom
 
         if ":" in data_str:
@@ -3063,9 +4389,16 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.FeatureData:
         """Update a feature.
 
-        Can also return a dictionary that will be accessible in `Data.returned_kwargs`.
+        Args:
+            feature (Feature): Feature identifier.
+            **kwargs: Keyword arguments passed for feature update.
 
-        This is an abstract method - override it to define custom logic."""
+        Returns:
+            FeatureData: Updated data and (optionally) a metadata dictionary, or None.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def try_update_feature(
@@ -3075,7 +4408,17 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         silence_warnings: bool = False,
         update_kwargs: tp.KwargsLike = None,
     ) -> tp.FeatureData:
-        """Try to update a feature using `Data.update_feature`."""
+        """Try to update a feature using `Data.update_feature`.
+
+        Args:
+            feature (Feature): Feature identifier.
+            skip_on_error (bool): If True, do not raise an exception on error.
+            silence_warnings (bool): Flag to suppress warning messages.
+            update_kwargs (KwargsLike): Keyword arguments for `Data.update_feature`.
+
+        Returns:
+            FeatureData: Updated data and (optionally) a metadata dictionary, or None.
+        """
         if update_kwargs is None:
             update_kwargs = {}
         try:
@@ -3099,9 +4442,16 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.SymbolData:
         """Update a symbol.
 
-        Can also return a dictionary that will be accessible in `Data.returned_kwargs`.
+        Args:
+            symbol (Symbol): Symbol identifier.
+            **kwargs: Keyword arguments passed for symbol update.
 
-        This is an abstract method - override it to define custom logic."""
+        Returns:
+            SymbolData: Updated data and (optionally) a metadata dictionary, or None.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def try_update_symbol(
@@ -3111,7 +4461,17 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         silence_warnings: bool = False,
         update_kwargs: tp.KwargsLike = None,
     ) -> tp.SymbolData:
-        """Try to update a symbol using `Data.update_symbol`."""
+        """Try to update a symbol using `Data.update_symbol`.
+
+        Args:
+            symbol (Symbol): Symbol identifier.
+            skip_on_error (bool): If True, do not raise an exception on error.
+            silence_warnings (bool): Flag to suppress warning messages.
+            update_kwargs (KwargsLike): Keyword arguments for `Data.update_symbol`.
+
+        Returns:
+            SymbolData: Updated data and (optionally) a metadata dictionary, or None.
+        """
         if update_kwargs is None:
             update_kwargs = {}
         try:
@@ -3137,27 +4497,33 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         execute_kwargs: tp.KwargsLike = None,
         return_raw: bool = False,
         **kwargs,
-    ) -> tp.Union[DataT, tp.List[tp.Any]]:
-        """Update data.
+    ) -> tp.PullOutput:
+        """Update the data object.
 
-        Fetches new data for each feature/symbol using `Data.update_feature`/`Data.update_symbol`.
+        Fetch new data for each feature or symbol by calling the appropriate update function via
+        `Data.update_feature` or `Data.update_symbol`.
 
         Args:
-            concat (bool): Whether to concatenate existing and updated/new data.
-            skip_on_error (bool): Whether to skip the feature/symbol when an exception is raised.
-            silence_warnings (bool): Whether to silence all warnings.
+            concat (bool): Whether to concatenate existing data with updated/new data.
+            skip_on_error (Optional[bool]): Whether to skip updating a feature or symbol if an exception occurs.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
-                Will also forward this argument to `Data.update_feature`/`Data.update_symbol`
-                if accepted by `Data.fetch_feature`/`Data.fetch_symbol`.
-            execute_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.execution.execute`.
-            return_raw (bool): Whether to return the raw outputs.
-            **kwargs: Passed to `Data.update_feature`/`Data.update_symbol`.
+                Also passed to `Data.update_feature` or `Data.update_symbol` if accepted by
+                `Data.fetch_feature` or `Data.fetch_symbol`.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-                If two features/symbols require different keyword arguments,
-                pass `key_dict` or `feature_dict`/`symbol_dict` for each argument.
+                See `vectorbtpro.utils.execution.execute`.
+            return_raw (bool): Whether to return the raw outputs from update operations.
+            **kwargs: Keyword arguments for `Data.update_feature` or `Data.update_symbol`.
+
+                If different features or symbols require distinct keyword arguments, provide them
+                via `key_dict` or `feature_dict`/`symbol_dict` for each.
+
+        Returns:
+            PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
 
         !!! note
-            Returns a new `Data` instance instead of changing the data in place.
+            Returns a new `Data` instance instead of modifying the current data in place.
         """
         skip_on_error = self.resolve_base_setting(skip_on_error, "skip_on_error")
         silence_warnings = self.resolve_base_setting(silence_warnings, "silence_warnings")
@@ -3366,28 +4732,46 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> DataT:
-        """Transform data.
+        """Transform data using a provided transformation function.
 
-        If one key (i.e., feature or symbol), passes the entire Series/DataFrame. If `per_feature` is True,
-        passes the Series/DataFrame of each feature. If `per_symbol` is True, passes the Series/DataFrame
-        of each symbol. If both are True, passes each feature and symbol combination as a Series
-        if `pass_frame` is False or as a DataFrame with one column if `pass_frame` is True.
-        If both are False, concatenates all features and symbols into a single DataFrame
-        and calls `transform_func` on it. Then, splits the data by key and builds a new `Data` instance.
-        Keyword arguments `key_wrapper_kwargs` are passed to `Data.get_key_wrapper` to control,
-        for example, attachment of classes.
+        Depending on the configuration, the transformation function is applied to:
 
-        After the transformation, the new data is aligned using `Data.align_data`. If the data is not
-        a Pandas object, it's broadcasted to the original data with `broadcast_kwargs`.
+        * the entire data if a single key is present or both `per_feature` and `per_symbol` are False,
+        * each feature individually if `per_feature` is True and `per_symbol` is False,
+        * each symbol individually if `per_symbol` is True and `per_feature` is False,
+        * each feature-symbol combination if both `per_feature` and `per_symbol` are True.
+
+        In cases with individual processing, if `pass_frame` is False, a Series is passed to
+        `transform_func`; otherwise, a one-column DataFrame is passed.
+
+        After transformation, the data is split by key and a new `Data` instance is created. The new data
+        is aligned using `Data.align_data`. If the output is not a Pandas object, it is broadcast to match
+        the original data using `broadcast_kwargs`.
+
+        Args:
+            transform_func (Callable): Function to apply to the data.
+            *args: Positional arguments for `transform_func`.
+            per_feature (bool): Process each feature separately.
+            per_symbol (bool): Process each symbol separately.
+            pass_frame (bool): Pass a one-column DataFrame instead of a Series when processing individual keys.
+            key_wrapper_kwargs (KwargsLike): Keyword arguments for `Data.get_key_wrapper`.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast`.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `transform_func`.
+
+        Returns:
+            Data: New instance with the transformed data.
 
         !!! note
-            The returned object must have the same type and dimensionality as the input object.
+            The returned object retains the same type and dimensionality as the input.
 
-            Number of columns (i.e., features and symbols) and their names must stay the same.
-            To remove columns, use either indexing or `Data.select` (depending on the data orientation).
-            To add new columns, use either column stacking or `Data.merge`.
-
-            Index, on the other hand, can be changed freely."""
+            * The number and names of columns remain unchanged.
+            * To remove columns, use indexing or `Data.select`.
+            * To add columns, use column stacking or `Data.merge`.
+            * The index may change freely.
+        """
         if key_wrapper_kwargs is None:
             key_wrapper_kwargs = {}
         if broadcast_kwargs is None:
@@ -3527,10 +4911,16 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         )
 
     def dropna(self: DataT, **kwargs) -> DataT:
-        """Drop missing values.
+        """Drop missing values from data.
 
-        Keyword arguments are passed to `Data.transform` and then to `pd.Series.dropna`
-        or `pd.DataFrame.dropna`."""
+        Calls `Data.transform` with a function that applies `dropna` on each Pandas Series or DataFrame.
+
+        Args:
+            **kwargs: Keyword arguments for `pd.Series.dropna` or `pd.DataFrame.dropna`.
+
+        Returns:
+            Data: New instance with missing values removed.
+        """
 
         def _dropna(df, **_kwargs):
             return df.dropna(**_kwargs)
@@ -3544,7 +4934,26 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         start_value: tp.ArrayLike = np.nan,
         ref_feature: tp.ArrayLike = -1,
     ) -> DataT:
-        """Mirror OHLC features."""
+        """Mirror OHLC features in the data.
+
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            start_value (ArrayLike): Initial value for the transformation.
+            ref_feature (ArrayLike): Reference feature used for mirroring.
+
+                Mapped using `vectorbtpro.ohlcv.enums.PriceFeature` if provided as a string.
+
+        Returns:
+            Data: New data instance with mirrored OHLC features.
+
+        See:
+            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
+        """
         if isinstance(ref_feature, str):
             ref_feature = map_enum_fields(ref_feature, PriceFeature)
 
@@ -3581,11 +4990,20 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     def resample(self: DataT, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> DataT:
         """Perform resampling on `Data`.
 
-        Features "open", "high", "low", "close", "volume", "trade count", and "vwap" (case-insensitive)
-        are recognized and resampled automatically.
+        This method automatically resamples features such as "open", "high", "low", "close",
+        "volume", "trade count", and "vwap" (case-insensitive). It searches for a `resample_func`
+        in `Data.feature_config` for each feature, which should accept the `Data` instance, the feature
+        object, and a resampler. If a feature-specific function is not provided, default resampling
+        methods are used based on the feature name.
 
-        Looks for `resample_func` of each feature in `Data.feature_config`. The function must
-        accept the `Data` instance, object, and resampler."""
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
+            wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
+
+        Returns:
+            Data: New data instance with resampled features.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)
 
@@ -3661,11 +5079,26 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         ffill: bool = True,
         **kwargs,
     ) -> DataT:
-        """Perform realigning on `Data`.
+        """Perform realignment on `Data`.
 
-        Looks for `realign_func` of each feature in `Data.feature_config`. If no function provided,
-        resamples feature "open" with `vectorbtpro.generic.accessors.GenericAccessor.realign_opening`
-        and other features with `vectorbtpro.generic.accessors.GenericAccessor.realign_closing`."""
+        This method realigns features based on a specified rule or the frequency defined in the wrapper.
+        It checks for a `realign_func` in `Data.feature_config` for each feature, which should handle the
+        realignment with a resampler and an option to forward-fill missing values. If no function is provided,
+        it realigns the "open" feature using `vectorbtpro.generic.accessors.GenericAccessor.realign_opening` and
+        applies `vectorbtpro.generic.accessors.GenericAccessor.realign_closing` to other features.
+
+        Args:
+            rule (Optional[AnyRuleLike]): Time rule for realignment.
+
+                If not provided, uses `vectorbtpro.base.wrapping.ArrayWrapper.freq`.
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
+            wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
+            ffill (bool): Whether to forward-fill missing values during realignment.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
+
+        Returns:
+            Data: New data instance with realigned features.
+        """
         if rule is None:
             rule = self.wrapper.freq
         if wrapper_meta is None:
@@ -3716,7 +5149,24 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         silence_warnings: bool = False,
         **kwargs,
     ) -> tp.Any:
-        """Try to run a function on data."""
+        """Try to run a function on the given `Data` instance.
+
+        Executes the `run` method on `data` with the provided arguments. If an exception is raised,
+        the error is either re-raised or a warning is issued based on the `raise_errors` and
+        `silence_warnings` flags.
+
+        Args:
+            data (Data): Data instance on which to execute the function.
+            func_name (str): Name identifying the function to run.
+            *args: Positional arguments for `Data.run`.
+            raise_errors (bool): If True, raises any exceptions encountered.
+            silence_warnings (bool): Flag to suppress warning messages.
+            **kwargs: Keyword arguments for `Data.run`.
+
+        Returns:
+            Any: Result of executing `Data.run`, or `vectorbtpro.utils.execution.NoResult` 
+                if execution fails without raising an error.
+        """
         try:
             return data.run(*args, **kwargs)
         except Exception as e:
@@ -3728,7 +5178,21 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def select_run_func_args(cls, i: int, func_name: str, args: tp.Args) -> tuple:
-        """Select positional arguments that correspond to a runnable function index or name."""
+        """Select positional arguments corresponding to a function index or name.
+
+        Iterates over the provided arguments and, for items that are instances of `run_func_dict`,
+        extracts the value associated with the given function name or index. If a default value is
+        defined with the key "_def", that value is used when neither the function name nor the index
+        is found. Items that are not instances of `run_func_dict` are returned unchanged.
+
+        Args:
+            i (int): Index used to look up an argument.
+            func_name (str): Name used to look up an argument.
+            args (Args): Tuple of positional arguments to search through.
+
+        Returns:
+            tuple: Tuple containing the selected arguments corresponding to the given function index or name.
+        """
         _args = ()
         for v in args:
             if isinstance(v, run_func_dict):
@@ -3744,7 +5208,21 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def select_run_func_kwargs(cls, i: int, func_name: str, kwargs: tp.Kwargs) -> dict:
-        """Select keyword arguments that correspond to a runnable function index or name."""
+        """Select keyword arguments corresponding to a runnable function based on its index or name.
+
+        Args:
+            i (int): Index used to select the matching function arguments.
+            func_name (str): Name of the function to match during argument selection.
+            kwargs (Kwargs): Dictionary where each value can be:
+
+                * A `run_func_dict` mapping function names or indices to specific argument values.
+                * A `run_arg_dict` that updates arguments if its key matches the provided function name or index.
+                * A direct value if no special type is applicable.
+
+        Returns:
+            dict: Dictionary containing the keyword arguments selected based
+                on the provided index or function name.
+        """
         _kwargs = {}
         for k, v in kwargs.items():
             if isinstance(v, run_func_dict):
@@ -3791,34 +5269,65 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Any:
         """Run a function on data.
 
-        Looks into the signature of the function and searches for arguments with the name `data` or
-        those found among features or attributes.
+        This method applies a function or a collection of functions to the data contained in the
+        current object. It automatically inspects the signature of the provided function and fills in
+        parameters using object attributes (e.g., substituting `open` with `Data.open`).
 
-        For example, the argument `open` will be substituted by `Data.open`.
+        The `func` parameter can be one of the following:
 
-        `func` can be one of the following:
+        * A location to compute all indicators. See `vectorbtpro.indicators.factory.IndicatorFactory.list_locations`.
+        * An indicator name. See `vectorbtpro.indicators.factory.IndicatorFactory.get_indicator`.
+        * A simulation method from `vectorbtpro.portfolio.base.Portfolio`.
+        * Any callable.
+        * An iterable of the above, with results aggregated as columns in a DataFrame.
 
-        * Location to compute all indicators from. See `vectorbtpro.indicators.factory.IndicatorFactory.list_locations`.
-        * Indicator name. See `vectorbtpro.indicators.factory.IndicatorFactory.get_indicator`.
-        * Simulation method. See `vectorbtpro.portfolio.base.Portfolio`.
-        * Any callable object
-        * Iterable with any of the above. Will be stacked as columns into a DataFrame.
+        Use `magnet_kwargs` to pass keyword arguments that are provided only if they are present in the
+        function signature. Use `rename_args` to map argument names; for example, data can be passed under a
+        different name as expected by a simulation method.
 
-        Use `magnet_kwargs` to provide keyword arguments that will be passed only if found
-        in the signature of the function.
+        Set `unpack` to True, "dict", or "frame" to automatically post-process the result using the corresponding
+        methods: `vectorbtpro.indicators.factory.IndicatorBase.unpack`, `to_dict`, or `to_frame`.
 
-        Use `rename_args` to rename arguments. For example, in `vectorbtpro.portfolio.base.Portfolio`,
-        data can be passed instead of `close`.
+        Args:
+            func (MaybeIterable[Union[Hashable, Callable]]): Function, location, indicator name,
+                or simulation method to run, or an iterable of such.
+            *args: Positional arguments for the function.
+            on_features (Optional[MaybeFeatures]): Features identifier(s) used to filter the data.
+            on_symbols (Optional[MaybeSymbols]): Symbols identifier(s) used to filter the data.
+            func_args (ArgsLike): Extra positional arguments for the function.
+            func_kwargs (KwargsLike): Extra keyword arguments for the function.
+            magnet_kwargs (KwargsLike): Keyword arguments injected only if they
+                match the function signature.
+            ignore_args (Optional[Sequence[str]]): Names of arguments to ignore when
+                auto-assigning object attributes.
+            rename_args (DictLike): Mapping of argument names to substitute names.
+            location (Optional[str]): Identifier used to specify the location for indicator selection.
+            prepend_location (Optional[bool]): When True, indicator names are prefixed with their location.
+            unpack (Union[bool, str]): Determines the processing of the function output.
 
-        Set `unpack` to True, "dict", or "frame" to use
-        `vectorbtpro.indicators.factory.IndicatorBase.unpack`,
-        `vectorbtpro.indicators.factory.IndicatorBase.to_dict`, and
-        `vectorbtpro.indicators.factory.IndicatorBase.to_frame` respectively.
+                Use True, "dict", or "frame" to apply post-processing.
+            concat (bool): If True, concatenates results from multiple function calls.
+            data_kwargs (KwargsLike): Keyword arguments for `Data.from_data`.
+            silence_warnings (bool): Flag to suppress warning messages.
+            raise_errors (bool): If True, raises any exceptions encountered.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-        Any argument in `*args` and `**kwargs` can be wrapped with `run_func_dict`/`run_arg_dict`
-        to specify the value per function/argument name or index when `func` is iterable.
+                See `vectorbtpro.utils.execution.execute`.
+            filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
+            raise_no_results (bool): Flag indicating whether to raise a 
+                `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
+            merge_func (MergeFuncLike): Function to merge the results.
+            
+                See `vectorbtpro.utils.merging.MergeFunc`.
+            merge_kwargs (KwargsLike): Keyword arguments for `merge_func`.
+            template_context (KwargsLike): Additional context for template substitution.
+            return_keys (bool): If True, includes keys representing function names in the return.
+            **kwargs: Keyword arguments for the function.
 
-        Multiple function calls are executed with `vectorbtpro.utils.execution.execute`."""
+        Returns:
+            Any: Result of applying the function(s) to the data. If `return_keys` is True,
+                returns a tuple of the results and the corresponding function keys.
+        """
         from vectorbtpro.indicators.factory import IndicatorBase, IndicatorFactory
         from vectorbtpro.indicators.talib_ import talib_func
         from vectorbtpro.portfolio.base import Portfolio
@@ -4083,7 +5592,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         template_context: tp.KwargsLike = None,
         is_kwargs: bool = False,
     ) -> tp.Any:
-        """Resolve argument."""
+        """Resolve an argument based on its type and key.
+
+        Args:
+            arg (Any): Input argument to process.
+            k (Key): Key used for lookup when the argument is a key dictionary.
+            arg_name (str): Name of the argument for validation and template evaluation.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
+            template_context (KwargsLike): Additional context for template substitution.
+            is_kwargs (bool): Specifies if the argument should be handled as keyword arguments.
+
+        Returns:
+            Any: Resolved argument with any applicable template substitutions.
+        """
         if check_dict_type:
             self.check_dict_type(arg, arg_name=arg_name)
         if isinstance(arg, key_dict):
@@ -4109,16 +5630,29 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return_meta: bool = False,
         **kwargs,
     ) -> tp.Union[None, feature_dict, symbol_dict]:
-        """Save data to CSV file(s).
+        """Save data to CSV file(s) using Pandas.DataFrame.to_csv.
 
-        Uses https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_csv.html
+        Uses `pd.DataFrame.to_csv` to write each DataFrame to a CSV file. If `path_or_buf` is a directory
+        or does not include a file suffix, each feature or symbol is saved to an individual file.
 
-        Any argument can be provided per feature using `feature_dict` or per symbol using `symbol_dict`,
-        depending on the format of the data dictionary.
+        Args:
+            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): File path or buffer.
 
-        If `path_or_buf` is a path to a directory, will save each feature/symbol to a separate file.
-        If there's only one file, you can specify the file path via `path_or_buf`. If there are
-        multiple files, use the same argument but wrap the multiple paths with `key_dict`."""
+                If a directory is provided, each feature or symbol is saved in a separate file.
+            ext (Union[str, feature_dict, symbol_dict, CustomTemplate]):
+                File extension to use for CSV files when saving multiple files.
+            mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
+                Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
+            template_context (KwargsLike): Additional context for template substitution.
+            return_meta (bool): If True, returns metadata about the saved CSV file(s).
+            **kwargs: Keyword arguments for `pd.DataFrame.to_csv`.
+
+        Returns:
+            Union[None, feature_dict, symbol_dict]: Dictionary with metadata if `return_meta` is True, or None.
+        """
         meta = self.dict_type()
         for k, v in self.data.items():
             if self.feature_oriented:
@@ -4173,9 +5707,21 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def from_csv(cls: tp.Type[DataT], *args, fetch_kwargs: tp.KwargsLike = None, **kwargs) -> DataT:
-        """Use `vectorbtpro.data.custom.csv.CSVData` to load data from CSV and switch the class back to this class.
+        """Load data from CSV files and convert the instance to the current class.
 
-        Use `fetch_kwargs` to provide keyword arguments that were originally used in fetching."""
+        Uses `vectorbtpro.data.custom.csv.CSVData` to load CSV data and then switches the resulting instance
+        to the current class.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.data.custom.csv.CSVData.pull`.
+            fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
+
+                Refer to the fetching function for further details.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.csv.CSVData.pull`.
+
+        Returns:
+            Data: Instance of the class with the loaded data.
+        """
         from vectorbtpro.data.custom.csv import CSVData
 
         if fetch_kwargs is None:
@@ -4198,12 +5744,31 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Union[None, feature_dict, symbol_dict]:
         """Save data to an HDF file using PyTables.
 
-        Uses https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_hdf.html
+        Uses `pd.DataFrame.to_hdf` to write each DataFrame to an HDF file.
+        If `path_or_buf` is a directory or does not have a file suffix, a file named
+        after the class (with a .h5 extension) is created automatically.
 
-        Any argument can be provided per feature using `feature_dict` or per symbol using `symbol_dict`,
-        depending on the format of the data dictionary.
+        Args:
+            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): File path or buffer.
 
-        If `path_or_buf` exists and it's a directory, will create inside it a file named after this class."""
+                If a directory is provided, each feature or symbol is saved in a separate file.
+            key (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
+                HDF key under which to store the data.
+
+                If None, the key defaults to the string representation of the feature or symbol.
+            mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
+                Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
+            format (str): File format for HDF storage.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
+            template_context (KwargsLike): Additional context for template substitution.
+            return_meta (bool): If True, returns metadata about the saved HDF file(s).
+            **kwargs: Keyword arguments for `pd.DataFrame.to_hdf`.
+
+        Returns:
+            Union[None, feature_dict, symbol_dict]: Dictionary with metadata if `return_meta` is True, or None.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("tables")
@@ -4256,9 +5821,21 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def from_hdf(cls: tp.Type[DataT], *args, fetch_kwargs: tp.KwargsLike = None, **kwargs) -> DataT:
-        """Use `vectorbtpro.data.custom.hdf.HDFData` to load data from HDF and switch the class back to this class.
+        """Load data from an HDF file and convert the instance to the current class.
 
-        Use `fetch_kwargs` to provide keyword arguments that were originally used in fetching."""
+        Uses `vectorbtpro.data.custom.hdf.HDFData` to load HDF data and then switches the resulting instance
+        to the current class.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.data.custom.hdf.HDFData.pull`.
+            fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
+
+                Refer to the fetching function for further details.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.hdf.HDFData.pull`.
+
+        Returns:
+            Data: Instance of the class with the loaded data.
+        """
         from vectorbtpro.data.custom.hdf import HDFData
 
         if fetch_kwargs is None:
@@ -4279,14 +5856,29 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Union[None, feature_dict, symbol_dict]:
         """Save data to Feather file(s) using PyArrow.
 
-        Uses https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_feather.html
+        Save the instance's data as one or multiple Feather file(s). If `path_or_buf` specifies
+        a directory or lacks a file suffix, each feature (or symbol) is saved to a separate
+        file with a name based on its key. Otherwise, the data is saved to a single file.
 
-        Any argument can be provided per feature using `feature_dict` or per symbol using `symbol_dict`,
-        depending on the format of the data dictionary.
+        Args:
+            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): File path or buffer.
 
-        If `path_or_buf` is a path to a directory, will save each feature/symbol to a separate file.
-        If there's only one file, you can specify the file path via `path_or_buf`. If there are
-        multiple files, use the same argument but wrap the multiple paths with `key_dict`."""
+                When a directory is provided or no file suffix is detected,
+                the key is appended with a ".feather" extension to form the file name.
+            mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
+                Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
+            template_context (KwargsLike): Additional context for template substitution.
+            return_meta (bool): Flag specifying whether to return a metadata dictionary
+                containing file paths and saving options.
+            **kwargs:
+                Keyword arguments passed to DataFrame.to_feather.
+
+        Returns:
+            Union[None, feature_dict, symbol_dict]: Dictionary with metadata if `return_meta` is True, or None.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("pyarrow")
@@ -4338,10 +5930,21 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def from_feather(cls: tp.Type[DataT], *args, fetch_kwargs: tp.KwargsLike = None, **kwargs) -> DataT:
-        """Use `vectorbtpro.data.custom.feather.FeatherData` to load data from Feather and
-        switch the class back to this class.
+        """Load data from Feather files and switch the class of the loaded data.
 
-        Use `fetch_kwargs` to provide keyword arguments that were originally used in fetching."""
+        Load data using `vectorbtpro.data.custom.feather.FeatherData.pull`, change its class
+        to the current class, and update its fetch parameters.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.data.custom.feather.FeatherData.pull`.
+            fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
+
+                Refer to the fetching function for further details.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.feather.FeatherData.pull`.
+
+        Returns:
+            Data: Instance of the class containing the loaded data.
+        """
         from vectorbtpro.data.custom.feather import FeatherData
 
         if fetch_kwargs is None:
@@ -4368,19 +5971,49 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Union[None, feature_dict, symbol_dict]:
         """Save data to Parquet file(s) using PyArrow or FastParquet.
 
-        Uses https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_parquet.html
+        This method writes each feature or symbol's data to a Parquet file using Pandas'
+        `DataFrame.to_parquet. If a directory path is provided via `path_or_buf`, a separate file
+        is generated for each key. For a single file, specify the full file path; for multiple files,
+        wrap the paths using `key_dict`.
 
-        Any argument can be provided per feature using `feature_dict` or per symbol using `symbol_dict`,
-        depending on the format of the data dictionary.
+        Args:
+            path_or_buf (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]): File path or buffer.
 
-        If `path_or_buf` is a path to a directory, will save each feature/symbol to a separate file.
-        If there's only one file, you can specify the file path via `path_or_buf`. If there are
-        multiple files, use the same argument but wrap the multiple paths with `key_dict`.
+                If a directory is provided, each feature or symbol is saved in a separate file.
+            mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
+                Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
+            partition_cols (Union[None, List[str], feature_dict, symbol_dict, CustomTemplate]):
+                Column names for partitioning the data.
 
-        If `partition_cols` and `partition_by` are None, `path_or_buf` must be a file, otherwise
-        it must be a directory. If `partition_by` is not None, will group the index by using
-        `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper` with `**groupby_kwargs` and
-        put it inside `partition_cols`. In this case, `partition_cols` must be None."""
+                Must be None if `partition_by` is provided.
+            partition_by (Union[None, AnyGroupByLike, feature_dict, symbol_dict, CustomTemplate]):
+                Criteria for grouping the index before partitioning.
+
+                When provided, the index is grouped using `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`
+                with `groupby_kwargs`, and the resulting groups are added as partition columns.
+            period_index_to (Union[str, AnyGroupByLike, feature_dict, symbol_dict, CustomTemplate]):
+                Specifies how to convert a PeriodIndex.
+
+                Use "str" to convert periods to strings or provide another method for timestamp conversion.
+            groupby_kwargs (Union[None, AnyGroupByLike, feature_dict, symbol_dict, CustomTemplate]):
+                Keyword arguments for `pandas.Series.groupby` and `pandas.Series.resample` methods.
+
+                See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+            keep_groupby_names (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
+                Flag indicating whether to retain original group names when partitioning.
+            engine (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
+                Parquet engine to use; valid options are "pyarrow", "fastparquet", or "auto".
+            check_dict_type (bool): Flag to validate the type of dictionaries.
+            template_context (KwargsLike): Additional context for template substitution.
+            return_meta (bool): If True, returns a metadata dictionary containing
+                file paths and configuration settings.
+            **kwargs: Keyword arguments for `DataFrame.to_parquet`.
+
+        Returns:
+            Union[None, feature_dict, symbol_dict]: Dictionary with metadata if `return_meta` is True, or None.
+        """
         from vectorbtpro.utils.module_ import assert_can_import, assert_can_import_any
         from vectorbtpro.data.custom.parquet import ParquetData
 
@@ -4511,10 +6144,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def from_parquet(cls: tp.Type[DataT], *args, fetch_kwargs: tp.KwargsLike = None, **kwargs) -> DataT:
-        """Use `vectorbtpro.data.custom.parquet.ParquetData` to load data from Parquet and
-        switch the class back to this class.
+        """Load data from Parquet and convert the object to the specified class using
+        `vectorbtpro.data.custom.parquet.ParquetData`.
 
-        Use `fetch_kwargs` to provide keyword arguments that were originally used in fetching."""
+        Args:
+            *args: Positional arguments for `vectorbtpro.data.custom.parquet.ParquetData.pull`.
+            fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
+
+                Refer to the fetching function for further details.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.parquet.ParquetData.pull`.
+
+        Returns:
+            Data: Instance of `cls` with data loaded from Parquet.
+        """
         from vectorbtpro.data.custom.parquet import ParquetData
 
         if fetch_kwargs is None:
@@ -4544,23 +6186,44 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Union[None, feature_dict, symbol_dict, EngineT]:
         """Save data to a SQL database using SQLAlchemy.
 
-        Uses https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_sql.html
+        This method saves each feature or symbol from the data into a separate SQL table using
+        the Pandas DataFrame.to_sql method. When `engine` is provided as None or a string,
+        it is resolved via `vectorbtpro.data.custom.sql.SQLData.resolve_engine` and may be
+        disposed automatically unless overridden by `dispose_engine`.
 
-        Any argument can be provided per feature using `feature_dict` or per symbol using `symbol_dict`,
-        depending on the format of the data dictionary.
+        Args:
+            engine (Union[None, str, EngineT, feature_dict, symbol_dict, CustomTemplate]):
+                Database engine instance, a URL string, or a mapping for per-feature/symbol configuration.
+            table (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
+                Table name or mapping for assigning table names to each feature or symbol.
+            schema (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
+                SQL schema name or mapping; if the schema does not exist, a new one is created.
+            to_utc (Union[None, bool, str, Sequence[str], feature_dict, symbol_dict, CustomTemplate]):
+                Specifies whether to localize or convert datetime fields to UTC.
 
-        Each feature/symbol gets saved to a separate table.
+                See `Data.prepare_dt`.
+            remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]): 
+                Indicates whether to remove the timezone after converting to UTC.
 
-        If `engine` is None or a string, will resolve an engine with
-        `vectorbtpro.data.custom.sql.SQLData.resolve_engine` and dispose it afterward if `dispose_engine`
-        is None or True. It can additionally return the engine if `return_engine` is True or entire
-        metadata (all passed arguments as `feature_dict` or `symbol_dict`). In this case, the engine
-        won't be disposed by default.
+                See `Data.prepare_dt`.
+            attach_row_number (Union[bool, feature_dict, symbol_dict, CustomTemplate]):
+                Specifies whether to attach a row number column to the data.
+            from_row_number (Union[None, int, feature_dict, symbol_dict, CustomTemplate]):
+                Starting row number for numbering if a row number column is attached.
+            row_number_column (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
+                Name of the column to use for row numbers.
+            engine_config (KwargsLike): Additional configuration for the engine.
+            dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
+            template_context (KwargsLike): Additional context for template substitution.
+            return_meta (bool): If True, returns metadata for each saved table.
+            return_engine (bool): If True, returns the database engine used.
+            **kwargs: Keyword arguments for `pd.DataFrame.to_sql`.
 
-        If `schema` is not None and it doesn't exist, will create a new schema.
-
-        For `to_utc` and `remove_utc_tz`, see `Data.prepare_dt`. If `to_utc` is None, uses the
-        corresponding setting of `vectorbtpro.data.custom.sql.SQLData`."""
+        Returns:
+            Union[None, feature_dict, symbol_dict, Engine]: Dictionary with metadata if
+                `return_meta` is True and/or engine if `return_engine` is True, or None.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("sqlalchemy")
@@ -4717,10 +6380,22 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def from_sql(cls: tp.Type[DataT], *args, fetch_kwargs: tp.KwargsLike = None, **kwargs) -> DataT:
-        """Use `vectorbtpro.data.custom.sql.SQLData` to load data from a SQL database and switch the class
-        back to this class.
+        """Load data from a SQL database and convert it to the current class.
 
-        Use `fetch_kwargs` to provide keyword arguments that were originally used in fetching."""
+        This method fetches data using `vectorbtpro.data.custom.sql.SQLData.pull` and
+        then switches the loaded data to the current class. The `fetch_kwargs` are applied
+        afterward to update fetch parameters.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.data.custom.sql.SQLData.pull`.
+            fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
+
+                Refer to the fetching function for further details.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.sql.SQLData.pull`.
+
+        Returns:
+            Data: Instance of the current class containing the loaded data.
+        """
         from vectorbtpro.data.custom.sql import SQLData
 
         if fetch_kwargs is None:
@@ -4751,33 +6426,90 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Union[None, feature_dict, symbol_dict, DuckDBPyConnectionT]:
         """Save data to a DuckDB database.
 
-        Any argument can be provided per feature using `feature_dict` or per symbol using `symbol_dict`,
-        depending on the format of the data dictionary.
+        This method saves the internal data to a DuckDB database. Each feature or symbol in the data
+        dictionary is processed individually. The target for saving can be either a database table
+        or a file, depending on the provided arguments.
 
-        If `connection` is None or a string, will resolve a connection with
-        `vectorbtpro.data.custom.duckdb.DuckDBData.resolve_connection`. It can additionally return the
-        connection if `return_connection` is True or entire metadata (all passed arguments as `feature_dict`
-        or `symbol_dict`). In this case, the engine won't be disposed by default.
+        If `connection` is None or a string, the method resolves a connection using
+        `vectorbtpro.data.custom.duckdb.DuckDBData.resolve_connection`. The connection is not
+        disposed automatically if either `return_meta` or `return_connection` is True.
 
-        If `write_format` is None and `write_path` is a directory (default), will persist each feature/symbol
-        to a table (see https://duckdb.org/docs/guides/python/import_pandas).
-        If `catalog` is not None, will make it default for this connection. If `schema` is not None,
-        and it doesn't exist, will create a new schema in the current catalog and make it default
-        for this connection. Any new table will be automatically created under this schema.
+        When `write_format` is not provided and `write_path` specifies a directory, each feature
+        or symbol is persisted to its own table (see https://duckdb.org/docs/guides/python/import_pandas).
+        Specifying `catalog` or `schema` sets the default context for the connection, and a new schema
+        is created if the given `schema` does not exist.
 
-        If `if_exists` is "fail", will raise an error if a table with the same name already exists.
-        If `if_exists` is "replace", will drop the existing table first. If `if_exists` is "append",
-        will append the new table to the existing one.
+        The `if_exists` argument controls the behavior when a table with the same name already exists:
 
-        If `write_format` is not None, it must be either "csv", "parquet", or "json". If `write_path` is
-        a directory or has no suffix (meaning it's not a file), each feature/symbol will be saved to a
-        separate file under that path and with the provided `write_format` as extension. The data will be
-        saved using a `COPY` mechanism (see https://duckdb.org/docs/sql/statements/copy.html).
-        To provide options to the write operation, pass them as a dictionary or an already formatted
-        string (without brackets). For example, `dict(compression="gzip")` is same as "COMPRESSION 'gzip'".
+        * fail: Raise an error.
+        * replace: Drop the existing table.
+        * append: Append the new data to the existing table.
 
-        For `to_utc` and `remove_utc_tz`, see `Data.prepare_dt`. If `to_utc` is None, uses the
-        corresponding setting of `vectorbtpro.data.custom.duckdb.DuckDBData`."""
+        If `write_format` is specified (as "csv", "parquet", or "json") and `write_path` is a
+        directory or a path without a file suffix, each feature or symbol is saved to a separate file
+        with the appropriate format extension. Data is written using the `COPY` command, and options
+        for that command can be provided either as a dictionary or a preformatted string.
+
+        For datetime handling, the parameters `to_utc` and `remove_utc_tz` are passed to `Data.prepare_dt`.
+
+        Args:
+            connection (Union[None, str, DuckDBPyConnection, feature_dict, symbol_dict, CustomTemplate]):
+                Database connection string or instance.
+
+                If None or a string, a connection is resolved via
+                `vectorbtpro.data.custom.duckdb.DuckDBData.resolve_connection`.
+            table (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
+                Name of the target table.
+
+                If not provided, the key from the data dictionary is used.
+            schema (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
+                Name of the schema to use.
+
+                A new schema is created if it does not exist.
+            catalog (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
+                Name of the catalog to set as default for the connection.
+            write_format (Union[None, str, feature_dict, symbol_dict, CustomTemplate]):
+                Format for writing data to a file.
+
+                Must be "csv", "parquet", or "json" if specified.
+            write_path (Union[PathLike, feature_dict, symbol_dict, CustomTemplate]):
+                File path or directory where data is saved.
+
+                If a directory or a path without a file suffix, each feature or symbol is saved
+                to a separate file with the format extension.
+            write_options (Union[None, str, dict, feature_dict, symbol_dict, CustomTemplate]):
+                Options to pass to the `COPY` command.
+
+                Provide these as a dictionary or a preformatted string.
+            mkdir_kwargs (Union[KwargsLike, feature_dict, symbol_dict, CustomTemplate]):
+                Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
+            to_utc (Union[None, bool, str, Sequence[str], feature_dict, symbol_dict, CustomTemplate]):
+                Specifies whether to localize or convert datetime fields to UTC.
+
+                See `Data.prepare_dt`.
+            remove_utc_tz (Union[bool, feature_dict, symbol_dict, CustomTemplate]): 
+                Indicates whether to remove the timezone after converting to UTC.
+
+                See `Data.prepare_dt`.
+            if_exists (Union[str, feature_dict, symbol_dict, CustomTemplate]):
+                Action to take if the target table already exists.
+
+                Options are "fail", "replace", or "append".
+            connection_config (KwargsLike): Configuration parameters for creating a database connection.
+            check_dict_type (bool): Flag to validate the type of dictionaries.
+            template_context (KwargsLike): Additional context for template substitution.
+            return_meta (bool): If True, returns metadata including all processed arguments
+                per feature or symbol.
+            return_connection (bool): If True and a connection string was provided, returns the
+                resolved DuckDB connection instead of disposing it automatically.
+
+        Returns:
+            Union[feature_dict, symbol_dict, DuckDBPyConnection, None]: A metadata dictionary if
+                `return_meta` is True. The resolved DuckDB connection is returned if
+                `return_connection` is True, otherwise None.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("duckdb")
@@ -4980,10 +6712,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def from_duckdb(cls: tp.Type[DataT], *args, fetch_kwargs: tp.KwargsLike = None, **kwargs) -> DataT:
-        """Use `vectorbtpro.data.custom.duckdb.DuckDBData` to load data from a DuckDB database and
-        switch the class back to this class.
+        """Load data from a DuckDB database using `vectorbtpro.data.custom.duckdb.DuckDBData` and
+        switch the object's class.
 
-        Use `fetch_kwargs` to provide keyword arguments that were originally used in fetching."""
+        Args:
+            *args: Positional arguments for `vectorbtpro.data.custom.duckdb.DuckDBData.pull`.
+            fetch_kwargs (KwargsLike): Keyword arguments originally used for fetching data.
+
+                Refer to the fetching function for further details.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.duckdb.DuckDBData.pull`.
+
+        Returns:
+            Data: Instance of the data with updated fetch parameters.
+        """
         from vectorbtpro.data.custom.duckdb import DuckDBData
 
         if fetch_kwargs is None:
@@ -5009,12 +6750,30 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         squeeze: bool = True,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Run a SQL query on this instance using DuckDB.
+        """Execute a SQL query on the current instance using DuckDB.
 
-        First, connection gets established. Then, `Data.get` gets invoked with `**kwargs` passed as
-        keyword arguments and `as_dict=True`. Then, each returned object gets registered within the
-        database. Finally, the query gets executed with `duckdb.sql` and the relation as a DataFrame
-        gets returned. If `squeeze` is True, a DataFrame with one column will be converted into a Series."""
+        Establish a database connection, register the instance's data (retrieved via `Data.get`)
+        along with any additional objects, and execute the specified SQL query. Optionally,
+        align the data types with the original columns and adjust the index. If `squeeze` is True,
+        convert a one-column DataFrame into a Series.
+
+        Args:
+            query (str): SQL query to execute.
+            dbcon (Optional[DuckDBPyConnection]): DuckDB connection to use; if not provided,
+                a new connection is established.
+            database (str): Identifier or path of the target database.
+            db_config (KwargsLike): Configuration parameters for establishing the DuckDB connection.
+            alias (str): Alias assigned to the query result.
+            params (KwargsLike): Parameters to substitute in the SQL query.
+            other_objs (Optional[dict]): Additional objects to register within the database.
+            date_as_object (bool): Whether to return date columns as objects.
+            align_dtypes (bool): Whether to align result column data types with the original data.
+            squeeze (bool): Flag indicating whether to convert a single-column DataFrame to a Series.
+            **kwargs: Keyword arguments for `Data.get`.
+
+        Returns:
+            SeriesFrame: Query result as a DataFrame or a Series if squeezed.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("duckdb")
@@ -5069,10 +6828,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `Data.stats`.
+        """Default configuration for `Data.stats`.
 
-        Merges `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults` and
-        `stats` from `vectorbtpro._settings.data`."""
+        Merges the defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.data`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the stats builder.
+        """
         return merge_dicts(Analyzable.stats_defaults.__get__(self), self.get_base_settings()["stats"])
 
     _metrics: tp.ClassVar[Config] = HybridConfig(
@@ -5128,7 +6891,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     def plot(
         self,
-        column: tp.Optional[tp.Hashable] = None,
+        column: tp.Optional[tp.Column] = None,
         feature: tp.Optional[tp.Feature] = None,
         symbol: tp.Optional[tp.Symbol] = None,
         feature_map: tp.KwargsLike = None,
@@ -5136,31 +6899,35 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         base: tp.Optional[float] = None,
         **kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
-        """Plot either one feature of multiple symbols, or OHLC(V) of one symbol.
+        """Plot one feature across multiple symbols or generate an OHLC(V) chart for a single symbol.
 
         Args:
-            column (hashable): Name of the feature or symbol to plot.
+            column (Column): Column identifier.
 
-                Depends on the data orientation.
-            feature (hashable): Name of the feature to plot.
-            symbol (hashable): Name of the symbol to plot.
-            feature_map (sequence of str): Dictionary mapping the feature names to OHLCV.
+                Used depending on the data orientation.
+            feature (Feature): Feature identifier.
+            symbol (Symbol): Symbol identifier.
+            feature_map (KwargsLike): Dictionary mapping feature names to OHLCV components.
 
-                Applied only if OHLC(V) is plotted.
-            plot_volume (bool): Whether to plot volume beneath.
+                Applied only when generating an OHLC(V) chart.
+            plot_volume (bool): Whether to plot volume below.
 
-                Applied only if OHLC(V) is plotted.
-            base (float): Rebase all series of a feature to a given initial base.
+                Applied only when generating an OHLC(V) chart.
+            base (float): Initial base value for rebasing the feature series.
 
                 !!! note
-                    The feature must contain prices.
+                    The feature must contain price data.
 
-                Applied only if lines are plotted.
-            kwargs (dict): Keyword arguments passed to `vectorbtpro.generic.accessors.GenericAccessor.plot`
-                for lines and to `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot` for OHLC(V).
+                    Applied only when plotting lines.
+            **kwargs: Keyword arguments for
+                `vectorbtpro.generic.accessors.GenericAccessor.plot` for lines and to
+                `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot` for OHLC(V).
 
-        Usage:
-            * Plot the lines of one feature across all symbols:
+        Returns:
+            Union[BaseFigure, TraceUpdater]: A plot figure or trace updater instance.
+
+        Examples:
+            Plot the lines of one feature across all symbols:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -5176,7 +6943,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             >>> data.plot(feature='Close', base=1).show()
             ```
 
-            * Plot OHLC(V) of one symbol (only if data contains the respective features):
+            Plot OHLC(V) of one symbol (only if data contains the respective features):
 
             ![](/assets/images/api/data_plot.light.svg#only-light){: .iimg loading=lazy }
             ![](/assets/images/api/data_plot.dark.svg#only-dark){: .iimg loading=lazy }
@@ -5211,10 +6978,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Data.plots`.
+        """Default configuration for `Data.plots`.
 
-        Merges `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` and
-        `plots` from `vectorbtpro._settings.data`."""
+        Merges the defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.data`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the plots builder.
+        """
         return merge_dicts(Analyzable.plots_defaults.__get__(self), self.get_base_settings()["plots"])
 
     _subplots: tp.ClassVar[Config] = HybridConfig(
@@ -5248,20 +7019,33 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     def subplots(self) -> Config:
         return self._subplots
 
-    # ############# Docs ############# #
-
     @classmethod
     def build_feature_config_doc(cls, source_cls: tp.Optional[type] = None) -> str:
-        """Build feature config documentation."""
+        """Build and return the documentation for the feature configuration.
+
+        Args:
+            source_cls (Optional[type]): Source class providing the original configuration.
+
+        Returns:
+            str: Formatted feature configuration documentation.
+        """
         if source_cls is None:
             source_cls = Data
         return string.Template(inspect.cleandoc(get_dict_attr(source_cls, "feature_config").__doc__)).substitute(
-            {"feature_config": cls.feature_config.prettify(), "cls_name": cls.__name__},
+            {"feature_config": cls.feature_config.prettify_doc(), "cls_name": cls.__name__},
         )
 
     @classmethod
     def override_feature_config_doc(cls, __pdoc__: dict, source_cls: tp.Optional[type] = None) -> None:
-        """Call this method on each subclass that overrides `Data.feature_config`."""
+        """Override the feature configuration documentation for the subclass.
+
+        Args:
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
+            source_cls (Optional[type]): Source class providing the original configuration.
+
+        Returns:
+            None
+        """
         __pdoc__[cls.__name__ + ".feature_config"] = cls.build_feature_config_doc(source_cls=source_cls)
 
 

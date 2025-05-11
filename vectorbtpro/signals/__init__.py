@@ -8,7 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for working with signals."""
+"""Package for working with signals.
+
+Provides submodules for working with signals, including accessors, factories, generators, and notebook utilities.
+"""
 
 from typing import TYPE_CHECKING
 

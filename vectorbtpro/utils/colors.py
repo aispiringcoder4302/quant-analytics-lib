@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for working with colors."""
+"""Module providing utilities for color manipulation, conversion, and adjustment."""
 
 import numpy as np
 
@@ -24,7 +24,18 @@ def map_value_to_cmap(
     vcenter: tp.Optional[float] = None,
     vmax: tp.Optional[float] = None,
 ) -> tp.MaybeSequence[str]:
-    """Get RGB of `value` from the colormap."""
+    """Return the RGB color(s) corresponding to the input value(s) according to the given colormap.
+
+    Args:
+        value (MaybeSequence[float]): Numeric value or sequence of values to map to colors.
+        cmap (Any): Colormap identifier provided as a string name or a collection (list/tuple) of colors.
+        vmin (Optional[float]): Minimum data value for colormap normalization.
+        vcenter (Optional[float]): Midpoint for two-slope colormap normalization.
+        vmax (Optional[float]): Maximum data value for colormap normalization.
+
+    Returns:
+        MaybeSequence[str]: A color string in `rgb(r,g,b)` format for each input value.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("matplotlib")
@@ -62,19 +73,43 @@ def map_value_to_cmap(
 
 
 def parse_rgba_tuple(color: str) -> tp.Tuple[float, float, float, float]:
-    """Parse floating RGBA tuple from string."""
+    """Return a tuple of normalized RGBA components parsed from the provided color string.
+
+    Args:
+        color (str): RGBA color string in the format "rgba(r,g,b,a)".
+
+    Returns:
+        Tuple[float, float, float, float]: A tuple containing the red, green, and blue components
+            normalized to [0, 1] and the alpha value.
+    """
     rgba = color.replace("rgba", "").replace("(", "").replace(")", "").split(",")
     return int(rgba[0]) / 255, int(rgba[1]) / 255, int(rgba[2]) / 255, float(rgba[3])
 
 
 def parse_rgb_tuple(color: str) -> tp.Tuple[float, float, float]:
-    """Parse floating RGB tuple from string."""
+    """Return a tuple of normalized RGB components parsed from the provided color string.
+
+    Args:
+        color (str): RGB color string in the format "rgb(r,g,b)".
+
+    Returns:
+        Tuple[float, float, float]: A tuple containing the red, green, and blue components
+            normalized to [0, 1].
+    """
     rgb = color.replace("rgb", "").replace("(", "").replace(")", "").split(",")
     return int(rgb[0]) / 255, int(rgb[1]) / 255, int(rgb[2]) / 255
 
 
 def adjust_opacity(color: tp.Any, opacity: float) -> str:
-    """Adjust opacity of color."""
+    """Return a color string with the specified opacity adjustment.
+
+    Args:
+        color (Any): Color represented as a Matplotlib color string, hex string, or RGB/RGBA tuple.
+        opacity (float): Desired opacity value.
+
+    Returns:
+        str: Color in `rgba(r,g,b,a)` format with the updated opacity.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("matplotlib")
@@ -84,15 +119,26 @@ def adjust_opacity(color: tp.Any, opacity: float) -> str:
         color = parse_rgba_tuple(color)
     elif isinstance(color, str) and color.startswith("rgb"):
         color = parse_rgb_tuple(color)
-    rgb = mc.to_rgb(color)
+    try:
+        c = mc.cnames[color]
+    except:
+        c = color
+    rgb = mc.to_rgb(c)
     return "rgba(%d,%d,%d,%.4f)" % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255), opacity)
 
 
 def adjust_lightness(color: tp.Any, amount: float = 0.7) -> str:
-    """Lightens the given color by multiplying (1-luminosity) by the given amount.
+    """Return an RGB color string with adjusted lightness.
 
-    Input can be matplotlib color string, hex string, or RGB tuple.
-    Output will be an RGB string."""
+    Args:
+        color (Any): Color represented as a Matplotlib color string, hex string, or RGB/RGBA tuple.
+        amount (float): Factor to adjust the lightness.
+        
+            Values less than 1 darken the color, while values greater than 1 lighten it.
+
+    Returns:
+        str: Adjusted color in `rgb(r,g,b)` format.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("matplotlib")

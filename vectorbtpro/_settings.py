@@ -8,25 +8,25 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Global settings of vectorbtpro.
+"""Module providing global settings for vectorbtpro.
 
-`settings` config is also accessible via `vectorbtpro.settings`.
+The `settings` config is also accessible via `vbt.settings`.
 
 !!! note
-    All places in vectorbt import `vectorbtpro._settings.settings`, not `vectorbtpro.settings`.
-    Overwriting `vectorbtpro.settings` only overwrites the reference created for the user.
-    Consider updating the settings config instead of replacing it.
+    All vectorbtpro modules import `vectorbtpro._settings.settings`, not `vbt.settings`.
+    Overwriting `vbt.settings` only replaces the user reference.
+    Update the settings config directly instead of replacing it.
 
-Here are the main properties of the `settings` config:
+The `settings` config has the following properties:
 
-* It's a nested config, that is, a config that consists of multiple sub-configs.
-    one per sub-package (e.g., 'data'), module (e.g., 'wrapping'), or even class (e.g., 'configured').
-    Each sub-config may consist of other sub-configs.
-* It has frozen keys - you cannot add other sub-configs or remove the existing ones, but you can modify them.
-* Each sub-config can be `frozen_cfg` or `flex_cfg`. The main reason for defining a flexible config
-    is to allow adding new keys (e.g., 'plotting.layout').
+* It is a nested configuration consisting of multiple sub-configs, each corresponding
+    to a sub-package (e.g., `data`), module (e.g., `wrapping`), or class (e.g., `configured`).
+* It uses frozen keys, which means you cannot add or remove sub-configs,
+    although you can modify their values.
+* Sub-configs can be either `frozen_cfg` or `flex_cfg`, with the latter allowing
+    the addition of new keys (e.g., `plotting.layout`).
 
-For example, you can change default width and height of each plot:
+For example, you can modify the default plot dimensions:
 
 ```pycon
 >>> from vectorbtpro import *
@@ -35,13 +35,13 @@ For example, you can change default width and height of each plot:
 >>> vbt.settings['plotting']['layout']['height'] = 400
 ```
 
-The main sub-configs such as for plotting can be also accessed/modified using the dot notation:
+Primary sub-configs, such as those for plotting, are also accessible using dot notation:
 
 ```pycon
 >>> vbt.settings.plotting['layout']['width'] = 800
 ```
 
-Some sub-configs allow the dot notation too but this depends on whether they are an instance of `frozen_cfg`:
+Note that some sub-configs support dot notation only if they are instances of `frozen_cfg`:
 
 ```pycon
 >>> type(vbt.settings)
@@ -58,26 +58,25 @@ vectorbtpro._settings.flex_cfg
 >>> vbt.settings.data.custom["binance"]  # ok
 ```
 
-Since this is only visible when looking at the source code, the advice is to always use the bracket notation.
+Given these behaviors, it is recommended to always use bracket notation.
 
 !!! note
-    Whether the change takes effect immediately depends upon the place that accesses the settings.
-    For example, changing 'wrapping.freq` has an immediate effect because the value is resolved
-    every time `vectorbtpro.base.wrapping.ArrayWrapper.freq` is called. On the other hand, changing
-    'portfolio.fillna_close' has only effect on `vectorbtpro.portfolio.base.Portfolio` instances created
-    in the future, not the existing ones, because the value is resolved upon the object's construction.
-    Moreover, some settings are only accessed when importing the package for the first time,
-    such as 'jitting.jit_decorator'. In any case, make sure to check whether the update actually took place.
+    The immediate effect of updating a setting depends on where it is accessed.
+    For example, changing `wrapping.freq` takes effect immediately as it is resolved each time
+    `vectorbtpro.base.wrapping.ArrayWrapper.freq` is accessed, whereas updating
+    `portfolio.fillna_close` affects only future `vectorbtpro.portfolio.base.Portfolio` instances.
+    Additionally, some settings (like `jitting.jit_decorator`) are read only at import time.
+    Always verify that the intended updates have been applied.
 
 ## Saving and loading
 
-Like any other class subclassing `vectorbtpro.utils.config.Config`, we can persist settings to the disk,
-load it back, and replace in-place. There are several ways of how to update the settings.
+Settings, as subclasses of `vectorbtpro.utils.config.Config`, can be persisted to disk, reloaded,
+and updated in place. There are several methods to update settings:
 
 ### Binary file
 
-Pickling will dump the entire settings object into a byte stream and save as a binary file.
-Supported file extensions are "pickle" (default) and "pkl".
+Pickling serializes the entire settings object to a binary file. Supported file extensions
+are "pickle" and "pkl".
 
 ```pycon
 >>> vbt.settings.save('my_settings')
@@ -91,13 +90,13 @@ False
 ```
 
 !!! note
-    Argument `clear=True` will replace the entire settings object. Disable it to apply
-    only a subset of settings (default).
+    Using `clear=True` replaces the entire settings object. To update only
+    a subset of settings, omit this option.
 
 ### Config file
 
-We can also encode the settings object into a config and save as a text file that can be edited
-easily. Supported file extensions are "config" (default), "cfg", and "ini".
+Settings can be encoded into a text-based config file, making them easy to edit.
+Supported file extensions include "config", "cfg", and "ini".
 
 ```pycon
 >>> vbt.settings.save('my_settings', file_format="config")
@@ -112,17 +111,19 @@ False
 
 ### On import
 
-Some settings (such as Numba-related ones) are applied only on import, so changing them during the runtime
-will have no effect. In this case, change the settings, save them to the disk, and then either
-rename the file to "vbt" (with extension) and place it in the working directory for it to be
-recognized automatically, or create an environment variable "VBT_SETTINGS_PATH" that holds the full path
-to the file - vectorbt will load it before any other module. You can also change the recognized file
-name using an environment variable "VBT_SETTINGS_NAME", which defaults to "vbt".
+Certain settings (e.g., those related to Numba) are applied only at import time, so runtime modifications
+may not be effective. To update these settings, save the changes to disk, then either:
+
+* Rename the file to "vbt" and place it in the working directory, or
+* Set the environment variable `VBT_SETTINGS_PATH` with the file's full path.
+
+You can also use the environment variable `VBT_SETTINGS_NAME` to specify a different recognized
+file name (default is "vbt").
 
 !!! note
     Environment variables must be set before importing vectorbtpro.
 
-For example, to set the default theme to dark, create the following "vbt.ini" file:
+For example, to set the default theme to dark, create a "vbt.ini" file with the following content:
 
 ```ini
 [plotting]
@@ -132,7 +133,6 @@ default_theme = dark
 
 import json
 import os
-import pkgutil
 
 import numpy as np
 from numba import config as nb_config
@@ -167,7 +167,15 @@ except ImportError:
 
 
 class frozen_cfg(Config):
-    """Class representing a frozen sub-config."""
+    """Class representing a frozen sub-configuration.
+
+    This configuration enforces frozen keys, preventing the addition or removal of sub-configs,
+    while allowing their modification. It also supports attribute-style access.
+
+    Args:
+        *args: Positional arguments for `vectorbtpro.utils.config.Config`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Config`.
+    """
 
     def __init__(
         self,
@@ -188,7 +196,14 @@ class frozen_cfg(Config):
 
 
 class flex_cfg(Config):
-    """Class representing a flexible sub-config."""
+    """Class representing a flexible sub-configuration.
+
+    This configuration allows the addition of new keys and does not support attribute-style access.
+
+    Args:
+        *args: Positional arguments for `vectorbtpro.utils.config.Config`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Config`.
+    """
 
     def __init__(
         self,
@@ -224,19 +239,20 @@ importing = frozen_cfg(
 """_"""
 
 __pdoc__["importing"] = Sub(
-    """Sub-config with settings applied on importing.
-    
-Disabling these options will make vectorbt load faster, but will limit the flexibility of accessing
-various features of the package.
-    
+    """Sub-configuration with import settings.
+
 !!! note
-    If `auto_import` is False, you won't be able to access most important modules and objects 
-    such as via `vbt.Portfolio`, only by explicitly importing them such as via 
-    `from vectorbtpro.portfolio.base import Portfolio`.
+    Disabling these options can speed up vectorbtpro's startup time but may restrict 
+    access to certain features.
+
+    If `auto_import` is False, core modules and objects, such as `vbt.Portfolio`, 
+    will not be imported automatically. They must be imported explicitly, 
+    for example from `vectorbtpro.portfolio.base`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["importing"] = importing
@@ -253,17 +269,19 @@ caching = frozen_cfg(
 """_"""
 
 __pdoc__["caching"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.registries.ca_registry`, 
-`vectorbtpro.utils.caching`, and cacheable decorators in `vectorbtpro.utils.decorators`.
+    """Sub-configuration with settings applied across `vectorbtpro.registries.ca_registry`, 
+`vectorbtpro.utils.caching`, and the cacheable decorators in `vectorbtpro.utils.decorators`.
+    
+!!! note
+    The `use_cached_accessors` setting is applied only at import.
 
 !!! hint
-    Apply setting `register_lazily` on startup to register all unbound cacheables.
-    
-    Setting `use_cached_accessors` is applied only on import.
+    Enable `register_lazily` at startup to register unbound cacheables.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["caching"] = caching
@@ -298,17 +316,17 @@ jitting = frozen_cfg(
 """_"""
 
 __pdoc__["jitting"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.registries.jit_registry` and 
-`vectorbtpro.utils.jitting`.
+    """Sub-configuration with settings applied across `vectorbtpro.registries.jit_registry` 
+and `vectorbtpro.utils.jitting`.
 
 !!! note
-    Options (with `_options` suffix) are applied only on import. 
-    
-    Keyword arguments (with `_kwargs` suffix) are applied right away.
+    Options with a `_options` suffix are applied only at import, while keyword arguments 
+    with a `_kwargs` suffix are applied immediately.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["jitting"] = jitting
@@ -320,11 +338,12 @@ numpy = frozen_cfg(
 """_"""
 
 __pdoc__["numpy"] = Sub(
-    """Sub-config with NumPy-related settings.
+    """Sub-configuration with NumPy settings applied across `vectorbtpro._dtypes`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["numpy"] = numpy
@@ -339,11 +358,12 @@ numba = frozen_cfg(
 """_"""
 
 __pdoc__["numba"] = Sub(
-    """Sub-config with Numba-related settings.
+    """Sub-configuration with Numba settings applied across `vectorbtpro.utils.jitting`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["numba"] = numba
@@ -358,14 +378,15 @@ math = frozen_cfg(
 """_"""
 
 __pdoc__["math"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.math_`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.math_`.
 
 !!! note
-    All math settings are applied only on import.
+    All math settings are applied only at import.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["math"] = math
@@ -471,11 +492,12 @@ execution = frozen_cfg(
 """_"""
 
 __pdoc__["execution"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.execution`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.execution`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["execution"] = execution
@@ -509,15 +531,16 @@ chunking = frozen_cfg(
 """_"""
 
 __pdoc__["chunking"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.registries.ch_registry` 
-and `vectorbtpro.utils.chunking`.
+    """Sub-configuration with settings applied across `vectorbtpro.registries.ch_registry` and 
+    `vectorbtpro.utils.chunking`.
 
 !!! note
-    Options (with `_options` suffix) and setting `disable_wrapping` are applied only on import.
+    Options with a `_options` suffix and the `disable_wrapping` setting are applied only at import.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["chunking"] = chunking
@@ -559,11 +582,12 @@ params = frozen_cfg(
 """_"""
 
 __pdoc__["params"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.params`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.params`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["params"] = params
@@ -576,11 +600,12 @@ template = frozen_cfg(
 """_"""
 
 __pdoc__["template"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.template`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.template`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["template"] = template
@@ -609,11 +634,12 @@ pickling = frozen_cfg(
 """_"""
 
 __pdoc__["pickling"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.utils.pickling`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.pickling`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["pickling"] = pickling
@@ -624,11 +650,12 @@ config = frozen_cfg(
 """_"""
 
 __pdoc__["config"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.utils.config.Config`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.config.Config`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["config"] = config
@@ -645,11 +672,12 @@ configured = frozen_cfg(
 """_"""
 
 __pdoc__["configured"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.utils.config.Configured`.
+    """Sub-configuration with settings applied to `vectorbtpro.utils.config.Configured`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["configured"] = configured
@@ -674,11 +702,12 @@ broadcasting = frozen_cfg(
 """_"""
 
 __pdoc__["broadcasting"] = Sub(
-    """Sub-config with settings applied to broadcasting functions across `vectorbtpro.base`.
+    """Sub-configuration with broadcasting settings applied across `vectorbtpro.base`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["broadcasting"] = broadcasting
@@ -690,14 +719,15 @@ indexing = frozen_cfg(
 """_"""
 
 __pdoc__["indexing"] = Sub(
-    """Sub-config with settings applied to indexing functions across `vectorbtpro.base`.
-    
+    """Sub-configuration with indexing settings applied across `vectorbtpro.base`.
+
 !!! note
     Options `rotate_rows` and `rotate_cols` are applied only on import. 
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["indexing"] = indexing
@@ -718,14 +748,17 @@ wrapping = frozen_cfg(
 """_"""
 
 __pdoc__["wrapping"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.base.wrapping`.
+    """Sub-configuration with settings applied across `vectorbtpro.base.wrapping`.
 
 ```python
 ${config_doc}
 ```
 
-When enabling `max_precision` and running your code for the first time, make sure to enable 
-`prec_check_bounds`. After that, you can safely disable it to slightly increase performance."""
+!!! note
+    When enabling `max_precision` and running your code for the first time, 
+    ensure that `prec_check_bounds` is also enabled. Afterwards, you can disable 
+    it to gain a slight performance boost.
+"""
 )
 
 _settings["wrapping"] = wrapping
@@ -736,11 +769,12 @@ resampling = frozen_cfg(
 """_"""
 
 __pdoc__["resampling"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.base.resampling`.
+    """Sub-configuration with settings applied across `vectorbtpro.base.resampling`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["resampling"] = resampling
@@ -763,11 +797,12 @@ datetime = frozen_cfg(
 """_"""
 
 __pdoc__["datetime"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.datetime_`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.datetime_`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["datetime"] = datetime
@@ -914,6 +949,7 @@ data = frozen_cfg(
             end=None,
             timeframe="1d",
             tz=None,
+            ticker_kwargs=flex_cfg(),
             history_kwargs=flex_cfg(),
         ),
         binance=flex_cfg(
@@ -962,13 +998,17 @@ data = frozen_cfg(
                 oauth_token=None,
                 paper=False,
             ),
+            data_type="bars",
             start=0,
             end="now",
             timeframe="1d",
             tz="utc",
-            adjustment="raw",
-            feed=None,
             limit=None,
+            adjustment=None,
+            feed=None,
+            sort=None,
+            asof=None,
+            currency=None,
         ),
         polygon=flex_cfg(
             client=None,
@@ -1094,28 +1134,18 @@ data = frozen_cfg(
 """_"""
 
 __pdoc__["data"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.data`.
+    """Sub-configuration with settings applied across `vectorbtpro.data`.
 
 ```python
 ${config_doc}
 ```
-
-Binance:
-    See `binance.client.Client`.
-
-CCXT:
-    See [Configuring API Keys](https://ccxt.readthedocs.io/en/latest/manual.html#configuring-api-keys).
-    Keys can be defined per exchange. If a key is defined at the root, it applies to all exchanges.
-    
-Alpaca:
-    Sign up for Alpaca API keys under https://app.alpaca.markets/signup.
 """
 )
 
 _settings["data"] = data
 
 plotting = frozen_cfg(
-    use_widgets=True,
+    use_widgets=False,
     use_resampler=False,
     auto_rangebreaks=False,
     pre_show_func=None,
@@ -1151,7 +1181,21 @@ plotting = frozen_cfg(
                 yellow="#bcbd22",
                 cyan="#17becf",
             ),
-            path="__name__/templates/light.json",
+            template_name="plotly",
+            color_map=flex_cfg(
+                {
+                    "#FF97FF": "#bcbd22",
+                    "#00cc96": "#2ca02c",
+                    "#19d3f3": "#8c564b",
+                    "#FF6692": "#e377c2",
+                    "#636efa": "#1f77b4",
+                    "#EF553B": "#ff7f0e",
+                    "#B6E880": "#7f7f7f",
+                    "#ab63fa": "#dc3912",
+                    "#FECB52": "#17becf",
+                    "#FFA15A": "#9467bd",
+                }
+            ),
         ),
         dark=flex_cfg(
             color_schema=flex_cfg(
@@ -1166,7 +1210,26 @@ plotting = frozen_cfg(
                 yellow="#bcbd22",
                 cyan="#17becf",
             ),
-            path="__name__/templates/dark.json",
+            template_name="plotly_dark",
+            color_map=flex_cfg(
+                {
+                    "#283442": "#313439",
+                    "#f2f5fa": "#d6dfef",
+                    "#506784": "#313439",
+                    "#C8D4E3": "#aec0d6",
+                    "#FF97FF": "#bcbd22",
+                    "#00cc96": "#2ca02c",
+                    "#19d3f3": "#8c564b",
+                    "#FF6692": "#e377c2",
+                    "#636efa": "#1f77b4",
+                    "#EF553B": "#ff7f0e",
+                    "#B6E880": "#7f7f7f",
+                    "#ab63fa": "#dc3912",
+                    "#FECB52": "#17becf",
+                    "#FFA15A": "#9467bd",
+                    "rgb(17,17,17)": "#1c1e21",
+                }
+            ),
         ),
         seaborn=flex_cfg(
             color_schema=flex_cfg(
@@ -1181,7 +1244,8 @@ plotting = frozen_cfg(
                 yellow="rgb(204,185,116)",
                 cyan="rgb(100,181,205)",
             ),
-            path="__name__/templates/seaborn.json",
+            template_name="seaborn",
+            color_map=flex_cfg(),
         ),
     ),
     default_theme="light",
@@ -1207,8 +1271,7 @@ plotting = frozen_cfg(
 """_"""
 
 __pdoc__["plotting"] = Sub(
-    """Sub-config with settings applied to Plotly figures 
-created from `vectorbtpro.utils.figure`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.figure`.
 
 ```python
 ${config_doc}
@@ -1247,12 +1310,12 @@ stats_builder = frozen_cfg(
 """_"""
 
 __pdoc__["stats_builder"] = Sub(
-    """Sub-config with settings applied to 
-`vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+    """Sub-configuration with settings applied to `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["stats_builder"] = stats_builder
@@ -1298,12 +1361,12 @@ plots_builder = frozen_cfg(
 """_"""
 
 __pdoc__["plots_builder"] = Sub(
-    """Sub-config with settings applied to 
-`vectorbtpro.generic.plots_builder.PlotsBuilderMixin`.
+    """Sub-configuration with settings applied to `vectorbtpro.generic.plots_builder.PlotsBuilderMixin`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["plots_builder"] = plots_builder
@@ -1329,11 +1392,12 @@ generic = frozen_cfg(
 """_"""
 
 __pdoc__["generic"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.generic.accessors.GenericAccessor`.
+    """Sub-configuration with settings applied to `vectorbtpro.generic.accessors.GenericAccessor`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["generic"] = generic
@@ -1345,11 +1409,12 @@ ranges = frozen_cfg(
 """_"""
 
 __pdoc__["ranges"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.generic.ranges.Ranges`.
+    """Sub-configuration with settings applied to `vectorbtpro.generic.ranges.Ranges`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["ranges"] = ranges
@@ -1374,11 +1439,12 @@ splitter = frozen_cfg(
 """_"""
 
 __pdoc__["splitter"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.generic.splitting.base.Splitter`.
+    """Sub-configuration with settings applied to `vectorbtpro.generic.splitting.base.Splitter`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["splitter"] = splitter
@@ -1394,11 +1460,12 @@ drawdowns = frozen_cfg(
 """_"""
 
 __pdoc__["drawdowns"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.generic.drawdowns.Drawdowns`.
+    """Sub-configuration with settings applied to `vectorbtpro.generic.drawdowns.Drawdowns`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["drawdowns"] = drawdowns
@@ -1412,11 +1479,12 @@ ohlcv = frozen_cfg(
 """_"""
 
 __pdoc__["ohlcv"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.ohlcv`.
+    """Sub-configuration with settings applied to `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["ohlcv"] = ohlcv
@@ -1439,11 +1507,12 @@ signals = frozen_cfg(
 """_"""
 
 __pdoc__["signals"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.signals.accessors.SignalsAccessor`.
-
+    """Sub-configuration with settings applied to `vectorbtpro.signals.accessors.SignalsAccessor`.
+    
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["signals"] = signals
@@ -1488,11 +1557,12 @@ returns = frozen_cfg(
 """_"""
 
 __pdoc__["returns"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.returns.accessors.ReturnsAccessor`.
+    """Sub-configuration with settings applied to `vectorbtpro.returns.accessors.ReturnsAccessor`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["returns"] = returns
@@ -1503,11 +1573,12 @@ qs_adapter = frozen_cfg(
 """_"""
 
 __pdoc__["qs_adapter"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.returns.qs_adapter.QSAdapter`.
+    """Sub-configuration with settings applied to `vectorbtpro.returns.qs_adapter.QSAdapter`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["qs_adapter"] = qs_adapter
@@ -1519,11 +1590,12 @@ records = frozen_cfg(
 """_"""
 
 __pdoc__["records"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.records.base.Records`.
-
+    """Sub-configuration with settings applied to `vectorbtpro.records.base.Records`.
+    
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["records"] = records
@@ -1548,11 +1620,12 @@ mapped_array = frozen_cfg(
 """_"""
 
 __pdoc__["mapped_array"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.records.mapped_array.MappedArray`.
+    """Sub-configuration with settings applied to `vectorbtpro.records.mapped_array.MappedArray`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["mapped_array"] = mapped_array
@@ -1564,11 +1637,12 @@ orders = frozen_cfg(
 """_"""
 
 __pdoc__["orders"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.portfolio.orders.Orders`.
+    """Sub-configuration with settings applied to `vectorbtpro.portfolio.orders.Orders`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["orders"] = orders
@@ -1585,11 +1659,12 @@ trades = frozen_cfg(
 """_"""
 
 __pdoc__["trades"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.portfolio.trades.Trades`.
+    """Sub-configuration with settings applied to `vectorbtpro.portfolio.trades.Trades`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["trades"] = trades
@@ -1600,11 +1675,12 @@ logs = frozen_cfg(
 """_"""
 
 __pdoc__["logs"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.portfolio.logs.Logs`.
+    """Sub-configuration with settings applied to `vectorbtpro.portfolio.logs.Logs`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["logs"] = logs
@@ -1798,11 +1874,12 @@ portfolio = frozen_cfg(
 """_"""
 
 __pdoc__["portfolio"] = Sub(
-    """Sub-config with settings applied to `vectorbtpro.portfolio.base.Portfolio`.
+    """Sub-configuration with settings applied to `vectorbtpro.portfolio.base.Portfolio`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["portfolio"] = portfolio
@@ -1872,11 +1949,12 @@ pfopt = frozen_cfg(
 """_"""
 
 __pdoc__["pfopt"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.portfolio.pfopt`.
+    """Sub-configuration with settings applied across `vectorbtpro.portfolio.pfopt`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["pfopt"] = pfopt
@@ -1897,23 +1975,11 @@ telegram = frozen_cfg(
 """_"""
 
 __pdoc__["telegram"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.telegram`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.telegram`.
 
 ```python
 ${config_doc}
 ```
-
-python-telegram-bot:
-    Sub-config with settings applied to 
-    [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot).
-    
-    Set `persistence` to string to use as `filename` in `telegram.ext.PicklePersistence`.
-    For `defaults`, see `telegram.ext.Defaults`. Other settings will be distributed across 
-    `telegram.ext.Updater` and `telegram.ext.updater.Updater.start_polling`.
-
-GIPHY:
-    Sub-config with settings applied to 
-    [GIPHY Translate Endpoint](https://developers.giphy.com/docs/api/endpoint#translate).
 """
 )
 
@@ -1939,11 +2005,12 @@ pbar = frozen_cfg(
 """_"""
 
 __pdoc__["pbar"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.pbar`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.pbar`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["pbar"] = pbar
@@ -1959,11 +2026,12 @@ path = frozen_cfg(
 """_"""
 
 __pdoc__["path"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.path_`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.path_`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["path"] = path
@@ -1978,11 +2046,12 @@ search = frozen_cfg(
 """_"""
 
 __pdoc__["search"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.search_`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.search_`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["search"] = search
@@ -2348,6 +2417,7 @@ window.onload = function() {
 $context
 ---------------------""",
         minimal_format=True,
+        quick_mode=False,
         tokenizer="tiktoken",
         tokenizer_config=flex_cfg(),
         tokenizer_configs=flex_cfg(
@@ -2386,15 +2456,18 @@ $context
         completions_configs=flex_cfg(
             openai=flex_cfg(
                 model="gpt-4o",
+                quick_model="gpt-4o-mini",
             ),
             litellm=flex_cfg(
                 model="gpt-4o",
+                quick_model="gpt-4o-mini",
             ),
             llama_index=flex_cfg(
                 llm="openai",
                 llm_configs=flex_cfg(
                     openai=flex_cfg(
                         model="gpt-4o",
+                        quick_model="gpt-4o-mini",
                     )
                 ),
             ),
@@ -2481,8 +2554,20 @@ $chunk_text""",
                     dir_path=RepEval("Path(cache_dir) / 'emb_lmdb_store'"),
                 ),
             ),
+            search_method="hybrid",
+            bm25_tokenizer=None,
+            bm25_tokenizer_kwargs=flex_cfg(
+                show_progress=False,
+            ),
+            bm25_retriever=None,
+            bm25_retriever_kwargs=flex_cfg(
+                show_progress=False,
+            ),
+            bm25_mirror_store_id=None,
+            bm25_score_weight=0.5,
             score_func="cosine",
             score_agg_func="mean",
+            normalize_scores=False,
         ),
     ),
     assets=flex_cfg(
@@ -2700,11 +2785,12 @@ $chunk_text""",
 """_"""
 
 __pdoc__["knowledge"] = Sub(
-    """Sub-config with settings applied across `vectorbtpro.utils.knowledge`.
+    """Sub-configuration with settings applied across `vectorbtpro.utils.knowledge`.
 
 ```python
 ${config_doc}
-```"""
+```
+"""
 )
 
 _settings["knowledge"] = knowledge
@@ -2714,7 +2800,12 @@ _settings["knowledge"] = knowledge
 
 
 class SettingsConfig(Config):
-    """Extends `vectorbtpro.utils.config.Config` for global settings."""
+    """Class representing a global settings configuration.
+
+    Args:
+        *args: Positional arguments for `vectorbtpro.utils.config.Config`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Config`.
+    """
 
     def __init__(
         self,
@@ -2734,44 +2825,75 @@ class SettingsConfig(Config):
         Config.__init__(self, *args, options_=options_, **kwargs)
 
     def register_template(self, theme: str) -> None:
-        """Register template of a theme."""
+        """Register the template for the specified theme.
+
+        Args:
+            theme (str): Name of the theme for which to register the template.
+
+        Returns:
+            None
+        """
         if check_installed("plotly"):
             import plotly.io as pio
             import plotly.graph_objects as go
 
-            template_path = self["plotting"]["themes"][theme]["path"]
-            if template_path is None:
-                raise ValueError(f"Must provide template path for the theme '{theme}'")
-            if template_path.startswith("__name__/"):
-                template_path = template_path.replace("__name__/", "")
-                template = Config(json.loads(pkgutil.get_data(__name__, template_path)))
-            else:
-                with open(template_path, "r") as f:
-                    template = Config(json.load(f))
+            template_name = self["plotting"]["themes"][theme]["template_name"]
+            if template_name is None:
+                raise ValueError(f"Must provide template name for the theme '{theme}'")
+            color_map = self["plotting"]["themes"][theme]["color_map"]
+            template = pio.templates[template_name].to_plotly_json()
+            if len(color_map) > 0:
+                template_dumps = json.dumps(template)
+                for k, v in color_map.items():
+                    template_dumps = template_dumps.replace(k, v)
+                template = json.loads(template_dumps)
             pio.templates["vbt_" + theme] = go.layout.Template(template)
 
     def register_templates(self) -> None:
-        """Register templates of all themes."""
+        """Register templates for all available themes.
+
+        Returns:
+            None
+        """
         for theme in self["plotting"]["themes"]:
             self.register_template(theme)
 
     def set_theme(self, theme: str) -> None:
-        """Set default theme."""
+        """Set the default theme and update plotting configuration.
+
+        Args:
+            theme (str): Name of the theme to apply.
+
+        Returns:
+            None
+        """
         self.register_template(theme)
         self["plotting"]["color_schema"].update(self["plotting"]["themes"][theme]["color_schema"])
         self["plotting"]["layout"]["template"] = "vbt_" + theme
 
     def reset_theme(self) -> None:
-        """Reset to default theme."""
+        """Reset the plotting theme to the default setting.
+
+        Returns:
+            None
+        """
         self.set_theme(self["plotting"]["default_theme"])
 
     def substitute_sub_config_docs(self, __pdoc__: dict, prettify_kwargs: tp.KwargsLike = None) -> None:
-        """Substitute templates in sub-config docs."""
+        """Substitute template placeholders in sub-config documentation strings.
+
+        Args:
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
+            prettify_kwargs (KwargsLike): Keyword arguments for customizing template substitution.
+
+        Returns:
+            None
+        """
         if prettify_kwargs is None:
             prettify_kwargs = {}
         for k, v in __pdoc__.items():
             if k in self:
-                config_doc = self[k].prettify(**prettify_kwargs.get(k, {}))
+                config_doc = self[k].prettify_doc(**prettify_kwargs.get(k, {}))
                 __pdoc__[k] = substitute_templates(
                     v,
                     context=dict(config_doc=config_doc),
@@ -2779,9 +2901,15 @@ class SettingsConfig(Config):
                 )
 
     def get(self, key: tp.PathLikeKey, default: tp.Any = MISSING) -> tp.Any:
-        """Get setting(s) under a path.
+        """Get settings using a path-like key.
 
-        See `vectorbtpro.utils.search_.get_pathlike_key` for path format."""
+        Args:
+            key (PathLikeKey): Path-like key identifying the setting(s) to retrieve.
+            default (Any): Default value to return if the key is not found.
+
+        Returns:
+            Any: Value associated with the specified key, or the default value if not found.
+        """
         from vectorbtpro.utils.search_ import get_pathlike_key
 
         try:
@@ -2792,9 +2920,16 @@ class SettingsConfig(Config):
             return default
 
     def set(self, key: tp.PathLikeKey, value: tp.Any, default_config_type: tp.Type[Config] = flex_cfg) -> None:
-        """Set setting(s) under a path.
+        """Set settings using a path-like key.
 
-        See `vectorbtpro.utils.search_.get_pathlike_key` for path format."""
+        Args:
+            key (PathLikeKey): Path-like key identifying where to set the setting.
+            value (Any): Value to assign at the specified key.
+            default_config_type (Type[Config]): Configuration type to use when creating intermediate settings.
+
+        Returns:
+            None
+        """
         from vectorbtpro.utils.search_ import resolve_pathlike_key
 
         tokens = resolve_pathlike_key(key)
@@ -2822,9 +2957,7 @@ class SettingsConfig(Config):
 
 
 settings = SettingsConfig(_settings)
-"""Global settings config.
-
-Combines all sub-configs defined in this module."""
+"""Global settings configuration that aggregates all sub-configurations defined in this module."""
 
 settings_name = os.environ.get("VBT_SETTINGS_NAME", "vbt")
 if "VBT_SETTINGS_PATH" in os.environ:

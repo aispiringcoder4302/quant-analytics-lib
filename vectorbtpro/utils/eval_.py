@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for evaluation and compilation."""
+"""Module providing utilities for evaluation and compilation."""
 
 import ast
 import builtins
@@ -25,9 +25,17 @@ __all__ = [
 
 
 def evaluate(expr: str, context: tp.KwargsLike = None) -> tp.Any:
-    """Evaluate one to multiple lines of expression.
+    """Evaluate one or multiple lines of Python code and return the result of the final expression.
 
-    Returns the result of the last line."""
+    Args:
+        expr (str): Expression string.
+
+            Must contain valid Python code and can be single-line or multi-line.
+        context (KwargsLike): Dictionary representing the execution context.
+
+    Returns:
+        Any: Result of evaluating the final expression.
+    """
     expr = inspect.cleandoc(expr)
     if context is None:
         context = {}
@@ -41,7 +49,14 @@ def evaluate(expr: str, context: tp.KwargsLike = None) -> tp.Any:
 
 
 def get_symbols(table: symtable.SymbolTable) -> tp.List[symtable.Symbol]:
-    """Get symbols from a symbol table recursively."""
+    """Recursively retrieve all symbols from a symbol table.
+
+    Args:
+        table (symtable.SymbolTable): Symbol table to traverse.
+
+    Returns:
+        List[symtable.Symbol]: A list of symbols found in the table and its child tables.
+    """
     symbols = []
     children = {child.get_name(): child for child in table.get_children()}
     for symbol in table.get_symbols():
@@ -53,7 +68,16 @@ def get_symbols(table: symtable.SymbolTable) -> tp.List[symtable.Symbol]:
 
 
 def get_free_vars(expr: str) -> tp.List[str]:
-    """Parse the code and retrieve all free variables, excluding built-in names."""
+    """Parse the provided code and return free variable names, excluding built-in names.
+
+    Args:
+        expr (str): Expression string.
+
+            Must contain valid Python code and can be single-line or multi-line.
+
+    Returns:
+        List[str]: A list of free variable names found in the code.
+    """
     expr = inspect.cleandoc(expr)
     global_table = symtable.symtable(expr, "<string>", "exec")
     symbols = get_symbols(global_table)
@@ -74,10 +98,20 @@ def get_free_vars(expr: str) -> tp.List[str]:
 
 
 class Evaluable(Base):
-    """Abstract class for instances that can be evaluated."""
+    """Abstract class for objects that can be evaluated.
+
+    This class provides an interface to check whether an instance's evaluation id meets a given evaluation id.
+    """
 
     def meets_eval_id(self, eval_id: tp.Optional[tp.Hashable]) -> bool:
-        """Return whether the evaluation id of the instance meets the global evaluation id."""
+        """Return whether the instance's evaluation id matches the provided evaluation id.
+
+        Args:
+            eval_id (Optional[Hashable]): Evaluation identifier.
+
+        Returns:
+            bool: True if the instance's evaluation id satisfies the given evaluation id, False otherwise.
+        """
         if self.eval_id is not None and eval_id is not None:
             if checks.is_complex_sequence(self.eval_id):
                 if eval_id not in self.eval_id:

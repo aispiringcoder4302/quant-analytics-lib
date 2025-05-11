@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `OHLCSTCX`."""
+"""Module providing the `OHLCSTCX` class for generating stop signals based on OHLC data."""
 
 from vectorbtpro.signals.factory import SignalFactory
 from vectorbtpro.signals.generators.ohlcstx import ohlcstx_config, ohlcstx_func_config, _bind_ohlcstx_plot
@@ -34,12 +34,15 @@ OHLCSTCX = SignalFactory(
 
 
 class _OHLCSTCX(OHLCSTCX):
-    """Exit signal generator based on OHLC and stop values.
+    """Class representing a chained exit signal generator based on OHLC data and stop values.
 
-    Generates chain of `new_entries` and `exits` based on `entries` and
-    `vectorbtpro.signals.nb.ohlc_stop_place_nb`.
+    Generates a chain of `new_entries` and `exits` derived from input `entries`.
 
-    See `OHLCSTX` for notes on parameters."""
+    See:
+        * `OHLCSTCX.run` for the main entry point.
+        * `vectorbtpro.signals.nb.ohlc_stop_place_nb` for details on the exit placement.
+        * `vectorbtpro.signals.generators.ohlcstx.OHLCSTX` for parameter details.
+    """
 
     plot = _bind_ohlcstx_plot(OHLCSTCX, "new_entries")
 

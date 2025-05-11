@@ -8,6 +8,12 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
+"""Module providing version and release information for vectorbtpro.
+
+This module attempts to read the version from the project's pyproject.toml file,
+and if unsuccessful, it falls back on using `importlib.metadata` for package version detection.
+"""
+
 try:
     try:
         import tomllib

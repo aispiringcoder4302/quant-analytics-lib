@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FSTD`."""
+"""Module defining the `FSTD` generator class for the future standard deviation."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -28,14 +28,29 @@ FSTD = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype", "wait"],
     output_names=["fstd"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        fstd=dict(
+            doc="Future standard deviation series.",
+        ),
+    ),
 ).with_apply_func(
     nb.future_std_nb,
     kwargs_as_args=["minp", "adjust", "ddof"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             post_index_func=lambda index: index.str.lower(),
-        )
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
+        ),
+        wait=dict(
+            doc="Number of periods to wait before calculating the future standard deviation.",
+        ),
     ),
     window=14,
     wtype="simple",
@@ -47,26 +62,38 @@ FSTD = IndicatorFactory(
 
 
 class _FSTD(FSTD):
-    """Look-ahead indicator based on `vectorbtpro.labels.nb.future_std_nb`."""
+    """Class representing the look-ahead future standard deviation generator.
+
+    See:
+        * `FSTD.run` for the main entry point.
+        * `vectorbtpro.labels.nb.future_std_nb` for the underlying implementation.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         fstd_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `FSTD.fstd`.
+        """Plot the `FSTD.fstd` indicator.
 
         Args:
-            column (str): Name of the column to plot.
-            fstd_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FSTD.fstd`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            fstd_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FSTD.fstd`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated figure with the `FSTD.fstd` indicator plotted.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.FSTD.run(ohlcv['Close']).plot().show()
             ```
@@ -79,7 +106,7 @@ class _FSTD(FSTD):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

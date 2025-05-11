@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `SUPERTREND`."""
+"""Module defining the `SUPERTREND` class for calculating the Supertrend indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators import nb
@@ -28,15 +28,59 @@ SUPERTREND = IndicatorFactory(
     input_names=["high", "low", "close"],
     param_names=["period", "multiplier"],
     output_names=["trend", "direction", "long", "short"],
-).with_apply_func(nb.supertrend_nb, period=7, multiplier=3)
+    attr_settings=dict(
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        close=dict(
+            doc="Close price series.",
+        ),
+        trend=dict(
+            doc="Supertrend trend series.",
+        ),
+        direction=dict(
+            doc="Supertrend direction series.",
+        ),
+        long=dict(
+            doc="Supertrend long signal series.",
+        ),
+        short=dict(
+            doc="Supertrend short signal series.",
+        ),
+    ),
+).with_apply_func(
+    nb.supertrend_nb, 
+    param_settings=dict(
+        period=dict(
+            doc="Period for the Supertrend calculation.",
+        ),
+        multiplier=dict(
+            doc="Multiplier for the ATR calculation.",
+        ),
+    ),
+    period=7, 
+    multiplier=3,
+)
 
 
 class _SUPERTREND(SUPERTREND):
-    """Supertrend indicator."""
+    """Class representing the supertrend indicator.
+
+    The supertrend indicator is a trend-following overlay that appears directly on price charts,
+    providing clear buy and sell signals based on the underlying asset's price action and volatility.
+
+    See:
+        * `SUPERTREND.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.supertrend_nb` for the underlying implementation.
+        * https://www.investopedia.com/supertrend-indicator-7976167 for the definition of the supertrend indicator.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         superl_trace_kwargs: tp.KwargsLike = None,
@@ -45,19 +89,26 @@ class _SUPERTREND(SUPERTREND):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `SUPERTREND.long` and `SUPERTREND.short` against `SUPERTREND.close`.
+        """Plot the long and short signals of the Supertrend indicator, and optionally the close prices.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `SUPERTREND.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `SUPERTREND.close`.
-            superl_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `SUPERTREND.long`.
-            supers_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `SUPERTREND.short`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_close (bool): Whether to plot the close price.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SUPERTREND.close`.
+            superl_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SUPERTREND.long`.
+            supers_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SUPERTREND.short`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Figure containing the plotted indicator traces.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.SUPERTREND.run(ohlcv['High'], ohlcv['Low'], ohlcv['Close']).plot().show()
             ```
@@ -70,7 +121,7 @@ class _SUPERTREND(SUPERTREND):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

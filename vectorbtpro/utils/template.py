@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for working with templates."""
+"""Module providing utilities for working with templates.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.template`.
+"""
 
 from string import Template
 
@@ -44,10 +48,11 @@ class CustomTemplate(Evaluable, DefineMixin):
     strict: tp.Optional[bool] = define.field(default=None)
     """Whether to raise an error if processing template fails.
 
-    If not None, overrides `strict` passed by `substitute_templates`."""
+    If not None, overrides `strict` passed by `substitute_templates`.
+    """
 
     context_merge_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `vectorbtpro.utils.config.merge_dicts`."""
+    """Keyword arguments for `vectorbtpro.utils.config.merge_dicts`."""
 
     eval_id: tp.Optional[tp.MaybeSequence[tp.Hashable]] = define.field(default=None)
     """One or more identifiers at which to evaluate this instance."""
@@ -57,10 +62,21 @@ class CustomTemplate(Evaluable, DefineMixin):
         context: tp.KwargsLike = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Kwargs:
-        """Resolve `CustomTemplate.context`.
+        """Return a merged context dictionary by combining the default context from
+        `vectorbtpro._settings.template`, the instance context, and the provided `context`.
 
-        Merges `context` in `vectorbtpro._settings.template`, `CustomTemplate.context`, and `context`.
-        Automatically appends `eval_id` and `from vectorbtpro import *`."""
+        Also, append `eval_id` and import entries from `vectorbtpro.imported_star` if available.
+
+        Args:
+            context (KwargsLike): Additional context to merge.
+            eval_id (Optional[Hashable]): Evaluation identifier.
+
+        Returns:
+            Kwargs: Merged context mapping.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.template`.
+        """
         from vectorbtpro._settings import settings
 
         template_cfg = settings["template"]
@@ -79,7 +95,7 @@ class CustomTemplate(Evaluable, DefineMixin):
         if "eval_id" not in new_context:
             new_context["eval_id"] = eval_id
         try:
-            for k, v in vbt.imported_stuff.items():
+            for k, v in vbt.imported_star.items():
                 if k not in new_context:
                     new_context[k] = v
         except AttributeError:
@@ -87,9 +103,18 @@ class CustomTemplate(Evaluable, DefineMixin):
         return new_context
 
     def resolve_strict(self, strict: tp.Optional[bool] = None) -> bool:
-        """Resolve `CustomTemplate.strict`.
+        """Return the resolved strict flag, combining the provided `strict` argument,
+        the instance setting, and the global default from `vectorbtpro._settings.template`.
 
-        If `strict` is None, uses `strict` in `vectorbtpro._settings.template`."""
+        Args:
+            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
+
+        Returns:
+            bool: True if strict mode is enabled, False otherwise.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.template`.
+        """
         if strict is None:
             strict = self.strict
         if strict is None:
@@ -101,7 +126,14 @@ class CustomTemplate(Evaluable, DefineMixin):
         return strict
 
     def get_context_vars(self) -> tp.List[str]:
-        """Get context variables."""
+        """Return a list of variable names extracted from the template.
+
+        Returns:
+            List[str]: Names of the placeholders in the template.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def substitute(
@@ -110,17 +142,30 @@ class CustomTemplate(Evaluable, DefineMixin):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Abstract method to substitute the template `CustomTemplate.template` using
-        the context from merging `CustomTemplate.context` and `context`."""
+        """Perform template substitution by merging the instance context with the provided
+        `context` and processing `CustomTemplate.template`.
+
+        Args:
+            context (KwargsLike): Additional context mapping for substitution.
+            strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
+            eval_id (Optional[Hashable]): Evaluation identifier.
+
+        Returns:
+            Any: Result of the template substitution.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
 
 class Sub(CustomTemplate):
-    """Class for substituting parts of a template string with the respective values from `context`.
+    """Class for substituting placeholders in a template string using a provided context mapping.
 
-    Uses `string.Template.substitute`.
+    Uses `string.Template.substitute` to replace placeholders with corresponding values.
 
-    Always returns a string."""
+    Returns a new string upon successful substitution, or the original instance if substitution is skipped or fails.
+    """
 
     def get_context_vars(self) -> tp.List[str]:
         tmpl = Template(self.template)
@@ -140,7 +185,6 @@ class Sub(CustomTemplate):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Substitute parts of `Sub.template` as a regular template."""
         if not self.meets_eval_id(eval_id):
             return self
         context = self.resolve_context(context=context, eval_id=eval_id)
@@ -155,11 +199,10 @@ class Sub(CustomTemplate):
 
 
 class SafeSub(CustomTemplate):
-    """Class for substituting parts of a template string with the respective values from `context`.
+    """Class for performing safe placeholder substitution in a template string using a provided context mapping.
 
-    Uses `string.Template.safe_substitute`.
-
-    Always returns a string."""
+    Uses `string.Template.safe_substitute` to replace placeholders, leaving unmatched placeholders unchanged.
+    """
 
     def get_context_vars(self) -> tp.List[str]:
         tmpl = Template(self.template)
@@ -179,7 +222,6 @@ class SafeSub(CustomTemplate):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Substitute parts of `Sub.template` as a regular template."""
         if not self.meets_eval_id(eval_id):
             return self
         context = self.resolve_context(context=context, eval_id=eval_id)
@@ -194,7 +236,7 @@ class SafeSub(CustomTemplate):
 
 
 class Rep(CustomTemplate):
-    """Class for replacing a template with the respective value from `context`."""
+    """Class for replacing a template key with its corresponding value from a context mapping."""
 
     def get_context_vars(self) -> tp.List[str]:
         return [self.template]
@@ -205,7 +247,6 @@ class Rep(CustomTemplate):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Replace `Rep.template` as a key."""
         if not self.meets_eval_id(eval_id):
             return self
         context = self.resolve_context(context=context, eval_id=eval_id)
@@ -221,7 +262,7 @@ class Rep(CustomTemplate):
 
 class RepEval(CustomTemplate):
     """Class for evaluating a template expression using `vectorbtpro.utils.eval_.evaluate`
-    with `context` used as locals."""
+    with a provided context mapping as local variables."""
 
     def get_context_vars(self) -> tp.List[str]:
         return get_free_vars(self.template)
@@ -232,7 +273,6 @@ class RepEval(CustomTemplate):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Evaluate `RepEval.template` as an expression."""
         if not self.meets_eval_id(eval_id):
             return self
         context = self.resolve_context(context=context, eval_id=eval_id)
@@ -247,7 +287,7 @@ class RepEval(CustomTemplate):
 
 
 class RepFunc(CustomTemplate):
-    """Class for calling a template function with argument names from `context`."""
+    """Class for executing a function provided as a template using parameters extracted from a context mapping."""
 
     def get_context_vars(self) -> tp.List[str]:
         return get_func_arg_names(self.template)
@@ -258,7 +298,6 @@ class RepFunc(CustomTemplate):
         strict: tp.Optional[bool] = None,
         eval_id: tp.Optional[tp.Hashable] = None,
     ) -> tp.Any:
-        """Call `RepFunc.template` as a function."""
         if not self.meets_eval_id(eval_id):
             return self
         context = self.resolve_context(context=context, eval_id=eval_id)
@@ -279,11 +318,24 @@ class RepFunc(CustomTemplate):
 
 
 def has_templates(obj: tp.Any, **kwargs) -> tp.Any:
-    """Check if the object has any templates.
+    """Check whether the object contains any template instances.
 
-    Uses `vectorbtpro.utils.search_.contains_in_obj`.
+    This function recursively searches for instances of `CustomTemplate` or `Template`
+    within the provided object using `vectorbtpro.utils.search_.contains_in_obj`.
 
-    Default can be overridden with `search_kwargs` under `vectorbtpro._settings.template`."""
+    The default search behavior can be customized by passing additional keyword arguments
+    that merge with `search_kwargs` from `vectorbtpro._settings.template`.
+
+    Args:
+        obj (Any): Object to search for template instances.
+        **kwargs: Additional parameters to override default search settings.
+
+    Returns:
+        Any: Object containing template instances, or None if none are found.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.template`.
+    """
     from vectorbtpro._settings import settings
 
     template_cfg = settings["template"]
@@ -303,15 +355,34 @@ def substitute_templates(
     eval_id: tp.Optional[tp.Hashable] = None,
     **kwargs,
 ) -> tp.Any:
-    """Traverses the object recursively and, if any template found, substitutes it using a context.
+    """Substitute template instances within the object using a context.
 
-    Uses `vectorbtpro.utils.search_.find_and_replace_in_obj`.
+    This function recursively traverses the input object and replaces any instance of
+    `CustomTemplate` or `Template` with its substituted value.
 
-    If `strict` is True, raises an error if processing template fails. Otherwise, returns the original template.
+    For `CustomTemplate`, the substitution includes `context`, `strict`, and `eval_id`,
+    while for `Template` it uses `context` only.
 
-    Default can be overridden with `search_kwargs` under `vectorbtpro._settings.template`.
+    If `strict` is True, the function raises an error on substitution failure; otherwise,
+    it returns the original template instance.
 
-    Usage:
+    The default search behavior can be customized by passing additional keyword arguments
+    that merge with `search_kwargs` from `vectorbtpro._settings.template`.
+
+    Args:
+        obj (Any): Object to traverse for template substitution.
+        context (KwargsLike): Context for replacing template placeholders.
+        strict (Optional[bool]): Flag indicating whether to raise an error if evaluation fails.
+        eval_id (Optional[Hashable]): Evaluation identifier.
+        **kwargs: Additional parameters to override default search settings.
+
+    Returns:
+        Any: Object with template instances replaced by their substituted values.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.template`.
+
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 

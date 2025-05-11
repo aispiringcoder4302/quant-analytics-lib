@@ -8,12 +8,12 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Adapter class for QuantStats.
+"""Module providing an adapter for integrating QuantStats with vectorbtpro returns.
 
 !!! note
     Accessors do not utilize caching.
 
-We can access the adapter from `ReturnsAccessor`:
+Access the adapter via `ReturnsAccessor`:
 
 ```pycon
 >>> from vectorbtpro import *
@@ -27,20 +27,19 @@ We can access the adapter from `ReturnsAccessor`:
 0.0011582111228735541
 ```
 
-Which is the same as:
+This is equivalent to:
 
 ```pycon
 >>> qs.stats.r_squared(rets, bm_returns)
 ```
 
-So why not just using `qs.stats`?
+Using the adapter offers two advantages:
 
-First, we can define all parameters such as benchmark returns once and avoid passing them repeatedly
-to every function. Second, vectorbt automatically translates parameters passed to `ReturnsAccessor`
-for the use in quantstats.
+* Parameters such as benchmark returns can be defined once rather than passed to every function.
+* Vectorbtpro automatically translates parameters from `ReturnsAccessor` for QuantStats functions.
 
 ```pycon
->>> # Defaults that vectorbt understands
+>>> # Defaults that vectorbtpro understands
 >>> ret_acc = rets.vbt.returns(
 ...     bm_returns=bm_returns,
 ...     freq='d',
@@ -69,14 +68,10 @@ for the use in quantstats.
 -1.9158923252075455
 ```
 
-The adapter automatically passes the returns to the particular function.
-It also merges the defaults defined in the settings, the defaults passed to `ReturnsAccessor`,
-and the defaults passed to `QSAdapter` itself, and matches them with the argument names listed
-in the function's signature.
-
-For example, the `periods` argument defaults to the annualization factor
-`ReturnsAccessor.ann_factor`, which itself is based on the `freq` argument. This makes the results
-produced by quantstats and vectorbt at least somewhat similar.
+For example, defaults defined in settings, in `ReturnsAccessor`, and in `QSAdapter` itself are merged
+and matched with the function's signature. In particular, the `periods` parameter defaults to
+`ReturnsAccessor.ann_factor`, which is based on the `freq` argument, aligning the results from
+QuantStats and vectorbtpro.
 
 ```pycon
 >>> vbt.settings.wrapping['freq'] = 'h'
@@ -89,7 +84,7 @@ produced by quantstats and vectorbt at least somewhat similar.
 -9.38160953971508
 ```
 
-We can still override any argument by overriding its default or by passing it directly to the function:
+Arguments can still be overridden by modifying defaults or by providing them directly:
 
 ```pycon
 >>> rets.vbt.returns.qs(defaults=dict(periods=252)).sharpe()
@@ -123,7 +118,23 @@ __all__ = [
 
 
 def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.Type[tp.T]:
-    """Class decorator to attach quantstats methods."""
+    """Attach QuantStats methods to a class.
+
+    This decorator iterates over functions in QuantStats modules
+    (`utils`, `stats`, `plots`, and `reports`) and attaches them as methods
+    to the decorated class if they accept a `returns` argument.
+
+    Args:
+        cls (Type[T]): Class to which QuantStats methods will be attached.
+        replace_signature (bool): Whether to replace the method signature with that of the
+            corresponding QuantStats function.
+
+    Returns:
+        Type[T]: The decorated class with QuantStats methods attached.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.qs_adapter`.
+    """
     import quantstats as qs
 
     checks.assert_subclass_of(cls, "QSAdapter")
@@ -142,7 +153,7 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
                     self,
                     *,
                     _func: tp.Callable = qs_func,
-                    column: tp.Optional[tp.Label] = None,
+                    column: tp.Optional[tp.Column] = None,
                     **kwargs,
                 ) -> tp.Any:
                     func_arg_names = get_func_arg_names(_func)
@@ -237,7 +248,13 @@ QSAdapterT = tp.TypeVar("QSAdapterT", bound="QSAdapter")
 
 @attach_qs_methods
 class QSAdapter(Configured):
-    """Adapter class for quantstats."""
+    """Adapter class for quantstats.
+
+    Args:
+        returns_acc (ReturnsAccessor): Returns accessor instance.
+        defaults (KwargsLike): Dictionary of default parameters.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
+    """
 
     def __init__(self, returns_acc: ReturnsAccessor, defaults: tp.KwargsLike = None, **kwargs) -> None:
         checks.assert_instance_of(returns_acc, ReturnsAccessor)
@@ -248,26 +265,53 @@ class QSAdapter(Configured):
         Configured.__init__(self, returns_acc=returns_acc, defaults=defaults, **kwargs)
 
     def __call__(self: QSAdapterT, **kwargs) -> QSAdapterT:
-        """Allows passing arguments to the initializer."""
+        """Call the instance to update its configuration.
 
+        Args:
+            **kwargs: Keyword arguments for `QSAdapter.replace`.
+
+        Returns:
+            QSAdapter: New instance with updated configuration.
+        """
         return self.replace(**kwargs)
 
     @property
     def returns_acc(self) -> ReturnsAccessor:
-        """Returns accessor."""
+        """Accessor instance.
+
+        This is the main entry point for accessing returns-related methods and properties.
+
+        Returns:
+            ReturnsAccessor: Returns accessor instance.
+        """
         return self._returns_acc
 
     @property
-    def defaults_mapping(self) -> tp.Dict:
-        """Common argument names in quantstats mapped to `ReturnsAccessor.defaults`."""
+    def defaults_mapping(self) -> tp.Dict[str, str]:
+        """Mapping of common quantstats argument names to
+        `vectorbtpro.returns.accessors.ReturnsAccessor.defaults`.
+
+        This mapping is used to translate parameters from `ReturnsAccessor` to
+        QuantStats functions.
+
+        Returns:
+            Dict[str, str]: A dictionary mapping common argument names to their corresponding defaults.
+        """
         return dict(rf="risk_free", rolling_period="window")
 
     @property
     def defaults(self) -> tp.Kwargs:
-        """Defaults for `QSAdapter`.
+        """Merged default parameters for `QSAdapter`.
 
-        Merges `defaults` from `vectorbtpro._settings.qs_adapter`, `returns_acc.defaults`
-        (with adapted naming), and `defaults` from `QSAdapter.__init__`."""
+        Merges defaults from `vectorbtpro._settings.qs_adapter`, mapped values from
+        `vectorbtpro.returns.accessors.ReturnsAccessor.defaults`, and user-provided defaults.
+
+        Returns:
+            Kwargs: Merged default settings for plots.
+
+        !!! info
+            For default settings, see `defaults` in `vectorbtpro._settings.qs_adapter`.
+        """
         from vectorbtpro._settings import settings
 
         qs_adapter_defaults_cfg = settings["qs_adapter"]["defaults"]

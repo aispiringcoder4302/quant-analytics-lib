@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base classes and functions for resampling."""
+"""Module providing base classes and functions for resampling."""
 
 import numpy as np
 import pandas as pd
@@ -30,18 +30,26 @@ ResamplerT = tp.TypeVar("ResamplerT", bound="Resampler")
 
 
 class Resampler(Configured):
-    """Class that exposes methods to resample index.
+    """Class for resampling an index.
 
     Args:
-        source_index (index_like): Index being resampled.
-        target_index (index_like): Index resulted from resampling.
-        source_freq (frequency_like or bool): Frequency or date offset of the source index.
+        source_index (IndexLike): Source index to be resampled.
+        target_index (IndexLike): Target index produced by resampling.
+        source_freq (Union[None, bool, FrequencyLike]): Frequency of the source index 
+            (e.g., "daily", "15 min", "index_mean").
 
-            Set to False to force-set the frequency to None.
-        target_freq (frequency_like or bool): Frequency or date offset of the target index.
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
-            Set to False to force-set the frequency to None.
-        silence_warnings (bool): Whether to silence all warnings."""
+            Set to False to disable automatic frequency inference.
+        target_freq (Union[None, bool, FrequencyLike]): Frequency of the target index 
+            (e.g., "daily", "15 min", "index_mean").
+
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
+
+            Set to False to disable automatic frequency inference.
+        silence_warnings (bool): Flag to suppress warning messages.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
+    """
 
     def __init__(
         self,
@@ -85,6 +93,61 @@ class Resampler(Configured):
             **kwargs,
         )
 
+    @property
+    def source_index(self) -> tp.Index:
+        """Source index used for resampling.
+
+        Returns:
+            Index: Source index.
+        """
+        return self._source_index
+
+    @property
+    def target_index(self) -> tp.Index:
+        """Target index produced by resampling.
+
+        Returns:
+            Index: Target index.
+        """
+        return self._target_index
+
+    @property
+    def source_freq(self) -> tp.AnyPandasFrequency:
+        """Source index frequency or date offset.
+
+        Returns:
+            AnyPandasFrequency: Frequency of the source index.
+        """
+        return self._source_freq
+
+    @property
+    def target_freq(self) -> tp.AnyPandasFrequency:
+        """Target index frequency or date offset.
+
+        Returns:
+            AnyPandasFrequency: Frequency of the target index.
+        """
+        return self._target_freq
+
+    @property
+    def silence_warnings(self) -> bool:
+        """Flag indicating whether warnings are silenced.
+
+        Returns:
+            bool: True if warnings are silenced, False otherwise.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.resampling`.
+        """
+        from vectorbtpro._settings import settings
+
+        resampling_cfg = settings["resampling"]
+
+        silence_warnings = self._silence_warnings
+        if silence_warnings is None:
+            silence_warnings = resampling_cfg["silence_warnings"]
+        return silence_warnings
+
     @classmethod
     def from_pd_resampler(
         cls: tp.Type[ResamplerT],
@@ -92,8 +155,18 @@ class Resampler(Configured):
         source_freq: tp.Optional[tp.FrequencyLike] = None,
         silence_warnings: bool = True,
     ) -> ResamplerT:
-        """Build `Resampler` from
-        [pandas.core.resample.Resampler](https://pandas.pydata.org/docs/reference/resampling.html).
+        """Create a `Resampler` instance from a `pandas.core.resample.Resampler` object.
+
+        Args:
+            pd_resampler (pandas.core.resample.Resampler): Pandas resampler object.
+            source_freq (Optional[FrequencyLike]): Frequency of the source index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            silence_warnings (bool): Flag to suppress warning messages.
+
+        Returns:
+            Resampler: New `Resampler` instance.
         """
         target_index = pd_resampler.count().index
         return cls(
@@ -113,8 +186,20 @@ class Resampler(Configured):
         silence_warnings: bool = True,
         **kwargs,
     ) -> ResamplerT:
-        """Build `Resampler` from
-        [pandas.DataFrame.resample](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html).
+        """Create a `Resampler` instance using the `pd.Series.resample` method.
+
+        Args:
+            source_index (IndexLike): Source index to be resampled.
+            *args: Positional arguments for `pd.Series.resample`.
+            source_freq (Optional[FrequencyLike]): Frequency of the source index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            silence_warnings (bool): Flag to suppress warning messages.
+            **kwargs: Keyword arguments for `pd.Series.resample`.
+
+        Returns:
+            Resampler: New `Resampler` instance.
         """
         pd_resampler = pd.Series(index=source_index, dtype=object).resample(*args, **kwargs)
         return cls.from_pd_resampler(pd_resampler, source_freq=source_freq, silence_warnings=silence_warnings)
@@ -128,7 +213,21 @@ class Resampler(Configured):
         silence_warnings: tp.Optional[bool] = None,
         **kwargs,
     ) -> ResamplerT:
-        """Build `Resampler` from `vectorbtpro.utils.datetime_.date_range`."""
+        """Create a `Resampler` instance using `vectorbtpro.utils.datetime_.date_range`.
+
+        Args:
+            source_index (IndexLike): Source index to be resampled.
+            *args: Positional arguments for `vectorbtpro.utils.datetime_.date_range`.
+            source_freq (Optional[FrequencyLike]): Frequency of the source index 
+                (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.date_range`.
+
+        Returns:
+            Resampler: New `Resampler` instance.
+        """
         target_index = dt.date_range(*args, **kwargs)
         return cls(
             source_index=source_index,
@@ -138,40 +237,15 @@ class Resampler(Configured):
             silence_warnings=silence_warnings,
         )
 
-    @property
-    def source_index(self) -> tp.Index:
-        """Index being resampled."""
-        return self._source_index
-
-    @property
-    def target_index(self) -> tp.Index:
-        """Index resulted from resampling."""
-        return self._target_index
-
-    @property
-    def source_freq(self) -> tp.AnyPandasFrequency:
-        """Frequency or date offset of the source index."""
-        return self._source_freq
-
-    @property
-    def target_freq(self) -> tp.AnyPandasFrequency:
-        """Frequency or date offset of the target index."""
-        return self._target_freq
-
-    @property
-    def silence_warnings(self) -> bool:
-        """Frequency or date offset of the target index."""
-        from vectorbtpro._settings import settings
-
-        resampling_cfg = settings["resampling"]
-
-        silence_warnings = self._silence_warnings
-        if silence_warnings is None:
-            silence_warnings = resampling_cfg["silence_warnings"]
-        return silence_warnings
-
     def get_np_source_freq(self, silence_warnings: tp.Optional[bool] = None) -> tp.AnyPandasFrequency:
-        """Frequency or date offset of the source index in NumPy format."""
+        """Convert the source index frequency to NumPy format.
+
+        Args:
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            AnyPandasFrequency: Source index frequency in NumPy format.
+        """
         if silence_warnings is None:
             silence_warnings = self.silence_warnings
 
@@ -192,7 +266,14 @@ class Resampler(Configured):
         return source_freq
 
     def get_np_target_freq(self, silence_warnings: tp.Optional[bool] = None) -> tp.AnyPandasFrequency:
-        """Frequency or date offset of the target index in NumPy format."""
+        """Convert the target index frequency to NumPy format.
+
+        Args:
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            AnyPandasFrequency: Target index frequency in NumPy format.
+        """
         if silence_warnings is None:
             silence_warnings = self.silence_warnings
 
@@ -214,9 +295,15 @@ class Resampler(Configured):
 
     @classmethod
     def get_lbound_index(cls, index: tp.Index, freq: tp.AnyPandasFrequency = None) -> tp.Index:
-        """Get the left bound of a datetime index.
+        """Return the left bound of a datetime index.
 
-        If `freq` is None, calculates the leftmost bound."""
+        Args:
+            index (Index): Datetime index.
+            freq (AnyPandasFrequency): Pandas-friendly frequency used to shift the index.
+
+        Returns:
+            Index: Datetime index representing the calculated left bound.
+        """
         index = dt.prepare_dt_index(index)
         checks.assert_instance_of(index, pd.DatetimeIndex)
         if freq is not None:
@@ -226,9 +313,15 @@ class Resampler(Configured):
 
     @classmethod
     def get_rbound_index(cls, index: tp.Index, freq: tp.AnyPandasFrequency = None) -> tp.Index:
-        """Get the right bound of a datetime index.
+        """Return the right bound of a datetime index.
 
-        If `freq` is None, calculates the rightmost bound."""
+        Args:
+            index (Index): Datetime index.
+            freq (AnyPandasFrequency): Pandas-friendly frequency used to shift the index.
+
+        Returns:
+            Index: Datetime index representing the calculated right bound.
+        """
         index = dt.prepare_dt_index(index)
         checks.assert_instance_of(index, pd.DatetimeIndex)
         if freq is not None:
@@ -238,22 +331,38 @@ class Resampler(Configured):
 
     @cached_property
     def source_lbound_index(self) -> tp.Index:
-        """Get the left bound of the source datetime index."""
+        """Left bound of the source datetime index.
+
+        Returns:
+            Index: Left bound of the source index.
+        """
         return self.get_lbound_index(self.source_index, freq=self.source_freq)
 
     @cached_property
     def source_rbound_index(self) -> tp.Index:
-        """Get the right bound of the source datetime index."""
+        """Right bound of the source datetime index.
+
+        Returns:
+            Index: Right bound of the source index.
+        """
         return self.get_rbound_index(self.source_index, freq=self.source_freq)
 
     @cached_property
     def target_lbound_index(self) -> tp.Index:
-        """Get the left bound of the target datetime index."""
+        """Left bound of the target datetime index.
+
+        Returns:
+            Index: Left bound of the target index.
+        """
         return self.get_lbound_index(self.target_index, freq=self.target_freq)
 
     @cached_property
     def target_rbound_index(self) -> tp.Index:
-        """Get the right bound of the target datetime index."""
+        """Right bound of the target datetime index.
+
+        Returns:
+            Index: Right bound of the target index.
+        """
         return self.get_rbound_index(self.target_index, freq=self.target_freq)
 
     def map_to_target_index(
@@ -264,7 +373,24 @@ class Resampler(Configured):
         jitted: tp.JittedOption = None,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.Union[tp.Array1d, tp.Index]:
-        """See `vectorbtpro.base.resampling.nb.map_to_target_index_nb`."""
+        """Return the mapping from the source index to the target index.
+
+        Args:
+            before (bool): If True, include source indices preceding or equal to the target;
+                otherwise, include those following or equal.
+            raise_missing (bool): If True, raise an error when a source index cannot be mapped; otherwise, assign -1.
+            return_index (bool): Return a Pandas Index if True; otherwise, return a NumPy array.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            Union[Array1d, Index]: The mapped index values.
+
+        See:
+            `vectorbtpro.base.resampling.nb.map_to_target_index_nb`
+        """
         target_freq = self.get_np_target_freq(silence_warnings=silence_warnings)
         func = jit_reg.resolve_option(nb.map_to_target_index_nb, jitted)
         mapped_arr = func(
@@ -292,7 +418,21 @@ class Resampler(Configured):
         return_index: bool = True,
         jitted: tp.JittedOption = None,
     ) -> tp.Union[tp.Array1d, tp.Index]:
-        """See `vectorbtpro.base.resampling.nb.index_difference_nb`."""
+        """Return the index difference mapping between the source and target indices.
+
+        Args:
+            reverse (bool): Reverse the order of indices for difference calculation if True.
+            return_index (bool): Return a Pandas Index if True; otherwise, return a NumPy array.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+
+        Returns:
+            Union[Array1d, Index]: The computed index difference mapping.
+
+        See:
+            `vectorbtpro.base.resampling.nb.index_difference_nb`
+        """
         func = jit_reg.resolve_option(nb.index_difference_nb, jitted)
         if reverse:
             mapped_arr = func(self.target_index.values, self.source_index.values)
@@ -308,10 +448,26 @@ class Resampler(Configured):
         jitted: tp.JittedOption = None,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-        """See `vectorbtpro.base.resampling.nb.map_index_to_source_ranges_nb`.
+        """Return the mapping of source index ranges corresponding to the target index.
 
-        If `Resampler.target_freq` is a date offset, sets is to None and gives a warning.
-        Raises another warning is `target_freq` is None."""
+        Args:
+            before (bool): If True, include source indices preceding or equal to the target; 
+                otherwise, include those following or equal.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            Tuple[Array1d, Array1d]: A tuple with the start and end indices of the source ranges.
+
+        See:
+            `vectorbtpro.base.resampling.nb.map_index_to_source_ranges_nb`
+
+        !!! note
+            If `Resampler.target_freq` is a date offset, it is set to None and a warning is emitted.
+            An additional warning is raised if `target_freq` is None.
+        """
         target_freq = self.get_np_target_freq(silence_warnings=silence_warnings)
         func = jit_reg.resolve_option(nb.map_index_to_source_ranges_nb, jitted)
         return func(
@@ -332,14 +488,31 @@ class Resampler(Configured):
         skip_not_found: bool = False,
         jitted: tp.JittedOption = None,
     ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-        """See `vectorbtpro.base.resampling.nb.map_bounds_to_source_ranges_nb`.
+        """Return the mapping from target index bounds to source index ranges.
 
-        Either `target_lbound_index` or `target_rbound_index` must be set.
-        Set `target_lbound_index` and `target_rbound_index` to 'pandas' to use
-        `Resampler.get_lbound_index` and `Resampler.get_rbound_index` respectively.
-        Also, both allow providing a single datetime string and will automatically broadcast
-        to the `Resampler.target_index`."""
+        Either `target_lbound_index` or `target_rbound_index` must be provided.
 
+        Args:
+            source_index (Optional[IndexLike]): Source datetime index.
+            target_lbound_index (Optional[IndexLike]): Left bound of the target index.
+
+                Set to "pandas" to use `Resampler.get_lbound_index`.
+            target_rbound_index (Optional[IndexLike]): Right bound of the target index.
+
+                Set to "pandas" to use `Resampler.get_rbound_index`.
+            closed_lbound (bool): Indicates if the left bound is inclusive.
+            closed_rbound (bool): Indicates if the right bound is inclusive.
+            skip_not_found (bool): Whether to drop indices that are -1 (not found).
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+
+        Returns:
+            Tuple[Array1d, Array1d]: A pair of arrays representing the mapping from target bounds to source ranges.
+
+        See:
+            `vectorbtpro.base.resampling.nb.map_bounds_to_source_ranges_nb`
+        """
         if not isinstance(cls_or_self, type):
             if target_lbound_index is None and target_rbound_index is None:
                 raise ValueError("Either target_lbound_index or target_rbound_index must be set")
@@ -381,7 +554,21 @@ class Resampler(Configured):
         jitted: tp.JittedOption = None,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.Array1d:
-        """See `vectorbtpro.base.resampling.nb.resample_source_mask_nb`."""
+        """Return a resampled mask for the source index.
+
+        Args:
+            source_mask (ArrayLike): Boolean mask for the source index.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            Array1d: Resampled array corresponding to the source mask.
+
+        See:
+            `vectorbtpro.base.resampling.nb.resample_source_mask_nb`
+        """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
         if silence_warnings is None:
@@ -399,7 +586,31 @@ class Resampler(Configured):
             target_freq,
         )
 
-    def last_before_target_index(self, incl_source: bool = True, jitted: tp.JittedOption = None) -> tp.Array1d:
-        """See `vectorbtpro.base.resampling.nb.last_before_target_index_nb`."""
+    def last_before_target_index(
+        self, 
+        incl_source: bool = True,
+        incl_target: bool = False,
+        jitted: tp.JittedOption = None,
+    ) -> tp.Array1d:
+        """Return the index of the last element before each target index.
+
+        Args:
+            incl_source (bool): Whether to include the original source index in the result.
+            incl_target (bool): Whether to include the target index if it matches a source index.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+
+        Returns:
+            Array1d: Array of indices representing the last element before each target index.
+
+        See:
+            `vectorbtpro.base.resampling.nb.last_before_target_index_nb`
+        """
         func = jit_reg.resolve_option(nb.last_before_target_index_nb, jitted)
-        return func(self.source_index.values, self.target_index.values, incl_source=incl_source)
+        return func(
+            self.source_index.values, 
+            self.target_index.values, 
+            incl_source=incl_source,
+            incl_target=incl_target,
+        )

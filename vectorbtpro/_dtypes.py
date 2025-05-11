@@ -8,15 +8,25 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Default data types for internal use."""
+"""Module providing default data types.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.numpy`.
+"""
 
 from vectorbtpro._settings import settings
 
+__pdoc__ = {}
+
 int_ = settings["numpy"]["int_"]
-"""Default integer data type."""
+"""_"""
+
+__pdoc__["int_"] = """Default integer data type retrieved from `vectorbtpro._settings.numpy`."""
 
 float_ = settings["numpy"]["float_"]
-"""Default floating data type."""
+"""_"""
+
+__pdoc__["float_"] = """Default floating point data type retrieved from `vectorbtpro._settings.numpy`."""
 
 __all__ = [
     "int_",

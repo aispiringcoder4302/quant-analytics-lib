@@ -8,12 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Named tuples and enumerated types for OHLC(V) data.
-
-Defines enums and other schemas for `vectorbtpro.ohlcv`."""
+"""Module providing named tuples and enumerated types for OHLC(V) data."""
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = [
     "PriceFeature",
@@ -37,9 +35,15 @@ PriceFeature = PriceFeatureT()
 
 __pdoc__[
     "PriceFeature"
-] = f"""Price feature.
+] = f"""Price feature enumeration.
+
+Fields:
+    Open: Index for the open price.
+    High: Index for the high price.
+    Low: Index for the low price.
+    Close: Index for the close price.
 
 ```python
-{prettify(PriceFeature)}
+{prettify_doc(PriceFeature)}
 ```
 """

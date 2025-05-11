@@ -8,7 +8,12 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for caching."""
+"""Module providing utilities for caching operations, including clearing Python cache directories
+and bytecode files, and managing cacheable properties and methods.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.caching`.
+"""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.base import Base
@@ -21,8 +26,12 @@ __all__ = [
 ]
 
 
-def clear_pycache():
-    """Clear __pycache__ folders and .pyc files."""
+def clear_pycache() -> None:
+    """Clear `__pycache__` directories and Python bytecode files (.pyc) from the project directory.
+
+    Returns:
+        None
+    """
     import pathlib
 
     for p in pathlib.Path(__file__).parent.parent.rglob("__pycache__"):
@@ -32,12 +41,16 @@ def clear_pycache():
 
 
 class Cacheable(Base):
-    """Class that contains cacheable properties and methods.
+    """Class for managing cacheable properties and methods.
 
-    Required to register `vectorbtpro.utils.decorators.cacheable_property` and
+    Required for registering `vectorbtpro.utils.decorators.cacheable_property` and
     `vectorbtpro.utils.decorators.cacheable_method`.
 
-    See `vectorbtpro.registries.ca_registry` for details on the caching procedure."""
+    See `vectorbtpro.registries.ca_registry` for details on the caching procedure.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
+    """
 
     def __init__(self) -> None:
         from vectorbtpro._settings import settings
@@ -52,8 +65,14 @@ class Cacheable(Base):
 
     @hybrid_method
     def get_ca_setup(cls_or_self) -> tp.Union["CAClassSetup", "CAInstanceSetup"]:
-        """Get instance setup of type `vectorbtpro.registries.ca_registry.CAInstanceSetup` if the instance method
-        was called and class setup of type `vectorbtpro.registries.ca_registry.CAClassSetup` otherwise."""
+        """Retrieve the caching setup for the class or instance.
+
+        If called on an instance, returns a `vectorbtpro.registries.ca_registry.CAInstanceSetup`.
+        If called on a class, returns a `vectorbtpro.registries.ca_registry.CAClassSetup`.
+
+        Returns:
+            Union[CAClassSetup, CAInstanceSetup]: The caching setup corresponding to the caller.
+        """
         from vectorbtpro.registries.ca_registry import CAClassSetup, CAInstanceSetup
 
         if isinstance(cls_or_self, type):

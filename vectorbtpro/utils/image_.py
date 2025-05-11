@@ -8,7 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for images."""
+"""Module providing utility functions for image processing."""
+
+from pathlib import Path
 
 import numpy as np
 
@@ -21,7 +23,15 @@ __all__ = [
 
 
 def hstack_image_arrays(a: tp.Array3d, b: tp.Array3d) -> tp.Array3d:
-    """Stack NumPy images horizontally."""
+    """Horizontally stack two 3D NumPy image arrays with a white background fill.
+
+    Args:
+        a (Array3d): Left image array.
+        b (Array3d): Right image array.
+
+    Returns:
+        Array3d: Combined image with `a` on the left and `b` on the right.
+    """
     h1, w1, d = a.shape
     h2, w2, _ = b.shape
     c = np.full((max(h1, h2), w1 + w2, d), 255, np.uint8)
@@ -31,7 +41,15 @@ def hstack_image_arrays(a: tp.Array3d, b: tp.Array3d) -> tp.Array3d:
 
 
 def vstack_image_arrays(a: tp.Array3d, b: tp.Array3d) -> tp.Array3d:
-    """Stack NumPy images vertically."""
+    """Vertically stack two 3D NumPy image arrays with a white background fill.
+
+    Args:
+        a (Array3d): Top image array.
+        b (Array3d): Bottom image array.
+
+    Returns:
+        Array3d: Combined image with `a` at the top and `b` at the bottom.
+    """
     h1, w1, d = a.shape
     h2, w2, _ = b.shape
     c = np.full((h1 + h2, max(w1, w2), d), 255, np.uint8)
@@ -41,41 +59,47 @@ def vstack_image_arrays(a: tp.Array3d, b: tp.Array3d) -> tp.Array3d:
 
 
 def save_animation(
-    fname: str,
+    fname: tp.PathLike,
     index: tp.Sequence,
     plot_func: tp.Callable,
     *args,
     delta: tp.Optional[int] = None,
     step: int = 1,
     fps: int = 3,
-    writer_kwargs: dict = None,
+    writer_kwargs: tp.KwargsLike = None,
     show_progress: bool = True,
     pbar_kwargs: tp.KwargsLike = None,
     to_image_kwargs: tp.KwargsLike = None,
     **kwargs,
-) -> None:
-    """Save animation to a file.
+) -> tp.Path:
+    """Save an animation to a file by iterating over a provided index.
 
     Args:
-        fname (str): File name.
-        index (sequence): Index to iterate over.
-        plot_func (callable): Plotting function.
+        fname (PathLike): File name or path to save the animation.
+        index (Sequence): Iterable index for generating frames.
+        plot_func (Callable): Plotting function that accepts a slice of `index`, additional
+            positional arguments, and keyword arguments, and returns either a Plotly figure, an image file
+            path (readable by `imageio.imread`), or a NumPy array representing an image.
+        *args: Positional arguments for `plot_func`.
+        delta (Optional[int]): Window size for each iteration.
 
-            Must take subset of `index`, `*args`, and `**kwargs`, and return either a Plotly figure,
-            image that can be read by `imageio.imread`, or a NumPy array.
-        *args: Positional arguments passed to `plot_func`.
-        delta (int): Window size of each iteration.
-        step (int): Step of each iteration.
-        fps (int): Frames per second.
+            Defaults to half the length of `index` if None.
+        step (int): Step size between iterations.
+        fps (int): Frames per second for the animation.
 
-            Will be translated to `duration` by `1000 / fps`.
-        writer_kwargs (dict): Keyword arguments passed to `imageio.get_writer`.
-        show_progress (bool): Whether to show the progress bar.
-        pbar_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`.
-        to_image_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.to_image`.
-        **kwargs: Keyword arguments passed to `plot_func`.
+            Internally converted to a frame duration using `1000 / fps`.
+        writer_kwargs (KwargsLike): Keyword arguments for `imageio.get_writer`.
+        show_progress (bool): Flag indicating whether to display the progress bar.
+        pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-    Usage:
+            See `vectorbtpro.utils.pbar.ProgressBar`.
+        to_image_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Figure.to_image`.
+        **kwargs: Keyword arguments for `plot_func`.
+
+    Returns:
+        Path: Path to the saved animation file.
+
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -99,6 +123,8 @@ def save_animation(
     import plotly.graph_objects as go
     import imageio
 
+    if isinstance(fname, str):
+        fname = Path(fname)
     if writer_kwargs is None:
         writer_kwargs = {}
     if "duration" not in writer_kwargs:
@@ -132,3 +158,5 @@ def save_animation(
                     next_j = index_steps[i + 1]
                     pbar.set_description("{} → {}".format(str(index[next_j]), str(index[next_j + delta - 1])))
                 pbar.update()
+
+    return fname

@@ -8,13 +8,12 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RAND`."""
-
-import numpy as np
+"""Module providing the `RAND` class for generating random entry signals."""
 
 from vectorbtpro.indicators.configs import flex_col_param_config
 from vectorbtpro.signals.factory import SignalFactory
 from vectorbtpro.signals.nb import rand_place_nb
+from vectorbtpro.utils.config import merge_dicts
 
 __all__ = [
     "RAND",
@@ -34,23 +33,31 @@ RAND = SignalFactory(
         pass_params=["n"],
     ),
     param_settings=dict(
-        n=flex_col_param_config,
+        n=merge_dicts(
+            flex_col_param_config,
+            dict(
+                doc="Number of entries to place, as a scalar or an array (per column).",
+            ),
+        ),
     ),
     seed=None,
 )
 
 
 class _RAND(RAND):
-    """Random entry signal generator based on the number of signals.
+    """Class representing a random entry signal generator based on probabilities.
 
-    Generates `entries` based on `vectorbtpro.signals.nb.rand_place_nb`.
+    See:
+        * `RAND.run` for the main entry point.
+        * `vectorbtpro.signals.nb.rand_place_nb` for details on the entry placement.
 
     !!! hint
-        Parameter `n` can be either a single value (per frame) or a NumPy array (per column).
-        To generate multiple combinations, pass it as a list.
+        The parameter `n` may be provided as either a single value (per frame) or a NumPy array (per column).
 
-    Usage:
-        Test three different entry counts values:
+        To create multiple combinations, specify `n` as a list.
+
+    Examples:
+        Test three different entry count values:
 
         ```pycon
         >>> from vectorbtpro import *

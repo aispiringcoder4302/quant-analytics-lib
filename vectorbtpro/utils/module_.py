@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for modules."""
+"""Module providing utilities for modules."""
 
 import importlib
 import importlib.util
@@ -51,18 +51,33 @@ __pdoc__[
 ] = f"""Config for package shortcuts.
 
 ```python
-{package_shortcut_config.prettify()}
+{package_shortcut_config.prettify_doc()}
 ```
 """
 
 
 def get_module(obj: tp.Any) -> ModuleType:
-    """Get module of an object."""
+    """Return the module in which the given object is defined.
+
+    Args:
+        obj (Any): Object whose module is to be obtained.
+
+    Returns:
+        ModuleType: Module where the object is defined.
+    """
     return inspect.getmodule(inspect.unwrap(obj))
 
 
 def is_from_module(obj: tp.Any, module: ModuleType) -> bool:
-    """Return whether `obj` is from module `module`."""
+    """Return True if the provided object is defined in the specified module; otherwise, return False.
+
+    Args:
+        obj (Any): Object to verify.
+        module (ModuleType): Module to check against.
+
+    Returns:
+        bool: True if the object is from the specified module; otherwise, False.
+    """
     mod = get_module(obj)
     return mod is None or mod.__name__ == module.__name__
 
@@ -72,9 +87,16 @@ def list_module_keys(
     whitelist: tp.Optional[tp.List[str]] = None,
     blacklist: tp.Optional[tp.List[str]] = None,
 ) -> tp.List[str]:
-    """List the names of all public functions and classes defined in the module `module_name`.
+    """Return a list of names for all public functions and classes in the specified module.
 
-    Includes the names listed in `whitelist` and excludes the names listed in `blacklist`."""
+    Args:
+        module_or_name (Union[str, ModuleType]): Module or its name to inspect.
+        whitelist (Optional[List[str]]): Additional names to include.
+        blacklist (Optional[List[str]]): Names to exclude from the list.
+
+    Returns:
+        List[str]: A list of public function and class names.
+    """
     if whitelist is None:
         whitelist = []
     if blacklist is None:
@@ -104,9 +126,21 @@ def search_package(
     return_first: bool = False,
     _visited: tp.Optional[tp.Set[str]] = None,
 ) -> tp.Union[None, tp.Any, tp.Dict[str, tp.Any]]:
-    """Search a package.
+    """Search for objects in a package that satisfy a given condition.
 
-    Match function should accept the name of the object and the object itself, and return a boolean."""
+    The matching function should accept the name of an object and the object itself, and return a boolean.
+
+    Args:
+        package (Union[str, ModuleType]): Package or its name to search.
+        match_func (Callable): Function that takes an object's name and the object, returning a boolean.
+        blacklist (Optional[Sequence[str]]): Names to exclude from the search.
+        path_attrs (bool): If True, use fully qualified names for object attributes.
+        return_first (bool): If True, return the first matching object.
+
+    Returns:
+        Union[None, Any, Dict[str, Any]]: If `return_first` is True, returns the first matching object or None;
+            otherwise, returns a dictionary of matching objects.
+    """
     if blacklist is None:
         blacklist = []
     if _visited is None:
@@ -162,7 +196,14 @@ def search_package(
 
 
 def find_class(path: str) -> tp.Optional[tp.Type]:
-    """Find the class by its path."""
+    """Return a class object based on its fully qualified path.
+
+    Args:
+        path (str): Dot-separated path to the class.
+
+    Returns:
+        Optional[Type]: The class if found; otherwise, None.
+    """
     try:
         path_parts = path.split(".")
         module_path = ".".join(path_parts[:-1])
@@ -180,17 +221,35 @@ def find_class(path: str) -> tp.Optional[tp.Type]:
 
 
 def check_installed(pkg_name: str) -> bool:
-    """Check if a package is installed."""
+    """Return True if the package with the specified name is installed; otherwise, return False.
+
+    Args:
+        pkg_name (str): Name of the package.
+
+    Returns:
+        bool: True if the package is installed; otherwise, False.
+    """
     return importlib.util.find_spec(pkg_name) is not None
 
 
 def get_installed_overview() -> tp.Dict[str, bool]:
-    """Get an overview of installed packages in `opt_dep_config`."""
+    """Return a dictionary mapping package names from `opt_dep_config` to their installation status.
+
+    Returns:
+        Dict[str, bool]: A mapping where keys are package names and values indicate installation status.
+    """
     return {pkg_name: check_installed(pkg_name) for pkg_name in opt_dep_config.keys()}
 
 
 def get_package_meta(pkg_name: str) -> dict:
-    """Get metadata of a package."""
+    """Return the metadata dictionary for the specified package from `opt_dep_config`.
+
+    Args:
+        pkg_name (str): Name of the package.
+
+    Returns:
+        dict: Dictionary containing metadata such as 'dist_name', 'version', and 'link'.
+    """
     if pkg_name not in opt_dep_config:
         raise KeyError(f"Package '{pkg_name}' not found in opt_dep_config")
     dist_name = opt_dep_config[pkg_name].get("dist_name", pkg_name)
@@ -200,9 +259,17 @@ def get_package_meta(pkg_name: str) -> dict:
 
 
 def assert_can_import(pkg_name: str) -> None:
-    """Assert that a package can be imported.
+    """Assert that the specified package can be imported.
 
-    Must be listed in `opt_dep_config`."""
+    The package must be listed in `opt_dep_config`. An ImportError is raised if the package
+    is not installed or the installed version is incompatible.
+
+    Args:
+        pkg_name (str): Name of the package.
+
+    Returns:
+        None
+    """
     from importlib.metadata import version as get_version
 
     metadata = get_package_meta(pkg_name)
@@ -227,9 +294,17 @@ def assert_can_import(pkg_name: str) -> None:
 
 
 def assert_can_import_any(*pkg_names: str) -> None:
-    """Assert that any from packages can be imported.
+    """Assert that at least one of the specified packages can be imported.
 
-    Must be listed in `opt_dep_config`."""
+    Packages must be listed in `opt_dep_config`. If none of the packages can be imported,
+    an ImportError is raised.
+
+    Args:
+        *pkg_names (str): Additional package names for checking import.
+
+    Returns:
+        None
+    """
     if len(pkg_names) == 1:
         return assert_can_import(pkg_names[0])
     for pkg_name in pkg_names:
@@ -248,9 +323,17 @@ def assert_can_import_any(*pkg_names: str) -> None:
 
 
 def warn_cannot_import(pkg_name: str) -> bool:
-    """Warn if a package is cannot be imported.
+    """Warn if the specified package cannot be imported.
 
-    Must be listed in `opt_dep_config`."""
+    The package must be listed in `opt_dep_config`. If the package cannot be imported,
+    a warning is issued and True is returned; otherwise, False is returned.
+
+    Args:
+        pkg_name (str): Name of the package.
+
+    Returns:
+        bool: True if the package cannot be imported; otherwise, False.
+    """
     try:
         assert_can_import(pkg_name)
         return False
@@ -260,7 +343,15 @@ def warn_cannot_import(pkg_name: str) -> bool:
 
 
 def import_module_from_path(module_path: tp.PathLike, reload: bool = False) -> ModuleType:
-    """Import the module from a path."""
+    """Import a Python module from a specified file path.
+
+    Args:
+        module_path (PathLike): File system path to the module.
+        reload (bool): Whether to force reloading if the module is already imported.
+
+    Returns:
+        ModuleType: Imported module.
+    """
     module_path = Path(module_path)
     spec = importlib.util.spec_from_file_location(module_path.stem, str(module_path.resolve()))
     module = importlib.util.module_from_spec(spec)
@@ -271,8 +362,12 @@ def import_module_from_path(module_path: tp.PathLike, reload: bool = False) -> M
     return module
 
 
-def get_caller_qualname() -> str:
-    """Returns the qualified name of the method or function that called this function."""
+def get_caller_qualname() -> tp.Optional[str]:
+    """Return the qualified name of the calling function or method.
+
+    Returns:
+        Optional[str]: The qualified name of the function or method that invoked this function.
+    """
     frame = inspect.currentframe()
     try:
         caller_frame = frame.f_back
@@ -297,7 +392,14 @@ def get_caller_qualname() -> str:
 
 
 def get_method_class(meth: tp.Callable) -> tp.Optional[tp.Type]:
-    """Get the class of a method."""
+    """Return the class associated with the given method, if available.
+
+    Args:
+        meth (Callable): Method or function for which to determine the associated class.
+
+    Returns:
+        Optional[type]: The class object if found, otherwise None.
+    """
     if inspect.ismethod(meth) or (
         inspect.isbuiltin(meth)
         and getattr(meth, "__self__", None) is not None
@@ -315,7 +417,14 @@ def get_method_class(meth: tp.Callable) -> tp.Optional[tp.Type]:
 
 
 def parse_refname(obj: tp.Any) -> str:
-    """Get the reference name of an object."""
+    """Return the fully qualified reference name for the provided object.
+
+    Args:
+        obj (Any): Target object to derive its reference name.
+
+    Returns:
+        str: Fully qualified reference name.
+    """
     from vectorbtpro.utils.decorators import class_property, hybrid_property, custom_property
 
     if inspect.ismodule(obj):
@@ -349,7 +458,15 @@ def get_refname_module_and_qualname(
     refname: str,
     module: tp.Optional[ModuleType] = None,
 ) -> tp.Tuple[tp.Optional[ModuleType], tp.Optional[str]]:
-    """Get the module and the qualified name from a reference name."""
+    """Return the module and qualified name extracted from the given reference name.
+
+    Args:
+        refname (str): Dot-separated reference name.
+        module (Optional[ModuleType]): Module context for extraction.
+
+    Returns:
+        Tuple[Optional[ModuleType], Optional[str]]: A tuple containing the module and the qualified name.
+    """
     refname_parts = refname.split(".")
     if module is None:
         module = importlib.import_module(refname_parts[0])
@@ -368,7 +485,16 @@ def get_refname_module_and_qualname(
 
 
 def resolve_refname(refname: str, module: tp.Union[None, str, ModuleType] = None) -> tp.Optional[tp.MaybeList[str]]:
-    """Resolve a reference name."""
+    """Resolve a reference name into its fully qualified form using the provided module context.
+
+    Args:
+        refname (str): Dot-separated reference name.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
+
+    Returns:
+        Optional[MaybeList[str]]: The resolved reference name(s) as a string or a list of strings,
+            or None if unresolved.
+    """
     if refname == "":
         if module is None:
             return None
@@ -468,7 +594,19 @@ def get_refname(
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
 ) -> tp.Optional[tp.MaybeList[str]]:
-    """Parse and (optionally) resolve the reference name(s) of an object."""
+    """Parse and optionally resolve the reference name(s) for an object.
+
+    Args:
+        obj (Any): Object from which to extract the reference name.
+
+            If a tuple is provided, its elements are concatenated.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the parsed reference name.
+
+    Returns:
+        Optional[MaybeList[str]]: The resolved reference name as a string,
+            a list of strings if multiple names are found, or None.
+    """
     if isinstance(obj, tuple):
         if len(obj) == 1:
             obj = obj[0]
@@ -485,7 +623,14 @@ def get_refname(
 
 
 def get_refname_obj(refname: str) -> tp.Any:
-    """Get the object under a reference name."""
+    """Return the object corresponding to a dot-separated reference name.
+
+    Args:
+        refname (str): Dot-separated reference name.
+
+    Returns:
+        Any: Object obtained by importing modules and accessing attributes.
+    """
     refname_parts = refname.split(".")
     obj = None
     for refname_part in refname_parts:
@@ -496,8 +641,18 @@ def get_refname_obj(refname: str) -> tp.Any:
     return obj
 
 
-def get_obj(*args, allow_multiple: bool = False, **kwargs) -> tp.MaybeList[tp.Any]:
-    """Get the object by its (resolved) reference name."""
+def get_obj(*args, allow_multiple: bool = False, **kwargs) -> tp.MaybeList:
+    """Return the object obtained by resolving its reference name.
+
+    Args:
+        *args: Positional arguments for `get_refname`.
+        allow_multiple (bool): Whether to allow returning multiple objects
+            if more than one reference name is resolved.
+        **kwargs: Keyword arguments for `get_refname`.
+
+    Returns:
+        MaybeList: Resolved object or a list of objects if multiple reference names are found.
+    """
     refname = get_refname(*args, **kwargs)
     if isinstance(refname, list):
         obj = None
@@ -525,7 +680,21 @@ def prepare_refname(
     return_parts: bool = False,
     raise_error: bool = True,
 ) -> tp.Union[None, str, tp.Tuple[str, ModuleType, str]]:
-    """Prepare (optionally) the module and the qualified name."""
+    """Prepare the reference name for an object and optionally extract its module and qualified name.
+
+    Args:
+        obj (Any): Object or reference name to prepare.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the object's reference name.
+        vbt_only (bool): If True, limit resolution to objects within vectorbtpro.
+        return_parts (bool): If True, return a tuple containing the reference name, module, and qualified name.
+        raise_error (bool): Whether to raise an error if the reference name cannot be determined.
+
+    Returns:
+        Union[None, str, Tuple[str, ModuleType, str]]: The prepared reference name as a string,
+            or a tuple of (refname, module, qualified name) if `return_parts` is True; or None
+            if the reference name cannot be determined.
+    """
 
     def _raise_error():
         raise ValueError(
@@ -556,7 +725,17 @@ def prepare_refname(
 
 
 def annotate_refname_parts(refname: str) -> tp.Tuple[dict, ...]:
-    """Return the type of each reference name part."""
+    """Annotate each part of a dot-separated reference name with its corresponding object.
+
+    Args:
+        refname (str): Dot-separated reference name.
+
+    Returns:
+        Tuple[dict, ...]: A tuple of dictionaries, each containing:
+
+            * `name`: The reference name part.
+            * `obj`: The object corresponding to the reference name part.
+    """
     refname_parts = refname.split(".")
     obj = None
     annotated_parts = []
@@ -570,13 +749,28 @@ def annotate_refname_parts(refname: str) -> tp.Tuple[dict, ...]:
 
 
 def get_imlucky_url(query: str) -> str:
-    """Get the "I'm lucky" URL on DuckDuckGo for a query."""
+    """Construct a DuckDuckGo "I'm lucky" URL for a query.
+
+    Args:
+        query (str): Search query.
+
+    Returns:
+        str: DuckDuckGo "I'm lucky" URL based on the query.
+    """
     return "https://duckduckgo.com/?q=!ducky+" + urllib.request.pathname2url(query)
 
 
-def imlucky(query: str, **kwargs) -> None:
-    """Open the "I'm lucky" URL on DuckDuckGo for a query."""
-    webbrowser.open(get_imlucky_url(query), **kwargs)
+def imlucky(query: str, **kwargs) -> bool:
+    """Open a DuckDuckGo "I'm lucky" URL for a query in the web browser.
+
+    Args:
+        query (str): Search query.
+        **kwargs: Keyword arguments for `webbrowser.open`.
+
+    Returns:
+        bool: True if the browser was opened successfully, False otherwise.
+    """
+    return webbrowser.open(get_imlucky_url(query), **kwargs)
 
 
 def get_api_ref(
@@ -585,7 +779,17 @@ def get_api_ref(
     resolve: bool = True,
     vbt_only: bool = False,
 ) -> str:
-    """Get the API reference to an object."""
+    """Return the API reference URL for an object.
+
+    Args:
+        obj (Any): Object for which the API reference is constructed.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the object's reference name.
+        vbt_only (bool): If True, limit resolution to objects within vectorbtpro.
+
+    Returns:
+        str: API reference URL for the given object.
+    """
     refname, module, qualname = prepare_refname(
         obj,
         module=module,
@@ -614,6 +818,16 @@ def open_api_ref(
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
     **kwargs,
-) -> None:
-    """Open the API reference to an object."""
-    webbrowser.open(get_api_ref(obj, module=module, resolve=resolve), **kwargs)
+) -> bool:
+    """Open the API reference URL for an object in the web browser.
+
+    Args:
+        obj (Any): Object whose API reference is to be opened.
+        module (Union[None, str, ModuleType]): Module context used in reference resolution.
+        resolve (bool): Whether to resolve the object's reference name.
+        **kwargs: Keyword arguments for `webbrowser.open`.
+
+    Returns:
+        bool: True if the browser was opened successfully, False otherwise.
+    """
+    return webbrowser.open(get_api_ref(obj, module=module, resolve=resolve), **kwargs)

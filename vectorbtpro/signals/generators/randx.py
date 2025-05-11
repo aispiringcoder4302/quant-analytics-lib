@@ -8,10 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RANDX`."""
+"""Module providing the `RANDX` class for generating random exit signals."""
 
 import numpy as np
-import pandas as pd
 
 from vectorbtpro.signals.factory import SignalFactory
 from vectorbtpro.signals.nb import rand_place_nb
@@ -37,14 +36,15 @@ RANDX = SignalFactory(
 
 
 class _RANDX(RANDX):
-    """Random exit signal generator based on the number of signals.
+    """Class representing a random exit signal generator based on probabilities.
 
-    Generates `exits` based on `entries` and `vectorbtpro.signals.nb.rand_place_nb`.
+    See:
+        * `RANDX.run` for the main entry point.
+        * `vectorbtpro.signals.nb.rand_place_nb` for details on the exit placement.
+        * `vectorbtpro.signals.generators.rand.RAND` for parameter notes.
 
-    See `RAND` for notes on parameters.
-
-    Usage:
-        Generate an exit for each entry:
+    Examples:
+        Generate an exit signal for each entry:
 
         ```pycon
         >>> from vectorbtpro import *

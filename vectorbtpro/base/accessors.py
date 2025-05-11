@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Custom Pandas accessors for base operations with Pandas objects."""
+"""Module providing custom Pandas accessors for base operations with Pandas objects."""
 
 import ast
 import inspect
@@ -45,11 +45,11 @@ from vectorbtpro.utils.warnings_ import warn
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT
 else:
-    DataT = "Data"
+    DataT = "vectorbtpro.data.base.Data"
 if tp.TYPE_CHECKING:
     from vectorbtpro.generic.splitting.base import Splitter as SplitterT
 else:
-    SplitterT = "Splitter"
+    SplitterT = "vectorbtpro.generic.splitting.base.Splitter"
 
 __all__ = ["BaseIDXAccessor", "BaseAccessor", "BaseSRAccessor", "BaseDFAccessor"]
 
@@ -57,9 +57,17 @@ BaseIDXAccessorT = tp.TypeVar("BaseIDXAccessorT", bound="BaseIDXAccessor")
 
 
 class BaseIDXAccessor(Configured, IndexApplier):
-    """Accessor on top of Index.
+    """Class representing an accessor on top of Index.
 
-    Accessible via `pd.Index.vbt` and all child accessors."""
+    Accessible via `pd.Index.vbt` and all child accessors.
+
+    Args:
+        obj (Index): Pandas Index object to be wrapped by the accessor.
+        freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
+    """
 
     def __init__(self, obj: tp.Index, freq: tp.Optional[tp.FrequencyLike] = None, **kwargs) -> None:
         checks.assert_instance_of(obj, pd.Index)
@@ -71,23 +79,43 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def obj(self) -> tp.Index:
-        """Pandas object."""
+        """Pandas Index object.
+
+        Returns:
+            Index: Underlying Pandas Index object.
+        """
         return self._obj
 
     def get(self) -> tp.Index:
-        """Get `IDXAccessor.obj`."""
+        """Return Pandas Index object.
+
+        Returns:
+            Index: Underlying Pandas Index object.
+        """
         return self.obj
 
     # ############# Index ############# #
 
     def to_ns(self) -> tp.Array1d:
-        """Convert index to an 64-bit integer array.
+        """Convert the index to a 64-bit integer array.
 
-        Timestamps will be converted to nanoseconds."""
+        Timestamps are converted to nanoseconds.
+
+        Returns:
+            Array1d: Resulting 64-bit integer array.
+        """
         return dt.to_ns(self.obj)
 
-    def to_period(self, freq: tp.FrequencyLike, shift: bool = False) -> pd.PeriodIndex:
-        """Convert index to period."""
+    def to_period(self, freq: tp.FrequencyLike, shift: bool = False) -> tp.PeriodIndex:
+        """Convert the index to a PeriodIndex.
+
+        Args:
+            freq (FrequencyLike): Frequency of the period index.
+            shift (bool): If True, shift the resulting period.
+
+        Returns:
+            PeriodIndex: Converted PeriodIndex.
+        """
         index = self.obj
         if isinstance(index, pd.DatetimeIndex):
             index = index.tz_localize(None).to_period(freq)
@@ -97,30 +125,73 @@ class BaseIDXAccessor(Configured, IndexApplier):
             raise TypeError(f"Cannot convert index of type {type(index)} to period")
         return index
 
-    def to_period_ts(self, *args, **kwargs) -> pd.DatetimeIndex:
-        """Convert index to period and then to timestamp."""
+    def to_period_ts(self, *args, **kwargs) -> tp.DatetimeIndex:
+        """Convert the index to a DatetimeIndex.
+
+        The index is first converted to a PeriodIndex and then to timestamps.
+
+        Args:
+            *args: Positional arguments for `BaseIDXAccessor.to_period`.
+            **kwargs: Keyword arguments for `BaseIDXAccessor.to_period`.
+
+        Returns:
+            DatetimeIndex: Resulting timestamp index.
+        """
         new_index = self.to_period(*args, **kwargs).to_timestamp()
         if self.obj.tz is not None:
             new_index = new_index.tz_localize(self.obj.tz)
         return new_index
 
     def to_period_ns(self, *args, **kwargs) -> tp.Array1d:
-        """Convert index to period and then to an 64-bit integer array.
+        """Convert the index to a 64-bit integer array via timestamps.
 
-        Timestamps will be converted to nanoseconds."""
+        The index is first converted to a PeriodIndex, then to a DatetimeIndex,
+        and finally to nanoseconds.
+
+        Args:
+            *args: Positional arguments for `BaseIDXAccessor.to_period_ts`.
+            **kwargs: Keyword arguments for `BaseIDXAccessor.to_period_ts`.
+
+        Returns:
+            Array1d: Resulting 64-bit integer array.
+        """
         return dt.to_ns(self.to_period_ts(*args, **kwargs))
 
     @classmethod
     def from_values(cls, *args, **kwargs) -> tp.Index:
-        """See `vectorbtpro.base.indexes.index_from_values`."""
+        """Return an index created from values using `vectorbtpro.base.indexes.index_from_values`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.indexes.index_from_values`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.index_from_values`.
+
+        Returns:
+            Index: Generated index.
+        """
         return indexes.index_from_values(*args, **kwargs)
 
     def repeat(self, *args, **kwargs) -> tp.Index:
-        """See `vectorbtpro.base.indexes.repeat_index`."""
+        """Return an index with repeated values using `vectorbtpro.base.indexes.repeat_index`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.indexes.repeat_index`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.repeat_index`.
+
+        Returns:
+            Index: Index with repeated values.
+        """
         return indexes.repeat_index(self.obj, *args, **kwargs)
 
     def tile(self, *args, **kwargs) -> tp.Index:
-        """See `vectorbtpro.base.indexes.tile_index`."""
+        """Return an index tiled using `vectorbtpro.base.indexes.tile_index`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.indexes.tile_index`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.tile_index`.
+
+        Returns:
+            Index: Tiled index.
+        """
         return indexes.tile_index(self.obj, *args, **kwargs)
 
     @hybrid_method
@@ -130,9 +201,16 @@ class BaseIDXAccessor(Configured, IndexApplier):
         on_top: bool = False,
         **kwargs,
     ) -> tp.Index:
-        """See `vectorbtpro.base.indexes.stack_indexes`.
+        """Stack multiple indexes using `vectorbtpro.base.indexes.stack_indexes`.
 
-        Set `on_top` to True to stack the second index on top of this one."""
+        Args:
+            *others (Union[IndexLike, BaseIDXAccessor]): (Additional) indexes or accessors to stack.
+            on_top (bool): If True, add the new levels before the existing index; if False, add them after.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.stack_indexes`.
+
+        Returns:
+            Index: Stacked index.
+        """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
             objs = others
@@ -150,9 +228,16 @@ class BaseIDXAccessor(Configured, IndexApplier):
         on_top: bool = False,
         **kwargs,
     ) -> tp.Index:
-        """See `vectorbtpro.base.indexes.combine_indexes`.
+        """Combine multiple indexes using `vectorbtpro.base.indexes.combine_indexes`.
 
-        Set `on_top` to True to stack the second index on top of this one."""
+        Args:
+            *others (Union[IndexLike, BaseIDXAccessor]): (Additional) indexes or accessors to combine.
+            on_top (bool): If True, add the new levels before the existing index; if False, add them after.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.combine_indexes`.
+
+        Returns:
+            Index: Combined index.
+        """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
             objs = others
@@ -165,7 +250,15 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @hybrid_method
     def concat(cls_or_self, *others: tp.Union[tp.IndexLike, "BaseIDXAccessor"], **kwargs) -> tp.Index:
-        """See `vectorbtpro.base.indexes.concat_indexes`."""
+        """Concatenate multiple indexes using `vectorbtpro.base.indexes.concat_indexes`.
+
+        Args:
+            *others (Union[IndexLike, BaseIDXAccessor]): (Additional) indexes or accessors to concatenate.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.concat_indexes`.
+
+        Returns:
+            Index: Concatenated index.
+        """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
             objs = others
@@ -182,7 +275,15 @@ class BaseIDXAccessor(Configured, IndexApplier):
         return self.replace(obj=apply_func(self.obj, *args, **kwargs)).obj
 
     def align_to(self, *args, **kwargs) -> tp.IndexSlice:
-        """See `vectorbtpro.base.indexes.align_index_to`."""
+        """Align the index to a target index using `vectorbtpro.base.indexes.align_index_to`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.indexes.align_index_to`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.align_index_to`.
+
+        Returns:
+            IndexSlice: Aligned index slice.
+        """
         return indexes.align_index_to(self.obj, *args, **kwargs)
 
     @hybrid_method
@@ -191,7 +292,15 @@ class BaseIDXAccessor(Configured, IndexApplier):
         *others: tp.Union[tp.IndexLike, "BaseIDXAccessor"],
         **kwargs,
     ) -> tp.Tuple[tp.IndexSlice, ...]:
-        """See `vectorbtpro.base.indexes.align_indexes`."""
+        """Align multiple indexes using `vectorbtpro.base.indexes.align_indexes`.
+
+        Args:
+            *others (Union[IndexLike, BaseIDXAccessor]): (Additional) indexes or accessors to align.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.align_indexes`.
+
+        Returns:
+            Tuple[IndexSlice, ...]: A tuple of aligned index slices.
+        """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
             objs = others
@@ -200,7 +309,15 @@ class BaseIDXAccessor(Configured, IndexApplier):
         return indexes.align_indexes(*objs, **kwargs)
 
     def cross_with(self, *args, **kwargs) -> tp.Tuple[tp.IndexSlice, tp.IndexSlice]:
-        """See `vectorbtpro.base.indexes.cross_index_with`."""
+        """Cross the current index with another index using `vectorbtpro.base.indexes.cross_index_with`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.indexes.cross_index_with`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.cross_index_with`.
+
+        Returns:
+            Tuple[IndexSlice, IndexSlice]: The resulting pair of index slices.
+        """
         return indexes.cross_index_with(self.obj, *args, **kwargs)
 
     @hybrid_method
@@ -209,7 +326,15 @@ class BaseIDXAccessor(Configured, IndexApplier):
         *others: tp.Union[tp.IndexLike, "BaseIDXAccessor"],
         **kwargs,
     ) -> tp.Tuple[tp.IndexSlice, ...]:
-        """See `vectorbtpro.base.indexes.cross_indexes`."""
+        """Cross multiple indexes using `vectorbtpro.base.indexes.cross_indexes`.
+
+        Args:
+            *others (Union[IndexLike, BaseIDXAccessor]): (Additional) indexes or accessors to cross.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.cross_indexes`.
+
+        Returns:
+            Tuple[IndexSlice, ...]: The resulting crossed indexes.
+        """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
             objs = others
@@ -220,7 +345,15 @@ class BaseIDXAccessor(Configured, IndexApplier):
     x = cross
 
     def find_first_occurrence(self, *args, **kwargs) -> int:
-        """See `vectorbtpro.base.indexes.find_first_occurrence`."""
+        """Find the first occurrence of a value in the index using `vectorbtpro.base.indexes.find_first_occurrence`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.indexes.find_first_occurrence`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.find_first_occurrence`.
+
+        Returns:
+            int: Index of the first occurrence.
+        """
         return indexes.find_first_occurrence(self.obj, *args, **kwargs)
 
     # ############# Frequency ############# #
@@ -232,7 +365,23 @@ class BaseIDXAccessor(Configured, IndexApplier):
         freq: tp.Optional[tp.FrequencyLike] = None,
         **kwargs,
     ) -> tp.Union[None, float, tp.PandasFrequency]:
-        """Index frequency as `pd.Timedelta` or None if it cannot be converted."""
+        """Determine the frequency of the index as a Pandas Timedelta or frequency.
+
+        Args:
+            index (Optional[Index]): Index from which to infer the frequency.
+
+                If None, the accessor's index is used.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.infer_index_freq`.
+
+        Returns:
+            Union[None, float, PandasFrequency]: The inferred frequency, or None if conversion fails.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
+        """
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]
@@ -254,14 +403,24 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def freq(self) -> tp.Optional[tp.PandasFrequency]:
-        """`BaseIDXAccessor.get_freq` with date offsets and integer frequencies not allowed."""
+        """Index frequency excluding date offsets and numeric frequencies.
+
+        Uses `BaseIDXAccessor.get_freq` with specific restrictions.
+
+        Returns:
+            Optional[PandasFrequency]: The frequency of the index, or None if not set.
+        """
         return self.get_freq(allow_offset=True, allow_numeric=False)
 
     @property
     def ns_freq(self) -> tp.Optional[int]:
-        """Convert frequency to a 64-bit integer.
+        """Frequency of the index as a 64-bit integer in nanoseconds.
 
-        Timedelta will be converted to nanoseconds."""
+        Timestamps are converted to nanoseconds via Timedelta.
+
+        Returns:
+            Optional[int]: The frequency in nanoseconds, or None if not set.
+        """
         freq = self.get_freq(allow_offset=False, allow_numeric=True)
         if freq is not None:
             freq = dt.to_ns(dt.to_timedelta64(freq))
@@ -269,12 +428,25 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def any_freq(self) -> tp.Union[None, float, tp.PandasFrequency]:
-        """Index frequency of any type."""
+        """Frequency of the index of any type using `BaseIDXAccessor.get_freq`.
+
+        Returns:
+            Union[None, float, PandasFrequency]: The frequency of the index, or None if not set.
+        """
         return self.get_freq()
 
     @hybrid_method
     def get_periods(cls_or_self, index: tp.Optional[tp.Index] = None) -> int:
-        """Get the number of periods in the index, without taking into account its datetime-like properties."""
+        """Return the number of periods in the index without considering datetime-like properties.
+
+        Args:
+            index (Optional[Index]): Index for which to count periods.
+
+                If None, the accessor's index is used.
+
+        Returns:
+            int: Number of periods in the index.
+        """
         if not isinstance(cls_or_self, type):
             if index is None:
                 index = cls_or_self.obj
@@ -284,16 +456,35 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def periods(self) -> int:
-        """`BaseIDXAccessor.get_periods` with default arguments."""
+        """Number of periods in the index.
+
+        Returns:
+            int: Computed number of periods.
+        """
         return len(self.obj)
 
     @hybrid_method
     def get_dt_periods(
         cls_or_self,
         index: tp.Optional[tp.Index] = None,
-        freq: tp.Optional[tp.PandasFrequency] = None,
+        freq: tp.Optional[tp.FrequencyLike] = None,
     ) -> float:
-        """Get the number of periods in the index, taking into account its datetime-like properties."""
+        """Return the number of periods in the index, accounting for its datetime-like properties.
+
+        Args:
+            index (Optional[Index]): Index to process.
+
+                If omitted and invoked on an instance, the object's index is used.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+
+        Returns:
+            float: Calculated number of periods.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
+        """
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]
@@ -326,7 +517,11 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
     @property
     def dt_periods(self) -> float:
-        """`BaseIDXAccessor.get_dt_periods` with default arguments."""
+        """Datetime period count in the index using default parameters.
+
+        Returns:
+            float: Computed number of datetime periods.
+        """
         return self.get_dt_periods()
 
     def arr_to_timedelta(
@@ -335,7 +530,19 @@ class BaseIDXAccessor(Configured, IndexApplier):
         to_pd: bool = False,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.Union[pd.Index, tp.MaybeArray]:
-        """Convert array to duration using `BaseIDXAccessor.freq`."""
+        """Convert an array of values to a duration based on the index frequency from `BaseIDXAccessor.freq`.
+
+        Args:
+            a (MaybeArray): Input array containing numerical values.
+            to_pd (bool): Determines whether to return a Pandas timedelta representation.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            Union[pd.Index, MaybeArray]: The array converted to time durations.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
+        """
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]
@@ -362,14 +569,24 @@ class BaseIDXAccessor(Configured, IndexApplier):
     # ############# Grouping ############# #
 
     def get_grouper(self, by: tp.AnyGroupByLike, groupby_kwargs: tp.KwargsLike = None, **kwargs) -> Grouper:
-        """Get an index grouper of type `vectorbtpro.base.grouping.base.Grouper`.
+        """Return an index grouper of type `vectorbtpro.base.grouping.base.Grouper`.
 
-        Argument `by` can be a grouper itself, an instance of Pandas `GroupBy`,
-        an instance of Pandas `Resampler`, but also any supported input to any of them
-        such as a frequency or an array of indices.
+        Args:
+            by (AnyGroupByLike): Grouper-like specification.
 
-        Keyword arguments `groupby_kwargs` are passed to the Pandas methods `groupby` and `resample`,
-        while `**kwargs` are passed to initialize `vectorbtpro.base.grouping.base.Grouper`."""
+                Can be one of the following:
+
+                * `vectorbtpro.base.grouping.base.Grouper` instance
+                * Pandas `GroupBy` instance
+                * Pandas `Resampler` instance
+                * An instruction for any of the above
+            groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and 
+                `pandas.Series.resample` methods.
+            **kwargs: Keyword arguments for initializing `vectorbtpro.base.grouping.base.Grouper`.
+
+        Returns:
+            Grouper: Constructed index grouper.
+        """
         if groupby_kwargs is None:
             groupby_kwargs = {}
         if isinstance(by, Grouper):
@@ -403,7 +620,27 @@ class BaseIDXAccessor(Configured, IndexApplier):
         return_pd_resampler: bool = False,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.Union[Resampler, tp.PandasResampler]:
-        """Get an index resampler of type `vectorbtpro.base.resampling.base.Resampler`."""
+        """Return an index resampler of type `vectorbtpro.base.resampling.base.Resampler`.
+
+        Args:
+            rule (AnyRuleLike): Resampler-like specification.
+
+                Can be one of the following:
+
+                * `vectorbtpro.base.resampling.base.Resampler` instance
+                * Pandas `Resampler` instance
+                * An instruction for any of the above
+                * Datetime-like object or iterable used to create a new index
+            freq (Optional[FrequencyLike]): Frequency of the target index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            resample_kwargs (KwargsLike): Keyword arguments for `pandas.Series.resample`.
+            return_pd_resampler (bool): Flag indicating whether to return a Pandas resampler.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            Union[Resampler, PandasResampler]: The constructed index resampler.
+        """
         if checks.is_frequency_like(rule):
             try:
                 rule = dt.to_freq(rule)
@@ -442,20 +679,48 @@ class BaseIDXAccessor(Configured, IndexApplier):
     # ############# Points and ranges ############# #
 
     def get_points(self, *args, **kwargs) -> tp.Array1d:
-        """See `vectorbtpro.base.indexing.get_index_points`."""
+        """Return index points using `vectorbtpro.base.indexing.get_index_points`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.indexing.get_index_points`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexing.get_index_points`.
+
+        Returns:
+            Array1d: Array of index points.
+        """
         return get_index_points(self.obj, *args, **kwargs)
 
     def get_ranges(self, *args, **kwargs) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-        """See `vectorbtpro.base.indexing.get_index_ranges`."""
+        """Return index ranges using `vectorbtpro.base.indexing.get_index_ranges`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.indexing.get_index_ranges`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexing.get_index_ranges`.
+
+        Returns:
+            Tuple[Array1d, Array1d]: A tuple of arrays representing the index ranges.
+        """
         return get_index_ranges(self.obj, self.any_freq, *args, **kwargs)
 
     # ############# Splitting ############# #
 
     def split(self, *args, splitter_cls: tp.Optional[tp.Type[SplitterT]] = None, **kwargs) -> tp.Any:
-        """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
+        """Return the result of splitting the Pandas object using
+        `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
+            splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+                Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
+
+        Returns:
+            Any: Result of the split operation.
 
         !!! note
-            Splits Pandas object, not accessor!"""
+            Splits the Pandas object itself, not the accessor.
+        """
         from vectorbtpro.generic.splitting.base import Splitter
 
         if splitter_cls is None:
@@ -469,10 +734,23 @@ class BaseIDXAccessor(Configured, IndexApplier):
         splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
         **kwargs,
     ) -> tp.Any:
-        """Split using `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
+        """Return the result of splitting and applying a function using
+        `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
+
+        Args:
+            apply_func (Callable): Function to apply to each split.
+            *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
+            splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+                Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
+
+        Returns:
+            Any: Result after applying the split and apply operation.
 
         !!! note
-            Splits Pandas object, not accessor!"""
+            Splits the Pandas object itself, not the accessor.
+        """
         from vectorbtpro.generic.splitting.base import Splitter, Takeable
 
         if splitter_cls is None:
@@ -490,21 +768,31 @@ class BaseIDXAccessor(Configured, IndexApplier):
         select: bool = False,
         return_chunk_meta: bool = False,
     ) -> tp.Iterator[tp.Union[tp.Index, tp.Tuple[ChunkMeta, tp.Index]]]:
-        """Chunk this instance.
+        """Chunk the instance and yield segments from its underlying Pandas object.
 
-        If `axis` is None, becomes 0 if the instance is one-dimensional and 1 otherwise.
+        The chunking is performed along the appropriate axis: if the object is one-dimensional,
+        the axis is set to 0; otherwise, 1 is used.
 
-        For arguments related to chunking meta, see `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        Args:
+            min_size (Optional[int]): Minimum number of elements to split.
+            n_chunks (Union[None, int, str]): Specification for the number of chunks.
+            chunk_len (Union[None, int, str]): Specification for the length of each chunk.
+            chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each chunk.
+
+                See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+            select (bool): Determines whether to use `ArraySelector` (if True) or
+                `ArraySlicer` (if False) for extracting the chunk.
+            return_chunk_meta (bool): Flag indicating whether to yield chunk metadata alongside each chunk.
+
+        Yields:
+            Union[Index, Tuple[ChunkMeta, Index]]: The index chunk or a tuple with
+                the chunk metadata and index chunk.
 
         !!! note
-            Splits Pandas object, not accessor!"""
+            Splits the underlying Pandas object, not the accessor.
+        """
         if chunk_meta is None:
-            chunk_meta = iter_chunk_meta(
-                size=len(self.obj),
-                min_size=min_size,
-                n_chunks=n_chunks,
-                chunk_len=chunk_len
-            )
+            chunk_meta = iter_chunk_meta(size=len(self.obj), min_size=min_size, n_chunks=n_chunks, chunk_len=chunk_len)
         for _chunk_meta in chunk_meta:
             if select:
                 array_taker = ArraySelector()
@@ -523,14 +811,28 @@ class BaseIDXAccessor(Configured, IndexApplier):
         execute_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MergeableResults:
-        """Chunk this instance and apply a function to each chunk.
+        """Chunk the instance and apply a function to each generated chunk.
 
-        If `apply_func` is a string, becomes the method name.
+        The function can be specified as a callable or as a string representing a method name.
+        Each chunk is derived from the instance's underlying Pandas object.
 
-        For arguments related to chunking, see `Wrapping.chunk`.
+        Args:
+            apply_func (Union[str, Callable]): Function or method name to apply to each chunk.
+            *args: Positional arguments for `apply_func`.
+            chunk_kwargs (KwargsLike): Keyword arguments for the chunking handler.
+
+                See `BaseIDXAccessor.chunk`.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
+
+                See `vectorbtpro.utils.execution.execute`.
+            **kwargs: Keyword arguments for `apply_func`.
+
+        Returns:
+            MergeableResults: Merged results from applying the function on all chunks.
 
         !!! note
-            Splits Pandas object, not accessor!"""
+            Splits the underlying Pandas object, not the accessor.
+        """
         if isinstance(apply_func, str):
             apply_func = getattr(type(self), apply_func)
         if chunk_kwargs is None:
@@ -557,26 +859,30 @@ BaseAccessorT = tp.TypeVar("BaseAccessorT", bound="BaseAccessor")
 @attach_binary_magic_methods(lambda self, other, np_func: self.combine(other, combine_func=np_func))
 @attach_unary_magic_methods(lambda self, np_func: self.apply(apply_func=np_func))
 class BaseAccessor(Wrapping):
-    """Accessor on top of Series and DataFrames.
+    """Class representing a base accessor for Series and DataFrame objects.
 
-    Accessible via `pd.Series.vbt` and `pd.DataFrame.vbt`, and all child accessors.
+    Accessible via `pd.Series.vbt` and `pd.DataFrame.vbt` and their descendants.
 
-    Series is just a DataFrame with one column, hence to avoid defining methods exclusively for 1-dim data,
-    we will convert any Series to a DataFrame and perform matrix computation on it. Afterwards,
-    by using `BaseAccessor.wrapper`, we will convert the 2-dim output back to a Series.
+    Because a Series is simply a DataFrame with a single column, it is converted to a DataFrame
+    for matrix operations, and the resulting 2-dimensional output is converted back to a Series using
+    `BaseAccessor.wrapper`.
 
-    `**kwargs` will be passed to `vectorbtpro.base.wrapping.ArrayWrapper`.
+    Args:
+        wrapper (Union[ArrayWrapper, tp.ArrayLike]): Wrapper instance or array if `obj` is not provided.
+        obj (Optional[tp.ArrayLike]): Array if `wrapper` is an array wrapper.
+        **kwargs: Keyword arguments distributed between
+            `vectorbtpro.base.wrapping.ArrayWrapper` and `vectorbtpro.base.wrapping.Wrapping`.
 
     !!! note
         When using magic methods, ensure that `.vbt` is called on the operand on the left
         if the other operand is an array.
 
-        Accessors do not utilize caching.
+        Accessors do not use caching.
 
-        Grouping is only supported by the methods that accept the `group_by` argument.
+        Grouping is supported only by methods that accept the `group_by` argument.
 
-    Usage:
-        * Build a symmetric matrix:
+    Examples:
+        Build a symmetric matrix:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -589,7 +895,7 @@ class BaseAccessor(Wrapping):
         2  3.0  NaN  NaN
         ```
 
-        * Broadcast pandas objects:
+        Broadcast Pandas objects:
 
         ```pycon
         >>> sr = pd.Series([1])
@@ -608,7 +914,7 @@ class BaseAccessor(Wrapping):
         2  1
         ```
 
-        * Many methods such as `BaseAccessor.broadcast` are both class and instance methods:
+        Use class and instance methods like `BaseAccessor.broadcast`:
 
         ```pycon
         >>> from vectorbtpro.base.accessors import BaseAccessor
@@ -627,7 +933,7 @@ class BaseAccessor(Wrapping):
         2  3
         ```
 
-        * Instead of explicitly importing `BaseAccessor` or any other accessor, we can use `pd_acc` instead:
+        Instead of explicitly importing an accessor, use `pd_acc`:
 
         ```pycon
         >>> vbt.pd_acc.broadcast(sr, df)
@@ -643,8 +949,8 @@ class BaseAccessor(Wrapping):
         2  3
         ```
 
-        * `BaseAccessor` implements arithmetic (such as `+`), comparison (such as `>`) and
-        logical operators (such as `&`) by forwarding the operation to `BaseAccessor.combine`:
+        Leverage arithmetic (e.g. `+`), comparison (e.g. `>`), and logical (e.g. `&`) operators that
+        forward operations to `BaseAccessor.combine`:
 
         ```pycon
         >>> sr.vbt + df
@@ -656,7 +962,7 @@ class BaseAccessor(Wrapping):
 
         Many interesting use cases can be implemented this way.
 
-        * For example, let's compare an array with 3 different thresholds:
+        Compare an array with different thresholds:
 
         ```pycon
         >>> df.vbt > vbt.Param(np.arange(3), name='threshold')
@@ -667,7 +973,7 @@ class BaseAccessor(Wrapping):
         z2         True  True  True   True  True  True   True   True  True
         ```
 
-        * The same using the broadcasting mechanism:
+        Use the broadcasting mechanism:
 
         ```pycon
         >>> df.vbt > vbt.Param(np.arange(3), name='threshold')
@@ -679,13 +985,47 @@ class BaseAccessor(Wrapping):
         ```
     """
 
+    def __init__(
+        self,
+        wrapper: tp.Union[ArrayWrapper, tp.ArrayLike],
+        obj: tp.Optional[tp.ArrayLike] = None,
+        **kwargs,
+    ) -> None:
+        if len(kwargs) > 0:
+            wrapper_kwargs, kwargs = ArrayWrapper.extract_init_kwargs(**kwargs)
+        else:
+            wrapper_kwargs, kwargs = {}, {}
+        if not isinstance(wrapper, ArrayWrapper):
+            if obj is not None:
+                raise ValueError("Must either provide wrapper and object, or only object")
+            wrapper, obj = ArrayWrapper.from_obj(wrapper, **wrapper_kwargs), wrapper
+        else:
+            if obj is None:
+                raise ValueError("Must either provide wrapper and object, or only object")
+            if len(wrapper_kwargs) > 0:
+                wrapper = wrapper.replace(**wrapper_kwargs)
+
+        Wrapping.__init__(self, wrapper, obj=obj, **kwargs)
+
+        self._obj = obj
+
+    def __call__(self: BaseAccessorT, **kwargs) -> BaseAccessorT:
+        """Pass additional keyword arguments to the initializer and return a new accessor instance.
+
+        Args:
+            **kwargs: Keyword arguments for `BaseAccessor.replace`.
+
+        Returns:
+            BaseAccessor: New accessor instance with updated parameters.
+        """
+        return self.replace(**kwargs)
+
     @classmethod
     def resolve_row_stack_kwargs(
         cls: tp.Type[BaseAccessorT],
-        *objs: tp.MaybeTuple[BaseAccessorT],
+        *objs: BaseAccessorT,
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `BaseAccessor` after stacking along rows."""
         if "obj" not in kwargs:
             kwargs["obj"] = kwargs["wrapper"].row_stack_arrs(
                 *[obj.obj for obj in objs],
@@ -697,11 +1037,20 @@ class BaseAccessor(Wrapping):
     @classmethod
     def resolve_column_stack_kwargs(
         cls: tp.Type[BaseAccessorT],
-        *objs: tp.MaybeTuple[BaseAccessorT],
+        *objs: BaseAccessorT,
         reindex_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `BaseAccessor` after stacking along columns."""
+        """Resolve keyword arguments for initializing `BaseAccessor` after stacking along columns.
+
+        Args:
+            *objs (MaybeTuple[BaseAccessor]): Accessor instances to be stacked.
+            reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: Resolved keyword arguments for initializing `BaseAccessor`.
+        """
         if "obj" not in kwargs:
             kwargs["obj"] = kwargs["wrapper"].column_stack_arrs(
                 *[obj.obj for obj in objs],
@@ -714,13 +1063,26 @@ class BaseAccessor(Wrapping):
     @hybrid_method
     def row_stack(
         cls_or_self: tp.MaybeType[BaseAccessorT],
-        *objs: tp.MaybeTuple[BaseAccessorT],
+        *objs: tp.MaybeSequence[BaseAccessorT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> BaseAccessorT:
         """Stack multiple `BaseAccessor` instances along rows.
 
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
+        Stacks accessor instances along the row axis using
+        `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` and configures a new accessor.
+
+        Args:
+            *objs (MaybeSequence[BaseAccessor]): (Additional) accessor instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `BaseAccessor` through
+                `BaseAccessor.resolve_row_stack_kwargs` and `BaseAccessor.resolve_stack_kwargs`.
+
+        Returns:
+            BaseAccessor: New accessor instance with row-stacked data.
+        """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
             cls = type(cls_or_self)
@@ -751,14 +1113,28 @@ class BaseAccessor(Wrapping):
     @hybrid_method
     def column_stack(
         cls_or_self: tp.MaybeType[BaseAccessorT],
-        *objs: tp.MaybeTuple[BaseAccessorT],
+        *objs: tp.MaybeSequence[BaseAccessorT],
         wrapper_kwargs: tp.KwargsLike = None,
         reindex_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> BaseAccessorT:
         """Stack multiple `BaseAccessor` instances along columns.
 
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
+        Stacks accessor instances along the column axis using
+        `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` and configures a new accessor.
+
+        Args:
+            *objs (MaybeSequence[BaseAccessor]): (Additional) accessor instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
+            **kwargs: Keyword arguments for `BaseAccessor` through
+                `BaseAccessor.resolve_column_stack_kwargs` and `BaseAccessor.resolve_stack_kwargs`.
+
+        Returns:
+            BaseAccessor: New accessor instance with column-stacked data.
+        """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
             cls = type(cls_or_self)
@@ -784,47 +1160,34 @@ class BaseAccessor(Wrapping):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls.df_accessor_cls(**kwargs)
 
-    def __init__(
-        self,
-        wrapper: tp.Union[ArrayWrapper, tp.ArrayLike],
-        obj: tp.Optional[tp.ArrayLike] = None,
-        **kwargs,
-    ) -> None:
-        if len(kwargs) > 0:
-            wrapper_kwargs, kwargs = ArrayWrapper.extract_init_kwargs(**kwargs)
-        else:
-            wrapper_kwargs, kwargs = {}, {}
-        if not isinstance(wrapper, ArrayWrapper):
-            if obj is not None:
-                raise ValueError("Must either provide wrapper and object, or only object")
-            wrapper, obj = ArrayWrapper.from_obj(wrapper, **wrapper_kwargs), wrapper
-        else:
-            if obj is None:
-                raise ValueError("Must either provide wrapper and object, or only object")
-            if len(wrapper_kwargs) > 0:
-                wrapper = wrapper.replace(**wrapper_kwargs)
-
-        Wrapping.__init__(self, wrapper, obj=obj, **kwargs)
-
-        self._obj = obj
-
-    def __call__(self: BaseAccessorT, **kwargs) -> BaseAccessorT:
-        """Allows passing arguments to the initializer."""
-
-        return self.replace(**kwargs)
-
     @hybrid_property
     def sr_accessor_cls(cls_or_self) -> tp.Type["BaseSRAccessor"]:
-        """Accessor class for `pd.Series`."""
+        """Pandas Series accessor class.
+
+        Returns:
+            Type[BaseSRAccessor]: The class of the Series accessor.
+        """
         return BaseSRAccessor
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["BaseDFAccessor"]:
-        """Accessor class for `pd.DataFrame`."""
+        """Pandas DataFrame accessor class.
+
+        Returns:
+            Type[BaseDFAccessor]: The class of the DataFrame accessor.
+        """
         return BaseDFAccessor
 
     def indexing_func(self: BaseAccessorT, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> BaseAccessorT:
-        """Perform indexing on `BaseAccessor`."""
+        """Perform indexing on the accessor instance and return a new accessor with the selected data.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func`.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func`.
+        Returns:
+            BaseAccessor: New accessor instance with the selected subset of data.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(*args, **kwargs)
         new_obj = ArrayWrapper.select_from_flex_array(
@@ -839,12 +1202,16 @@ class BaseAccessor(Wrapping):
         return self.replace(cls_=self.df_accessor_cls, wrapper=wrapper_meta["new_wrapper"], obj=new_obj)
 
     def indexing_setter_func(self, pd_indexing_setter_func: tp.Callable, **kwargs) -> None:
-        """Perform indexing setter on `BaseAccessor`."""
         pd_indexing_setter_func(self._obj)
 
     @property
     def obj(self) -> tp.SeriesFrame:
-        """Pandas object."""
+        """Underlying Pandas object.
+
+        Returns:
+            SeriesFrame: Pandas Series or DataFrame that matches the wrapper's configuration,
+                or a wrapped version if it does not.
+        """
         if isinstance(self._obj, (pd.Series, pd.DataFrame)):
             if self._obj.shape == self.wrapper.shape:
                 if self._obj.index is self.wrapper.index:
@@ -855,7 +1222,16 @@ class BaseAccessor(Wrapping):
         return self.wrapper.wrap(self._obj, group_by=False)
 
     def get(self, key: tp.Optional[tp.Hashable] = None, default: tp.Optional[tp.Any] = None) -> tp.SeriesFrame:
-        """Get `BaseAccessor.obj`."""
+        """Retrieve the underlying Pandas object or a specific element by key.
+
+        Args:
+            key (Optional[Hashable]): Key to access from the underlying object.
+            default (Optional[Any]): Default value if the key is not found.
+
+        Returns:
+            SeriesFrame: Underlying Pandas object if no key is provided,
+                or the value associated with the key.
+        """
         if key is None:
             return self.obj
         return self.obj.get(key, default=default)
@@ -870,30 +1246,58 @@ class BaseAccessor(Wrapping):
 
     @hybrid_property
     def ndim(cls_or_self) -> tp.Optional[int]:
-        """Number of dimensions in the object.
+        """Number of dimensions in the underlying object.
 
-        1 -> Series, 2 -> DataFrame."""
+        For example:
+
+        * 1 corresponds to a Series.
+        * 2 corresponds to a DataFrame.
+
+        Returns:
+            Optional[int]: The number of dimensions in the underlying object.
+        """
         if isinstance(cls_or_self, type):
             return None
         return cls_or_self.obj.ndim
 
     @hybrid_method
     def is_series(cls_or_self) -> bool:
-        """Whether the object is a Series."""
+        """Determine whether the underlying object is a Pandas Series.
+
+        Returns:
+            bool: True if the underlying object is a Series, False otherwise.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         if isinstance(cls_or_self, type):
             raise NotImplementedError
         return isinstance(cls_or_self.obj, pd.Series)
 
     @hybrid_method
     def is_frame(cls_or_self) -> bool:
-        """Whether the object is a DataFrame."""
+        """Determine whether the underlying object is a Pandas DataFrame.
+
+        Returns:
+            bool: True if the underlying object is a DataFrame, False otherwise.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         if isinstance(cls_or_self, type):
             raise NotImplementedError
         return isinstance(cls_or_self.obj, pd.DataFrame)
 
     @classmethod
     def resolve_shape(cls, shape: tp.ShapeLike) -> tp.Shape:
-        """Resolve shape."""
+        """Resolve the given shape to a two-dimensional format.
+
+        Args:
+            shape (ShapeLike): Input shape.
+
+        Returns:
+            Shape: Resolved two-dimensional shape.
+        """
         shape_2d = reshaping.to_2d_shape(shape)
         try:
             if cls.is_series() and shape_2d[1] > 1:
@@ -906,14 +1310,32 @@ class BaseAccessor(Wrapping):
 
     @classmethod
     def empty(cls, shape: tp.Shape, fill_value: tp.Scalar = np.nan, **kwargs) -> tp.SeriesFrame:
-        """Generate an empty Series/DataFrame of shape `shape` and fill with `fill_value`."""
+        """Generate an empty Pandas Series or DataFrame.
+
+        Args:
+            shape (Shape): Tuple specifying the dimensions of the output array.
+            fill_value (Scalar): Value to fill the object.
+            **kwargs: Keyword arguments for the Pandas constructor.
+
+        Returns:
+            SeriesFrame: Empty Series or DataFrame with the specified shape.
+        """
         if not isinstance(shape, tuple) or (isinstance(shape, tuple) and len(shape) == 1):
             return pd.Series(np.full(shape, fill_value), **kwargs)
         return pd.DataFrame(np.full(shape, fill_value), **kwargs)
 
     @classmethod
     def empty_like(cls, other: tp.SeriesFrame, fill_value: tp.Scalar = np.nan, **kwargs) -> tp.SeriesFrame:
-        """Generate an empty Series/DataFrame like `other` and fill with `fill_value`."""
+        """Generate an empty Pandas Series or DataFrame based on another object.
+
+        Args:
+            other (SeriesFrame): Reference Pandas object to mimic.
+            fill_value (Scalar): Value to fill the new object.
+            **kwargs: Keyword arguments for the Pandas constructor.
+
+        Returns:
+            SeriesFrame: Empty Series or DataFrame matching the structure of `other`.
+        """
         if checks.is_series(other):
             return cls.empty(other.shape, fill_value=fill_value, index=other.index, name=other.name, **kwargs)
         return cls.empty(other.shape, fill_value=fill_value, index=other.index, columns=other.columns, **kwargs)
@@ -926,10 +1348,20 @@ class BaseAccessor(Wrapping):
         wrap: bool = False,
         **kwargs,
     ) -> tp.Union[BaseAccessorT, tp.SeriesFrame]:
-        """See `vectorbtpro.base.wrapping.Wrapping.apply_to_index`.
+        """Apply an indexing operation to the accessor.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.wrapping.Wrapping.apply_to_index`.
+            wrap (bool): If False, return the underlying Pandas object; if True, return an accessor.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping.apply_to_index`.
+
+        Returns:
+            Union[BaseAccessor, SeriesFrame]: An accessor instance with the applied indexing,
+                or the underlying Pandas object if `wrap` is False.
 
         !!! note
-            If `wrap` is False, returns Pandas object, not accessor!"""
+            If `wrap` is False, returns Pandas object, not accessor!
+        """
         result = Wrapping.apply_to_index(self, *args, **kwargs)
         if wrap:
             return result
@@ -946,12 +1378,33 @@ class BaseAccessor(Wrapping):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Optional[tp.SeriesFrame]:
-        """Set value at each index point using `vectorbtpro.base.indexing.get_index_points`.
+        """Set values at specified index points of the data.
 
-        If `value_or_func` is a function, selects all keyword arguments that were not passed
-        to the `get_index_points` method, substitutes any templates, and passes everything to the function.
-        As context uses `kwargs`, `template_context`, and various variables such as `i` (iteration index),
-        `index_point` (absolute position in the index), `wrapper`, and `obj`."""
+        Determine index points using `vectorbtpro.base.indexing.get_index_points` and assign values accordingly.
+        If `value_or_func` is callable, it is invoked at each index point with a context that includes:
+
+        * `i`: iteration index.
+        * `index_point`: absolute position in the index.
+        * `wrapper`: the associated data wrapper.
+        * `obj`: the underlying data object.
+
+        Keyword arguments not used by `get_index_points` are filtered, template-substituted,
+        and passed to the callable.
+
+        Args:
+            value_or_func (Union[MaybeArray, Callable]): Value to assign or a function that
+                computes the value based on context.
+            *args: Positional arguments for `value_or_func` if it is callable.
+            inplace (bool): If True, modify the data object in place.
+            columns (Optional[MaybeSequence[Hashable]]): Column(s) where the value should be set.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexing.get_index_points`.
+
+                These are also passed to `value_or_func` if it is callable.
+
+        Returns:
+            Optional[SeriesFrame]: Pandas Series or DataFrame if `inplace` is False.
+        """
         if inplace:
             obj = self.obj
         else:
@@ -1016,12 +1469,35 @@ class BaseAccessor(Wrapping):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Optional[tp.SeriesFrame]:
-        """Set value at each index range using `vectorbtpro.base.indexing.get_index_ranges`.
+        """Set values over specified index ranges of the data.
 
-        If `value_or_func` is a function, selects all keyword arguments that were not passed
-        to the `get_index_points` method, substitutes any templates, and passes everything to the function.
-        As context uses `kwargs`, `template_context`, and various variables such as `i` (iteration index),
-        `index_slice` (absolute slice of the index), `wrapper`, and `obj`."""
+        Determine index ranges using `vectorbtpro.base.indexing.get_index_ranges` and assign values accordingly.
+        If `value_or_func` is callable, it is invoked for each range with a context that includes:
+
+        * `i`: iteration index.
+        * `index_slice`: a slice representing the absolute range in the index.
+        * `range_starts`: list of range starting indices.
+        * `range_ends`: list of range ending indices.
+        * `wrapper`: the associated data wrapper.
+        * `obj`: the underlying data object.
+
+        Keyword arguments not used by `get_index_ranges` are filtered, template-substituted,
+        and passed to the callable.
+
+        Args:
+            value_or_func (Union[MaybeArray, Callable]): Value to assign or a function that
+                computes the value based on context.
+            *args: Positional arguments for `value_or_func` if it is callable.
+            inplace (bool): If True, modify the data object in place.
+            columns (Optional[MaybeSequence[Hashable]]): Column(s) where the value should be set.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexing.get_index_ranges`.
+
+                These are also passed to `value_or_func` if it is callable.
+
+        Returns:
+            Optional[SeriesFrame]: Pandas Series or DataFrame if `inplace` is False.
+        """
         if inplace:
             obj = self.obj
         else:
@@ -1065,15 +1541,51 @@ class BaseAccessor(Wrapping):
         if inplace:
             return None
         return obj
+    
+    # ############# Splitting ############# #
+
+    def split(
+        self,
+        *args,
+        splitter_cls: tp.Optional[tp.Type[SplitterT]] = None,
+        wrap: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> tp.Any:
+        from vectorbtpro.generic.splitting.base import Splitter
+
+        if splitter_cls is None:
+            splitter_cls = Splitter
+        if wrap is None:
+            wrap = self.should_wrap()
+        wrapped_self = self if wrap else self.unwrapped
+        return splitter_cls.split_and_take(
+            self.wrapper.index, 
+            wrapped_self, 
+            *args, 
+            _take_kwargs=dict(into="reset_stacked"),
+            **kwargs
+        )
 
     # ############# Reshaping ############# #
 
     def to_1d_array(self) -> tp.Array1d:
-        """See `vectorbtpro.base.reshaping.to_1d` with `raw` set to True."""
+        """Convert the data to a one-dimensional array.
+
+        Calls `vectorbtpro.base.reshaping.to_1d` with `raw=True` on the underlying data.
+
+        Returns:
+            Array1d: One-dimensional representation of the data.
+        """
         return reshaping.to_1d_array(self.obj)
 
     def to_2d_array(self) -> tp.Array2d:
-        """See `vectorbtpro.base.reshaping.to_2d` with `raw` set to True."""
+        """Convert the data to a two-dimensional array.
+
+        Calls `vectorbtpro.base.reshaping.to_2d` with `raw=True` on the underlying data.
+
+        Returns:
+            Array2d: Two-dimensional representation of the data.
+        """
         return reshaping.to_2d_array(self.obj)
 
     def tile(
@@ -1083,10 +1595,23 @@ class BaseAccessor(Wrapping):
         axis: int = 1,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.base.reshaping.tile`.
+        """Tile the data by repeating it along a specified axis.
 
-        Set `axis` to 1 for columns and 0 for index.
-        Use `keys` as the outermost level."""
+        Calls `vectorbtpro.base.reshaping.tile` to generate tiled data.
+        Set `axis` to 1 for columns and 0 for index. If `keys` is provided,
+        it is used as the outermost level when combining indexes.
+
+        Args:
+            n (int): Number of times to tile the data.
+            keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
+            axis (int): Axis along which to tile the data (1 for columns, 0 for index).
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Tiled data, with updated index or columns if `keys` is provided.
+        """
         tiled = reshaping.tile(self.obj, n, axis=axis)
         if keys is not None:
             if axis == 1:
@@ -1110,10 +1635,23 @@ class BaseAccessor(Wrapping):
         axis: int = 1,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.base.reshaping.repeat`.
+        """Repeat the data along a specified axis.
 
-        Set `axis` to 1 for columns and 0 for index.
-        Use `keys` as the outermost level."""
+        Calls `vectorbtpro.base.reshaping.repeat` to generate repeated data.
+        Set `axis` to 1 for columns and 0 for index. If `keys` is provided,
+        it is used as the outermost level when combining indexes.
+
+        Args:
+            n (int): Number of times to repeat the data.
+            keys (Optional[IndexLike]): Outer-level keys used to combine indexes.
+            axis (int): Axis along which to repeat the data (1 for columns, 0 for index).
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Repeated data, with updated index or columns if `keys` is provided.
+        """
         repeated = reshaping.repeat(self.obj, n, axis=axis)
         if keys is not None:
             if axis == 1:
@@ -1131,9 +1669,21 @@ class BaseAccessor(Wrapping):
         return repeated
 
     def align_to(self, other: tp.SeriesFrame, wrap_kwargs: tp.KwargsLike = None, **kwargs) -> tp.SeriesFrame:
-        """Align to `other` on their axes using `vectorbtpro.base.indexes.align_index_to`.
+        """Align input object to match the axes of a given object.
 
-        Usage:
+        Args:
+            other (SeriesFrame): Object to align to.
+
+                Must be a `pd.Series` or `pd.DataFrame`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.align_index_to`.
+
+        Returns:
+            SeriesFrame: Aligned object.
+
+        Example:
             ```pycon
             >>> df1 = pd.DataFrame(
             ...     [[1, 2], [3, 4]],
@@ -1182,7 +1732,15 @@ class BaseAccessor(Wrapping):
         *others: tp.Union[tp.SeriesFrame, "BaseAccessor"],
         **kwargs,
     ) -> tp.Tuple[tp.SeriesFrame, ...]:
-        """Align objects using `vectorbtpro.base.indexes.align_indexes`."""
+        """Align input objects to a common index and columns.
+
+        Args:
+            *others (Union[SeriesFrame, BaseAccessor]): (Additional) objects to align.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexes.align_indexes`.
+
+        Returns:
+            Tuple[SeriesFrame, ...]: The aligned objects.
+        """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
         if isinstance(cls_or_self, type):
             objs = others
@@ -1210,9 +1768,20 @@ class BaseAccessor(Wrapping):
         return tuple(new_objs)
 
     def cross_with(self, other: tp.SeriesFrame, wrap_kwargs: tp.KwargsLike = None) -> tp.SeriesFrame:
-        """Align to `other` on their axes using `vectorbtpro.base.indexes.cross_index_with`.
+        """Cross align the input object with another object on both axes.
 
-        Usage:
+        Args:
+            other (SeriesFrame): Object to cross align with.
+
+                Must be a `pd.Series` or `pd.DataFrame`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Cross aligned object.
+
+        Example:
             ```pycon
             >>> df1 = pd.DataFrame(
             ...     [[1, 2, 3, 4], [5, 6, 7, 8]],
@@ -1267,7 +1836,14 @@ class BaseAccessor(Wrapping):
 
     @hybrid_method
     def cross(cls_or_self, *others: tp.Union[tp.SeriesFrame, "BaseAccessor"]) -> tp.Tuple[tp.SeriesFrame, ...]:
-        """Align objects using `vectorbtpro.base.indexes.cross_indexes`."""
+        """Cross align input objects on both axes.
+
+        Args:
+            *others (Union[SeriesFrame, BaseAccessor]): (Additional) objects to cross align.
+
+        Returns:
+            Tuple[SeriesFrame, ...]: The cross aligned objects.
+        """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
         if isinstance(cls_or_self, type):
             objs = others
@@ -1296,7 +1872,16 @@ class BaseAccessor(Wrapping):
 
     @hybrid_method
     def broadcast(cls_or_self, *others: tp.Union[tp.ArrayLike, "BaseAccessor"], **kwargs) -> tp.Any:
-        """See `vectorbtpro.base.reshaping.broadcast`."""
+        """Broadcast input arrays to a common shape.
+
+        Args:
+            *others (Union[ArrayLike, BaseAccessor]): (Additional) arrays for broadcasting.
+
+            **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.broadcast`.
+
+        Returns:
+            Any: Broadcasted result.
+        """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
         if isinstance(cls_or_self, type):
             objs = others
@@ -1305,14 +1890,31 @@ class BaseAccessor(Wrapping):
         return reshaping.broadcast(*objs, **kwargs)
 
     def broadcast_to(self, other: tp.Union[tp.ArrayLike, "BaseAccessor"], **kwargs) -> tp.Any:
-        """See `vectorbtpro.base.reshaping.broadcast_to`."""
+        """Broadcast the input object to the shape of another array.
+
+        Args:
+            other (Union[ArrayLike, BaseAccessor]): Array to broadcast to.
+            **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.broadcast_to`.
+
+        Returns:
+            Any: Broadcasted result.
+        """
         if isinstance(other, BaseAccessor):
             other = other.obj
         return reshaping.broadcast_to(self.obj, other, **kwargs)
 
     @hybrid_method
     def broadcast_combs(cls_or_self, *others: tp.Union[tp.ArrayLike, "BaseAccessor"], **kwargs) -> tp.Any:
-        """See `vectorbtpro.base.reshaping.broadcast_combs`."""
+        """Compute broadcast combinations for input arrays.
+
+        Args:
+            *others (Union[ArrayLike, BaseAccessor]): (Additional) arrays for broadcasting combinations.
+
+            **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.broadcast_combs`.
+
+        Returns:
+            Any: Result of broadcast combinations.
+        """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
         if isinstance(cls_or_self, type):
             objs = others
@@ -1321,19 +1923,51 @@ class BaseAccessor(Wrapping):
         return reshaping.broadcast_combs(*objs, **kwargs)
 
     def make_symmetric(self, *args, **kwargs) -> tp.Frame:
-        """See `vectorbtpro.base.reshaping.make_symmetric`."""
+        """Return a symmetric version of the DataFrame using `vectorbtpro.base.reshaping.make_symmetric`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.reshaping.make_symmetric`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.make_symmetric`.
+
+        Returns:
+            Frame: Symmetric reshaped DataFrame.
+        """
         return reshaping.make_symmetric(self.obj, *args, **kwargs)
 
     def unstack_to_array(self, *args, **kwargs) -> tp.Array:
-        """See `vectorbtpro.base.reshaping.unstack_to_array`."""
+        """Return an array by unstacking data using `vectorbtpro.base.reshaping.unstack_to_array`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.reshaping.unstack_to_array`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.unstack_to_array`.
+
+        Returns:
+            Array: Resulting unstacked array.
+        """
         return reshaping.unstack_to_array(self.obj, *args, **kwargs)
 
     def unstack_to_df(self, *args, **kwargs) -> tp.Frame:
-        """See `vectorbtpro.base.reshaping.unstack_to_df`."""
+        """Return a DataFrame by unstacking data using `vectorbtpro.base.reshaping.unstack_to_df`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.reshaping.unstack_to_df`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.unstack_to_df`.
+
+        Returns:
+            Frame: Resulting unstacked DataFrame.
+        """
         return reshaping.unstack_to_df(self.obj, *args, **kwargs)
 
     def to_dict(self, *args, **kwargs) -> tp.Mapping:
-        """See `vectorbtpro.base.reshaping.to_dict`."""
+        """Convert the object to a dictionary using `vectorbtpro.base.reshaping.to_dict`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.reshaping.to_dict`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.reshaping.to_dict`.
+
+        Returns:
+            Mapping: Dictionary representation of the data.
+        """
         return reshaping.to_dict(self.obj, *args, **kwargs)
 
     # ############# Conversion ############# #
@@ -1344,7 +1978,16 @@ class BaseAccessor(Wrapping):
         columns_are_symbols: bool = True,
         **kwargs,
     ) -> DataT:
-        """Convert to a `vectorbtpro.data.base.Data` instance."""
+        """Convert the object to a `vectorbtpro.data.base.Data` instance.
+
+        Args:
+            data_cls (Optional[Type[Data]]): Data class to use for conversion.
+            columns_are_symbols (bool): Flag indicating whether the columns represent symbols.
+            **kwargs: Keyword arguments for `Data.from_data`.
+
+        Returns:
+            Data: A `vectorbtpro.data.base.Data` instance representing the converted data.
+        """
         if data_cls is None:
             from vectorbtpro.data.base import Data
 
@@ -1366,19 +2009,34 @@ class BaseAccessor(Wrapping):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Apply a function `apply_func`.
+        """Apply a function to the object with broadcasting and template substitution support.
 
-        Set `keep_pd` to True to keep inputs as pandas objects, otherwise convert to NumPy arrays.
+        Args:
+            apply_func (Callable): Function to apply.
+            *args: Positional arguments for `apply_func`.
+            keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
+            to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
 
-        Set `to_2d` to True to reshape inputs to 2-dim arrays, otherwise keep as-is.
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
 
-        `*args` and `**kwargs` are passed to `apply_func`.
+                See `vectorbtpro.base.reshaping.broadcast`.
+            template_context (KwargsLike): Additional context for template substitution.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `apply_func`.
+
+        Returns:
+            SeriesFrame: Result after applying the function.
 
         !!! note
-            The resulted array must have the same shape as the original array.
+            The resulting array must have the same shape as the original array.
 
-        Usage:
-            * Using instance method:
+        Examples:
+            Using instance method:
 
             ```pycon
             >>> sr = pd.Series([1, 2], index=['x', 'y'])
@@ -1388,7 +2046,7 @@ class BaseAccessor(Wrapping):
             dtype: int64
             ```
 
-            * Using class method, templates, and broadcasting:
+            Using class method, templates, and broadcasting:
 
             ```pycon
             >>> sr.vbt.apply(
@@ -1436,9 +2094,21 @@ class BaseAccessor(Wrapping):
         broadcast_kwargs: tp.KwargsLike = None,
         keys: tp.Optional[tp.IndexLike] = None,
     ) -> tp.Frame:
-        """Concatenate with `others` along columns.
+        """Concatenate the object with additional arrays along columns.
 
-        Usage:
+        Args:
+            *others (ArrayLike): (Additional) arrays or objects to concatenate.
+
+                If an element is an instance of `BaseAccessor`, its `.obj` attribute is used.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast`.
+            keys (Optional[IndexLike]): Keys to label the columns in the resulting DataFrame.
+
+        Returns:
+            Frame: Concatenated DataFrame.
+
+        Example:
             ```pycon
             >>> sr = pd.Series([1, 2], index=['x', 'y'])
             >>> df = pd.DataFrame([[3, 4], [5, 6]], index=['x', 'y'], columns=['a', 'b'])
@@ -1477,19 +2147,45 @@ class BaseAccessor(Wrapping):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeTuple[tp.Frame]:
-        """Apply `apply_func` `ntimes` times and concatenate the results along columns.
+        """Apply the given function `apply_func` multiple times and concatenate the results along columns.
 
-        See `vectorbtpro.base.combining.apply_and_concat`.
+        This method applies `apply_func` `ntimes` times on the parent object,
+        passing additional arguments and keyword arguments as provided.
+        If `keys` is specified, the output columns are labeled accordingly;
+        otherwise, a default numeric index is created. The method also handles broadcasting,
+        template substitutions, and optional reshaping based on the flags `keep_pd` and `to_2d`.
 
-        `ntimes` is the number of times to call `apply_func`, while `n_outputs` is the number of outputs to expect.
+        See also `vectorbtpro.base.combining.apply_and_concat`.
 
-        `*args` and `**kwargs` are passed to `vectorbtpro.base.combining.apply_and_concat`.
+        Args:
+            ntimes (int): Number of times to execute `apply_func`.
+            apply_func (Callable): Function to execute, with the iteration index as its first parameter.
+            *args: Positional arguments for `apply_func`.
+            keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
+            to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
+            keys (Optional[IndexLike]): Labels for the concatenated results along columns.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast`.
+            template_context (KwargsLike): Additional context for template substitution.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `apply_func`.
+
+        Returns:
+            MaybeTuple[Frame]: The wrapped result as a single DataFrame or a tuple of frames,
+                or None if no result is produced.
 
         !!! note
-            The resulted arrays to be concatenated must have the same shape as broadcast input arrays.
+            The arrays to be concatenated must have the same shape as the broadcast input arrays.
 
-        Usage:
-            * Using instance method:
+        Examples:
+            Using instance method:
 
             ```pycon
             >>> df = pd.DataFrame([[3, 4], [5, 6]], index=['x', 'y'], columns=['a', 'b'])
@@ -1505,7 +2201,7 @@ class BaseAccessor(Wrapping):
             y  5  6  10  12  15  18
             ```
 
-            * Using class method, templates, and broadcasting:
+            Using class method, templates, and broadcasting:
 
             ```pycon
             >>> sr = pd.Series([1, 2, 3], index=['x', 'y', 'z'])
@@ -1524,7 +2220,7 @@ class BaseAccessor(Wrapping):
             z          3  6  9  4  7  10  5  8  11
             ```
 
-            * To change the execution engine or specify other engine-related arguments, use `execute_kwargs`:
+            To change the execution engine or specify other engine-related arguments, use `execute_kwargs`:
 
             ```pycon
             >>> import time
@@ -1595,49 +2291,57 @@ class BaseAccessor(Wrapping):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Combine with `other` using `combine_func`.
+        """Combine this object with additional objects using a specified combine function.
 
         Args:
-            obj (array_like): Object(s) to combine this array with.
-            combine_func (callable): Function to combine two arrays.
+            obj (array_like): Object or sequence of objects to combine with.
+            combine_func (callable): Function used to combine two arrays.
 
-                Can be Numba-compiled.
-            *args: Variable arguments passed to `combine_func`.
-            allow_multiple (bool): Whether a tuple/list/Index will be considered as multiple objects in `other`.
+                The function may be Numba-compiled.
+            *args: Positional arguments for `combine_func`.
+            allow_multiple (bool): Determines if a tuple, list, or Index is interpreted as multiple objects.
 
-                Takes effect only when using the instance method.
-            keep_pd (bool): Whether to keep inputs as pandas objects, otherwise convert to NumPy arrays.
-            to_2d (bool): Whether to reshape inputs to 2-dim arrays, otherwise keep as-is.
-            concat (bool): Whether to concatenate the results along the column axis.
-                Otherwise, pairwise combine into a Series/DataFrame of the same shape.
+                Applicable only when using the instance method.
+            keep_pd (bool): If True, retain inputs as Pandas objects; otherwise, convert them to NumPy arrays.
+            to_2d (bool): If True, reshapes inputs to two-dimensional arrays.
+            concat (bool): Determines whether to concatenate the results along the column axis or
+                combine objects pairwise.
 
-                If True, see `vectorbtpro.base.combining.combine_and_concat`.
-                If False, see `vectorbtpro.base.combining.combine_multiple`.
-                If None, becomes True if there are multiple objects to combine.
+                * If True, see `vectorbtpro.base.combining.combine_and_concat`.
+                * If False, see `vectorbtpro.base.combining.combine_multiple`.
+                * If None, defaults to True when combining multiple objects.
 
-                Can only concatenate using the instance method.
-            keys (index_like): Outermost column level.
-            broadcast_named_args (dict): Dictionary with arguments to broadcast against each other.
-            broadcast_kwargs (dict): Keyword arguments passed to `vectorbtpro.base.reshaping.broadcast`.
-            template_context (dict): Context used to substitute templates in `args` and `kwargs`.
-            wrap_kwargs (dict): Keyword arguments passed to `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
-            **kwargs: Keyword arguments passed to `combine_func`.
+                Can only be used with the instance method.
+            keys (index_like): Label(s) for the outermost column level.
+            broadcast_named_args (KwargsLike): Additional named arguments for broadcasting.
+
+                Use templates such as `vectorbtpro.utils.template.Rep` to substitute
+                callback function arguments with their broadcasted values.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast`.
+            template_context (KwargsLike): Additional context for template substitution.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `combine_func`.
+
+        Returns:
+            SeriesFrame: Result after combining the objects.
 
         !!! note
-            If `combine_func` is Numba-compiled, will broadcast using `WRITEABLE` and `C_CONTIGUOUS`
-            flags, which can lead to an expensive computation overhead if passed objects are large and
-            have different shape/memory order. You also must ensure that all objects have the same data type.
+            If `combine_func` is Numba-compiled, inputs are broadcast using `WRITEABLE` and
+            `C_CONTIGUOUS` flags, which may incur significant overhead for large objects with
+            differing shapes or memory orders. Ensure that all objects have the same data type
+            and that each argument in `*args` is Numba-compatible.
 
-            Also remember to bring each in `*args` to a Numba-compatible format.
-
-        Usage:
-            * Using instance method:
+        Examples:
+            Using instance method:
 
             ```pycon
             >>> sr = pd.Series([1, 2], index=['x', 'y'])
             >>> df = pd.DataFrame([[3, 4], [5, 6]], index=['x', 'y'], columns=['a', 'b'])
 
-            >>> # using instance method
             >>> sr.vbt.combine(df, np.add)
                a  b
             x  4  5
@@ -1672,7 +2376,7 @@ class BaseAccessor(Wrapping):
             y  17  20
             ```
 
-            * Using class method, templates, and broadcasting:
+            Using class method, templates, and broadcasting:
 
             ```pycon
             >>> sr = pd.Series([1, 2, 3], index=['x', 'y', 'z'])
@@ -1691,7 +2395,7 @@ class BaseAccessor(Wrapping):
             z            5  6  7  6  7  8  7  8  9
             ```
 
-            * To change the execution engine or specify other engine-related arguments, use `execute_kwargs`:
+            To change the execution engine or specify other engine-related arguments, use `execute_kwargs`:
 
             ```pycon
             >>> import time
@@ -1786,16 +2490,40 @@ class BaseAccessor(Wrapping):
         global_dict: tp.Optional[tp.Mapping] = None,
         broadcast_kwargs: tp.KwargsLike = None,
         wrap_kwargs: tp.KwargsLike = None,
-    ):
+    ) -> tp.SeriesFrame:
         """Evaluate a simple array expression element-wise using NumExpr or NumPy.
 
-        If NumExpr is enables, only one-line statements are supported. Otherwise, uses
-        `vectorbtpro.utils.eval_.evaluate`.
+        Perform element-wise evaluation of the provided array expression.
+        If `use_numexpr` is enabled, only one-line expressions are supported.
+        Otherwise, the evaluation is performed via `vectorbtpro.utils.eval_.evaluate`.
+
+        Args:
+            expr (str): Expression string.
+
+                Must contain valid Python code and can be single-line or multi-line.
+            frames_back (int): Number of frames to go back from the current frame.
+            use_numexpr (bool): Flag indicating whether to use NumExpr for evaluation.
+            numexpr_kwargs (KwargsLike): Keyword arguments for `numexpr.evaluate`.
+            local_dict (Optional[Mapping]): Dictionary of local variables.
+
+                If not provided, uses the calling frame's local variables.
+            global_dict (Optional[Mapping]): Dictionary of global variables.
+
+                If not provided, uses the calling frame's global variables.
+            broadcast_kwargs (KwargsLike): Keyword arguments for broadcasting.
+
+                See `vectorbtpro.base.reshaping.broadcast`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            Any: Evaluated expression wrapped using the broadcast wrapper.
 
         !!! note
             All required variables will broadcast against each other prior to the evaluation.
 
-        Usage:
+        Example:
             ```pycon
             >>> sr = pd.Series([1, 2, 3], index=['x', 'y', 'z'])
             >>> df = pd.DataFrame([[4, 5, 6]], index=['x', 'y', 'z'], columns=['a', 'b', 'c'])
@@ -1846,9 +2574,15 @@ class BaseAccessor(Wrapping):
 
 
 class BaseSRAccessor(BaseAccessor):
-    """Accessor on top of Series.
+    """Class representing an accessor for one-dimensional Series data.
 
-    Accessible via `pd.Series.vbt` and all child accessors."""
+    Accessible via `pd.Series.vbt` and its child accessors.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
+        obj (Optional[ArrayLike]): Optional array-like object.
+        **kwargs: Keyword arguments for `BaseAccessor`.
+    """
 
     def __init__(
         self,
@@ -1881,9 +2615,15 @@ class BaseSRAccessor(BaseAccessor):
 
 
 class BaseDFAccessor(BaseAccessor):
-    """Accessor on top of DataFrames.
+    """Class representing an accessor for two-dimensional DataFrame data.
 
-    Accessible via `pd.DataFrame.vbt` and all child accessors."""
+    Accessible via `pd.DataFrame.vbt` and its child accessors.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
+        obj (Optional[ArrayLike]): Optional array-like object.
+        **kwargs: Keyword arguments for `BaseAccessor`.
+    """
 
     def __init__(
         self,

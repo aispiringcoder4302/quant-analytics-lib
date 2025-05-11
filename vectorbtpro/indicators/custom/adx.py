@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `ADX`."""
+"""Module defining the `ADX` class for calculating the Average Directional Index indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -28,14 +28,41 @@ ADX = IndicatorFactory(
     input_names=["high", "low", "close"],
     param_names=["window", "wtype"],
     output_names=["plus_di", "minus_di", "dx", "adx"],
+    attr_settings=dict(
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        close=dict(
+            doc="Close price series.",
+        ),
+        plus_di=dict(
+            doc="Positive Directional Indicator (DI) series.",
+        ),
+        minus_di=dict(
+            doc="Negative Directional Indicator (DI) series.",
+        ),
+        dx=dict(
+            doc="Directional Movement Index (DX) series.",
+        ),
+        adx=dict(
+            doc="Average Directional Index (ADX) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.adx_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         )
     ),
     window=14,
@@ -46,15 +73,19 @@ ADX = IndicatorFactory(
 
 
 class _ADX(ADX):
-    """Average Directional Movement Index (ADX).
+    """Class representing the Average Directional Movement Index (ADX) indicator.
 
-    The indicator is used by some traders to determine the strength of a trend.
+    Measures trend strength to assist traders in assessing market conditions.
 
-    See [Average Directional Index (ADX)](https://www.investopedia.com/terms/a/adx.asp)."""
+    See:
+        * `ADX.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.adx_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/a/adx.asp for the definition of ADX.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plus_di_trace_kwargs: tp.KwargsLike = None,
         minus_di_trace_kwargs: tp.KwargsLike = None,
         adx_trace_kwargs: tp.KwargsLike = None,
@@ -62,18 +93,25 @@ class _ADX(ADX):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `ADX.plus_di`, `ADX.minus_di`, and `ADX.adx`.
+        """Plot ADX traces including `ADX.plus_di`, `ADX.minus_di`, and `ADX.adx`.
 
         Args:
-            column (str): Name of the column to plot.
-            plus_di_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `ADX.plus_di`.
-            minus_di_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `ADX.minus_di`.
-            adx_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `ADX.adx`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            plus_di_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ADX.plus_di`.
+            minus_di_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ADX.minus_di`.
+            adx_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ADX.adx`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Figure containing the plotted ADX traces.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.ADX.run(ohlcv['High'], ohlcv['Low'], ohlcv['Close']).plot().show()
             ```
@@ -86,7 +124,7 @@ class _ADX(ADX):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Class decorators for base classes."""
+"""Module providing class decorators for base classes."""
 
 from functools import cached_property as cachedproperty
 
@@ -20,12 +20,18 @@ __all__ = []
 
 
 def override_arg_config(config: Config, merge_configs: bool = True) -> tp.ClassWrapper:
-    """Class decorator to override the argument config of a class subclassing
+    """Class decorator to override the argument configuration of a subclass of
     `vectorbtpro.base.preparing.BasePreparer`.
 
-    Instead of overriding `_arg_config` class attribute, you can pass `config` directly to this decorator.
+    Args:
+        config (Config): Configuration to override the current argument config.
+        merge_configs (bool): Whether to merge the existing configuration with the provided one.
 
-    Disable `merge_configs` to not merge, which will effectively disable field inheritance."""
+            If False, replace it entirely.
+
+    Returns:
+        ClassWrapper: Decorated class with the updated `_arg_config`.
+    """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         checks.assert_subclass_of(cls, "BasePreparer")
@@ -42,9 +48,16 @@ def override_arg_config(config: Config, merge_configs: bool = True) -> tp.ClassW
 
 
 def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
-    """Class decorator to attach properties for arguments defined in the argument config
-    of a `vectorbtpro.base.preparing.BasePreparer` subclass."""
+    """Class decorator to attach properties for arguments defined in the argument configuration
+    of a subclass of `vectorbtpro.base.preparing.BasePreparer`.
 
+    Args:
+        cls (Type[T]): Subclass of `vectorbtpro.base.preparing.BasePreparer` for which
+            argument properties will be attached.
+
+    Returns:
+        Type[T]: The decorated class with the new argument properties attached.
+    """
     checks.assert_subclass_of(cls, "BasePreparer")
 
     for arg_name, settings in cls.arg_config.items():
@@ -56,7 +69,7 @@ def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 return_type = tp.ArrayLike
             else:
                 return_type = object
-            target_pre_name = "_pre_" + arg_name
+            target_pre_name = "pre__" + arg_name
             if not hasattr(cls, target_pre_name):
 
                 def pre_arg_prop(self, _arg_name: str = arg_name) -> return_type:
@@ -66,15 +79,17 @@ def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 pre_arg_prop.__module__ = cls.__module__
                 pre_arg_prop.__qualname__ = f"{cls.__name__}.{pre_arg_prop.__name__}"
                 if broadcast and substitute_templates:
-                    pre_arg_prop.__doc__ = f"Argument `{arg_name}` before broadcasting and template substitution."
+                    pre_arg_prop.__doc__ = (
+                        f"Original value of argument `{arg_name}` before broadcasting and template substitution."
+                    )
                 elif broadcast:
-                    pre_arg_prop.__doc__ = f"Argument `{arg_name}` before broadcasting."
+                    pre_arg_prop.__doc__ = f"Original value of argument `{arg_name}` before broadcasting."
                 else:
-                    pre_arg_prop.__doc__ = f"Argument `{arg_name}` before template substitution."
+                    pre_arg_prop.__doc__ = f"Original value of argument `{arg_name}` before template substitution."
                 setattr(cls, pre_arg_prop.__name__, cachedproperty(pre_arg_prop))
                 getattr(cls, pre_arg_prop.__name__).__set_name__(cls, pre_arg_prop.__name__)
 
-            target_post_name = "_post_" + arg_name
+            target_post_name = "post__" + arg_name
             if not hasattr(cls, target_post_name):
 
                 def post_arg_prop(self, _arg_name: str = arg_name) -> return_type:
@@ -84,11 +99,13 @@ def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 post_arg_prop.__module__ = cls.__module__
                 post_arg_prop.__qualname__ = f"{cls.__name__}.{post_arg_prop.__name__}"
                 if broadcast and substitute_templates:
-                    post_arg_prop.__doc__ = f"Argument `{arg_name}` after broadcasting and template substitution."
+                    post_arg_prop.__doc__ = (
+                        f"Processed value of argument `{arg_name}` after broadcasting and template substitution."
+                    )
                 elif broadcast:
-                    post_arg_prop.__doc__ = f"Argument `{arg_name}` after broadcasting."
+                    post_arg_prop.__doc__ = f"Processed value of argument `{arg_name}` after broadcasting."
                 else:
-                    post_arg_prop.__doc__ = f"Argument `{arg_name}` after template substitution."
+                    post_arg_prop.__doc__ = f"Processed value of argument `{arg_name}` after template substitution."
                 setattr(cls, post_arg_prop.__name__, cachedproperty(post_arg_prop))
                 getattr(cls, post_arg_prop.__name__).__set_name__(cls, post_arg_prop.__name__)
 
@@ -101,7 +118,7 @@ def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 arg_prop.__name__ = target_name
                 arg_prop.__module__ = cls.__module__
                 arg_prop.__qualname__ = f"{cls.__name__}.{arg_prop.__name__}"
-                arg_prop.__doc__ = f"Argument `{arg_name}`."
+                arg_prop.__doc__ = f"Processed value for argument `{arg_name}`."
                 setattr(cls, arg_prop.__name__, cachedproperty(arg_prop))
                 getattr(cls, arg_prop.__name__).__set_name__(cls, arg_prop.__name__)
         elif (isinstance(attach, bool) and attach) or attach is None:
@@ -113,7 +130,7 @@ def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 arg_prop.__name__ = arg_name
                 arg_prop.__module__ = cls.__module__
                 arg_prop.__qualname__ = f"{cls.__name__}.{arg_prop.__name__}"
-                arg_prop.__doc__ = f"Argument `{arg_name}`."
+                arg_prop.__doc__ = f"Processed value for argument `{arg_name}`."
                 setattr(cls, arg_prop.__name__, cachedproperty(arg_prop))
                 getattr(cls, arg_prop.__name__).__set_name__(cls, arg_prop.__name__)
 

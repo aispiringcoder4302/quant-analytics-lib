@@ -8,13 +8,12 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RPROBNX`."""
-
-import numpy as np
+"""Module providing the `RPROBNX` class for generating random entry and exit signals based on probabilities."""
 
 from vectorbtpro.indicators.configs import flex_elem_param_config
 from vectorbtpro.signals.factory import SignalFactory
 from vectorbtpro.signals.nb import rand_by_prob_place_nb
+from vectorbtpro.utils.config import merge_dicts
 
 __all__ = [
     "RPROBNX",
@@ -40,21 +39,32 @@ RPROBNX = SignalFactory(
         pass_kwargs=["pick_first"],
     ),
     param_settings=dict(
-        entry_prob=flex_elem_param_config,
-        exit_prob=flex_elem_param_config,
+        entry_prob=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Probability of placing an entry, as a scalar or an array.",
+            ),
+        ),
+        exit_prob=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Probability of placing an exit, as a scalar or an array.",
+            ),
+        ),
     ),
     seed=None,
 )
 
 
 class _RPROBNX(RPROBNX):
-    """Random entry and exit signal generator based on probabilities.
+    """Class representing a random entry and exit signal generator based on probabilities.
 
-    Generates `entries` and `exits` based on `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
+    See:
+        * `RPROBNX.run` for the main entry point.
+        * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the entry and exit placement.
+        * `vectorbtpro.signals.generators.rprob.RPROB` for parameter details.
 
-    See `RPROB` for notes on parameters.
-
-    Usage:
+    Examples:
         Test all probability combinations:
 
         ```pycon

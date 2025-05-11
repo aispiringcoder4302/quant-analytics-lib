@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Class decorators for records."""
+"""Module providing class decorators for records."""
 
 import keyword
 from functools import partial
@@ -24,12 +24,21 @@ __all__ = []
 
 
 def override_field_config(config: Config, merge_configs: bool = True) -> tp.ClassWrapper:
-    """Class decorator to override the field config of a class subclassing
-    `vectorbtpro.records.base.Records`.
+    """Class decorator to override the field configuration of a subclass of `vectorbtpro.records.base.Records`.
 
-    Instead of overriding `_field_config` class attribute, you can pass `config` directly to this decorator.
+    Pass a configuration to this decorator to override the `_field_config` attribute of the class.
+    If merging is enabled, the existing configuration is merged with the provided configuration.
+    Use merge_configs=False to disable merging and effectively disable field inheritance.
 
-    Disable `merge_configs` to not merge, which will effectively disable field inheritance."""
+    Args:
+        config (Config): Configuration to override the field configuration.
+        merge_configs (bool): Whether to merge the existing configuration with the provided one.
+
+            If False, replace it entirely.
+
+    Returns:
+        ClassWrapper: Decorator function that returns the decorated class.
+    """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         checks.assert_subclass_of(cls, "Records")
@@ -46,35 +55,42 @@ def override_field_config(config: Config, merge_configs: bool = True) -> tp.Clas
 
 
 def attach_fields(*args, on_conflict: str = "raise") -> tp.FlexClassWrapper:
-    """Class decorator to attach field properties in a `vectorbtpro.records.base.Records` class.
+    """Class decorator to attach field properties to a subclass of `vectorbtpro.records.base.Records`.
 
-    Will extract `dtype` and other relevant information from `vectorbtpro.records.base.Records.field_config`
-    and map its fields as properties. This behavior can be changed by using `config`.
+    Extracts `dtype` and additional metadata from the class's `field_config` to generate properties that
+    map fields. Additional configuration can be provided via a dictionary to override the default behavior.
 
     !!! note
-        Make sure to run `attach_fields` after `override_field_config`.
+        Ensure that `attach_fields` is applied after `override_field_config`.
 
-    `config` must contain fields (keys) and dictionaries (values) with the following keys:
+    The configuration (if provided) should include keys corresponding to field names, each mapping to
+    a dictionary that may contain:
 
-    * `attach`: Whether to attach the field property. Can be provided as a string to be used
-        as a target attribute name. Defaults to True.
-    * `defaults`: Dictionary with default keyword arguments for `vectorbtpro.records.base.Records.map_field`.
-        Defaults to an empty dict.
-    * `attach_filters`: Whether to attach filters based on the field's values. Can be provided as a dict
-        to be used instead of the mapping (filter value -> target filter name). Defaults to False.
-        If True, defaults to `mapping` in `vectorbtpro.records.base.Records.field_config`.
-    * `filter_defaults`: Dictionary with default keyword arguments for `vectorbtpro.records.base.Records.apply_mask`.
-        Can be provided by target filter name. Defaults to an empty dict.
-    * `on_conflict`: Overrides global `on_conflict` for both field and filter properties.
+    * `attach`: Determines whether to attach the field property.
+        A string value may be provided to specify the target attribute name.
+    * `defaults`: Dictionary with keyword arguments for `vectorbtpro.records.base.Records.map_field`.
+    * `attach_filters`: Specifies whether to attach filters based on field values.
+        If provided as a dictionary, it maps filter values to target filter names.
+        When True, the mapping defined in `field_config` is used.
+    * `filter_defaults`: Dictionary with keyword arguments for `vectorbtpro.records.base.Records.apply_mask`.
+        It can be specified globally or per target filter name.
+    * `on_conflict`: Overrides the global `on_conflict` setting for both field and filter properties.
 
-    Any potential attribute name is prepared by placing underscores between capital letters and
-    converting to the lower case.
+    Attribute names are derived by inserting underscores between capital letters and converting to lowercase.
+    If an attribute with the same name exists and is not listed in `field_config`:
 
-    If an attribute with the same name already exists in the class but the name is not listed in the field config:
+    * It is overridden if `on_conflict` is "override".
+    * It is ignored if `on_conflict` is "ignore".
+    * An error is raised if `on_conflict` is "raise".
 
-    * it will be overridden if `on_conflict` is 'override'
-    * it will be ignored if `on_conflict` is 'ignore'
-    * an error will be raised if `on_conflict` is 'raise'
+    Args:
+        *args: Positional arguments representing either the decorated class
+            or a configuration dictionary.
+        on_conflict (str): Strategy for handling attribute name conflicts,
+            which can be "raise", "ignore", or "override".
+
+    Returns:
+        FlexClassWrapper: Decorator that attaches field properties to the target class.
     """
 
     def wrapper(cls: tp.Type[tp.T], config: tp.DictLike = None) -> tp.Type[tp.T]:
@@ -205,23 +221,36 @@ def attach_fields(*args, on_conflict: str = "raise") -> tp.FlexClassWrapper:
 
 
 def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
-    """Class decorator to attach shortcut properties.
+    """Attach shortcut properties to a subclass of `vectorbtpro.records.base.Records`.
 
-    `config` must contain target property names (keys) and settings (values) with the following keys:
+    This class decorator adds shortcut properties to a class based on a configuration mapping.
 
-    * `method_name`: Name of the source method. Defaults to the target name prepended with the prefix `get_`.
-    * `obj_type`: Type of the returned object. Can be 'array' for 2-dim arrays, 'red_array' for 1-dim arrays,
-        'records' for record arrays, and 'mapped_array' for mapped arrays. Defaults to 'records'.
-    * `group_aware`: Whether the returned object is aligned based on the current grouping.
+    The configuration mapping `config` must have target property names as keys and their
+    corresponding settings as values. Each setting may include the following keys:
+
+    * `method_name`: Name of the source method.
+        If omitted, defaults to the target name prefixed with `get_`.
+    * `obj_type`: Type of the returned object.
+        Supported types are "array" for 2-dimensional arrays, "red_array" for 1-dimensional arrays,
+        "records" for record arrays, and "mapped_array" for mapped arrays. Defaults to "records".
+    * `group_by_aware`: Whether the returned object is aligned based on current grouping.
         Defaults to True.
-    * `method_kwargs`: Keyword arguments passed to the source method. Defaults to None.
-    * `decorator`: Defaults to `vectorbtpro.utils.decorators.cached_property` for object types
-        'records' and 'red_array'. Otherwise, to `vectorbtpro.utils.decorators.cacheable_property`.
-    * `decorator_kwargs`: Keyword arguments passed to the decorator. By default,
-        includes options `obj_type` and `group_aware`.
-    * `docstring`: Method docstring.
+    * `method_kwargs`: Keyword arguments for the source method.
+    * `decorator`: Decorator function.
+        If not specified, defaults to `vectorbtpro.utils.decorators.cached_property` for object types
+        "records" and "red_array", and to `vectorbtpro.utils.decorators.cacheable_property` otherwise.
+    * `decorator_kwargs`: Keyword arguments for the decorator, which by default include the
+        options `obj_type` and `group_by_aware`.
+    * `docstring`: Docstring for the generated method.
 
-    The class must be a subclass of `vectorbtpro.records.base.Records`."""
+    Args:
+        config (Config): Configuration mapping containing target property names
+            and their corresponding settings.
+
+    Returns:
+        ClassWrapper: Class decorator that attaches the configured shortcut properties
+            to a subclass of `vectorbtpro.records.base.Records`.
+    """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         checks.assert_subclass_of(cls, "Records")

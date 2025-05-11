@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Mixin for building statistics out of performance metrics."""
+"""Module providing a mixin for constructing statistics from performance metrics."""
 
 import inspect
 import string
@@ -32,18 +32,26 @@ __all__ = []
 
 
 class MetaStatsBuilderMixin(type):
-    """Metaclass for `StatsBuilderMixin`."""
+    """Metaclass for `StatsBuilderMixin` that provides access to performance metrics configuration."""
 
     @property
     def metrics(cls) -> Config:
-        """Metrics supported by `StatsBuilderMixin.stats`."""
+        """Performance metrics configuration used by `StatsBuilderMixin.stats`.
+
+        Returns:
+            Config: Performance metrics configuration.
+        """
         return cls._metrics
 
 
 class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
-    """Mixin that implements `StatsBuilderMixin.stats`.
+    """Mixin class that provides the implementation for `StatsBuilderMixin.stats`.
 
-    Required to be a subclass of `vectorbtpro.base.wrapping.Wrapping`."""
+    Requires subclassing of `vectorbtpro.base.wrapping.Wrapping`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.stats_builder`.
+    """
 
     _writeable_attrs: tp.WriteableAttrs = {"_metrics"}
 
@@ -55,7 +63,11 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `StatsBuilderMixin.stats`."""
+        """Default configuration for `StatsBuilderMixin.stats`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the stats builder.
+        """
         return dict(settings=dict(freq=self.wrapper.freq))
 
     def resolve_stats_setting(
@@ -64,7 +76,19 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         key: str,
         merge: bool = False,
     ) -> tp.Any:
-        """Resolve a setting for `StatsBuilderMixin.stats`."""
+        """Resolve and return a configuration setting for `StatsBuilderMixin.stats`.
+
+        Args:
+            value (Optional[Any]): Provided value for the setting.
+            key (str): Key identifying the stats setting.
+            merge (bool): Indicates whether to merge the provided value with defaults.
+
+        Returns:
+            Any: Resolved configuration setting.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.stats_builder`.
+        """
         from vectorbtpro._settings import settings as _settings
 
         stats_builder_cfg = _settings["stats_builder"]
@@ -105,24 +129,28 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
     @property
     def metrics(self) -> Config:
-        """Metrics supported by `${cls_name}`.
+        """Metrics configuration for `${cls_name}`.
+
+        This property returns a copy of `${cls_name}._metrics` created during instance initialization.
+        Modifications to the returned configuration do not affect the class-level settings.
 
         ```python
         ${metrics}
         ```
 
-        Returns `${cls_name}._metrics`, which gets (hybrid-) copied upon creation of each instance.
-        Thus, changing this config won't affect the class.
+        To modify the metrics, change the configuration in-place, override this property,
+        or assign a new value to the instance variable `${cls_name}._metrics`.
 
-        To change metrics, you can either change the config in-place, override this property,
-        or overwrite the instance variable `${cls_name}._metrics`."""
+        Returns:
+            Config: Copy of the metrics configuration for `${cls_name}`.
+        """
         return self._metrics
 
     def stats(
         self,
         metrics: tp.Optional[tp.MaybeIterable[tp.Union[str, tp.Tuple[str, tp.Kwargs]]]] = None,
         tags: tp.Optional[tp.MaybeIterable[str]] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         group_by: tp.GroupByLike = None,
         per_column: tp.Optional[bool] = None,
         split_columns: tp.Optional[bool] = None,
@@ -137,150 +165,150 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         """Compute various metrics on this object.
 
         Args:
-            metrics (str, tuple, iterable, or dict): Metrics to calculate.
+            metrics (Optional[MaybeIterable[Union[str, Tuple[str, Kwargs]]]]): Metric or metrics to calculate.
 
-                Each element can be either:
+                Each element can be one of the following:
 
-                * Metric name (see keys in `StatsBuilderMixin.metrics`)
-                * Tuple of a metric name and a settings dict as in `StatsBuilderMixin.metrics`
-                * Tuple of a metric name and a template of instance `vectorbtpro.utils.template.CustomTemplate`
-                * Tuple of a metric name and a list of settings dicts to be expanded into multiple metrics
+                * A metric name (see keys in `StatsBuilderMixin.metrics`).
+                * A tuple with a metric name and a settings dictionary as defined in `StatsBuilderMixin.metrics`.
+                * A tuple with a metric name and a `vectorbtpro.utils.template.CustomTemplate` instance.
+                * A tuple with a metric name and a list of settings dictionaries to be expanded into multiple metrics.
 
-                The settings dict can contain the following keys:
+                The settings dictionary can include:
 
-                * `title`: Title of the metric. Defaults to the name.
-                * `tags`: Single or multiple tags to associate this metric with.
-                    If any of these tags is in `tags`, keeps this metric.
-                * `check_{filter}` and `inv_check_{filter}`: Whether to check this metric against a
-                    filter defined in `filters`. True (or False for inverse) means to keep this metric.
-                * `calc_func` (required): Calculation function for custom metrics.
-                    Must return either a scalar for one column/group, pd.Series for multiple columns/groups,
-                    or a dict of such for multiple sub-metrics.
-                * `resolve_calc_func`: whether to resolve `calc_func`. If the function can be accessed
-                    by traversing attributes of this object, you can specify the path to this function
-                    as a string (see `vectorbtpro.utils.attr_.deep_getattr` for the path format).
+                * `title`: Metric title. Defaults to the metric name.
+                * `tags`: A single tag or multiple tags to associate with the metric.
+                    The metric is retained if any tag matches those in `tags`.
+                * `check_{filter}` and `inv_check_{filter}`: Flags to evaluate the metric against
+                    a filter defined in `filters`. True indicates inclusion.
+                * `calc_func` (required): Function to compute custom metrics.
+                    It should return a scalar for a single column/group, a pandas.Series
+                    for multiple columns/groups, or a dictionary of such values for sub-metrics.
+                * `resolve_calc_func`: If True, resolve `calc_func` as an attribute of the object
+                    if not callable. You can specify the path to this function as a string
+                    (see `vectorbtpro.utils.attr_.deep_getattr` for the path format).
                     If `calc_func` is a function, arguments from merged metric settings are matched with
-                    arguments in the signature (see below). If `resolve_calc_func` is False, `calc_func`
-                    must accept (resolved) self and dictionary of merged metric settings.
+                    arguments in the signature (see below). If False, `calc_func` must accept the resolved
+                    object and a dictionary of merged metric settings. Defaults to True.
+                * `use_shortcuts`: If True, employ shortcut properties when resolving `calc_func`.
                     Defaults to True.
-                * `use_shortcuts`: Whether to use shortcut properties whenever possible when
-                    resolving `calc_func`. Defaults to True.
-                * `post_calc_func`: Function to post-process the result of `calc_func`.
-                    Must accept (resolved) self, output of `calc_func`, and dictionary of merged metric settings,
-                    and return whatever is acceptable to be returned by `calc_func`. Defaults to None.
-                * `fill_wrap_kwargs`: Whether to fill `wrap_kwargs` with `to_timedelta` and `silence_warnings`.
+                * `post_calc_func`: Function to post-process the output of `calc_func`.
+                    It must accept the resolved object, the output from `calc_func`, and
+                    merged metric settings, and return a valid metric result. Defaults to None.
+                * `fill_wrap_kwargs`: If True, populate `wrap_kwargs` with `to_timedelta` and
+                    `silence_warnings`. Defaults to False.
+                * `apply_to_timedelta`: If True, apply `vectorbtpro.base.wrapping.ArrayWrapper.arr_to_timedelta`
+                    on the result. To disable globally, set `to_timedelta` to False in `settings`.
                     Defaults to False.
-                * `apply_to_timedelta`: Whether to apply `vectorbtpro.base.wrapping.ArrayWrapper.arr_to_timedelta`
-                    on the result. To disable this globally, pass `to_timedelta=False` in `settings`.
-                    Defaults to False.
-                * `pass_{arg}`: Whether to pass any argument from the settings (see below). Defaults to True if
-                    this argument was found in the function's signature. Set to False to not pass.
-                    If argument to be passed was not found, `pass_{arg}` is removed.
-                * `resolve_path_{arg}`: Whether to resolve an argument that is meant to be an attribute of
-                    this object and is the first part of the path of `calc_func`. Passes only optional arguments.
-                    Defaults to True. See `vectorbtpro.utils.attr_.AttrResolverMixin.resolve_attr`.
-                * `resolve_{arg}`: Whether to resolve an argument that is meant to be an attribute of
-                    this object and is present in the function's signature. Defaults to False.
+                * `pass_{arg}`: If True, pass the corresponding argument from settings when found
+                    in the function's signature (see below). If False, the argument is not passed.
+                    This key is removed if the argument does not exist.
+                * `resolve_path_{arg}`: If True, resolve an argument intended as an attribute of the object
+                    and used as the first part of `calc_func`'s attribute path. Applies only to
+                    optional arguments. Defaults to True.
                     See `vectorbtpro.utils.attr_.AttrResolverMixin.resolve_attr`.
-                * `use_shortcuts_{arg}`: Whether to use shortcut properties whenever possible when resolving
-                    an argument. Defaults to True.
-                * `select_col_{arg}`: Whether to select the column from an argument that is meant to be
-                    an attribute of this object. Defaults to False.
-                * `template_context`: Mapping to replace templates in metric settings. Used across all settings.
-                * Any other keyword argument that overrides the settings or is passed directly to `calc_func`.
+                * `resolve_{arg}`: If True, resolve an argument found in the function's signature
+                    as an attribute of the object. Defaults to False.
+                    See `vectorbtpro.utils.attr_.AttrResolverMixin.resolve_attr`.
+                * `use_shortcuts_{arg}`: If True, use shortcut properties when resolving the argument.
+                    Defaults to True.
+                * `select_col_{arg}`: If True, select a specific column from an argument that represents
+                    an attribute of the object. Defaults to False.
+                * `template_context`: Mapping for template substitution in metric settings.
+                * Any other keyword argument overrides settings or is passed directly to `calc_func`.
 
-                If `resolve_calc_func` is True, the calculation function may "request" any of the
-                following arguments by accepting them or if `pass_{arg}` was found in the settings dict:
+                If `resolve_calc_func` is True, `calc_func` may accept additional arguments, including:
 
-                * Each of `vectorbtpro.utils.attr_.AttrResolverMixin.self_aliases`: original object
-                    (ungrouped, with no column selected)
-                * `group_by`: won't be passed if it was used in resolving the first attribute of `calc_func`
-                    specified as a path, use `pass_group_by=True` to pass anyway
+                * Each alias in `vectorbtpro.utils.attr_.AttrResolverMixin.self_aliases`
+                    representing the original object (ungrouped, with no column selected).
+                * group_by: Not passed if used in resolving the first attribute of `calc_func`'s path,
+                    unless `pass_group_by=True` is specified.
                 * `column`
                 * `metric_name`
                 * `agg_func`
                 * `silence_warnings`
-                * `to_timedelta`: replaced by True if None and frequency is set
+                * `to_timedelta`: Replaced with True if set to None and a frequency is available.
                 * Any argument from `settings`
-                * Any attribute of this object if it meant to be resolved
-                    (see `vectorbtpro.utils.attr_.AttrResolverMixin.resolve_attr`)
+                * Any attribute of the object intended for resolution
+                    (see `vectorbtpro.utils.attr_.AttrResolverMixin.resolve_attr`).
 
                 Pass `metrics='all'` to calculate all supported metrics.
-            tags (str or iterable): Tags to select.
+            tags (Optional[MaybeIterable[str]]): Tag or tags to filter metrics.
 
                 See `vectorbtpro.utils.tagging.match_tags`.
-            column (str): Name of the column/group.
+            column (Optional[Column]): Identifier of the column to select.
 
                 !!! hint
-                    There are two ways to select a column: `obj['a'].stats()` and `obj.stats(column='a')`.
-                    They both accomplish the same thing but in different ways: `obj['a'].stats()` computes
-                    statistics of the column 'a' only, while `obj.stats(column='a')` computes statistics of
-                    all columns first and only then selects the column 'a'. The first method is preferred
-                    when you have a lot of data or caching is disabled. The second method is preferred when
-                    most attributes have already been cached.
-            group_by (any): Group or ungroup columns. See `vectorbtpro.base.grouping.base.Grouper`.
-            per_column (bool): Whether to compute per column and then stack along columns.
-            split_columns (bool): Whether to split this instance into multiple columns when `per_column` is True.
+                    There are two methods to select a column:
 
-                Otherwise, iterates over columns and passes `column` to the whole instance.
-            agg_func (callable): Aggregation function to aggregate statistics across all columns.
-                By default, takes the mean of all columns. If None, returns all columns as a DataFrame.
+                    * `obj['a'].stats()` computes statistics for column 'a' only.
+                    * `obj.stats(column='a')` computes statistics for all columns and then selects column 'a'.
 
-                Must take `pd.Series` and return a const.
+                    Use the first method for large datasets or when caching is disabled,
+                    and the second when most attributes are cached.
+            group_by (GroupByLike): Grouping specification.
 
-                Takes effect if `column` was specified or this object contains only one column of data.
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            per_column (Optional[bool]): If True, compute metrics for each column and stack the results.
+            split_columns (Optional[bool]): If True and `per_column` is True, split the instance
+                into multiple columns; otherwise, iterate over columns and apply `column` to the entire instance.
+            agg_func (Optional[Callable]): Function to aggregate computed statistics across columns.
 
-                If `agg_func` has been overridden by a metric:
+                By default, calculates the mean across columns. If None, returns all columns as a DataFrame.
+                The function should accept a pandas.Series and return a scalar. Aggregation is applied
+                if `column` is specified or if the object has only one column.
 
-                * Takes effect if global `agg_func` is not None
-                * Raises a warning if it's None but the result of calculation has multiple values
-            dropna (bool): Whether to hide metrics that are all NaN.
-            silence_warnings (bool): Whether to silence all warnings.
-            template_context (mapping): Context used to substitute templates.
+                If overridden by a metric:
 
-                Gets merged over `template_context` from `vectorbtpro._settings.stats_builder` and
-                `StatsBuilderMixin.stats_defaults`.
+                * It takes effect only if the global `agg_func` is not None.
+                * A warning is raised if it is None but the calculation returns multiple values.
+            dropna (Optional[bool]): If True, omit metrics that are entirely NaN.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+            template_context (KwargsLike): Additional context for template substitution.
 
-                Applied on `settings` and then on each metric settings.
-            filters (dict): Filters to apply.
+                Merged with `template_context` from `vectorbtpro._settings.stats_builder` and
+                `StatsBuilderMixin.stats_defaults`. Applied first to `settings` and then to
+                individual metric settings.
+            filters (KwargsLike): Filters to apply to metrics.
 
-                Each item consists of the filter name and settings dict.
+                Each key is a filter name with its corresponding settings dictionary, which can include:
 
-                The settings dict can contain the following keys:
+                * filter_func: Function that takes the resolved object and merged metric settings,
+                    returning True or False.
+                * warning_message: Warning to display when skipping a metric
+                    (supports template substitution).
+                * inv_warning_message: Warning for inverse checks.
 
-                * `filter_func`: Filter function that must accept resolved self and
-                    merged settings for a metric, and return either True or False.
-                * `warning_message`: Warning message to be shown when skipping a metric.
-                    Can be a template that will be substituted using merged metric settings as context.
-                    Defaults to None.
-                * `inv_warning_message`: Same as `warning_message` but for inverse checks.
+                These filters are merged with those from `vectorbtpro._settings.stats_builder`
+                and `StatsBuilderMixin.stats_defaults`.
+            settings (KwargsLike): Global settings and resolution arguments.
 
-                Gets merged over `filters` from `vectorbtpro._settings.stats_builder` and
-                `StatsBuilderMixin.stats_defaults`.
-            settings (dict): Global settings and resolution arguments.
+                These override values from `vectorbtpro._settings.stats_builder` and
+                `StatsBuilderMixin.stats_defaults` and can be extended or overridden
+                by metric-specific settings.
+            metric_settings (KwargsLike): Overrides for individual metrics.
 
-                Extends/overrides `settings` from `vectorbtpro._settings.stats_builder` and
-                `StatsBuilderMixin.stats_defaults`.
-                Gets extended/overridden by metric settings.
-            metric_settings (dict): Keyword arguments for each metric.
+                Extend or override all global and metric settings on a per-metric basis.
 
-                Extends/overrides all global and metric settings.
+        Returns:
+            Optional[SeriesFrame]: The computed metrics as a Pandas Series
+                (for single-dimensional output) or DataFrame (for multi-dimensional output).
 
-        For template logic, see `vectorbtpro.utils.template`.
+        !!! info
+            For default settings, see `vectorbtpro._settings.stats_builder` and `StatsBuilderMixin.stats_defaults`.
 
-        For defaults, see `vectorbtpro._settings.stats_builder` and `StatsBuilderMixin.stats_defaults`.
-
-        !!! hint
-            There are two types of arguments: optional (or resolution) and mandatory arguments.
-            Optional arguments are only passed if they are found in the function's signature.
-            Mandatory arguments are passed regardless of this. Optional arguments can only be defined
-            using `settings` (that is, globally), while mandatory arguments can be defined both using
-            default metric settings and `{metric_name}_kwargs`. Overriding optional arguments using default
-            metric settings or `{metric_name}_kwargs` won't turn them into mandatory. For this, pass `pass_{arg}=True`.
+            See `vectorbtpro.utils.template` for template logic.
 
         !!! hint
-            Make sure to resolve and then to re-use as many object attributes as possible to
-            utilize built-in caching (even if global caching is disabled).
+            Optional (resolution) arguments are passed only if they appear in the function's signature,
+            while mandatory arguments are always passed. Optional arguments are defined via `settings`
+            (globally), whereas mandatory arguments can be set using default metric settings or
+            `{metric_name}_kwargs`. Overriding optional arguments does not make them mandatory;
+            use `pass_{arg}=True` to enforce passing.
+
+        !!! hint
+            Resolve and reuse object attributes wherever possible to leverage built-in caching,
+            even if global caching is disabled.
         """
         # Compute per column
         if column is None:
@@ -779,18 +807,36 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
     @classmethod
     def build_metrics_doc(cls, source_cls: tp.Optional[type] = None) -> str:
-        """Build metrics documentation."""
+        """Generate and return the metrics documentation string based on a source class.
+
+        Args:
+            source_cls (Optional[type]): Source class providing the original configuration.
+
+        Returns:
+            str: Generated metrics documentation string with substituted values.
+        """
         if source_cls is None:
             source_cls = StatsBuilderMixin
         return string.Template(
             inspect.cleandoc(get_dict_attr(source_cls, "metrics").__doc__),
         ).substitute(
-            {"metrics": cls.metrics.prettify(), "cls_name": cls.__name__},
+            {"metrics": cls.metrics.prettify_doc(), "cls_name": cls.__name__},
         )
 
     @classmethod
     def override_metrics_doc(cls, __pdoc__: dict, source_cls: tp.Optional[type] = None) -> None:
-        """Call this method on each subclass that overrides `StatsBuilderMixin.metrics`."""
+        """Override the metrics documentation for the subclass.
+
+        This method updates the provided documentation dictionary by assigning a generated
+        metrics documentation string to the key corresponding to the subclass's `metrics` attribute.
+
+        Args:
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
+            source_cls (Optional[type]): Source class providing the original configuration.
+
+        Returns:
+            None
+        """
         __pdoc__[cls.__name__ + ".metrics"] = cls.build_metrics_doc(source_cls=source_cls)
 
 

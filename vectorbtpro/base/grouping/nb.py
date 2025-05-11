@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for grouping."""
+"""Module providing Numba-compiled functions for grouping."""
 
 import numpy as np
 
@@ -23,10 +23,17 @@ GroupByT = tp.Union[None, bool, tp.Index]
 
 @register_jitted(cache=True)
 def get_group_lens_nb(groups: tp.Array1d) -> tp.GroupLens:
-    """Return the count per group.
+    """Return the count of elements per group in a sorted array.
+
+    Args:
+        groups (Array1d): Array of group identifiers sorted in non-decreasing order.
+
+    Returns:
+        GroupLens: Array of counts for each group.
 
     !!! note
-        Columns must form monolithic, sorted groups. For unsorted groups, use `get_group_map_nb`."""
+        Columns must form monolithic, sorted groups. For unsorted groups, use `get_group_map_nb`.
+    """
     result = np.empty(groups.shape[0], dtype=int_)
     j = 0
     last_group = -1
@@ -53,11 +60,18 @@ def get_group_lens_nb(groups: tp.Array1d) -> tp.GroupLens:
 
 @register_jitted(cache=True)
 def get_group_map_nb(groups: tp.Array1d, n_groups: int) -> tp.GroupMap:
-    """Build the map between groups and indices.
+    """Build mapping between groups and array indices.
 
-    Returns an array with indices segmented by group and an array with group lengths.
+    Args:
+        groups (Array1d): Array of group identifiers.
+        n_groups (int): Total number of groups.
 
-    Works well for unsorted group arrays."""
+    Returns:
+        Tuple[Array1d, Array1d]: A tuple containing:
+
+            * An array of indices segmented by group.
+            * An array of group lengths.
+    """
     group_lens_out = np.full(n_groups, 0, dtype=int_)
     for g in range(groups.shape[0]):
         group = groups[g]
@@ -76,9 +90,18 @@ def get_group_map_nb(groups: tp.Array1d, n_groups: int) -> tp.GroupMap:
 
 @register_jitted(cache=True)
 def group_lens_select_nb(group_lens: tp.GroupLens, new_groups: tp.Array1d) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-    """Perform indexing on a sorted array using group lengths.
+    """Perform selection indexing on a sorted group array using group lengths.
 
-    Returns indices of elements corresponding to groups in `new_groups` and a new group array."""
+    Args:
+        group_lens (GroupLens): Array defining the number of columns in each group.
+        new_groups (Array1d): Array of group identifiers to select.
+
+    Returns:
+        Tuple[Array1d, Array1d]: A tuple containing:
+
+            * An array of indices for the selected groups.
+            * An array mapping each index to its new group position.
+    """
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
     n_values = np.sum(group_lens[new_groups])
@@ -100,7 +123,18 @@ def group_lens_select_nb(group_lens: tp.GroupLens, new_groups: tp.Array1d) -> tp
 
 @register_jitted(cache=True)
 def group_map_select_nb(group_map: tp.GroupMap, new_groups: tp.Array1d) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-    """Perform indexing using group map."""
+    """Perform selection indexing using a provided group map.
+
+    Args:
+        group_map (GroupMap): Tuple of indices and lengths for each group.
+        new_groups (Array1d): Array of original group identifiers to select.
+
+    Returns:
+        Tuple[Array1d, Array1d]: A tuple containing:
+
+            * An array of indices from the group map corresponding to the selected groups.
+            * An array mapping each index to its new group position.
+    """
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens
     total_count = np.sum(group_lens[new_groups])
@@ -123,7 +157,15 @@ def group_map_select_nb(group_map: tp.GroupMap, new_groups: tp.Array1d) -> tp.Tu
 
 @register_jitted(cache=True)
 def group_by_evenly_nb(n: int, n_splits: int) -> tp.Array1d:
-    """Get `group_by` from evenly splitting a space of values."""
+    """Compute group assignment by evenly splitting a space of values.
+
+    Args:
+        n (int): Total number of values.
+        n_splits (int): Number of groups to split the values into.
+
+    Returns:
+        Array1d: Array where each element's value indicates its group assignment.
+    """
     out = np.empty(n, dtype=int_)
     for i in range(n):
         out[i] = i * n_splits // n + n_splits // (2 * n)

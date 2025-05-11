@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for portfolio simulation based on orders."""
+"""Module providing Numba-compiled functions for portfolio simulation based on orders."""
 
 from numba import prange
 
@@ -117,17 +117,178 @@ def from_orders_nb(
     max_order_records: tp.Optional[int] = None,
     max_log_records: tp.Optional[int] = 0,
 ) -> SimulationOutput:
-    """Creates on order out of each element.
+    """Generate simulation orders for each element in a column-major order using flexible broadcasting.
 
-    Iterates in the column-major order. Utilizes flexible broadcasting.
+    This function processes market data and portfolio inputs to create simulation orders and
+    update simulation state arrays.
 
-    !!! note
-        Should be only grouped if cash sharing is enabled.
+    Args:
+        target_shape (Shape): Base dimensions (rows, columns).
+        group_lens (GroupLens): Array defining the number of columns in each group.
 
-        Single value must be passed as a 0-dim array (for example, by using `np.asarray(value)`).
+            !!! note
+                Should be grouped only if cash sharing is enabled.
+        open (FlexArray2dLike): Open price.
+        
+            Provided as a scalar, or per row, column, or element.
+        high (FlexArray2dLike): High price.
+        
+            Provided as a scalar, or per row, column, or element.
+        low (FlexArray2dLike): Low price.
+        
+            Provided as a scalar, or per row, column, or element.
+        close (FlexArray2dLike): Close price.
+        
+            Provided as a scalar, or per row, column, or element.
+        init_cash (FlexArray1dLike): Initial cash amount.
 
-    Usage:
-        * Buy and hold using all cash and closing price (default):
+            Provided as a scalar or per group.
+        init_position (FlexArray1dLike): Initial position.
+
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): Initial position price.
+
+            Provided as a scalar or per column.
+        cash_deposits (FlexArray2dLike): Cash deposits or withdrawals at the beginning of each bar.
+        
+            Provided as a scalar, or per row, group, or element.
+        cash_earnings (FlexArray2dLike): Cash earnings or losses at the end of each bar.
+        
+            Provided as a scalar, or per row, column, or element.
+        cash_dividends (FlexArray2dLike): Cash dividends or interest at the end of each bar.
+        
+            Provided as a scalar, or per row, column, or element.
+        size (FlexArray2dLike): Order size.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.size`.
+        price (FlexArray2dLike): Order price.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.price`.
+        size_type (FlexArray2dLike): Order size type.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.size_type`.
+        fees (FlexArray2dLike): Transaction fee rate.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.fees`.
+        fixed_fees (FlexArray2dLike): Fixed fee amount.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.fixed_fees`.
+        slippage (FlexArray2dLike): Slippage amount.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.slippage`.
+        min_size (FlexArray2dLike): Minimum allowable order size.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.min_size`.
+        max_size (FlexArray2dLike): Maximum allowable order size.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.max_size`.
+        size_granularity (FlexArray2dLike): Granularity for order size.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.size_granularity`.
+        leverage (FlexArray2dLike): Leverage factor.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.leverage`.
+        leverage_mode (FlexArray2dLike): Mode for leverage calculation.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.leverage_mode`.
+        reject_prob (FlexArray2dLike): Probability of order rejection.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.reject_prob`.
+        price_area_vio_mode (FlexArray2dLike): Mode for handling price area violations.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.price_area_vio_mode`.
+        allow_partial (FlexArray2dLike): Indicator whether partial orders are allowed.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.allow_partial`.
+
+            Does not apply when the order size is `np.inf`.
+        raise_reject (FlexArray2dLike): Indicator whether to raise errors on order rejection.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.raise_reject`.
+        log (FlexArray2dLike): Logging flag.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.log`.
+        val_price (FlexArray2dLike): Valuation price.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.ValPriceType`.
+
+            * Any `-np.inf` element is replaced by the latest valuation price
+                (using `open` or a previously known value if `ffill_val_price` is True).
+            * Any `np.inf` element is replaced by the current order price.
+        from_ago (FlexArray2dLike): Lookback offset for price selection.
+        
+            Provided as a scalar, or per row, column, or element.
+
+            Negative values are converted to positive to avoid look-ahead bias.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per group.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per group.
+        call_seq (Optional[Array2d]): Sequence dictating the order in which columns are
+            processed per row and group.
+        auto_call_seq (bool): Flag to automatically sort the call sequence.
+        ffill_val_price (bool): Flag to forward-fill valuation price.
+        update_value (bool): Flag to update portfolio value with each order.
+        save_state (bool): Flag to record the account state.
+
+            See `vectorbtpro.portfolio.enums.AccountState`.
+        save_value (bool): Flag to record the portfolio value.
+        save_returns (bool): Flag to record the portfolio returns.
+        skip_empty (bool): Flag indicating whether to skip processing when order data is empty.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
+
+    Returns:
+        SimulationOutput: Simulation output containing order and log records, cash deposits,
+            earnings, and other aggregated metrics.
+
+    !!! tip
+        This function is parallelizable.
+
+    Examples:
+        Buy and hold using all cash and close price (default):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -291,8 +452,8 @@ def from_orders_nb(
 
             skip = skip_empty
             if skip:
-                for c in range(group_len):
-                    col = from_col + c
+                for ci in range(group_len):
+                    col = from_col + ci
                     _i = i - abs(flex_select_nb(from_ago_, i, col))
                     if _i < 0:
                         continue
@@ -305,8 +466,8 @@ def from_orders_nb(
                             break
 
             if not skip or ffill_val_price:
-                for c in range(group_len):
-                    col = from_col + c
+                for ci in range(group_len):
+                    col = from_col + ci
 
                     # Update valuation price using current open
                     _open = flex_select_nb(open_, i, col)
@@ -348,15 +509,15 @@ def from_orders_nb(
                 if cash_sharing:
                     # Dynamically sort by order value -> selling comes first to release funds early
                     if call_seq is None:
-                        for c in range(group_len):
-                            temp_call_seq[c] = c
+                        for ci in range(group_len):
+                            temp_call_seq[ci] = ci
                         call_seq_now = temp_call_seq[:group_len]
                     else:
                         call_seq_now = call_seq[i, from_col:to_col]
                     if auto_call_seq:
                         # Same as sort_by_order_value_ctx_nb but with flexible indexing
-                        for c in range(group_len):
-                            col = from_col + c
+                        for ci in range(group_len):
+                            col = from_col + ci
                             exec_state = ExecState(
                                 cash=last_cash[group] if cash_sharing else last_cash[col],
                                 position=last_position[col],
@@ -368,15 +529,15 @@ def from_orders_nb(
                             )
                             _i = i - abs(flex_select_nb(from_ago_, i, col))
                             if _i < 0:
-                                temp_order_value[c] = 0.0
+                                temp_order_value[ci] = 0.0
                             else:
-                                temp_order_value[c] = approx_order_value_nb(
+                                temp_order_value[ci] = approx_order_value_nb(
                                     exec_state,
                                     flex_select_nb(size_, _i, col),
                                     flex_select_nb(size_type_, _i, col),
                                     flex_select_nb(direction_, _i, col),
                                 )
-                            if call_seq_now[c] != c:
+                            if call_seq_now[ci] != ci:
                                 raise ValueError("Call sequence must follow CallSeqType.Default")
 
                         # Sort by order value
@@ -384,12 +545,12 @@ def from_orders_nb(
 
                 for k in range(group_len):
                     if cash_sharing:
-                        c = call_seq_now[k]
-                        if c >= group_len:
+                        ci = call_seq_now[k]
+                        if ci >= group_len:
                             raise ValueError("Call index out of bounds of the group")
                     else:
-                        c = k
-                    col = from_col + c
+                        ci = k
+                    col = from_col + ci
 
                     # Get current values per column
                     position_now = last_position[col]

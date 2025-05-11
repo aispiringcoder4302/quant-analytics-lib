@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FMIN`."""
+"""Module defining the `FMIN` generator class for the future minimum."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.factory import IndicatorFactory
@@ -27,19 +27,40 @@ FMIN = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wait"],
     output_names=["fmin"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        fmin=dict(
+            doc="Future minimum series.",
+        ),
+    ),
 ).with_apply_func(
     nb.future_min_nb,
+    param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
+        wait=dict(
+            doc="Number of periods to wait before calculating the future minimum.",
+        ),
+    ),
     window=14,
     wait=1,
 )
 
 
 class _FMIN(FMIN):
-    """Look-ahead indicator based on `vectorbtpro.labels.nb.future_min_nb`."""
+    """Class representing the look-ahead future minimum generator.
+
+    See:
+        * `FMIN.run` for the main entry point.
+        * `vectorbtpro.labels.nb.future_min_nb` for the underlying implementation.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         fmin_trace_kwargs: tp.KwargsLike = None,
@@ -50,15 +71,22 @@ class _FMIN(FMIN):
         """Plot `FMIN.fmin` against `FMIN.close`.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `FMIN.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FMIN.close`.
-            fmin_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FMIN.fmin`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_close (bool): Whether to plot the close price.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMIN.close`.
+            fmin_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMIN.fmin`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated figure object with the plotted traces.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.FMIN.run(ohlcv['Close']).plot().show()
             ```
@@ -71,7 +99,7 @@ class _FMIN(FMIN):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

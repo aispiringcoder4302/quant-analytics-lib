@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for scheduling jobs."""
+"""Module providing utilities for scheduling jobs."""
 
 import asyncio
 import inspect
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 class CustomScheduler(Scheduler, Base):
-    """Custom scheduler."""
+    """Class for custom scheduling."""
 
     def __init__(self) -> None:
         super(CustomScheduler, self).__init__()
@@ -44,7 +44,12 @@ CustomJobT = tp.TypeVar("CustomJobT", bound="CustomJob")
 
 
 class CustomJob(Job, Base):
-    """Custom job."""
+    """Class for custom job scheduling.
+
+    Args:
+        interval (int): Interval between job executions.
+        scheduler (Optional[Scheduler]): Scheduler instance managing the job.
+    """
 
     def __init__(self, interval: int, scheduler: tp.Optional[Scheduler] = None) -> None:
         super(CustomJob, self).__init__(interval, scheduler)
@@ -54,19 +59,31 @@ class CustomJob(Job, Base):
 
     @property
     def zero_offset(self: CustomJobT) -> CustomJobT:
-        """Set offset to zero."""
+        """Job instance with zero offset scheduling enabled.
+
+        Returns:
+            CustomJob: Current job instance with zero offset enabled.
+        """
         self._zero_offset = True
         return self
 
     @property
     def force_missed_run(self: CustomJobT) -> CustomJobT:
-        """Set whether to force a missed run."""
+        """Job instance with forced missed run scheduling enabled.
+
+        Returns:
+            CustomJob: Current job instance with forced missed run enabled.
+        """
         self._force_missed_run = True
         return self
 
     @property
     def modulo(self) -> int:
-        """Module based on the next run's unit and interval."""
+        """Remainder of the next scheduled run time's corresponding unit divided by the interval.
+
+        Returns:
+            int: Remainder computed based on the time unit of the next run.
+        """
         if self.unit == "seconds":
             return self.next_run.second % self.interval
         if self.unit == "minutes":
@@ -97,16 +114,22 @@ class CustomJob(Job, Base):
 
 
 class CancelledError(asyncio.CancelledError):
-    """Thrown for the operation to be cancelled."""
+    """Exception indicating that an operation has been cancelled."""
 
     pass
 
 
 class AsyncJob(CustomJob):
-    """Async `CustomJob`."""
+    """Class for asynchronous custom jobs."""
 
     async def async_run(self) -> tp.Any:
-        """Async `CustomJob.run`."""
+        """Asynchronously execute the job function.
+
+        Runs the job function, updates the last run timestamp, and schedules the next run.
+
+        Returns:
+            Any: Result returned by the job function.
+        """
         logger.info("Running job %s", self)
         ret = self.job_func()
         if inspect.isawaitable(ret):
@@ -117,34 +140,69 @@ class AsyncJob(CustomJob):
 
 
 class AsyncScheduler(CustomScheduler):
-    """Async `CustomScheduler`."""
+    """Class for asynchronous custom scheduling."""
 
     async def async_run_pending(self) -> None:
-        """Async `CustomScheduler.run_pending`."""
+        """Asynchronously run all pending jobs.
+
+        Identifies jobs that are ready to run and concurrently executes them.
+
+        Returns:
+            None
+        """
         runnable_jobs = (job for job in self.jobs if job.should_run)
         await asyncio.gather(*[self._async_run_job(job) for job in runnable_jobs])
 
     async def async_run_all(self, delay_seconds: int = 0) -> None:
-        """Async `CustomScheduler.run_all`."""
+        """Asynchronously execute all scheduled jobs with an optional delay between jobs.
+
+        Args:
+            delay_seconds (int): Delay in seconds between consecutive job executions.
+
+        Returns:
+            None
+        """
         logger.info("Running *all* %i jobs with %is delay in-between", len(self.jobs), delay_seconds)
         for job in self.jobs[:]:
             await self._async_run_job(job)
             await asyncio.sleep(delay_seconds)
 
     async def _async_run_job(self, job: AsyncJob) -> None:
-        """Async `CustomScheduler.run_job`."""
+        """Asynchronously execute a job.
+
+        Asynchronous version of `CustomScheduler.run_job`.
+
+        Args:
+            job (AsyncJob): Asynchronous job.
+
+        Returns:
+            None
+        """
         ret = await job.async_run()
         if isinstance(ret, CancelJob) or ret is CancelJob:
             self.cancel_job(job)
 
     def every(self, interval: int = 1) -> AsyncJob:
-        """Schedule a new periodic job of type `AsyncJob`."""
+        """Schedule a new periodic asynchronous job.
+
+        Args:
+            interval (int): Interval between job executions.
+
+        Returns:
+            AsyncJob: Newly scheduled asynchronous job.
+        """
         job = AsyncJob(interval, self)
         return job
 
 
 class ScheduleManager(Base):
-    """Class that manages `CustomScheduler`."""
+    """Class for managing `CustomScheduler` jobs.
+
+    Args:
+        scheduler (Optional[AsyncScheduler]): Scheduler instance to be used.
+
+            If not provided, an `AsyncScheduler` instance is created.
+    """
 
     units: tp.ClassVar[tp.Tuple[str, ...]] = (
         "second",
@@ -158,7 +216,7 @@ class ScheduleManager(Base):
         "week",
         "weeks",
     )
-    """Units."""
+    """Time units accepted by the scheduler."""
 
     weekdays: tp.ClassVar[tp.Tuple[str, ...]] = (
         "monday",
@@ -169,7 +227,7 @@ class ScheduleManager(Base):
         "saturday",
         "sunday",
     )
-    """Weekdays."""
+    """Valid weekdays for scheduling jobs."""
 
     def __init__(self, scheduler: tp.Optional[AsyncScheduler] = None) -> None:
         if scheduler is None:
@@ -181,12 +239,20 @@ class ScheduleManager(Base):
 
     @property
     def scheduler(self) -> AsyncScheduler:
-        """Scheduler."""
+        """The scheduler instance used for scheduling jobs.
+
+        Returns:
+            AsyncScheduler: Scheduler instance.
+        """
         return self._scheduler
 
     @property
     def async_task(self) -> tp.Optional[asyncio.Task]:
-        """Current async task."""
+        """The current asynchronous task, if any.
+
+        Returns:
+            Optional[asyncio.Task]: The current asynchronous task.
+        """
         return self._async_task
 
     def every(
@@ -197,19 +263,35 @@ class ScheduleManager(Base):
         force_missed_run: bool = False,
         tags: tp.Optional[tp.Iterable[tp.Hashable]] = None,
     ) -> AsyncJob:
-        """Create a new job that runs every `interval` units of time.
+        """Create a new asynchronous job that runs at a specified interval.
 
-        `*args` can include at most four different arguments: `interval`, `unit`, `start_day`, and `at`,
-        in the strict order:
+        Positional arguments determine scheduling parameters in a strict order:
 
-        * `interval`: integer or `datetime.timedelta`
-        * `unit`: `ScheduleManager.units`
-        * `start_day`: `ScheduleManager.weekdays`
-        * `at`: string or `datetime.time`.
+        * interval: int or timedelta specifying the time interval.
+        * unit: str from `ScheduleManager.units` indicating the time unit.
+        * start_day: str from `ScheduleManager.weekdays` indicating the starting weekday.
+        * at: str or datetime.time specifying the execution time.
 
-        See the package `schedule` for more details.
+        This method utilizes the `schedule` package for job scheduling.
 
-        Usage:
+        Args:
+            *args: Positional arguments for specifying scheduling parameters.
+
+                They must be provided in the strict order:
+
+                * interval: int or timedelta specifying the time interval.
+                * unit: str from `ScheduleManager.units` indicating the time unit.
+                * start_day: str from `ScheduleManager.weekdays` indicating the starting weekday.
+                * at: str or datetime.time specifying a specific execution time.
+            to (Optional[int]): Specifies an end parameter for the schedule.
+            zero_offset (bool): When True, configures the job to use a zero offset.
+            force_missed_run (bool): When True, forces the job to run if a scheduled execution was missed.
+            tags (Optional[Iterable[Hashable]]): Tags used to identify the scheduled job.
+
+        Returns:
+            AsyncJob: Configured asynchronous job.
+
+        Examples:
             ```pycon
             >>> from vectorbtpro import *
 
@@ -218,7 +300,6 @@ class ScheduleManager(Base):
 
             >>> my_manager = vbt.ScheduleManager()
 
-            >>> # add jobs
             >>> my_manager.every().do(job_func, message="Hello")
             Every 1 second do job_func(message='Hello') (last run: [never], next run: 2021-03-18 19:06:47)
 
@@ -345,7 +426,15 @@ class ScheduleManager(Base):
         return job
 
     def start(self, sleep: int = 1, clear_after: bool = False) -> None:
-        """Run pending jobs in a loop."""
+        """Run pending jobs in a loop.
+
+        Args:
+            sleep (int): Time in seconds to sleep between job checks.
+            clear_after (bool): Clear scheduled jobs after stopping if True.
+
+        Returns:
+            None
+        """
         logger.info("Starting schedule manager with jobs %s", str(self.scheduler.jobs))
         try:
             while True:
@@ -357,7 +446,15 @@ class ScheduleManager(Base):
             self.scheduler.clear()
 
     async def async_start(self, sleep: int = 1, clear_after: bool = False) -> None:
-        """Async run pending jobs in a loop."""
+        """Run pending jobs in a loop asynchronously.
+
+        Args:
+            sleep (int): Time in seconds to sleep between job checks.
+            clear_after (bool): Clear scheduled jobs after stopping if True.
+
+        Returns:
+            None
+        """
         logger.info("Starting schedule manager in the background with jobs %s", str(self.scheduler.jobs))
         logger.info("Jobs: %s", str(self.scheduler.jobs))
         try:
@@ -370,11 +467,25 @@ class ScheduleManager(Base):
             self.scheduler.clear()
 
     def done_callback(self, async_task: asyncio.Task) -> None:
-        """Callback run when the async task is finished."""
+        """Handle completion of an asynchronous task.
+
+        Args:
+            async_task (Task): Asynchronous task that has completed.
+
+        Returns:
+            None
+        """
         logger.info(async_task)
 
     def start_in_background(self, **kwargs) -> None:
-        """Run `ScheduleManager.async_start` in the background."""
+        """Start the asynchronous schedule manager in the background.
+
+        Args:
+            **kwargs: Keyword arguments for `ScheduleManager.async_start`.
+
+        Returns:
+            None
+        """
         async_task = asyncio.create_task(self.async_start(**kwargs))
         async_task.add_done_callback(self.done_callback)
         logger.info(async_task)
@@ -382,16 +493,31 @@ class ScheduleManager(Base):
 
     @property
     def async_task_running(self) -> bool:
-        """Whether the async task is running."""
+        """Indicates whether the asynchronous task is currently running.
+
+        Returns:
+            bool: True if the asynchronous task is running, False otherwise.
+        """
         return self.async_task is not None and not self.async_task.done()
 
     def stop(self) -> None:
-        """Stop the async task."""
+        """Stop the asynchronous task if it is running.
+
+        Returns:
+            None
+        """
         if self.async_task_running:
             self.async_task.cancel()
 
     def clear_jobs(self, tags: tp.Optional[tp.Iterable[tp.Hashable]] = None) -> None:
-        """Delete scheduled jobs with the given tags, or all jobs if tag is omitted."""
+        """Delete scheduled jobs filtered by given tags, or all jobs if no tags are provided.
+
+        Args:
+            tags (Optional[Iterable[Hashable]]): Tags used to identify the scheduled job.
+
+        Returns:
+            None
+        """
         if tags is None:
             self.scheduler.clear()
         else:

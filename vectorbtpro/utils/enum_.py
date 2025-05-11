@@ -8,10 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Enum utilities.
+"""Module providing utilities for mapping between enum fields and values.
 
-In vectorbt, enums are represented by instances of named tuples to be easily used in Numba.
-Their values start with 0, while -1 means there is no value."""
+In vectorbtpro, enums are implemented as named tuple instances to facilitate their use with Numba.
+Enum values start at 0, and a value of -1 indicates an undefined enum.
+"""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.mapping import to_value_mapping, apply_mapping
@@ -22,22 +23,48 @@ __all__ = [
 
 
 def map_enum_fields(
-    field: tp.Any, enum: tp.Union[tp.NamedTuple, tp.EnumMeta], enum_unkval: tp.Any = -1, ignore_type=int, **kwargs
+    field: tp.Any,
+    enum: tp.Union[tp.NamedTuple, tp.EnumMeta],
+    enum_unkval: tp.Any = -1,
+    ignore_type=int,
+    **kwargs,
 ) -> tp.Any:
-    """Map fields to values.
+    """Map enum fields to corresponding values.
 
-    See `vectorbtpro.utils.mapping.apply_mapping`."""
+    Args:
+        field (Any): Field to be mapped.
+        enum (Union[NamedTuple, EnumMeta]): Enum type used for mapping.
+        enum_unkval (Any): Value for unknown enumeration items.
+        ignore_type (type): Type to ignore during mapping.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
+
+    Returns:
+        Any: Mapped enum value.
+    """
     mapping = to_value_mapping(enum, reverse=True, enum_unkval=enum_unkval)
 
     return apply_mapping(field, mapping, ignore_type=ignore_type, **kwargs)
 
 
 def map_enum_values(
-    value: tp.Any, enum: tp.Union[tp.NamedTuple, tp.EnumMeta], enum_unkval: tp.Any = -1, ignore_type=str, **kwargs
+    value: tp.Any,
+    enum: tp.Union[tp.NamedTuple, tp.EnumMeta],
+    enum_unkval: tp.Any = -1,
+    ignore_type=str,
+    **kwargs,
 ) -> tp.Any:
-    """Map values to fields.
+    """Map enum values to corresponding fields.
 
-    See `vectorbtpro.utils.mapping.apply_mapping`."""
+    Args:
+        value (Any): Value to be mapped.
+        enum (Union[NamedTuple, EnumMeta]): Enum type used for mapping.
+        enum_unkval (Any): Value for unknown enumeration items.
+        ignore_type (type): Type to ignore during mapping.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
+
+    Returns:
+        Any: Mapped enum field.
+    """
     mapping = to_value_mapping(enum, reverse=False, enum_unkval=enum_unkval)
 
     return apply_mapping(value, mapping, ignore_type=ignore_type, **kwargs)

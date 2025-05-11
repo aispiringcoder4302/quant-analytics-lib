@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `STCX`."""
+"""Module providing the `STCX` class for generating stop signals."""
 
 from vectorbtpro.signals.factory import SignalFactory
 from vectorbtpro.signals.generators.stx import stx_config, stx_func_config
@@ -32,12 +32,15 @@ STCX = SignalFactory(
 
 
 class _STCX(STCX):
-    """Exit signal generator based on stop values.
+    """Class representing a chained exit signal generator based on stop values.
 
-    Generates chain of `new_entries` and `exits` based on `entries` and
-    `vectorbtpro.signals.nb.stop_place_nb`.
+    Generates a chain of `new_entries` and `exits` derived from input `entries`.
 
-    See `STX` for notes on parameters."""
+    See:
+        * `STCX.run` for the main entry point.
+        * `vectorbtpro.signals.nb.stop_place_nb` for details on the exit placement.
+        * `vectorbtpro.signals.generators.stx.STX` for parameter details.
+    """
 
     pass
 

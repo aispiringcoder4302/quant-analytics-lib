@@ -8,26 +8,26 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Global registry for cacheables.
+"""Module providing a global registry for cacheable functions.
 
-Caching in vectorbt is achieved through a combination of decorators and the registry.
-Cacheable decorators such as `vectorbtpro.utils.decorators.cacheable` take a function and wrap
-it with another function that behaves like the wrapped function but also takes care of all
-caching modalities.
-
-But unlike other implementations such as that of `functools.lru_cache`, the actual caching procedure
-doesn't happen nor are the results stored inside the decorators themselves: decorators just register a
-so-called "setup" for the wrapped function at the registry (see `CARunSetup`).
+This module provides a global registry that manages caching setups for functions decorated
+with cacheable decorators. In vectorbtpro, caching is implemented by combining decorators with a registry.
+Cacheable decorators such as `vectorbtpro.utils.decorators.cacheable` wrap a function to integrate caching
+without storing results directly. Instead, they register a caching "setup" (see `CARunSetup`) with the registry,
+which handles caching behavior and metrics.
 
 ## Runnable setups
 
-The actual magic happens within a runnable setup: it takes the function that should be called
-and the arguments that should be passed to this function, looks whether the result should be cached,
-runs the function, stores the result in the cache, updates the metrics, etc. It then returns the
-resulting object to the wrapping function, which in turn returns it to the user. Each setup is stateful
-- it stores the cache, the number of hits and misses, and other metadata. Thus, there can be only one
-registered setup per each cacheable function globally at a time. To avoid creating new setups for the same
-function over and over again, each setup can be uniquely identified by its function through hashing:
+A runnable setup encapsulates the execution of a cacheable function by:
+
+* Determining whether the result should be cached.
+* Executing the function with the provided arguments.
+* Storing the result in the cache.
+* Updating metrics such as hits, misses, and elapsed time.
+* Returning the cached or computed result to the calling wrapper.
+
+Each setup is stateful and uniquely identified by its associated function (via hashing), ensuring that only one
+setup is registered globally per cacheable function.
 
 ```pycon
 >>> from vectorbtpro import *
@@ -41,23 +41,23 @@ function over and over again, each setup can be uniquely identified by its funct
 >>> my_ca_func.get_ca_setup()
 CARunSetup(registry=<vectorbtpro.registries.ca_registry.CacheableRegistry object at 0x7fe14c27df60>, use_cache=True, whitelist=False, cacheable=<function <lambda> at 0x7fe14e94cae8>, instance=None, max_size=None, ignore_args=None, cache={})
 
->>> # Another call won't register a new setup but return the existing one
+>>> # Subsequent calls return the existing setup
 >>> my_ca_func.get_ca_setup()
 CARunSetup(registry=<vectorbtpro.registries.ca_registry.CacheableRegistry object at 0x7fe14c27df60>, use_cache=True, whitelist=False, cacheable=<function <lambda> at 0x7fe14e94cae8>, instance=None, max_size=None, ignore_args=None, cache={})
 
->>> # Only one CARunSetup object per wrapper and optionally the instance the wrapper is bound to
+>>> # Only one CARunSetup object per wrapper and instance binding
 >>> hash(my_ca_func.get_ca_setup()) == hash((my_ca_func, None))
 True
 ```
 
-When we call `my_ca_func`, it takes the setup from the registry and calls `CARunSetup.run`.
-The caching happens by the setup itself and isn't in any way visible to `my_ca_func`.
-To access the cache or any metric of interest, we can ask the setup:
+When `my_ca_func` is called, it retrieves the setup from the registry and invokes `CARunSetup.run`.
+The caching process is entirely managed by the setup, remaining transparent to `my_ca_func`.
+To inspect caching metrics or access the cache, query the setup as shown below:
 
 ```pycon
 >>> my_setup = my_ca_func.get_ca_setup()
 
->>> # Cache is empty
+>>> # Cache is initially empty
 >>> my_setup.get_stats()
 {
     'hash': 4792160544297109364,
@@ -78,7 +78,7 @@ To access the cache or any metric of interest, we can ask the setup:
     'last_update_time': None
 }
 
->>> # The result is cached
+>>> # After execution, the result is cached
 >>> my_ca_func()
 >>> my_setup.get_stats()
 {
@@ -100,7 +100,7 @@ To access the cache or any metric of interest, we can ask the setup:
     'last_update_time': None
 }
 
->>> # The cached result is retrieved
+>>> # Retrieving the cached result increases the hit count
 >>> my_ca_func()
 >>> my_setup.get_stats()
 {
@@ -127,9 +127,9 @@ To access the cache or any metric of interest, we can ask the setup:
 
 To enable or disable caching, we can invoke `CARunSetup.enable_caching` and `CARunSetup.disable_caching`
 respectively. This will set `CARunSetup.use_cache` flag to True or False. Even though we expressed
-our disire to change caching rules, the final decision also depends on the global settings and whether
-the setup is whitelisted in case caching is disabled globally. This decision is available via
-`CARunSetup.caching_enabled`:
+our disire to change caching rules, the final decision also depends on the global settings and
+whether the setup is whitelisted in case caching is disabled globally. This decision is available
+via `CARunSetup.caching_enabled`:
 
 ```pycon
 >>> my_setup.disable_caching()
@@ -167,35 +167,32 @@ To disable registration of new setups completely, use `disable_machinery`:
 
 ## Setup hierarchy
 
-But what if we wanted to change caching rules for an entire instance or class at once?
-Even if we changed the setup of every cacheable function declared in the class, how do we
-make sure that each future subclass or instance inherits the changes that we applied?
-To account for this, vectorbt provides us with a set of setups that both are stateful
-and can delegate various operations to their child setups, all the way down to `CARunSetup`.
-The setup hierarchy follows the inheritance hierarchy in OOP:
+Consider how to change caching rules for an entire instance or class at once. Even if every cacheable
+function declared in a class is updated, ensuring that each future subclass or instance inherits
+these changes can be challenging. To address this, vectorbtpro provides a set of stateful setups that
+delegate operations to their child setups—all the way down to `CARunSetup`. The setup hierarchy
+mirrors the inheritance hierarchy in object‐oriented programming.
 
 ![](/assets/images/api/setup_hierarchy.svg){: loading=lazy style="width:700px;" }
 
-For example, calling `B.get_ca_setup().disable_caching()` would disable caching for each current
-and future subclass and instance of `B`, but it won't disable caching for `A` or any other superclass of `B`.
-In turn, each instance of `B` would then disable caching for each cacheable property and method in
-that instance. As we see, the propagation of this operation is happening from top to bottom.
+For example, calling `B.get_ca_setup().disable_caching()` disables caching for every current and
+future subclass and instance of `B`, while leaving `A` or any other superclass of `B` unaffected.
+Subsequently, each instance of `B` disables caching for every cacheable property and method.
+In essence, the operation propagates from top to bottom.
 
-The reason why unbound setups are stretching outside of their classes in the diagram is
-because there is no easy way to derive the class when calling a cacheable decorator,
-thus their functions are considered to be living on their own. When calling
-`B.f.get_ca_setup().disable_caching()`, we are disabling caching for the function `B.f`
-for each current and future subclass and instance of `B`, while all other functions remain untouched.
+Unbound setups appear outside their classes in the diagram because it is not straightforward to
+deduce the class when using a cacheable decorator; therefore, these functions are treated as independent.
+When you invoke `B.f.get_ca_setup().disable_caching()`, caching is disabled for the function `B.f`
+for every current and future subclass and instance of `B`, with all other functions remaining unchanged.
 
-But what happens when we enable caching for the class `B` and disable caching for the unbound
-function `B.f`? Would the future method `b2.f` be cached or not? Quite easy: it would then
-inherit the state from the setup that has been updated more recently.
+What happens if caching is enabled for class `B` but disabled for the unbound function `B.f`?
+In that case, the future method `b2.f` will inherit the state from the setup that was updated most recently.
 
-Here is another illustration of how operations are propagated from parents to children:
+Below is an illustration of how operations propagate from parent setups to child setups:
 
 ![](/assets/images/api/setup_propagation.svg){: loading=lazy style="width:800px;" }
 
-The diagram above depicts the following setup hierarchy:
+The diagram above represents the following setup hierarchy:
 
 ```pycon
 >>> # Populate setups at init
@@ -265,7 +262,7 @@ The diagram above depicts the following setup hierarchy:
 ]
 ```
 
-Let's disable caching for the entire `A` class:
+To disable caching for the entire `A` class, use:
 
 ```pycon
 >>> A.get_ca_setup().disable_caching()
@@ -277,8 +274,8 @@ False
 False
 ```
 
-This disabled caching for `A`, subclasses `B` and `C`, their instances, and any instance function.
-But it didn't touch unbound functions such as `C.f1` and `C.f2`:
+This operation disables caching for `A`, its subclasses (`B` and `C`), their instances,
+and any instance function, but it does not affect unbound functions such as `C.f1` and `C.f2`:
 
 ```pycon
 >>> C.f1.get_ca_setup().use_cache
@@ -287,10 +284,9 @@ True
 True
 ```
 
-This is because unbound functions are not children of the classes they are declared in!
-Still, any future instance method of `C` won't be cached because it looks which parent
-has been updated more recently: the class or the unbound function. In our case,
-the class had a more recent update.
+This behavior occurs because unbound functions are not considered children of the classes
+they are defined in. Consequently, any future instance method of `C` will remain uncached
+if the class setup was updated more recently than the unbound function.
 
 ```pycon
 >>> c3 = C()
@@ -298,9 +294,11 @@ the class had a more recent update.
 False
 ```
 
-In fact, if we want to disable an entire class but leave one function untouched,
-we need to perform two operations in a particular order: 1) disable caching on the class
-and 2) enable caching on the unbound function.
+If you want to disable caching for an entire class while leaving one function unaffected,
+perform the following operations in order:
+
+1. Disable caching on the class.
+2. Enable caching on the unbound function.
 
 ```pycon
 >>> A.get_ca_setup().disable_caching()
@@ -313,15 +311,14 @@ True
 
 ## Getting statistics
 
-The main advantage of having a central registry of setups is that we can easily find any setup
-registered in any part of vectorbt that matches some condition using `CacheableRegistry.match_setups`.
+The central registry of setups provides an easy way to locate any setup registered in any
+part of vectorbtpro that meets specific conditions using `CacheableRegistry.match_setups`.
 
 !!! note
-    By default, all setups are registered lazily - no setup is registered until it's run
-    or explicitly called. To change this behavior, set `register_lazily` in the global
-    settings to False.
+    By default, setups are registered lazily — a setup is only registered when executed or explicitly called.
+    To change this behavior, set `register_lazily` in the global settings to False.
 
-For example, let's look which setups have been registered so far:
+For example, the following command displays the registered setups:
 
 ```pycon
 >>> vbt.ca_reg.match_setups(kind=None)
@@ -342,7 +339,7 @@ For example, let's look which setups have been registered so far:
 }
 ```
 
-Let's get the runnable setup of any property and method called `f2`:
+To obtain the runnable setup of any property or method named `f2`, run:
 
 ```pycon
 >>> vbt.ca_reg.match_setups('f2', kind='runnable')
@@ -352,8 +349,8 @@ Let's get the runnable setup of any property and method called `f2`:
 }
 ```
 
-But there is a better way to get the stats: `CAQueryDelegator.get_stats`.
-It returns a DataFrame with setup stats as rows:
+Alternatively, retrieve statistics using `CAQueryDelegator.get_stats`,
+which returns a DataFrame containing setup statistics as rows:
 
 ```pycon
 >>> vbt.CAQueryDelegator('f2', kind='runnable').get_stats()
@@ -384,10 +381,10 @@ hash
 
 ## Clearing up
 
-Instance and runnable setups hold only weak references to their instances such that
-deleting those instances won't keep them in memory and will automatically remove the setups.
+Instance and runnable setups hold weak references to their respective instances. Consequently,
+deleting an instance does not persist its setup in memory—the setup is automatically deregistered.
 
-To clear all caches:
+To clear all caches, execute:
 
 ```pycon
 >>> vbt.CAQueryDelegator().clear_cache()
@@ -395,17 +392,20 @@ To clear all caches:
 
 ## Resetting
 
-To reset global caching flags:
+Reset global caching flags with:
 
 ```pycon
 >>> vbt.settings.caching.reset()
 ```
 
-To remove all setups:
+To deregister all setups, execute:
 
 ```pycon
 >>> vbt.CAQueryDelegator(kind=None).deregister()
 ```
+
+!!!
+    For default settings, see `vectorbtpro._settings.caching`.
 """
 
 import inspect
@@ -426,7 +426,8 @@ from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.caching import Cacheable
 from vectorbtpro.utils.decorators import cacheableT, cacheable_property
 from vectorbtpro.utils.formatting import ptable
-from vectorbtpro.utils.parsing import Regex, hash_args, UnhashableArgsError, get_func_arg_names
+from vectorbtpro.utils.hashing import hash_args, UnhashableArgsError
+from vectorbtpro.utils.parsing import Regex, get_func_arg_names
 from vectorbtpro.utils.profiling import Timer
 from vectorbtpro.utils.warnings_ import warn
 
@@ -453,11 +454,18 @@ __pdoc__ = {}
 
 
 class _GARBAGE:
-    """Sentinel class for garbage."""
+    """Sentinel class representing a marker for garbage."""
 
 
 def is_cacheable_function(cacheable: tp.Any) -> bool:
-    """Check if `cacheable` is a cacheable function."""
+    """Determine whether the provided object is a cacheable function.
+
+    Args:
+        cacheable (Any): Object to evaluate for cacheable function behavior.
+
+    Returns:
+        bool: True if the object is a cacheable function, False otherwise.
+    """
     return (
         callable(cacheable)
         and hasattr(cacheable, "is_method")
@@ -468,12 +476,26 @@ def is_cacheable_function(cacheable: tp.Any) -> bool:
 
 
 def is_cacheable_property(cacheable: tp.Any) -> bool:
-    """Check if `cacheable` is a cacheable property."""
+    """Determine whether the provided object is a cacheable property.
+
+    Args:
+        cacheable (Any): Object to evaluate for cacheable property behavior.
+
+    Returns:
+        bool: True if the object is a cacheable property, False otherwise.
+    """
     return isinstance(cacheable, cacheable_property)
 
 
 def is_cacheable_method(cacheable: tp.Any) -> bool:
-    """Check if `cacheable` is a cacheable method."""
+    """Determine whether the provided object is a cacheable method.
+
+    Args:
+        cacheable (Any): Object to evaluate for cacheable method behavior.
+
+    Returns:
+        bool: True if the object is a cacheable method, False otherwise.
+    """
     return (
         callable(cacheable)
         and hasattr(cacheable, "is_method")
@@ -484,60 +506,98 @@ def is_cacheable_method(cacheable: tp.Any) -> bool:
 
 
 def is_bindable_cacheable(cacheable: tp.Any) -> bool:
-    """Check if `cacheable` is a cacheable that can be bound to an instance."""
+    """Determine whether the provided object is a bindable cacheable suitable for instance binding.
+
+    Args:
+        cacheable (Any): Object to evaluate for bindable cacheable behavior.
+
+    Returns:
+        bool: True if the object is bindable, False otherwise.
+    """
     return is_cacheable_property(cacheable) or is_cacheable_method(cacheable)
 
 
 def is_cacheable(cacheable: tp.Any) -> bool:
-    """Check if `cacheable` is a cacheable."""
+    """Determine whether the provided object is cacheable.
+
+    Args:
+        cacheable (Any): Object to evaluate for cacheable behavior.
+
+    Returns:
+        bool: True if the object is cacheable, False otherwise.
+    """
     return is_cacheable_function(cacheable) or is_bindable_cacheable(cacheable)
 
 
 def get_obj_id(instance: object) -> tp.Tuple[type, int]:
-    """Get id of an instance."""
+    """Retrieve the type and unique identifier of the given instance.
+
+    Args:
+        instance (object): Instance whose identity is being retrieved.
+
+    Returns:
+        Tuple[type, int]: A tuple containing the instance's type and its id.
+    """
     return type(instance), id(instance)
 
 
-CAQueryT = tp.TypeVar("CAQueryT", bound="CAQuery")
+def instance_converter(
+    instance: tp.Optional[tp.Union[Cacheable, ReferenceType]],
+) -> tp.Optional[tp.Union[Cacheable, ReferenceType]]:
+    """Convert the provided instance to a weak reference if applicable.
 
-InstanceT = tp.Optional[tp.Union[Cacheable, ReferenceType]]
+    Args:
+        instance (Optional[Union[Cacheable, ReferenceType]]): Instance to convert.
 
-
-def _instance_converter(instance: InstanceT) -> InstanceT:
-    """Make the reference to the instance weak."""
+    Returns:
+        Optional[Union[Cacheable, ReferenceType]]: A weak reference to the instance
+            if it is not already a weak reference; otherwise, the unchanged instance.
+    """
     if instance is not None and instance is not _GARBAGE and not isinstance(instance, ReferenceType):
         return ref(instance)
     return instance
 
 
+CAQueryT = tp.TypeVar("CAQueryT", bound="CAQuery")
+
+
 @define
 class CAQuery(DefineMixin):
-    """Data class that represents a query for matching and ranking setups."""
+    """Class that represents a query for matching and ranking setups."""
 
     cacheable: tp.Optional[tp.Union[tp.Callable, cacheableT, str, Regex]] = define.field(default=None)
-    """Cacheable object or its name (case-sensitive)."""
+    """Cacheable object or its identifier name (case-sensitive)."""
 
-    instance: InstanceT = define.field(default=None, converter=_instance_converter)
-    """Weak reference to the instance `CAQuery.cacheable` is bound to."""
+    instance: tp.Optional[tp.Union[Cacheable, ReferenceType]] = define.field(default=None, converter=instance_converter)
+    """Weak reference to the instance to which `CAQuery.cacheable` is bound."""
 
     cls: tp.Optional[tp.TypeLike] = define.field(default=None)
-    """Class of the instance or its name (case-sensitive) `CAQuery.cacheable` is bound to."""
+    """Class of the instance to which `CAQuery.cacheable` is bound, or its name (case-sensitive)."""
 
     base_cls: tp.Optional[tp.TypeLike] = define.field(default=None)
-    """Base class of the instance or its name (case-sensitive) `CAQuery.cacheable` is bound to."""
+    """Base class of the instance to which `CAQuery.cacheable` is bound, or its name (case-sensitive)."""
 
     options: tp.Optional[dict] = define.field(default=None)
-    """Options to match."""
+    """Dictionary of options used for matching."""
 
     @classmethod
     def parse(cls: tp.Type[CAQueryT], query_like: tp.Any, use_base_cls: bool = True) -> CAQueryT:
         """Parse a query-like object.
 
+        Args:
+            query_like (Any): Object representing the query.
+
+                Can be a callable, string, dictionary, type, or other object.
+            use_base_cls (bool): Flag indicating whether the base class is used in query parsing.
+
+        Returns:
+            CAQuery: New `CAQuery` instance parsed from the input.
+
         !!! note
             Not all attribute combinations can be safely parsed by this function.
             For example, you cannot combine cacheable together with options.
 
-        Usage:
+        Examples:
             ```pycon
             >>> vbt.CAQuery.parse(lambda x: x)
             CAQuery(cacheable=<function <lambda> at 0x7fd4766c7730>, instance=None, cls=None, base_cls=None, options=None)
@@ -599,7 +659,11 @@ class CAQuery(DefineMixin):
 
     @property
     def instance_obj(self) -> tp.Optional[tp.Union[Cacheable, object]]:
-        """Instance object."""
+        """The instance if available; if the weak reference is dead, returns a garbage sentinel.
+
+        Returns:
+            Optional[Union[Cacheable, object]]: The instance or a garbage sentinel.
+        """
         if self.instance is _GARBAGE:
             return _GARBAGE
         if self.instance is not None and self.instance() is None:
@@ -607,9 +671,15 @@ class CAQuery(DefineMixin):
         return self.instance() if self.instance is not None else None
 
     def matches_setup(self, setup: "CABaseSetup") -> bool:
-        """Return whether the setup matches this query.
+        """Determine if the given setup matches the query criteria.
 
-        Usage:
+        Args:
+            setup (CABaseSetup): Setup instance to validate against the query.
+
+        Returns:
+            bool: True if the setup meets the query criteria, otherwise False.
+
+        Examples:
             Let's evaluate various queries:
 
             ```pycon
@@ -680,7 +750,6 @@ class CAQuery(DefineMixin):
             ['f']
             ```
         """
-
         if self.cacheable is not None:
             if not isinstance(setup, (CARunSetup, CAUnboundSetup)):
                 return False
@@ -753,25 +822,32 @@ class CAQuery(DefineMixin):
 
 @define
 class CARule(DefineMixin):
-    """Data class that represents a rule that should be enforced on setups that match a query."""
+    """Class representing a rule enforced on setups that match a specified query."""
 
     query: CAQuery = define.field()
-    """`CAQuery` used in matching."""
+    """The `CAQuery` used for matching."""
 
     enforce_func: tp.Optional[tp.Callable] = define.field()
-    """Function to run on the setup if it has been matched."""
+    """Callable function to execute on the setup when it matches the rule."""
 
     kind: tp.Optional[tp.MaybeIterable[str]] = define.field(default=None)
-    """Kind of a setup to match."""
+    """Specifies the expected kind(s) of setup. For example, 'class', 'instance', 'unbound', or 'runnable'."""
 
     exclude: tp.Optional[tp.MaybeIterable["CABaseSetup"]] = define.field(default=None)
-    """One or multiple setups to exclude."""
+    """A setup or an iterable of setups to be excluded from matching."""
 
     filter_func: tp.Optional[tp.Callable] = define.field(default=None)
-    """Function to filter out a setup."""
+    """Callable function used to apply additional filtering on a setup."""
 
     def matches_setup(self, setup: "CABaseSetup") -> bool:
-        """Return whether the setup matches the rule."""
+        """Return whether the specified setup satisfies the rule criteria.
+
+        Args:
+            setup (CABaseSetup): Setup instance to evaluate.
+
+        Returns:
+            bool: True if the setup meets the rule conditions, otherwise False.
+        """
         if not self.query.matches_setup(setup):
             return False
         if self.kind is not None:
@@ -806,7 +882,14 @@ class CARule(DefineMixin):
         return True
 
     def enforce(self, setup: "CABaseSetup") -> None:
-        """Run `CARule.enforce_func` on the setup if it has been matched."""
+        """Execute the enforce function on the setup if it satisfies the rule criteria.
+
+        Args:
+            setup (CABaseSetup): Setup instance to process.
+
+        Returns:
+            None
+        """
         if self.matches_setup(setup):
             self.enforce_func(setup)
 
@@ -822,7 +905,11 @@ class CARule(DefineMixin):
 
 
 class CacheableRegistry(Base):
-    """Class for registering setups of cacheables."""
+    """Class that manages registration of cacheable setups.
+
+    This class stores and retrieves setups for cacheable objects including class setups, instance setups,
+    unbound setups, and run setups, along with registered rules.
+    """
 
     def __init__(self) -> None:
         self._class_setups = dict()
@@ -833,36 +920,67 @@ class CacheableRegistry(Base):
 
     @property
     def class_setups(self) -> tp.Dict[int, "CAClassSetup"]:
-        """Dict of registered `CAClassSetup` instances by their hash."""
+        """Dictionary of registered `CAClassSetup` instances keyed by hash.
+
+        Returns:
+            Dict[int, CAClassSetup]: Dictionary of class setups.
+        """
         return self._class_setups
 
     @property
     def instance_setups(self) -> tp.Dict[int, "CAInstanceSetup"]:
-        """Dict of registered `CAInstanceSetup` instances by their hash."""
+        """Dictionary of registered `CAInstanceSetup` instances keyed by hash.
+
+        Returns:
+            Dict[int, CAInstanceSetup]: Dictionary of instance setups.
+        """
         return self._instance_setups
 
     @property
     def unbound_setups(self) -> tp.Dict[int, "CAUnboundSetup"]:
-        """Dict of registered `CAUnboundSetup` instances by their hash."""
+        """Dictionary of registered `CAUnboundSetup` instances keyed by hash.
+
+        Returns:
+            Dict[int, CAUnboundSetup]: Dictionary of unbound setups.
+        """
         return self._unbound_setups
 
     @property
     def run_setups(self) -> tp.Dict[int, "CARunSetup"]:
-        """Dict of registered `CARunSetup` instances by their hash."""
+        """Dictionary of registered `CARunSetup` instances keyed by hash.
+
+        Returns:
+            Dict[int, CARunSetup]: Dictionary of run setups.
+        """
         return self._run_setups
 
     @property
     def setups(self) -> tp.Dict[int, "CABaseSetup"]:
-        """Dict of registered `CABaseSetup` instances by their hash."""
+        """Dictionary with all registered setups combined from class, instance, unbound, and run setups.
+
+        Returns:
+            Dict[int, CABaseSetup]: Dictionary of all setups.
+        """
         return {**self.class_setups, **self.instance_setups, **self.unbound_setups, **self.run_setups}
 
     @property
     def rules(self) -> tp.List[CARule]:
-        """List of registered `CARule` instances."""
+        """List of registered `CARule` instances.
+
+        Returns:
+            List[CARule]: List of caching rules.
+        """
         return self._rules
 
     def get_setup_by_hash(self, hash_: int) -> tp.Optional["CABaseSetup"]:
-        """Get the setup by its hash."""
+        """Return the setup corresponding to the specified hash.
+
+        Args:
+            hash_ (int): Hash of the setup.
+
+        Returns:
+            Optional[CABaseSetup]: The setup instance if found; otherwise, None.
+        """
         if hash_ in self.class_setups:
             return self.class_setups[hash_]
         if hash_ in self.instance_setups:
@@ -874,11 +992,25 @@ class CacheableRegistry(Base):
         return None
 
     def setup_registered(self, setup: "CABaseSetup") -> bool:
-        """Return whether the setup is registered."""
+        """Return whether the specified setup is registered.
+
+        Args:
+            setup (CABaseSetup): Setup instance to check.
+
+        Returns:
+            bool: True if the setup is registered; otherwise, False.
+        """
         return self.get_setup_by_hash(hash(setup)) is not None
 
     def register_setup(self, setup: "CABaseSetup") -> None:
-        """Register a new setup of type `CABaseSetup`."""
+        """Register a new setup.
+
+        Args:
+            setup (CABaseSetup): Setup instance to register.
+
+        Returns:
+            None
+        """
         if isinstance(setup, CARunSetup):
             setups = self.run_setups
         elif isinstance(setup, CAUnboundSetup):
@@ -892,11 +1024,17 @@ class CacheableRegistry(Base):
         setups[hash(setup)] = setup
 
     def deregister_setup(self, setup: "CABaseSetup") -> None:
-        """Deregister a new setup of type `CABaseSetup`.
+        """Deregister the specified setup.
 
-        Removes the setup from its respective collection.
+        Removes the setup from its corresponding collection.
+        To also deregister its children, call `CASetupDelegatorMixin.deregister`.
 
-        To also deregister its children, call the `CASetupDelegatorMixin.deregister` method."""
+        Args:
+            setup (CABaseSetup): Setup instance to deregister.
+
+        Returns:
+            None
+        """
         if isinstance(setup, CARunSetup):
             setups = self.run_setups
         elif isinstance(setup, CAUnboundSetup):
@@ -911,11 +1049,25 @@ class CacheableRegistry(Base):
             del setups[hash(setup)]
 
     def register_rule(self, rule: CARule) -> None:
-        """Register a new rule of type `CARule`."""
+        """Register a new caching rule.
+
+        Args:
+            rule (CARule): Rule instance to register.
+
+        Returns:
+            None
+        """
         self.rules.append(rule)
 
     def deregister_rule(self, rule: CARule) -> None:
-        """Deregister a rule of type `CARule`."""
+        """Deregister the specified caching rule.
+
+        Args:
+            rule (CARule): Rule instance to deregister.
+
+        Returns:
+            None
+        """
         self.rules.remove(rule)
 
     def get_run_setup(
@@ -923,7 +1075,15 @@ class CacheableRegistry(Base):
         cacheable: cacheableT,
         instance: tp.Optional[Cacheable] = None,
     ) -> tp.Optional["CARunSetup"]:
-        """Get a setup of type `CARunSetup` with this cacheable and instance, or return None."""
+        """Return the run setup for the specified cacheable and instance.
+
+        Args:
+            cacheable (cacheable): Cacheable object.
+            instance (Optional[Cacheable]): Instance associated with the cacheable.
+
+        Returns:
+            Optional[CARunSetup]: The run setup if available and valid; otherwise, None.
+        """
         run_setup = self.run_setups.get(CARunSetup.get_hash(cacheable, instance=instance), None)
         if run_setup is not None and run_setup.instance_obj is _GARBAGE:
             self.deregister_setup(run_setup)
@@ -931,11 +1091,25 @@ class CacheableRegistry(Base):
         return run_setup
 
     def get_unbound_setup(self, cacheable: cacheableT) -> tp.Optional["CAUnboundSetup"]:
-        """Get a setup of type `CAUnboundSetup` with this cacheable or return None."""
+        """Return the unbound setup for the specified cacheable.
+
+        Args:
+            cacheable (cacheable): Cacheable object.
+
+        Returns:
+            Optional[CAUnboundSetup]: The unbound setup if available; otherwise, None.
+        """
         return self.unbound_setups.get(CAUnboundSetup.get_hash(cacheable), None)
 
     def get_instance_setup(self, instance: Cacheable) -> tp.Optional["CAInstanceSetup"]:
-        """Get a setup of type `CAInstanceSetup` with this instance or return None."""
+        """Return the instance setup for the specified cacheable instance.
+
+        Args:
+            instance (Cacheable): Cacheable instance.
+
+        Returns:
+            Optional[CAInstanceSetup]: The instance setup if available and valid; otherwise, None.
+        """
         instance_setup = self.instance_setups.get(CAInstanceSetup.get_hash(instance), None)
         if instance_setup is not None and instance_setup.instance_obj is _GARBAGE:
             self.deregister_setup(instance_setup)
@@ -943,7 +1117,14 @@ class CacheableRegistry(Base):
         return instance_setup
 
     def get_class_setup(self, cls: tp.Type[Cacheable]) -> tp.Optional["CAClassSetup"]:
-        """Get a setup of type `CAInstanceSetup` with this class or return None."""
+        """Return the class setup for the specified cacheable class.
+
+        Args:
+            cls (Type[Cacheable]): Cacheable class.
+
+        Returns:
+            Optional[CAClassSetup]: The class setup if available; otherwise, None.
+        """
         return self.class_setups.get(CAClassSetup.get_hash(cls), None)
 
     def match_setups(
@@ -955,28 +1136,40 @@ class CacheableRegistry(Base):
         exclude_children: bool = True,
         filter_func: tp.Optional[tp.Callable] = None,
     ) -> tp.Set["CABaseSetup"]:
-        """Match all setups registered in this registry against `query_like`.
+        """Match all setups in the registry that satisfy the provided queries.
 
-        `query_like` can be one or more query-like objects that will be parsed using `CAQuery.parse`.
+        This function parses one or more query-like objects using `CAQuery.parse` and returns
+        a set of setups that match any of the queries. If `collapse` is True, child setups
+        of a matched parent setup are excluded from the final results.
 
-        Set `collapse` to True to remove child setups that belong to any matched parent setup.
+        Args:
+            query_like (MaybeIterable[Any]): One or multiple query-like objects to match setups.
 
-        `kind` can be one or multiple of the following:
+                They are parsed with `CAQuery.parse`.
+            collapse (bool): If True, remove child setups belonging to any matched parent setup.
+            kind (Optional[MaybeIterable[str]]): Specifies the expected kind(s) of setup to match.
+                
+                Supported values:
 
-        * 'class' to only return class setups (instances of `CAClassSetup`)
-        * 'instance' to only return instance setups (instances of `CAInstanceSetup`)
-        * 'unbound' to only return unbound setups (instances of `CAUnboundSetup`)
-        * 'runnable' to only return runnable setups (instances of `CARunSetup`)
+                * "class": Matches class setups (instances of `CAClassSetup`).
+                * "instance": Matches instance setups (instances of `CAInstanceSetup`).
+                * "unbound": Matches unbound setups (instances of `CAUnboundSetup`).
+                * "runnable": Matches runnable setups (instances of `CARunSetup`).
+            exclude (Optional[MaybeIterable[CABaseSetup]]): Setup or setups to exclude from matching.
 
-        Set `exclude` to one or multiple setups to exclude. To not exclude their children,
-        set `exclude_children` to False.
+                If you wish to retain child setups of an excluded setup, set `exclude_children` to False.
+            exclude_children (bool): When True, excludes child setups of an excluded setup.
+
+                This is applied only when `collapse` is True.
+            filter_func (Optional[Callable]): Function that takes a setup and returns a boolean
+                indicating whether the setup should be included.
+
+        Returns:
+            Set[CABaseSetup]: A set of setups matching the given criteria.
 
         !!! note
             `exclude_children` is applied only when `collapse` is True.
-
-        `filter_func` can be used to filter out setups. For example, `lambda setup: setup.caching_enabled`
-        includes only those setups that have caching enabled. It must take a setup and return a boolean
-        of whether to include this setup in the final results."""
+        """
         if not checks.is_iterable(query_like) or isinstance(query_like, (str, tuple)):
             query_like = [query_like]
         query_like = list(map(CAQuery.parse, query_like))
@@ -1080,60 +1273,148 @@ class CacheableRegistry(Base):
 
 
 ca_reg = CacheableRegistry()
-"""Default registry of type `CacheableRegistry`."""
+"""Default cacheable registry instance of type `CacheableRegistry`."""
 
 
 class CAMetrics(Base):
-    """Abstract class that exposes various metrics related to caching."""
+    """Abstract base class that provides properties for accessing caching-related metrics,
+    including hit and miss counts, total cached size, elapsed time, time saved, and execution timestamps."""
 
     @property
     def hits(self) -> int:
-        """Number of hits."""
+        """Number of cache hits.
+
+        A cache hit occurs when a requested object is found in the cache.
+
+        Returns:
+            int: Total count of times a cached object was successfully retrieved.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def misses(self) -> int:
-        """Number of misses."""
+        """Number of cache misses.
+
+        A cache miss occurs when a requested object is not found in the cache.
+
+        Returns:
+            int: Total count of times an object retrieval failed due to absence in the cache.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def total_size(self) -> int:
-        """Total size of cached objects."""
+        """Total size of all cached objects.
+
+        Returns:
+            int: Aggregate memory size in bytes of all objects stored in the cache.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def total_elapsed(self) -> tp.Optional[timedelta]:
-        """Total number of seconds elapsed during running the function."""
+        """Cumulative elapsed time during function execution.
+
+        Returns:
+            Optional[timedelta]: The sum of execution durations for all cached function runs,
+                or None if the metric is not available.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def total_saved(self) -> tp.Optional[timedelta]:
-        """Total number of seconds saved by using the cache."""
+        """Cumulative time saved by caching.
+
+        Returns:
+            Optional[timedelta]: The total time saved by fetching results from the cache
+                instead of executing the function, or None if not determined.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def first_run_time(self) -> tp.Optional[datetime]:
-        """Time of the first run."""
+        """Timestamp of the first function execution.
+
+        Returns:
+            Optional[datetime]: The datetime when the function was first executed,
+                or None if it has never been run.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def last_run_time(self) -> tp.Optional[datetime]:
-        """Time of the last run."""
+        """Timestamp of the most recent function execution.
+
+        Returns:
+            Optional[datetime]: The datetime of the most recent function run,
+                or None if the function has not been executed.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def first_hit_time(self) -> tp.Optional[datetime]:
-        """Time of the first hit."""
+        """Timestamp of the first cache hit.
+
+        Returns:
+            Optional[datetime]: The datetime when the cache was hit for the first time,
+                or None if there have been no cache hits.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def last_hit_time(self) -> tp.Optional[datetime]:
-        """Time of the last hit."""
+        """Timestamp of the most recent cache hit.
+
+        Returns:
+            Optional[datetime]: The datetime when the cache was hit most recently,
+                or None if no cache hit has occurred.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def metrics(self) -> dict:
-        """Dict with all metrics."""
+        """Dictionary containing all caching metrics.
+
+        Returns:
+            dict: Dictionary with keys:
+
+                * `hits`
+                * `misses`
+                * `total_size`
+                * `total_elapsed`
+                * `total_saved`
+                * `first_run_time`
+                * `last_run_time`
+                * `first_hit_time`
+                * `last_hit_time`
+        """
         return dict(
             hits=self.hits,
             misses=self.misses,
@@ -1149,19 +1430,19 @@ class CAMetrics(Base):
 
 @define
 class CABaseSetup(CAMetrics, DefineMixin):
-    """Base class that exposes properties and methods for cache management."""
+    """Base class that provides properties and methods for cache management."""
 
     registry: CacheableRegistry = define.field(default=ca_reg)
-    """Registry of type `CacheableRegistry`."""
+    """Cache registry of type `CacheableRegistry`."""
 
     use_cache: tp.Optional[bool] = define.field(default=None)
-    """Whether caching is enabled."""
+    """Indicates whether caching is enabled."""
 
     whitelist: tp.Optional[bool] = define.field(default=None)
-    """Whether to cache even if caching was disabled globally."""
+    """Indicates if caching is maintained even when it is disabled globally."""
 
     active: bool = define.field(default=True)
-    """Whether to register and/or return setup when requested."""
+    """Indicates whether the setup is active and can be registered or returned."""
 
     def __attrs_post_init__(self) -> None:
         object.__setattr__(self, "_creation_time", datetime.now(timezone.utc))
@@ -1170,20 +1451,36 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
     @property
     def query(self) -> CAQuery:
-        """Query to match this setup."""
+        """Query used to match this setup.
+
+        Returns:
+            CAQuery: Query instance that identifies or filters setups.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def caching_enabled(self) -> tp.Optional[bool]:
-        """Whether caching is enabled in this setup.
+        """Whether caching is enabled for this setup.
 
-        Caching is disabled when any of the following apply:
+        Caching is considered disabled under any of the following conditions:
 
-        * `CARunSetup.use_cache` is False
-        * Caching is disabled globally and `CARunSetup.whitelist` is False
-        * Caching and whitelisting are disabled globally
+        * The setup's `use_cache` flag is False.
+        * Global caching is disabled (via settings["caching"]["disable"]) and the setup is not whitelisted.
+        * Both global caching and whitelisting are disabled.
 
-        Returns None if `CABaseSetup.use_cache` or `CABaseSetup.whitelist` is None."""
+        Returns:
+            Optional[bool]: Indicates the caching status:
+
+                * True if caching is enabled for this setup.
+                * False if caching is disabled.
+                * None if the caching flag is undefined.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+        """
         from vectorbtpro._settings import settings
 
         caching_cfg = settings["caching"]
@@ -1201,45 +1498,86 @@ class CABaseSetup(CAMetrics, DefineMixin):
         return False
 
     def register(self) -> None:
-        """Register setup using `CacheableRegistry.register_setup`."""
+        """Register the setup using `CacheableRegistry.register_setup`.
+
+        Returns:
+            None
+        """
         self.registry.register_setup(self)
 
     def deregister(self) -> None:
-        """Register setup using `CacheableRegistry.deregister_setup`."""
+        """Deregister the setup using `CacheableRegistry.deregister_setup`.
+
+        Returns:
+            None
+        """
         self.registry.deregister_setup(self)
 
     @property
     def registered(self) -> bool:
-        """Return whether setup is registered."""
+        """Whether the setup is registered.
+
+        Returns:
+            bool: True if the setup is registered; otherwise, False.
+        """
         return self.registry.setup_registered(self)
 
     def enforce_rules(self) -> None:
-        """Enforce registry rules."""
+        """Enforce all registry rules on this setup.
+
+        Returns:
+            None
+        """
         for rule in self.registry.rules:
             rule.enforce(self)
 
     def activate(self) -> None:
-        """Activate."""
+        """Activate the setup.
+
+        Returns:
+            None
+        """
         object.__setattr__(self, "active", True)
 
     def deactivate(self) -> None:
-        """Deactivate."""
+        """Deactivate the setup.
+
+        Returns:
+            None
+        """
         object.__setattr__(self, "active", False)
 
     def enable_whitelist(self) -> None:
-        """Enable whitelisting."""
+        """Enable whitelisting for this setup.
+
+        Returns:
+            None
+        """
         object.__setattr__(self, "whitelist", True)
         object.__setattr__(self, "_whitelist_lut", datetime.now(timezone.utc))
 
     def disable_whitelist(self) -> None:
-        """Disable whitelisting."""
+        """Disable whitelisting for this setup.
+
+        Returns:
+            None
+        """
         object.__setattr__(self, "whitelist", False)
         object.__setattr__(self, "_whitelist_lut", datetime.now(timezone.utc))
 
     def enable_caching(self, force: bool = False, silence_warnings: tp.Optional[bool] = None) -> None:
-        """Enable caching.
+        """Enable caching for this setup.
 
-        Set `force` to True to whitelist this setup."""
+        Args:
+            force (bool): Enable whitelisting when set to True.
+            silence_warnings (bool): Flag to suppress warning messages.
+
+        Returns:
+            None
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+        """
         from vectorbtpro._settings import settings
 
         caching_cfg = settings["caching"]
@@ -1258,9 +1596,14 @@ class CABaseSetup(CAMetrics, DefineMixin):
         object.__setattr__(self, "_use_cache_lut", datetime.now(timezone.utc))
 
     def disable_caching(self, clear_cache: bool = True) -> None:
-        """Disable caching.
+        """Disable caching for this setup.
 
-        Set `clear_cache` to True to also clear the cache."""
+        Args:
+            clear_cache (bool): If True, also clear the cache.
+
+        Returns:
+            None
+        """
         object.__setattr__(self, "use_cache", False)
         if clear_cache:
             self.clear_cache()
@@ -1268,22 +1611,41 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
     @property
     def creation_time(self) -> tp.datetime:
-        """Time when this setup was created."""
+        """UTC time when this setup was created.
+
+        Returns:
+            datetime: UTC datetime representing when the setup was instantiated.
+        """
         return object.__getattribute__(self, "_creation_time")
 
     @property
     def use_cache_lut(self) -> tp.Optional[datetime]:
-        """Last time `CABaseSetup.use_cache` was updated."""
+        """Last update time for the `use_cache` flag.
+
+        Returns:
+            Optional[datetime]: The timestamp of the most recent update to the `use_cache` flag,
+                or None if not set.
+        """
         return object.__getattribute__(self, "_use_cache_lut")
 
     @property
     def whitelist_lut(self) -> tp.Optional[datetime]:
-        """Last time `CABaseSetup.whitelist` was updated."""
+        """Last update time for the `whitelist` flag.
+
+        Returns:
+            Optional[datetime]: The timestamp of the most recent update to the `whitelist` flag,
+                or None if not set.
+        """
         return object.__getattribute__(self, "_whitelist_lut")
 
     @property
     def last_update_time(self) -> tp.Optional[datetime]:
-        """Last time any of `CABaseSetup.use_cache` and `CABaseSetup.whitelist` were updated."""
+        """Most recent update time between `use_cache` and `whitelist` flags.
+
+        Returns:
+            Optional[datetime]: The later timestamp between `use_cache_lut` and `whitelist_lut`,
+                or None if both are None.
+        """
         if self.use_cache_lut is None:
             return self.whitelist_lut
         elif self.whitelist_lut is None:
@@ -1293,29 +1655,60 @@ class CABaseSetup(CAMetrics, DefineMixin):
         return max(self.use_cache_lut, self.whitelist_lut)
 
     def clear_cache(self) -> None:
-        """Clear the cache."""
+        """Clear the cache associated with this setup.
+
+        Returns:
+            None
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def same_type_setups(self) -> ValuesView:
-        """Setups of the same type."""
+        """Setups of the same type.
+
+        Returns:
+            ValuesView: Collection view of setups that are of the same type as this setup.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def short_str(self) -> str:
-        """Convert this setup into a short string."""
+        """Concise string representation of the setup.
+
+        Returns:
+            str: Brief string that summarizes the setup.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def readable_name(self) -> str:
-        """Get a readable name of the object the setup is bound to."""
+        """Human-readable name for the object associated with this setup.
+
+        Returns:
+            str: User-friendly name representing the setup's associated object.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def position_among_similar(self) -> tp.Optional[int]:
-        """Get position among all similar setups.
+        """Determine the position of this setup among similar setups ordered by creation time.
 
-        Ordered by creation time."""
+        Returns:
+            Optional[int]: The ordinal position (starting at 0) of this setup among similar ones,
+                or None if the position cannot be determined.
+        """
         i = 0
         for setup in self.same_type_setups:
             if self is setup:
@@ -1326,11 +1719,40 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
     @property
     def readable_str(self) -> str:
-        """Convert this setup into a readable string."""
+        """Detailed string representation of the setup.
+
+        Returns:
+            str: Descriptive string combining the human-readable name and its position among similar setups.
+        """
         return f"{self.readable_name}:{self.position_among_similar}"
 
     def get_stats(self, readable: bool = True, short_str: bool = False) -> dict:
-        """Get stats of the setup as a dict with metrics."""
+        """Get stats of the setup as a dict with metrics.
+
+        Args:
+            readable (bool): Whether to use a human-readable format.
+            short_str (bool): When True and `readable` is False, use the short string representation.
+
+        Returns:
+            dict: Dictionary containing the following metrics:
+
+                * `hash`: Hash value of the setup instance.
+                * `string`: String representation of the setup.
+                * `use_cache`: Indicator if caching is enabled.
+                * `whitelist`: Whitelist settings.
+                * `caching_enabled`: Flag indicating whether caching is active.
+                * `hits`: Number of cache hits.
+                * `misses`: Number of cache misses.
+                * `total_size`: Total size of cached data (humanized if `readable` is True).
+                * `total_elapsed`: Total elapsed time for operations (formatted when applicable).
+                * `total_saved`: Total time saved by caching (formatted when applicable).
+                * `first_run_time`: Timestamp of the first run (humanized if `readable` is True).
+                * `last_run_time`: Timestamp of the last run (humanized if `readable` is True).
+                * `first_hit_time`: Timestamp of the first cache hit (humanized if `readable` is True).
+                * `last_hit_time`: Timestamp of the last cache hit (humanized if `readable` is True).
+                * `creation_time`: Timestamp when the setup was created (humanized if `readable` is True).
+                * `last_update_time`: Timestamp when the setup was last updated (humanized if `readable` is True).
+        """
         if short_str:
             string = self.short_str
         else:
@@ -1406,15 +1828,34 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
 
 class CASetupDelegatorMixin(CAMetrics):
-    """Mixin class that delegates cache management to child setups."""
+    """Mixin class that delegates cache management operations to child setup instances.
+
+    This mixin provides methods to propagate cache management actions (e.g. deregistration,
+    enabling/disabling caching or whitelist) to all child setups.
+    """
 
     @property
     def child_setups(self) -> tp.Set[CABaseSetup]:
-        """Child setups."""
+        """Set of child setup instances.
+
+        Returns:
+            Set[CABaseSetup]: A set of child setups associated with this setup.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def get_setup_hierarchy(self, readable: bool = True, short_str: bool = False) -> tp.List[dict]:
-        """Get the setup hierarchy by recursively traversing the child setups."""
+        """Return the hierarchical structure of setups by recursively traversing child setups.
+
+        Args:
+            readable (bool): Whether to use a human-readable format.
+            short_str (bool): When True and `readable` is False, use the short string representation.
+
+        Returns:
+            List[dict]: A list representing the setup hierarchy.
+        """
         results = []
         for setup in self.child_setups:
             if readable:
@@ -1435,10 +1876,19 @@ class CASetupDelegatorMixin(CAMetrics):
         exclude: tp.Optional[tp.MaybeIterable["CABaseSetup"]] = None,
         **kwargs,
     ) -> None:
-        """Delegate a function to all child setups.
+        """Delegate a function call to each child setup.
 
-        `func` must take the setup and return nothing. If the setup is an instance of
-        `CASetupDelegatorMixin`, it must additionally accept `exclude`."""
+        The callable `func` must accept a setup instance as its first parameter and return nothing.
+        If a setup is an instance of `CASetupDelegatorMixin`, it should also accept an `exclude` keyword argument.
+
+        Args:
+            func (Callable): Function to apply to each child setup.
+            exclude (Optional[MaybeIterable[CABaseSetup]]): Iterable of child setups to exclude from delegation.
+            **kwargs: Keyword arguments for `func`.
+
+        Returns:
+            None
+        """
         if exclude is None:
             exclude = set()
         if isinstance(exclude, CABaseSetup):
@@ -1453,27 +1903,81 @@ class CASetupDelegatorMixin(CAMetrics):
                     func(setup, **kwargs)
 
     def deregister(self, **kwargs) -> None:
-        """Calls `CABaseSetup.deregister` on each child setup."""
+        """Delegate the deregistration action to each child setup.
+
+        Calls the `deregister` method on all child setups.
+
+        Args:
+            **kwargs: Keyword arguments for `CABaseSetup.deregister`.
+
+        Returns:
+            None
+        """
         self.delegate(lambda setup, **_kwargs: setup.deregister(**_kwargs), **kwargs)
 
     def enable_whitelist(self, **kwargs) -> None:
-        """Calls `CABaseSetup.enable_whitelist` on each child setup."""
+        """Delegate the enabling of whitelist to each child setup.
+
+        Calls the `enable_whitelist` method on all child setups.
+
+        Args:
+            **kwargs: Keyword arguments for `CABaseSetup.enable_whitelist`.
+
+        Returns:
+            None
+        """
         self.delegate(lambda setup, **_kwargs: setup.enable_whitelist(**_kwargs), **kwargs)
 
     def disable_whitelist(self, **kwargs) -> None:
-        """Calls `CABaseSetup.disable_whitelist` on each child setup."""
+        """Delegate the disabling of whitelist to each child setup.
+
+        Calls the `disable_whitelist` method on all child setups.
+
+        Args:
+            **kwargs: Keyword arguments for `CABaseSetup.disable_whitelist`.
+
+        Returns:
+            None
+        """
         self.delegate(lambda setup, **_kwargs: setup.disable_whitelist(**_kwargs), **kwargs)
 
     def enable_caching(self, **kwargs) -> None:
-        """Calls `CABaseSetup.enable_caching` on each child setup."""
+        """Delegate the enabling of caching to each child setup.
+
+        Calls the `enable_caching` method on all child setups.
+
+        Args:
+            **kwargs: Keyword arguments for `CABaseSetup.enable_caching`.
+
+        Returns:
+            None
+        """
         self.delegate(lambda setup, **_kwargs: setup.enable_caching(**_kwargs), **kwargs)
 
     def disable_caching(self, **kwargs) -> None:
-        """Calls `CABaseSetup.disable_caching` on each child setup."""
+        """Delegate the disabling of caching to each child setup.
+
+        Calls the `disable_caching` method on all child setups.
+
+        Args:
+            **kwargs: Keyword arguments for `CABaseSetup.disable_caching`.
+
+        Returns:
+            None
+        """
         self.delegate(lambda setup, **_kwargs: setup.disable_caching(**_kwargs), **kwargs)
 
     def clear_cache(self, **kwargs) -> None:
-        """Calls `CABaseSetup.clear_cache` on each child setup."""
+        """Delegate the clearing of cache to each child setup.
+
+        Calls the `clear_cache` method on all child setups.
+
+        Args:
+            **kwargs: Keyword arguments for `CABaseSetup.clear_cache`.
+
+        Returns:
+            None
+        """
         self.delegate(lambda setup, **_kwargs: setup.clear_cache(**_kwargs), **kwargs)
 
     @property
@@ -1565,7 +2069,20 @@ class CASetupDelegatorMixin(CAMetrics):
         include: tp.Optional[tp.MaybeSequence[str]] = None,
         exclude: tp.Optional[tp.MaybeSequence[str]] = None,
     ) -> tp.Optional[tp.Frame]:
-        """Get a DataFrame out of stats dicts of child setups."""
+        """Return a DataFrame constructed from the stats dictionaries of child setups.
+
+        Args:
+            readable (bool): Whether to use a human-readable format.
+            short_str (bool): When True and `readable` is False, use the short string representation.
+            index_by_hash (bool): If True, set the DataFrame index to the setup hash.
+            filter_func (Callable): Function to filter child setups.
+            include (Sequence[str]): List of column names to include in the DataFrame.
+            exclude (Sequence[str]): List of column names to exclude from the DataFrame.
+
+        Returns:
+            Optional[pd.DataFrame]: A DataFrame containing the stats of child setups,
+                or None if no setups are available.
+        """
         if len(self.child_setups) == 0:
             return None
         df = pd.DataFrame(
@@ -1597,13 +2114,14 @@ class CASetupDelegatorMixin(CAMetrics):
 
 
 class CABaseDelegatorSetup(CABaseSetup, CASetupDelegatorMixin):
-    """Base class acting as a stateful setup that delegates cache management to child setups.
+    """Class representing a stateful setup that delegates cache management operations to child setups.
 
-    First delegates the work and only then changes its own state."""
+    This class first delegates cache management actions to its child setups and then applies
+    the corresponding state changes to itself.
+    """
 
     @property
     def child_setups(self) -> tp.Set[CABaseSetup]:
-        """Get child setups that match `CABaseDelegatorSetup.query`."""
         return self.registry.match_setups(self.query, collapse=True)
 
     def deregister(self, **kwargs) -> None:
@@ -1630,8 +2148,17 @@ class CABaseDelegatorSetup(CABaseSetup, CASetupDelegatorMixin):
         CASetupDelegatorMixin.clear_cache(self, **kwargs)
 
 
-def _assert_value_not_none(instance: object, attribute: attr.Attribute, value: tp.Any) -> None:
-    """Assert that value is not None."""
+def assert_value_not_none(instance: object, attribute: attr.Attribute, value: tp.Any) -> None:
+    """Assert that the provided value is not None.
+
+    Args:
+        instance (object): Instance on which the attribute is being set.
+        attribute (Attribute): Attribute for which the value is being validated.
+        value (Any): Value to check.
+
+    Returns:
+        None
+    """
     if value is None:
         raise ValueError("Please provide {}".format(attribute.name))
 
@@ -1641,20 +2168,23 @@ CAClassSetupT = tp.TypeVar("CAClassSetupT", bound="CAClassSetup")
 
 @define
 class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
-    """Class that represents a setup of a cacheable class.
+    """Class that represents a setup for a cacheable class.
 
-    The provided class must subclass `vectorbtpro.utils.caching.Cacheable`.
+    The provided class must be a subclass of `vectorbtpro.utils.caching.Cacheable`.
 
-    Delegates cache management to its child subclass setups of type `CAClassSetup` and
-    child instance setups of type `CAInstanceSetup`.
+    Delegates cache management to its child setups:
 
-    If `use_cash` or `whitelist` are None, inherits a non-empty value from its superclass setups
-    using the method resolution order (MRO).
+    * `CAClassSetup` for subclass setups.
+    * `CAInstanceSetup` for instance setups.
+
+    If `use_cache` or `whitelist` are None, inherits non-empty values from its superclass setups
+    following the method resolution order (MRO).
 
     !!! note
-        Unbound setups are not children of class setups. See notes on `CAUnboundSetup`."""
+        Unbound setups are not considered children of class setups. See notes on `CAUnboundSetup`.
+    """
 
-    cls: tp.Type[Cacheable] = define.field(default=None, validator=_assert_value_not_none)
+    cls: tp.Type[Cacheable] = define.field(default=None, validator=assert_value_not_none)
     """Cacheable class."""
 
     @staticmethod
@@ -1663,7 +2193,14 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
     @staticmethod
     def get_cacheable_superclasses(cls: tp.Type[Cacheable]) -> tp.List[tp.Type[Cacheable]]:
-        """Get an ordered list of the cacheable superclasses of a class."""
+        """Return an ordered list of cacheable superclasses.
+
+        Args:
+            cls (Type[Cacheable]): Cacheable class whose superclasses are retrieved.
+
+        Returns:
+            List[Type[Cacheable]]: An ordered list of cacheable superclasses, excluding the class itself.
+        """
         superclasses = []
         for super_cls in inspect.getmro(cls):
             if issubclass(super_cls, Cacheable):
@@ -1673,7 +2210,15 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
     @staticmethod
     def get_superclass_setups(registry: CacheableRegistry, cls: tp.Type[Cacheable]) -> tp.List["CAClassSetup"]:
-        """Setups of type `CAClassSetup` of each in `CAClassSetup.get_cacheable_superclasses`."""
+        """Return setups for cacheable superclasses.
+
+        Args:
+            registry (CacheableRegistry): Registry to retrieve class setups.
+            cls (Type[Cacheable]): Cacheable class to analyze.
+
+        Returns:
+            List[CAClassSetup]: A list of setups corresponding to each cacheable superclass.
+        """
         setups = []
         for super_cls in CAClassSetup.get_cacheable_superclasses(cls):
             if registry.get_class_setup(super_cls) is not None:
@@ -1682,7 +2227,14 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
     @staticmethod
     def get_cacheable_subclasses(cls: tp.Type[Cacheable]) -> tp.List[tp.Type[Cacheable]]:
-        """Get an ordered list of the cacheable subclasses of a class."""
+        """Return an ordered list of cacheable subclasses.
+
+        Args:
+            cls (Type[Cacheable]): Cacheable class to examine.
+
+        Returns:
+            List[Type[Cacheable]]: An ordered list of all cacheable subclasses, excluding the class itself.
+        """
         subclasses = []
         for sub_cls in cls.__subclasses__():
             if issubclass(sub_cls, Cacheable):
@@ -1693,7 +2245,15 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
     @staticmethod
     def get_subclass_setups(registry: CacheableRegistry, cls: tp.Type[Cacheable]) -> tp.List["CAClassSetup"]:
-        """Setups of type `CAClassSetup` of each in `CAClassSetup.get_cacheable_subclasses`."""
+        """Return setups for cacheable subclasses.
+
+        Args:
+            registry (CacheableRegistry): Registry used to retrieve class setups.
+            cls (Type[Cacheable]): Cacheable class to examine.
+
+        Returns:
+            List[CAClassSetup]: A list of setups corresponding to each cacheable subclass.
+        """
         setups = []
         for super_cls in CAClassSetup.get_cacheable_subclasses(cls):
             if registry.get_class_setup(super_cls) is not None:
@@ -1702,13 +2262,28 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
     @staticmethod
     def get_unbound_cacheables(cls: tp.Type[Cacheable]) -> tp.Set[cacheableT]:
-        """Get a set of the unbound cacheables of a class."""
+        """Return a set of unbound cacheable members.
+
+        Args:
+            cls (Type[Cacheable]): Cacheable class.
+
+        Returns:
+            Set[cacheableT]: A set containing unbound cacheable members.
+        """
         members = inspect.getmembers(cls, is_bindable_cacheable)
         return {attr for attr_name, attr in members}
 
     @staticmethod
     def get_unbound_setups(registry: CacheableRegistry, cls: tp.Type[Cacheable]) -> tp.Set["CAUnboundSetup"]:
-        """Setups of type `CAUnboundSetup` of each in `CAClassSetup.get_unbound_cacheables`."""
+        """Return setups for unbound cacheables.
+
+        Args:
+            registry (CacheableRegistry): Registry used to retrieve unbound setups.
+            cls (Type[Cacheable]): Cacheable class to inspect for unbound cacheable members.
+
+        Returns:
+            Set[CAUnboundSetup]: A set of setups corresponding to each unbound cacheable member.
+        """
         setups = set()
         for cacheable in CAClassSetup.get_unbound_cacheables(cls):
             if registry.get_unbound_setup(cacheable) is not None:
@@ -1722,9 +2297,20 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         registry: CacheableRegistry = ca_reg,
         **kwargs,
     ) -> tp.Optional[CAClassSetupT]:
-        """Get setup from `CacheableRegistry` or register a new one.
+        """Retrieve or create a cacheable class setup.
 
-        `**kwargs` are passed to `CAClassSetup.__init__`."""
+        Args:
+            cls_ (Type[Cacheable]): Cacheable class to retrieve or register.
+            registry (CacheableRegistry): Registry to use for retrieving the setup.
+            **kwargs: Keyword arguments for `CAClassSetup`.
+
+        Returns:
+            Optional[CAClassSetup]: The retrieved or newly registered setup,
+                or None if caching machinery is disabled or the setup is inactive.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+        """
         from vectorbtpro._settings import settings
 
         caching_cfg = settings["caching"]
@@ -1766,22 +2352,42 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
     @property
     def superclass_setups(self) -> tp.List["CAClassSetup"]:
-        """See `CAClassSetup.get_superclass_setups`."""
+        """List of setups for each cacheable superclass.
+
+        Returns:
+            List[CAClassSetup]: A list of class setups corresponding to each cacheable
+                superclass of `CAClassSetup.cls`.
+        """
         return self.get_superclass_setups(self.registry, self.cls)
 
     @property
     def subclass_setups(self) -> tp.List["CAClassSetup"]:
-        """See `CAClassSetup.get_subclass_setups`."""
+        """List of setups for each cacheable subclass.
+
+        Returns:
+            List[CAClassSetup]: A list of class setups corresponding to each cacheable
+                subclass of `CAClassSetup.cls`.
+        """
         return self.get_subclass_setups(self.registry, self.cls)
 
     @property
     def unbound_setups(self) -> tp.Set["CAUnboundSetup"]:
-        """See `CAClassSetup.get_unbound_setups`."""
+        """Set of setups for each unbound cacheable member.
+
+        Returns:
+            Set[CAUnboundSetup]: A set of unbound setup instances for cacheable members
+                defined in `CAClassSetup.cls`.
+        """
         return self.get_unbound_setups(self.registry, self.cls)
 
     @property
     def instance_setups(self) -> tp.Set["CAInstanceSetup"]:
-        """Setups of type `CAInstanceSetup` of instances of the class."""
+        """Set of setups for instances associated with this class setup.
+
+        Returns:
+            Set[CAInstanceSetup]: A set of instance setup instances whose `class_setup` attribute
+                is equal to `CAClassSetup`.
+        """
         matches = set()
         for instance_setup in self.registry.instance_setups.values():
             if instance_setup.class_setup is self:
@@ -1790,7 +2396,12 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
     @property
     def any_use_cache_lut(self) -> tp.Optional[datetime]:
-        """Last time `CABaseSetup.use_cache` was updated in this class or any of its superclasses."""
+        """Most recent update time for `use_cache` in this class or its superclasses.
+
+        Returns:
+            Optional[datetime]: The latest timestamp among `CAClassSetup.use_cache_lut` and
+                those of its superclass setups, or None if no timestamp is available.
+        """
         max_use_cache_lut = self.use_cache_lut
         for setup in self.superclass_setups:
             if setup.use_cache_lut is not None:
@@ -1800,7 +2411,12 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
 
     @property
     def any_whitelist_lut(self) -> tp.Optional[datetime]:
-        """Last time `CABaseSetup.whitelist` was updated in this class or any of its superclasses."""
+        """Most recent update time for `whitelist` in this class or its superclasses.
+
+        Returns:
+            Optional[datetime]: The latest timestamp among `CAClassSetup.whitelist_lut` and
+                those of its superclass setups, or None if no timestamp is available.
+        """
         max_whitelist_lut = self.whitelist_lut
         for setup in self.superclass_setups:
             if setup.whitelist_lut is not None:
@@ -1834,15 +2450,16 @@ CAInstanceSetupT = tp.TypeVar("CAInstanceSetupT", bound="CAInstanceSetup")
 
 @define
 class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
-    """Class that represents a setup of an instance that has cacheables bound to it.
+    """Class that represents a setup for an instance with bound cacheable objects.
 
-    The provided instance must be of `vectorbtpro.utils.caching.Cacheable`.
+    The provided instance must be of `Cacheable` from `vectorbtpro.utils.caching`.
 
     Delegates cache management to its child setups of type `CARunSetup`.
 
-    If `use_cash` or `whitelist` are None, inherits a non-empty value from its parent class setup."""
+    If `use_cache` or `whitelist` are None, they inherit values from the parent class setup.
+    """
 
-    instance: tp.Union[Cacheable, ReferenceType] = define.field(default=None, validator=_assert_value_not_none)
+    instance: tp.Union[Cacheable, ReferenceType] = define.field(default=None, validator=assert_value_not_none)
     """Cacheable instance."""
 
     @staticmethod
@@ -1856,9 +2473,19 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
         registry: CacheableRegistry = ca_reg,
         **kwargs,
     ) -> tp.Optional[CAInstanceSetupT]:
-        """Get setup from `CacheableRegistry` or register a new one.
+        """Get or register a new instance setup from a `CacheableRegistry`.
 
-        `**kwargs` are passed to `CAInstanceSetup.__init__`."""
+        Args:
+            instance (Cacheable): Cacheable instance for which to retrieve or create a setup.
+            registry (CacheableRegistry): Registry to query for an existing setup.
+            **kwargs: Keyword arguments for `CAInstanceSetup`.
+
+        Returns:
+            Optional[CAInstanceSetup]: The active setup for the instance if found, otherwise None.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+        """
         from vectorbtpro._settings import settings
 
         caching_cfg = settings["caching"]
@@ -1900,33 +2527,62 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
 
     @property
     def instance_obj(self) -> tp.Union[Cacheable, object]:
-        """Instance object."""
+        """Underlying cacheable instance.
+
+        This property returns the actual cacheable instance if it is still alive. If the instance has been
+        garbage collected, it returns a designated garbage placeholder.
+
+        Returns:
+            Union[Cacheable, object]: The live instance of the cacheable object or a garbage marker.
+        """
         if self.instance() is None:
             return _GARBAGE
         return self.instance()
 
     @property
     def contains_garbage(self) -> bool:
-        """Whether instance was destroyed."""
+        """Indicates whether the underlying instance has been garbage collected.
+
+        Returns:
+            bool: True if the instance has been destroyed (garbage collected), otherwise False.
+        """
         return self.instance_obj is _GARBAGE
 
     @property
     def class_setup(self) -> tp.Optional[CAClassSetup]:
-        """Setup of type `CAClassSetup` of the cacheable class of the instance."""
+        """Retrieves the cacheable class setup for the type of the underlying instance.
+
+        If the instance is no longer available, None is returned.
+
+        Returns:
+            Optional[CAClassSetup]: The class setup for the instance's type, or None if the instance is garbage.
+        """
         if self.contains_garbage:
             return None
         return CAClassSetup.get(type(self.instance_obj), self.registry)
 
     @property
     def unbound_setups(self) -> tp.Set["CAUnboundSetup"]:
-        """Setups of type `CAUnboundSetup` of unbound cacheables declared in the class of the instance."""
+        """Gets the set of unbound cacheable setups declared in the instance's class.
+
+        Returns:
+            Set[CAUnboundSetup]: A set of unbound setups associated with the class of the instance.
+
+                Returns an empty set if the instance contains garbage.
+        """
         if self.contains_garbage:
             return set()
         return self.class_setup.unbound_setups
 
     @property
     def run_setups(self) -> tp.Set["CARunSetup"]:
-        """Setups of type `CARunSetup` of cacheables bound to the instance."""
+        """Retrieves all runnable cacheable setups bound to the instance.
+
+        Returns:
+            Set[CARunSetup]: A set of run setups associated with the instance.
+
+                If the instance has been garbage collected, an empty set is returned.
+        """
         if self.contains_garbage:
             return set()
         matches = set()
@@ -1965,26 +2621,24 @@ CAUnboundSetupT = tp.TypeVar("CAUnboundSetupT", bound="CAUnboundSetup")
 
 @define
 class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
-    """Class that represents a setup of an unbound cacheable property or method.
+    """Class representing the setup for an unbound cacheable property or method.
 
-    An unbound callable is a callable that was declared in a class but is not bound
-    to any instance (just yet).
+    An unbound callable is declared in a class but is not yet bound to an instance.
 
     !!! note
-        Unbound callables are just regular functions - they have no parent setups. Even though they
-        are formally declared in a class, there is no easy way to get a reference to the class
-        from the decorator itself. Thus, searching for child setups of a specific class won't return
-        unbound setups.
+        Unbound callables are regular functions without parent setups. Although declared within a class,
+        there is no straightforward way to retrieve the class reference from the decorator.
+        Therefore, searching for child setups of a specific class will not return unbound setups.
 
-    Delegates cache management to its child setups of type `CARunSetup`.
-    One unbound cacheable property or method can be bound to multiple instances, thus there is
-    one-to-many relationship between `CAUnboundSetup` and `CARunSetup` instances.
+    Delegates cache management to its child setups of type `CARunSetup`. A single unbound cacheable
+    can be bound to multiple instances, establishing a one-to-many relationship with `CARunSetup` instances.
 
     !!! hint
-        Use class attributes instead of instance attributes to access unbound callables."""
+        Access unbound callables using class attributes instead of instance attributes.
+    """
 
-    cacheable: cacheableT = define.field(default=None, validator=_assert_value_not_none)
-    """Cacheable object."""
+    cacheable: cacheableT = define.field(default=None, validator=assert_value_not_none)
+    """Cacheable object associated with the unbound setup."""
 
     @staticmethod
     def get_hash(cacheable: cacheableT) -> int:
@@ -1997,9 +2651,19 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
         registry: CacheableRegistry = ca_reg,
         **kwargs,
     ) -> tp.Optional[CAUnboundSetupT]:
-        """Get setup from `CacheableRegistry` or register a new one.
+        """Get or register a new unbound setup from a `CacheableRegistry`.
 
-        `**kwargs` are passed to `CAUnboundSetup.__init__`."""
+        Args:
+            cacheable (cacheable): Cacheable property or method for which to retrieve or create a setup.
+            registry (CacheableRegistry): Registry to query for an existing setup.
+            **kwargs: Keyword arguments for `CAUnboundSetup`.
+
+        Returns:
+            Optional[CAUnboundSetup]: The active unbound setup if found, otherwise None.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+        """
         from vectorbtpro._settings import settings
 
         caching_cfg = settings["caching"]
@@ -2030,7 +2694,11 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
 
     @property
     def run_setups(self) -> tp.Set["CARunSetup"]:
-        """Setups of type `CARunSetup` of bound cacheables."""
+        """Set of run setups for cacheables that have been bound to this unbound setup.
+
+        Returns:
+            Set[CARunSetup]: A set of run setups associated with the unbound cacheable.
+        """
         matches = set()
         for run_setup in self.registry.run_setups.values():
             if run_setup.unbound_setup is self:
@@ -2067,19 +2735,20 @@ CARunSetupT = tp.TypeVar("CARunSetupT", bound="CARunSetup")
 
 @define
 class CARunResult(DefineMixin):
-    """Class that represents a cached result of a run.
+    """Class that represents a cached result from a run.
 
     !!! note
-        Hashed solely by the hash of the arguments `args_hash`."""
+        This instance is uniquely identified by the hash of its arguments (`args_hash`).
+    """
 
     args_hash: int = define.field()
-    """Hash of the arguments."""
+    """Integer hash of the run arguments."""
 
     result: tp.Any = define.field()
-    """Result of the run."""
+    """Output produced by the run."""
 
     timer: Timer = define.field()
-    """Timer used to measure the execution time."""
+    """Timer instance that measures the execution duration of the run."""
 
     def __attrs_post_init__(self) -> None:
         object.__setattr__(self, "_run_time", datetime.now(timezone.utc))
@@ -2093,31 +2762,57 @@ class CARunResult(DefineMixin):
 
     @property
     def result_size(self) -> int:
-        """Get size of the result in memory."""
+        """Memory size of the run result in bytes.
+
+        Returns:
+            int: Size in bytes of the cached run result.
+        """
         return sys.getsizeof(self.result)
 
     @property
     def run_time(self) -> datetime:
-        """Time of the run."""
+        """Timestamp marking when the run was executed.
+
+        Returns:
+            datetime: UTC datetime when the function run was executed.
+        """
         return object.__getattribute__(self, "_run_time")
 
     @property
     def hits(self) -> int:
-        """Number of hits."""
+        """Total number of cache hits recorded for this run result.
+
+        Returns:
+            int: Cumulative count of cache hits for this run result.
+        """
         return object.__getattribute__(self, "_hits")
 
     @property
     def first_hit_time(self) -> tp.Optional[datetime]:
-        """Time of the first hit."""
+        """Timestamp of the first cache hit, if any.
+
+        Returns:
+            Optional[datetime]: The UTC datetime of the first cache hit, or None if no hit has occurred.
+        """
         return object.__getattribute__(self, "_first_hit_time")
 
     @property
     def last_hit_time(self) -> tp.Optional[datetime]:
-        """Time of the last hit."""
+        """Timestamp of the most recent cache hit, if any.
+
+        Returns:
+            Optional[datetime]: The UTC datetime of the most recent cache hit, or None if no hit has occurred.
+        """
         return object.__getattribute__(self, "_last_hit_time")
 
     def hit(self) -> tp.Any:
-        """Hit the result."""
+        """Record a cache hit and return the cached result.
+
+        Updates the first and last hit timestamps and increments the hit counter.
+
+        Returns:
+            Any: Cached result from the run.
+        """
         hit_time = datetime.now(timezone.utc)
         if self.first_hit_time is None:
             object.__setattr__(self, "_first_hit_time", hit_time)
@@ -2134,43 +2829,42 @@ class CARunResult(DefineMixin):
 class CARunSetup(CABaseSetup, DefineMixin):
     """Class that represents a runnable cacheable setup.
 
-    Takes care of running functions and caching the results using `CARunSetup.run`.
+    Manages execution of functions and caching of results through the `CARunSetup.run` method.
 
-    Accepts as `cacheable` either `vectorbtpro.utils.decorators.cacheable_property`,
-    `vectorbtpro.utils.decorators.cacheable_method`, or `vectorbtpro.utils.decorators.cacheable`.
+    Accepts `cacheable` argument representing a cacheable property, method, or function from
+    `vectorbtpro.utils.decorators`.
 
-    Hashed by the callable and optionally the id of the instance its bound to.
-    This way, it can be uniquely identified among all setups.
-
-    !!! note
-        Cacheable properties and methods must provide an instance.
-
-        Only one instance per each unique combination of `cacheable` and `instance` can exist at a time.
-
-    If `use_cash` or `whitelist` are None, inherits a non-empty value either from its parent instance setup
-    or its parent unbound setup. If both setups have non-empty values, takes the one that has been
-    updated more recently.
+    The setup is uniquely identified by hashing the provided callable and, if applicable, the id of its
+    bound instance.
 
     !!! note
-        Use `CARunSetup.get` class method instead of `CARunSetup.__init__` to create a setup. The class method
-        first checks whether a setup with the same hash has already been registered, and if so, returns it.
-        Otherwise, creates and registers a new one. Using `CARunSetup.__init__` will throw an error if there
-        is a setup with the same hash."""
+        Cacheable properties and methods require an instance.
 
-    cacheable: cacheableT = define.field(default=None, validator=_assert_value_not_none)
-    """Cacheable object."""
+        Only one instance per unique combination of `cacheable` and `instance` is allowed concurrently.
+
+    If `use_cache` or `whitelist` are None, the setup inherits a non-empty value from its parent instance setup
+    or unbound setup, preferring the one updated most recently.
+
+    !!! note
+        Use the `CARunSetup.get` class method to create a setup. This method first checks if a setup with the
+        same hash is already registered and active, returning it if found; otherwise, it creates and registers
+        a new one. Direct instantiation of `CARunSetup` may raise an error if a duplicate setup exists.
+    """
+
+    cacheable: cacheableT = define.field(default=None, validator=assert_value_not_none)
+    """Cacheable object (callable, property, or method) that defines caching behavior."""
 
     instance: tp.Union[Cacheable, ReferenceType] = define.field(default=None)
-    """Cacheable instance."""
+    """Instance to which the cacheable is bound."""
 
     max_size: tp.Optional[int] = define.field(default=None)
     """Maximum number of entries in `CARunSetup.cache`."""
 
     ignore_args: tp.Optional[tp.Iterable[tp.AnnArgQuery]] = define.field(default=None)
-    """Arguments to ignore when hashing."""
+    """Arguments to ignore when computing the hash."""
 
     cache: tp.Dict[int, CARunResult] = define.field(factory=dict)
-    """Dict of cached `CARunResult` instances by their hash."""
+    """Dictionary of cached `CARunResult` instances keyed by their hash."""
 
     @staticmethod
     def get_hash(cacheable: cacheableT, instance: tp.Optional[Cacheable] = None) -> int:
@@ -2184,9 +2878,24 @@ class CARunSetup(CABaseSetup, DefineMixin):
         registry: CacheableRegistry = ca_reg,
         **kwargs,
     ) -> tp.Optional[CARunSetupT]:
-        """Get setup from `CacheableRegistry` or register a new one.
+        """Retrieve an existing run setup from the registry or register a new one.
 
-        `**kwargs` are passed to `CARunSetup.__init__`."""
+        Additional arguments are passed to the `CARunSetup` constructor.
+
+        Args:
+            cacheable (cacheable): Cacheable object (callable, property, or method)
+                that defines caching behavior.
+            instance (Optional[Cacheable]): Instance associated with the cacheable.
+            registry (CacheableRegistry): Registry used to store and retrieve run setups.
+            **kwargs: Keyword arguments for `CARunSetup`.
+
+        Returns:
+            Optional[CARunSetupT]: The existing or newly registered run setup,
+                or None if caching machinery is disabled.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+        """
         from vectorbtpro._settings import settings
 
         caching_cfg = settings["caching"]
@@ -2273,26 +2982,46 @@ class CARunSetup(CABaseSetup, DefineMixin):
 
     @property
     def instance_obj(self) -> tp.Union[Cacheable, object]:
-        """Instance object."""
+        """Bound instance object.
+
+        If the referenced instance has been garbage collected, returns a garbage marker.
+
+        Returns:
+            Union[Cacheable, object]: The actual bound instance if it exists, or the garbage marker `_GARBAGE`.
+        """
         if self.instance is not None and self.instance() is None:
             return _GARBAGE
         return self.instance() if self.instance is not None else None
 
     @property
     def contains_garbage(self) -> bool:
-        """Whether instance was destroyed."""
+        """Indicates whether the bound instance has been destroyed (garbage collected).
+
+        Returns:
+            bool: True if the bound instance is no longer available (garbage collected), otherwise False.
+        """
         return self.instance_obj is _GARBAGE
 
     @property
     def instance_setup(self) -> tp.Optional[CAInstanceSetup]:
-        """Setup of type `CAInstanceSetup` of the instance this cacheable is bound to."""
+        """Associated `CAInstanceSetup` for the bound instance.
+
+        Returns:
+            Optional[CAInstanceSetup]: The `CAInstanceSetup` corresponding to the current instance
+                if it exists and has not been garbage collected; otherwise, returns None.
+        """
         if self.instance_obj is None or self.contains_garbage:
             return None
         return CAInstanceSetup.get(self.instance_obj, self.registry)
 
     @property
     def unbound_setup(self) -> tp.Optional[CAUnboundSetup]:
-        """Setup of type `CAUnboundSetup` of the unbound cacheable."""
+        """Associated `CAUnboundSetup` for the unbound cacheable.
+
+        Returns:
+            Optional[CAUnboundSetup]: The `CAUnboundSetup` corresponding to the cacheable attribute,
+                or None if it is not registered.
+        """
         return self.registry.get_unbound_setup(self.cacheable)
 
     @property
@@ -2362,17 +3091,35 @@ class CARunSetup(CABaseSetup, DefineMixin):
         return list(sorted(last_hit_times))[-1]
 
     def run_func(self, *args, **kwargs) -> tp.Any:
-        """Run the setup's function without caching."""
+        """Run the setup's function without caching.
+
+        Args:
+            *args: Positional arguments for `CARunSetup.cacheable.func`.
+            **kwargs: Keyword arguments for `CARunSetup.cacheable.func`.
+
+        Returns:
+            Any: Result returned by `CARunSetup.cacheable.func`.
+        """
         if self.instance_obj is not None:
             return self.cacheable.func(self.instance_obj, *args, **kwargs)
         return self.cacheable.func(*args, **kwargs)
 
     def get_args_hash(self, *args, **kwargs) -> tp.Optional[int]:
-        """Get the hash of the passed arguments.
+        """Get the hash of the provided arguments using `vectorbtpro.utils.hashing.hash_args`.
 
-        `CARunSetup.ignore_args` gets extended with `ignore_args` under `vectorbtpro._settings.caching`.
+        This method extends `CARunSetup.ignore_args` with additional ignore arguments defined
+        in `vectorbtpro._settings.caching`. If no arguments are provided, it returns the hash of None.
 
-        If no arguments were passed, hashes None."""
+        Args:
+            *args: Positional arguments to be included in the hash computation.
+            **kwargs: Keyword arguments to be included in the hash computation.
+
+        Returns:
+            Optional[int]: The computed hash of the provided arguments.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+        """
         if len(args) == 0 and len(kwargs) == 0:
             return hash(None)
 
@@ -2394,9 +3141,18 @@ class CARunSetup(CABaseSetup, DefineMixin):
     def run_func_and_cache(self, *args, **kwargs) -> tp.Any:
         """Run the setup's function and cache the result.
 
-        Hashes the arguments using `CARunSetup.get_args_hash`, runs the function using
-        `CARunSetup.run_func`, wraps the result using `CARunResult`, and uses the hash
-        as a key to store the instance of `CARunResult` into `CARunSetup.cache` for later retrieval."""
+        This method calculates a hash for the given arguments using `CARunSetup.get_args_hash`.
+        It then executes the function via `CARunSetup.run_func`, wraps the result with `CARunResult`,
+        and stores the outcome in the cache using the computed hash. If a cached result exists,
+        it is returned via `CARunResult.hit()`.
+
+        Args:
+            *args: Positional arguments for `CARunSetup.run_func`.
+            **kwargs: Keyword arguments for `CARunSetup.run_func`.
+
+        Returns:
+            Any: Result from executing the function.
+        """
         args_hash = self.get_args_hash(*args, **kwargs)
         run_result_hash = CARunResult.get_hash(args_hash)
         if run_result_hash in self.cache:
@@ -2410,10 +3166,18 @@ class CARunSetup(CABaseSetup, DefineMixin):
         return result
 
     def run(self, *args, **kwargs) -> tp.Any:
-        """Run the setup and cache it depending on a range of conditions.
+        """Run the setup's function with caching control.
 
-        Runs `CARunSetup.run_func` if caching is disabled or arguments are not hashable,
-        and `CARunSetup.run_func_and_cache` otherwise."""
+        If caching is enabled and the provided arguments are hashable, this method executes
+        `CARunSetup.run_func_and_cache`. Otherwise, it falls back to executing `CARunSetup.run_func` directly.
+
+        Args:
+            *args: Positional arguments for `CARunSetup.run_func`.
+            **kwargs: Keyword arguments for `CARunSetup.run_func`.
+
+        Returns:
+            Any: Result of the function execution.
+        """
         if self.caching_enabled:
             try:
                 return self.run_func_and_cache(*args, **kwargs)
@@ -2422,7 +3186,6 @@ class CARunSetup(CABaseSetup, DefineMixin):
         return self.run_func(*args, **kwargs)
 
     def clear_cache(self) -> None:
-        """Clear the cache."""
         self.cache.clear()
 
     @property
@@ -2479,9 +3242,16 @@ class CARunSetup(CABaseSetup, DefineMixin):
 
 
 class CAQueryDelegator(CASetupDelegatorMixin):
-    """Class that delegates any setups that match a query.
+    """Class that delegates setups matching a query using a registry.
 
-    `*args`, `collapse`, and `**kwargs` are passed to `CacheableRegistry.match_setups`."""
+    All positional and keyword arguments are passed to `CacheableRegistry.match_setups`.
+
+    Args:
+        *args: Positional arguments for querying setups.
+        registry (CacheableRegistry): Registry used to match setups.
+        collapse (bool): If True, remove child setups belonging to any matched parent setup.
+        **kwargs: Keyword arguments for querying setups.
+    """
 
     def __init__(self, *args, registry: CacheableRegistry = ca_reg, collapse: bool = True, **kwargs) -> None:
         self._args = args
@@ -2491,27 +3261,46 @@ class CAQueryDelegator(CASetupDelegatorMixin):
 
     @property
     def args(self) -> tp.Args:
-        """Arguments."""
+        """Positional arguments used for querying setups.
+
+        Returns:
+            Args: Tuple or list of positional arguments stored in this instance.
+        """
         return self._args
 
     @property
     def kwargs(self) -> tp.Kwargs:
-        """Keyword arguments."""
+        """Keyword arguments used for querying setups.
+
+        Returns:
+            Kwargs: Dictionary of keyword arguments stored in this instance.
+        """
         return self._kwargs
 
     @property
     def registry(self) -> CacheableRegistry:
-        """Registry of type `CacheableRegistry`."""
+        """Cacheable registry used for matching setups.
+
+        Returns:
+            CacheableRegistry: Registry instance used to match and retrieve setups.
+        """
         return self._registry
 
     @property
     def child_setups(self) -> tp.Set[CABaseSetup]:
-        """Get child setups by matching them using `CacheableRegistry.match_setups`."""
         return self.registry.match_setups(*self.args, **self.kwargs)
 
 
 def get_cache_stats(*args, **kwargs) -> tp.Optional[tp.Frame]:
-    """Get cache stats globally or of an object."""
+    """Retrieve caching statistics globally or for a specific object.
+
+    Args:
+        *args: Positional arguments for `CAQueryDelegator`.
+        **kwargs: Keyword arguments distributed between `CAQueryDelegator` and `CAQueryDelegator.get_stats`.
+
+    Returns:
+        Optional[Frame]: A DataFrame containing caching statistics or None if not available.
+    """
     delegator_kwargs = {}
     stats_kwargs = {}
     if len(kwargs) > 0:
@@ -2527,30 +3316,64 @@ def get_cache_stats(*args, **kwargs) -> tp.Optional[tp.Frame]:
 
 
 def print_cache_stats(*args, **kwargs) -> None:
-    """Print cache stats globally or of an object."""
+    """Print caching statistics globally or for a specific object.
+
+    Args:
+        *args: Positional arguments for `get_cache_stats`.
+        **kwargs: Keyword arguments for `get_cache_stats`.
+
+    Returns:
+        None
+    """
     ptable(get_cache_stats(*args, **kwargs))
 
 
 def clear_cache(*args, **kwargs) -> None:
-    """Clear cache globally or of an object."""
+    """Clear the global cache or the cache of a specific object.
+
+    Args:
+        *args: Positional arguments for `CAQueryDelegator`.
+        **kwargs: Keyword arguments for `CAQueryDelegator`.
+
+    Returns:
+        None
+    """
     return CAQueryDelegator(*args, **kwargs).clear_cache()
 
 
 def collect_garbage() -> None:
-    """Collect garbage."""
+    """Collect garbage using the Python garbage collector.
+
+    Returns:
+        None
+    """
     import gc
 
     gc.collect()
 
 
 def flush() -> None:
-    """Clear cache and collect garbage."""
+    """Clear the cache and trigger garbage collection.
+
+    Returns:
+        None
+    """
     clear_cache()
     collect_garbage()
 
 
 def disable_caching(clear_cache: bool = True) -> None:
-    """Disable caching globally."""
+    """Disable caching globally.
+
+    Args:
+        clear_cache (bool): Whether to clear the cache when disabling caching.
+
+    Returns:
+        None
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
+    """
     from vectorbtpro._settings import settings
 
     caching_cfg = settings["caching"]
@@ -2564,7 +3387,14 @@ def disable_caching(clear_cache: bool = True) -> None:
 
 
 def enable_caching() -> None:
-    """Enable caching globally."""
+    """Enable caching globally.
+
+    Returns:
+        None
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
+    """
     from vectorbtpro._settings import settings
 
     caching_cfg = settings["caching"]
@@ -2575,7 +3405,30 @@ def enable_caching() -> None:
 
 
 class CachingDisabled(Base):
-    """Context manager to disable caching."""
+    """Context manager to temporarily disable caching based on a query.
+
+    Args:
+        query_like (Optional[Any]): Value used for parsing the query via `CAQuery.parse`.
+        use_base_cls (bool): Flag indicating whether the base class is used in query parsing.
+        kind (Optional[MaybeIterable[str]]): Specifies the expected kind(s) of setup to match.
+
+            See `CARegistry.match_setups`.
+        exclude (Optional[MaybeIterable[CABaseSetup]]): Setup or setups to exclude from matching.
+
+            See `CARegistry.match_setups`.
+        filter_func (Optional[Callable]): Function that takes a setup and returns a boolean
+            indicating whether the setup should be included.
+
+            See `CARegistry.match_setups`.
+        registry (CacheableRegistry): Registry instance for caching setups.
+        disable_whitelist (bool): Whether to disable the whitelist.
+        disable_machinery (bool): Flag to disable caching machinery.
+        clear_cache (bool): Whether to clear the cache when disabling caching.
+        silence_warnings (bool): Flag to suppress warning messages.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
+    """
 
     def __init__(
         self,
@@ -2607,67 +3460,123 @@ class CachingDisabled(Base):
 
     @property
     def query_like(self) -> tp.Optional[tp.Any]:
-        """See `CAQuery.parse`."""
+        """Query-like object used for parsing as utilized by `CAQuery.parse`.
+
+        Returns:
+            Optional[Any]: The original query-like object provided for parsing, or None if not set.
+        """
         return self._query_like
 
     @property
     def use_base_cls(self) -> bool:
-        """See `CAQuery.parse`."""
+        """Whether to use the base class during query parsing as specified in `CAQuery.parse`.
+
+        Returns:
+            bool: True if the base class should be used; otherwise, False.
+        """
         return self._use_base_cls
 
     @property
     def kind(self) -> tp.Optional[tp.MaybeIterable[str]]:
-        """See `CARule.kind`."""
+        """Kind or kinds used for filtering setups, as described in `CARule.kind`.
+
+        Returns:
+            Optional[Iterable[str]]: A string or iterable of strings indicating the kinds of setups,
+                or None if unspecified.
+        """
         return self._kind
 
     @property
     def exclude(self) -> tp.Optional[tp.MaybeIterable["CABaseSetup"]]:
-        """See `CARule.exclude`."""
+        """Setups to be excluded from caching, as defined in `CARule.exclude`.
+
+        Returns:
+            Optional[Iterable[CABaseSetup]]: A single setup or an iterable of setups to exclude,
+                or None if not specified.
+        """
         return self._exclude
 
     @property
     def filter_func(self) -> tp.Optional[tp.Callable]:
-        """See `CARule.filter_func`."""
+        """Filter function used for setups selection, as described in `CARule.filter_func`.
+
+        Returns:
+            Optional[Callable]: A function that filters setups, or None if no filter is applied.
+        """
         return self._filter_func
 
     @property
     def registry(self) -> CacheableRegistry:
-        """Registry of type `CacheableRegistry`."""
+        """`CacheableRegistry` instance used for caching setups.
+
+        Returns:
+            CacheableRegistry: Registry that manages all caching setups.
+        """
         return self._registry
 
     @property
     def disable_whitelist(self) -> bool:
-        """Whether to disable whitelist."""
+        """Whether the whitelist is disabled.
+
+        Returns:
+            bool: True if the whitelist is disabled; otherwise, False.
+        """
         return self._disable_whitelist
 
     @property
     def disable_machinery(self) -> bool:
-        """Whether to disable machinery."""
+        """Whether the caching machinery is disabled.
+
+        Returns:
+            bool: True if caching machinery is disabled; otherwise, False.
+        """
         return self._disable_machinery
 
     @property
     def clear_cache(self) -> bool:
-        """Whether to clear global cache when entering or local cache when disabling caching."""
+        """Whether cache clearing is performed when disabling caching.
+
+        Returns:
+            bool: True if the cache should be cleared; otherwise, False.
+        """
         return self._clear_cache
 
     @property
     def silence_warnings(self) -> bool:
-        """Whether to silence warnings."""
+        """Whether warnings are suppressed during caching operations.
+
+        Returns:
+            bool: True if warnings are silenced; otherwise, False.
+        """
         return self._silence_warnings
 
     @property
     def rule(self) -> tp.Optional[CARule]:
-        """Rule."""
+        """`CARule` instance applied if one is set.
+
+        Returns:
+            Optional[CARule]: The current caching rule applied, or None if no rule is active.
+        """
         return self._rule
 
     @property
     def init_settings(self) -> tp.Kwargs:
-        """Initial caching settings."""
+        """Initial global caching settings captured upon entering the context.
+
+        Returns:
+            Kwargs: Dictionary containing the original global caching settings.
+        """
         return self._init_settings
 
     @property
     def init_setup_settings(self) -> tp.Dict[int, dict]:
-        """Initial setup settings."""
+        """Initial caching settings for each setup, mapped by setup hash.
+
+        Returns:
+            Dict[int, dict]: A dictionary where each key is a setup hash and each value is another
+                dictionary containing the initial settings (such as `active`, `whitelist`,
+                and `use_cache` flags) for that setup.
+        """
         return self._init_setup_settings
 
     def __enter__(self) -> tp.Self:
@@ -2744,7 +3653,15 @@ class CachingDisabled(Base):
 
 
 def with_caching_disabled(*args, **caching_disabled_kwargs) -> tp.Callable:
-    """Decorator to run a function with `CachingDisabled`."""
+    """Decorator to execute a function within a caching-disabled context using `CachingDisabled`.
+
+    Args:
+        func (Callable): Function to be decorated.
+        **caching_disabled_kwargs: Keyword arguments used to initialize `CachingDisabled`.
+
+    Returns:
+        Callable: Decorated function if a function is provided, or a decorator function.
+    """
 
     def decorator(func: tp.Callable) -> tp.Callable:
         @wraps(func)
@@ -2762,7 +3679,30 @@ def with_caching_disabled(*args, **caching_disabled_kwargs) -> tp.Callable:
 
 
 class CachingEnabled(Base):
-    """Context manager to enable caching."""
+    """Context manager to temporarily enable caching based on a query.
+
+    Args:
+        query_like (Optional[Any]): Query specification to restrict caching behavior.
+        use_base_cls (bool): Flag indicating whether the base class is used in query parsing.
+        kind (Optional[MaybeIterable[str]]): Specifies the expected kind(s) of setup to match.
+
+            See `CARegistry.match_setups`.
+        exclude (Optional[MaybeIterable[CABaseSetup]]): Setup or setups to exclude from matching.
+
+            See `CARegistry.match_setups`.
+        filter_func (Optional[Callable]): Function that takes a setup and returns a boolean
+            indicating whether the setup should be included.
+
+            See `CARegistry.match_setups`.
+        registry (CacheableRegistry): Registry used for managing caching setups.
+        enable_whitelist (bool): Flag to enable whitelist for caching setups.
+        enable_machinery (bool): Flag to enable caching machinery.
+        clear_cache (bool): Flag to clear caches upon exiting the context.
+        silence_warnings (bool): Flag to suppress warning messages.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
+    """
 
     def __init__(
         self,
@@ -2794,67 +3734,132 @@ class CachingEnabled(Base):
 
     @property
     def query_like(self) -> tp.Optional[tp.Any]:
-        """See `CAQuery.parse`."""
+        """Query specification used for determining caching rules.
+
+        See `CAQuery.parse`.
+
+        Returns:
+            Optional[Any]: The query specification used for caching rules.
+        """
         return self._query_like
 
     @property
     def use_base_cls(self) -> bool:
-        """See `CAQuery.parse`."""
+        """Flag indicating whether the base class is used in query parsing.
+
+        See `CAQuery.parse`.
+
+        Returns:
+            bool: True if the base class is used during query parsing; otherwise, False.
+        """
         return self._use_base_cls
 
     @property
     def kind(self) -> tp.Optional[tp.MaybeIterable[str]]:
-        """See `CARule.kind`."""
+        """Type indicator for the caching rule.
+
+        See `CARule.kind`.
+
+        Returns:
+            Optional[Iterable[str]]: The type or types that indicate which caching rule to apply.
+        """
         return self._kind
 
     @property
     def exclude(self) -> tp.Optional[tp.MaybeIterable["CABaseSetup"]]:
-        """See `CARule.exclude`."""
+        """Setups to be excluded from the caching rule.
+
+        See `CARule.exclude`.
+
+        Returns:
+            Optional[Iterable[CABaseSetup]]: The caching setups that should be excluded from the rule.
+        """
         return self._exclude
 
     @property
     def filter_func(self) -> tp.Optional[tp.Callable]:
-        """See `CARule.filter_func`."""
+        """Filter function applied to caching setups.
+
+        See `CARule.filter_func`.
+
+        Returns:
+            Optional[Callable]: The filter function used to select applicable caching setups.
+        """
         return self._filter_func
 
     @property
     def registry(self) -> CacheableRegistry:
-        """Registry of type `CacheableRegistry`."""
+        """Caching registry of type `CacheableRegistry` used to manage caching setups.
+
+        Returns:
+            CacheableRegistry: Registry instance responsible for caching setup management.
+        """
         return self._registry
 
     @property
     def enable_whitelist(self) -> bool:
-        """Whether to enable whitelist."""
+        """Flag indicating if whitelist is enabled for caching setups.
+
+        Returns:
+            bool: True if whitelist is enabled; otherwise, False.
+        """
         return self._enable_whitelist
 
     @property
     def enable_machinery(self) -> bool:
-        """Whether to enable machinery."""
+        """Flag indicating if caching machinery is active.
+
+        Returns:
+            bool: True if the caching machinery is active; otherwise, False.
+        """
         return self._enable_machinery
 
     @property
     def clear_cache(self) -> bool:
-        """Whether to clear global cache when exiting or local cache when disabling caching."""
+        """Flag indicating whether to clear the global cache upon exiting or
+        the local cache when disabling caching.
+
+        Returns:
+            bool: True if cache clearing is enabled; otherwise, False.
+        """
         return self._clear_cache
 
     @property
     def silence_warnings(self) -> bool:
-        """Whether to silence warnings."""
+        """Flag determining whether caching-related warnings are silenced.
+
+        Returns:
+            bool: True if caching warnings are suppressed; otherwise, False.
+        """
         return self._silence_warnings
 
     @property
     def rule(self) -> tp.Optional[CARule]:
-        """Rule."""
+        """Caching rule applied by this context manager.
+
+        Returns:
+            Optional[CARule]: The caching rule currently applied, or None if no rule is active.
+        """
         return self._rule
 
     @property
     def init_settings(self) -> tp.Kwargs:
-        """Initial caching settings."""
+        """Initial global caching settings recorded upon entering the context.
+
+        Returns:
+            Kwargs: Dictionary of the global caching settings at the time of context entry.
+        """
         return self._init_settings
 
     @property
     def init_setup_settings(self) -> tp.Dict[int, dict]:
-        """Initial setup settings."""
+        """Dictionary mapping setup hashes to their initial settings
+        (active state, whitelist, and caching usage).
+
+        Returns:
+            Dict[int, dict]: A dictionary where keys are setup hashes and values are
+                dictionaries of initial settings.
+        """
         return self._init_setup_settings
 
     def __enter__(self) -> tp.Self:
@@ -2931,7 +3936,18 @@ class CachingEnabled(Base):
 
 
 def with_caching_enabled(*args, **caching_enabled_kwargs) -> tp.Callable:
-    """Decorator to run a function with `CachingEnabled`."""
+    """Decorator to execute a function within a caching-enabled context.
+
+    This decorator wraps a function so that it runs with caching enabled via `CachingEnabled`.
+    Keyword arguments provided are passed to the `CachingEnabled` context manager.
+
+    Args:
+        func (Callable): Function to be decorated.
+        **caching_enabled_kwargs: Keyword arguments for configuring `CachingEnabled`.
+
+    Returns:
+        Callable: Decorator that wraps the function to run with caching enabled.
+    """
 
     def decorator(func: tp.Callable) -> tp.Callable:
         @wraps(func)

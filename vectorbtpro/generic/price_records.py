@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for working with records that can make use of OHLC data."""
+"""Module providing a base class for records that utilize OHLC data."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.base.resampling.base import Resampler
@@ -20,6 +20,11 @@ from vectorbtpro.records.decorators import attach_shortcut_properties
 from vectorbtpro.records.mapped_array import MappedArray
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import ReadonlyConfig
+
+if tp.TYPE_CHECKING:
+    from vectorbtpro.data.base import Data as DataT
+else:
+    DataT = "vectorbtpro.data.base.Data"
 
 __all__ = [
     "PriceRecords",
@@ -41,10 +46,10 @@ price_records_shortcut_config = ReadonlyConfig(
 
 __pdoc__[
     "price_records_shortcut_config"
-] = f"""Config of shortcut properties to be attached to `PriceRecords`.
+] = f"""Configuration for shortcut properties attached to `PriceRecords`.
 
 ```python
-{price_records_shortcut_config.prettify()}
+{price_records_shortcut_config.prettify_doc()}
 ```
 """
 
@@ -53,114 +58,19 @@ PriceRecordsT = tp.TypeVar("PriceRecordsT", bound="PriceRecords")
 
 @attach_shortcut_properties(price_records_shortcut_config)
 class PriceRecords(Records):
-    """Extends `vectorbtpro.records.base.Records` for records that can make use of OHLC data."""
+    """Class extending `vectorbtpro.records.base.Records` for records that can make use of OHLC data.
 
-    @classmethod
-    def from_records(
-        cls: tp.Type[PriceRecordsT],
-        wrapper: ArrayWrapper,
-        records: tp.RecordArray,
-        data: tp.Optional["Data"] = None,
-        open: tp.Optional[tp.ArrayLike] = None,
-        high: tp.Optional[tp.ArrayLike] = None,
-        low: tp.Optional[tp.ArrayLike] = None,
-        close: tp.Optional[tp.ArrayLike] = None,
-        attach_data: bool = True,
-        **kwargs,
-    ) -> PriceRecordsT:
-        """Build `PriceRecords` from records."""
-        if open is None and data is not None:
-            open = data.open
-        if high is None and data is not None:
-            high = data.high
-        if low is None and data is not None:
-            low = data.low
-        if close is None and data is not None:
-            close = data.close
-        return cls(
-            wrapper,
-            records,
-            open=open if attach_data else None,
-            high=high if attach_data else None,
-            low=low if attach_data else None,
-            close=close if attach_data else None,
-            **kwargs,
-        )
+    Args:
+        wrapper (ArrayWrapper): Array wrapper instance.
 
-    @classmethod
-    def resolve_row_stack_kwargs(
-        cls: tp.Type[PriceRecordsT],
-        *objs: tp.MaybeTuple[PriceRecordsT],
-        **kwargs,
-    ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `PriceRecords` after stacking along columns."""
-        kwargs = Records.resolve_row_stack_kwargs(*objs, **kwargs)
-        if len(objs) == 1:
-            objs = objs[0]
-        objs = list(objs)
-        for obj in objs:
-            if not checks.is_instance_of(obj, PriceRecords):
-                raise TypeError("Each object to be merged must be an instance of PriceRecords")
-        for price_name in ("open", "high", "low", "close"):
-            if price_name not in kwargs:
-                price_objs = []
-                stack_price_objs = True
-                for obj in objs:
-                    if getattr(obj, price_name) is not None:
-                        price_objs.append(getattr(obj, price_name))
-                    else:
-                        stack_price_objs = False
-                        break
-                if stack_price_objs:
-                    kwargs[price_name] = kwargs["wrapper"].row_stack_arrs(
-                        *price_objs,
-                        group_by=False,
-                        wrap=False,
-                    )
-        return kwargs
-
-    @classmethod
-    def resolve_column_stack_kwargs(
-        cls: tp.Type[PriceRecordsT],
-        *objs: tp.MaybeTuple[PriceRecordsT],
-        reindex_kwargs: tp.KwargsLike = None,
-        ffill_close: bool = False,
-        fbfill_close: bool = False,
-        **kwargs,
-    ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `PriceRecords` after stacking along columns."""
-        kwargs = Records.resolve_column_stack_kwargs(*objs, reindex_kwargs=reindex_kwargs, **kwargs)
-        kwargs.pop("reindex_kwargs", None)
-        if len(objs) == 1:
-            objs = objs[0]
-        objs = list(objs)
-        for obj in objs:
-            if not checks.is_instance_of(obj, PriceRecords):
-                raise TypeError("Each object to be merged must be an instance of PriceRecords")
-        for price_name in ("open", "high", "low", "close"):
-            if price_name not in kwargs:
-                price_objs = []
-                stack_price_objs = True
-                for obj in objs:
-                    if getattr(obj, "_" + price_name) is not None:
-                        price_objs.append(getattr(obj, price_name))
-                    else:
-                        stack_price_objs = False
-                        break
-                if stack_price_objs:
-                    new_price = kwargs["wrapper"].column_stack_arrs(
-                        *price_objs,
-                        reindex_kwargs=reindex_kwargs,
-                        group_by=False,
-                        wrap=True,
-                    )
-                    if price_name == "close":
-                        if fbfill_close:
-                            new_price = new_price.vbt.fbfill()
-                        elif ffill_close:
-                            new_price = new_price.vbt.ffill()
-                    kwargs[price_name] = new_price.values
-        return kwargs
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
+        records_arr (RecordArray): Array of records.
+        open (Optional[ArrayLike]): Array of open prices.
+        high (Optional[ArrayLike]): Array of high prices.
+        low (Optional[ArrayLike]): Array of low prices.
+        close (Optional[ArrayLike]): Array of close prices.
+        **kwargs: Keyword arguments for `vectorbtpro.records.base.Records`.
+    """
 
     def __init__(
         self,
@@ -197,8 +107,151 @@ class PriceRecords(Records):
         self._low = low
         self._close = close
 
+    @classmethod
+    def from_records(
+        cls: tp.Type[PriceRecordsT],
+        wrapper: ArrayWrapper,
+        records: tp.RecordArray,
+        data: tp.Optional[DataT] = None,
+        open: tp.Optional[tp.ArrayLike] = None,
+        high: tp.Optional[tp.ArrayLike] = None,
+        low: tp.Optional[tp.ArrayLike] = None,
+        close: tp.Optional[tp.ArrayLike] = None,
+        attach_data: bool = True,
+        **kwargs,
+    ) -> PriceRecordsT:
+        """Build `PriceRecords` from records.
+
+        Args:
+            wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            records (RecordArray): Array of records.
+            data (Optional[Data]): Data object containing OHLC data.
+            open (Optional[ArrayLike]): Array of open prices.
+            high (Optional[ArrayLike]): Array of high prices.
+            low (Optional[ArrayLike]): Array of low prices.
+            close (Optional[ArrayLike]): Array of close prices.
+            attach_data (bool): Flag indicating whether to attach the OHLC data.
+            **kwargs: Keyword arguments for `PriceRecords`.
+
+        Returns:
+            PriceRecords: New instance of `PriceRecords`.
+        """
+        if open is None and data is not None:
+            open = data.open
+        if high is None and data is not None:
+            high = data.high
+        if low is None and data is not None:
+            low = data.low
+        if close is None and data is not None:
+            close = data.close
+        return cls(
+            wrapper,
+            records,
+            open=open if attach_data else None,
+            high=high if attach_data else None,
+            low=low if attach_data else None,
+            close=close if attach_data else None,
+            **kwargs,
+        )
+
+    @classmethod
+    def resolve_row_stack_kwargs(
+        cls: tp.Type[PriceRecordsT],
+        *objs: tp.MaybeSequence[PriceRecordsT],
+        **kwargs,
+    ) -> tp.Kwargs:
+        kwargs = Records.resolve_row_stack_kwargs(*objs, **kwargs)
+        if len(objs) == 1:
+            objs = objs[0]
+        objs = list(objs)
+        for obj in objs:
+            if not checks.is_instance_of(obj, PriceRecords):
+                raise TypeError("Each object to be merged must be an instance of PriceRecords")
+        for price_name in ("open", "high", "low", "close"):
+            if price_name not in kwargs:
+                price_objs = []
+                stack_price_objs = True
+                for obj in objs:
+                    if getattr(obj, price_name) is not None:
+                        price_objs.append(getattr(obj, price_name))
+                    else:
+                        stack_price_objs = False
+                        break
+                if stack_price_objs:
+                    kwargs[price_name] = kwargs["wrapper"].row_stack_arrs(
+                        *price_objs,
+                        group_by=False,
+                        wrap=False,
+                    )
+        return kwargs
+
+    @classmethod
+    def resolve_column_stack_kwargs(
+        cls: tp.Type[PriceRecordsT],
+        *objs: tp.MaybeSequence[PriceRecordsT],
+        reindex_kwargs: tp.KwargsLike = None,
+        ffill_close: bool = False,
+        fbfill_close: bool = False,
+        **kwargs,
+    ) -> tp.Kwargs:
+        """Resolve keyword arguments for initializing `PriceRecords` after stacking along columns.
+
+        Args:
+            *objs (MaybeSequence[PriceRecords]): `PriceRecords` instances to be stacked.
+            reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
+            ffill_close (bool): If True, forward-fill missing values in the close prices.
+            fbfill_close (bool): If True, forward and backward-fill missing values in the close prices.
+            **kwargs: Keyword arguments for `PriceRecords`.
+
+        Returns:
+            Kwargs: Resolved keyword arguments.
+        """
+        kwargs = Records.resolve_column_stack_kwargs(*objs, reindex_kwargs=reindex_kwargs, **kwargs)
+        kwargs.pop("reindex_kwargs", None)
+        if len(objs) == 1:
+            objs = objs[0]
+        objs = list(objs)
+        for obj in objs:
+            if not checks.is_instance_of(obj, PriceRecords):
+                raise TypeError("Each object to be merged must be an instance of PriceRecords")
+        for price_name in ("open", "high", "low", "close"):
+            if price_name not in kwargs:
+                price_objs = []
+                stack_price_objs = True
+                for obj in objs:
+                    if getattr(obj, "_" + price_name) is not None:
+                        price_objs.append(getattr(obj, price_name))
+                    else:
+                        stack_price_objs = False
+                        break
+                if stack_price_objs:
+                    new_price = kwargs["wrapper"].column_stack_arrs(
+                        *price_objs,
+                        reindex_kwargs=reindex_kwargs,
+                        group_by=False,
+                        wrap=True,
+                    )
+                    if price_name == "close":
+                        if fbfill_close:
+                            new_price = new_price.vbt.fbfill()
+                        elif ffill_close:
+                            new_price = new_price.vbt.ffill()
+                    kwargs[price_name] = new_price.values
+        return kwargs
+
     def indexing_func_meta(self, *args, records_meta: tp.DictLike = None, **kwargs) -> dict:
-        """Perform indexing on `PriceRecords` and return metadata."""
+        """Perform indexing on `PriceRecords` and return updated metadata.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.records.base.Records.indexing_func_meta`.
+            records_meta (DictLike): Metadata from the indexing operation on the records.
+            **kwargs: Keyword arguments for `vectorbtpro.records.base.Records.indexing_func_meta`.
+
+        Returns:
+            dict: Dictionary containing updated indexing metadata and OHLC arrays.
+        """
         if records_meta is None:
             records_meta = Records.indexing_func_meta(self, *args, **kwargs)
         prices = {}
@@ -217,7 +270,16 @@ class PriceRecords(Records):
         return {**records_meta, **prices}
 
     def indexing_func(self: PriceRecordsT, *args, price_records_meta: tp.DictLike = None, **kwargs) -> PriceRecordsT:
-        """Perform indexing on `PriceRecords`."""
+        """Perform indexing on `PriceRecords`.
+
+        Args:
+            *args: Positional arguments for `PriceRecords.indexing_func_meta`.
+            price_records_meta (DictLike): Metadata from the indexing operation on the price records.
+            **kwargs: Keyword arguments for `PriceRecords.indexing_func_meta`.
+
+        Returns:
+            PriceRecords: New `PriceRecords` instance after indexing.
+        """
         if price_records_meta is None:
             price_records_meta = self.indexing_func_meta(*args, **kwargs)
         return self.replace(
@@ -237,7 +299,18 @@ class PriceRecords(Records):
         records_meta: tp.DictLike = None,
         **kwargs,
     ) -> PriceRecordsT:
-        """Perform resampling on `PriceRecords`."""
+        """Perform resampling on `PriceRecords`.
+
+        Args:
+            *args: Positional arguments for `PriceRecords.resample_meta`.
+            ffill_close (bool): If True, forward-fill missing values in the close prices.
+            fbfill_close (bool): If True, forward and backward-fill missing values in the close prices.
+            records_meta (DictLike): Metadata from the resampling operation on the records.
+            **kwargs: Keyword arguments for `PriceRecords.resample_meta`.
+
+        Returns:
+            PriceRecords: New `PriceRecords` instance after resampling.
+        """
         if records_meta is None:
             records_meta = self.resample_meta(*args, **kwargs)
         if self._open is None:
@@ -283,38 +356,71 @@ class PriceRecords(Records):
 
     @property
     def open(self) -> tp.Optional[tp.SeriesFrame]:
-        """Open price."""
+        """Open price.
+
+        Returns:
+            Optional[SeriesFrame]: The wrapped open price data, or None if not available.
+        """
         if self._open is None:
             return None
         return self.wrapper.wrap(self._open, group_by=False)
 
     @property
     def high(self) -> tp.Optional[tp.SeriesFrame]:
-        """High price."""
+        """High price.
+
+        Returns:
+            Optional[SeriesFrame]: The wrapped high price data, or None if not available.
+        """
         if self._high is None:
             return None
         return self.wrapper.wrap(self._high, group_by=False)
 
     @property
     def low(self) -> tp.Optional[tp.SeriesFrame]:
-        """Low price."""
+        """Low price.
+
+        Returns:
+            Optional[SeriesFrame]: The wrapped low price data, or None if not available.
+        """
         if self._low is None:
             return None
         return self.wrapper.wrap(self._low, group_by=False)
 
     @property
     def close(self) -> tp.Optional[tp.SeriesFrame]:
-        """Close price."""
+        """Close price series.
+
+        Returns:
+            Optional[SeriesFrame]: The wrapped close price data, or None if not available.
+        """
         if self._close is None:
             return None
         return self.wrapper.wrap(self._close, group_by=False)
 
     def get_bar_open_time(self, **kwargs) -> MappedArray:
-        """Get a mapped array with the opening time of the bar."""
+        """Return a mapped array with the opening time of the bar.
+
+        Args:
+            **kwargs: Keyword arguments for `PriceRecords.map_array`.
+
+        Returns:
+            MappedArray: Mapped array of bar open times.
+        """
         return self.map_array(self.wrapper.index[self.idx_arr], **kwargs)
 
     def get_bar_close_time(self, **kwargs) -> MappedArray:
-        """Get a mapped array with the closing time of the bar."""
+        """Return a mapped array with the closing time of the bar.
+
+        Args:
+            **kwargs: Keyword arguments for `PriceRecords.map_array`.
+
+        Returns:
+            MappedArray: Mapped array of bar close times.
+
+        !!! note
+            Ensure that `wrapper.freq` is provided, as it is required to compute the closing time.
+        """
         if self.wrapper.freq is None:
             raise ValueError("Must provide frequency")
         return self.map_array(
@@ -322,17 +428,45 @@ class PriceRecords(Records):
         )
 
     def get_bar_open(self, **kwargs) -> MappedArray:
-        """Get a mapped array with the opening price of the bar."""
+        """Return a mapped array with the open price of the bar.
+
+        Args:
+            **kwargs: Keyword arguments for `PriceRecords.apply`.
+
+        Returns:
+            MappedArray: Mapped array of bar open prices.
+        """
         return self.apply(nb.bar_price_nb, self._open, **kwargs)
 
     def get_bar_high(self, **kwargs) -> MappedArray:
-        """Get a mapped array with the high price of the bar."""
+        """Return a mapped array with the high price of the bar.
+
+        Args:
+            **kwargs: Keyword arguments for `PriceRecords.apply`.
+
+        Returns:
+            MappedArray: Mapped array of bar high prices.
+        """
         return self.apply(nb.bar_price_nb, self._high, **kwargs)
 
     def get_bar_low(self, **kwargs) -> MappedArray:
-        """Get a mapped array with the low price of the bar."""
+        """Return a mapped array with the low price of the bar.
+
+        Args:
+            **kwargs: Keyword arguments for `PriceRecords.apply`.
+
+        Returns:
+            MappedArray: Mapped array of bar low prices.
+        """
         return self.apply(nb.bar_price_nb, self._low, **kwargs)
 
     def get_bar_close(self, **kwargs) -> MappedArray:
-        """Get a mapped array with the closing price of the bar."""
+        """Return a mapped array with the close price of the bar.
+
+        Args:
+            **kwargs: Keyword arguments for `PriceRecords.apply`.
+
+        Returns:
+            MappedArray: Mapped array of bar close prices.
+        """
         return self.apply(nb.bar_price_nb, self._close, **kwargs)

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Mixin for building plots out of subplots."""
+"""Module providing a mixin for building plots using subplots."""
 
 import inspect
 import string
@@ -34,14 +34,22 @@ class MetaPlotsBuilderMixin(type):
 
     @property
     def subplots(cls) -> Config:
-        """Subplots supported by `PlotsBuilderMixin.plots`."""
+        """Subplots configuration used by `PlotsBuilderMixin.plots`.
+
+        Returns:
+            Config: Dictionary containing the default subplots configuration.
+        """
         return cls._subplots
 
 
 class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
-    """Mixin that implements `PlotsBuilderMixin.plots`.
+    """Mixin class that provides plotting configurations via the `plots` functionality.
 
-    Required to be a subclass of `vectorbtpro.base.wrapping.Wrapping`."""
+    This mixin requires that the class is a subclass of `vectorbtpro.base.wrapping.Wrapping`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plots_builder`.
+    """
 
     _writeable_attrs: tp.WriteableAttrs = {"_subplots"}
 
@@ -53,7 +61,11 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `PlotsBuilderMixin.plots`."""
+        """Default configuration for `PlotsBuilderMixin.plots`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the plots builder.
+        """
         return dict(settings=dict(freq=self.wrapper.freq))
 
     def resolve_plots_setting(
@@ -62,7 +74,16 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         key: str,
         merge: bool = False,
     ) -> tp.Any:
-        """Resolve a setting for `PlotsBuilderMixin.plots`."""
+        """Resolve a setting for `PlotsBuilderMixin.plots` by combining defaults and user-provided values.
+
+        Args:
+            value (Optional[Any]): Provided value for the setting.
+            key (str): Key identifying the specific setting.
+            merge (bool): Flag indicating whether to merge the default and provided values.
+
+        Returns:
+            Any: Resolved setting based on the merge strategy and default configurations.
+        """
         from vectorbtpro._settings import settings as _settings
 
         plots_builder_cfg = _settings["plots_builder"]
@@ -81,24 +102,28 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
 
     @property
     def subplots(self) -> Config:
-        """Subplots supported by `${cls_name}`.
+        """Subplots configuration for `${cls_name}`.
 
         ```python
         ${subplots}
         ```
 
-        Returns `${cls_name}._subplots`, which gets (hybrid-) copied upon creation of each instance.
-        Thus, changing this config won't affect the class.
+        This property returns a hybrid copy of `${cls_name}._subplots` created at instance initialization,
+        ensuring that modifications do not affect the class-level configuration.
 
-        To change subplots, you can either change the config in-place, override this property,
-        or overwrite the instance variable `${cls_name}._subplots`."""
+        To modify the subplots, update the configuration in-place, override this property, or assign a new value
+        to `${cls_name}._subplots` on the instance.
+
+        Returns:
+            Config: Hybrid copy of the subplots configuration.
+        """
         return self._subplots
 
     def plots(
         self,
         subplots: tp.Optional[tp.MaybeIterable[tp.Union[str, tp.Tuple[str, tp.Kwargs]]]] = None,
         tags: tp.Optional[tp.MaybeIterable[str]] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         group_by: tp.GroupByLike = None,
         per_column: tp.Optional[bool] = None,
         split_columns: tp.Optional[bool] = None,
@@ -119,38 +144,42 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         """Plot various parts of this object.
 
         Args:
-            subplots (str, tuple, iterable, or dict): Subplots to plot.
+            subplots (Optional[MaybeIterable[Union[str, Tuple[str, Kwargs]]]]): Subplots to plot.
 
-                Each element can be either:
+                Each element may be:
 
-                * Subplot name (see keys in `PlotsBuilderMixin.subplots`)
-                * Tuple of a subplot name and a settings dict as in `PlotsBuilderMixin.subplots`
-                * Tuple of a subplot name and a template of instance `vectorbtpro.utils.template.CustomTemplate`
-                * Tuple of a subplot name and a list of settings dicts to be expanded into multiple subplots
+                * A subplot name (as defined in `PlotsBuilderMixin.subplots`).
+                * A tuple containing a subplot name and a settings dictionary
+                    (as defined in `PlotsBuilderMixin.subplots`).
+                * A tuple containing a subplot name and a `vectorbtpro.utils.template.CustomTemplate` instance.
+                * A tuple containing a subplot name and a list of settings dictionaries
+                    to be expanded into multiple subplots.
 
-                The settings dict can contain the following keys:
+                The settings dictionary may include:
 
-                * `title`: Title of the subplot. Defaults to the name.
+                * `title`: The subplot title; defaults to the subplot name.
                 * `plot_func` (required): Plotting function for custom subplots.
-                    Must write the supplied figure `fig` in-place and can return anything (it won't be used).
-                * `xaxis_kwargs`: Layout keyword arguments for the x-axis. Defaults to `dict(title='Index')`.
-                * `yaxis_kwargs`: Layout keyword arguments for the y-axis. Defaults to empty dict.
-                * `tags`, `check_{filter}`, `inv_check_{filter}`, `resolve_plot_func`, `pass_{arg}`,
-                    `resolve_path_{arg}`, `resolve_{arg}` and `template_context`:
-                    The same as in `vectorbtpro.generic.stats_builder.StatsBuilderMixin` for `calc_func`.
-                * Any other keyword argument that overrides the settings or is passed directly to `plot_func`.
+                    It must modify the provided figure `fig` in-place.
+                * `xaxis_kwargs`: Layout keyword arguments for the x-axis;
+                    defaults to `{'title': 'Index'}`.
+                * `yaxis_kwargs`: Layout keyword arguments for the y-axis;
+                    defaults to an empty dict.
+                * `tags`, `check_{filter}`, `inv_check_{filter}`, `resolve_plot_func`,
+                    `pass_{arg}`, `resolve_path_{arg}`, `resolve_{arg}`, and `template_context`:
+                    As described in `vectorbtpro.generic.stats_builder.StatsBuilderMixin` for `calc_func`.
+                * Any additional keyword argument that overrides settings or is passed directly to `plot_func`.
 
-                If `resolve_plot_func` is True, the plotting function may "request" any of the
-                following arguments by accepting them or if `pass_{arg}` was found in the settings dict:
+                If `resolve_plot_func` is True, the plotting function may request extra parameters
+                by accepting them or if `pass_{arg}` was found in the settings dictionary:
 
-                * Each of `vectorbtpro.utils.attr_.AttrResolverMixin.self_aliases`: original object
-                    (ungrouped, with no column selected)
-                * `group_by`: won't be passed if it was used in resolving the first attribute of `plot_func`
-                    specified as a path, use `pass_group_by=True` to pass anyway
+                * Each alias from `vectorbtpro.utils.attr_.AttrResolverMixin.self_aliases`
+                    representing the original object (ungrouped, without column selection).
+                * `group_by` (unless already used to resolve the first attribute of `plot_func`;
+                    use `pass_group_by=True` to force its inclusion).
                 * `column`
                 * `subplot_name`
-                * `trace_names`: list with the subplot name, can't be used in templates
-                * `add_trace_kwargs`: dict with subplot row and column index
+                * `trace_names`: A list containing the subplot name (cannot be used in templates).
+                * `add_trace_kwargs`: A dict with subplot row and column index.
                 * `xref`
                 * `yref`
                 * `xaxis`
@@ -159,51 +188,62 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 * `y_domain`
                 * `fig`
                 * `silence_warnings`
-                * Any argument from `settings`
-                * Any attribute of this object if it meant to be resolved
-                    (see `vectorbtpro.utils.attr_.AttrResolverMixin.resolve_attr`)
+                * Any parameter from `settings`
+                * Any attribute of the object intended for resolution
+                    (see `vectorbtpro.utils.attr_.AttrResolverMixin.resolve_attr`).
 
                 !!! note
-                    Layout-related resolution arguments such as `add_trace_kwargs` are unavailable
-                    before filtering and thus cannot be used in any templates but can still be overridden.
+                    Layout-related resolution arguments (such as `add_trace_kwargs`) are unavailable
+                    before filtering and cannot be used in templates, though they may still be overridden.
 
                 Pass `subplots='all'` to plot all supported subplots.
-            tags (str or iterable): See `tags` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            column (str): See `column` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            group_by (any): See `group_by` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            per_column (bool): See `per_column` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            split_columns (bool): See `split_columns` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            silence_warnings (bool): See `silence_warnings` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            template_context (mapping): See `template_context` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            tags (Optional[MaybeIterable[str]]): Tag or tags to filter metrics, as described in
+                `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            column (Optional[Column]): Identifier of the column to plot, as described in
+                `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            group_by (GroupByLike): Grouping specification, as described in
+                `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            per_column (Optional[bool]): Flag indicating whether to plot per column,
+                as in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            split_columns (Optional[bool]): Flag indicating whether to split columns,
+                as in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+            template_context (KwargsLike): Additional context for template substitution.
+            filters (KwargsLike): Filters as specified in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            settings (KwargsLike): Settings as specified in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            subplot_settings (KwargsLike): Subplot-specific settings, analogous to
+                `metric_settings` in `StatsBuilderMixin`.
+            show_titles (bool): Whether to display titles for subplots.
+            show_legend (Optional[bool]): Whether to display the legend.
 
-                Applied on `settings`, `make_subplots_kwargs`, and `layout_kwargs`, and then on each subplot settings.
-            filters (dict): See `filters` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            settings (dict): See `settings` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            subplot_settings (dict): See `metric_settings` in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-            show_titles (bool): Whether to show the title of each subplot.
-            show_legend (bool): Whether to show legend.
+                If None and plotting per column, the value is inferred.
+            show_column_label (Optional[bool]): Whether to display the column label next to each legend label.
 
-                If None and plotting per column, becomes False, otherwise True.
-            show_column_label (bool): Whether to show the column label next to each legend label.
-
-                If None and plotting per column, becomes True, otherwise False.
-            hide_id_labels (bool): Whether to hide identical legend labels.
-
-                Two labels are identical if their name, marker style and line style match.
+                If None and plotting per column, the value is inferred.
+            hide_id_labels (bool): Whether to hide duplicate legend labels (duplicates have the same name,
+                marker style, and line style).
             group_id_labels (bool): Whether to group identical legend labels.
-            make_subplots_kwargs (dict): Keyword arguments passed to `plotly.subplots.make_subplots`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments used to update the layout of the figure.
+            make_subplots_kwargs (KwargsLike): Keyword arguments for creating subplots.
+            
+                See `vectorbtpro.utils.figure.make_subplots`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
+
+        Returns:
+            Optional[BaseFigure]: A Plotly figure containing subplots.
 
         !!! note
-            `PlotsBuilderMixin` and `vectorbtpro.generic.stats_builder.StatsBuilderMixin` are very similar.
-            Some artifacts follow the same concept, just named differently:
+            `PlotsBuilderMixin` and `vectorbtpro.generic.stats_builder.StatsBuilderMixin`
+            share similar designs, differing mainly in nomenclature:
 
             * `plots_defaults` vs `stats_defaults`
             * `subplots` vs `metrics`
             * `subplot_settings` vs `metric_settings`
 
-            See further notes under `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+            See further details in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         # Plot per column
         if column is None:
@@ -881,22 +921,39 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
         # Return the figure
         return fig
 
-    # ############# Docs ############# #
-
     @classmethod
     def build_subplots_doc(cls, source_cls: tp.Optional[type] = None) -> str:
-        """Build subplots documentation."""
+        """Build subplots documentation.
+
+        Args:
+            source_cls (Optional[type]): Source class providing the original configuration.
+
+                If not provided, defaults to using `PlotsBuilderMixin`.
+
+        Returns:
+            str: Generated documentation string for subplots.
+        """
         if source_cls is None:
             source_cls = PlotsBuilderMixin
         return string.Template(
             inspect.cleandoc(get_dict_attr(source_cls, "subplots").__doc__),
         ).substitute(
-            {"subplots": cls.subplots.prettify(), "cls_name": cls.__name__},
+            {"subplots": cls.subplots.prettify_doc(), "cls_name": cls.__name__},
         )
 
     @classmethod
     def override_subplots_doc(cls, __pdoc__: dict, source_cls: tp.Optional[type] = None) -> None:
-        """Call this method on each subclass that overrides `PlotsBuilderMixin.subplots`."""
+        """Override subplots documentation for the subclass.
+
+        Args:
+            __pdoc__ (dict): Dictionary mapping objects to their documentation strings.
+            source_cls (Optional[type]): Source class providing the original configuration.
+
+                If not provided, defaults to using `PlotsBuilderMixin`.
+
+        Returns:
+            None
+        """
         __pdoc__[cls.__name__ + ".subplots"] = cls.build_subplots_doc(source_cls=source_cls)
 
 

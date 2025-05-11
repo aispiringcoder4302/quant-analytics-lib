@@ -8,7 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Custom asset function classes."""
+"""Module providing custom asset function classes.
+
+See `vectorbtpro.utils.knowledge` for the toy dataset.
+"""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.config import flat_merge_dicts
@@ -19,7 +22,8 @@ __all__ = []
 
 
 class ToMarkdownAssetFunc(AssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_markdown`."""
+    """Asset function class for formatting asset metadata and content as Markdown with
+    `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_markdown`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "to_markdown"
 
@@ -37,6 +41,27 @@ class ToMarkdownAssetFunc(AssetFunc):
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **to_markdown_kwargs,
     ) -> tp.ArgsKwargs:
+        """Prepare positional and keyword arguments for an asset function call.
+
+        Args:
+            root_metadata_key (Optional[Key]): Key under which to nest metadata.
+            minimize_metadata (Optional[bool]): Whether to minimize metadata.
+            minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
+            clean_metadata (Optional[bool]): If True, remove empty metadata fields.
+            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
+
+                Defaults to `vectorbtpro.utils.knowledge.custom_assets.VBTAsset`.
+            **to_markdown_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+
+        Returns:
+            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+        """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
         if asset_cls is None:
@@ -79,7 +104,27 @@ class ToMarkdownAssetFunc(AssetFunc):
         dump_metadata_kwargs: tp.KwargsLike = None,
         **to_markdown_kwargs,
     ) -> str:
-        """Get metadata in Markdown format."""
+        """Return Markdown formatted metadata by converting data to markdown using
+        `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+
+        Args:
+            d (dict): Asset data dictionary.
+            root_metadata_key (Optional[Key]): Key under which to nest metadata.
+            allow_empty (Optional[bool]): Whether to allow empty metadata.
+            minimize_metadata (bool): If True, remove specified keys to minimize metadata.
+            minimize_keys (Optional[Union[PathLikeKey, list]]): Key or list of keys to remove during minimization.
+            clean_metadata (bool): If True, clean the metadata to remove empty or irrelevant values.
+            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            **to_markdown_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+
+        Returns:
+            str: Markdown formatted metadata string.
+        """
         from vectorbtpro.utils.formatting import get_dump_language
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -110,7 +155,16 @@ class ToMarkdownAssetFunc(AssetFunc):
 
     @classmethod
     def get_markdown_content(cls, d: dict, **kwargs) -> str:
-        """Get content in Markdown format."""
+        """Return Markdown formatted content by converting data to markdown using
+        `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+
+        Args:
+            d (dict): Asset data dictionary.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+
+        Returns:
+            str: Markdown formatted content string.
+        """
         if d["content"] is None:
             return ""
         return to_markdown(d["content"], **kwargs)
@@ -150,7 +204,8 @@ class ToMarkdownAssetFunc(AssetFunc):
 
 
 class ToHTMLAssetFunc(ToMarkdownAssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_html`."""
+    """Asset function class for converting asset data to HTML with
+    `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_html`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "to_html"
 
@@ -168,6 +223,33 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **to_html_kwargs,
     ) -> tp.ArgsKwargs:
+        """Prepare positional and keyword arguments for an asset function call.
+
+        Args:
+            root_metadata_key (Optional[Key]): Key under which to nest metadata.
+            minimize_metadata (Optional[bool]): Whether to minimize metadata.
+            minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
+            clean_metadata (Optional[bool]): If True, remove empty metadata fields.
+            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
+            
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+            format_html_kwargs (KwargsLike): Keyword arguments for HTML formatting.
+                
+                See `vectorbtpro.utils.knowledge.formatting.format_html`.
+            asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
+
+                Defaults to `vectorbtpro.utils.knowledge.custom_assets.VBTAsset`.
+            **to_html_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
+
+        Returns:
+            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+        """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
         if asset_cls is None:
@@ -215,7 +297,31 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         to_markdown_kwargs: tp.KwargsLike = None,
         **to_html_kwargs,
     ) -> str:
-        """Get metadata in HTML format."""
+        """Return HTML formatted metadata by converting data to markdown using
+        `ToHTMLAssetFunc.get_markdown_metadata` and then to HTML using
+        `vectorbtpro.utils.knowledge.formatting.to_html`.
+
+        Args:
+            d (dict): Asset data dictionary.
+            root_metadata_key (Optional[Key]): Key under which to nest metadata.
+            allow_empty (Optional[bool]): Whether to allow empty metadata.
+            minimize_metadata (bool): If True, remove specified keys to minimize metadata.
+            minimize_keys (Optional[List[PathLikeKey]]): Keys to minimize in the metadata.
+            clean_metadata (bool): If True, clean the metadata to remove empty or irrelevant values.
+            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
+
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+            **to_html_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
+
+        Returns:
+            str: HTML formatted metadata.
+        """
         if to_markdown_kwargs is None:
             to_markdown_kwargs = {}
         metadata = cls.get_markdown_metadata(
@@ -235,7 +341,20 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
 
     @classmethod
     def get_html_content(cls, d: dict, to_markdown_kwargs: tp.KwargsLike = None, **kwargs) -> str:
-        """Get content in HTML format."""
+        """Return HTML formatted content by converting data to markdown using
+        `ToHTMLAssetFunc.get_markdown_content` and then to HTML using
+        `vectorbtpro.utils.knowledge.formatting.to_html`.
+
+        Args:
+            d (dict): Asset data dictionary.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
+            
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
+
+        Returns:
+            str: HTML formatted content.
+        """
         if to_markdown_kwargs is None:
             to_markdown_kwargs = {}
         content = cls.get_markdown_content(d, **to_markdown_kwargs)
@@ -311,7 +430,8 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
 
 
 class AggMessageAssetFunc(AssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_messages`."""
+    """Asset function class for aggregating messages with
+    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_messages`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_message"
 
@@ -329,6 +449,29 @@ class AggMessageAssetFunc(AssetFunc):
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
+        """Prepare positional and keyword arguments for an asset function call.
+
+        Args:
+            minimize_metadata (Optional[bool]): Whether to minimize metadata.
+            minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
+            clean_metadata (Optional[bool]): If True, remove empty metadata fields.
+            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
+            
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+            asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
+
+                Defaults to `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset`.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+        """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
         if asset_cls is None:
@@ -351,6 +494,7 @@ class AggMessageAssetFunc(AssetFunc):
                 clean_metadata=clean_metadata,
                 clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
+                to_markdown_kwargs=to_markdown_kwargs,
             ),
             **kwargs,
         }
@@ -402,7 +546,8 @@ class AggMessageAssetFunc(AssetFunc):
 
 
 class AggBlockAssetFunc(AssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks`."""
+    """Asset function class for aggregating block messages with
+    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_blocks`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_block"
 
@@ -423,6 +568,33 @@ class AggBlockAssetFunc(AssetFunc):
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
     ) -> tp.ArgsKwargs:
+        """Prepare positional and keyword arguments for an asset function call.
+
+        Args:
+            aggregate_fields (Union[None, bool, Iterable[str]]): Fields to aggregate instead of
+                including in child metadata; True aggregates all lists; False aggregates none.
+            parent_links_only (Optional[bool]): If True, excludes links from the metadata.
+            minimize_metadata (Optional[bool]): Whether to minimize metadata.
+            minimize_keys (Optional[MaybeList[PathLikeKey]]): Keys specifying which metadata to minimize.
+            clean_metadata (Optional[bool]): If True, remove empty metadata fields.
+            clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+            dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
+            
+                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
+            
+                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+            link_map (Optional[Dict[str, dict]]): Mapping of links to their corresponding data items.
+            asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
+
+                Defaults to `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset`.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+        """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
         if asset_cls is None:
@@ -449,6 +621,7 @@ class AggBlockAssetFunc(AssetFunc):
                 clean_metadata=clean_metadata,
                 clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
+                to_markdown_kwargs=to_markdown_kwargs,
                 link_map=link_map,
             ),
             **kwargs,
@@ -570,7 +743,8 @@ class AggBlockAssetFunc(AssetFunc):
 
 
 class AggThreadAssetFunc(AggBlockAssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_threads`."""
+    """Asset function class for aggregating thread messages with
+    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_threads`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_thread"
 
@@ -663,13 +837,21 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
 
 
 class AggChannelAssetFunc(AggThreadAssetFunc):
-    """Asset function class for `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_channels`."""
+    """Asset function class for aggregating channel messages with
+    `vectorbtpro.utils.knowledge.custom_assets.MessagesAsset.aggregate_channels`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_channel"
 
     @classmethod
     def get_channel_link(cls, link: str) -> str:
-        """Get channel link from a message link."""
+        """Return the channel link extracted from a message link.
+
+        Args:
+            link (str): Message link to process.
+
+        Returns:
+            str: Extracted channel link.
+        """
         if link.startswith("$discord/"):
             link = link[len("$discord/") :]
             link_parts = link.split("/")

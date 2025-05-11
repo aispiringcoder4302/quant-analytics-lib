@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `OLS`."""
+"""Module defining the `OLS` class for rolling Ordinary Least Squares regression analysis."""
 
 import numpy as np
 
@@ -51,9 +51,43 @@ OLS = IndicatorFactory(
             ),
         ),
     ),
+    attr_settings=dict(
+        x=dict(
+            doc="Independent variable series.",
+        ),
+        y=dict(
+            doc="Dependent variable series.",
+        ),
+        slope=dict(
+            doc="Slope of the regression line.",
+        ),
+        intercept=dict(
+            doc="Intercept of the regression line.",
+        ),
+        zscore=dict(
+            doc="Z-score of the regression line.",
+        ),
+        pred=dict(
+            doc="Predicted values based on the regression line.",
+        ),
+        error=dict(
+            doc="Error between the actual and predicted values.",
+        ),
+        angle=dict(
+            doc="Angle of the regression line in radians.",
+        ),
+    ),
 ).with_apply_func(
     nb.ols_nb,
     kwargs_as_args=["minp", "ddof", "with_zscore"],
+    param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
+        norm_window=dict(
+            doc="Normalization window size.",
+        ),
+    ),
     window=14,
     norm_window=None,
     minp=None,
@@ -63,16 +97,27 @@ OLS = IndicatorFactory(
 
 
 class _OLS(OLS):
-    """Rolling Ordinary Least Squares (OLS).
+    """Class representing the Rolling Ordinary Least Squares (OLS) indicator.
 
-    The indicator can be used to detect changes in the behavior of the stocks against the market or each other.
+    The `OLS` indicator is used to detect changes in the relationship between stocks and
+    the market or between different stocks by computing rolling linear regressions.
 
-    See [The Linear Regression of Time and Price](https://www.investopedia.com/articles/trading/09/linear-regression-time-price.asp).
+    See:
+        * `OLS.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.ols_nb` for the underlying implementation.
+        * `vectorbtpro.indicators.nb.ols_pred_nb` for the underlying implementation of
+            the `OLS.pred` property.
+        * `vectorbtpro.indicators.nb.ols_error_nb` for the underlying implementation of
+            the `OLS.error` property.
+        * `vectorbtpro.indicators.nb.ols_angle_nb` for the underlying implementation of
+            the `OLS.angle` property.
+        * https://www.investopedia.com/articles/trading/09/linear-regression-time-price.asp
+            for the definition of OLS.
     """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_y: bool = True,
         y_trace_kwargs: tp.KwargsLike = None,
         pred_trace_kwargs: tp.KwargsLike = None,
@@ -80,18 +125,25 @@ class _OLS(OLS):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `OLS.pred` against `OLS.y`.
+        """Plot the `OLS.pred` and (optionally) `OLS.y` values.
 
         Args:
-            column (str): Name of the column to plot.
+            column (Optional[Column]): Identifier of the column to plot.
             plot_y (bool): Whether to plot `OLS.y`.
-            y_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `OLS.y`.
-            pred_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `OLS.pred`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            y_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `OLS.y`.
+            pred_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `OLS.pred`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Figure with plotted OLS predictions and actual values.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.OLS.run(np.arange(len(ohlcv)), ohlcv['Close']).plot().show()
             ```
@@ -104,7 +156,7 @@ class _OLS(OLS):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()
@@ -139,7 +191,7 @@ class _OLS(OLS):
 
     def plot_zscore(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         alpha: float = 0.05,
         zscore_trace_kwargs: tp.KwargsLike = None,
         add_shape_kwargs: tp.KwargsLike = None,
@@ -147,21 +199,27 @@ class _OLS(OLS):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `OLS.zscore` with confidence intervals.
+        """Plot the `OLS.zscore` values with confidence intervals.
 
         Args:
-            column (str): Name of the column to plot.
-            alpha (float): The alpha level for the confidence interval.
+            column (Optional[Column]): Identifier of the column to plot.
+            alpha (float): Alpha level for the confidence interval.
 
-                The default alpha = .05 returns a 95% confidence interval.
-            zscore_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `OLS.zscore`.
-            add_shape_kwargs (dict): Keyword arguments passed to `fig.add_shape`
-                when adding the range between both confidence intervals.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+                The default alpha value of 0.05 returns a 95% confidence interval.
+            zscore_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `OLS.zscore`.
+            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Figure with plotted OLS z-score and confidence intervals.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.OLS.run(np.arange(len(ohlcv)), ohlcv['Close']).plot_zscore().show()
             ```
@@ -175,7 +233,7 @@ class _OLS(OLS):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

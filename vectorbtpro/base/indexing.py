@@ -8,9 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Classes and functions for indexing."""
+"""Module providing classes and functions for indexing."""
 
 import functools
+import inspect
 from datetime import time
 from functools import partial
 
@@ -61,30 +62,54 @@ __pdoc__ = {}
 
 
 class IndexingError(Exception):
-    """Exception raised when an indexing error has occurred."""
+    """Exception raised when an indexing error occurs."""
 
 
 IndexingBaseT = tp.TypeVar("IndexingBaseT", bound="IndexingBase")
 
 
 class IndexingBase(Base):
-    """Class that supports indexing through `IndexingBase.indexing_func`."""
+    """Class providing indexing support via the `indexing_func` method."""
 
-    def indexing_func(self: IndexingBaseT, pd_indexing_func: tp.Callable, **kwargs) -> IndexingBaseT:
-        """Apply `pd_indexing_func` on all pandas objects in question and return a new instance of the class.
+    def indexing_func(self: IndexingBaseT, pd_indexing_func: tp.PandasIndexingFunc, **kwargs) -> IndexingBaseT:
+        """Apply the given Pandas indexing function on all associated Pandas objects and return a new instance.
 
-        Should be overridden."""
+        Args:
+            pd_indexing_func (PandasIndexingFunc): Function to perform Pandas-style indexing.
+            **kwargs: Keyword arguments for the indexing function.
+
+        Returns:
+            IndexingBase: New instance of the class with the applied indexing function.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def indexing_setter_func(self, pd_indexing_setter_func: tp.Callable, **kwargs) -> None:
-        """Apply `pd_indexing_setter_func` on all pandas objects in question.
+        """Apply the provided Pandas indexing setter function on all associated Pandas objects.
 
-        Should be overridden."""
+        Args:
+            pd_indexing_setter_func (Callable): Pandas indexing setter function.
+            **kwargs: Keyword arguments for the setter function.
+
+        Returns:
+            None
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
 
 class LocBase(Base):
-    """Class that implements location-based indexing."""
+    """Class providing location-based indexing functionality.
+
+    Args:
+        indexing_func (Callable): Function to perform indexing operations.
+        indexing_setter_func (Optional[Callable]): Function to perform index setting operations.
+        **kwargs: Keyword arguments for indexing operations.
+    """
 
     def __init__(
         self,
@@ -98,17 +123,29 @@ class LocBase(Base):
 
     @property
     def indexing_func(self) -> tp.Callable:
-        """Indexing function."""
+        """The function used to perform indexing operations on associated Pandas objects.
+
+        Returns:
+            Callable: Function used for indexing.
+        """
         return self._indexing_func
 
     @property
     def indexing_setter_func(self) -> tp.Optional[tp.Callable]:
-        """Indexing setter function."""
+        """The function used to set values via indexing on associated Pandas objects.
+
+        Returns:
+            Optional[Callable]: The function used for setting indexed values.
+        """
         return self._indexing_setter_func
 
     @property
     def indexing_kwargs(self) -> dict:
-        """Keyword arguments passed to `LocBase.indexing_func`."""
+        """Keyword arguments for the indexing function.
+
+        Returns:
+            dict: Dictionary of keyword arguments for indexing.
+        """
         return self._indexing_kwargs
 
     def __getitem__(self, key: tp.Any) -> tp.Any:
@@ -122,16 +159,40 @@ class LocBase(Base):
 
 
 class pdLoc(LocBase):
-    """Forwards a Pandas-like indexing operation to each Series/DataFrame and returns a new class instance."""
+    """Class forwarding a Pandas-like indexing operation to each contained Series or DataFrame
+    and returning a new instance."""
 
     @classmethod
     def pd_indexing_func(cls, obj: tp.SeriesFrame, key: tp.Any) -> tp.MaybeSeriesFrame:
-        """Pandas-like indexing operation."""
+        """Perform a Pandas-like indexing operation on a Series or DataFrame.
+
+        Args:
+            obj (SeriesFrame): Pandas Series or DataFrame to index.
+            key (Any): Key to use for indexing.
+
+        Returns:
+            MaybeSeriesFrame: Result of the indexing operation.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @classmethod
     def pd_indexing_setter_func(cls, obj: tp.SeriesFrame, key: tp.Any, value: tp.Any) -> None:
-        """Pandas-like indexing setter operation."""
+        """Perform a Pandas-like indexing setter operation on a Series or DataFrame.
+
+        Args:
+            obj (SeriesFrame): Pandas Series or DataFrame to modify.
+            key (Any): Key identifying the location to set.
+            value (Any): Value to assign.
+
+        Returns:
+            None: Function modifies the Series or DataFrame in place.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def __getitem__(self, key: tp.Any) -> tp.Any:
@@ -142,8 +203,8 @@ class pdLoc(LocBase):
 
 
 class iLoc(pdLoc):
-    """Forwards `pd.Series.iloc`/`pd.DataFrame.iloc` operation to each
-    Series/DataFrame and returns a new class instance."""
+    """Class forwarding Pandas `iloc` indexing operations to each contained Series or DataFrame
+    and returning a new instance."""
 
     @classmethod
     def pd_indexing_func(cls, obj: tp.SeriesFrame, key: tp.Any) -> tp.MaybeSeriesFrame:
@@ -155,8 +216,8 @@ class iLoc(pdLoc):
 
 
 class Loc(pdLoc):
-    """Forwards `pd.Series.loc`/`pd.DataFrame.loc` operation to each
-    Series/DataFrame and returns a new class instance."""
+    """Class forwarding Pandas `loc` indexing operations to each contained Series or DataFrame
+    and returning a new instance."""
 
     @classmethod
     def pd_indexing_func(cls, obj: tp.SeriesFrame, key: tp.Any) -> tp.MaybeSeriesFrame:
@@ -171,9 +232,12 @@ PandasIndexerT = tp.TypeVar("PandasIndexerT", bound="PandasIndexer")
 
 
 class PandasIndexer(IndexingBase):
-    """Implements indexing using `iloc`, `loc`, `xs` and `__getitem__`.
+    """Class for indexing Pandas objects using `iloc`, `loc`, `xs`, and `__getitem__`.
 
-    Usage:
+    Args:
+        **kwargs: Keyword arguments for indexing operations.
+
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
         >>> from vectorbtpro.base.indexing import PandasIndexer
@@ -216,26 +280,45 @@ class PandasIndexer(IndexingBase):
 
     @property
     def indexing_kwargs(self) -> dict:
-        """Indexing keyword arguments."""
+        """Indexing keyword arguments used for configuring indexing operations.
+
+        Returns:
+            dict: Dictionary of keyword arguments for indexing.
+        """
         return self._indexing_kwargs
 
     @property
     def iloc(self) -> iLoc:
-        """Purely integer-location based indexing for selection by position."""
+        """Property providing integer-location based indexing via Pandas `iloc`.
+
+        Returns:
+            iLoc: Instance of the `iLoc` accessor for integer-location based indexing.
+        """
         return self._iloc
 
     iloc.__doc__ = iLoc.__doc__
 
     @property
     def loc(self) -> Loc:
-        """Purely label-location based indexer for selection by label."""
+        """Property providing label-based indexing via Pandas `loc`.
+
+        Returns:
+            Loc: Instance of the `Loc` accessor for label-based indexing.
+        """
         return self._loc
 
     loc.__doc__ = Loc.__doc__
 
     def xs(self: PandasIndexerT, *args, **kwargs) -> PandasIndexerT:
-        """Forwards `pd.Series.xs`/`pd.DataFrame.xs`
-        operation to each Series/DataFrame and returns a new class instance."""
+        """Forward the `xs` operation to each Pandas object and return a new instance.
+
+        Args:
+            *args: Positional arguments for the Pandas `xs` method.
+            **kwargs: Keyword arguments for the Pandas `xs` method.
+
+        Returns:
+            PandasIndexer: New instance of the class with the result of the `xs` operation.
+        """
         return self.indexing_func(lambda x: x.xs(*args, **kwargs), **self.indexing_kwargs)
 
     def __getitem__(self: PandasIndexerT, key: tp.Any) -> PandasIndexerT:
@@ -255,8 +338,8 @@ class PandasIndexer(IndexingBase):
 
 
 class xLoc(iLoc):
-    """Subclass of `iLoc` that transforms an `Idxr`-based operation with
-    `get_idxs` to an `iLoc` operation."""
+    """Subclass of `iLoc` that converts an `Idxr`-based indexing operation defined by `get_idxs`
+    into an equivalent integer-location based (`iLoc`) operation."""
 
     @classmethod
     def pd_indexing_func(cls, obj: tp.SeriesFrame, key: tp.Any) -> tp.MaybeSeriesFrame:
@@ -286,7 +369,12 @@ class xLoc(iLoc):
 
 
 class ExtPandasIndexer(PandasIndexer):
-    """Extension of `PandasIndexer` that also implements indexing using `xLoc`."""
+    """Subclass of `PandasIndexer` that extends indexing capabilities by incorporating
+    `xLoc` for `Idxr`-based indexing.
+
+    Args:
+        **kwargs: Keyword arguments for indexing operations.
+    """
 
     def __init__(self, **kwargs) -> None:
         self._xloc = xLoc(self.indexing_func, indexing_setter_func=self.indexing_setter_func, **kwargs)
@@ -294,24 +382,28 @@ class ExtPandasIndexer(PandasIndexer):
 
     @property
     def xloc(self) -> xLoc:
-        """`Idxr`-based indexing."""
+        """Property providing `Idxr`-based indexing functionality via `xLoc`.
+
+        Returns:
+            xLoc: Instance of the `xLoc` accessor for `Idxr`-based indexing.
+        """
         return self._xloc
 
     xloc.__doc__ = xLoc.__doc__
 
 
 class ParamLoc(LocBase):
-    """Access a group of columns by parameter using `pd.Series.loc`.
+    """Class for selecting a group of columns by parameter using `pd.Series.loc`.
 
-    Uses `mapper` to establish link between columns and parameter values."""
+    Uses the provided `mapper` to link columns with parameter values.
 
-    @classmethod
-    def encode_key(cls, key: tp.Any):
-        """Encode key."""
-        if isinstance(key, tuple):
-            return str(tuple(map(lambda k: k.item() if isinstance(k, np.generic) else k, key)))
-        key_str = str(key)
-        return str(key.item()) if isinstance(key, np.generic) else key_str
+    Args:
+        mapper (Series): Series mapping column names to parameter values.
+        indexing_func (Callable): Function to perform indexing operations.
+        indexing_setter_func (Optional[Callable]): Function to perform index setting operations.
+        level_name (Level): Name of the column level to adjust after selection.
+        **kwargs: Keyword arguments for indexing operations.
+    """
 
     def __init__(
         self,
@@ -335,16 +427,47 @@ class ParamLoc(LocBase):
 
     @property
     def mapper(self) -> tp.Series:
-        """Mapper."""
+        """Mapper used for linking columns to parameter values.
+
+        Returns:
+            Series: Mapping of columns to parameter values.
+        """
         return self._mapper
 
     @property
     def level_name(self) -> tp.Level:
-        """Level name."""
+        """Column level name for adjusting the DataFrame after selection.
+
+        Returns:
+            Level: Name of the column level.
+        """
         return self._level_name
 
+    @classmethod
+    def encode_key(cls, key: tp.Any) -> str:
+        """Encode the provided key for consistent mapping.
+
+        Args:
+            key (Any): Key to encode.
+
+        Returns:
+            str: Encoded key as a string.
+        """
+        if isinstance(key, tuple):
+            return str(tuple(map(lambda k: k.item() if isinstance(k, np.generic) else k, key)))
+        key_str = str(key)
+        return str(key.item()) if isinstance(key, np.generic) else key_str
+
     def get_idxs(self, key: tp.Any) -> tp.Array1d:
-        """Get array of indices affected by this key."""
+        """Return an array of indices corresponding to the columns selected by the
+        given key based on the mapper.
+
+        Args:
+            key (Any): Key used for selecting columns.
+
+        Returns:
+            Array1d: Array of indices for the matched columns.
+        """
         if self.mapper.dtype == "O":
             if isinstance(key, (slice, hslice)):
                 start = self.encode_key(key.start) if key.start is not None else None
@@ -389,9 +512,19 @@ class ParamLoc(LocBase):
 def indexing_on_mapper(
     mapper: tp.Series,
     ref_obj: tp.SeriesFrame,
-    pd_indexing_func: tp.Callable,
+    pd_indexing_func: tp.PandasIndexingFunc,
 ) -> tp.Optional[tp.Series]:
-    """Broadcast `mapper` Series to `ref_obj` and perform pandas indexing using `pd_indexing_func`."""
+    """Broadcast the `mapper` Series to match the structure of `ref_obj` and
+    apply the Pandas indexing function.
+
+    Args:
+        mapper (Series): Series used as a mapping to reindex data.
+        ref_obj (SeriesFrame): Reference object whose structure defines the target shape.
+        pd_indexing_func (PandasIndexingFunc): Function to perform Pandas-style indexing.
+
+    Returns:
+        Optional[Series]: A new Series with values indexed according to the mapping, or None.
+    """
     from vectorbtpro.base.reshaping import broadcast_to
 
     checks.assert_instance_of(mapper, pd.Series)
@@ -415,21 +548,21 @@ def build_param_indexer(
     class_name: str = "ParamIndexer",
     module_name: tp.Optional[str] = None,
 ) -> tp.Type[IndexingBase]:
-    """A factory to create a class with parameter indexing.
+    """Factory function to create a parameter indexer class.
 
-    Parameter indexer enables accessing a group of rows and columns by a parameter array (similar to `loc`).
-    This way, one can query index/columns by another Series called a parameter mapper, which is just a
-    `pd.Series` that maps columns (its index) to params (its values).
-
-    Parameter indexing is important, since querying by column/index labels alone is not always the best option.
-    For example, `pandas` doesn't let you query by list at a specific index/column level.
+    The generated parameter indexer allows accessing groups of rows and columns by using
+    a parameter mapping, similar to the `loc` indexer. This enables querying indices and columns
+    through an associated parameter mapper, which is a `pd.Series` mapping column names to parameter values.
 
     Args:
-        param_names (list of str): Names of the parameters.
+        param_names (Sequence[str]): Names of the parameters.
         class_name (str): Name of the generated class.
-        module_name (str): Name of the module to which the class should be bound.
+        module_name (Optional[str]): Module name to bind the generated class.
 
-    Usage:
+    Returns:
+        Type[IndexingBase]: A subclass of `IndexingBase`.
+
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
         >>> from vectorbtpro.base.indexing import build_param_indexer, indexing_on_mapper
@@ -469,7 +602,13 @@ def build_param_indexer(
     """
 
     class ParamIndexer(IndexingBase):
-        """Class with parameter indexing."""
+        """Class for parameter indexing.
+
+        Args:
+            param_mappers (Sequence[Series]): List of parameter mapping Series.
+            level_names (Optional[Sequence[str]]): List of level names corresponding to each parameter.
+            **kwargs: Keyword arguments for indexing operations.
+        """
 
         def __init__(
             self,
@@ -489,10 +628,13 @@ def build_param_indexer(
         def param_loc(self, _param_name=param_name) -> ParamLoc:
             return getattr(self, f"_{_param_name}_loc")
 
-        param_loc.__doc__ = f"""Access a group of columns by parameter `{param_name}` using `pd.Series.loc`.
-        
-        Forwards this operation to each Series/DataFrame and returns a new class instance.
-        """
+        param_loc.__doc__ = inspect.cleandoc(
+            f"""
+            Return the parameter locator for the `{param_name}` mapping using `pd.Series.loc`.
+    
+            The locator forwards indexing operations to each Series/DataFrame and returns a new instance.
+            """
+        )
 
         setattr(ParamIndexer, param_name + "_loc", property(param_loc))
 
@@ -509,16 +651,22 @@ hsliceT = tp.TypeVar("hsliceT", bound="hslice")
 
 @define
 class hslice(DefineMixin):
-    """Hashable slice."""
+    """Class for a hashable slice.
+
+    Args:
+        start (object): Start value for the slice.
+        stop (object): Stop value for the slice.
+        step (object): Step value for the slice.
+    """
 
     start: object = define.field()
-    """Start."""
+    """Start value for the slice."""
 
     stop: object = define.field()
-    """Stop."""
+    """Stop value for the slice."""
 
     step: object = define.field()
-    """Step."""
+    """Step value for the slice."""
 
     def __init__(self, start: object = MISSING, stop: object = MISSING, step: object = MISSING) -> None:
         if start is not MISSING and stop is MISSING and step is MISSING:
@@ -535,19 +683,41 @@ class hslice(DefineMixin):
 
     @classmethod
     def from_slice(cls: tp.Type[hsliceT], slice_: slice) -> hsliceT:
-        """Construct from a slice."""
+        """Construct a hashable slice from a Python slice.
+
+        Args:
+            slice_ (slice): Python slice object.
+
+        Returns:
+            hslice: Hashable slice instance.
+        """
         return cls(slice_.start, slice_.stop, slice_.step)
 
     def to_slice(self) -> slice:
-        """Convert to a slice."""
+        """Return a Python slice constructed from the hashable slice attributes.
+
+        Returns:
+            slice: Python slice object with the same start, stop, and step.
+        """
         return slice(self.start, self.stop, self.step)
 
 
 class IdxrBase(Base):
-    """Abstract class for resolving indices."""
+    """Abstract base class for resolving indices."""
 
     def get(self, *args, **kwargs) -> tp.Any:
-        """Get indices."""
+        """Return indices computed by the indexer.
+
+        Args:
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Any: Computed indices based on the indexer.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @classmethod
@@ -558,7 +728,17 @@ class IdxrBase(Base):
         closed_start: bool = True,
         closed_end: bool = False,
     ) -> slice:
-        """Compute the slice indexer for input labels and step."""
+        """Return a slice object computed from the given index and slice parameters.
+
+        Args:
+            index (Index): Index from which to compute slice bounds.
+            slice_ (Slice): Slice object with start, stop, and step attributes.
+            closed_start (bool): Whether the start of a slice is inclusive.
+            closed_end (bool): Whether the end of a slice is inclusive.
+
+        Returns:
+            slice: Computed slice object representing the index range.
+        """
         start = slice_.start
         end = slice_.stop
         if start is not None:
@@ -578,7 +758,15 @@ class IdxrBase(Base):
         return slice(start, end, slice_.step)
 
     def check_idxs(self, idxs: tp.MaybeIndexArray, check_minus_one: bool = False) -> None:
-        """Check indices after resolving them."""
+        """Validate the resolved indices for correct type and value constraints.
+
+        Args:
+            idxs (MaybeIndexArray): Indices to validate.
+            check_minus_one (bool): Flag indicating whether to consider -1 as an unmatched index.
+
+        Returns:
+            None
+        """
         if isinstance(idxs, slice):
             if idxs.start is not None and not checks.is_int(idxs.start):
                 raise TypeError("Start of a returned index slice must be an integer or None")
@@ -613,7 +801,15 @@ class IdxrBase(Base):
 
 
 def normalize_idxs(idxs: tp.MaybeIndexArray, target_len: int) -> tp.Array1d:
-    """Normalize indexes into a 1-dim integer array."""
+    """Convert various index representations into a one-dimensional integer NumPy array.
+
+    Args:
+        idxs (MaybeIndexArray): Index representation, which may be a slice, an integer, or a NumPy array.
+        target_len (int): Size of the target domain used for normalization.
+
+    Returns:
+        Array1d: One-dimensional NumPy array of integers representing normalized indices.
+    """
     if isinstance(idxs, hslice):
         idxs = idxs.to_slice()
     if isinstance(idxs, slice):
@@ -630,13 +826,24 @@ def normalize_idxs(idxs: tp.MaybeIndexArray, target_len: int) -> tp.Array1d:
 
 
 class UniIdxr(IdxrBase):
-    """Abstract class for resolving indices based on a single index."""
+    """Abstract class for resolving indices based on a single index.
+
+    Subclasses must implement the `UniIdxr.get` method.
+    """
 
     def get(
         self,
         index: tp.Optional[tp.Index] = None,
         freq: tp.Optional[tp.FrequencyLike] = None,
     ) -> tp.MaybeIndexArray:
+        """Return indices computed by the indexer.
+        Args:
+            index (Optional[Index]): Index to resolve the indices.
+            freq (Optional[FrequencyLike]): Frequency of the index.
+            
+        Returns:
+            MaybeIndexArray: Computed indices based on the indexer.
+        """
         raise NotImplementedError
 
     def __invert__(self):
@@ -729,13 +936,17 @@ class UniIdxr(IdxrBase):
 
 @define
 class UniIdxrOp(UniIdxr, DefineMixin):
-    """Class for applying an operation to one or more indexers.
+    """Class for applying an operation to one or more indexers, producing a single set of indices.
 
-    Produces a single set of indices."""
+    Args:
+        op_func (Callable): Operation function that receives indices from each indexer as positional
+            arguments, along with keyword arguments `index` and `freq`, and returns new indices.
+        *idxrs (object): One or more indexers.
+    """
 
     op_func: tp.Callable = define.field()
-    """Operation function that takes the indices of each indexer (as `*args`), `index` (keyword argument), 
-    and `freq` (keyword argument), and returns new indices."""
+    """Operation function that receives indices from each indexer as positional arguments, 
+    along with keyword arguments `index` and `freq`, and returns new indices."""
 
     idxrs: tp.Tuple[object, ...] = define.field()
     """A tuple of one or more indexers."""
@@ -765,7 +976,7 @@ class PosIdxr(UniIdxr, DefineMixin):
     """Class for resolving indices provided as integer positions."""
 
     value: tp.Union[None, tp.MaybeSequence[tp.MaybeSequence[int]], tp.Slice] = define.field()
-    """One or more integer positions."""
+    """One or more integer positions used for indexing."""
 
     def get(
         self,
@@ -788,7 +999,7 @@ class MaskIdxr(UniIdxr, DefineMixin):
     """Class for resolving indices provided as a mask."""
 
     value: tp.Union[None, tp.Sequence[bool]] = define.field()
-    """Mask."""
+    """Boolean mask used for indexing."""
 
     def get(
         self,
@@ -807,16 +1018,16 @@ class LabelIdxr(UniIdxr, DefineMixin):
     """Class for resolving indices provided as labels."""
 
     value: tp.Union[None, tp.MaybeSequence[tp.Label], tp.Slice] = define.field()
-    """One or more labels."""
+    """One or more labels used for indexing."""
 
     closed_start: bool = define.field(default=True)
-    """Whether slice start should be inclusive."""
+    """Indicates if the slice start is inclusive."""
 
     closed_end: bool = define.field(default=True)
-    """Whether slice end should be inclusive."""
+    """Indicates if the slice end is inclusive."""
 
     level: tp.MaybeLevelSequence = define.field(default=None)
-    """One or more levels."""
+    """Levels to consider when indexing a MultiIndex."""
 
     def get(
         self,
@@ -857,24 +1068,25 @@ class DatetimeIdxr(UniIdxr, DefineMixin):
     """Class for resolving indices provided as datetime-like objects."""
 
     value: tp.Union[None, tp.MaybeSequence[tp.DatetimeLike], tp.Slice] = define.field()
-    """One or more datetime-like objects."""
+    """One or more datetime-like values used for indexing."""
 
     closed_start: bool = define.field(default=True)
-    """Whether slice start should be inclusive."""
+    """Indicates if the slice start is inclusive."""
 
     closed_end: bool = define.field(default=False)
-    """Whether slice end should be inclusive."""
+    """Indicates if the slice end is inclusive."""
 
     indexer_method: tp.Optional[str] = define.field(default="bfill")
-    """Method for `pd.Index.get_indexer`.
-    
-    Allows two additional values: "before" and "after"."""
+    """Method for `pd.Index.get_indexer` execution.
+
+    Allowed additional values: "before" and "after".
+    """
 
     below_to_zero: bool = define.field(default=False)
-    """Whether to place 0 instead of -1 if `DatetimeIdxr.value` is below the first index."""
+    """If True, returns 0 when the datetime value is earlier than the first index."""
 
     above_to_len: bool = define.field(default=False)
-    """Whether to place `len(index)` instead of -1 if `DatetimeIdxr.value` is above the last index."""
+    """If True, returns the length of the index when the datetime value is later than the last index."""
 
     def get(
         self,
@@ -938,7 +1150,7 @@ class DTCIdxr(UniIdxr, DefineMixin):
     """One or more datetime-like components."""
 
     parse_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `vectorbtpro.utils.datetime_.DTC.parse`."""
+    """Keyword arguments for `vectorbtpro.utils.datetime_.DTC.parse`."""
 
     closed_start: bool = define.field(default=True)
     """Whether slice start should be inclusive."""
@@ -952,7 +1164,17 @@ class DTCIdxr(UniIdxr, DefineMixin):
 
     @staticmethod
     def get_dtc_namedtuple(value: tp.Optional[tp.DTCLike] = None, **parse_kwargs) -> dt.DTCNT:
-        """Convert a value to a `vectorbtpro.utils.datetime_.DTCNT` instance."""
+        """Convert a value to a `vectorbtpro.utils.datetime_.DTCNT` instance.
+
+        Args:
+            value (Optional[DTCLike]): Datetime-like value to convert.
+
+                If None, returns a named tuple representing a default `vectorbtpro.utils.datetime_.DTC` instance.
+            **parse_kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.DTC.parse`.
+
+        Returns:
+            DTCNT: Named tuple representing the parsed datetime components.
+        """
         if value is None:
             return dt.DTC().to_namedtuple()
         if isinstance(value, dt.DTC):
@@ -1009,11 +1231,12 @@ class PointIdxr(UniIdxr, DefineMixin):
     every: tp.Optional[tp.FrequencyLike] = define.field(default=None)
     """Frequency either as an integer or timedelta.
     
-    Gets translated into `on` array by creating a range. If integer, an index sequence from `start` to `end` 
-    (exclusive) is created and 'indices' as `kind` is used. If timedelta-like, a date sequence from 
-    `start` to `end` (inclusive) is created and 'labels' as `kind` is used.
+    Gets translated into `on` array by creating a range. If integer, an index sequence from 
+    `start` to `end` (exclusive) is created and 'indices' as `kind` is used. If timedelta-like, 
+    a date sequence from `start` to `end` (inclusive) is created and 'labels' as `kind` is used.
     
-    If `at_time` is not None and `every` and `on` are None, `every` defaults to one day."""
+    If `at_time` is not None and `every` and `on` are None, `every` defaults to one day.
+    """
 
     normalize_every: bool = define.field(default=False)
     """Normalize start/end dates to midnight before generating date range."""
@@ -1023,37 +1246,43 @@ class PointIdxr(UniIdxr, DefineMixin):
     
     Every datetime in `on` gets floored to the daily frequency, while `at_time` gets converted into 
     a timedelta using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_delta`. 
-    Index must be datetime-like."""
+    Index must be datetime-like.
+    """
 
     start: tp.Optional[tp.Union[int, tp.DatetimeLike]] = define.field(default=None)
     """Start index/date.
     
     If (human-readable) string, gets converted into a datetime.
     
-    If `every` is None, gets used to filter the final index array."""
+    If `every` is None, gets used to filter the final index array.
+    """
 
     end: tp.Optional[tp.Union[int, tp.DatetimeLike]] = define.field(default=None)
     """End index/date.
     
     If (human-readable) string, gets converted into a datetime.
     
-    If `every` is None, gets used to filter the final index array."""
+    If `every` is None, gets used to filter the final index array.
+    """
 
     exact_start: bool = define.field(default=False)
     """Whether the first index should be exactly `start`.
     
     Depending on `every`, the first index picked by `pd.date_range` may happen after `start`.
-    In such a case, `start` gets injected before the first index generated by `pd.date_range`."""
+    In such a case, `start` gets injected before the first index generated by `pd.date_range`.
+    """
 
     on: tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]] = define.field(default=None)
     """Index/label or a sequence of such.
     
-    Gets converted into datetime format whenever possible."""
+    Gets converted into datetime format whenever possible.
+    """
 
     add_delta: tp.Optional[tp.FrequencyLike] = define.field(default=None)
     """Offset to be added to each in `on`.
     
-    Gets converted to a proper offset/timedelta using `vectorbtpro.utils.datetime_.to_freq`."""
+    Gets converted to a proper offset/timedelta using `vectorbtpro.utils.datetime_.to_freq`.
+    """
 
     kind: tp.Optional[str] = define.field(default=None)
     """Kind of data in `on`: indices or labels.
@@ -1062,18 +1291,21 @@ class PointIdxr(UniIdxr, DefineMixin):
     
     If `kind` is 'labels', `on` gets converted into indices using `pd.Index.get_indexer`. 
     Prior to this, gets its timezone aligned to the timezone of the index. If `kind` is 'indices', 
-    `on` gets wrapped with NumPy."""
+    `on` gets wrapped with NumPy.
+    """
 
     indexer_method: str = define.field(default="bfill")
     """Method for `pd.Index.get_indexer`.
     
-    Allows two additional values: "before" and "after"."""
+    Allows two additional values: "before" and "after".
+    """
 
     indexer_tolerance: tp.Optional[tp.Union[int, tp.TimedeltaLike, tp.IndexLike]] = define.field(default=None)
     """Tolerance for `pd.Index.get_indexer`.
     
     If `at_time` is set and `indexer_method` is neither exact nor nearest, `indexer_tolerance` 
-    becomes such that the next element must be within the current day."""
+    becomes such that the next element must be within the current day.
+    """
 
     skip_not_found: bool = define.field(default=True)
     """Whether to drop indices that are -1 (not found)."""
@@ -1110,10 +1342,26 @@ def get_index_points(
 ) -> tp.Array1d:
     """Translate indices or labels into index points.
 
-    See `PointIdxr` for arguments.
+    Args:
+        index (Index): Index.
+        every (Optional[FrequencyLike]): See `PointIdxr.every`.
+        normalize_every (bool): See `PointIdxr.normalize_every`.
+        at_time (Optional[TimeLike]): See `PointIdxr.at_time`.
+        start (Optional[Union[int, DatetimeLike]]): See `PointIdxr.start`.
+        end (Optional[Union[int, DatetimeLike]]): See `PointIdxr.end`.
+        exact_start (bool): See `PointIdxr.exact_start`.
+        on (Optional[Union[int, DatetimeLike, IndexLike]]): See `PointIdxr.on`.
+        add_delta (Optional[FrequencyLike]): See `PointIdxr.add_delta`.
+        kind (Optional[str]): See `PointIdxr.kind`.
+        indexer_method (str): See `PointIdxr.indexer_method`.
+        indexer_tolerance (str): See `PointIdxr.indexer_tolerance`.
+        skip_not_found (bool): See `PointIdxr.skip_not_found`.
 
-    Usage:
-        * Provide nothing to generate at the beginning:
+    Returns:
+        Array1d: Array of index positions corresponding to the given index.
+
+    Examples:
+        Provide nothing to generate at the beginning:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -1124,7 +1372,7 @@ def get_index_points(
         array([0])
         ```
 
-        * Provide `every` as an integer frequency to generate index points using NumPy:
+        Provide `every` as an integer frequency to generate index points using NumPy:
 
         ```pycon
         >>> # Generate a point every five rows
@@ -1140,7 +1388,7 @@ def get_index_points(
         array([ 5, 10])
         ```
 
-        * Provide `every` as a time delta frequency to generate index points using Pandas:
+        Provide `every` as a time delta frequency to generate index points using Pandas:
 
         ```pycon
         >>> # Generate a point every week
@@ -1164,7 +1412,7 @@ def get_index_points(
         array([11, 18, 25])
         ```
 
-        * Instead of using `every`, provide indices explicitly:
+        Instead of using `every`, provide indices explicitly:
 
         ```pycon
         >>> # Generate one point
@@ -1308,109 +1556,122 @@ class RangeIdxr(UniIdxr, DefineMixin):
     every: tp.Optional[tp.FrequencyLike] = define.field(default=None)
     """Frequency either as an integer or timedelta.
 
-    Gets translated into `start` and `end` arrays by creating a range. If integer, an index sequence from `start` 
-    to `end` (exclusive) is created and 'indices' as `kind` is used. If timedelta-like, a date sequence 
-    from `start` to `end` (inclusive) is created and 'bounds' as `kind` is used. 
+    Gets translated into `start` and `end` arrays by creating a range. 
+    If an integer, an index sequence from `start` to `end` (exclusive) is created and 
+    `kind` is set to `indices`. If timedelta-like, a date sequence from `start` to 
+    `end` (inclusive) is generated and `kind` is set to `bounds`.
 
-    If `start_time` and `end_time` are not None and `every`, `start`, and `end` are None, 
-    `every` defaults to one day."""
+    If `start_time` and `end_time` are provided and `every`, `start`, and `end` are None, 
+    `every` defaults to one day.
+    """
 
     normalize_every: bool = define.field(default=False)
-    """Normalize start/end dates to midnight before generating date range."""
+    """Normalize `start` and `end` dates to midnight before generating the date range."""
 
     split_every: bool = define.field(default=True)
-    """Whether to split the sequence generated using `every` into `start` and `end` arrays.
+    """Split the sequence generated with `every` into separate `start` and `end` arrays.
 
-    After creation, and if `split_every` is True, an index range is created from each pair of elements in 
-    the generated sequence. Otherwise, the entire sequence is assigned to `start` and `end`, and only time 
-    and delta instructions can be used to further differentiate between them.
-
-    Forced to False if `every`, `start_time`, and `end_time` are not None and `fixed_start` is False."""
+    If True, creates an index range from each consecutive pair of values in the sequence. 
+    If False, the entire sequence is used for both `start` and `end`, with further differentiation 
+    achieved through time and delta adjustments. Forced to False when `every`, `start_time`, 
+    and `end_time` are provided and `fixed_start` is False.
+    """
 
     start_time: tp.Optional[tp.TimeLike] = define.field(default=None)
-    """Start time of the day either as a (human-readable) string or `datetime.time`. 
+    """Start time of the day as a human-readable string or a `datetime.time` object.
 
-    Every datetime in `start` gets floored to the daily frequency, while `start_time` gets converted into 
-    a timedelta using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_start_delta`. 
-    Index must be datetime-like."""
+    Each datetime in `start` is floored to a daily frequency. The `start_time` is converted to a timedelta 
+    using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_start_delta`.
+    
+    The index must be datetime-like.
+    """
 
     end_time: tp.Optional[tp.TimeLike] = define.field(default=None)
-    """End time of the day either as a (human-readable) string or `datetime.time`. 
+    """End time of the day as a human-readable string or a `datetime.time` object.
 
-    Every datetime in `end` gets floored to the daily frequency, while `end_time` gets converted into 
-    a timedelta using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_end_delta`. 
-    Index must be datetime-like."""
+    Each datetime in `end` is floored to a daily frequency. The `end_time` is converted to a timedelta 
+    using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_end_delta`.
+    
+    The index must be datetime-like.
+    """
 
     lookback_period: tp.Optional[tp.FrequencyLike] = define.field(default=None)
-    """Lookback period either as an integer or offset.
+    """Lookback period specified as an integer or an offset.
 
-    If `lookback_period` is set, `start` becomes `end-lookback_period`. If `every` is not None, 
-    the sequence is generated from `start+lookback_period` to `end` and then assigned to `end`.
+    When set, `start` is computed as `end - lookback_period`. If `every` is provided, a sequence is 
+    generated from `start + lookback_period` to `end` and then assigned to `end`.
 
-    If string, gets converted to a proper offset/timedelta using `vectorbtpro.utils.datetime_.to_freq`.
-    If integer, gets multiplied by the frequency of the index if the index is not integer."""
+    If given as a string, it is converted to an offset/timedelta using `vectorbtpro.utils.datetime_.to_freq`.
+    If given as an integer, it is multiplied by the index frequency when the index is not integer.
+    """
 
     start: tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]] = define.field(default=None)
-    """Start index/label or a sequence of such.
+    """Starting index/label or a sequence thereof.
 
-    Gets converted into datetime format whenever possible.
-
-    Gets broadcasted together with `end`."""
+    Converted to datetime format when possible and broadcast together with `end`.
+    """
 
     end: tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]] = define.field(default=None)
-    """End index/label or a sequence of such.
+    """Ending index/label or a sequence thereof.
 
-    Gets converted into datetime format whenever possible.
-
-    Gets broadcasted together with `start`."""
+    Converted to datetime format when possible and broadcast together with `start`.
+    """
 
     exact_start: bool = define.field(default=False)
-    """Whether the first index in the `start` array should be exactly `start`.
+    """Determines if the first index in `start` should exactly match the specified `start`.
 
-    Depending on `every`, the first index picked by `pd.date_range` may happen after `start`.
-    In such a case, `start` gets injected before the first index generated by `pd.date_range`.
-
-    Cannot be used together with `lookback_period`."""
+    If `every` is provided and the first index from `pd.date_range` occurs after `start`, 
+    the specified `start` is prepended.
+    
+    Cannot be used with `lookback_period`.
+    """
 
     fixed_start: bool = define.field(default=False)
-    """Whether all indices in the `start` array should be exactly `start`.
+    """Determines if all indices in `start` should exactly match the specified `start`.
 
-    Works only together with `every`.
-
-    Cannot be used together with `lookback_period`."""
+    Applies only with `every` and cannot be used with `lookback_period`.
+    """
 
     closed_start: bool = define.field(default=True)
-    """Whether `start` should be inclusive."""
+    """Indicates if the `start` bound is inclusive."""
 
     closed_end: bool = define.field(default=False)
-    """Whether `end` should be inclusive."""
+    """Indicates if the `end` bound is inclusive."""
 
     add_start_delta: tp.Optional[tp.FrequencyLike] = define.field(default=None)
-    """Offset to be added to each in `start`.
+    """Offset to add to each element in `start`.
 
-    If string, gets converted to a proper offset/timedelta using `vectorbtpro.utils.datetime_.to_freq`."""
+    If provided as a string, it is converted to an offset/timedelta using 
+    `vectorbtpro.utils.datetime_.to_freq`.
+    """
 
     add_end_delta: tp.Optional[tp.FrequencyLike] = define.field(default=None)
-    """Offset to be added to each in `end`.
+    """Offset to add to each element in `end`.
 
-    If string, gets converted to a proper offset/timedelta using `vectorbtpro.utils.datetime_.to_freq`."""
+    If provided as a string, it is converted to an offset/timedelta using 
+    `vectorbtpro.utils.datetime_.to_freq`.
+    """
 
     kind: tp.Optional[str] = define.field(default=None)
-    """Kind of data in `on`: indices, labels or bounds.
+    """Type of data to be used.
+    
+    * "labels": `start` and `end` are converted to indices using `pd.Index.get_indexer` 
+        after aligning their timezones with the index.
+    * "indices": `start` and `end` are wrapped with NumPy.
+    * "bounds": `vectorbtpro.base.resampling.base.Resampler.map_bounds_to_source_ranges` is used.
 
-    If None, gets assigned to `indices` if `start` and `end` contain integer data, to `bounds`
-    if `start`, `end`, and index are datetime-like, otherwise to `labels`.
-
-    If `kind` is 'labels', `start` and `end` get converted into indices using `pd.Index.get_indexer`. 
-    Prior to this, get their timezone aligned to the timezone of the index. If `kind` is 'indices', 
-    `start` and `end` get wrapped with NumPy. If kind` is 'bounds', 
-    `vectorbtpro.base.resampling.base.Resampler.map_bounds_to_source_ranges` is used."""
+    If not specified, it defaults to:
+    
+    * `indices` if `start` and `end` contain integer values,
+    * `bounds` if `start`, `end`, and the index are datetime-like,
+    * `labels` otherwise.
+    """
 
     skip_not_found: bool = define.field(default=True)
     """Whether to drop indices that are -1 (not found)."""
 
     jitted: tp.JittedOption = define.field(default=None)
-    """Jitting option passed to `vectorbtpro.base.resampling.base.Resampler.map_bounds_to_source_ranges`."""
+    """Jitting option provided to `vectorbtpro.base.resampling.base.Resampler.map_bounds_to_source_ranges`."""
 
     def get(
         self,
@@ -1452,12 +1713,36 @@ def get_index_ranges(
     skip_not_found: bool = range_idxr_defaults["skip_not_found"],
     jitted: tp.JittedOption = range_idxr_defaults["jitted"],
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-    """Translate indices, labels, or bounds into index ranges.
+    """Generate index ranges from a given index based on specified bounds, frequency, and adjustments.
 
-    See `RangeIdxr` for arguments.
+    Args:
+        index (Index): Index.
+        index_freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
-    Usage:
-        * Provide nothing to generate one largest index range:
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
+        every (Optional[FrequencyLike]): See `RangeIdxr.every`.
+        normalize_every (bool): See `RangeIdxr.normalize_every`.
+        split_every (bool): See `RangeIdxr.split_every`.
+        start_time (Optional[TimeLike]): See `RangeIdxr.start_time`.
+        end_time (Optional[TimeLike]): See `RangeIdxr.end_time`.
+        lookback_period (Optional[FrequencyLike]): See `RangeIdxr.lookback_period`.
+        start (Optional[Union[int, DatetimeLike, IndexLike]]): See `RangeIdxr.start`.
+        end (Optional[Union[int, DatetimeLike, IndexLike]]): See `RangeIdxr.end`.
+        exact_start (bool): See `RangeIdxr.exact_start`.
+        fixed_start (bool): See `RangeIdxr.fixed_start`.
+        closed_start (bool): See `RangeIdxr.closed_start`.
+        closed_end (bool): See `RangeIdxr.closed_end`.
+        add_start_delta (Optional[FrequencyLike]): See `RangeIdxr.add_start_delta`.
+        add_end_delta (Optional[FrequencyLike]): See `RangeIdxr.add_end_delta`.
+        kind (Optional[str]): See `RangeIdxr.kind`.
+        skip_not_found (bool): See `RangeIdxr.skip_not_found`.
+        jitted (JittedOption): See `RangeIdxr.jitted`.
+
+    Returns:
+        Tuple[Array1d, Array1d]: A tuple containing arrays of start and end indices for the generated ranges.
+
+    Examples:
+        Provide nothing to generate one largest index range:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -1468,7 +1753,7 @@ def get_index_ranges(
         array([[ 0, 32]])
         ```
 
-        * Provide `every` as an integer frequency to generate index ranges using NumPy:
+        Provide `every` as an integer frequency to generate index ranges using NumPy:
 
         ```pycon
         >>> # Generate a range every five rows
@@ -1503,7 +1788,7 @@ def get_index_ranges(
                [10, 15]])
         ```
 
-        * Provide `every` as a time delta frequency to generate index ranges using Pandas:
+        Provide `every` as a time delta frequency to generate index ranges using Pandas:
 
         ```pycon
         >>> # Generate a range every week
@@ -1575,7 +1860,7 @@ def get_index_ranges(
                [ 0, 25]])
         ```
 
-        * Use a look-back period (instead of an end index):
+        Use a look-back period (instead of an end index):
 
         ```pycon
         >>> # Generate a range every week, looking 5 days back
@@ -1599,7 +1884,7 @@ def get_index_ranges(
                [11, 25]])
         ```
 
-        * Instead of using `every`, provide start and end indices explicitly:
+        Instead of using `every`, provide start and end indices explicitly:
 
         ```pycon
         >>> # Generate one range
@@ -1629,7 +1914,7 @@ def get_index_ranges(
                [ 0, 13]])
         ```
 
-        * Use `closed_start` and `closed_end` to exclude any of the bounds:
+        Use `closed_start` and `closed_end` to exclude any of the bounds:
 
         ```pycon
         >>> # Generate ranges between multiple dates
@@ -1896,7 +2181,37 @@ def get_index_ranges(
 
 @define
 class AutoIdxr(UniIdxr, DefineMixin):
-    """Class for resolving indices, datetime-like objects, frequency-like objects, and labels for one axis."""
+    """Class for resolving indices, datetime-like objects, frequency-like objects, and labels for one axis.
+
+    Args:
+        value (Any): One or more indices represented as integers, datetime-like objects,
+            frequency-like objects, or labels.
+
+            Can also be a `vectorbtpro.utils.selection.PosSel` instance holding position(s) or
+            a `vectorbtpro.utils.selection.LabelSel` instance holding label(s).
+        closed_start (bool): Whether the start of a slice is inclusive.
+        closed_end (bool): Whether the end of a slice is inclusive.
+        indexer_method (Optional[str]): Specifies the method used by `pd.Index.get_indexer`.
+        below_to_zero (bool): If True, returns 0 instead of -1 when `value` is below the first index.
+        above_to_len (bool): If True, returns `len(index)` instead of -1 when `value` is above the last index.
+        level (MaybeLevelSequence): One or more levels.
+
+            If provided and `kind` is None, `kind` is set to "labels".
+        kind (Optional[str]): Specifies the kind of the provided value.
+
+            Allowed values:
+
+            * "position(s)" for `PosIdxr`
+            * "mask" for `MaskIdxr`
+            * "label(s)" for `LabelIdxr`
+            * "datetime" for `DatetimeIdxr`
+            * "dtc" for `DTCIdxr`
+            * "frequency" for `PointIdxr`
+
+            If None, the kind will be determined automatically based on the type of the indices.
+        idxr_kwargs (KwargsLike): Keyword arguments for the selected indexer.
+        **kwargs: Keyword arguments acting as `idxr_kwargs`.
+    """
 
     value: tp.Union[
         None,
@@ -1909,47 +2224,50 @@ class AutoIdxr(UniIdxr, DefineMixin):
         tp.FrequencyLike,
         tp.Slice,
     ] = define.field()
-    """One or more integer indices, datetime-like objects, frequency-like objects, or labels.
-    
-    Can also be an instance of `vectorbtpro.utils.selection.PosSel` holding position(s)
-    and `vectorbtpro.utils.selection.LabelSel` holding label(s)."""
+    """One or more indices represented as integers, datetime-like objects, frequency-like objects, or labels.
+
+    Can also be a `vectorbtpro.utils.selection.PosSel` instance holding position(s) or 
+    a `vectorbtpro.utils.selection.LabelSel` instance holding label(s).
+    """
 
     closed_start: bool = define.optional_field()
-    """Whether slice start should be inclusive."""
+    """Whether the start of a slice is inclusive."""
 
     closed_end: bool = define.optional_field()
-    """Whether slice end should be inclusive."""
+    """Whether the end of a slice is inclusive."""
 
     indexer_method: tp.Optional[str] = define.optional_field()
-    """Method for `pd.Index.get_indexer`."""
+    """Specifies the method used by `pd.Index.get_indexer`."""
 
     below_to_zero: bool = define.optional_field()
-    """Whether to place 0 instead of -1 if `AutoIdxr.value` is below the first index."""
+    """If True, returns 0 instead of -1 when `value` is below the first index."""
 
     above_to_len: bool = define.optional_field()
-    """Whether to place `len(index)` instead of -1 if `AutoIdxr.value` is above the last index."""
+    """If True, returns `len(index)` instead of -1 when `value` is above the last index."""
 
     level: tp.MaybeLevelSequence = define.field(default=None)
     """One or more levels.
 
-    If `level` is not None and `kind` is None, `kind` becomes "labels"."""
+    If provided and `kind` is None, `kind` is set to "labels".
+    """
 
     kind: tp.Optional[str] = define.field(default=None)
-    """Kind of value.
+    """Specifies the kind of the provided value.
 
-    Allowed are
-
+    Allowed values:
+    
     * "position(s)" for `PosIdxr`
     * "mask" for `MaskIdxr`
     * "label(s)" for `LabelIdxr`
     * "datetime" for `DatetimeIdxr`
-    * "dtc": for `DTCIdxr`
+    * "dtc" for `DTCIdxr`
     * "frequency" for `PointIdxr`
 
-    If None, will (try to) determine automatically based on the type of indices."""
+    If None, the kind will be determined automatically based on the type of the indices.
+    """
 
     idxr_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to the selected indexer."""
+    """Keyword arguments for the selected indexer."""
 
     def __init__(self, *args, **kwargs) -> None:
         idxr_kwargs = kwargs.pop("idxr_kwargs", None)
@@ -2107,15 +2425,22 @@ class AutoIdxr(UniIdxr, DefineMixin):
 
 @define
 class RowIdxr(IdxrBase, DefineMixin):
-    """Class for resolving row indices."""
+    """Class for resolving row indices.
+
+    Args:
+        idxr (object): Indexer that can be an instance of `UniIdxr`, a custom template,
+            or a value to be wrapped with `AutoIdxr`.
+        **idxr_kwargs: Keyword arguments for `AutoIdxr`.
+    """
 
     idxr: object = define.field()
-    """Indexer.
-    
-    Can be an instance of `UniIdxr`, a custom template, or a value to be wrapped with `AutoIdxr`."""
+    """Indexer object.
+
+    Can be an instance of `UniIdxr`, a custom template, or a value to be wrapped with `AutoIdxr`.
+    """
 
     idxr_kwargs: tp.KwargsLike = define.field()
-    """Keyword arguments passed to `AutoIdxr`."""
+    """Keyword arguments for initializing the indexer via `AutoIdxr`."""
 
     def __init__(self, idxr: object, **idxr_kwargs) -> None:
         DefineMixin.__init__(self, idxr=idxr, idxr_kwargs=hdict(idxr_kwargs))
@@ -2126,6 +2451,17 @@ class RowIdxr(IdxrBase, DefineMixin):
         freq: tp.Optional[tp.FrequencyLike] = None,
         template_context: tp.KwargsLike = None,
     ) -> tp.MaybeIndexArray:
+        """Return indices computed by the indexer.
+        Args:
+            index (Optional[Index]): Index labels of the array.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            template_context (KwargsLike): Additional context for template substitution.
+            
+        Returns:
+            MaybeIndexArray: Computed indices based on the indexer.
+        """
         idxr = self.idxr
         if isinstance(idxr, CustomTemplate):
             _template_context = merge_dicts(dict(index=index, freq=freq), template_context)
@@ -2139,15 +2475,22 @@ class RowIdxr(IdxrBase, DefineMixin):
 
 @define
 class ColIdxr(IdxrBase, DefineMixin):
-    """Class for resolving column indices."""
+    """Class for resolving column indices.
+
+    Args:
+        idxr (object): Indexer that can be an instance of `UniIdxr`,
+            a custom template, or a value to be wrapped with `AutoIdxr`.
+        **idxr_kwargs: Keyword arguments for `AutoIdxr`.
+    """
 
     idxr: object = define.field()
-    """Indexer.
-        
-    Can be an instance of `UniIdxr`, a custom template, or a value to be wrapped with `AutoIdxr`."""
+    """Indexer object.
+
+    Can be an instance of `UniIdxr`, a custom template, or a value to be wrapped with `AutoIdxr`.
+    """
 
     idxr_kwargs: tp.KwargsLike = define.field()
-    """Keyword arguments passed to `AutoIdxr`."""
+    """Keyword arguments for initializing the indexer via `AutoIdxr`."""
 
     def __init__(self, idxr: object, **idxr_kwargs) -> None:
         DefineMixin.__init__(self, idxr=idxr, idxr_kwargs=hdict(idxr_kwargs))
@@ -2157,6 +2500,14 @@ class ColIdxr(IdxrBase, DefineMixin):
         columns: tp.Optional[tp.Index] = None,
         template_context: tp.KwargsLike = None,
     ) -> tp.MaybeIndexArray:
+        """Return indices computed by the indexer.
+        Args:
+            columns (Optional[Index]): Column labels of the array.
+            template_context (KwargsLike): Additional context for template substitution.
+            
+        Returns:
+            MaybeIndexArray: Computed indices based on the indexer.
+        """
         idxr = self.idxr
         if isinstance(idxr, CustomTemplate):
             _template_context = merge_dicts(dict(columns=columns), template_context)
@@ -2170,19 +2521,30 @@ class ColIdxr(IdxrBase, DefineMixin):
 
 @define
 class Idxr(IdxrBase, DefineMixin):
-    """Class for resolving indices."""
+    """Class for resolving indices.
+
+    Args:
+        *idxrs (object): One or more indexers.
+
+            * If one indexer is provided, it can be an instance of `RowIdxr` or `ColIdxr`,
+                a custom template, or a value to be wrapped with `RowIdxr`.
+            * If two indexers are provided, they are interpreted as row and column
+                indexers respectively, either as instances of `RowIdxr` and `ColIdxr`
+                or as values to be wrapped with `RowIdxr` and `ColIdxr`.
+        **idxr_kwargs: Keyword arguments for `RowIdxr` and `ColIdxr`.
+    """
 
     idxrs: tp.Tuple[object, ...] = define.field()
-    """A tuple of one or more indexers.
-    
-    If one indexer is provided, can be an instance of `RowIdxr` or `ColIdxr`, 
-    a custom template, or a value to wrapped with `RowIdxr`.
-    
-    If two indexers are provided, can be an instance of `RowIdxr` and `ColIdxr` respectively,
-    or a value to wrapped with `RowIdxr` and `ColIdxr` respectively."""
+    """Tuple of indexers.
+
+    * If one indexer is provided, it can be an instance of `RowIdxr` or `ColIdxr`, 
+        a custom template, or a value to be wrapped with `RowIdxr`.
+    * If two indexers are provided, they are interpreted as row and column indexers respectively, 
+        either as instances of `RowIdxr` and `ColIdxr` or as values to be wrapped with `RowIdxr` and `ColIdxr`.
+    """
 
     idxr_kwargs: tp.KwargsLike = define.field()
-    """Keyword arguments passed to `RowIdxr` and `ColIdxr`."""
+    """Keyword arguments for initializing the row and column indexers."""
 
     def __init__(self, *idxrs: object, **idxr_kwargs) -> None:
         DefineMixin.__init__(self, idxrs=idxrs, idxr_kwargs=hdict(idxr_kwargs))
@@ -2194,6 +2556,19 @@ class Idxr(IdxrBase, DefineMixin):
         freq: tp.Optional[tp.FrequencyLike] = None,
         template_context: tp.KwargsLike = None,
     ) -> tp.Tuple[tp.MaybeIndexArray, tp.MaybeIndexArray]:
+        """Return indices computed by the indexer(s).
+
+        Args:
+            index (Optional[Index]): Index labels of the array.
+            columns (Optional[Index]): Column labels of the array.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            template_context (KwargsLike): Additional context for template substitution.
+            
+        Returns:
+            Tuple[MaybeIndexArray, MaybeIndexArray]: Computed row and column indices based on the indexer(s).
+        """
         if len(self.idxrs) == 0:
             raise ValueError("Must provide at least one indexer")
         elif len(self.idxrs) == 1:
@@ -2246,23 +2621,40 @@ def get_idxs(
     template_context: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.Tuple[tp.MaybeIndexArray, tp.MaybeIndexArray]:
-    """Translate indexer to row and column indices.
+    """Translate an indexer to row and column indices.
 
-    If `idxr` is not an indexer class, wraps it with `Idxr`.
+    If the provided `idxr` is not an instance of `Idxr`, it is wrapped with `Idxr`.
 
-    Keyword arguments are passed when constructing a new `Idxr`."""
+    Keyword arguments are passed when constructing a new `Idxr`.
+
+    Args:
+        idxr (object): Input indexer.
+        index (Optional[Index]): Index labels of the array.
+        columns (Optional[Index]): Column labels of the array.
+        freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
+        template_context (KwargsLike): Additional context for template substitution.
+        **kwargs: Keyword arguments for `Idxr`.
+
+    Returns:
+        Tuple[MaybeIndexArray, MaybeIndexArray]: A tuple containing row and column indices.
+    """
     if not isinstance(idxr, Idxr):
         idxr = Idxr(idxr, **kwargs)
     return idxr.get(index=index, columns=columns, freq=freq, template_context=template_context)
 
 
 class index_dict(pdict):
-    """Dict that contains indexer objects as keys and values to be set as values.
+    """Class representing a dictionary mapping indexer objects to their corresponding values.
 
-    Each indexer object must be hashable. To make a slice hashable, use `hslice`.
-    To make an array hashable, convert it into a tuple.
+    Each indexer object must be hashable.
 
-    To set a default value, use the `_def` key (case-sensitive!)."""
+    * To make a slice hashable, use `hslice`.
+    * To convert an array to a hashable key, convert it into a tuple.
+
+    To set a default value, use the `_def` key (case-sensitive!).
+    """
 
     pass
 
@@ -2275,11 +2667,21 @@ class IdxSetter(DefineMixin):
     """Class for setting values based on indexing."""
 
     idx_items: tp.List[tp.Tuple[object, tp.ArrayLike]] = define.field()
-    """Items where the first element is an indexer and the second element is a value to be set."""
+    """List of index-value pairs, where the first element serves as the indexer and 
+    the second element is the value to assign."""
 
     @classmethod
     def set_row_idxs(cls, arr: tp.Array, idxs: tp.MaybeIndexArray, v: tp.Any) -> None:
-        """Set row indices in an array."""
+        """Set values at specified row indices in an array.
+
+        Args:
+            arr (Array): Array to modify.
+            idxs (MaybeIndexArray): Row indices or slice defining which rows to set.
+            v (Any): Value or array of values to assign, which is broadcast to match the target shape.
+
+        Returns:
+            None: Function modifies `arr` in place.
+        """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
         if not isinstance(v, np.ndarray):
@@ -2308,7 +2710,16 @@ class IdxSetter(DefineMixin):
 
     @classmethod
     def set_col_idxs(cls, arr: tp.Array, idxs: tp.MaybeIndexArray, v: tp.Any) -> None:
-        """Set column indices in an array."""
+        """Set values at specified column indices in an array.
+
+        Args:
+            arr (Array): Array to modify.
+            idxs (MaybeIndexArray): Column indices or slice defining which columns to set.
+            v (Any): Value or array of values to assign, which is broadcast to match the target shape.
+
+        Returns:
+            None: Function modifies `arr` in place.
+        """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
         if not isinstance(v, np.ndarray):
@@ -2335,7 +2746,17 @@ class IdxSetter(DefineMixin):
         col_idxs: tp.MaybeIndexArray,
         v: tp.Any,
     ) -> None:
-        """Set row and column indices in an array."""
+        """Set values at specified row and column indices in an array.
+
+        Args:
+            arr (Array): Array to modify.
+            row_idxs (MaybeIndexArray): Row indices or slice specifying which rows to set.
+            col_idxs (MaybeIndexArray): Column indices or slice to select.
+            v (Any): Value or array of values to assign, which is broadcast to match the target shape.
+
+        Returns:
+            None: Function modifies `arr` in place.
+        """
         from vectorbtpro.base.reshaping import broadcast_array_to
 
         if not isinstance(v, np.ndarray):
@@ -2402,7 +2823,25 @@ class IdxSetter(DefineMixin):
         freq: tp.Optional[tp.FrequencyLike] = None,
         template_context: tp.KwargsLike = None,
     ) -> tp.Kwargs:
-        """Get meta of setting operations in `IdxSetter.idx_items`."""
+        """Compute meta information for setting operations in `IdxSetter.idx_items`.
+
+        Args:
+            shape (ShapeLike): Shape of the target array.
+            index (Optional[Index]): Index labels of the array.
+            columns (Optional[Index]): Column labels of the array.
+            freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            template_context (KwargsLike): Additional context for template substitution.
+
+        Returns:
+            Kwargs: Dictionary containing:
+
+                * `default`: The default value specified in `IdxSetter.idx_items`, if any.
+                * `set_funcs`: A list of partially-applied functions for setting values in the array.
+                * `rows_changed`: Boolean indicating whether row indices will be modified.
+                * `cols_changed`: Boolean indicating whether column indices will be modified.
+        """
         from vectorbtpro.base.reshaping import to_tuple_shape
 
         shape = to_tuple_shape(shape)
@@ -2483,7 +2922,18 @@ class IdxSetter(DefineMixin):
         )
 
     def set(self, arr: tp.Array, set_funcs: tp.Optional[tp.Sequence[tp.Callable]] = None, **kwargs) -> None:
-        """Set values of a NumPy array based on `IdxSetter.get_set_meta`."""
+        """Set values of a NumPy array using metadata from `IdxSetter.get_set_meta`.
+
+        Args:
+            arr (Array): NumPy array whose values will be updated.
+            set_funcs (Optional[Sequence[Callable]]): Functions to set array values.
+
+                If not provided, they are obtained via `IdxSetter.get_set_meta`.
+            **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
+
+        Returns:
+            None: Function modifies `arr` in place.
+        """
         if set_funcs is None:
             set_meta = self.get_set_meta(arr.shape, **kwargs)
             set_funcs = set_meta["set_funcs"]
@@ -2491,7 +2941,15 @@ class IdxSetter(DefineMixin):
             set_op(arr)
 
     def set_pd(self, pd_arr: tp.SeriesFrame, **kwargs) -> None:
-        """Set values of a Pandas array based on `IdxSetter.get_set_meta`."""
+        """Set values of a Pandas DataFrame or Series using metadata from `IdxSetter.get_set_meta`.
+
+        Args:
+            pd_arr (SeriesFrame): Pandas object whose underlying array values will be updated.
+            **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
+
+        Returns:
+            None: Function modifies `arr` in place.
+        """
         from vectorbtpro.base.indexes import get_index
 
         index = get_index(pd_arr, 0)
@@ -2506,13 +2964,22 @@ class IdxSetter(DefineMixin):
         fill_value: tp.Scalar = np.nan,
         **kwargs,
     ) -> tp.Array:
-        """Fill a new array and set its values based on `IdxSetter.get_set_meta`.
+        """Fill a new NumPy array and update its values using metadata from `IdxSetter.get_set_meta`.
 
-        If `keep_flex` is True, will return the most memory-efficient array representation
-        capable of flexible indexing.
+        This method creates an array filled with a specified initial value and
+        then sets its values based on metadata.
 
-        If `fill_value` is None, will search for the `_def` key in `IdxSetter.idx_items`.
-        If there's none, will be set to NaN."""
+        Args:
+            shape (ShapeLike): Shape of the new array.
+            keep_flex (bool): Whether to preserve the flexible array structure.
+            fill_value (Scalar): Initial fill value for the array.
+
+                This value is overridden by the metadata default if available.
+            **kwargs: Keyword arguments for `IdxSetter.get_set_meta`.
+
+        Returns:
+            Array: Filled and updated NumPy array.
+        """
         set_meta = self.get_set_meta(shape, **kwargs)
         if set_meta["default"] is not None:
             fill_value = set_meta["default"]
@@ -2533,19 +3000,27 @@ class IdxSetter(DefineMixin):
 
 
 class IdxSetterFactory(Base):
-    """Class for building index setters."""
+    """Class for constructing index setter instances."""
 
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:
-        """Get an instance of `IdxSetter` or a dict of such instances - one per array name."""
+        """Return an `IdxSetter` instance or a dictionary mapping array names to `IdxSetter` instances.
+
+        Returns:
+            Union[IdxSetter, Dict[Label, IdxSetter]]: An `IdxSetter` instance or
+                a dictionary of `IdxSetter` instances.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
 
 @define
 class IdxDict(IdxSetterFactory, DefineMixin):
-    """Class for building an index setter from a dict."""
+    """Class for constructing an index setter from a dictionary."""
 
     index_dct: dict = define.field()
-    """Dict that contains indexer objects as keys and values to be set as values."""
+    """Dictionary mapping indexer objects to values to be set."""
 
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:
         return IdxSetter(list(self.index_dct.items()))
@@ -2553,19 +3028,20 @@ class IdxDict(IdxSetterFactory, DefineMixin):
 
 @define
 class IdxSeries(IdxSetterFactory, DefineMixin):
-    """Class for building an index setter from a Series."""
+    """Class for constructing an index setter from a Series."""
 
     sr: tp.AnyArray1d = define.field()
-    """Series or any array-like object to create the Series from."""
+    """Series or array-like object used to create the series."""
 
     split: bool = define.field(default=False)
-    """Whether to split the setting operation.
-        
-    If False, will set all values using a single operation.
-    Otherwise, will do one operation per element."""
+    """Flag indicating whether to split the setting operation.
+
+    If False, sets all values using a single operation.
+    If True, performs one operation per element.
+    """
 
     idx_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `idx` if the indexer isn't an instance of `Idxr`."""
+    """Keyword arguments for `idx` when the indexer is not an instance of `Idxr`."""
 
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:
         sr = self.sr
@@ -2592,26 +3068,29 @@ class IdxSeries(IdxSetterFactory, DefineMixin):
 
 @define
 class IdxFrame(IdxSetterFactory, DefineMixin):
-    """Class for building an index setter from a DataFrame."""
+    """Class for constructing an index setter from a DataFrame."""
 
     df: tp.AnyArray2d = define.field()
-    """DataFrame or any array-like object to create the DataFrame from."""
+    """DataFrame or array-like object used to create the DataFrame."""
 
     split: tp.Union[bool, str] = define.field(default=False)
-    """Whether to split the setting operation.
-    
-    If False, will set all values using a single operation.
-    Otherwise, the following options are supported:
+    """Flag or string defining how to split the setting operation.
+
+    When provided as a boolean, True implies splitting into individual elements 
+    (equivalent to 'elements'), and False implies no splitting.
+
+    When provided as a string, supported options are:
 
     * 'columns': one operation per column
     * 'rows': one operation per row
-    * True or 'elements': one operation per element"""
+    * 'elements': one operation per element
+    """
 
     rowidx_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `rowidx` if the indexer isn't an instance of `RowIdxr`."""
+    """Keyword arguments for `rowidx` when the row indexer is not an instance of `RowIdxr`."""
 
     colidx_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `colidx` if the indexer isn't an instance of `ColIdxr`."""
+    """Keyword arguments for `colidx` when the column indexer is not an instance of `ColIdxr`."""
 
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:
         df = self.df
@@ -2664,37 +3143,37 @@ class IdxFrame(IdxSetterFactory, DefineMixin):
 
 @define
 class IdxRecords(IdxSetterFactory, DefineMixin):
-    """Class for building index setters from records - one per field."""
+    """Class for building index setters from records, one per field."""
 
     records: tp.RecordsLike = define.field()
     """Series, DataFrame, or any sequence of mapping-like objects.
-    
-    If a Series or DataFrame and the index is not a default range, the index will become a row field.
-    If a custom row field is provided, the index will be ignored."""
+
+    If a Series or DataFrame is provided and the index is not a default range, the index becomes a row field.
+    If a custom row field is provided, the index is ignored.
+    """
 
     row_field: tp.Union[None, bool, tp.Label] = define.field(default=None)
     """Row field.
-    
-    If None or True, will search for "row", "index", "open time", and "date" (case-insensitive).
-    If `IdxRecords.records` is a Series or DataFrame, will also include the index name
-    if the index is not a default range.
-    
-    If a record doesn't have a row field, all rows will be set.
-    If there's no row and column field, the field value will become the default of the entire array."""
+
+    If None or True, searches for "row", "index", "open time", and "date" (case-insensitive).
+    If `IdxRecords.records` is a Series or DataFrame, also includes the index name if the index 
+    is not a default range. If a record lacks a row field, all rows are set.
+    If neither a row nor a column field is found, the field value becomes the default for the entire array.
+    """
 
     col_field: tp.Union[None, bool, tp.Label] = define.field(default=None)
     """Column field.
 
-    If None or True, will search for "col", "column", and "symbol" (case-insensitive).
-    
-    If a record doesn't have a column field, all columns will be set.
-    If there's no row and column field, the field value will become the default of the entire array."""
+    If None or True, searches for "col", "column", and "symbol" (case-insensitive).
+    If a record lacks a column field, all columns are set. If neither a row nor a column 
+    field is present, the field value becomes the default for the entire array.
+    """
 
     rowidx_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `rowidx` if the indexer isn't an instance of `RowIdxr`."""
+    """Keyword arguments for `rowidx` if the indexer is not an instance of `RowIdxr`."""
 
     colidx_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `colidx` if the indexer isn't an instance of `ColIdxr`."""
+    """Keyword arguments for `colidx` if the indexer is not an instance of `ColIdxr`."""
 
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:
         records = self.records
@@ -2822,56 +3301,56 @@ class IdxRecords(IdxSetterFactory, DefineMixin):
 
 
 posidx = PosIdxr
-"""Shortcut for `PosIdxr`."""
+"""Alias for `PosIdxr`."""
 
 __pdoc__["posidx"] = False
 
 maskidx = MaskIdxr
-"""Shortcut for `MaskIdxr`."""
+"""Alias for `MaskIdxr`."""
 
 __pdoc__["maskidx"] = False
 
 lbidx = LabelIdxr
-"""Shortcut for `LabelIdxr`."""
+"""Alias for `LabelIdxr`."""
 
 __pdoc__["lbidx"] = False
 
 dtidx = DatetimeIdxr
-"""Shortcut for `DatetimeIdxr`."""
+"""Alias for `DatetimeIdxr`."""
 
 __pdoc__["dtidx"] = False
 
 dtcidx = DTCIdxr
-"""Shortcut for `DTCIdxr`."""
+"""Alias for `DTCIdxr`."""
 
 __pdoc__["dtcidx"] = False
 
 pointidx = PointIdxr
-"""Shortcut for `PointIdxr`."""
+"""Alias for `PointIdxr`."""
 
 __pdoc__["pointidx"] = False
 
 rangeidx = RangeIdxr
-"""Shortcut for `RangeIdxr`."""
+"""Alias for `RangeIdxr`."""
 
 __pdoc__["rangeidx"] = False
 
 autoidx = AutoIdxr
-"""Shortcut for `AutoIdxr`."""
+"""Alias for `AutoIdxr`."""
 
 __pdoc__["autoidx"] = False
 
 rowidx = RowIdxr
-"""Shortcut for `RowIdxr`."""
+"""Alias for `RowIdxr`."""
 
 __pdoc__["rowidx"] = False
 
 colidx = ColIdxr
-"""Shortcut for `ColIdxr`."""
+"""Alias for `ColIdxr`."""
 
 __pdoc__["colidx"] = False
 
 idx = Idxr
-"""Shortcut for `Idxr`."""
+"""Alias for `Idxr`."""
 
 __pdoc__["idx"] = False

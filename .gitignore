@@ -143,3 +143,4 @@ dmypy.json
 /*.ipynb
 .virtual_documents/
 /knowledge/
+.vscode

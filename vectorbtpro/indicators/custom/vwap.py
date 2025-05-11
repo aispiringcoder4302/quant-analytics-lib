@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `VWAP`."""
+"""Module defining the `VWAP` class for calculating the Volume-Weighted Average Price indicator."""
 
 import numpy as np
 
@@ -27,7 +27,23 @@ __pdoc__ = {}
 
 
 def substitute_anchor(wrapper: ArrayWrapper, anchor: tp.Optional[tp.FrequencyLike]) -> tp.Array1d:
-    """Substitute reset frequency by group lens."""
+    """Substitute the reset frequency with group lengths.
+
+    Computes group lengths based on the provided `anchor`. If `anchor` is None, returns an array
+    with the number of rows in the wrapper; otherwise, calculates group lengths using the
+    wrapper's index grouper.
+
+    Args:
+        wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
+        anchor (Optional[FrequencyLike]): Reset frequency for grouping.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper.get_index_grouper`.
+
+    Returns:
+        Array1d: Array containing the group lengths.
+    """
     if anchor is None:
         return np.array([wrapper.shape[0]])
     return wrapper.get_index_grouper(anchor).get_group_lens()
@@ -40,28 +56,52 @@ VWAP = IndicatorFactory(
     input_names=["high", "low", "close", "volume"],
     param_names=["anchor"],
     output_names=["vwap"],
+    attr_settings=dict(
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        close=dict(
+            doc="Close price series.",
+        ),
+        volume=dict(
+            doc="Volume series.",
+        ),
+        vwap=dict(
+            doc="Volume-Weighted Average Price (VWAP) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.vwap_nb,
     param_settings=dict(
-        anchor=dict(template=RepFunc(substitute_anchor)),
+        anchor=dict(
+            template=RepFunc(substitute_anchor),
+            doc="Reset frequency for grouping (see `substitute_anchor`).",
+        ),
     ),
     anchor="D",
 )
 
 
 class _VWAP(VWAP):
-    """Volume-Weighted Average Price (VWAP).
+    """Class representing the Volume-Weighted Average Price (VWAP) indicator.
 
-    VWAP is a technical analysis indicator used on intraday charts that resets at the start
-    of every new trading session.
+    Calculates the volume-weighted average price commonly used in intraday charts.
+    The calculation resets at the beginning of each trading session.
 
-    See [Volume-Weighted Average Price (VWAP)](https://www.investopedia.com/terms/v/vwap.asp).
+    The `anchor` parameter specifies the grouping for when the VWAP resets and can be any valid index grouper.
 
-    Anchor can be any index grouper."""
+    See:
+        * `VWAP.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.vwap_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/v/vwap.asp for the definition of VWAP.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         vwap_trace_kwargs: tp.KwargsLike = None,
@@ -69,18 +109,25 @@ class _VWAP(VWAP):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `VWAP.vwap` against `VWAP.close`.
+        """Plot `VWAP.vwap` against `VWAP.close` values.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `VWAP.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `VWAP.close`.
-            vwap_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `VWAP.vwap`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_close (bool): Whether to plot the close price.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `VWAP.close`.
+            vwap_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `VWAP.vwap`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated figure containing the plotted traces.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.VWAP.run(
             ...    ohlcv['High'],
@@ -99,7 +146,7 @@ class _VWAP(VWAP):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

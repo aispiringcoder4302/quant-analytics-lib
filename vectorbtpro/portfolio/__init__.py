@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for working with portfolio."""
+"""Package for portfolio management.
+
+This package includes submodules that provide core functionality for portfolio
+management, including optimization, order sequencing, logging, and trade execution.
+"""
 
 from typing import TYPE_CHECKING
 

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FileData`."""
+"""Module providing the `FileData` class for handling file data."""
 
 import re
 from glob import glob
@@ -29,18 +29,36 @@ FileDataT = tp.TypeVar("FileDataT", bound="FileData")
 
 
 class FileData(LocalData):
-    """Data class for fetching file data."""
+    """Data class for fetching file data from the filesystem via `LocalData`.
+
+    !!! info
+        For default settings, see `custom.file` in `vectorbtpro._settings.data`.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.file")
 
     @classmethod
     def is_dir_match(cls, path: tp.PathLike) -> bool:
-        """Return whether a directory is a valid match."""
+        """Determine whether the given directory matches the criteria.
+
+        Args:
+            path (PathLike): Directory path to evaluate.
+
+        Returns:
+            bool: True if the directory matches the criteria, False otherwise.
+        """
         return False
 
     @classmethod
     def is_file_match(cls, path: tp.PathLike) -> bool:
-        """Return whether a file is a valid match."""
+        """Determine whether the given file matches the criteria.
+
+        Args:
+            path (PathLike): File path to evaluate.
+
+        Returns:
+            bool: True if the file matches the criteria, False otherwise.
+        """
         return True
 
     @classmethod
@@ -53,11 +71,24 @@ class FileData(LocalData):
         extension: tp.Optional[str] = None,
         **kwargs,
     ) -> tp.List[Path]:
-        """Get the list of all paths matching a path.
+        """Obtain a list of file system paths that match the specified criteria.
 
-        If `FileData.is_dir_match` returns True for a directory, it gets returned as-is.
-        Otherwise, iterates through all files in that directory and invokes `FileData.is_file_match`.
-        If a pattern was provided, these methods aren't invoked."""
+        If the provided path is a directory and `FileData.is_dir_match` returns True, the
+        directory is returned directly. Otherwise, if the path is a directory, each file within
+        it is checked using `FileData.is_file_match`. When a regex pattern is provided via
+        `match_regex`, only paths matching the pattern are included.
+
+        Args:
+            path (PathLike): Starting path to search for files.
+            match_regex (Optional[str]): Regular expression for filtering paths.
+            sort_paths (bool): Flag indicating whether to sort the resulting paths.
+            recursive (bool): Whether to search subdirectories recursively.
+            extension (Optional[str]): Specifies a file extension to filter by (without the dot).
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            List[Path]: A list of paths that match the specified criteria.
+        """
         if not isinstance(path, Path):
             path = Path(path)
         if path.exists():
@@ -81,12 +112,28 @@ class FileData(LocalData):
 
     @classmethod
     def list_paths(cls, path: tp.PathLike = ".", **match_path_kwargs) -> tp.List[Path]:
-        """List all features or symbols under a path."""
+        """List all feature or symbol paths under the specified directory.
+
+        Args:
+            path (PathLike): Path in which to search for feature or symbol data.
+            **match_path_kwargs: Keyword arguments for `FileData.match_path`.
+
+        Returns:
+            List[Path]: A list of matching paths.
+        """
         return cls.match_path(path, **match_path_kwargs)
 
     @classmethod
     def path_to_key(cls, path: tp.PathLike, **kwargs) -> str:
-        """Convert a path into a feature or symbol."""
+        """Convert the given file path to a key by extracting its stem.
+
+        Args:
+            path (PathLike): File path to convert.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            str: Resulting key derived from the file path.
+        """
         return Path(path).stem
 
     @classmethod
@@ -121,15 +168,31 @@ class FileData(LocalData):
         path_to_key_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> FileDataT:
-        """Override `vectorbtpro.data.base.Data.pull` to take care of paths.
+        """Pull file data from the filesystem based on provided keys or paths.
 
-        Use either features, symbols, or `paths` to specify the path to one or multiple files.
-        Allowed are paths in a string or `pathlib.Path` format, or string expressions accepted by `glob.glob`.
+        Overrides `vectorbtpro.data.base.Data.pull` to handle file system paths.
 
-        Set `match_paths` to False to not parse paths and behave like a regular
-        `vectorbtpro.data.base.Data` instance.
+        Use one of `features`, `symbols`, or `paths` to specify the file location. The file paths
+        may be provided as strings, `pathlib.Path` objects, or glob patterns.
 
-        For defaults, see `custom.local` in `vectorbtpro._settings.data`.
+        Set `match_paths` to False to bypass path parsing and perform a standard pull operation from
+        `vectorbtpro.data.base.Data`.
+
+        Args:
+            keys (MaybeKeys): Feature or symbol identifier(s).
+            keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
+            features (MaybeFeatures): Feature identifier(s).
+            symbols (MaybeSymbols): Symbol identifier(s).
+            paths (Any): One or more file paths or glob patterns.
+            match_paths (Optional[bool]): Flag to enable or disable path matching.
+            match_regex (Optional[str]): Regular expression for filtering paths.
+            sort_paths (Optional[bool]): Indicates if the matched paths should be sorted.
+            match_path_kwargs (KwargsLike): Keyword arguments for `FileData.match_path`.
+            path_to_key_kwargs (KwargsLike): Keyword arguments for `FileData.path_to_key`.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.file.FileData.pull`.
+
+        Returns:
+            FileData: Instance of `FileData` containing the pulled file data.
         """
         keys_meta = cls.resolve_keys_meta(
             keys=keys,

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Mixin class for working with simulation ranges."""
+"""Module providing a mixin class for simulation range operations."""
 
 import numpy as np
 import pandas as pd
@@ -30,15 +30,42 @@ SimRangeMixinT = tp.TypeVar("SimRangeMixinT", bound="SimRangeMixin")
 class SimRangeMixin(Base):
     """Mixin class for working with simulation ranges.
 
-    Should be subclassed by a subclass of `vectorbtpro.base.wrapping.Wrapping`."""
+    Should be subclassed by a subclass of `vectorbtpro.base.wrapping.Wrapping`.
+
+    Args:
+        sim_start (Optional[ArrayLike]): Start index of the simulation range.
+        sim_end (Optional[ArrayLike]): End index of the simulation range.
+    """
+
+    def __init__(
+        self,
+        sim_start: tp.Optional[tp.ArrayLike] = None,
+        sim_end: tp.Optional[tp.ArrayLike] = None,
+    ) -> None:
+        sim_start = type(self).resolve_sim_start(sim_start=sim_start, wrapper=self.wrapper, group_by=False)
+        sim_end = type(self).resolve_sim_end(sim_end=sim_end, wrapper=self.wrapper, group_by=False)
+
+        self._sim_start = sim_start
+        self._sim_end = sim_end
 
     @classmethod
     def row_stack_sim_start(
         cls,
         new_wrapper: ArrayWrapper,
-        *objs: tp.MaybeTuple[SimRangeMixinT],
+        *objs: tp.MaybeSequence[SimRangeMixinT],
     ) -> tp.Optional[tp.ArrayLike]:
-        """Row-stack simulation start."""
+        """Row-stack simulation start.
+
+        Args:
+            new_wrapper (ArrayWrapper): New array wrapper.
+            *objs (MaybeSequence[SimRangeMixin]): Simulation range mixin objects to merge.
+
+                The first object's simulation start is used, and all subsequent
+                objects must have it set to None.
+
+        Returns:
+            Optional[ArrayLike]: The computed simulation start array for row stacking, or None.
+        """
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -56,9 +83,19 @@ class SimRangeMixin(Base):
     def row_stack_sim_end(
         cls,
         new_wrapper: ArrayWrapper,
-        *objs: tp.MaybeTuple[SimRangeMixinT],
+        *objs: tp.MaybeSequence[SimRangeMixinT],
     ) -> tp.Optional[tp.ArrayLike]:
-        """Row-stack simulation end."""
+        """Row-stack simulation end.
+
+        Args:
+            new_wrapper (ArrayWrapper): New array wrapper.
+            *objs (MaybeSequence[SimRangeMixin]): Simulation range mixin objects to merge.
+
+                The last object's simulation end is used, and all preceding objects must have it set to None.
+
+        Returns:
+            Optional[ArrayLike]: The computed simulation end array for row stacking, or None.
+        """
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -77,9 +114,17 @@ class SimRangeMixin(Base):
     def column_stack_sim_start(
         cls,
         new_wrapper: ArrayWrapper,
-        *objs: tp.MaybeTuple[SimRangeMixinT],
+        *objs: tp.MaybeSequence[SimRangeMixinT],
     ) -> tp.Optional[tp.ArrayLike]:
-        """Column-stack simulation start."""
+        """Column-stack simulation start.
+
+        Args:
+            new_wrapper (ArrayWrapper): New array wrapper.
+            *objs (MaybeSequence[SimRangeMixin]): Simulation range mixin objects to merge.
+
+        Returns:
+            Optional[ArrayLike]: The computed simulation start array for column stacking, or None.
+        """
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -113,9 +158,17 @@ class SimRangeMixin(Base):
     def column_stack_sim_end(
         cls,
         new_wrapper: ArrayWrapper,
-        *objs: tp.MaybeTuple[SimRangeMixinT],
+        *objs: tp.MaybeSequence[SimRangeMixinT],
     ) -> tp.Optional[tp.ArrayLike]:
-        """Column-stack simulation end."""
+        """Column-stack simulation end.
+
+        Args:
+            new_wrapper (ArrayWrapper): New array wrapper.
+            *objs (MaybeSequence[SimRangeMixin]): Simulation range mixin objects to merge.
+
+        Returns:
+            Optional[ArrayLike]: The computed simulation end array for column stacking, or None.
+        """
         if len(objs) == 1:
             objs = objs[0]
         objs = list(objs)
@@ -145,19 +198,16 @@ class SimRangeMixin(Base):
             new_sim_end = None
         return new_sim_end
 
-    def __init__(
-        self,
-        sim_start: tp.Optional[tp.Array1d] = None,
-        sim_end: tp.Optional[tp.Array1d] = None,
-    ) -> None:
-        sim_start = type(self).resolve_sim_start(sim_start=sim_start, wrapper=self.wrapper, group_by=False)
-        sim_end = type(self).resolve_sim_end(sim_end=sim_end, wrapper=self.wrapper, group_by=False)
-
-        self._sim_start = sim_start
-        self._sim_end = sim_end
-
     def sim_start_indexing_func(self, wrapper_meta: dict) -> tp.Optional[tp.ArrayLike]:
-        """Indexing function for simulation start."""
+        """Index simulation start.
+
+        Args:
+            wrapper_meta (dict): Metadata from the indexing operation on the wrapper.
+
+        Returns:
+            Optional[ArrayLike]: The updated simulation start positions array,
+                or None if simulation start is not defined.
+        """
         if self._sim_start is None:
             new_sim_start = None
         elif not wrapper_meta["rows_changed"]:
@@ -173,7 +223,15 @@ class SimRangeMixin(Base):
         return new_sim_start
 
     def sim_end_indexing_func(self, wrapper_meta: dict) -> tp.Optional[tp.ArrayLike]:
-        """Indexing function for simulation end."""
+        """Index simulation end.
+
+        Args:
+            wrapper_meta (dict): Metadata from the indexing operation on the wrapper.
+
+        Returns:
+            Optional[ArrayLike]: The updated simulation end positions array,
+                or None if simulation end is not defined.
+        """
         if self._sim_end is None:
             new_sim_end = None
         elif not wrapper_meta["rows_changed"]:
@@ -189,7 +247,15 @@ class SimRangeMixin(Base):
         return new_sim_end
 
     def resample_sim_start(self, new_wrapper: ArrayWrapper) -> tp.Optional[tp.ArrayLike]:
-        """Resample simulation start."""
+        """Resample simulation start indices based on a new array wrapper.
+
+        Args:
+            new_wrapper (ArrayWrapper): New array wrapper.
+
+        Returns:
+            Optional[ArrayLike]: The resampled simulation start array,
+                or None if simulation start is not defined.
+        """
         if self._sim_start is not None:
             new_sim_start = np.empty(len(self._sim_start), dtype=int_)
             for i in range(len(self._sim_start)):
@@ -210,7 +276,15 @@ class SimRangeMixin(Base):
         return new_sim_start
 
     def resample_sim_end(self, new_wrapper: ArrayWrapper) -> tp.Optional[tp.ArrayLike]:
-        """Resample simulation end."""
+        """Resample simulation end indices based on a new array wrapper.
+
+        Args:
+            new_wrapper (ArrayWrapper): New array wrapper.
+
+        Returns:
+            Optional[ArrayLike]: The resampled simulation end array,
+                or None if simulation end is not defined.
+        """
         if self._sim_end is not None:
             new_sim_end = np.empty(len(self._sim_end), dtype=int_)
             for i in range(len(self._sim_end)):
@@ -236,7 +310,15 @@ class SimRangeMixin(Base):
         value: tp.Scalar,
         wrapper: tp.Optional[ArrayWrapper] = None,
     ) -> int:
-        """Resolve a single value of simulation start."""
+        """Return the resolved simulation start position for the provided scalar value.
+
+        Args:
+            value (Scalar): Scalar simulation start value to resolve.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+
+        Returns:
+            int: Resolved position corresponding to the simulation start.
+        """
         if not isinstance(cls_or_self, type):
             if wrapper is None:
                 wrapper = cls_or_self.wrapper
@@ -252,7 +334,15 @@ class SimRangeMixin(Base):
         value: tp.Scalar,
         wrapper: tp.Optional[ArrayWrapper] = None,
     ) -> int:
-        """Resolve a single value of simulation end."""
+        """Return the resolved simulation end position for the provided scalar value.
+
+        Args:
+            value (Scalar): Scalar simulation end value to resolve.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+
+        Returns:
+            int: Resolved position corresponding to the simulation end.
+        """
         if not isinstance(cls_or_self, type):
             if wrapper is None:
                 wrapper = cls_or_self.wrapper
@@ -270,7 +360,19 @@ class SimRangeMixin(Base):
         wrapper: tp.Optional[ArrayWrapper] = None,
         group_by: tp.GroupByLike = None,
     ) -> tp.Optional[tp.ArrayLike]:
-        """Resolve simulation start."""
+        """Resolve simulation start positions.
+
+        Args:
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            allow_none (bool): Allow simulation positions to be None when applicable.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
+        Returns:
+            Optional[ArrayLike]: The resolved simulation start positions, or None if the input is treated as None.
+        """
         already_resolved = False
         if not isinstance(cls_or_self, type):
             if sim_start is None:
@@ -330,7 +432,19 @@ class SimRangeMixin(Base):
         wrapper: tp.Optional[ArrayWrapper] = None,
         group_by: tp.GroupByLike = None,
     ) -> tp.Optional[tp.ArrayLike]:
-        """Resolve simulation end."""
+        """Resolve simulation end positions.
+
+        Args:
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            allow_none (bool): Allow simulation positions to be None when applicable.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
+        Returns:
+            Optional[ArrayLike]: The resolved simulation end positions, or None if the input is treated as None.
+        """
         already_resolved = False
         if not isinstance(cls_or_self, type):
             if sim_end is None:
@@ -392,7 +506,23 @@ class SimRangeMixin(Base):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Union[None, tp.Array1d, tp.Series]:
-        """Get simulation start."""
+        """Return the simulation start positions after resolution and optional wrapping.
+
+        Args:
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            keep_flex (bool): Whether to preserve the flexible array structure.
+            allow_none (bool): Allow simulation positions to be None when applicable.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            Union[None, Array1d, Series]: The final simulation start result, either wrapped or raw.
+        """
         if not isinstance(cls_or_self, type):
             if wrapper is None:
                 wrapper = cls_or_self.wrapper
@@ -414,7 +544,11 @@ class SimRangeMixin(Base):
 
     @property
     def sim_start(self) -> tp.Series:
-        """`SimRangeMixin.get_sim_start` with default arguments."""
+        """Simulation start value computed using default parameters from `SimRangeMixin.get_sim_start`.
+
+        Returns:
+            Series: Simulation start series.
+        """
         return self.get_sim_start()
 
     @hybrid_method
@@ -427,7 +561,23 @@ class SimRangeMixin(Base):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Union[None, tp.Array1d, tp.Series]:
-        """Get simulation end."""
+        """Return the simulation end positions after resolution and optional wrapping.
+
+        Args:
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            keep_flex (bool): Whether to preserve the flexible array structure.
+            allow_none (bool): Allow simulation positions to be None when applicable.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            Union[None, Array1d, Series]: The final simulation end result, either wrapped or raw.
+        """
         if not isinstance(cls_or_self, type):
             if wrapper is None:
                 wrapper = cls_or_self.wrapper
@@ -449,7 +599,11 @@ class SimRangeMixin(Base):
 
     @property
     def sim_end(self) -> tp.Series:
-        """`SimRangeMixin.get_sim_end` with default arguments."""
+        """Simulation end value computed using default parameters from `SimRangeMixin.get_sim_end`.
+
+        Returns:
+            Series: Simulation end series.
+        """
         return self.get_sim_end()
 
     @hybrid_method
@@ -461,7 +615,22 @@ class SimRangeMixin(Base):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Optional[tp.Series]:
-        """Get index of simulation start."""
+        """Return the simulation start index.
+
+        Args:
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            allow_none (bool): Allow simulation positions to be None when applicable.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            Optional[Series]: The resolved simulation start index, or None.
+        """
         if not isinstance(cls_or_self, type):
             if wrapper is None:
                 wrapper = cls_or_self.wrapper
@@ -495,7 +664,11 @@ class SimRangeMixin(Base):
 
     @property
     def sim_start_index(self) -> tp.Series:
-        """`SimRangeMixin.get_sim_start_index` with default arguments."""
+        """Simulation start index using default arguments via `SimRangeMixin.get_sim_start_index`.
+
+        Returns:
+            Series: Simulation start index series.
+        """
         return self.get_sim_start_index()
 
     @hybrid_method
@@ -508,7 +681,23 @@ class SimRangeMixin(Base):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Optional[tp.Series]:
-        """Get index of simulation end."""
+        """Return the simulation end index.
+
+        Args:
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            allow_none (bool): Allow simulation positions to be None when applicable.
+            inclusive (bool): Determines if the simulation end should be treated as inclusive.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            Optional[Series]: The resolved simulation end index, or None.
+        """
         if not isinstance(cls_or_self, type):
             if wrapper is None:
                 wrapper = cls_or_self.wrapper
@@ -551,7 +740,11 @@ class SimRangeMixin(Base):
 
     @property
     def sim_end_index(self) -> tp.Series:
-        """`SimRangeMixin.get_sim_end_index` with default arguments."""
+        """Simulation end index using default arguments via `SimRangeMixin.get_sim_end_index`.
+
+        Returns:
+            Series: Simulation end index series.
+        """
         return self.get_sim_end_index()
 
     @hybrid_method
@@ -563,7 +756,22 @@ class SimRangeMixin(Base):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.Optional[tp.Series]:
-        """Get duration of simulation range."""
+        """Return the duration of the simulation range.
+
+        Args:
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            Optional[Series]: The duration of the simulation range.
+        """
         if not isinstance(cls_or_self, type):
             if wrapper is None:
                 wrapper = cls_or_self.wrapper
@@ -588,21 +796,42 @@ class SimRangeMixin(Base):
 
     @property
     def sim_duration(self) -> tp.Series:
-        """`SimRangeMixin.get_sim_duration` with default arguments."""
+        """Simulation duration using default arguments via `SimRangeMixin.get_sim_duration`.
+
+        Returns:
+            Series: Simulation duration series.
+        """
         return self.get_sim_duration()
 
     @hybrid_method
     def fit_fig_to_sim_range(
         cls_or_self,
         fig: tp.BaseFigure,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         sim_start: tp.Optional[tp.ArrayLike] = None,
         sim_end: tp.Optional[tp.ArrayLike] = None,
         wrapper: tp.Optional[ArrayWrapper] = None,
         group_by: tp.GroupByLike = None,
         xref: tp.Optional[str] = None,
     ) -> tp.BaseFigure:
-        """Fit figure to simulation range."""
+        """Adjust the figure's x-axis range to match the simulation range.
+
+        Args:
+            fig (BaseFigure): Figure to update.
+            column (Optional[Column]): Identifier of the column or group to plot.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
+
+                If None, it is inferred from the figure.
+
+        Returns:
+            BaseFigure: Updated figure with an adjusted x-axis range.
+        """
         if not isinstance(cls_or_self, type):
             if wrapper is None:
                 wrapper = cls_or_self.wrapper

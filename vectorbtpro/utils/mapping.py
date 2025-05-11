@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Mapping utilities."""
+"""Module providing mapping utilities."""
 
 import re
 
@@ -22,14 +22,26 @@ __all__ = []
 
 
 def reverse_mapping(mapping: tp.Mapping) -> dict:
-    """Reverse a mapping.
+    """Return a mapping with keys and values swapped.
 
-    Returns a dict."""
+    Args:
+        mapping (Mapping): Mapping to reverse.
+
+    Returns:
+        dict: Dictionary with reversed key-value pairs.
+    """
     return {v: k for k, v in mapping.items()}
 
 
 def to_field_mapping(mapping_like: tp.MappingLike) -> dict:
-    """Convert mapping-like object to a field mapping."""
+    """Return a field mapping dictionary from a mapping-like object.
+
+    Args:
+        mapping_like (MappingLike): Object convertible to a mapping.
+
+    Returns:
+        dict: Dictionary representing the field mapping.
+    """
     if isinstance(mapping_like, tp.EnumMeta):
         mapping = {i.name: i.value for i in mapping_like}
     elif checks.is_namedtuple(mapping_like):
@@ -44,9 +56,18 @@ def to_field_mapping(mapping_like: tp.MappingLike) -> dict:
 
 
 def to_value_mapping(mapping_like: tp.MappingLike, reverse: bool = False, enum_unkval: tp.Any = -1) -> dict:
-    """Convert mapping-like object to a value mapping.
+    """Return a value mapping dictionary from a mapping-like object.
 
-    Enable `reverse` to apply `reverse_mapping` on the result dict."""
+    If `reverse` is True, applies `reverse_mapping` to swap keys and values.
+
+    Args:
+        mapping_like (MappingLike): Object convertible to a mapping.
+        reverse (bool): Whether to reverse the mapping's keys and values.
+        enum_unkval (Any): Value for unknown enumeration items.
+
+    Returns:
+        dict: Dictionary representing the value mapping.
+    """
     if isinstance(mapping_like, tp.EnumMeta):
         mapping = {i.value: i.name for i in mapping_like}
     elif checks.is_namedtuple(mapping_like):
@@ -81,28 +102,38 @@ def apply_mapping(
     ignore_missing: bool = False,
     na_sentinel: tp.Any = None,
 ) -> tp.Any:
-    """Apply mapping on object using a mapping-like object.
+    """Return an object with values transformed based on a mapping-like converter.
+
+    This function applies a mapping to the provided object, which can be a scalar,
+    tuple, list, set, frozenset, NumPy array, Pandas Index, Series, or DataFrame. It
+    converts the mapping-like object using `to_value_mapping` and then transforms the
+    input object based on defined rules for key matching and conversion.
 
     Args:
-        obj (any): Any object.
+        obj (Any): Input object to transform.
 
-            Can take a scalar, tuple, list, set, frozenset, NumPy array, Index, Series, and DataFrame.
-        mapping_like (mapping_like): Any mapping-like object.
+            Can be a scalar, tuple, list, set, frozenset, NumPy array, Index, Series, or DataFrame.
+        mapping_like (Optional[MappingLike]): Object convertible to a mapping.
 
             See `to_value_mapping`.
-        enum_unkval (any): Missing value for enumerated types.
-        reverse (bool): See `reverse` in `to_value_mapping`.
-        ignore_case (bool): Whether to ignore the case if the key is a string.
-        ignore_underscores (bool): Whether to ignore underscores if the key is a string.
-        ignore_invalid (bool): Whether to remove any character that is not allowed in a Python variable.
-        ignore_type (dtype_like or tuple): One or multiple types or data types to ignore.
-        ignore_missing (bool): Whether to ignore missing values.
-        na_sentinel (any): Value to mark “not found”.
+        enum_unkval (Any): Value for unknown enumeration items.
+        reverse (bool): Whether to reverse the mapping's keys and values.
+
+            See `to_value_mapping`.
+        ignore_case (bool): Whether to ignore case when matching.
+        ignore_underscores (bool): Whether to ignore underscores in string keys.
+        ignore_invalid (bool): Whether to remove characters not allowed in a Python variable.
+        ignore_type (Optional[MaybeTuple[DTypeLike]]): One or multiple data types to ignore.
+        ignore_missing (bool): Whether to return the original value if a key is not found.
+        na_sentinel (Any): Value used to represent a "not found" state.
+
+    Returns:
+        Any: Transformed object with the mapping applied.
     """
     if mapping_like is None:
         return obj
 
-    def key_func(x):
+    def _key_func(x):
         if ignore_case:
             x = x.lower()
         if ignore_underscores:
@@ -122,7 +153,7 @@ def apply_mapping(
             na_sentinel = v
         else:
             if isinstance(k, str):
-                k = key_func(k)
+                k = _key_func(k)
             new_mapping[k] = v
 
     def _compatible_types(x_type: type, item: tp.Any = None) -> bool:
@@ -152,7 +183,7 @@ def apply_mapping(
         if pd.isnull(x):
             return na_sentinel
         if isinstance(x, str):
-            x = key_func(x)
+            x = _key_func(x)
         if ignore_missing:
             try:
                 return new_mapping[x]

@@ -8,15 +8,13 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Named tuples and enumerated types for generic data.
-
-Defines enums and other schemas for `vectorbtpro.generic`."""
+"""Module providing named tuples and enumerations for generic data."""
 
 import numpy as np
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._dtypes import *
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = [
     "BarZone",
@@ -74,10 +72,10 @@ BarZone = BarZoneT()
 
 __pdoc__[
     "BarZone"
-] = f"""Bar zone.
+] = f"""Bar zone enumeration.
 
 ```python
-{prettify(BarZone)}
+{prettify_doc(BarZone)}
 ```
 """
 
@@ -95,10 +93,10 @@ WType = WTypeT()
 
 __pdoc__[
     "WType"
-] = f"""Rolling window type.
+] = f"""Rolling weighting type enumeration.
 
 ```python
-{prettify(WType)}
+{prettify_doc(WType)}
 ```
 """
 
@@ -113,10 +111,10 @@ RangeStatus = RangeStatusT()
 
 __pdoc__[
     "RangeStatus"
-] = f"""Range status.
+] = f"""Range status enumeration.
 
 ```python
-{prettify(RangeStatus)}
+{prettify_doc(RangeStatus)}
 ```
 """
 
@@ -133,25 +131,25 @@ InterpMode = InterpModeT()
 
 __pdoc__[
     "InterpMode"
-] = f"""Interpolation mode.
+] = f"""Interpolation mode enumeration.
 
 ```python
-{prettify(InterpMode)}
+{prettify_doc(InterpMode)}
 ```
 
-Attributes:
-    Line: Linear interpolation.
+Fields:
+    Linear: Linear interpolation.
 
-        For example: `[1.0, 2.0, 3.0]` -> `[1.0, 1.5, 2.0, 2.5, 3.0]`
+        For example: `[1.0, 2.0, 3.0]` to 5 yields `[1.0, 1.5, 2.0, 2.5, 3.0]`
     Nearest: Nearest-neighbor interpolation.
 
-        For example: `[1.0, 2.0, 3.0]` -> `[1.0, 1.0, 2.0, 3.0, 3.0]`
+        For example: `[1.0, 2.0, 3.0]` to 5 yields `[1.0, 1.0, 2.0, 3.0, 3.0]`
     Discrete: Discrete interpolation.
 
-        For example: `[1.0, 2.0, 3.0]` -> `[1.0, np.nan, 2.0, np.nan, 3.0]`
+        For example: `[1.0, 2.0, 3.0]` to 5 yields `[1.0, np.nan, 2.0, np.nan, 3.0]`
     Mixed: Mixed interpolation.
 
-        For example: `[1.0, 2.0, 3.0]` -> `[1.0, 1.5, 2.0, 2.5, 3.0]`
+        For example: `[1.0, 2.0, 3.0]` to 5 yields `[1.0, 1.5, 2.0, 2.5, 3.0]`
 """
 
 
@@ -166,27 +164,27 @@ RescaleMode = RescaleModeT()
 
 __pdoc__[
     "RescaleMode"
-] = f"""Rescaling mode.
+] = f"""Rescaling mode enumeration.
 
 ```python
-{prettify(RescaleMode)}
+{prettify_doc(RescaleMode)}
 ```
 
-Attributes:
-    MinMax: Array is rescaled from its min-max range to the min-max range of another array.
-    
-        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` -> `[12.0, 11.0, 10.0]`
-    
+Fields:
+    MinMax: Rescales an array from its min-max range to match the min-max range of another array.
+        
+        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` yields `[12.0, 11.0, 10.0]`
+        
         Use this to search for patterns irrespective of their vertical scale.
-    Rebase: Array is rebased to the first value in another array.
+    Rebase: Rebases an array to the first value of another array.
     
-        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` -> `[10.0, 6.6, 3.3]`
-    
+        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` yields `[10.0, 6.6, 3.3]`
+        
         Use this to search for percentage changes.
-    Disable: Disable any rescaling.
+    Disable: Disables rescaling, leaving the array unchanged.
     
-        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` -> `[3.0, 2.0, 1.0]`
-    
+        For example: `[3.0, 2.0, 1.0]` to `[10, 11, 12]` yields `[3.0, 2.0, 1.0]`
+        
         Use this to search for particular numbers.
 """
 
@@ -201,15 +199,15 @@ ErrorType = ErrorTypeT()
 
 __pdoc__[
     "ErrorType"
-] = f"""Error type.
+] = f"""Error type enumeration.
 
 ```python
-{prettify(ErrorType)}
+{prettify_doc(ErrorType)}
 ```
 
-Attributes:
-    Absolute: Absolute error, that is, `x1 - x0`.
-    Relative: Relative error, that is, `(x1 - x0) / x0`.
+Fields:
+    Absolute: Represents the absolute error `(x1 - x0)`.
+    Relative: Represents the relative error `((x1 - x0) / x0)`.
 """
 
 
@@ -224,13 +222,13 @@ DistanceMeasure = DistanceMeasureT()
 
 __pdoc__[
     "DistanceMeasure"
-] = f"""Distance measure.
+] = f"""Distance measure enumeration.
 
 ```python
-{prettify(DistanceMeasure)}
+{prettify_doc(DistanceMeasure)}
 ```
 
-Attributes:
+Fields:
     MAE: Mean absolute error.
     MSE: Mean squared error.
     RMSE: Root mean squared error.
@@ -248,19 +246,19 @@ OverlapMode = OverlapModeT()
 
 __pdoc__[
     "OverlapMode"
-] = f"""Overlapping mode.
+] = f"""Overlap mode enumeration.
 
 ```python
-{prettify(OverlapMode)}
+{prettify_doc(OverlapMode)}
 ```
 
-Attributes:
-    AllowAll: Allow any overlapping ranges, even if they start at the same row.
-    Allow: Allow overlapping ranges, but only if they do not start at the same row.
-    Disallow: Disallow any overlapping ranges.
-    
-Any other positive number will check whether the intersection of each two consecutive ranges is 
-bigger than that number of rows, and if so, the range with the highest similarity will be selected.
+Fields:
+    AllowAll: Allows any overlapping ranges, including those starting at the same row.
+    Allow: Allows overlapping ranges only if they do not share the same starting row.
+    Disallow: Disallows any overlapping ranges.
+
+Any other positive number specifies a minimum number of overlapping rows required to 
+select the range with the highest similarity.
 """
 
 
@@ -274,10 +272,10 @@ DrawdownStatus = DrawdownStatusT()
 
 __pdoc__[
     "DrawdownStatus"
-] = f"""Drawdown status.
+] = f"""Drawdown status enumeration.
 
 ```python
-{prettify(DrawdownStatus)}
+{prettify_doc(DrawdownStatus)}
 ```
 """
 
@@ -297,10 +295,10 @@ range_dt = np.dtype(
 
 __pdoc__[
     "range_dt"
-] = f"""`np.dtype` of range records.
+] = f"""NumPy dtype of range records.
 
 ```python
-{prettify(range_dt)}
+{prettify_doc(range_dt)}
 ```
 """
 
@@ -319,10 +317,10 @@ pattern_range_dt = np.dtype(
 
 __pdoc__[
     "pattern_range_dt"
-] = f"""`np.dtype` of pattern range records.
+] = f"""NumPy dtype of pattern range records.
 
 ```python
-{prettify(pattern_range_dt)}
+{prettify_doc(pattern_range_dt)}
 ```
 """
 
@@ -344,10 +342,10 @@ drawdown_dt = np.dtype(
 
 __pdoc__[
     "drawdown_dt"
-] = f"""`np.dtype` of drawdown records.
+] = f"""NumPy dtype for drawdown records.
 
 ```python
-{prettify(drawdown_dt)}
+{prettify_doc(drawdown_dt)}
 ```
 """
 
@@ -365,10 +363,9 @@ class RollSumAIS(tp.NamedTuple):
     minp: tp.Optional[int]
 
 
-__pdoc__[
-    "RollSumAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_sum_acc_nb`."""
+__pdoc__["RollSumAIS"] = (
+    """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_sum_acc_nb`."""
+)
 
 
 class RollSumAOS(tp.NamedTuple):
@@ -378,10 +375,9 @@ class RollSumAOS(tp.NamedTuple):
     value: float
 
 
-__pdoc__[
-    "RollSumAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_sum_acc_nb`."""
+__pdoc__["RollSumAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_sum_acc_nb`."""
+)
 
 
 class RollProdAIS(tp.NamedTuple):
@@ -394,10 +390,9 @@ class RollProdAIS(tp.NamedTuple):
     minp: tp.Optional[int]
 
 
-__pdoc__[
-    "RollProdAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_prod_acc_nb`."""
+__pdoc__["RollProdAIS"] = (
+    """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_prod_acc_nb`."""
+)
 
 
 class RollProdAOS(tp.NamedTuple):
@@ -407,10 +402,9 @@ class RollProdAOS(tp.NamedTuple):
     value: float
 
 
-__pdoc__[
-    "RollProdAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_prod_acc_nb`."""
+__pdoc__["RollProdAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_prod_acc_nb`."""
+)
 
 
 class RollMeanAIS(tp.NamedTuple):
@@ -423,10 +417,9 @@ class RollMeanAIS(tp.NamedTuple):
     minp: tp.Optional[int]
 
 
-__pdoc__[
-    "RollMeanAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_mean_acc_nb`."""
+__pdoc__["RollMeanAIS"] = (
+    """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_mean_acc_nb`."""
+)
 
 
 class RollMeanAOS(tp.NamedTuple):
@@ -436,10 +429,9 @@ class RollMeanAOS(tp.NamedTuple):
     value: float
 
 
-__pdoc__[
-    "RollMeanAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_mean_acc_nb`."""
+__pdoc__["RollMeanAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_mean_acc_nb`."""
+)
 
 
 class RollStdAIS(tp.NamedTuple):
@@ -454,10 +446,9 @@ class RollStdAIS(tp.NamedTuple):
     ddof: int
 
 
-__pdoc__[
-    "RollStdAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_std_acc_nb`."""
+__pdoc__["RollStdAIS"] = (
+    """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_std_acc_nb`."""
+)
 
 
 class RollStdAOS(tp.NamedTuple):
@@ -468,10 +459,9 @@ class RollStdAOS(tp.NamedTuple):
     value: float
 
 
-__pdoc__[
-    "RollStdAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_std_acc_nb`."""
+__pdoc__["RollStdAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_std_acc_nb`."""
+)
 
 
 class RollZScoreAIS(tp.NamedTuple):
@@ -486,10 +476,9 @@ class RollZScoreAIS(tp.NamedTuple):
     ddof: int
 
 
-__pdoc__[
-    "RollZScoreAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_zscore_acc_nb`."""
+__pdoc__["RollZScoreAIS"] = (
+    """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_zscore_acc_nb`."""
+)
 
 
 class RollZScoreAOS(tp.NamedTuple):
@@ -500,10 +489,9 @@ class RollZScoreAOS(tp.NamedTuple):
     value: float
 
 
-__pdoc__[
-    "RollZScoreAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_zscore_acc_nb`."""
+__pdoc__["RollZScoreAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_zscore_acc_nb`."""
+)
 
 
 class WMMeanAIS(tp.NamedTuple):
@@ -517,10 +505,9 @@ class WMMeanAIS(tp.NamedTuple):
     minp: tp.Optional[int]
 
 
-__pdoc__[
-    "WMMeanAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.wm_mean_acc_nb`."""
+__pdoc__["WMMeanAIS"] = (
+    """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.wm_mean_acc_nb`."""
+)
 
 
 class WMMeanAOS(tp.NamedTuple):
@@ -531,10 +518,9 @@ class WMMeanAOS(tp.NamedTuple):
     value: float
 
 
-__pdoc__[
-    "WMMeanAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.wm_mean_acc_nb`."""
+__pdoc__["WMMeanAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.wm_mean_acc_nb`."""
+)
 
 
 class EWMMeanAIS(tp.NamedTuple):
@@ -550,10 +536,9 @@ class EWMMeanAIS(tp.NamedTuple):
 
 __pdoc__[
     "EWMMeanAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.ewm_mean_acc_nb`.
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.ewm_mean_acc_nb`.
 
-To get `alpha`, use one of the following:
+To obtain `alpha`, use one of the following:
 
 * `vectorbtpro.generic.nb.rolling.alpha_from_com_nb`
 * `vectorbtpro.generic.nb.rolling.alpha_from_span_nb`
@@ -568,10 +553,9 @@ class EWMMeanAOS(tp.NamedTuple):
     value: float
 
 
-__pdoc__[
-    "EWMMeanAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.ewm_mean_acc_nb`."""
+__pdoc__["EWMMeanAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.ewm_mean_acc_nb`."""
+)
 
 
 class EWMStdAIS(tp.NamedTuple):
@@ -591,10 +575,10 @@ class EWMStdAIS(tp.NamedTuple):
 
 __pdoc__[
     "EWMStdAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.ewm_std_acc_nb`.
+] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.ewm_std_acc_nb`.
 
-For tips on `alpha`, see `EWMMeanAIS`."""
+For tips on `alpha`, see `EWMMeanAIS`.
+"""
 
 
 class EWMStdAOS(tp.NamedTuple):
@@ -608,10 +592,9 @@ class EWMStdAOS(tp.NamedTuple):
     value: float
 
 
-__pdoc__[
-    "EWMStdAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.ewm_std_acc_nb`."""
+__pdoc__["EWMStdAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.ewm_std_acc_nb`."""
+)
 
 
 class VidyaAIS(tp.NamedTuple):
@@ -628,10 +611,7 @@ class VidyaAIS(tp.NamedTuple):
     minp: tp.Optional[int]
 
 
-__pdoc__[
-    "VidyaAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.vidya_acc_nb`."""
+__pdoc__["VidyaAIS"] = """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.vidya_acc_nb`."""
 
 
 class VidyaAOS(tp.NamedTuple):
@@ -643,10 +623,9 @@ class VidyaAOS(tp.NamedTuple):
     vidya: float
 
 
-__pdoc__[
-    "VidyaAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.vidya_acc_nb`."""
+__pdoc__["VidyaAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.vidya_acc_nb`."""
+)
 
 
 class RollCovAIS(tp.NamedTuple):
@@ -664,10 +643,9 @@ class RollCovAIS(tp.NamedTuple):
     ddof: int
 
 
-__pdoc__[
-    "RollCovAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_cov_acc_nb`."""
+__pdoc__["RollCovAIS"] = (
+    """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_cov_acc_nb`."""
+)
 
 
 class RollCovAOS(tp.NamedTuple):
@@ -679,10 +657,9 @@ class RollCovAOS(tp.NamedTuple):
     value: float
 
 
-__pdoc__[
-    "RollCovAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_cov_acc_nb`."""
+__pdoc__["RollCovAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_cov_acc_nb`."""
+)
 
 
 class RollCorrAIS(tp.NamedTuple):
@@ -701,10 +678,9 @@ class RollCorrAIS(tp.NamedTuple):
     minp: tp.Optional[int]
 
 
-__pdoc__[
-    "RollCorrAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_corr_acc_nb`."""
+__pdoc__["RollCorrAIS"] = (
+    """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_corr_acc_nb`."""
+)
 
 
 class RollCorrAOS(tp.NamedTuple):
@@ -718,10 +694,9 @@ class RollCorrAOS(tp.NamedTuple):
     value: float
 
 
-__pdoc__[
-    "RollCorrAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_corr_acc_nb`."""
+__pdoc__["RollCorrAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_corr_acc_nb`."""
+)
 
 
 class RollOLSAIS(tp.NamedTuple):
@@ -740,10 +715,9 @@ class RollOLSAIS(tp.NamedTuple):
     minp: tp.Optional[int]
 
 
-__pdoc__[
-    "RollOLSAIS"
-] = """A named tuple representing the input state of 
-`vectorbtpro.generic.nb.rolling.rolling_ols_acc_nb`."""
+__pdoc__["RollOLSAIS"] = (
+    """Named tuple representing the input state for `vectorbtpro.generic.nb.rolling.rolling_ols_acc_nb`."""
+)
 
 
 class RollOLSAOS(tp.NamedTuple):
@@ -758,7 +732,6 @@ class RollOLSAOS(tp.NamedTuple):
     intercept_value: float
 
 
-__pdoc__[
-    "RollOLSAOS"
-] = """A named tuple representing the output state of 
-`vectorbtpro.generic.nb.rolling.rolling_ols_acc_nb`."""
+__pdoc__["RollOLSAOS"] = (
+    """Named tuple representing the output state for `vectorbtpro.generic.nb.rolling.rolling_ols_acc_nb`."""
+)

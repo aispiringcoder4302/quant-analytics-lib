@@ -8,28 +8,26 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Global registry for jittables.
+"""Module providing a global registry for jittable functions.
 
-Jitting is a process of just-in-time compiling functions to make their execution faster.
-A jitter is a decorator that wraps a regular Python function and returns the decorated function.
-Depending upon a jitter, this decorated function has the same or at least a similar signature
-to the function that has been decorated. Jitters take various jitter-specific options
-to change the behavior of execution; that is, a single regular Python function can be
-decorated by multiple jitter instances (for example, one jitter for decorating a function
-with `numba.jit` and another jitter for doing the same with `parallel=True` flag).
+Jitting refers to just-in-time compilation of functions to accelerate their execution.
+A jitter is a decorator that wraps a regular Python function and returns a decorated version,
+which may share the original signature or have a similar one. Jitters accept various options
+to modify execution behavior, allowing a single function to be decorated by multiple jitter
+instances (for example, one using `numba.jit` and another applying a `parallel=True` flag).
 
-In addition to jitters, vectorbt introduces the concept of tasks. One task can be
-executed by multiple jitter types (such as NumPy, Numba, and JAX). For example, one
-can create a task that converts price into returns and implements it using NumPy and Numba.
-Those implementations are registered by `JITRegistry` as `JitableSetup` instances, are stored
-in `JITRegistry.jitable_setups`, and can be uniquely identified by the task id and jitter type.
-Note that `JitableSetup` instances contain only information on how to decorate a function.
+In addition to jitters, vectorbtpro introduces the concept of tasks. A single task can be implemented
+using various jitter types (such as NumPy, Numba, and JAX). For example, a task that converts
+prices to returns can be implemented using both NumPy and Numba. These implementations are
+registered by `JITRegistry` as `JitableSetup` instances, stored in `JITRegistry.jitable_setups`,
+and uniquely identified by the task ID and jitter type. Note that `JitableSetup` instances store
+only the information needed to decorate a function.
 
-The decorated function itself and the jitter that has been used are registered as a `JittedSetup`
-instance and stored in `JITRegistry.jitted_setups`. It acts as a cache to quickly retrieve an
-already decorated function and to avoid recompilation.
+The decorated function together with the applied jitter is registered as a `JittedSetup` instance
+and stored in `JITRegistry.jitted_setups`. This mechanism acts as a cache to quickly retrieve an
+already decorated function and avoid unnecessary recompilation.
 
-Let's implement a task that takes a sum over an array using both NumPy and Numba:
+Let's implement a task that computes the sum over an array using both NumPy and Numba:
 
 ```pycon
 >>> from vectorbtpro import *
@@ -68,9 +66,8 @@ Moreover, two jitted setups were registered for our decorated functions:
 {6326224984503844995: JittedSetup(jitter=<vectorbtpro.utils.jitting.NumbaJitter object at 0x7fea214d0ba8>, jitted_func=CPUDispatcher(<function sum_nb at 0x7fea273d41e0>))}
 ```
 
-These setups contain decorated functions with the options passed during the registration.
-When we call `JITRegistry.resolve` without any additional keyword arguments,
-`JITRegistry` returns exactly these functions:
+These setups hold the decorated functions along with any options passed during registration.
+When `JITRegistry.resolve` is called without additional keyword arguments, it returns the registered function:
 
 ```pycon
 >>> jitted_func = vbt.jit_reg.resolve('sum', jitter='nb')
@@ -81,8 +78,7 @@ CPUDispatcher(<function sum_nb at 0x7fea273d41e0>)
 {'nopython': True, 'nogil': True, 'parallel': False, 'boundscheck': False}
 ```
 
-Once we pass any other option, the Python function will be redecorated, and another `JittedOption`
-instance will be registered:
+When additional options are provided, the function is redecorated and a new `JittedOption` instance is registered:
 
 ```pycon
 >>> jitted_func = vbt.jit_reg.resolve('sum', jitter='nb', nopython=False)
@@ -99,9 +95,8 @@ CPUDispatcher(<function sum_nb at 0x7fea273d41e0>)
 
 ## Templates
 
-Templates can be used to, based on the current context, dynamically select the jitter or
-keyword arguments for jitting. For example, let's pick the NumPy jitter over any other
-jitter if there are more than two of them for a given task:
+Templates can be used to dynamically select the jitter or its keyword arguments based on the current context.
+For example, you can choose the NumPy jitter over others if multiple options are available for a given task:
 
 ```pycon
 >>> vbt.jit_reg.resolve('sum', jitter=vbt.RepEval("'nb' if 'nb' in task_setups else None"))
@@ -110,7 +105,7 @@ CPUDispatcher(<function sum_nb at 0x7fea273d41e0>)
 
 ## Disabling
 
-In the case we want to disable jitting, we can simply pass `disable=True` to `JITRegistry.resolve`:
+To disable jitting, pass `disable=True` to `JITRegistry.resolve`:
 
 ```pycon
 >>> py_func = vbt.jit_reg.resolve('sum', jitter='nb', disable=True)
@@ -118,7 +113,7 @@ In the case we want to disable jitting, we can simply pass `disable=True` to `JI
 <function __main__.sum_nb(a)>
 ```
 
-We can also disable jitting globally:
+You can also disable jitting globally:
 
 ```pycon
 >>> vbt.settings.jitting['disable'] = True
@@ -128,18 +123,18 @@ We can also disable jitting globally:
 ```
 
 !!! hint
-    If we don't plan to use any additional options and we have only one jitter registered per task,
-    we can also disable resolution to increase performance.
+    If no additional options are used and only one jitter is registered per task,
+    you can disable resolution to improve performance.
 
 !!! warning
-    Disabling jitting globally only applies to functions resolved using `JITRegistry.resolve`.
-    Any decorated function that is being called directly will be executed as usual.
+    Disabling jitting globally only affects functions resolved via `JITRegistry.resolve`.
+    Any decorated function that is directly invoked will execute normally.
 
 ## Jitted option
 
-Since most functions that call other jitted functions in vectorbt have a `jitted` argument,
-you can pass `jitted` as a dictionary with options, as a string denoting the jitter, or False
-to disable jitting (see `vectorbtpro.utils.jitting.resolve_jitted_option`):
+Since most vectorbtpro functions that call other jitted functions accept a `jitted` argument,
+you can provide `jitted` as a dictionary with options, as a string denoting the jitter,
+or as False to disable jitting (see `vectorbtpro.utils.jitting.resolve_jitted_option`):
 
 ```pycon
 >>> def sum_arr(arr, jitted=None):
@@ -159,12 +154,12 @@ to disable jitting (see `vectorbtpro.utils.jitting.resolve_jitted_option`):
 ```
 
 !!! hint
-    A good rule of thumb is: whenever a caller function accepts a `jitted` argument,
-    the jitted functions it calls are most probably resolved using `JITRegistry.resolve_option`.
+    As a rule of thumb, when a function accepts a `jitted` parameter, the jitted functions it
+    calls are typically resolved using `JITRegistry.resolve_option`.
 
 ## Changing options upon registration
 
-Options are usually specified upon registration using `register_jitted`:
+Options are typically specified during registration using `register_jitted`:
 
 ```pycon
 >>> from numba import prange
@@ -183,28 +178,28 @@ Options are usually specified upon registration using `register_jitted`:
 {'nopython': True, 'nogil': True, 'parallel': True, 'boundscheck': False}
 ```
 
-But what if we wanted to change the registration options of vectorbt's own jitable functions,
-such as `vectorbtpro.generic.nb.base.diff_nb`? For example, let's disable caching for all Numba functions.
+If you want to change the registration options for vectorbtpro's built-in jitable functions,
+such as `vectorbtpro.generic.nb.base.diff_nb`, you can update the settings.
+For example, to disable caching for all Numba functions:
 
 ```pycon
 >>> vbt.settings.jitting.jitters['nb']['override_options'] = dict(cache=False)
 ```
 
-Since all functions have already been registered, the above statement has no effect:
+Since the functions have already been registered, this change will have no effect:
 
 ```pycon
 >>> vbt.jit_reg.jitable_setups['vectorbtpro.generic.nb.base.diff_nb']['nb'].jitter_kwargs
 {'cache': True}
 ```
 
-In order for them to be applied, we need to save the settings to a file and
-load them before all functions are imported:
+To apply the changes, save the settings to a file and load them before any functions are imported:
 
 ```pycon
 >>> vbt.settings.save('my_settings')
 ```
 
-Let's restart the runtime and instruct vectorbt to load the file with settings before anything else:
+Then restart the runtime and set the settings path before importing vectorbtpro:
 
 ```pycon
 >>> import os
@@ -215,9 +210,9 @@ Let's restart the runtime and instruct vectorbt to load the file with settings b
 {'cache': False}
 ```
 
-We can also change the registration options for some specific tasks, and even replace Python functions.
-For example, we can change the implementation in the deepest places of the core.
-Let's change the default `ddof` from 0 to 1 in `vectorbtpro.generic.nb.base.nanstd_1d_nb` and disable caching with Numba:
+You can also modify registration options for specific tasks or even replace Python functions.
+For example, to change the default `ddof` from 0 to 1 in `vectorbtpro.generic.nb.base.nanstd_1d_nb`
+and disable caching with Numba:
 
 ```pycon
 >>> vbt.nb.nanstd_1d_nb(np.array([1, 2, 3]))
@@ -247,46 +242,45 @@ After restarting the runtime:
 ```
 
 !!! note
-    All of the above examples require saving the setting to a file, restarting the runtime,
-    setting the path to the file to an environment variable, and only then importing vectorbtpro.
+    All the above examples require saving settings to a file, restarting the runtime,
+    setting the environment variable `VBT_SETTINGS_PATH` to the file path, and then importing vectorbtpro.
 
 ## Changing options upon resolution
 
-Another approach but without the need to restart the runtime is by changing the options
-upon resolution using `JITRegistry.resolve_option`:
+Alternatively, you can modify options during resolution using `JITRegistry.resolve_option`:
 
 ```pycon
->>> # On specific Numba function
+>>> # For a specific Numba function
 >>> vbt.settings.jitting.jitters['nb']['tasks']['vectorbtpro.generic.nb.base.diff_nb'] = dict(
 ...     resolve_kwargs=dict(
 ...         nogil=False
 ...     )
 ... )
 
->>> # disabled
+>>> # The 'nogil' option is disabled
 >>> vbt.jit_reg.resolve('vectorbtpro.generic.nb.base.diff_nb', jitter='nb').targetoptions
 {'nopython': True, 'nogil': False, 'parallel': False, 'boundscheck': False}
 
->>> # still enabled
+>>> # Unchanged for another function
 >>> vbt.jit_reg.resolve('sum', jitter='nb').targetoptions
 {'nopython': True, 'nogil': True, 'parallel': False, 'boundscheck': False}
 
->>> # On each Numba function
+>>> # For each Numba function
 >>> vbt.settings.jitting.jitters['nb']['resolve_kwargs'] = dict(nogil=False)
 
->>> # disabled
+>>> # The 'nogil' option is disabled for diff_nb
 >>> vbt.jit_reg.resolve('vectorbtpro.generic.nb.base.diff_nb', jitter='nb').targetoptions
 {'nopython': True, 'nogil': False, 'parallel': False, 'boundscheck': False}
 
->>> # disabled
+>>> # And for 'sum'
 >>> vbt.jit_reg.resolve('sum', jitter='nb').targetoptions
 {'nopython': True, 'nogil': False, 'parallel': False, 'boundscheck': False}
 ```
 
 ## Building custom jitters
 
-Let's build a custom jitter on top of `vectorbtpro.utils.jitting.NumbaJitter` that converts
-any argument that contains a Pandas object to a 2-dimensional NumPy array prior to decoration:
+Below is an example of creating a custom jitter based on `vectorbtpro.utils.jitting.NumbaJitter`
+that converts any argument containing a Pandas object into a 2-dimensional NumPy array before decoration:
 
 ```pycon
 >>> from functools import wraps
@@ -317,13 +311,13 @@ any argument that contains a Pandas object to a 2-dimensional NumPy array prior 
 ...         return wrapper
 ```
 
-After we have defined our jitter class, we need to register it globally:
+After defining the custom jitter class, register it globally:
 
 ```pycon
 >>> vbt.settings.jitting.jitters['safe_nb'] = dict(cls=SafeNumbaJitter)
 ```
 
-Finally, we can execute any Numba function by specifying our new jitter:
+Finally, execute any Numba function using your new jitter:
 
 ```pycon
 >>> func = vbt.jit_reg.resolve(
@@ -336,7 +330,7 @@ array([[nan, nan],
        [ 2.,  2.]])
 ```
 
-Whereas executing the same func using the vanilla Numba jitter causes an error:
+Using the vanilla Numba jitter with the same function results in an error:
 
 ```pycon
 >>> func = vbt.jit_reg.resolve(task_id_or_func=vbt.generic.nb.diff_nb)
@@ -346,10 +340,13 @@ non-precise type pyobject
 ```
 
 !!! note
-    Make sure to pass a function as `task_id_or_func` if the jitted function hasn't been registered yet.
+    Ensure you pass a function as `task_id_or_func` if the jitted function has not been registered yet.
 
-    This jitter cannot be used for decorating Numba functions that should be called
-    from other Numba functions since the convertion operation is done using Python.
+    This custom jitter cannot be used to decorate Numba functions that are intended to be called
+    from within other Numba functions, as the conversion is performed in Python.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.jitting`.
 """
 
 from vectorbtpro import _typing as tp
@@ -375,31 +372,43 @@ __all__ = [
 
 
 def get_func_full_name(func: tp.Callable) -> str:
-    """Get full name of the func to be used as task id."""
+    """Return the full name of the given function for use as a task identifier.
+
+    Concatenates the function's module and name.
+
+    Args:
+        func (Callable): Function for which to retrieve the full name.
+
+    Returns:
+        str: Full name of the function.
+    """
     return func.__module__ + "." + func.__name__
 
 
 @define
 class JitableSetup(DefineMixin):
-    """Class that represents a jitable setup.
+    """Class representing a jitable setup used for just-in-time compilation.
 
     !!! note
-        Hashed solely by `task_id` and `jitter_id`."""
+        The instance is hashed solely based on `task_id` and `jitter_id`.
+    """
 
     task_id: tp.Hashable = define.field()
-    """Task id."""
+    """Task identifier."""
 
     jitter_id: tp.Hashable = define.field()
-    """Jitter id."""
+    """Jitter identifier."""
 
     py_func: tp.Callable = define.field()
-    """Python function to be jitted."""
+    """Python function to be JIT-compiled."""
 
     jitter_kwargs: tp.KwargsLike = define.field(default=None)
-    """Keyword arguments passed to `vectorbtpro.utils.jitting.resolve_jitter`."""
+    """Keyword arguments for configuring the jitter.
+    
+    See `vectorbtpro.utils.jitting.resolve_jitter`."""
 
     tags: tp.SetLike = define.field(default=None)
-    """Set of tags."""
+    """Set of tags used for categorization."""
 
     @staticmethod
     def get_hash(task_id: tp.Hashable, jitter_id: tp.Hashable) -> int:
@@ -412,17 +421,19 @@ class JitableSetup(DefineMixin):
 
 @define
 class JittedSetup(DefineMixin):
-    """Class that represents a jitted setup.
+    """Class representing a JIT-decorated setup.
 
     !!! note
-        Hashed solely by sorted config of `jitter`. That is, two jitters with the same config
-        will yield the same hash and the function won't be re-decorated."""
+        The hash is computed solely based on the sorted configuration of `jitter`.
+        Two jitters with identical configurations yield the same hash,
+        preventing redundant decoration.
+    """
 
     jitter: Jitter = define.field()
-    """Jitter that decorated the function."""
+    """Jitter instance used to decorate the function."""
 
     jitted_func: tp.Callable = define.field()
-    """Decorated function."""
+    """Function decorated using JIT."""
 
     @staticmethod
     def get_hash(jitter: Jitter) -> int:
@@ -442,12 +453,23 @@ class JITRegistry(Base):
 
     @property
     def jitable_setups(self) -> tp.Dict[tp.Hashable, tp.Dict[tp.Hashable, JitableSetup]]:
-        """Dict of registered `JitableSetup` instances by `task_id` and `jitter_id`."""
+        """Dictionary of registered `JitableSetup` instances by task ID and jitter ID.
+
+        Returns:
+            Dict[Hashable, Dict[Hashable, JitableSetup]]: Mapping of task ID
+                to a dictionary of jitter IDs with their `JitableSetup` instances.
+        """
         return self._jitable_setups
 
     @property
     def jitted_setups(self) -> tp.Dict[int, tp.Dict[int, JittedSetup]]:
-        """Nested dict of registered `JittedSetup` instances by hash of their `JitableSetup` instance."""
+        """Nested dictionary of registered `JittedSetup` instances keyed by the hash of
+        their associated `JitableSetup` instance.
+
+        Returns:
+            Dict[int, Dict[int, JittedSetup]]: Mapping from the hash of a jitable setup
+                to a dictionary of jitted setups.
+        """
         return self._jitted_setups
 
     def register_jitable_setup(
@@ -458,7 +480,20 @@ class JITRegistry(Base):
         jitter_kwargs: tp.KwargsLike = None,
         tags: tp.Optional[set] = None,
     ) -> JitableSetup:
-        """Register a jitable setup."""
+        """Register a jitable setup.
+
+        Args:
+            task_id (Hashable): Unique identifier for the task.
+            jitter_id (Hashable): Unique identifier for the jitter type.
+            py_func (Callable): Python function to decorate.
+            jitter_kwargs (KwargsLike): Keyword arguments for configuring the jitter.
+            
+                See `vectorbtpro.utils.jitting.resolve_jitter`.
+            tags (set): Tags associated with the function.
+
+        Returns:
+            JitableSetup: Registered `JitableSetup` instance.
+        """
         jitable_setup = JitableSetup(
             task_id=task_id,
             jitter_id=jitter_id,
@@ -478,7 +513,16 @@ class JITRegistry(Base):
         jitter: Jitter,
         jitted_func: tp.Callable,
     ) -> JittedSetup:
-        """Register a jitted setup."""
+        """Register a jitted setup.
+
+        Args:
+            jitable_setup (JitableSetup): Associated jitable setup instance.
+            jitter (Jitter): Jitter instance used for decoration.
+            jitted_func (Callable): Jitted (decorated) version of the function.
+
+        Returns:
+            JittedSetup: Registered `JittedSetup` instance.
+        """
         jitable_setup_hash = hash(jitable_setup)
         jitted_setup = JittedSetup(jitter=jitter, jitted_func=jitted_func)
         jitted_setup_hash = hash(jitted_setup)
@@ -495,8 +539,21 @@ class JITRegistry(Base):
         jitter: tp.Optional[tp.JitterLike] = None,
         jitter_kwargs: tp.KwargsLike = None,
         tags: tp.Optional[set] = None,
-    ):
-        """Decorate a jitable function and register both jitable and jitted setups."""
+    ) -> tp.Callable:
+        """Decorate a jitable function and register both jitable and jitted setups.
+
+        Args:
+            task_id (Hashable): Unique identifier for the task.
+            py_func (Callable): Python function to decorate.
+            jitter (JitterLike): Jitter specification used for resolving the jitter.
+            jitter_kwargs (KwargsLike): Keyword arguments for configuring the jitter.
+            
+                See `vectorbtpro.utils.jitting.resolve_jitter`.
+            tags (set): Tags associated with the function.
+
+        Returns:
+            Callable: Decorated jitted function.
+        """
         if jitter_kwargs is None:
             jitter_kwargs = {}
         jitter = resolve_jitter(jitter=jitter, py_func=py_func, **jitter_kwargs)
@@ -513,7 +570,15 @@ class JITRegistry(Base):
         expression: tp.Optional[str] = None,
         context: tp.KwargsLike = None,
     ) -> tp.Set[JitableSetup]:
-        """Match jitable setups against an expression with each setup being a context."""
+        """Match jitable setups against an expression evaluated within each setup's context.
+
+        Args:
+            expression (str): Expression to evaluate against each setup's context.
+            context (KwargsLike): Additional context for template substitution.
+
+        Returns:
+            Set[JitableSetup]: Set of jitable setups that satisfy the expression.
+        """
         matched_setups = set()
         for setups_by_jitter_id in self.jitable_setups.values():
             for setup in setups_by_jitter_id.values():
@@ -533,7 +598,16 @@ class JITRegistry(Base):
         expression: tp.Optional[str] = None,
         context: tp.KwargsLike = None,
     ) -> tp.Set[JittedSetup]:
-        """Match jitted setups of a jitable setup against an expression with each setup a context."""
+        """Match jitted setups for a given jitable setup using an expression evaluated within each setup's context.
+
+        Args:
+            jitable_setup (JitableSetup): Jitable setup for which to match jitted setups.
+            expression (str): Expression to evaluate against each setup's context.
+            context (KwargsLike): Additional context for template substitution.
+
+        Returns:
+            Set[JittedSetup]: Set of jitted setups that satisfy the expression.
+        """
         matched_setups = set()
         for setup in self.jitted_setups[hash(jitable_setup)].values():
             if expression is None:
@@ -559,9 +633,12 @@ class JITRegistry(Base):
         tags: tp.Optional[set] = None,
         **jitter_kwargs,
     ) -> tp.Union[tp.Hashable, tp.Callable]:
-        """Resolve jitted function for the given task id.
+        """Resolve and return the jitted function for the specified task identifier.
 
-        For details on the format of `task_id_or_func`, see `register_jitted`.
+        This method uses the provided task identifier or function (`task_id_or_func`) to locate
+        or create a jitted function based on configured jitter settings. Templates within `jitter`,
+        `disable`, and `jitter_kwargs` are substituted using a merged `template_context`.
+        If `disable_resolution` is enabled, the original `task_id_or_func` is returned unchanged.
 
         Jitter keyword arguments are merged in the following order:
 
@@ -570,23 +647,37 @@ class JITRegistry(Base):
         * `jitter.your_jitter.tasks.your_task.resolve_kwargs` in `vectorbtpro._settings.jitting`
         * `jitter_kwargs`
 
-        Templates are substituted in `jitter`, `disable`, and `jitter_kwargs`.
+        If no jitted setup of type `JittedSetup` is found and `allow_new` is True, the function
+        is decorated and returned instead of raising an error. If `return_missing_task` is True,
+        `task_id_or_func` is returned when the task id is not found in `JITRegistry.jitable_setups`.
 
-        Set `disable` to True to return the Python function without decoration.
-        If `disable_resolution` is enabled globally, `task_id_or_func` is returned unchanged.
+        Args:
+            task_id_or_func (Union[Hashable, Callable]): Task identifier or a function.
+
+                For details on valid formats, see `register_jitted`.
+            jitter (Optional[Union[JitterLike, CustomTemplate]]): Jitter identifier or template.
+            disable (Optional[Union[bool, CustomTemplate]]): Flag or template to disable decoration.
+            disable_resolution (Optional[bool]): Flag to disable the resolution process.
+            allow_new (Optional[bool]): Flag to allow creating a new jitted setup if none is found.
+            register_new (Optional[bool]): Flag to register a new jitted setup.
+            return_missing_task (bool): If True, returns `task_id_or_func` when the task is not registered.
+            template_context (KwargsLike): Additional context for template substitution.
+            tags (Optional[set]): Tags associated with the function.
+            **jitter_kwargs: Keyword arguments for configuring the jitter.
+
+        Returns:
+            Union[Hashable, Callable]: Either the resolved jitted function or the original task
+                identifier/function based on the resolution process.
 
         !!! note
-            `disable` is only being used by `JITRegistry`, not `vectorbtpro.utils.jitting`.
+            The `disable` parameter is used only by `JITRegistry` and not by `vectorbtpro.utils.jitting`.
 
         !!! note
-            If there are more than one jitted setups registered for a single task id,
-            make sure to provide a jitter.
+            If multiple jitted setups are registered for a single task id, the `jitter` parameter
+            must be explicitly provided.
 
-        If no jitted setup of type `JittedSetup` was found and `allow_new` is True,
-        decorates and returns the function supplied as `task_id_or_func` (otherwise throws an error).
-
-        Set `return_missing_task` to True to return `task_id_or_func` if it cannot be found
-        in `JITRegistry.jitable_setups`.
+        !!! info
+            For default settings, see `vectorbtpro._settings.jitting`.
         """
         from vectorbtpro._settings import settings
 
@@ -705,7 +796,23 @@ class JITRegistry(Base):
         option: tp.JittedOption,
         **kwargs,
     ) -> tp.Union[tp.Hashable, tp.Callable]:
-        """Resolve `option` using `vectorbtpro.utils.jitting.resolve_jitted_option` and call `JITRegistry.resolve`."""
+        """Resolve the specified jitted option and return the corresponding function.
+
+        This method first processes the provided `option` along with additional keyword arguments using
+        `vectorbtpro.utils.jitting.resolve_jitted_kwargs`. If the result is None, resolution is configured with
+        `disable=True`. The resolved keyword arguments are then passed to `JITRegistry.resolve` to obtain the
+        corresponding jitted function.
+
+        Args:
+            task_id (Union[Hashable, Callable]): Task identifier or a function.
+
+                Specifies the task for which the option is applied.
+            option (JittedOption): Option to control JIT compilation.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.jitting.resolve_jitted_kwargs`.
+
+        Returns:
+            Union[Hashable, Callable]: The resolved jitted function or the original task identifier/function.
+        """
         kwargs = resolve_jitted_kwargs(option=option, **kwargs)
         if kwargs is None:
             kwargs = dict(disable=True)
@@ -713,7 +820,7 @@ class JITRegistry(Base):
 
 
 jit_reg = JITRegistry()
-"""Default registry of type `JITRegistry`."""
+"""Default registry instance of `JITRegistry`."""
 
 
 def register_jitted(
@@ -725,19 +832,36 @@ def register_jitted(
 ) -> tp.Callable:
     """Decorate and register a jitable function using `JITRegistry.decorate_and_register`.
 
-    If `task_id_or_func` is a callable, gets replaced by the callable's module name and function name.
-    Additionally, the function name may contain a suffix pointing at the jitter (such as `_nb`).
+    If `task_id_or_func` is a callable, its module and function name are used as the task identifier.
+    The function name may include a suffix (e.g., `_nb`) to indicate the jitter variant.
 
     Options are merged in the following order:
 
-    * `jitters.{jitter_id}.options` in `vectorbtpro._settings.jitting`
-    * `jitters.{jitter_id}.tasks.{task_id}.options` in `vectorbtpro._settings.jitting`
+    * `jitters.{jitter_id}.options` from `vectorbtpro._settings.jitting`
+    * `jitters.{jitter_id}.tasks.{task_id}.options` from `vectorbtpro._settings.jitting`
     * `options`
-    * `jitters.{jitter_id}.override_options` in `vectorbtpro._settings.jitting`
-    * `jitters.{jitter_id}.tasks.{task_id}.override_options` in `vectorbtpro._settings.jitting`
+    * `jitters.{jitter_id}.override_options` from `vectorbtpro._settings.jitting`
+    * `jitters.{jitter_id}.tasks.{task_id}.override_options` from `vectorbtpro._settings.jitting`
 
-    `py_func` can also be overridden using `jitters.your_jitter.tasks.your_task.replace_py_func`
-    in `vectorbtpro._settings.jitting`."""
+    `py_func` may be overridden using `jitters.your_jitter.tasks.your_task.replace_py_func`
+    in `vectorbtpro._settings.jitting`.
+
+    Args:
+        py_func (Optional[Callable]): Function to be decorated.
+
+            If None, returns the decorator.
+        task_id_or_func (Optional[Union[Hashable, Callable]]): Task identifier or a callable
+            from which the task identifier is derived.
+        registry (JITRegistry): Registry used to register the decorated function.
+        tags (Optional[set]): Tags associated with the function.
+        **options: Keyword arguments for configuration.
+
+    Returns:
+        Callable: Decorated function.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+    """
 
     def decorator(_py_func: tp.Callable) -> tp.Callable:
         nonlocal options

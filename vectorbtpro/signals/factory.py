@@ -8,12 +8,12 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Factory for building signal generators.
+"""Module for building signal generators.
 
-The signal factory class `SignalFactory` extends `vectorbtpro.indicators.factory.IndicatorFactory`
-to offer a convenient way to create signal generators of any complexity. By providing it with information
-such as entry and exit functions and the names of inputs, parameters, and outputs, it will create a
-stand-alone class capable of generating signals for an arbitrary combination of inputs and parameters.
+This module defines the `SignalFactory` class, which extends the `vectorbtpro.indicators.factory.IndicatorFactory`
+to provide a convenient way to create complex signal generators. By configuring entry and exit functions along with
+the names of inputs, parameters, and outputs, it constructs a stand-alone class capable of generating signals for
+various combinations of conditions.
 """
 
 import inspect
@@ -24,7 +24,7 @@ from numba import njit
 from vectorbtpro import _typing as tp
 from vectorbtpro._dtypes import *
 from vectorbtpro.base import combining
-from vectorbtpro.indicators.factory import IndicatorFactory, IndicatorBase, CacheOutputT
+from vectorbtpro.indicators.factory import IndicatorFactory, IndicatorBase
 from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.signals.enums import FactoryMode
 from vectorbtpro.signals.nb import generate_nb, generate_ex_nb, generate_enex_nb, first_place_nb
@@ -39,16 +39,25 @@ __all__ = [
 
 
 class SignalFactory(IndicatorFactory):
-    """A factory for building signal generators.
+    """Class representing a factory for building signal generators.
 
     Extends `vectorbtpro.indicators.factory.IndicatorFactory` with place functions.
 
-    Generates a fixed number of outputs (depending upon `mode`).
-    If you need to generate other outputs, use in-place outputs (via `in_output_names`).
+    Generates a fixed number of outputs based on the provided factory mode.
+    If other outputs are needed, use in-place outputs via `in_output_names`.
 
-    See `vectorbtpro.signals.enums.FactoryMode` for supported generation modes.
+    Args:
+        *args: Positional arguments for `vectorbtpro.indicators.factory.IndicatorFactory`.
+        mode (Union[str, int]): Factory mode controlling generated outputs.
 
-    Other arguments are passed to `vectorbtpro.indicators.factory.IndicatorFactory`.
+            Mapped using `vectorbtpro.signals.enums.FactoryMode` if provided as a string.
+        input_names (Optional[Sequence[str]]): List of input names.
+
+            Reserved names "entries" and "exits" are not allowed.
+        attr_settings (KwargsLike): Settings for attributes, where each key maps to a dictionary of options.
+
+            See `vectorbtpro.indicators.factory.IndicatorFactory`.
+        **kwargs: Keyword arguments for `vectorbtpro.indicators.factory.IndicatorFactory`.
     """
 
     def __init__(
@@ -86,6 +95,28 @@ class SignalFactory(IndicatorFactory):
         for output_name in output_names:
             attr_settings[output_name] = dict(dtype=np.bool_)
 
+        if "entries" in input_names or "entries" in output_names:
+            entries_settings = attr_settings.get("entries", None)
+            if entries_settings is None:
+                entries_settings = {}
+            if "doc" not in entries_settings:
+                entries_settings["doc"] = "Entry signal series."
+            attr_settings["entries"] = entries_settings
+        if "exits" in output_names:
+            exits_settings = attr_settings.get("exits", None)
+            if exits_settings is None:
+                exits_settings = {}
+            if "doc" not in exits_settings:
+                exits_settings["doc"] = "Exit signal series."
+            attr_settings["exits"] = exits_settings
+        if "new_entries" in output_names:
+            new_entries_settings = attr_settings.get("new_entries", None)
+            if new_entries_settings is None:
+                new_entries_settings = {}
+            if "doc" not in new_entries_settings:
+                new_entries_settings["doc"] = "New entry signal series."
+            attr_settings["new_entries"] = new_entries_settings
+
         IndicatorFactory.__init__(
             self,
             *args,
@@ -97,117 +128,172 @@ class SignalFactory(IndicatorFactory):
         )
         self._mode = mode
 
-        def plot(
-            _self,
-            column: tp.Optional[tp.Label] = None,
-            entry_y: tp.Union[None, str, tp.ArrayLike] = None,
-            exit_y: tp.Union[None, str, tp.ArrayLike] = None,
-            entry_types: tp.Optional[tp.ArrayLike] = None,
-            exit_types: tp.Optional[tp.ArrayLike] = None,
-            entry_trace_kwargs: tp.KwargsLike = None,
-            exit_trace_kwargs: tp.KwargsLike = None,
-            fig: tp.Optional[tp.BaseFigure] = None,
-            **kwargs,
-        ) -> tp.BaseFigure:
-            self_col = _self.select_col(column=column, group_by=False)
-            if entry_y is not None and isinstance(entry_y, str):
-                entry_y = getattr(self_col, entry_y)
-            if exit_y is not None and isinstance(exit_y, str):
-                exit_y = getattr(self_col, exit_y)
+        Indicator = self.Indicator
 
-            if entry_trace_kwargs is None:
-                entry_trace_kwargs = {}
-            if exit_trace_kwargs is None:
-                exit_trace_kwargs = {}
-            entry_trace_kwargs = merge_dicts(
-                dict(name="New Entries" if mode == FactoryMode.Chain else "Entries"),
-                entry_trace_kwargs,
-            )
-            exit_trace_kwargs = merge_dicts(dict(name="Exits"), exit_trace_kwargs)
-            if entry_types is not None:
-                entry_types = np.asarray(entry_types)
+        if mode == FactoryMode.Entries:
+
+            def plot(
+                _self,
+                column: tp.Optional[tp.Column] = None,
+                entry_y: tp.Union[None, str, tp.ArrayLike] = None,
+                entry_types: tp.Optional[tp.ArrayLike] = None,
+                entry_trace_kwargs: tp.KwargsLike = None,
+                fig: tp.Optional[tp.BaseFigure] = None,
+                **kwargs,
+            ) -> tp.BaseFigure:
+                self_col = _self.select_col(column=column, group_by=False)
+                if entry_y is not None and isinstance(entry_y, str):
+                    entry_y = getattr(self_col, entry_y)
                 entry_trace_kwargs = merge_dicts(
-                    dict(customdata=entry_types, hovertemplate="(%{x}, %{y})<br>Type: %{customdata}"),
+                    dict(name="Entries"),
                     entry_trace_kwargs,
                 )
-            if exit_types is not None:
-                exit_types = np.asarray(exit_types)
-                exit_trace_kwargs = merge_dicts(
-                    dict(customdata=exit_types, hovertemplate="(%{x}, %{y})<br>Type: %{customdata}"),
-                    exit_trace_kwargs,
-                )
-            if mode == FactoryMode.Entries:
+                if entry_types is not None:
+                    entry_types = np.asarray(entry_types)
+                    entry_trace_kwargs = merge_dicts(
+                        dict(customdata=entry_types, hovertemplate="(%{x}, %{y})<br>Type: %{customdata}"),
+                        entry_trace_kwargs,
+                    )
                 fig = self_col.entries.vbt.signals.plot_as_entries(
                     y=entry_y,
                     trace_kwargs=entry_trace_kwargs,
                     fig=fig,
                     **kwargs,
                 )
-            elif mode == FactoryMode.Exits:
-                fig = self_col.entries.vbt.signals.plot_as_entries(
-                    y=entry_y,
-                    trace_kwargs=entry_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
-                fig = self_col.exits.vbt.signals.plot_as_exits(
-                    y=exit_y,
-                    trace_kwargs=exit_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
-            elif mode == FactoryMode.Both:
-                fig = self_col.entries.vbt.signals.plot_as_entries(
-                    y=entry_y,
-                    trace_kwargs=entry_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
-                fig = self_col.exits.vbt.signals.plot_as_exits(
-                    y=exit_y,
-                    trace_kwargs=exit_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
-            else:
-                fig = self_col.new_entries.vbt.signals.plot_as_entries(
-                    y=entry_y,
-                    trace_kwargs=entry_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
-                fig = self_col.exits.vbt.signals.plot_as_exits(
-                    y=exit_y,
-                    trace_kwargs=exit_trace_kwargs,
-                    fig=fig,
-                    **kwargs,
-                )
+                return fig
 
-            return fig
+            plot.__doc__ = inspect.cleandoc(
+                """
+                Plot `{0}.{1}`.
+        
+                Args:
+                    column (Optional[Column]): Identifier of the column to plot.
+                    entry_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting entry markers.
+                    entry_types (Optional[ArrayLike]): Entry types in string format.
+                    entry_trace_kwargs (KwargsLike): Keyword arguments for 
+                        `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
+                    fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+                    **kwargs: Keyword arguments for `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
+        
+                Returns:
+                    BaseFigure: Updated figure with plotted signals.
+                """.format(
+                    Indicator.__name__, "entries"
+                )
+            )
+        else:
 
-        plot.__doc__ = """Plot `{0}.{1}` and `{0}.exits`.
+            def plot(
+                _self,
+                column: tp.Optional[tp.Column] = None,
+                entry_y: tp.Union[None, str, tp.ArrayLike] = None,
+                exit_y: tp.Union[None, str, tp.ArrayLike] = None,
+                entry_types: tp.Optional[tp.ArrayLike] = None,
+                exit_types: tp.Optional[tp.ArrayLike] = None,
+                entry_trace_kwargs: tp.KwargsLike = None,
+                exit_trace_kwargs: tp.KwargsLike = None,
+                fig: tp.Optional[tp.BaseFigure] = None,
+                **kwargs,
+            ) -> tp.BaseFigure:
+                self_col = _self.select_col(column=column, group_by=False)
+                if entry_y is not None and isinstance(entry_y, str):
+                    entry_y = getattr(self_col, entry_y)
+                if exit_y is not None and isinstance(exit_y, str):
+                    exit_y = getattr(self_col, exit_y)
+                entry_trace_kwargs = merge_dicts(
+                    dict(name="New Entries" if mode == FactoryMode.Chain else "Entries"),
+                    entry_trace_kwargs,
+                )
+                exit_trace_kwargs = merge_dicts(dict(name="Exits"), exit_trace_kwargs)
+                if entry_types is not None:
+                    entry_types = np.asarray(entry_types)
+                    entry_trace_kwargs = merge_dicts(
+                        dict(customdata=entry_types, hovertemplate="(%{x}, %{y})<br>Type: %{customdata}"),
+                        entry_trace_kwargs,
+                    )
+                if exit_types is not None:
+                    exit_types = np.asarray(exit_types)
+                    exit_trace_kwargs = merge_dicts(
+                        dict(customdata=exit_types, hovertemplate="(%{x}, %{y})<br>Type: %{customdata}"),
+                        exit_trace_kwargs,
+                    )
+                if mode == FactoryMode.Exits:
+                    fig = self_col.entries.vbt.signals.plot_as_entries(
+                        y=entry_y,
+                        trace_kwargs=entry_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                    fig = self_col.exits.vbt.signals.plot_as_exits(
+                        y=exit_y,
+                        trace_kwargs=exit_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                elif mode == FactoryMode.Both:
+                    fig = self_col.entries.vbt.signals.plot_as_entries(
+                        y=entry_y,
+                        trace_kwargs=entry_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                    fig = self_col.exits.vbt.signals.plot_as_exits(
+                        y=exit_y,
+                        trace_kwargs=exit_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                else:
+                    fig = self_col.new_entries.vbt.signals.plot_as_entries(
+                        y=entry_y,
+                        trace_kwargs=entry_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                    fig = self_col.exits.vbt.signals.plot_as_exits(
+                        y=exit_y,
+                        trace_kwargs=exit_trace_kwargs,
+                        fig=fig,
+                        **kwargs,
+                    )
+                return fig
 
-        Args:
-            entry_y (array_like): Y-axis values to plot entry markers on.
-            exit_y (array_like): Y-axis values to plot exit markers on.
-            entry_types (array_like): Entry types in string format.
-            exit_types (array_like): Exit types in string format.
-            entry_trace_kwargs (dict): Keyword arguments passed to
-                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-            exit_trace_kwargs (dict): Keyword arguments passed to 
-                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **kwargs: Keyword arguments passed to `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
-        """.format(
-            self.class_name,
-            "new_entries" if mode == FactoryMode.Chain else "entries",
-        )
+            plot.__doc__ = inspect.cleandoc(
+                """
+                Plot `{0}.{1}` and `{0}.exits`.
+        
+                Args:
+                    column (Optional[Column]): Identifier of the column to plot.
+                    entry_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting entry markers.
+                    exit_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting exit markers.
+                    entry_types (Optional[ArrayLike]): Entry types in string format.
+                    exit_types (Optional[ArrayLike]): Exit types in string format.
+                    entry_trace_kwargs (KwargsLike): Keyword arguments for 
+                        `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
+                    exit_trace_kwargs (KwargsLike): Keyword arguments for 
+                        `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
+                    fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+                    **kwargs: Keyword arguments for `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
+        
+                Returns:
+                    BaseFigure: Updated figure with plotted signals.
+                """.format(
+                    Indicator.__name__,
+                    "new_entries" if mode == FactoryMode.Chain else "entries",
+                )
+            )
 
-        setattr(self.Indicator, "plot", plot)
+        setattr(Indicator, "plot", plot)
 
     @property
-    def mode(self):
-        """Factory mode."""
+    def mode(self) -> int:
+        """Factory mode.
+
+        Returns:
+            FactoryMode: Factory mode.
+
+                See `vectorbtpro.signals.enums.FactoryMode`.
+        """
         return self._mode
 
     def with_place_func(
@@ -225,115 +311,92 @@ class SignalFactory(IndicatorFactory):
         jitted: tp.JittedOption = None,
         **kwargs,
     ) -> tp.Type[IndicatorBase]:
-        """Build signal generator class around entry and exit placement functions.
+        """Build a signal generator class using entry and exit placement functions.
 
-        A placement function is simply a function that places signals.
-        There are two types of it: entry placement function and exit placement function.
-        Each placement function takes broadcast time series, broadcast in-place output time series,
-        broadcast parameter arrays, and other arguments, and returns an array of indices
-        corresponding to chosen signals. See `vectorbtpro.signals.nb.generate_nb`.
+        A placement function selects indices for signals and is available in two types:
+        entry and exit placement functions. Each function accepts broadcast time series,
+        in-place output arrays, parameter arrays, and other arguments, and returns an array
+        of indices corresponding to the chosen signals. See `vectorbtpro.signals.nb.generate_nb`
+        for more details.
 
         Args:
-            entry_place_func_nb (callable): `place_func_nb` that returns indices of entries.
+            entry_place_func_nb (Optional[PlaceFunc]): Callback function for placing entry signals.
 
-                Defaults to `vectorbtpro.signals.nb.first_place_nb` for `FactoryMode.Chain`.
-            exit_place_func_nb (callable): `place_func_nb` that returns indices of exits.
-            generate_func_nb (callable): Entry generation function.
+                Defaults to `vectorbtpro.signals.nb.first_place_nb` when used with `FactoryMode.Chain`.
+            exit_place_func_nb (Optional[PlaceFunc]): Callback function for placing exit signals.
+            generate_func_nb (Optional[Callable]): Generation function for entry signals.
 
                 Defaults to `vectorbtpro.signals.nb.generate_nb`.
-            generate_ex_func_nb (callable): Exit generation function.
+            generate_ex_func_nb (Optional[Callable]): Generation function for exit signals.
 
                 Defaults to `vectorbtpro.signals.nb.generate_ex_nb`.
-            generate_enex_func_nb (callable): Entry and exit generation function.
+            generate_enex_func_nb (Optional[Callable]): Generation function for both entry and exit signals.
 
                 Defaults to `vectorbtpro.signals.nb.generate_enex_nb`.
-            cache_func (callable): A caching function to preprocess data beforehand.
+            cache_func (Callable): Caching function to preprocess data.
 
-                All returned objects will be passed as last arguments to placement functions.
-            entry_settings (dict): Settings dict for `entry_place_func_nb`.
-            exit_settings (dict): Settings dict for `exit_place_func_nb`.
-            cache_settings (dict): Settings dict for `cache_func`.
-            jit_kwargs (dict): Keyword arguments passed to `@njit` decorator of the parameter selection function.
+                Its outputs are appended as the last arguments to placement functions.
+            entry_settings (KwargsLike): Settings dictionary for the entry placement function.
+            exit_settings (KwargsLike): Settings dictionary for the exit placement function.
+            cache_settings (KwargsLike): Settings dictionary for the cache function.
+            jit_kwargs (KwargsLike): Keyword arguments for the `@njit` decorator of the parameter
+                selection function.
 
-                By default, has `nogil` set to True.
-            jitted (any): See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+                Has `nogil` set to True by default.
+            jitted (JittedOption): Option to control JIT compilation.
 
-                Gets applied to generation functions only. If the respective generation
-                function is not jitted, then the apply function won't be jitted as well.
-            **kwargs: Keyword arguments passed to `IndicatorFactory.with_custom_func`.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+
+                If the generation function is not jitted, the apply function will not be jitted.
+            **kwargs: Keyword arguments for `IndicatorFactory.with_custom_func`.
+
+        Returns:
+            Type[IndicatorBase]: A custom signal generator class configured with
+                the specified placement and generation functions.
+
+        The settings dictionary of each function can have the following options:
+
+        Options:
+            pass_inputs (List[str]): Names of inputs to pass to the placement function.
+
+                Order matters; each must be in `input_names`.
+            pass_in_outputs (List[str]): Names of in-place outputs to pass to the placement function.
+
+                Order matters; each must be in `in_output_names`.
+            pass_params (List[str]): Names of parameters to pass to the placement function.
+
+                Order matters; each must be in `param_names`.
+            pass_kwargs (Union[dict, List[str], List[Tuple]]): Keyword arguments from the kwargs
+                dict to pass as positional arguments.
+
+                Built-in keys include:
+
+                * `input_shape`: Provided when no input time series are passed.
+                * `wait`: Number of ticks to wait before placing signals; defaults to 1.
+                * `until_next`: (Applied in `generate_ex_func_nb` only) Whether to place
+                    signals up to the next entry.
+                * `skip_until_exit`: (Applied in `generate_ex_func_nb` only) Whether to skip
+                    processing until the next exit.
+                * `pick_first`: Indicates whether to stop at the first exit signal.
+                * `temp_idx_arr`: An empty integer array for temporarily storing indices.
+            pass_cache (bool): Indicates whether to pass cache from `cache_func` to the placement function.
+
+                Defaults to False.
+
+        For more arguments, see the custom function of the generated indicator and
+        `vectorbtpro.indicators.factory.IndicatorBase.run_pipeline`.
 
         !!! note
             Choice functions must be Numba-compiled.
 
-            Which inputs, parameters and arguments to pass to each function must be
-            explicitly indicated in the function's settings dict. By default, nothing is passed.
+            Which inputs, parameters and arguments to pass to each function must be explicitly indicated
+            in the function's settings dictionary. By default, nothing is passed.
 
             Passing keyword arguments directly to the placement functions is not supported.
-            Use `pass_kwargs` in a settings dict to pass keyword arguments as positional.
+            Use `pass_kwargs` in a settings dictionary to pass keyword arguments as positional.
 
-        Settings dict of each function can have the following keys:
-
-        Attributes:
-            pass_inputs (list of str): Input names to pass to the placement function.
-
-                Defaults to []. Order matters. Each name must be in `input_names`.
-            pass_in_outputs (list of str): In-place output names to pass to the placement function.
-
-                Defaults to []. Order matters. Each name must be in `in_output_names`.
-            pass_params (list of str): Parameter names to pass to the placement function.
-
-                Defaults to []. Order matters. Each name must be in `param_names`.
-            pass_kwargs (dict, list of str or list of tuple): Keyword arguments from `kwargs` dict to
-                pass as positional arguments to the placement function.
-
-                Defaults to []. Order matters.
-
-                If any element is a tuple, must contain the name and the default value.
-                If any element is a string, the default value is None.
-
-                Built-in keys include:
-
-                * `input_shape`: Input shape if no input time series passed.
-                    Default is provided by the pipeline if `pass_input_shape` is True.
-                * `wait`: Number of ticks to wait before placing signals.
-                    Default is 1.
-                * `until_next`: Whether to place signals up to the next entry signal.
-                    Default is True. Applied in `generate_ex_func_nb` only.
-                * `skip_until_exit`: Whether to skip processing entry signals until the next exit.
-                    Default is False. Applied in `generate_ex_func_nb` only.
-                * `pick_first`: Whether to stop as soon as the first exit signal is found.
-                    Default is False with `FactoryMode.Entries`, otherwise is True.
-                * `temp_idx_arr`: Empty integer array used to temporarily store indices.
-                    Default is an automatically generated array of shape `input_shape[0]`.
-                    You can also pass `temp_idx_arr1`, `temp_idx_arr2`, etc. to generate multiple.
-            pass_cache (bool): Whether to pass cache from `cache_func` to the placement function.
-
-                Defaults to False. Cache is passed unpacked.
-
-        The following arguments can be passed to `run` and `run_combs` methods:
-
-        Args:
-            *args: Can be used instead of `place_args`.
-            place_args (tuple): Arguments passed to any placement function (depending on the mode).
-            entry_place_args (tuple): Arguments passed to the entry placement function.
-            exit_place_args (tuple): Arguments passed to the exit placement function.
-            entry_args (tuple): Alias for `entry_place_args`.
-            exit_args (tuple): Alias for `exit_place_args`.
-            cache_args (tuple): Arguments passed to the cache function.
-            entry_kwargs (tuple): Settings for the entry placement function. Also contains arguments
-                passed as positional if in `pass_kwargs`.
-            exit_kwargs (tuple): Settings for the exit placement function. Also contains arguments
-                passed as positional if in `pass_kwargs`.
-            cache_kwargs (tuple): Settings for the cache function. Also contains arguments
-                passed as positional if in `pass_kwargs`.
-            return_cache (bool): Whether to return only cache.
-            use_cache (any): Cache to use.
-            **kwargs: Default keyword arguments (depending on the mode).
-
-        For more arguments, see `vectorbtpro.indicators.factory.IndicatorBase.run_pipeline`.
-
-        Usage:
-            * The simplest signal indicator that places True at the very first index:
+        Examples:
+            Simplest signal indicator that places True at the very first index:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -368,7 +431,7 @@ class SignalFactory(IndicatorFactory):
             2  False  False  False
             ```
 
-            * Take the first entry and place an exit after waiting `n` ticks. Find the next entry and repeat.
+            Take the first entry and place an exit after waiting `n` ticks. Find the next entry and repeat.
             Test three different `n` values.
 
             ```pycon
@@ -421,7 +484,7 @@ class SignalFactory(IndicatorFactory):
             4         False  False  False
             ```
 
-            * To combine multiple iterative signals, you would need to create a custom placement function.
+            To combine multiple iterative signals, you would need to create a custom placement function.
             Here is an example of combining two random generators using "OR" rule (the first signal wins):
 
             ```pycon
@@ -707,7 +770,7 @@ class SignalFactory(IndicatorFactory):
             input_list: tp.List[tp.AnyArray],
             in_output_list: tp.List[tp.List[tp.AnyArray]],
             param_list: tp.List[tp.List[tp.ParamValue]],
-            *args,
+            *args_,
             input_shape: tp.Optional[tp.Shape] = None,
             place_args: tp.ArgsLike = None,
             entry_place_args: tp.ArgsLike = None,
@@ -719,10 +782,46 @@ class SignalFactory(IndicatorFactory):
             exit_kwargs: tp.KwargsLike = None,
             cache_kwargs: tp.KwargsLike = None,
             return_cache: bool = False,
-            use_cache: tp.Optional[CacheOutputT] = None,
+            use_cache: tp.Optional[tp.IFCacheOutput] = None,
             execute_kwargs: tp.KwargsLike = None,
-            **_kwargs,
-        ) -> tp.Union[CacheOutputT, tp.Array2d, tp.List[tp.Array2d]]:
+            **kwargs_,
+        ) -> tp.Union[None, tp.IFCacheOutput, tp.Array2d, tp.List[tp.Array2d]]:
+            """Forward inputs and parameters to `{0}`, performing caching and pre-processing.
+
+            Args:
+                input_tuple (Tuple[AnyArray, ...]): Tuple of input arrays.
+                in_output_tuple (Tuple[List[AnyArray], ...]): Tuple of lists of in-place output arrays.
+                param_tuple (Tuple[List[ParamValue], ...]): Tuple of lists of parameter values.
+                *args_: Additional positional arguments.
+                input_shape (Optional[Shape]): Shape of the input arrays.
+                place_args (ArgsLike): Arguments passed to any placement function (depending on the mode).
+                entry_place_args (ArgsLike): Positional arguments for `{1}`.
+                exit_place_args (ArgsLike): Positional arguments for `{2}`.
+                entry_args (ArgsLike): Alias for `entry_place_args`.
+                exit_args (ArgsLike): Alias for `exit_place_args`.
+                cache_args (ArgsLike): Arguments passed to the cache function.
+                entry_kwargs (KwargsLike): Settings for the entry placement function,
+                    including arguments from `pass_kwargs`.
+                exit_kwargs (KwargsLike): Settings for the exit placement function,
+                    including arguments from `pass_kwargs`.
+                cache_kwargs (KwargsLike): Settings for the cache function,
+                    including arguments from `pass_kwargs`.
+                return_cache (bool): If True, return the cache result instead of processing further.
+                use_cache (Optional[IFCacheOutput]): Cache to use.
+                execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
+
+                    See `vectorbtpro.utils.execution.execute`.
+                **kwargs: Default keyword arguments based on the mode.
+
+            Returns:
+                Union[None, IFCacheOutput, Array2d, List[Array2d]]:
+                    Result of applying `{0}`, which may be:
+
+                    * The cache output if `return_cache` is True.
+                    * A 2D array.
+                    * A list of 2D arrays.
+                    * None.
+            """
             # Get arguments
             if len(input_list) == 0:
                 if input_shape is None:
@@ -730,10 +829,10 @@ class SignalFactory(IndicatorFactory):
             else:
                 input_shape = input_list[0].shape
 
-            if len(args) > 0 and place_args is not None:
-                raise ValueError("Must provide either *args or place_args, not both")
+            if len(args_) > 0 and place_args is not None:
+                raise ValueError("Must provide either *args_ or place_args, not both")
             if place_args is None:
-                place_args = args
+                place_args = args_
             if (
                 mode == FactoryMode.Entries
                 or mode == FactoryMode.Both
@@ -770,12 +869,12 @@ class SignalFactory(IndicatorFactory):
                 or mode == FactoryMode.Both
                 or (mode == FactoryMode.Chain and not default_chain_entry_func)
             ):
-                entry_kwargs = merge_dicts(_kwargs, entry_kwargs)
+                entry_kwargs = merge_dicts(kwargs_, entry_kwargs)
             else:
                 if entry_kwargs is None:
                     entry_kwargs = {}
             if mode in (FactoryMode.Exits, FactoryMode.Both, FactoryMode.Chain):
-                exit_kwargs = merge_dicts(_kwargs, exit_kwargs)
+                exit_kwargs = merge_dicts(kwargs_, exit_kwargs)
             else:
                 if exit_kwargs is None:
                     exit_kwargs = {}
@@ -947,6 +1046,11 @@ class SignalFactory(IndicatorFactory):
                     execute_kwargs=execute_kwargs,
                 )
 
+        custom_func.__doc__ = custom_func.__doc__.format(
+            Indicator.__name__ + ".apply_func",
+            Indicator.__name__ + ".entry_place_func_nb",
+            Indicator.__name__ + ".exit_place_func_nb",
+        )
         return self.with_custom_func(
             custom_func,
             pass_packed=True,

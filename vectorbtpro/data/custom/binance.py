@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `BinanceData`."""
+"""Module providing the `BinanceData` class for fetching data from Binance using the Python Binance API."""
 
 import time
 import traceback
@@ -25,12 +25,10 @@ from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.warnings_ import warn
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from binance.client import Client as BinanceClientT
-except ImportError:
-    BinanceClientT = "BinanceClient"
+if tp.TYPE_CHECKING:
+    from binance.client import Client as ClientT
+else:
+    ClientT = "binance.client.Client"
 
 __all__ = [
     "BinanceData",
@@ -42,18 +40,21 @@ BinanceDataT = tp.TypeVar("BinanceDataT", bound="BinanceData")
 
 
 class BinanceData(RemoteData):
-    """Data class for fetching from Binance.
+    """Data class for fetching data from Binance using the Python Binance API.
 
-    See https://github.com/sammchardy/python-binance for API.
+    See:
+        * https://github.com/sammchardy/python-binance for the API client.
+        * `BinanceData.fetch_symbol` for argument details.
 
-    See `BinanceData.fetch_symbol` for arguments.
+    !!! info
+        For default settings, see `custom.binance` in `vectorbtpro._settings.data`.
 
     !!! note
-        If you are using an exchange from the US, Japan or other TLD then make sure pass `tld="us"`
-        in `client_config` when creating the client.
+        If using an exchange from the US, Japan, or another TLD, pass `tld="us"` in
+        `client_config` when creating the client.
 
-    Usage:
-        * Set up the API key globally (optional):
+    Examples:
+        Set up the API key globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -66,7 +67,7 @@ class BinanceData(RemoteData):
         ... )
         ```
 
-        * Pull data:
+        Pull data:
 
         ```pycon
         >>> data = vbt.BinanceData.pull(
@@ -108,11 +109,19 @@ class BinanceData(RemoteData):
         return self._feature_config
 
     @classmethod
-    def resolve_client(cls, client: tp.Optional[BinanceClientT] = None, **client_config) -> BinanceClientT:
-        """Resolve the client.
+    def resolve_client(cls, client: tp.Optional[ClientT] = None, **client_config) -> ClientT:
+        """Resolve and return a Binance client instance.
 
-        If provided, must be of the type `binance.client.Client`.
-        Otherwise, will be created using `client_config`."""
+        If a client is provided, it must be an instance of `binance.client.Client`.
+        Otherwise, a new client is created using `client_config`.
+
+        Args:
+            client (Optional[Client]): Binance client instance.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
+
+        Returns:
+            Client: Resolved or newly created Binance client.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("binance")
@@ -135,12 +144,24 @@ class BinanceData(RemoteData):
         pattern: tp.Optional[str] = None,
         use_regex: bool = False,
         sort: bool = True,
-        client: tp.Optional[BinanceClientT] = None,
+        client: tp.Optional[ClientT] = None,
         client_config: tp.KwargsLike = None,
     ) -> tp.List[str]:
-        """List all symbols.
+        """List and return all Binance symbols.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each symbol against `pattern`."""
+        Retrieves symbol data from the Binance API and filters the symbols using
+        `vectorbtpro.data.custom.custom.CustomData.key_match` if a pattern is provided.
+
+        Args:
+            pattern (Optional[str]): Pattern to filter symbols.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
+            sort (bool): Whether to return the symbols in sorted order.
+            client (Optional[Client]): Binance client instance.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
+
+        Returns:
+            List[str]: A list of Binance symbols.
+        """
         if client_config is None:
             client_config = {}
         client = cls.resolve_client(client=client, **client_config)
@@ -159,8 +180,8 @@ class BinanceData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
-        client: tp.Optional[BinanceClientT] = None,
+        symbol: tp.Symbol,
+        client: tp.Optional[ClientT] = None,
         client_config: tp.KwargsLike = None,
         start: tp.Optional[tp.DatetimeLike] = None,
         end: tp.Optional[tp.DatetimeLike] = None,
@@ -174,39 +195,42 @@ class BinanceData(RemoteData):
         silence_warnings: tp.Optional[bool] = None,
         **get_klines_kwargs,
     ) -> tp.SymbolData:
-        """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Binance.
+        """Fetch symbol data from Binance.
 
         Args:
-            symbol (str): Symbol.
-            client (binance.client.Client): Client.
+            symbol (Symbol): Symbol identifier.
+            client (Optional[Client]): Binance client instance.
 
                 See `BinanceData.resolve_client`.
-            client_config (dict): Client config.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
 
                 See `BinanceData.resolve_client`.
-            start (any): Start datetime.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): End datetime.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str): Timeframe.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
-                Allows human-readable strings such as "15 minutes".
-            tz (any): Timezone.
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            klines_type (int or str): Kline type.
+            klines_type (Union[None, int, str]): Type of klines to fetch.
 
-                See `binance.enums.HistoricalKlinesType`. Supports strings.
-            limit (int): The maximum number of returned items.
-            delay (float): Time to sleep after each request (in seconds).
-            show_progress (bool): Whether to show the progress bar.
-            pbar_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`.
-            silence_warnings (bool): Whether to silence all warnings.
-            **get_klines_kwargs: Keyword arguments passed to `binance.client.Client.get_klines`.
+                Mapped using `binance.enums.HistoricalKlinesType` if provided as a string.
+            limit (Optional[int]): Maximum number of klines to retrieve per API call.
+            delay (Optional[float]): Delay in seconds between requests.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
+            pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-        For defaults, see `custom.binance` in `vectorbtpro._settings.data`.
+                See `vectorbtpro.utils.pbar.ProgressBar`.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+            **get_klines_kwargs: Keyword arguments for `binance.client.Client.get_klines`.
+
+        Returns:
+            SymbolData: Fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -347,7 +371,7 @@ class BinanceData(RemoteData):
 
         return df, dict(tz=tz, freq=freq)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

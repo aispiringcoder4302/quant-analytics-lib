@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Extensions for chunking of portfolio."""
+"""Module providing extensions for chunking of portfolio."""
 
 import numpy as np
 
@@ -25,7 +25,16 @@ __all__ = []
 
 
 def get_init_cash_slicer(ann_args: tp.AnnArgs) -> ArraySlicer:
-    """Get slicer for `init_cash` based on cash sharing."""
+    """Return the slicer for `init_cash` based on the cash sharing configuration.
+
+    Args:
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
+
+    Returns:
+        ArraySlicer: Slicer configured for slicing the initial cash values.
+    """
     cash_sharing = ann_args["cash_sharing"]["value"]
     if cash_sharing:
         return base_ch.FlexArraySlicer()
@@ -33,7 +42,16 @@ def get_init_cash_slicer(ann_args: tp.AnnArgs) -> ArraySlicer:
 
 
 def get_cash_deposits_slicer(ann_args: tp.AnnArgs) -> ArraySlicer:
-    """Get slicer for `cash_deposits` based on cash sharing."""
+    """Return the slicer for `cash_deposits` based on the cash sharing configuration.
+
+    Args:
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
+
+    Returns:
+        ArraySlicer: Slicer configured for slicing the cash deposit values.
+    """
     cash_sharing = ann_args["cash_sharing"]["value"]
     if cash_sharing:
         return base_ch.FlexArraySlicer(axis=1)
@@ -45,18 +63,33 @@ def in_outputs_merge_func(
     chunk_meta: tp.Iterable[ChunkMeta],
     ann_args: tp.AnnArgs,
     mapper: base_ch.GroupLensMapper,
-):
-    """Merge chunks of in-output objects.
+) -> tp.NamedTuple:
+    """Merge chunks of in-place output objects.
 
-    Concatenates 1-dim arrays, stacks columns of 2-dim arrays, and fixes and concatenates record arrays
-    using `vectorbtpro.records.chunking.merge_records`. Other objects will throw an error."""
+    Concatenates 1-dimensional arrays, stacks columns of 2-dimensional arrays, and
+    merges record arrays using `vectorbtpro.records.chunking.merge_records`.
+    Other object types will raise an error.
+
+    Args:
+        results (List[SimulationOutput]): List of simulation output chunks.
+        chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
+        mapper (GroupLensMapper): Mapper for grouping and lens mapping.
+
+    Returns:
+        NamedTuple: Instance of the same type as `results[0].in_outputs` with merged data.
+    """
     in_outputs = dict()
     for k, v in results[0].in_outputs._asdict().items():
         if v is None:
             in_outputs[k] = None
             continue
         if not isinstance(v, np.ndarray):
-            raise TypeError(f"Cannot merge in-output object '{k}' of type {type(v)}")
+            raise TypeError(f"Cannot merge in-place output object '{k}' of type {type(v)}")
         if v.ndim == 2:
             in_outputs[k] = column_stack_arrays([getattr(r.in_outputs, k) for r in results])
         elif v.ndim == 1:
@@ -66,7 +99,7 @@ def in_outputs_merge_func(
                 records = [getattr(r.in_outputs, k) for r in results]
                 in_outputs[k] = merge_records(records, chunk_meta, ann_args=ann_args, mapper=mapper)
         else:
-            raise ValueError(f"Cannot merge in-output object '{k}' with number of dimensions {v.ndim}")
+            raise ValueError(f"Cannot merge in-place output object '{k}' with number of dimensions {v.ndim}")
     return type(results[0].in_outputs)(**in_outputs)
 
 
@@ -80,7 +113,25 @@ def merge_sim_outs(
 ) -> SimulationOutput:
     """Merge chunks of `vectorbtpro.portfolio.enums.SimulationOutput` instances.
 
-    If `SimulationOutput.in_outputs` is not None, must provide `in_outputs_merge_func` or similar."""
+    Merges various components including order and log records, cash deposits, cash earnings, call sequence,
+    in-place outputs, and simulation timing arrays. If `vectorbtpro.portfolio.enums.SimulationOutput.in_outputs`
+    is provided, a merge function such as `in_outputs_merge_func` must be used.
+
+    Args:
+        results (List[SimulationOutput]): List of simulation output chunks.
+        chunk_meta (Iterable[ChunkMeta]): Iterable containing metadata for each chunk.
+
+            See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+        ann_args (AnnArgs): Annotated arguments.
+
+            See `vectorbtpro.utils.parsing.annotate_args`.
+        mapper (GroupLensMapper): Mapper for grouping and lens mapping.
+        in_outputs_merge_func (Callable): Function to merge in-place output objects.
+        **kwargs: Keyword arguments for `in_outputs_merge_func`.
+
+    Returns:
+        SimulationOutput: Merged simulation output instance.
+    """
     order_records = [r.order_records for r in results]
     order_records = merge_records(order_records, chunk_meta, ann_args=ann_args, mapper=mapper)
 
@@ -134,4 +185,4 @@ merge_sim_outs_config = ReadonlyConfig(
         ),
     )
 )
-"""Config for merging using `merge_sim_outs`."""
+"""Configuration for merging simulation outputs using `merge_sim_outs`."""

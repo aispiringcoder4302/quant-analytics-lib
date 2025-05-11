@@ -8,13 +8,14 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `TRENDLB`."""
+"""Module defining the `TRENDLB` generator class for trend labels."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.configs import flex_elem_param_config
 from vectorbtpro.indicators.factory import IndicatorFactory
 from vectorbtpro.labels import nb
 from vectorbtpro.labels.enums import TrendLabelMode
+from vectorbtpro.utils.config import merge_dicts
 
 __all__ = [
     "TRENDLB",
@@ -28,29 +29,61 @@ TRENDLB = IndicatorFactory(
     input_names=["high", "low"],
     param_names=["up_th", "down_th", "mode"],
     output_names=["labels"],
+    attr_settings=dict(
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        labels=dict(
+            doc="Trend labels series.",
+        ),
+    ),
 ).with_apply_func(
     nb.trend_labels_nb,
     param_settings=dict(
-        up_th=flex_elem_param_config,
-        down_th=flex_elem_param_config,
+        up_th=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Upper threshold for trend labels, as a scalar or an array.",
+            ),
+        ),
+        down_th=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Lower threshold for trend labels, as a scalar or an array.",
+            ),
+        ),
         mode=dict(
             dtype=TrendLabelMode,
             post_index_func=lambda index: index.str.lower(),
+            doc="Trend label mode (see `vectorbtpro.labels.enums.TrendLabelMode`).",
         ),
     ),
-    mode=TrendLabelMode.Binary,
+    mode="binary",
 )
 
 
 class _TRENDLB(TRENDLB):
-    """Label generator based on `vectorbtpro.labels.nb.trend_labels_nb`."""
+    """Class representing the look-ahead trend label generator.
 
-    def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
-        """Plot the median of `TRENDLB.high` and `TRENDLB.low`, and overlay it with the heatmap of `TRENDLB.labels`.
+    See:
+        * `TRENDLB.run` for the main entry point.
+        * `vectorbtpro.labels.nb.trend_labels_nb` for the underlying implementation.
+    """
 
-        `**kwargs` are passed to `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+    def plot(self, column: tp.Optional[tp.Column] = None, **kwargs) -> tp.BaseFigure:
+        """Plot the median of `TRENDLB.high` and `TRENDLB.low` and overlay it with a heatmap of `TRENDLB.labels`.
 
-        Usage:
+        Args:
+            column (Optional[Column]): Identifier of the column to plot.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+
+        Returns:
+            BaseFigure: Figure object displaying the overlay of the median and heatmap.
+
+        Examples:
             ```pycon
             >>> vbt.TRENDLB.run(ohlcv['High'], ohlcv['Low'], up_th=0.2, down_th=0.2).plot().show()
             ```

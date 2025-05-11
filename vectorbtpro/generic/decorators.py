@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Class decorators for generic accessors."""
+"""Module providing class decorators for generic accessors."""
 
 import inspect
 
@@ -23,19 +23,25 @@ __all__ = []
 
 
 def attach_nb_methods(config: Config) -> tp.ClassWrapper:
-    """Class decorator to attach Numba methods.
+    """Class decorator to attach Numba methods to a class.
 
-    `config` must contain target method names (keys) and dictionaries (values) with the following keys:
+    Args:
+        config (Config): Dictionary mapping target method names (str) to
+            configuration dictionaries with the following keys:
 
-    * `func`: Function that must be wrapped. The first argument must expect a 2-dim array.
-    * `is_reducing`: Whether the function is reducing. Defaults to False.
-    * `disable_jitted`: Whether to disable the `jitted` option.
-    * `disable_chunked`: Whether to disable the `chunked` option.
-    * `replace_signature`: Whether to replace the target signature with the source signature. Defaults to True.
-    * `wrap_kwargs`: Default keyword arguments for wrapping. Will be merged with the dict supplied by the user.
-        Defaults to `dict(name_or_index=target_name)` for reducing functions.
+            * `func` (Callable): Function to be wrapped, where the first argument accepts a 2-dim array.
+            * `is_reducing` (bool): Specifies if the function performs a reduction.
+            * `disable_jitted` (bool): Disables the jitted option when set.
+            * `disable_chunked` (bool): Disables the chunked option when set.
+            * `replace_signature` (bool): Replaces the target method signature with
+                that of the source function.
+            * `wrap_kwargs` (KwargsLike): Keyword arguments for wrapping that
+                will be merged with user-supplied values.
 
-    The class must be a subclass of `vectorbtpro.base.wrapping.Wrapping`.
+    Returns:
+        ClassWrapper: Decorated class with the new methods attached.
+
+    The decorated class must be a subclass of `vectorbtpro.base.wrapping.Wrapping`.
     """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
@@ -109,20 +115,23 @@ def attach_nb_methods(config: Config) -> tp.ClassWrapper:
 
 
 def attach_transform_methods(config: Config) -> tp.ClassWrapper:
-    """Class decorator to add transformation methods.
+    """Class decorator to add transformation methods to a class.
 
-    `config` must contain target method names (keys) and dictionaries (values) with the following keys:
+    Args:
+        config (Config): Dictionary mapping target method names (str) to
+            configuration dictionaries with the following keys:
 
-    * `transformer`: Transformer class/object.
-    * `docstring`: Method docstring.
-    * `replace_signature`: Whether to replace the target signature. Defaults to True.
+            * `transformer` (MaybeType[Transformer]): Transformer class or instance.
+            * `docstring` (str): Docstring assigned to the generated method.
+            * `replace_signature` (bool): Replaces the target method signature with that of the transformer.
 
-    The class must be a subclass of `vectorbtpro.generic.accessors.GenericAccessor`.
+    Returns:
+        ClassWrapper: Decorated class with the new methods attached.
+
+    The decorated class must be a subclass of `vectorbtpro.generic.accessors.GenericAccessor`.
     """
 
     def wrapper(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
-        from vectorbtpro.generic.accessors import TransformerT
-
         checks.assert_subclass_of(cls, "GenericAccessor")
 
         for target_name, settings in config.items():
@@ -133,7 +142,7 @@ def attach_transform_methods(config: Config) -> tp.ClassWrapper:
             def new_method(
                 self,
                 _target_name: str = target_name,
-                _transformer: tp.Union[tp.Type[TransformerT], TransformerT] = transformer,
+                _transformer: tp.MaybeType[tp.TransformerT] = transformer,
                 **kwargs,
             ) -> tp.SeriesFrame:
                 if inspect.isclass(_transformer):

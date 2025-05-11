@@ -8,7 +8,9 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `OHLCSTX`."""
+"""Module providing the `OHLCSTX` class for generating stop signals based on OHLC data."""
+
+import inspect
 
 import numpy as np
 import pandas as pd
@@ -37,11 +39,32 @@ ohlcstx_config = ReadonlyConfig(
         in_output_names=["stop_price", "stop_type"],
         param_names=["sl_stop", "tsl_th", "tsl_stop", "tp_stop", "reverse"],
         attr_settings=dict(
-            stop_type=dict(dtype=StopType),
+            entry_price=dict(
+                doc="Entry price series.",
+            ),
+            open=dict(
+                doc="Open price series.",
+            ),
+            high=dict(
+                doc="High price series.",
+            ),
+            low=dict(
+                doc="Low price series.",
+            ),
+            close=dict(
+                doc="Close price series.",
+            ),
+            stop_price=dict(
+                doc="Stop price series.",
+            ),
+            stop_type=dict(
+                dtype=StopType,
+                doc="Stop type series (see `vectorbtpro.signals.enums.StopType`).",
+            ),
         ),
     )
 )
-"""Factory config for `OHLCSTX`."""
+"""Factory configuration for the `OHLCSTX` signal generator."""
 
 ohlcstx_func_config = ReadonlyConfig(
     dict(
@@ -57,11 +80,36 @@ ohlcstx_func_config = ReadonlyConfig(
             stop_type=dict(dtype=int_),
         ),
         param_settings=dict(
-            sl_stop=flex_elem_param_config,
-            tsl_th=flex_elem_param_config,
-            tsl_stop=flex_elem_param_config,
-            tp_stop=flex_elem_param_config,
-            reverse=flex_elem_param_config,
+            sl_stop=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Stop loss value, as a scalar or an array.",
+                ),
+            ),
+            tsl_th=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Trailing stop threshold value, as a scalar or an array.",
+                ),
+            ),
+            tsl_stop=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Trailing stop value, as a scalar or an array.",
+                ),
+            ),
+            tp_stop=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Take profit value, as a scalar or an array.",
+                ),
+            ),
+            reverse=merge_dicts(
+                flex_elem_param_config,
+                dict(
+                    doc="Whether to reverse the position, as a scalar or an array.",
+                ),
+            ),
         ),
         open=np.nan,
         high=np.nan,
@@ -77,7 +125,7 @@ ohlcstx_func_config = ReadonlyConfig(
         is_entry_open=False,
     )
 )
-"""Exit function config for `OHLCSTX`."""
+"""Exit function configuration for the `OHLCSTX` signal generator."""
 
 OHLCSTX = SignalFactory(**ohlcstx_config).with_place_func(**ohlcstx_func_config)
 
@@ -87,7 +135,7 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         ohlc_kwargs: tp.KwargsLike = None,
         entry_price_kwargs: tp.KwargsLike = None,
         entry_trace_kwargs: tp.KwargsLike = None,
@@ -132,48 +180,63 @@ def _bind_ohlcstx_plot(base_cls: type, entries_attr: str) -> tp.Callable:
         )
         return fig
 
-    plot.__doc__ = """Plot OHLC, `{0}.{1}` and `{0}.exits`.
+    plot.__doc__ = inspect.cleandoc(
+        """
+        Plot OHLC, `{0}.{1}` and `{0}.exits`.
+    
+        Args:
+            column (Optional[Column]): Identifier of the column to plot.
 
-    Args:
-        ohlc_kwargs (dict): Keyword arguments passed to
-            `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot`.
-        entry_trace_kwargs (dict): Keyword arguments passed to
-            `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
-        exit_trace_kwargs (dict): Keyword arguments passed to
-            `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
-        fig (Figure or FigureWidget): Figure to add traces to.
-        **layout_kwargs: Keyword arguments for layout.""".format(
-        base_cls.__name__,
-        entries_attr,
-    )
+                If None, a default column is used.
+            ohlc_kwargs (KwargsLike): Keyword arguments for plotting OHLC data using
+                `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot`.
+            entry_price_kwargs (KwargsLike): Keyword arguments for plotting the entry price line.
+            entry_trace_kwargs (KwargsLike): Keyword arguments for 
+                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
+            exit_trace_kwargs (KwargsLike): Keyword arguments for 
+                `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
+        Returns:
+            BaseFigure: Updated or newly created figure.
+        """
+    ).format(base_cls.__name__, entries_attr)
     if entries_attr == "entries":
-        plot.__doc__ += """
-    Usage:
-        ```pycon
-        >>> ohlcstx.iloc[:, 0].plot().show()
-        ```
-
-        ![](/assets/images/api/OHLCSTX.light.svg#only-light){: .iimg loading=lazy }
-        ![](/assets/images/api/OHLCSTX.dark.svg#only-dark){: .iimg loading=lazy }
-    """
+        plot.__doc__ += "\n" + inspect.cleandoc(
+            """
+            Examples:
+                ```pycon
+                >>> ohlcstx.iloc[:, 0].plot().show()
+                ```
+            
+                ![](/assets/images/api/OHLCSTX.light.svg#only-light){: .iimg loading=lazy }
+                ![](/assets/images/api/OHLCSTX.dark.svg#only-dark){: .iimg loading=lazy }
+            """
+        )
     return plot
 
 
 class _OHLCSTX(OHLCSTX):
-    """Exit signal generator based on OHLC and stop values.
+    """Class representing an exit signal generator based on OHLC data and stop values.
 
-    Generates `exits` based on `entries` and `vectorbtpro.signals.nb.ohlc_stop_place_nb`.
+    See:
+        * `OHLCSTX.run` for the main entry point.
+        * `vectorbtpro.signals.nb.ohlc_stop_place_nb` for details on the exit placement.
 
     !!! hint
-        All parameters can be either a single value (per frame) or a NumPy array (per row, column,
-        or element). To generate multiple combinations, pass them as lists.
+        All parameters may be provided as a single value (per frame) or as a NumPy array
+        (per row, column, or element).
+
+        To generate multiple combinations, pass them as lists.
 
     !!! warning
-        Searches for an exit after each entry. If two entries come one after another, no exit can be placed.
-        Consider either cleaning up entry signals prior to passing, or using `OHLCSTCX`.
+        The generator checks for an exit after every entry. If two entries occur consecutively,
+        no exit signal is generated. Consider cleaning up entry signals before passing them, or use `OHLCSTCX`.
 
-    Usage:
+    Examples:
         Test each stop type:
 
         ```pycon

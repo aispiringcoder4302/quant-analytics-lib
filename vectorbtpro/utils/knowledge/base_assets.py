@@ -8,9 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base asset classes.
+"""Module providing base classes for managing knowledge assets.
 
-See `vectorbtpro.utils.knowledge` for the toy dataset."""
+See `vectorbtpro.utils.knowledge` for the toy dataset.
+"""
 
 import hashlib
 import json
@@ -43,13 +44,32 @@ __all__ = [
 
 
 asset_cache: tp.Dict[tp.Hashable, "KnowledgeAsset"] = {}
-"""Asset cache."""
+"""Cache for storing knowledge assets, keyed by a unique identifier."""
 
 
 class AssetCacheManager(Configured):
-    """Class for managing knowledge asset cache.
+    """Class for managing cached knowledge assets.
 
-    For defaults, see `vectorbtpro._settings.knowledge`."""
+    Args:
+        persist_cache (Optional[bool]): Whether to persist the cache to disk.
+        cache_dir (Optional[PathLike]): Directory for saving knowledge assets.
+        cache_mkdir_kwargs (KwargsLike): Keyword arguments for cache directory creation.
+
+            See `vectorbtpro.utils.path_.check_mkdir`.
+        clear_cache (Optional[bool]): Remove the cache directory before operation if True.
+        max_cache_count (Optional[int]): Maximum number of assets to retain, evicting older ones.
+        save_cache_kwargs (KwargsLike): Keyword arguments for saving assets to disk.
+        
+            See `vectorbtpro.utils.pickling.save`.
+        load_cache_kwargs (KwargsLike): Keyword arguments for loading assets from disk.
+        
+            See `vectorbtpro.utils.pickling.load`.
+        template_context (KwargsLike): Additional context for template substitution.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge`.
+    """
 
     _settings_path: tp.SettingsPath = "knowledge"
 
@@ -114,34 +134,63 @@ class AssetCacheManager(Configured):
 
     @property
     def persist_cache(self) -> bool:
-        """Whether to persist cache on disk."""
+        """Whether to persist the cache to disk.
+
+        Returns:
+            bool: True if cache persistence is enabled, otherwise False.
+        """
         return self._persist_cache
 
     @property
     def cache_dir(self) -> tp.Path:
-        """Cache directory."""
+        """Directory path for storing cached assets.
+
+        Returns:
+            Path: Path of the cache directory.
+        """
         return self._cache_dir
 
     @property
     def max_cache_count(self) -> tp.Optional[int]:
-        """Maximum number of assets to be cached.
+        """Maximum number of assets to retain, evicting older ones.
 
-        Keeps only the most recent assets."""
+        Returns:
+            Optional[int]: The maximum number of assets to retain in the cache.
+        """
         return self._max_cache_count
 
     @property
     def save_cache_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.pickling.save`."""
+        """Keyword arguments for saving assets to disk.
+        
+        See `vectorbtpro.utils.pickling.save`.
+
+        Returns:
+            Kwargs: Keyword arguments used for saving assets to disk.
+        """
         return self._save_cache_kwargs
 
     @property
     def load_cache_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments passed to `vectorbtpro.utils.pickling.load`."""
+        """Keyword arguments for loading assets from disk.
+        
+        See `vectorbtpro.utils.pickling.load`.
+
+        Returns:
+            Kwargs: Keyword arguments used for loading assets from disk.
+        """
         return self._load_cache_kwargs
 
     @classmethod
     def generate_cache_key(cls, **kwargs) -> str:
-        """Generate a cache key based on the current VBT version, settings, and keyword arguments."""
+        """Generate a cache key based on the current VectorBT version, asset settings, and provided parameters.
+
+        Args:
+            **kwargs: Additional parameters contributing to the cache key.
+
+        Returns:
+            str: MD5 hash representing the cache key.
+        """
         from vectorbtpro._version import __version__
 
         bytes_ = b""
@@ -151,7 +200,14 @@ class AssetCacheManager(Configured):
         return hashlib.md5(bytes_).hexdigest()
 
     def load_asset(self, cache_key: str) -> tp.Optional[tp.MaybeKnowledgeAsset]:
-        """Load the knowledge asset under a cache key."""
+        """Load a knowledge asset from the cache.
+
+        Args:
+            cache_key (str): Unique identifier for the cached asset.
+
+        Returns:
+            Optional[MaybeKnowledgeAsset]: The loaded knowledge asset if found, otherwise None.
+        """
         if cache_key in asset_cache:
             return asset_cache[cache_key]
         asset_cache_file = self.cache_dir / cache_key
@@ -159,19 +215,33 @@ class AssetCacheManager(Configured):
             return load(asset_cache_file, **self.load_cache_kwargs)
 
     def cleanup_cache_dir(self) -> None:
-        """Keep only the most recent assets."""
+        """Remove older cached assets, retaining only the most recent ones based on modification time.
+
+        Returns:
+            None
+        """
         if not self.max_cache_count:
             return
         files = [f for f in self.cache_dir.iterdir() if f.is_file()]
         if len(files) <= self.max_cache_count:
             return
         files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
-        files_to_delete = files[self.max_cache_count:]
+        files_to_delete = files[self.max_cache_count :]
         for file_path in files_to_delete:
             file_path.unlink(missing_ok=True)
 
     def save_asset(self, asset: tp.MaybeKnowledgeAsset, cache_key: str) -> tp.Optional[tp.Path]:
-        """Save a knowledge asset under a cache key."""
+        """Save a knowledge asset to the cache.
+
+        Caches the asset in memory and, if persistence is enabled, writes it to disk.
+
+        Args:
+            asset (MaybeKnowledgeAsset): Knowledge asset to cache.
+            cache_key (str): Unique identifier for the cached asset.
+
+        Returns:
+            Optional[Path]: The file path where the asset was saved if persistence is enabled, otherwise None.
+        """
         asset_cache[cache_key] = asset
         if self.persist_cache:
             asset_cache_file = self.cache_dir / cache_key
@@ -184,7 +254,7 @@ KnowledgeAssetT = tp.TypeVar("KnowledgeAssetT", bound="KnowledgeAsset")
 
 
 class MetaKnowledgeAsset(type(Configured), type(MutableSequence)):
-    """Metaclass for `KnowledgeAsset`."""
+    """Metaclass for the `KnowledgeAsset` class."""
 
     pass
 
@@ -194,19 +264,56 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
     This class behaves like a mutable sequence.
 
-    For defaults, see `vectorbtpro._settings.knowledge`."""
+    Args:
+        data (Optional[List[Any]]): List of data items for the asset.
+
+            If more than one item is provided, the asset is not considered a single item.
+        single_item (bool): Indicates whether the asset holds a single data item.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge`.
+    """
 
     _settings_path: tp.SettingsPath = "knowledge"
+
+    def __init__(self, data: tp.Optional[tp.List[tp.Any]] = None, single_item: bool = True, **kwargs) -> None:
+        if data is None:
+            data = []
+        if not isinstance(data, list):
+            data = [data]
+        else:
+            data = list(data)
+        if len(data) > 1:
+            single_item = False
+
+        Configured.__init__(
+            self,
+            data=data,
+            single_item=single_item,
+            **kwargs,
+        )
+
+        self._data = data
+        self._single_item = single_item
 
     @hybrid_method
     def combine(
         cls_or_self: tp.MaybeType[KnowledgeAssetT],
-        *objs: tp.MaybeTuple[KnowledgeAssetT],
+        *objs: tp.MaybeSequence[KnowledgeAssetT],
         **kwargs,
     ) -> KnowledgeAssetT:
         """Combine multiple `KnowledgeAsset` instances into one.
 
-        Usage:
+        Args:
+            *objs (MaybeSequence[KnowledgeAsset]): (Additional) `KnowledgeAsset` instances to combine.
+            **kwargs: Keyword arguments for `KnowledgeAsset.merge_lists` or
+                `KnowledgeAsset.merge_dicts` or `KnowledgeAsset`.
+
+        Returns:
+            KnowledgeAsset: New asset containing merged data.
+
+        Examples:
             ```pycon
             >>> asset1 = asset[[0, 1]]
             >>> asset2 = asset[[2, 3]]
@@ -252,15 +359,28 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     @hybrid_method
     def merge(
         cls_or_self: tp.MaybeType[KnowledgeAssetT],
-        *objs: tp.MaybeTuple[KnowledgeAssetT],
+        *objs: tp.MaybeSequence[KnowledgeAssetT],
         flatten_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> KnowledgeAssetT:
-        """Either merge multiple `KnowledgeAsset` instances into one if called as a class method or instance
-        method with at least one additional object, or merge data items of a single instance if called
-        as an instance method with no additional objects.
+        """Merge multiple `KnowledgeAsset` instances or the data items of a single instance.
 
-        Usage:
+        When called as a class method or instance method with additional objects, combine the provided
+        `KnowledgeAsset` instances. When called as an instance method without additional objects,
+        merge the data items within the instance.
+
+        Args:
+            *objs (MaybeSequence[KnowledgeAsset]): (Additional) `KnowledgeAsset` instances to merge.
+            flatten_kwargs (KwargsLike): Keyword arguments for flattening data items.
+            
+                See `vectorbtpro.utils.search_.flatten_obj`.
+            **kwargs: Keyword arguments for `KnowledgeAsset.merge_lists` or
+                `KnowledgeAsset.merge_dicts` or `KnowledgeAsset`.
+
+        Returns:
+            KnowledgeAsset: New asset containing merged data.
+
+        Examples:
             ```pycon
             >>> asset1 = asset.select(["s"])
             >>> asset2 = asset.select(["b", "d2"])
@@ -328,11 +448,26 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     def from_json_file(
         cls: tp.Type[KnowledgeAssetT],
         path: tp.PathLike,
-        compression: tp.Union[None, bool, str] = None,
+        compression: tp.CompressionLike = None,
         decompress_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> KnowledgeAssetT:
-        """Build `KnowledgeAsset` from a JSON file."""
+        """Build a `KnowledgeAsset` instance from a JSON file.
+
+        Args:
+            path (PathLike): Path to the JSON file.
+            compression (CompressionLike): Compression algorithm.
+        
+                See `vectorbtpro.utils.pickling.compress`.
+            decompress_kwargs (KwargsLike): Keyword arguments for decompression.
+            **kwargs: Keyword arguments for `KnowledgeAsset`.
+
+        Returns:
+            KnowledgeAsset: New asset populated with data from the JSON file.
+            
+        See:
+            `vectorbtpro.utils.pickling.load_bytes`
+        """
         bytes_ = load_bytes(path, compression=compression, decompress_kwargs=decompress_kwargs)
         json_str = bytes_.decode("utf-8")
         return cls(data=json.loads(json_str), **kwargs)
@@ -341,49 +476,56 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     def from_json_bytes(
         cls: tp.Type[KnowledgeAssetT],
         bytes_: bytes,
-        compression: tp.Union[None, bool, str] = None,
+        compression: tp.CompressionLike = None,
         decompress_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> KnowledgeAssetT:
-        """Build `KnowledgeAsset` from JSON bytes."""
+        """Build a `KnowledgeAsset` instance from JSON bytes.
+
+        Args:
+            bytes_ (bytes): Byte stream containing the JSON object.
+            compression (CompressionLike): Compression algorithm.
+        
+                See `vectorbtpro.utils.pickling.compress`.
+            decompress_kwargs (KwargsLike): Keyword arguments for decompression.
+            **kwargs: Keyword arguments for `KnowledgeAsset`.
+
+        Returns:
+            KnowledgeAsset: New asset containing data from the JSON bytes.
+            
+        See:
+            `vectorbtpro.utils.pickling.decompress`
+        """
         if decompress_kwargs is None:
             decompress_kwargs = {}
         bytes_ = decompress(bytes_, compression=compression, **decompress_kwargs)
         json_str = bytes_.decode("utf-8")
         return cls(data=json.loads(json_str), **kwargs)
 
-    def __init__(self, data: tp.Optional[tp.List[tp.Any]] = None, single_item: bool = True, **kwargs) -> None:
-        if data is None:
-            data = []
-        if not isinstance(data, list):
-            data = [data]
-        else:
-            data = list(data)
-        if len(data) > 1:
-            single_item = False
-
-        Configured.__init__(
-            self,
-            data=data,
-            single_item=single_item,
-            **kwargs,
-        )
-
-        self._data = data
-        self._single_item = single_item
-
     @property
     def data(self) -> tp.List[tp.Any]:
-        """Data."""
+        """List of data items in the asset.
+
+        Returns:
+            List[Any]: The data items contained in the asset.
+        """
         return self._data
 
     @property
     def single_item(self) -> bool:
-        """Whether this instance holds a single item."""
+        """Whether the asset holds a single item.
+
+        Returns:
+            bool: True if the asset contains a single item, otherwise False.
+        """
         return self._single_item
 
     def modify_data(self, data: tp.List[tp.Any]) -> None:
-        """Modify data in place."""
+        """Update the asset's data in place and synchronize its configuration.
+
+        Returns:
+            None
+        """
         if len(data) > 1:
             single_item = False
         else:
@@ -395,7 +537,18 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     # ############# Item methods ############# #
 
     def get_items(self, index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]]) -> tp.Any:
-        """Get one or more data items."""
+        """Get one or more data items from the asset.
+
+        Args:
+            index (Union[int, slice, Iterable[Union[bool, int]]]): Index specifying the item(s) to retrieve.
+
+                A boolean iterable selects items by truth value, an integer iterable selects specific
+                positions, a slice selects a range, and an integer selects a single item.
+
+        Returns:
+            Union[Any, KnowledgeAsset]: The selected data element if an integer is provided,
+                or a new asset containing the extracted items otherwise.
+        """
         if checks.is_complex_iterable(index):
             if all(checks.is_bool(i) for i in index):
                 index = list(index)
@@ -415,9 +568,19 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         value: tp.Any,
         inplace: bool = False,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Set one or more data items.
+        """Set one or more data items in the asset.
 
-        Returns a new `KnowledgeAsset` instance if `inplace` is False."""
+        Args:
+            index (Union[int, slice, Iterable[Union[bool, int]]]): Index specifying the item(s) to update.
+
+                A boolean iterable selects items by truth value, an integer iterable selects specific
+                positions, a slice selects a range, and an integer selects a single item.
+            value (Any): New value or iterable of values to assign.
+            inplace (bool): If True, modify the asset in place.
+
+        Returns:
+            Optional[KnowledgeAsset]: A new asset with updated data, or None if modified in place.
+        """
         new_data = list(self.data)
         if checks.is_complex_iterable(index):
             index = list(index)
@@ -466,9 +629,19 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         index: tp.Union[int, slice, tp.Iterable[tp.Union[bool, int]]],
         inplace: bool = False,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Delete one or more data items.
+        """Delete one or more data items from the asset.
 
-        Returns a new `KnowledgeAsset` instance if `inplace` is False."""
+        Args:
+            index (Union[int, slice, Iterable[Union[bool, int]]]): Index specifying the item(s) to remove.
+
+                A boolean iterable selects items by truth value, an integer iterable selects specific
+                positions, a slice selects a range, and an integer selects a single item.
+            inplace (bool): If True, delete the items in place.
+
+        Returns:
+            Optional[KnowledgeAsset]: A new asset with the selected items removed,
+                or None if modified in place.
+        """
         new_data = list(self.data)
         if checks.is_complex_iterable(index):
             if all(checks.is_bool(i) for i in index):
@@ -497,9 +670,15 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         d: tp.Any,
         inplace: bool = False,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Append a new data item.
+        """Append a new data item to the asset.
 
-        Returns a new `KnowledgeAsset` instance if `inplace` is False."""
+        Args:
+            d (Any): Data item to append.
+            inplace (bool): If True, modify the asset in place.
+
+        Returns:
+            Optional[KnowledgeAsset]: A new asset with the appended item, or None if modified in place.
+        """
         new_data = list(self.data)
         new_data.append(d)
         if inplace:
@@ -512,9 +691,15 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         data: tp.Iterable[tp.Any],
         inplace: bool = False,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Extend by new data items.
+        """Extend the asset with additional data items.
 
-        Returns a new `KnowledgeAsset` instance if `inplace` is False."""
+        Args:
+            data (Iterable[Any]): Iterable of data items to append.
+            inplace (bool): If True, modify the asset in place.
+
+        Returns:
+            Optional[KnowledgeAsset]: A new asset with extended data, or None if modified in place.
+        """
         new_data = list(self.data)
         new_data.extend(data)
         if inplace:
@@ -523,7 +708,15 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return self.replace(data=new_data)
 
     def remove_empty(self, inplace: bool = False) -> tp.Optional[KnowledgeAssetT]:
-        """Remove empty data items."""
+        """Remove empty data items from the asset.
+
+        Args:
+            inplace (bool): If True, remove empty items in place.
+
+        Returns:
+            Optional[KnowledgeAsset]: A new asset with empty items removed,
+                or None if modified in place.
+        """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
         new_data = [d for d in self.data if not FindRemoveAssetFunc.is_empty_func(d)]
@@ -539,11 +732,19 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         inplace: bool = False,
         **kwargs,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """De-duplicate based on `KnowledgeAsset.get` called on `*args` and `**kwargs`.
+        """De-duplicate data items using keys obtained via `KnowledgeAsset.get`.
 
-        Returns a new `KnowledgeAsset` instance if `inplace` is False.
+        Args:
+            *args: Positional arguments for `KnowledgeAsset.get`.
+            keep (str): Indicates which duplicate to retain; valid options are "first" or "last".
+            inplace (bool): If True, de-duplicate the data in place.
+            **kwargs: Keyword arguments for `KnowledgeAsset.get`.
 
-        Usage:
+        Returns:
+            Optional[KnowledgeAsset]: A new asset with duplicates removed,
+                or None if modified in place.
+
+        Examples:
             ```pycon
             >>> asset.unique("b").get()
             [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123},
@@ -581,11 +782,22 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         inplace: bool = False,
         **kwargs,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Sort based on `KnowledgeAsset.get` called on `*args` and `**kwargs`.
+        """Sort data items based on keys extracted via `KnowledgeAsset.get`.
 
-        Returns a new `KnowledgeAsset` instance if `inplace` is False.
+        Args:
+            *args: Positional arguments for `KnowledgeAsset.get`.
+            keys (Optional[Iterable[Key]]): Iterable of keys to sort by.
+            
+                If None, keys are obtained by calling `KnowledgeAsset.get`.
+            ascending (bool): True for ascending order, False for descending.
+            inplace (bool): If True, sort the data in place.
+            **kwargs: Keyword arguments for `KnowledgeAsset.get`.
 
-        Usage:
+        Returns:
+            Optional[KnowledgeAsset]: A new asset with sorted data,
+                or None if sorted in place.
+
+        Examples:
             ```pycon
             >>> asset.sort("d2.c").get()
             [{'s': 'EFG', 'b': False, 'd2': {'c': 'black', 'l': [9, 10]}, 'xyz': 123},
@@ -608,7 +820,15 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         seed: tp.Optional[int] = None,
         inplace: bool = False,
     ) -> tp.Optional[KnowledgeAssetT]:
-        """Shuffle data items."""
+        """Shuffle the asset's data items randomly.
+
+        Args:
+            seed (Optional[int]): Random seed for deterministic output.
+            inplace (bool): If True, shuffle the data in place; otherwise, return a new asset instance.
+
+        Returns:
+            KnowledgeAsset: New asset with shuffled data if `inplace` is False; otherwise, None.
+        """
         import random
 
         if seed is not None:
@@ -626,7 +846,19 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         seed: tp.Optional[int] = None,
         wrap: bool = True,
     ) -> tp.Any:
-        """Pick a random sample of data items."""
+        """Return a random sample of data items from the asset.
+
+        Args:
+            k (Optional[int]): Number of items to sample.
+
+                Defaults to 1 if not specified.
+            seed (Optional[int]): Random seed for deterministic output.
+            wrap (bool): If True, wrap the sampled data in a new asset; otherwise, return raw data items.
+
+        Returns:
+            Any: Either a new asset with the sampled data if `wrap` is True, or a single item
+                (when sampling one) or a list of items.
+        """
         import random
 
         if k is None:
@@ -644,9 +876,18 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return new_data
 
     def print_sample(self, k: tp.Optional[int] = None, seed: tp.Optional[int] = None, **kwargs) -> None:
-        """Print a random sample.
+        """Print a random sample of data items.
 
-        Keyword arguments are passed to `KnowledgeAsset.print`."""
+        Args:
+            k (Optional[int]): Number of items to sample.
+
+                Defaults to 1 if not specified.
+            seed (Optional[int]): Random seed for deterministic output.
+            **kwargs: Keyword arguments for `KnowledgeAsset.print`.
+
+        Returns:
+            None
+        """
         self.sample(k=k, seed=seed).print(**kwargs)
 
     # ############# Collection methods ############# #
@@ -704,19 +945,33 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return_iterator: bool = False,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Apply a function to each data item.
+        """Apply a function or pipeline to each data item in the asset.
 
-        Function can be either a callable, a tuple of function and its arguments,
-        a `vectorbtpro.utils.execution.Task` instance, a subclass of
-        `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix or full name.
-        Moreover, function can be a list of the above. In such a case, `BasicAssetPipeline` will be used.
-        If function is a valid expression, `ComplexAssetPipeline` will be used.
+        The `func` parameter accepts various types:
 
-        Uses `vectorbtpro.utils.execution.execute` for execution.
+        * A callable or a tuple containing a callable and its arguments.
+        * An instance of `vectorbtpro.utils.execution.Task`.
+        * A subclass of `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix/full name.
+        * A list of any of the above, which will use `BasicAssetPipeline`.
+        * A valid expression, which will use `ComplexAssetPipeline`.
 
-        If `wrap` is True, returns a new `KnowledgeAsset` instance, otherwise raw output.
+        Execution is handled by `vectorbtpro.utils.execution.execute`.
 
-        Usage:
+        Args:
+            func (MaybeList[Union[AssetFuncLike, AssetPipeline]]): Function, pipeline, or expression to apply.
+            *args: Positional arguments for the asset pipeline or function.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
+
+                See `vectorbtpro.utils.execution.execute`.
+            wrap (Optional[bool]): If True, return the result wrapped as an asset.
+            single_item (Optional[bool]): Determines if data items are treated as single items.
+            return_iterator (bool): If True, return an iterator instead of executing tasks.
+            **kwargs: Keyword arguments for the asset pipeline or function.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with processed data if `wrap` is True; otherwise, raw output.
+
+        Examples:
             ```pycon
             >>> asset.apply(["flatten", ("query", len)])
             [5, 5, 5, 5, 6]
@@ -822,7 +1077,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return new_data
 
     def get(
-        self: KnowledgeAssetT,
+        self,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         keep_path: tp.Optional[bool] = None,
         skip_missing: tp.Optional[bool] = None,
@@ -830,22 +1085,25 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Get data items or parts of them.
+        """Return specific data items or subsets of them.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.GetAssetFunc`.
+        This method retrieves complete data items or extracts portions specified by a nested path.
+        It applies `vectorbtpro.utils.knowledge.base_asset_funcs.GetAssetFunc` via `KnowledgeAsset.apply`.
 
-        Use argument `path` to specify what part of the data item should be got. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. If `keep_path` is True, the data item will be represented
-        as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
-        becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
-        and path is missing in the data item, will skip the data item.
+        Args:
+            path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to get (e.g. "x.y[0].z").
+            keep_path (Optional[bool]): If True, returns results structured as nested dictionaries
+                mirroring the specified path.
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            source (Optional[CustomTemplateLike]): Template, function, or string for preprocessing;
+                in the template, "i" denotes the index, "d" the full data item, and "x" the extracted part.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
-        Use argument `source` instead of `path` or in addition to `path` to also preprocess the source.
-        It can be a string or function (will become a template), or any custom template. In this template,
-        the index of the data item is represented by "i", the data item itself is represented by "d",
-        the data item under the path is represented by "x" while its fields are represented by their names.
+        Returns:
+            MaybeKnowledgeAsset: New asset containing the selected data.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
@@ -896,11 +1154,19 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def select(self: KnowledgeAssetT, *args, **kwargs) -> KnowledgeAssetT:
-        """Call `KnowledgeAsset.get` and return a new `KnowledgeAsset` instance."""
+        """Return a new `KnowledgeAsset` instance based on the output of `KnowledgeAsset.get`.
+
+        Args:
+            *args: Positional arguments for `KnowledgeAsset.get`.
+            **kwargs: Keyword arguments for `KnowledgeAsset.get`.
+
+        Returns:
+            KnowledgeAsset: New asset containing the selected data.
+        """
         return self.get(*args, wrap=True, **kwargs)
 
     def set(
-        self: KnowledgeAssetT,
+        self,
         value: tp.Any,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: tp.Optional[bool] = None,
@@ -909,23 +1175,26 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Set data items or parts of them.
+        """Set specific data items or their parts.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.SetAssetFunc`.
+        This method modifies data items by applying `vectorbtpro.utils.knowledge.base_asset_funcs.SetAssetFunc`
+        via `KnowledgeAsset.apply`.
 
-        Argument `value` can be any value, function (will become a template), or a template. In this template,
-        the index of the data item is represented by "i", the data item itself is represented by "d",
-        the data item under the path is represented by "x" while its fields are represented by their names.
+        Args:
+            value (Any): Value, function, or template to set.
 
-        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the data item, will skip the data item.
+                In templates, "i" represents the index, "d" the full data item, and "x" the targeted part.
+            path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to set (e.g. "x.y[0].z").
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
+            changed_only (Optional[bool]): If True, returns only data items that were modified.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
-        Set `make_copy` to True to not modify original data.
+        Returns:
+            MaybeKnowledgeAsset: New asset with the modified data.
 
-        Set `changed_only` to True to keep only the data items that have been changed.
-
-        Usage:
+        Examples:
             ```pycon
             >>> asset.set(lambda d: sum(d["d2"]["l"])).get()
             [3, 7, 11, 15, 19]
@@ -959,28 +1228,33 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def remove(
-        self: KnowledgeAssetT,
+        self,
         path: tp.MaybeList[tp.PathLikeKey],
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Remove data items or parts of them.
+        """Remove data items or parts of them from the asset.
 
-        If `path` is an integer, removes the entire data item at that index.
+        Leverages `KnowledgeAsset.apply` with
+        `vectorbtpro.utils.knowledge.base_asset_funcs.RemoveAssetFunc` to remove either an entire data item
+        (when a numeric path is provided) or a specific element within a data item based on a hierarchical path
+        (e.g., "x.y[0].z").
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.RemoveAssetFunc`.
+        Args:
+            path (MaybeList[PathLikeKey]): Path or list of paths indicating the element(s) to remove.
+            
+                If an integer is provided, the entire data item at that index is removed.
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
+            changed_only (Optional[bool]): If True, returns only data items that were modified.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
-        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the data item, will skip the data item.
+        Returns:
+            MaybeKnowledgeAsset: New asset with the specified data items removed.
 
-        Set `make_copy` to True to not modify original data.
-
-        Set `changed_only` to True to keep only the data items that have been changed.
-
-        Usage:
+        Examples:
             ```pycon
             >>> asset.remove("d2.l[0]").get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [2]}},
@@ -1007,7 +1281,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def move(
-        self: KnowledgeAssetT,
+        self,
         path: tp.Union[tp.PathMoveDict, tp.MaybeList[tp.PathLikeKey]],
         new_path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: tp.Optional[bool] = None,
@@ -1015,22 +1289,30 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Move data items or parts of them.
+        """Move data items or parts of them within the asset.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.MoveAssetFunc`.
+        Uses `KnowledgeAsset.apply` with
+        `vectorbtpro.utils.knowledge.base_asset_funcs.MoveAssetFunc` to reposition elements within
+        data items. Specify the element to move using `path`. When `new_path` is provided, it designates
+        the new token for the element; otherwise, `path` must be given as a dictionary mapping original
+        paths to new tokens.
 
-        Use argument `path` to specify what part of the data item should be renamed. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the data item, will skip the data item.
+        Args:
+            path (Union[PathMoveDict, MaybeList[PathLikeKey]]): Mapping or path(s) within the data item 
+                to move (e.g. "x.y[0].z").
 
-        Use argument `new_path` to specify the last part of the data item (i.e., token) that should be renamed to.
-        Multiple tokens can be provided. If None, `path` must be a dictionary.
+                When provided as a dictionary, keys are source paths and values are the corresponding new tokens.
+            new_path (Optional[MaybeList[PathLikeKey]]): Path(s) for the moved element(s)
+                when `path` is not a dictionary.
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
+            changed_only (Optional[bool]): If True, returns only data items that were modified.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
-        Set `make_copy` to True to not modify original data.
+        Returns:
+            MaybeKnowledgeAsset: New asset with the modified data.
 
-        Set `changed_only` to True to keep only the data items that have been changed.
-
-        Usage:
+        Examples:
             ```pycon
             >>> asset.move("d2.l", "l").get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red'}, 'l': [1, 2]},
@@ -1059,7 +1341,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def rename(
-        self: KnowledgeAssetT,
+        self,
         path: tp.Union[tp.PathRenameDict, tp.MaybeList[tp.PathLikeKey]],
         new_token: tp.Optional[tp.MaybeList[tp.PathKeyToken]] = None,
         skip_missing: tp.Optional[bool] = None,
@@ -1067,13 +1349,28 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Rename data items or parts of them.
+        """Rename data items or parts of them within the asset.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.RenameAssetFunc`.
+        Leverages `KnowledgeAsset.apply` with
+        `vectorbtpro.utils.knowledge.base_asset_funcs.RenameAssetFunc` to change the names of elements within
+        data items. This function is similar to `move` but uses `new_token` to specify the new name.
 
-        Same as `KnowledgeAsset.move` but must specify new token instead of new path.
+        Args:
+            path (Union[PathRenameDict, MaybeList[PathLikeKey]]): Mapping or list of paths indicating
+                the element(s) to rename.
 
-        Usage:
+                When provided as a dictionary, the keys define the source paths.
+            new_token (Optional[MaybeList[PathKeyToken]]): New token or list of tokens for
+                renaming the element(s).
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
+            changed_only (Optional[bool]): If True, returns only data items that were modified.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with the modified data.
+
+        Examples:
             ```pycon
             >>> asset.rename("d2.l", "x").get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'x': [1, 2]}},
@@ -1097,7 +1394,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def reorder(
-        self: KnowledgeAssetT,
+        self,
         new_order: tp.Union[str, tp.PathKeyTokens],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: tp.Optional[bool] = None,
@@ -1106,30 +1403,31 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Reorder data items or parts of them.
+        """Reorder data items or parts within each item.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.ReorderAssetFunc`.
+        Uses `KnowledgeAsset.apply` with `vectorbtpro.utils.knowledge.base_asset_funcs.ReorderAssetFunc`
+        to reorder data. For dictionaries, keys are reordered using `vectorbtpro.utils.config.reorder_dict`;
+        for sequences, ordering follows `vectorbtpro.utils.config.reorder_list`.
 
-        Can change order in dicts based on `vectorbtpro.utils.config.reorder_dict` and
-        sequences based on `vectorbtpro.utils.config.reorder_list`.
+        Args:
+            new_order (Union[str, PathKeyTokens]): New order specification, which can be:
 
-        Argument `new_order` can be a sequence of tokens. To not reorder a subset of keys, they can
-        be replaced by an ellipsis (`...`). For example, `["a", ..., "z"]` puts the token "a" at the start
-        and the token "z" at the end while other tokens are left in the original order. If `new_order` is
-        a string, it can be "asc"/"ascending" or "desc"/"descending". Other than that, it can be a string or
-        function (will become a template), or any custom template. In this template, the data item is
-        the index of the data item is represented by "i", the data item itself is represented by "d",
-        the data item under the path is represented by "x" while its fields are represented by their names.
+                * A sequence with tokens and an ellipsis (`...`) to preserve segments (e.g. ["a", ..., "z"]).
+                * A string "asc", "ascending", "desc", or "descending" indicating the sort order.
+                * A function or template that generates an order using variables: `i` for the item index,
+                    `d` for the data item, `x` for the value at the specified path, and field names for
+                    individual fields.
+            path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to reorder (e.g. "x.y[0].z").
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
+            changed_only (Optional[bool]): If True, returns only data items that were modified.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
-        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the data item, will skip the data item.
+        Returns:
+            MaybeKnowledgeAsset: New asset with the reordered data.
 
-        Set `make_copy` to True to not modify original data.
-
-        Set `changed_only` to True to keep only the data items that have been changed.
-
-        Usage:
+        Examples:
             ```pycon
             >>> asset.reorder(["xyz", ...], skip_missing=True).get()
             >>> asset.reorder(lambda x: ["xyz", ...] if "xyz" in x else [...]).get()
@@ -1159,36 +1457,42 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def query(
-        self: KnowledgeAssetT,
+        self,
         expression: tp.CustomTemplateLike,
         query_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         return_type: tp.Optional[str] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Query using an engine and return the queried data item(s).
+        """Query data items using a specified engine and return matching results.
 
-        Following engines are supported:
+        Evaluates an expression or template over data items using one of the following engines:
 
-        * "jmespath": Evaluation with `jmespath` package
-        * "jsonpath", "jsonpath-ng" or "jsonpath_ng": Evaluation with `jsonpath-ng` package
-        * "jsonpath.ext", "jsonpath-ng.ext" or "jsonpath_ng.ext": Evaluation with extended `jsonpath-ng` package
-        * None or "template": Evaluation of each data item as a template. The index of the data item is
-            represented by "i", the data item itself is represented by "d", the data item under the path
-            is represented by "x" while its fields are represented by their names.
-            Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.QueryAssetFunc`.
-        * "pandas": Same as above but variables being columns
+        * "jmespath": Evaluates expressions with the `jmespath` package.
+        * "jsonpath", "jsonpath-ng", "jsonpath_ng": Evaluates expressions with the `jsonpath_ng` package.
+        * "jsonpath.ext", "jsonpath-ng.ext", "jsonpath_ng.ext": Evaluates expressions with the extended
+            `jsonpath_ng` package.
+        * None or "template": Evaluates each data item as a template using `KnowledgeAsset.apply` with
+            `vectorbtpro.utils.knowledge.base_asset_funcs.QueryAssetFunc`. In the template, use `i`
+            for the item index, `d` for the data item, `x` for the value at a specified path, and
+            field names for individual fields.
+        * "pandas": Evaluates the expression treating data items as rows with their fields as columns.
 
-        If `return_type` is "item", returns the data item when matched. If `return_type` is "bool",
-        returns True when matched.
+        Templates can also utilize functions from `vectorbtpro.utils.search_.search_config` and operate
+        on both single values and sequences.
 
-        Templates can also use the functions defined in `vectorbtpro.utils.search_.search_config`.
+        Args:
+            expression (CustomTemplateLike): Query expression or template.
+            query_engine (Optional[str]): Name of the query engine.
+            template_context (KwargsLike): Additional context for template substitution.
+            return_type (Optional[str]): If "item", returns the matched data item; if "bool",
+                returns a boolean indicating a match.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply` or the query engine.
 
-        They work on single values and sequences alike.
+        Returns:
+            MaybeKnowledgeAsset: New asset with the matching data items.
 
-        Keyword arguments are passed to the respective search/parse/evaluation function.
-
-        Usage:
+        Examples:
             ```pycon
             >>> asset.query("d['s'] == 'ABC'")
             >>> asset.query("x['s'] == 'ABC'")
@@ -1298,11 +1602,19 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return new_obj
 
     def filter(self: KnowledgeAssetT, *args, **kwargs) -> KnowledgeAssetT:
-        """Call `KnowledgeAsset.query` and return a new `KnowledgeAsset` instance."""
+        """Return a new `KnowledgeAsset` instance by calling `KnowledgeAsset.query`.
+
+        Args:
+            *args: Positional arguments for `KnowledgeAsset.query`.
+            **kwargs: Keyword arguments for `KnowledgeAsset.query`.
+
+        Returns:
+            KnowledgeAsset: New asset containing the filtered data.
+        """
         return self.query(*args, wrap=True, **kwargs)
 
     def find(
-        self: KnowledgeAssetT,
+        self,
         target: tp.MaybeList[tp.Any],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         per_path: tp.Optional[bool] = None,
@@ -1321,38 +1633,50 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         unique_fields: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Find occurrences and return a new `KnowledgeAsset` instance.
+        """Return a new `KnowledgeAsset` instance with found occurrences based on the target.
 
         Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindAssetFunc`.
 
-        Uses `vectorbtpro.utils.search_.contains_in_obj` (keyword arguments are passed here)
-        to find any occurrences in each data item if `return_type` is "item" (returns the data item when matched),
-        `return_type` is "field" (returns the field), or `return_type` is "bool" (returns True when matched).
-        For all other return types, uses `vectorbtpro.utils.search_.find_in_obj` and `vectorbtpro.utils.search_.find`.
+        Searches each data item with `vectorbtpro.utils.search_.contains_in_obj` when `return_type`
+        is "item", "field", or "bool", and uses `vectorbtpro.utils.search_.find_in_obj` and
+        `vectorbtpro.utils.search_.find` for all other return types.
 
         Target can be one or multiple data items. If there are multiple targets and `find_all` is True,
         the match function will return True only if all targets have been found.
-
-        Use argument `path` to specify what part of the data item should be searched. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. If `keep_path` is True, the data item will be represented
-        as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
-        becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
-        and path is missing in the data item, will skip the data item. If `per_path` is True, will consider
-        targets to be provided per path.
 
         Use argument `source` instead of `path` or in addition to `path` to also preprocess the source.
         It can be a string or function (will become a template), or any custom template. In this template,
         the index of the data item is represented by "i", the data item itself is represented by "d",
         the data item under the path is represented by "x" while its fields are represented by their names.
 
-        Set `in_dumps` to True to convert the entire data item to string and search in that string.
-        Will use `vectorbtpro.utils.formatting.dump` with `**dump_kwargs`.
+        Args:
+            target (MaybeList[Any]): Target value(s) or callable(s) to determine if a match occurs.
 
-        Disable `merge_matches` and `merge_fields` to keep empty lists when searching for matches and
-        fields respectively. Disable `unique_matches` and `unique_fields` to keep duplicate matches
-        and fields respectively.
+                Also supports negation using `vectorbtpro.utils.search_.Not`.
+            path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to search (e.g. "x.y[0].z").
+            per_path (Optional[bool]): If True, consider targets provided per path.
+            find_all (Optional[bool]): Require all targets to be found when multiple targets are provided.
+            keep_path (Optional[bool]): If True, returns results structured as nested dictionaries
+                mirroring the specified path.
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
+            in_dumps (Optional[bool]): If True, converts the entire data item to string for searching.
+            dump_kwargs (KwargsLike): Keyword arguments for dumping structured data.
 
-        Usage:
+                See `vectorbtpro.utils.formatting.dump`.
+            template_context (KwargsLike): Additional context for template substitution.
+            return_type (Optional[str]): Indicates the return type: "item", "field", or "bool".
+            return_path (Optional[bool]): Specifies whether to include the path in the returned result.
+            merge_matches (Optional[bool]): If False, keeps empty lists when searching for matches.
+            merge_fields (Optional[bool]): If False, keeps empty lists when searching for fields.
+            unique_matches (Optional[bool]): If False, allows duplicate matches.
+            unique_fields (Optional[bool]): If False, allows duplicate fields.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with the found data items.
+
+        Examples:
             ```pycon
             >>> asset.find("BC").get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
@@ -1459,9 +1783,27 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         flags: int = 0,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Find code using `KnowledgeAsset.find`.
+        """Return code segments from the asset data that match the specified target pattern and language criteria.
 
-        For defaults, see `code` in `vectorbtpro._settings.knowledge`."""
+        This method constructs a regular expression based on the provided target, language, and block settings,
+        and then uses `KnowledgeAsset.find` to search the asset data.
+
+        Args:
+            target (Optional[Iterable[Any]]): Target pattern(s) to locate in the asset.
+            language (Union[None, bool, Iterable[str]]): Language specification(s) to filter code blocks.
+            in_blocks (Optional[bool]): If True, search within code blocks rather than inline code.
+            escape_target (bool): If True, escape regex special characters in the target.
+            escape_language (bool): If True, escape regex special characters in the language.
+            return_type (Optional[str]): Type of result to return.
+            flags (int): Additional flags for compiling the regular expression.
+            **kwargs: Keyword arguments for `KnowledgeAsset.find`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with segments that match the search criteria.
+
+        !!! info
+            For default settings, see `code` in `vectorbtpro._settings.knowledge`.
+        """
         language = self.resolve_setting(language, "language", sub_path="code")
         in_blocks = self.resolve_setting(in_blocks, "in_blocks", sub_path="code")
 
@@ -1538,7 +1880,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return self.find(new_target, mode="regex", return_type=return_type, flags=flags, **kwargs)
 
     def find_replace(
-        self: KnowledgeAssetT,
+        self,
         target: tp.Union[dict, tp.MaybeList[tp.Any]],
         replacement: tp.Optional[tp.MaybeList[tp.Any]] = None,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
@@ -1550,28 +1892,42 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Find and replace occurrences and return a new `KnowledgeAsset` instance.
+        """Return a new `KnowledgeAsset` with occurrences replaced according to the specified criteria.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindReplaceAssetFunc`.
+        This method applies a find-and-replace operation on the asset data using
+        `vectorbtpro.utils.knowledge.base_asset_funcs.FindReplaceAssetFunc` via `KnowledgeAsset.apply`.
+        It uses `vectorbtpro.utils.search_.find_in_obj` to locate occurrences and
+        `vectorbtpro.utils.search_.replace_in_obj` to perform the replacements.
 
-        Uses `vectorbtpro.utils.search_.find_in_obj` (keyword arguments are passed here) to find
-        occurrences in each data item. Then, uses `vectorbtpro.utils.search_.replace_in_obj` to replace them.
+        The target can be provided as a single or multiple data items (list or dictionary).
+        When multiple targets are used with `find_all` set to True, all targets must be found
+        to register a match. The `path` parameter specifies the portion of the data item to search
+        (e.g., "x.y[0].z" to access nested elements). If `keep_path` is True, the results will be
+        returned as a nested dictionary keyed by the specified paths. Providing multiple paths will
+        automatically enable `keep_path` and merge the results. If `skip_missing` is True, any data
+        item missing the specified path will be skipped. When `per_path` is True, targets and
+        replacements are applied per individual path.
 
-        Target can be one or multiple of data items, either as a list or a dictionary. If there are multiple
-        targets and `find_all` is True, the match function will return True only if all targets have been found.
+        Setting `make_copy` avoids modifying the original data.
+        Enabling `changed_only` will return only data items that were modified.
 
-        Use argument `path` to specify what part of the data item should be searched. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. If `keep_path` is True, the data item will be represented
-        as a nested dictionary with path as keys. If multiple paths are provided, `keep_path` automatically
-        becomes True, and they will be merged into one nested dictionary. If `skip_missing` is True
-        and path is missing in the data item, will skip the data item. If `per_path` is True, will consider
-        targets and replacements to be provided per path.
+        Args:
+            target (Union[dict, List[Any]]): Data item(s) or pattern(s) to search for.
+            replacement (Optional[List[Any]]): Replacement value(s) for matched occurrences.
+            path (Optional[List[PathLikeKey]]): Specific path(s) within each data item to target.
+            per_path (Optional[bool]): If True, consider targets and replacements provided per path.
+            find_all (Optional[bool]): Require all targets to be found when multiple targets are provided.
+            keep_path (Optional[bool]): If True, returns results structured as nested dictionaries
+                mirroring the specified path.
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
+            changed_only (Optional[bool]): If True, returns only data items that were modified.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
-        Set `make_copy` to True to not modify original data.
+        Returns:
+            MaybeKnowledgeAsset: New asset with the specified replacements applied.
 
-        Set `changed_only` to True to keep only the data items that have been changed.
-
-        Usage:
+        Examples:
             ```pycon
             >>> asset.find_replace("BC", "XY").get()
             [{'s': 'AXY', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
@@ -1628,7 +1984,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def find_remove(
-        self: KnowledgeAssetT,
+        self,
         target: tp.Union[dict, tp.MaybeList[tp.Any]],
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         per_path: tp.Optional[bool] = None,
@@ -1639,11 +1995,28 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Find and remove occurrences and return a new `KnowledgeAsset` instance.
+        """Remove occurrences of a target from the asset data and return a new `KnowledgeAsset` instance.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+        This method applies a removal operation on nested data items using `KnowledgeAsset.apply` with
+        `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
 
-        Similar to `KnowledgeAsset.find_replace`."""
+        Args:
+            target (Union[dict, MaybeList[Any]]): Value or mapping used to identify occurrences for removal.
+            path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to search (e.g. "x.y[0].z").
+            per_path (Optional[bool]): If True, consider targets provided per path.
+            find_all (Optional[bool]): Require all targets to be found when multiple targets are provided.
+            keep_path (Optional[bool]): If True, returns results structured as nested dictionaries
+                mirroring the specified path.
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
+            changed_only (Optional[bool]): If True, returns only data items that were modified.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with the specified occurrences removed.
+
+        Similar to `KnowledgeAsset.find_replace`.
+        """
         return self.apply(
             "find_remove",
             target=target,
@@ -1657,35 +2030,48 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs,
         )
 
-    def find_remove_empty(self: KnowledgeAssetT, **kwargs) -> tp.MaybeKnowledgeAsset:
-        """Find and remove empty objects."""
+    def find_remove_empty(self, **kwargs) -> tp.MaybeKnowledgeAsset:
+        """Remove empty objects from the asset data.
+
+        This method uses a predefined emptiness check via
+        `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc.is_empty_func` to remove empty objects.
+
+        Args:
+            **kwargs: Keyword arguments for `KnowledgeAsset.find_remove`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with empty objects removed.
+        """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
         return self.find_remove(FindRemoveAssetFunc.is_empty_func, **kwargs)
 
     def flatten(
-        self: KnowledgeAssetT,
+        self,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Flatten data items or parts of them.
+        """Flatten nested elements in the asset data into a flat structure.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FlattenAssetFunc`.
+        This method applies a flattening operation using `KnowledgeAsset.apply` with
+        `vectorbtpro.utils.knowledge.base_asset_funcs.FlattenAssetFunc`. Specify the nested
+        portion to flatten using the `path` argument. Multiple paths can be provided.
+        If `skip_missing` is True and a specified path is missing, the data item will be skipped.
 
-        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the data item, will skip the data item.
+        Args:
+            path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to flatten (e.g. "x.y[0].z").
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
+            changed_only (Optional[bool]): If True, returns only data items that were modified.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
-        Set `make_copy` to True to not modify original data.
+        Returns:
+            MaybeKnowledgeAsset: New asset with flattened data.
 
-        Set `changed_only` to True to keep only the data items that have been changed.
-
-        Keyword arguments are passed to `vectorbtpro.utils.search_.flatten_obj`.
-
-        Usage:
+        Examples:
             ```pycon
             >>> asset.flatten().get()
             [{'s': 'ABC',
@@ -1712,28 +2098,31 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def unflatten(
-        self: KnowledgeAssetT,
+        self,
         path: tp.Optional[tp.MaybeList[tp.PathLikeKey]] = None,
         skip_missing: tp.Optional[bool] = None,
         make_copy: tp.Optional[bool] = None,
         changed_only: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Unflatten data items or parts of them.
+        """Reconstruct nested structures from flattened asset data.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.UnflattenAssetFunc`.
+        This method applies an unflattening operation using `KnowledgeAsset.apply` with
+        `vectorbtpro.utils.knowledge.base_asset_funcs.UnflattenAssetFunc`. Specify the flattened portion to
+        reconstruct using the `path` argument. Multiple paths can be provided. If `skip_missing`
+        is True and a specified path is missing, the data item will be skipped.
 
-        Use argument `path` to specify what part of the data item should be set. For example, "x.y[0].z"
-        to navigate nested dictionaries/lists. Multiple paths can be provided. If `skip_missing` is True and
-        path is missing in the data item, will skip the data item.
+        Args:
+            path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to unflatten (e.g. "x.y[0].z").
+            skip_missing (Optional[bool]): If True, skips data items where the specified path is missing.
+            make_copy (Optional[bool]): If True, operates on a copy rather than modifying the original data.
+            changed_only (Optional[bool]): If True, returns only data items that were modified.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
-        Set `make_copy` to True to not modify original data.
+        Returns:
+            MaybeKnowledgeAsset: New asset with unflattened data.
 
-        Set `changed_only` to True to keep only the data items that have been changed.
-
-        Keyword arguments are passed to `vectorbtpro.utils.search_.unflatten_obj`.
-
-        Usage:
+        Examples:
             ```pycon
             >>> asset.flatten().unflatten().get()
             [{'s': 'ABC', 'b': True, 'd2': {'c': 'red', 'l': [1, 2]}},
@@ -1753,33 +2142,42 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def dump(
-        self: KnowledgeAssetT,
+        self,
         source: tp.Optional[tp.CustomTemplateLike] = None,
         dump_engine: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Dump data items.
+        """Dump asset data items using a specified dump engine.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+        This method applies `KnowledgeAsset.apply` with
+        `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc` to format asset data.
 
-        Following engines are supported:
+        Supported dump engines:
 
-        * "repr": Dumping with `repr`
-        * "prettify": Dumping with `vectorbtpro.utils.formatting.prettify`
-        * "nestedtext": Dumping with NestedText (https://pypi.org/project/nestedtext/)
-        * "yaml": Dumping with YAML
-        * "toml": Dumping with TOML (https://pypi.org/project/toml/)
-        * "json": Dumping with JSON
+        * "repr": Uses Python's `repr`.
+        * "prettify": Uses `vectorbtpro.utils.formatting.prettify`.
+        * "nestedtext": Uses NestedText (https://pypi.org/project/nestedtext/).
+        * "yaml": Uses YAML formatting.
+        * "toml": Uses TOML (https://pypi.org/project/toml/).
+        * "json": Uses JSON formatting.
 
-        Use argument `source` to also preprocess the source. It can be a string or function
-        (will become a template), or any custom template. In this template, the index of the data item
-        is represented by "i", the data item itself is represented by "d" while its fields are
-        represented by their names.
+        The `source` argument can be a string, callable, or custom template to preprocess the data.
+        In the template, "i" represents the index, "d" represents the data item, and its fields are
+        accessible by name.
 
-        Keyword arguments are passed to the respective engine.
+        Args:
+            source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
+            dump_engine (Optional[str]): Name of the dump engine.
 
-        Usage:
+                See `vectorbtpro.utils.formatting.dump`.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with dumped data.
+
+        Examples:
             ```pycon
             >>> print(asset.dump(source="{i: d}", default_flow_style=True).join())
             {0: {s: ABC, b: true, d2: {c: red, l: [1, 2]}}}
@@ -1804,9 +2202,22 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> str:
-        """Dump data list as a single data item.
+        """Dump asset data list into a single asset representation.
 
-        See `KnowledgeAsset.dump` for arguments."""
+        This method uses `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc.prepare_and_call`
+        on the asset's data with the provided parameters.
+
+        Args:
+            source (Optional[CustomTemplateLike]): Template or function to preprocess the source data.
+            dump_engine (Optional[str]): Name of the dump engine.
+
+                See `vectorbtpro.utils.formatting.dump`.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc.prepare_and_call`.
+
+        Returns:
+            str: Dumped asset data as a string.
+        """
         from vectorbtpro.utils.knowledge.base_asset_funcs import DumpAssetFunc
 
         return DumpAssetFunc.prepare_and_call(
@@ -1817,32 +2228,66 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs,
         )
 
-    def to_documents(self, **kwargs) -> tp.MaybeKnowledgeAsset:
-        """Convert to documents of type `vectorbtpro.utils.knowledge.chatting.TextDocument`.
+    def to_documents(
+        self, 
+        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None, 
+        template_context: tp.KwargsLike = None,
+        **kwargs,
+    ) -> tp.MaybeKnowledgeAsset:
+        """Convert asset data items to text documents of type `vectorbtpro.utils.knowledge.chatting.TextDocument`.
 
-        Document-related keyword arguments may contain templates. In such templates,
-        the index of the data item is represented by "i", the data item itself is represented by "d",
-        the data item under the path is represented by "x" while its fields are represented by their names."""
-        return self.apply("to_docs", **kwargs)
+        Templates provided via keyword arguments can reference:
+
+        * "i": the index of the data item,
+        * "d": the data item,
+        * "x": the data item at a specified path, and
+        * field names for respective data item fields.
+
+        Args:
+            document_cls (Optional[Type[StoreDocument]]): Document class to use for creating documents.
+
+                Defaults to `vectorbtpro.utils.knowledge.chatting.TextDocument`.
+            template_context (KwargsLike): Additional context for template substitution.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with data items converted to text documents.
+        """
+        return self.apply(
+            "to_docs", 
+            document_cls=document_cls, 
+            template_context=template_context, 
+            **kwargs,
+        )
 
     def split_text(
         self,
         text_path: tp.Optional[tp.PathLikeKey] = None,
+        document_cls: tp.Optional[tp.Type[tp.StoreDocument]] = None, 
         merge_chunks: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Split text.
+        """Split text content from the asset.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.SplitTextAssetFunc`.
+        This method applies `vectorbtpro.utils.knowledge.base_asset_funcs.SplitTextAssetFunc`
+        via `KnowledgeAsset.apply` to split text content using
+        `vectorbtpro.utils.knowledge.chatting.split_text`.
 
-        Use argument `text_path` to specify a path to the content.
+        Args:
+            text_path (Optional[PathLikeKey]): Path specifying the location of the text content.
+            document_cls (Optional[Type[StoreDocument]]): Document class to use for creating documents.
 
-        If `merge_chunks` is True, merges all chunks into a single list.
+                Defaults to `vectorbtpro.utils.knowledge.chatting.TextDocument`.
+            merge_chunks (Optional[bool]): If True, merge all text chunks into a single list.
+            **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
-        Uses `vectorbtpro.utils.knowledge.chatting.split_text` with `**split_text_kwargs` for text splitting."""
+        Returns:
+            MaybeKnowledgeAsset: New asset with its text content split into chunks.
+        """
         split_asset = self.apply(
             "split_text",
             text_path=text_path,
+            document_cls=document_cls,
             **kwargs,
         )
         merge_chunks = self.resolve_setting(merge_chunks, "merge_chunks")
@@ -1863,7 +2308,20 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         by: tp.List[tp.Any],
         uniform_groups: bool = False,
     ) -> tp.Tuple[tp.List[tp.Any], tp.List[tp.List[int]]]:
-        """get keys and groups."""
+        """Return keys and grouping indices from a list of items.
+
+        When `uniform_groups` is True, consecutive identical items are grouped together.
+        Otherwise, groups are formed based on the first occurrence of each unique item.
+
+        Args:
+            by (List[Any]): List of items to group.
+            uniform_groups (bool): If True, group consecutive identical items; otherwise,
+                group all identical items.
+
+        Returns:
+            Tuple[List[Any], List[List[int]]]: A tuple containing a list of keys and a corresponding
+                list of index groups.
+        """
         keys = []
         groups = []
         if uniform_groups:
@@ -1890,7 +2348,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return keys, groups
 
     def reduce(
-        self: KnowledgeAssetT,
+        self,
         func: tp.CustomTemplateLike,
         *args,
         initializer: tp.Optional[tp.Any] = None,
@@ -1902,22 +2360,37 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return_iterator: bool = False,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Reduce data items.
+        """Reduce asset data items using a binary operation.
 
-        Function can be a callable, a tuple of function and its arguments,
-        a `vectorbtpro.utils.execution.Task` instance, a subclass of
-        `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix or full name.
-        It can also be an expression or a template. In this template, the index of the data item is
-        represented by "i", the data items themselves are represented by "d1" and "d2" or "x1" and "x2".
+        The reduction function `func` can be a callable, a tuple pairing a function with its arguments,
+        a `vectorbtpro.utils.execution.Task` instance, a subclass (or its prefix/full name) of
+        `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc`, or an expression/template.
+        In templates, use "i" for the data item index and "d1"/"d2" (or "x1"/"x2") for operands.
 
-        If an initializer is provided, the first set of values will be `d1=initializer` and
-        `d2=self.data[0]`. If not, it will be `d1=self.data[0]` and `d2=self.data[1]`.
+        If an initializer is provided, the reduction starts with `d1` as the initializer and
+        `d2` as the first data item. Otherwise, it starts with the first two data items.
 
-        If `by` is provided, see `KnowledgeAsset.groupby_reduce`.
+        If `by` is specified, see `KnowledgeAsset.groupby_reduce` for grouped reduction.
+        If `wrap` is True, the result is returned as a new `KnowledgeAsset` instance.
 
-        If `wrap` is True, returns a new `KnowledgeAsset` instance, otherwise raw output.
+        Args:
+            func (CustomTemplateLike): Reduction function, expression, or template.
+            *args: Positional arguments for `KnowledgeAsset.groupby_reduce` or the reduction function.
+            initializer (Optional[Any]): Initial value for the reduction.
+            by (Optional[PathLikeKey]): Key or path used to group data items.
+            template_context (KwargsLike): Additional context for template substitution.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
+            pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
-        Usage:
+                See `vectorbtpro.utils.pbar.ProgressBar`.
+            wrap (Optional[bool]): If True, wrap the result in a `KnowledgeAsset` instance.
+            return_iterator (bool): If True, return an iterator instead of executing tasks.
+            **kwargs: Keyword arguments for `KnowledgeAsset.groupby_reduce` or the reduction function.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with the result of reducing the asset data items.
+
+        Examples:
             ```pycon
             >>> asset.reduce(lambda d1, d2: vbt.merge_dicts(d1, d2))
             >>> asset.reduce(vbt.merge_dicts)
@@ -2034,7 +2507,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return d1
 
     def groupby_reduce(
-        self: KnowledgeAssetT,
+        self,
         func: tp.CustomTemplateLike,
         *args,
         by: tp.Optional[tp.PathLikeKey] = None,
@@ -2043,15 +2516,28 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         execute_kwargs: tp.KwargsLike = None,
         return_group_keys: bool = False,
         **kwargs,
-    ) -> tp.Union[KnowledgeAssetT, dict, list]:
-        """Group data items by keys and reduce.
+    ) -> tp.MaybeKnowledgeAsset:
+        """Group data items by keys and reduce them.
 
-        If `by` is provided, uses it as `path` in `KnowledgeAsset.get`, groups by unique values,
-        and runs `KnowledgeAsset.reduce` on each group.
+        Group data items based on keys obtained using the provided `by` parameter via `KnowledgeAsset.get`.
+        If `uniform_groups` is True, only contiguous identical key values are grouped.
+        For each group, apply `KnowledgeAsset.reduce` with the supplied function and additional arguments.
 
-        Set `uniform_groups` to True to only group unique values that are located adjacent to each other.
+        Args:
+            func (CustomTemplateLike): Reduction function, expression, or template.
+            *args: Positional arguments for `KnowledgeAsset.reduce`.
+            by (Optional[PathLikeKey]): Key or path used to group data items.
+            uniform_groups (Optional[bool]): Whether to group only contiguous identical key values.
+            get_kwargs (KwargsLike): Keyword arguments for retrieving keys via `KnowledgeAsset.get`.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
 
-        Variable arguments are passed to each call of `KnowledgeAsset.reduce`."""
+                See `vectorbtpro.utils.execution.execute`.
+            return_group_keys (bool): If True, returns a dictionary mapping group keys to reduction results.
+            **kwargs: Keyword arguments for `KnowledgeAsset.reduce`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with the reduced data items.
+        """
         uniform_groups = self.resolve_setting(uniform_groups, "uniform_groups")
         execute_kwargs = self.resolve_setting(execute_kwargs, "execute_kwargs", merge=True)
 
@@ -2083,27 +2569,57 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             return type(self).combine(results)
         return results
 
-    def merge_dicts(self: KnowledgeAssetT, **kwargs) -> tp.MaybeKnowledgeAsset:
-        """Merge (dict) date items into a single dict.
+    def merge_dicts(self, **kwargs) -> tp.MaybeKnowledgeAsset:
+        """Merge dictionary data items into a single dictionary.
 
-        Final keyword arguments are passed to `vectorbtpro.utils.config.merge_dicts`."""
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.utils.config.merge_dicts`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with merged dictionary data.
+        """
         return self.reduce("merge_dicts", **kwargs)
 
-    def merge_lists(self: KnowledgeAssetT, **kwargs) -> tp.MaybeKnowledgeAsset:
-        """Merge (list) date items into a single list."""
+    def merge_lists(self, **kwargs) -> tp.MaybeKnowledgeAsset:
+        """Merge list data items into a single list.
+
+        Args:
+            **kwargs: Keyword arguments for `KnowledgeAsset.reduce`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with merged list data.
+        """
         return self.reduce("merge_lists", **kwargs)
 
     def collect(
-        self: KnowledgeAssetT,
+        self,
         sort_keys: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Collect values of each key in each data item."""
+        """Collect values for each key across all data items.
+
+        Args:
+            sort_keys (Optional[bool]): Whether to sort the keys.
+            **kwargs: Keyword arguments for `KnowledgeAsset.reduce`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset containing collected values for each key.
+        """
         return self.reduce("collect", sort_keys=sort_keys, **kwargs)
 
     @classmethod
     def describe_lengths(self, lengths: list, **describe_kwargs) -> dict:
-        """Describe values representing lengths."""
+        """Describe a list of lengths.
+
+        Compute descriptive statistics for the input lengths, excluding count and standard deviation.
+
+        Args:
+            lengths (list): List of numerical lengths.
+            **describe_kwargs: Keyword arguments for `pd.Series.describe`.
+
+        Returns:
+            dict: Dictionary of descriptive statistics with keys prefixed by "len_".
+        """
         len_describe_dict = pd.Series(lengths).describe(**describe_kwargs).to_dict()
         del len_describe_dict["count"]
         del len_describe_dict["std"]
@@ -2116,7 +2632,22 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         wrap: bool = False,
         **kwargs,
     ) -> tp.Union[KnowledgeAssetT, dict]:
-        """Collect and describe each key in each data item."""
+        """Collect and describe values for each key in data items.
+
+        Retrieve values using `KnowledgeAsset.collect` and compute descriptive statistics for each
+        key using `pd.Series.describe`. For keys containing collection values, additional length
+        statistics are computed. If `wrap` is True, the description is wrapped as a single-item
+        asset via `KnowledgeAsset.replace`.
+
+        Args:
+            ignore_empty (Optional[bool]): Whether to ignore empty values.
+            describe_kwargs (KwargsLike): Keyword arguments for `pd.Series.describe`.
+            wrap (bool): If True, wraps the description in a single-item asset.
+            **kwargs: Keyword arguments for `KnowledgeAsset.collect`.
+
+        Returns:
+            Union[KnowledgeAssetT, dict]: A data asset or dictionary containing descriptive statistics.
+        """
         ignore_empty = self.resolve_setting(ignore_empty, "ignore_empty")
         describe_kwargs = self.resolve_setting(describe_kwargs, "describe_kwargs", merge=True)
 
@@ -2170,12 +2701,12 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return description
 
     def print_schema(self, **kwargs) -> None:
-        """Print schema.
+        """Print the asset schema as a directory tree.
 
-        Keyword arguments are split between `KnowledgeAsset.describe` and
-        `vectorbtpro.utils.path_.dir_tree_from_paths`.
+        Keyword arguments are forwarded to `KnowledgeAsset.describe` and
+        `vectorbtpro.utils.path_.dir_tree_from_paths` to build the schema structure.
 
-        Usage:
+        Examples:
             ```pycon
             >>> asset.print_schema()
             /
@@ -2224,7 +2755,22 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         print(dir_tree_from_paths(paths, **dir_tree_kwargs))
 
     def join(self, separator: tp.Optional[str] = None) -> str:
-        """Join the list of string data items."""
+        """Join string data items into a single string.
+
+        If no separator is provided, the method infers one based on the trailing characters of each string:
+
+        * Uses an empty string if all items end with a newline, tab, or space.
+        * Uses ', ' if all items end with '}' or ']'.
+        * Otherwise, uses two newlines.
+
+        If the resulting string starts with '{' and ends with '}', it is converted to use square brackets.
+
+        Args:
+            separator (Optional[str]): Separator to insert between data items.
+
+        Returns:
+            str: Resulting concatenated string.
+        """
         if len(self.data) == 0:
             return ""
         if len(self.data) == 1:
@@ -2256,11 +2802,21 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         wrap_documents: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.Optional[tp.MaybeKnowledgeAsset]:
-        """Embed documents.
+        """Embed documents in the asset.
 
-        First, converts to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
-        `KnowledgeAsset.to_documents` and `**to_documents_kwargs`. Then, uses
-        `vectorbtpro.utils.knowledge.chatting.embed_documents` with `**kwargs` for actual ranking."""
+        Converts the asset's data to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
+        `KnowledgeAsset.to_documents` if needed, then embeds them with
+        `vectorbtpro.utils.knowledge.chatting.embed_documents` using provided keyword arguments.
+        Optionally unwraps the embedded documents if `wrap_documents` is False.
+
+        Args:
+            to_documents_kwargs (KwargsLike): Keyword arguments for `KnowledgeAsset.to_documents`.
+            wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.embed_documents`.
+
+        Returns:
+            Optional[MaybeKnowledgeAsset]: A new asset with embedded documents, or None if embedding fails.
+        """
         from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, embed_documents
 
         if self.data and not isinstance(self.data[0], StoreDocument):
@@ -2305,13 +2861,29 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     ) -> tp.MaybeKnowledgeAsset:
         """Rank documents by their similarity to a query.
 
-        First, converts to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
-        `KnowledgeAsset.to_documents` and `**to_documents_kwargs`. Then, uses
-        `vectorbtpro.utils.knowledge.chatting.rank_documents` with `**kwargs` for actual ranking.
+        Converts the asset's data to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
+        `KnowledgeAsset.to_documents` if necessary, then ranks the documents with
+        `vectorbtpro.utils.knowledge.chatting.rank_documents` using provided keyword arguments.
+        If caching is enabled with `cache_documents` and `cache_key`, the generated text documents are
+        stored or loaded via an asset cache manager.
 
-        If `cache_documents` is True and `cache_key` is not None, will use an asset cache manager
-        to store the generated text documents in a local and/or disk cache after conversion.
-        Running the same method again will use the cached documents."""
+        Args:
+            query (str): Query string to rank document relevance.
+            to_documents_kwargs (KwargsLike): Keyword arguments for `KnowledgeAsset.to_documents`.
+            wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
+            cache_documents (bool): If True, will use an asset cache manager to cache the generated
+                text documents after conversion.
+
+                Running the same method again will use the cached documents.
+            cache_key (Optional[str]): Unique identifier for the cached asset.
+            asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of `AssetCacheManager`.
+            asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
+            silence_warnings (bool): Flag to suppress warning messages.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.rank_documents`.
+
+        Returns:
+            MaybeKnowledgeAsset: New asset with documents ranked based on similarity to the query.
+        """
         from vectorbtpro.utils.knowledge.chatting import StoreDocument, ScoredDocument, rank_documents
 
         if cache_documents:
@@ -2348,6 +2920,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 documents = self.data
                 if wrap_documents is None:
                     wrap_documents = True
+        if "bm25_mirror_store_id" not in kwargs:
+            kwargs["bm25_mirror_store_id"] = cache_key
         ranked_documents = rank_documents(query=query, documents=documents, **kwargs)
         if not wrap_documents:
 
@@ -2371,12 +2945,21 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         separator: tp.Optional[str] = None,
         **kwargs,
     ) -> str:
-        """Convert to a context.
+        """Convert the asset to a context string.
 
-        If `dump_all` is True, calls `KnowledgeAsset.dump_all` with `*args` and `**kwargs`.
-        Otherwise, calls `KnowledgeAsset.dump`.
+        Based on the `dump_all` flag, calls either `KnowledgeAsset.dump_all` or `KnowledgeAsset.dump`
+        with provided arguments. The dumped data is then joined using `KnowledgeAsset.join` with
+        the specified separator.
 
-        Finally, calls `KnowledgeAsset.join` with `separator`."""
+        Args:
+            *args: Positional arguments for the dump function.
+            dump_all (Optional[bool]): Flag determining which dump method to use.
+            separator (Optional[str]): Separator used for joining dumped data.
+            **kwargs: Keyword arguments for the dump function.
+
+        Returns:
+            str: Resulting context string.
+        """
         from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, ScoredDocument
 
         if dump_all is None:
@@ -2396,7 +2979,16 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         return dumped.join(separator=separator)
 
     def print(self, *args, **kwargs) -> None:
-        """Convert to a context and print.
+        """Print the asset as a context string.
 
-        Uses `KnowledgeAsset.to_context`."""
+        Calls `KnowledgeAsset.to_context` with provided arguments to generate a context string,
+        which is then printed.
+
+        Args:
+            *args: Positional arguments for `KnowledgeAsset.to_context`.
+            **kwargs: Keyword arguments for `KnowledgeAsset.to_context`.
+
+        Returns:
+            None
+        """
         print(self.to_context(*args, **kwargs))

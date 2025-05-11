@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RandomData`."""
+"""Module providing the `RandomData` class for generating synthetic data."""
 
 import pandas as pd
 
@@ -29,7 +29,14 @@ __pdoc__ = {}
 
 
 class RandomData(SyntheticData):
-    """`SyntheticData` for data generated using `vectorbtpro.data.nb.generate_random_data_nb`."""
+    """Data class for synthetic data generation.
+
+    See:
+        * `RandomData.generate_key` for argument details.
+
+    !!! info
+        For default settings, see `custom.random` in `vectorbtpro._settings.data`.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.random")
 
@@ -50,26 +57,33 @@ class RandomData(SyntheticData):
         """Generate a feature or symbol.
 
         Args:
-            key (hashable): Feature or symbol.
-            index (pd.Index): Pandas index.
-            columns (hashable or index_like): Column names.
+            key (Hashable): Feature or symbol identifier.
+            index (Index): Pandas index.
+            columns (Union[Hashable, IndexLike]): Column names.
 
-                Provide a single value (hashable) to make a Series.
+                Provide a single value to create a Series.
             start_value (float): Value at time 0.
 
-                Does not appear as the first value in the output data.
-            mean (float): Drift, or mean of the percentage change.
-            std (float): Standard deviation of the percentage change.
-            symmetric (bool): Whether to diminish negative returns and make them symmetric to positive ones.
-            seed (int): Seed to make output deterministic.
-            jitted (any): See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+                Not included as the first value in the output.
+            mean (float): Mean of the Gaussian distribution for sampling returns.
+            std (float): Standard deviation of the Gaussian distribution for sampling returns.
+            symmetric (bool): If True, converts negative returns to be symmetric to positive ones,
+                reducing their negative impact.
+            seed (int): Random seed for deterministic output.
 
-        For defaults, see `custom.random` in `vectorbtpro._settings.data`.
+                !!! note
+                    When using a seed, pass a unique seed per feature or symbol via
+                    `vectorbtpro.data.base.feature_dict`, `vectorbtpro.data.base.symbol_dict`,
+                    or generally `vectorbtpro.data.base.key_dict`.
+            jitted (JittedOption): Option to control JIT compilation.
 
-        !!! note
-            When setting a seed, remember to pass a seed per feature/symbol using
-            `vectorbtpro.data.base.feature_dict`/`vectorbtpro.data.base.symbol_dict` or generally
-            `vectorbtpro.data.base.key_dict`.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+
+        Returns:
+            KeyData: Generated data and a metadata dictionary.
+
+        See:
+            `vectorbtpro.data.nb.generate_random_data_nb`
         """
         if checks.is_hashable(columns):
             columns = [columns]

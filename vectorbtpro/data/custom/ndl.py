@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `NDLData`."""
+"""Module providing the `NDLData` class for accessing data from Nasdaq Data Link."""
 
 import pandas as pd
 
@@ -27,14 +27,19 @@ NDLDataT = tp.TypeVar("NDLDataT", bound="NDLData")
 
 
 class NDLData(RemoteData):
-    """Data class for fetching from Nasdaq Data Link.
+    """Data class for fetching data from Nasdaq Data Link.
 
-    See https://github.com/Nasdaq/data-link-python for API.
+    This class provides methods to pull data from Nasdaq Data Link using its API.
 
-    See `NDLData.fetch_symbol` for arguments.
+    See:
+        * https://github.com/Nasdaq/data-link-python for the official API documentation.
+        * `NDLData.fetch_symbol` for argument details.
 
-    Usage:
-        * Set up the API key globally (optional):
+    !!! info
+        For default settings, see `custom.ndl` in `vectorbtpro._settings.data`.
+
+    Examples:
+        Set up the API key globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -44,7 +49,7 @@ class NDLData(RemoteData):
         ... )
         ```
 
-        * Pull a dataset:
+        Pull a dataset:
 
         ```pycon
         >>> data = vbt.NDLData.pull(
@@ -54,7 +59,7 @@ class NDLData(RemoteData):
         ... )
         ```
 
-        * Pull a datatable:
+        Pull a datatable:
 
         ```pycon
         >>> data = vbt.NDLData.pull(
@@ -71,7 +76,7 @@ class NDLData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         api_key: tp.Optional[str] = None,
         data_format: tp.Optional[str] = None,
         start: tp.Optional[tp.DatetimeLike] = None,
@@ -80,29 +85,30 @@ class NDLData(RemoteData):
         column_indices: tp.Optional[tp.MaybeIterable[int]] = None,
         **params,
     ) -> tp.SymbolData:
-        """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Nasdaq Data Link.
+        """Fetch a symbol's data from Nasdaq Data Link.
 
         Args:
-            symbol (str): Symbol.
-            api_key (str): API key.
-            data_format (str): Data format.
+            symbol (Symbol): Symbol identifier.
+            api_key (Optional[str]): API key.
+            data_format (Optional[str]): Data format.
 
-                Supported are "dataset" and "datatable".
-            start (any): Retrieve data rows on and after the specified start date.
+                Supported formats: "dataset" and "datatable".
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): Retrieve data rows up to and including the specified end date.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            tz (any): Timezone.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            column_indices (int or iterable): Request one or more specific columns.
+            column_indices (Optional[MaybeIterable[int]]): Specific column(s) to retrieve.
 
-                Column 0 is the date column and is always returned. Data begins at column 1.
-            **params: Keyword arguments sent as field/value params to Nasdaq Data Link with no interference.
+                Column 0 (date) is always returned, with data columns starting at index 1.
+            **params: Keyword arguments for Nasdaq Data Link as field/value parameters.
 
-        For defaults, see `custom.ndl` in `vectorbtpro._settings.data`.
+        Returns:
+            SymbolData: Fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -179,7 +185,7 @@ class NDLData(RemoteData):
                     df = df[df.index < end]
         return df, dict(tz=tz)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for working with class/instance attributes."""
+"""Module providing utilities for working with class and instance attributes."""
 
 import enum
 import inspect
@@ -36,7 +36,7 @@ __all__ = [
 
 
 class _Missing(enum.Enum):
-    """Sentinel class for missing values."""
+    """Class representing a sentinel for missing values."""
 
     MISSING = enum.auto()
 
@@ -54,7 +54,12 @@ DefineMixinT = tp.TypeVar("DefineMixinT", bound="DefineMixin")
 
 
 class DefineMixin(Hashable):
-    """Mixin class for `define`."""
+    """Mixin class for `define` that provides attribute field management capabilities for attrs-decorated classes.
+
+    Args:
+        *args: Positional arguments for the underlying initializer.
+        **kwargs: Keyword arguments for the underlying initializer.
+    """
 
     def __init__(self, *args, **kwargs) -> None:
         if not attr.has(type(self)):
@@ -65,7 +70,11 @@ class DefineMixin(Hashable):
 
     @hybrid_property
     def fields(cls_or_self) -> tp.Optional[tp.Tuple[attr.Attribute]]:
-        """Get a tuple of fields."""
+        """Tuple of attribute fields for the class or instance.
+
+        Returns:
+            Optional[Tuple[Attribute]]: Tuple of attribute fields if available, otherwise None.
+        """
         if isinstance(cls_or_self, type):
             cls = cls_or_self
             if not attr.has(cls):
@@ -76,7 +85,11 @@ class DefineMixin(Hashable):
 
     @hybrid_property
     def fields_dict(cls_or_self) -> tp.Optional[tp.Dict[str, attr.Attribute]]:
-        """Get a dict of fields."""
+        """Dictionary mapping field names to attribute fields for the class or instance.
+
+        Returns:
+            Optional[Dict[str, Attribute]]: Dictionary of attribute fields if available, otherwise None.
+        """
         if isinstance(cls_or_self, type):
             cls = cls_or_self
             if not attr.has(cls):
@@ -87,12 +100,26 @@ class DefineMixin(Hashable):
 
     @hybrid_method
     def get_field(cls_or_self, field_name: str) -> attr.Attribute:
-        """Get field."""
+        """Return the attribute field corresponding to the specified field name.
+
+        Args:
+            field_name (str): Name of the attribute field.
+
+        Returns:
+            Attribute: Attribute field object.
+        """
         return cls_or_self.fields_dict[field_name]
 
     @hybrid_method
-    def is_field_required(cls_or_self, field_or_name: tp.Union[str, attr.Attribute]) -> None:
-        """Return whether a field is required."""
+    def is_field_required(cls_or_self, field_or_name: tp.Union[str, attr.Attribute]) -> bool:
+        """Determine if the specified field is required.
+
+        Args:
+            field_or_name (Union[str, Attribute]): Name or object of the attribute field.
+
+        Returns:
+            bool: True if the field is required, False otherwise.
+        """
         if isinstance(field_or_name, str):
             field = cls_or_self.get_field(field_or_name)
         else:
@@ -100,8 +127,15 @@ class DefineMixin(Hashable):
         return field.default is MISSING and "default" not in field.metadata
 
     @hybrid_method
-    def is_field_optional(cls_or_self, field_or_name: tp.Union[str, attr.Attribute]) -> None:
-        """Return whether a field is optional."""
+    def is_field_optional(cls_or_self, field_or_name: tp.Union[str, attr.Attribute]) -> bool:
+        """Determine if the specified field is optional.
+
+        Args:
+            field_or_name (Union[str, Attribute]): Name or object of the attribute field.
+
+        Returns:
+            bool: True if the field is optional, False otherwise.
+        """
         if isinstance(field_or_name, str):
             field = cls_or_self.get_field(field_or_name)
         else:
@@ -109,7 +143,17 @@ class DefineMixin(Hashable):
         return field.default is MISSING and "default" in field.metadata
 
     def resolve_field(self, field_or_name: tp.Union[str, attr.Attribute]) -> tp.Any:
-        """Resolve a field."""
+        """Resolve the value of the specified field for the instance.
+
+        Checks the instance attribute and, if unset (i.e. equal to `MISSING`),
+        returns the field's default value or the default specified in metadata if available.
+
+        Args:
+            field_or_name (Union[str, Attribute]): Name or object of the attribute field.
+
+        Returns:
+            Any: Resolved value of the field, or `MISSING` if no value is available.
+        """
         if isinstance(field_or_name, str):
             if getattr(self, field_or_name) is not MISSING:
                 return getattr(self, field_or_name)
@@ -122,12 +166,28 @@ class DefineMixin(Hashable):
             return field.default
         return field.metadata.get("default", MISSING)
 
-    def is_field_missing(self, field_or_name: tp.Union[str, attr.Attribute]) -> None:
-        """Raise an error if a field is missing."""
+    def is_field_missing(self, field_or_name: tp.Union[str, attr.Attribute]) -> bool:
+        """Determine if the specified field is missing.
+
+        Args:
+            field_or_name (Union[str, Attribute]): Name or object of the attribute field.
+
+        Returns:
+            bool: True if the field is missing, False otherwise.
+        """
         return self.resolve_field(field_or_name) is MISSING
 
     def assert_field_not_missing(self, field_or_name: tp.Union[str, attr.Attribute]) -> None:
-        """Raise an error if a field is missing."""
+        """Assert that the specified field is not missing.
+
+        If the field is missing, raises a ValueError indicating whether it is required or optional.
+
+        Args:
+            field_or_name (Union[str, Attribute]): Name or object of the attribute field.
+
+        Returns:
+            None
+        """
         if isinstance(field_or_name, str):
             field = self.get_field(field_or_name)
         else:
@@ -141,7 +201,17 @@ class DefineMixin(Hashable):
                 raise ValueError(f"Field '{type(self).__name__}.{field.name}' is missing")
 
     def resolve(self: DefineMixinT, assert_not_missing: bool = True) -> DefineMixinT:
-        """Resolve a field or all fields."""
+        """Resolve all attribute fields for the instance.
+
+        For each field, verifies that a value is present (if `assert_not_missing` is True)
+        and replaces missing values using default values.
+
+        Args:
+            assert_not_missing (bool): If True, asserts that each field is not missing.
+
+        Returns:
+            DefineMixin: New instance with all field values resolved.
+        """
         changes = {}
         for field in self.fields:
             if assert_not_missing:
@@ -153,9 +223,16 @@ class DefineMixin(Hashable):
         return self.replace(**changes)
 
     def asdict(self, full: bool = True) -> dict:
-        """Convert this instance to a dictionary.
+        """Convert the instance to a dictionary representation.
 
-        If `full` is False, won't include fields with `MISSING` as value."""
+        If `full` is False, fields with a value of `MISSING` are omitted.
+
+        Args:
+            full (bool): If True, include all fields; otherwise, exclude fields with a missing value.
+
+        Returns:
+            dict: Dictionary mapping field names to their corresponding values.
+        """
         dct = dict()
         for field in self.fields:
             k = field.name
@@ -165,17 +242,45 @@ class DefineMixin(Hashable):
         return dct
 
     def replace(self: DefineMixinT, **changes) -> DefineMixinT:
-        """Create a new instance by making changes to the attribute values."""
+        """Return a new instance with updated attribute values.
+
+        Args:
+            **changes: Keyword arguments specifying field updates.
+
+        Returns:
+            DefineMixin: New instance reflecting the specified changes.
+        """
         return attr.evolve(self, **changes)
 
     def merge_with(self: DefineMixinT, other: DefineMixinT, **changes) -> DefineMixinT:
-        """Merge this instance with another instance."""
+        """Return a new instance resulting from merging attribute values from this instance and another.
+
+        In cases of overlapping fields, values from this instance and provided changes take precedence.
+
+        Args:
+            other (DefineMixin): Other instance to merge with.
+            **changes: Keyword arguments specifying field updates.
+
+        Returns:
+            DefineMixin: New instance with merged attribute values.
+        """
         from vectorbtpro.utils.config import merge_dicts
 
         return self.replace(**merge_dicts(self.asdict(full=False), other.asdict(full=False), changes))
 
     def merge_over(self: DefineMixinT, other: DefineMixinT, **changes) -> DefineMixinT:
-        """Merge this instance over another instance."""
+        """Return a new instance obtained by merging this instance over another.
+
+        In cases of overlapping fields, values from this instance and provided changes override
+        those from the other instance.
+
+        Args:
+            other (DefineMixin): Other instance to merge over.
+            **changes: Keyword arguments specifying field updates.
+
+        Returns:
+            DefineMixin: New instance with merged attribute values.
+        """
         from vectorbtpro.utils.config import merge_dicts
 
         return self.replace(**merge_dicts(other.asdict(full=False), self.asdict(full=False), changes))
@@ -194,20 +299,35 @@ class DefineMixin(Hashable):
 
 
 class define(Base):
-    """Prepare a class decorated with `define`.
+    """Class for preparing a class with `define`.
 
-    Attaches `DefineMixin` as a base class (if not present) and applies `attr.define`."""
+    Attaches `DefineMixin` as a base class and applies `attr.define` to configure classes as
+    frozen with customized initialization.
+    """
 
     @classmethod
     def field(cls, **kwargs) -> tp.Any:
-        """Alias for `attr.field`."""
+        """Alias for `attr.field`.
+
+        Args:
+            **kwargs: Keyword arguments for `attr.field`.
+
+        Returns:
+            Any: Result from `attr.field`.
+        """
         return attr.field(**kwargs)
 
     @classmethod
     def required_field(cls, **kwargs) -> tp.Any:
-        """Alias for `attr.field` with `MISSING` as default.
+        """Return a field definition using `attr.field` with `MISSING` as the default value and
+        without a default in metadata.
 
-        Doesn't have `default` in metadata."""
+        Args:
+            **kwargs: Keyword arguments for `attr.field`.
+
+        Returns:
+            Any: Defined field.
+        """
         return cls.field(default=MISSING, **kwargs)
 
     @classmethod
@@ -218,9 +338,17 @@ class define(Base):
         metadata: tp.Optional[tp.Mapping] = None,
         **kwargs,
     ) -> tp.Any:
-        """Alias for `attr.field` with `MISSING` as default.
+        """Return a field definition using `attr.field` with `MISSING` as the default value and
+        with the provided default stored in metadata.
 
-        Has `default` in metadata."""
+        Args:
+            default (Any): Default value stored in metadata.
+            metadata (Optional[Mapping]): Additional metadata for the field.
+            **kwargs: Keyword arguments for `attr.field`.
+
+        Returns:
+            Any: Defined field.
+        """
         if metadata is None:
             metadata = {}
         else:
@@ -242,7 +370,15 @@ class define(Base):
 
 
 def get_dict_attr(obj: tp.Union[object, type], attr: str) -> tp.Any:
-    """Get attribute without invoking the attribute lookup machinery."""
+    """Retrieve an attribute directly from an object's dictionary without triggering dynamic attribute lookup.
+
+    Args:
+        obj (Union[object, type]): Object or class to inspect.
+        attr (str): Name of the attribute to retrieve.
+
+    Returns:
+        Any: Attribute value if present.
+    """
     if inspect.isclass(obj):
         cls = obj
     else:
@@ -257,10 +393,21 @@ def default_getattr_func(
     obj: tp.Any,
     attr: str,
     args: tp.Optional[tp.Args] = None,
-    kwargs: tp.Optional[tp.Kwargs] = None,
+    kwargs: tp.KwargsLike = None,
     call_attr: bool = True,
 ) -> tp.Any:
-    """Default `getattr_func`."""
+    """Retrieve an attribute from an object using default behavior.
+
+    Args:
+        obj (Any): Object from which to retrieve the attribute.
+        attr (str): Attribute name to access.
+        args (Args): Positional arguments passed for calling a callable attribute.
+        kwargs (KwargsLike): Keyword arguments passed for calling a callable attribute.
+        call_attr (bool): Indicates whether to call the attribute if it is callable.
+
+    Returns:
+        Any: Attribute's value or the result of calling it if callable.
+    """
     if args is None:
         args = ()
     if kwargs is None:
@@ -277,21 +424,29 @@ def deep_getattr(
     getattr_func: tp.Callable = default_getattr_func,
     call_last_attr: bool = True,
 ) -> tp.Any:
-    """Retrieve attribute consecutively.
+    """Retrieve attributes from an object following a specified chain.
 
-    The attribute chain `attr_chain` can be:
+    Args:
+        obj (Any): Root object from which to retrieve attributes.
+        attr_chain (Union[str, tuple, Iterable]): Chain of attributes to access.
 
-    * string -> get variable/property or method without arguments
-    * tuple of string -> call method without arguments
-    * tuple of string and tuple -> call method and pass positional arguments (unpacked)
-    * tuple of string, tuple, and dict -> call method and pass positional and keyword arguments (unpacked)
-    * iterable of any of the above
+            It can be specified as one of the following forms:
 
-    Use `getattr_func` to overwrite the default behavior of accessing an attribute (see `default_getattr_func`).
+            * string: Retrieve a property or method without arguments.
+            * tuple of string: Call a method without arguments.
+            * tuple of string and tuple: Call a method with positional arguments.
+            * tuple of string, tuple, and dict: Call a method with positional and keyword arguments.
+            * Iterable: Sequence of any of the above forms.
+        getattr_func (Callable): Function used for attribute retrieval, overriding default behavior
+            (`default_getattr_func`).
+        call_last_attr (bool): Indicates whether to call the final attribute if it is callable.
+
+    Returns:
+        Any: Resulting attribute value or the result from calling the attribute.
 
     !!! hint
-        If your chain includes only attributes and functions without arguments,
-        you can represent this chain as a single (but probably long) string.
+        If your attribute chain contains only attributes and methods without arguments,
+        represent it as a single string.
     """
     checks.assert_instance_of(attr_chain, (str, tuple, Iterable))
 
@@ -343,13 +498,18 @@ AttrResolverMixinT = tp.TypeVar("AttrResolverMixinT", bound="AttrResolverMixin")
 
 
 class AttrResolverMixin(Base):
-    """Class that implements resolution of self and its attributes.
+    """Class for resolving attributes of an object via getattr.
 
-    Resolution is `getattr` that works for self, properties, and methods. It also utilizes built-in caching."""
+    This mixin applies resolution logic to self, properties, and methods using built-in caching.
+    """
 
     @property
     def self_aliases(self) -> tp.Set[str]:
-        """Names to associate with this object."""
+        """Set of alias names associated with the object.
+
+        Returns:
+            Set[str]: A set of alias names.
+        """
         return {"self"}
 
     def resolve_self(
@@ -359,31 +519,67 @@ class AttrResolverMixin(Base):
         impacts_caching: bool = True,
         silence_warnings: bool = False,
     ) -> AttrResolverMixinT:
-        """Resolve self.
+        """Resolve self with optional keyword conditions.
+
+        Args:
+            cond_kwargs (KwargsLike): Keyword arguments for conditional resolution.
+            custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
+            impacts_caching (bool): Flag indicating whether the changes impact caching.
+            silence_warnings (bool): Flag to suppress warning messages.
+
+        Returns:
+            AttrResolverMixin: Resolved self.
 
         !!! note
-            `cond_kwargs` can be modified in-place."""
+            `cond_kwargs` can be modified in-place.
+        """
         return self
 
     def pre_resolve_attr(self, attr: str, final_kwargs: tp.KwargsLike = None) -> str:
         """Pre-process an attribute before resolution.
 
-        Must return an attribute."""
+        Args:
+            attr (str): Name of the attribute to process.
+            final_kwargs (KwargsLike): Dictionary of keyword arguments for resolution.
+
+        Returns:
+            str: Processed attribute name.
+        """
         return attr
 
     def post_resolve_attr(self, attr: str, out: tp.Any, final_kwargs: tp.KwargsLike = None) -> str:
-        """Post-process an object after resolution.
+        """Post-process a resolved attribute output.
 
-        Must return an object."""
+        Args:
+            attr (str): Original attribute name.
+            out (Any): Resolved attribute value.
+            final_kwargs (KwargsLike): Dictionary of keyword arguments used during resolution.
+
+        Returns:
+            str: Post-processed output.
+        """
         return out
 
     @cachedproperty
     def cls_dir(self) -> tp.Set[str]:
-        """Get set of attribute names."""
+        """Set of attribute names defined on the object's class.
+
+        Returns:
+            Set[str]: A set of attribute names.
+        """
         return set(dir(type(self)))
 
     def resolve_shortcut_attr(self, attr: str, *args, **kwargs) -> tp.Any:
-        """Resolve an attribute that may have shortcut properties."""
+        """Resolve an attribute using potential shortcut properties.
+
+        Args:
+            attr (str): Attribute name to resolve.
+            *args: Positional arguments passed for resolution.
+            **kwargs: Keyword arguments passed for resolution.
+
+        Returns:
+            Any: Resolved attribute value.
+        """
         if not attr.startswith("get_"):
             if "get_" + attr not in self.cls_dir or (len(args) == 0 and len(kwargs) == 0):
                 if isinstance(getattr(type(self), attr), property):
@@ -407,18 +603,36 @@ class AttrResolverMixin(Base):
     ) -> tp.Any:
         """Resolve an attribute using keyword arguments and built-in caching.
 
-        * If there is a `get_{arg}` method, uses `get_{arg}` as `attr`.
-        * If `attr` is a property, returns its value.
-        * If `attr` is a method, passes `*args`, `**kwargs`, and `**cond_kwargs` with keys found in the signature.
-        * If `use_shortcuts` is True, resolves the potential shortcuts using `AttrResolverMixin.resolve_shortcut_attr`.
+        The resolution process follows these steps:
 
-        Won't cache if `use_caching` is False or any passed argument is in `custom_arg_names`.
+        * If a `get_{arg}` method exists, it is used as the attribute.
+        * If the attribute is a property, its value is returned.
+        * If the attribute is a method, it is invoked with `*args`, `**kwargs`, and
+            `**cond_kwargs` filtered by the method's signature.
+        * If `use_shortcuts` is True, `AttrResolverMixin.resolve_shortcut_attr` is applied
+            to resolve potential shortcuts.
 
-        Use `passed_kwargs_out` to get keyword arguments that were passed."""
+        Caching is bypassed if `use_caching` is False or if any argument name is present in `custom_arg_names`.
+
+        Use `passed_kwargs_out` to capture the keyword arguments that were passed during resolution.
+
+        Args:
+            attr (str): Attribute name to resolve.
+            args (ArgsLike): Positional arguments for the attribute.
+            cond_kwargs (KwargsLike): Keyword arguments for conditional resolution.
+            kwargs (KwargsLike): Keyword arguments for invoking the attribute.
+            custom_arg_names (Optional[Container[str]]): Container of argument names affecting caching.
+            cache_dct (KwargsLike): Dictionary used for caching resolved attributes.
+            use_caching (bool): Flag indicating whether to use caching.
+            passed_kwargs_out (KwargsLike): Dictionary to collect the actual keyword arguments passed.
+            use_shortcuts (bool): Flag indicating whether to apply shortcut resolution.
+
+        Returns:
+            Any: Resolved attribute value.
+        """
         from vectorbtpro.utils.config import merge_dicts
         from vectorbtpro.utils.parsing import get_func_arg_names
 
-        # Resolve defaults
         if custom_arg_names is None:
             custom_arg_names = list()
         if cache_dct is None:
@@ -431,7 +645,6 @@ class AttrResolverMixin(Base):
             passed_kwargs_out = {}
         final_kwargs = merge_dicts(cond_kwargs, kwargs)
 
-        # Resolve attribute
         cls = type(self)
         _attr = self.pre_resolve_attr(attr, final_kwargs=final_kwargs)
         if "get_" + _attr in dir(cls):
@@ -470,12 +683,31 @@ class AttrResolverMixin(Base):
         return out
 
     def deep_getattr(self, *args, **kwargs) -> tp.Any:
-        """See `deep_getattr`."""
+        """Retrieve a nested attribute using the `deep_getattr` function.
+
+        Args:
+            *args: Positional arguments for `deep_getattr`.
+            **kwargs: Keyword arguments for `deep_getattr`.
+
+        Returns:
+            Any: Value of the nested attribute.
+        """
         return deep_getattr(self, *args, **kwargs)
 
 
 def parse_attrs(obj: tp.Any = None, own_only: bool = False, sort_by: tp.Optional[str] = None) -> tp.Frame:
-    """Parse attributes of a class, object, or a module, and return a DataFrame with types and paths."""
+    """Parse attributes of a class, object, or module and return a DataFrame of types and paths.
+
+    Args:
+        obj (Any): Object, class, or module whose attributes are to be parsed.
+
+            Defaults to `vbt` if None.
+        own_only (bool): If True, only include attributes defined on the object's class.
+        sort_by (Optional[str]): Column name used to sort the resulting DataFrame.
+
+    Returns:
+        Frame: DataFrame indexed by attribute names with columns for type and path information.
+    """
     if obj is None:
         obj = vbt
     if inspect.isclass(obj) or inspect.ismodule(obj):

@@ -8,22 +8,22 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Custom Pandas accessors for OHLC(V) data.
+"""Module providing custom Pandas accessors for OHLC(V) data.
 
-Methods can be accessed as follows:
+Access the methods via:
 
 * `OHLCVDFAccessor` -> `pd.DataFrame.vbt.ohlcv.*`
 
-The accessors inherit `vectorbtpro.generic.accessors`.
+The accessors inherit from `vectorbtpro.generic.accessors`.
 
 !!! note
     Accessors do not utilize caching.
 
 ## Column names
 
-By default, vectorbt searches for columns with names 'open', 'high', 'low', 'close', and 'volume'
-(case doesn't matter). You can change the naming either using `feature_map` in
-`vectorbtpro._settings.ohlcv`, or by providing `feature_map` directly to the accessor.
+By default, vectorbtpro searches for columns with names 'open', 'high', 'low', 'close', and 'volume'
+(case-insensitive). You can change the naming by either using `feature_map` in
+`vectorbtpro._settings.ohlcv` or by providing a custom `feature_map` directly to the accessor.
 
 ```pycon
 >>> from vectorbtpro import *
@@ -58,7 +58,8 @@ Name: my_open1, dtype: float64
 ## Stats
 
 !!! hint
-    See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `OHLCVDFAccessor.metrics`.
+    See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `OHLCVDFAccessor.metrics`
+    for more details.
 
 ```pycon
 >>> ohlcv_acc.stats()
@@ -79,9 +80,9 @@ Name: agg_stats, dtype: object
 ## Plots
 
 !!! hint
-    See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `OHLCVDFAccessor.subplots`.
+    See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `OHLCVDFAccessor.subplots` for more details.
 
-`OHLCVDFAccessor` class has a single subplot based on `OHLCVDFAccessor.plot` (without volume):
+The `OHLCVDFAccessor` provides a single subplot based on `OHLCVDFAccessor.plot` (excluding volume):
 
 ```pycon
 >>> ohlcv_acc.plots(settings=dict(ohlc_type='candlestick')).show()
@@ -111,7 +112,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT
 else:
-    DataT = "Data"
+    DataT = "vectorbtpro.data.base.Data"
 
 __all__ = [
     "OHLCVDFAccessor",
@@ -124,9 +125,19 @@ OHLCVDFAccessorT = tp.TypeVar("OHLCVDFAccessorT", bound="OHLCVDFAccessor")
 
 @register_df_vbt_accessor("ohlcv")
 class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
-    """Accessor on top of OHLCV data. For DataFrames only.
+    """Class representing an accessor on top of OHLCV data for Pandas DataFrames.
 
-    Accessible via `pd.DataFrame.vbt.ohlcv`."""
+    Accessible via `pd.DataFrame.vbt.ohlcv`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
+        obj (Optional[ArrayLike]): Underlying data object.
+        feature_map (KwargsLike): Dictionary mapping feature names to OHLCV components.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.ohlcv`.
+    """
 
     def __init__(
         self,
@@ -141,12 +152,17 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     @hybrid_property
     def df_accessor_cls(cls_or_self) -> tp.Type["OHLCVDFAccessor"]:
-        """Accessor class for `pd.DataFrame`."""
         return OHLCVDFAccessor
 
     @property
     def feature_map(self) -> tp.Kwargs:
-        """Column names."""
+        """Merged feature mapping for OHLCV columns.
+
+        Merges default feature settings from `vectorbtpro._settings` with the instance's feature map.
+
+        Returns:
+            Kwargs: Dictionary mapping OHLCV feature names to their corresponding column names.
+        """
         from vectorbtpro._settings import settings
 
         ohlcv_cfg = settings["ohlcv"]
@@ -196,7 +212,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
     # ############# Conversion ############# #
 
     def to_data(self, data_cls: tp.Optional[tp.Type[DataT]] = None, **kwargs) -> DataT:
-        """Convert to a `vectorbtpro.data.base.Data` instance."""
         if data_cls is None:
             from vectorbtpro.data.base import Data
 
@@ -213,7 +228,29 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         start_value: tp.ArrayLike = np.nan,
         ref_feature: tp.ArrayLike = -1,
     ) -> tp.Frame:
-        """Mirror OHLC features."""
+        """Mirror OHLC features.
+
+        Applies a mirror transformation to the OHLC columns ("Open", "High", "Low", "Close")
+        using the specified starting value and reference feature.
+
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            start_value (ArrayLike): Starting value used in the mirror operation.
+            ref_feature (ArrayLike): Reference feature used for mirroring.
+
+                Mapped using `vectorbtpro.ohlcv.enums.PriceFeature` if provided as a string.
+
+        Returns:
+            Frame: DataFrame with mirrored OHLC features.
+
+        See:
+            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
+        """
         if isinstance(ref_feature, str):
             ref_feature = map_enum_fields(ref_feature, enums.PriceFeature)
 
@@ -245,7 +282,24 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         return df
 
     def resample(self: OHLCVDFAccessorT, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> OHLCVDFAccessorT:
-        """Perform resampling on `OHLCVDFAccessor`."""
+        """Resample OHLCV data.
+
+        Resamples each feature based on default reduction rules:
+
+        * For "open", applies the first value.
+        * For "high", applies the maximum value.
+        * For "low", applies the minimum value.
+        * For "close", applies the last value.
+        * For "volume", applies the sum.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
+            wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
+
+        Returns:
+            OHLCVDFAccessor: New accessor instance with resampled OHLCV data.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)
         sr_dct = {}
@@ -287,10 +341,14 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `OHLCVDFAccessor.stats`.
+        """Default configuration for `OHLCVDFAccessor.stats`.
 
-        Merges `vectorbtpro.generic.accessors.GenericAccessor.stats_defaults` and
-        `stats` from `vectorbtpro._settings.ohlcv`."""
+        Merges the defaults from `vectorbtpro.generic.accessors.GenericAccessor.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.ohlcv`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the stats builder.
+        """
         from vectorbtpro._settings import settings
 
         ohlcv_stats_cfg = settings["ohlcv"]["stats"]
@@ -386,13 +444,20 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         """Plot OHLC data.
 
         Args:
-            ohlc_type: Either 'OHLC', 'Candlestick' or Plotly trace.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
+
+        Returns:
+            BaseFigure: Updated figure containing the OHLC plot.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.ohlcv` and `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -466,10 +531,17 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         """Plot volume data.
 
         Args:
-            trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Bar`.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Bar`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
+
+        Returns:
+            BaseFigure: Updated figure with the volume bar plot.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -521,21 +593,25 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot OHLC(V) data.
+        """Plot OHLC(V) data using Plotly.
 
         Args:
-            ohlc_type: Either 'OHLC', 'Candlestick' or Plotly trace.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            plot_volume (bool): Whether to plot volume beneath.
-            ohlc_trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
-            volume_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Bar`.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace` for OHLC.
-            volume_add_trace_kwargs (dict): Keyword arguments passed to `add_trace` for volume.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            plot_volume (bool): Whether to plot volume below the OHLC chart.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            volume_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Bar` for the volume data.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            volume_add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for the volume trace.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated figure with the OHLC(V) plot.
+
+        Examples:
             ```pycon
             >>> vbt.YFData.pull("BTC-USD").get().vbt.ohlcv.plot().show()
             ```
@@ -596,10 +672,14 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `OHLCVDFAccessor.plots`.
+        """Default configuration for `OHLCVDFAccessor.plots`.
 
-        Merges `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults` and
-        `plots` from `vectorbtpro._settings.ohlcv`."""
+        Merges the defaults from `vectorbtpro.generic.accessors.GenericAccessor.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.ohlcv`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the plots builder.
+        """
         from vectorbtpro._settings import settings
 
         ohlcv_plots_cfg = settings["ohlcv"]["plots"]

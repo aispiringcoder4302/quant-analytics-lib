@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for working with tags."""
+"""Module providing utilities for working with tags."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.parsing import get_expr_var_names
@@ -18,13 +18,25 @@ __all__ = []
 
 
 def match_tags(tags: tp.MaybeIterable[str], in_tags: tp.MaybeIterable[str]) -> bool:
-    """Match tags in `tags` to that in `in_tags`.
+    """Return True if any tag from `tags` matches identifiers in `in_tags` using an OR rule.
 
-    Multiple tags in `tags` are combined using OR rule, that is, returns True if any of them is found in `in_tags`.
-    If any tag is not an identifier, evaluates it as a boolean expression.
-    All tags in `in_tags` must be identifiers.
+    For valid identifier tags, match them directly within `in_tags`. For tags that are not valid
+    identifiers, evaluate the tag as a boolean expression where each variable indicates its
+    presence in `in_tags`. A ValueError is raised if any tag in `in_tags` is not a valid identifier,
+    and a TypeError is raised if a tag expression does not produce a boolean.
 
-    Usage:
+    Args:
+        tags (MaybeIterable[str]): Tag or collection of tags to match.
+        
+            If a tag is not a valid identifier, it is evaluated as a boolean expression.
+        in_tags (MaybeIterable[str]): Identifier or collection of identifiers to search for matches.
+
+            All elements must be valid Python identifiers.
+
+    Returns:
+        bool: True if any tag from `tags` matches identifiers in `in_tags`, False otherwise.
+
+    Examples:
         ```pycon
         >>> from vectorbtpro.utils.tagging import match_tags
 

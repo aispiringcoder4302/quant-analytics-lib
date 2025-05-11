@@ -1,20 +1,29 @@
-"""Numba-compiled functions for working with portfolio.
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
-Provides an arsenal of Numba-compiled functions that are used for portfolio
-simulation, such as generating and filling orders. These only accept NumPy arrays and
-other Numba-compatible types.
+"""Package providing Numba-compiled functions used in portfolio simulation.
+
+Provides a suite of Numba-compiled functions for portfolio simulation, including generating and
+filling orders. All functions accept only NumPy arrays and other Numba-compatible types.
 
 !!! note
-    vectorbt treats matrices as first-class citizens and expects input arrays to be
-    2-dim, unless function has suffix `_1d` or is meant to be input to another function.
+    Vectorbtpro treats matrices as first-class citizens and expects input arrays to be 2-dimensional,
+    unless a function has the `_1d` suffix or is used as input to another function.
 
-    All functions passed as argument must be Numba-compiled.
+    All functions supplied as arguments must be Numba-compiled.
 
-    Records must retain the order they were created in.
+    Records preserve their original creation order.
 
 !!! warning
-    Accumulation of roundoff error possible.
-    See [here](https://en.wikipedia.org/wiki/Round-off_error#Accumulation_of_roundoff_error) for explanation.
+    Round-off error accumulation is possible.
+    See [here](https://en.wikipedia.org/wiki/Round-off_error#Accumulation_of_roundoff_error) for an explanation.
 
     Rounding errors can cause trades and positions to not close properly:
 
@@ -34,17 +43,16 @@ other Numba-compatible types.
     5.657668225467205e-06
     ```
 
-    While vectorbt has implemented tolerance checks when comparing floats for equality,
-    adding/subtracting small amounts large number of times may still introduce a noticable
-    error that cannot be corrected post factum.
+    While vectorbtpro implements tolerance checks when comparing floats for equality, repeatedly
+    adding or subtracting small values may introduce a noticeable error that cannot be corrected afterwards.
 
-    To mitigate this issue, avoid repeating lots of micro-transactions of the same sign.
-    For example, reduce by `np.inf` or `position_now` to close a long/short position.
+    To mitigate this issue, avoid performing numerous micro-transactions of the same sign.
+    For instance, use reduction by `np.inf` or `position_now` to close a long/short position.
 
-    See `vectorbtpro.utils.math_` for current tolerance values.
+    See `vectorbtpro.utils.math_` for the current tolerance values.
 
 !!! warning
-    Make sure to use `parallel=True` only if your columns are independent.
+    Use `parallel=True` only if your columns are independent.
 """
 
 from vectorbtpro.portfolio.nb.analysis import *

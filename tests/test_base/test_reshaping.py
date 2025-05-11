@@ -1018,6 +1018,20 @@ class TestReshaping:
         np.testing.assert_array_equal(result["b"], result2["b"])
         np.testing.assert_array_equal(result["c"], result2["c"])
         assert_index_equal(wrapper.columns, wrapper2.columns)
+        result2, wrapper2 = reshaping.broadcast(
+            dict(
+                a=vbt.BCO(vbt.Param(1, level=0)),
+                b=vbt.BCO(vbt.Param([False, True], level=1)),
+                c=vbt.BCO(vbt.Param(["x", "y", "z"], level=-1)),
+                sr=pd.Series([1, 2, 3]),
+            ),
+            keep_flex=True,
+            return_wrapper=True,
+        )
+        np.testing.assert_array_equal(result["a"], result2["a"])
+        np.testing.assert_array_equal(result["b"], result2["b"])
+        np.testing.assert_array_equal(result["c"], result2["c"])
+        assert_index_equal(wrapper.columns, wrapper2.columns)
 
         result, wrapper = reshaping.broadcast(
             dict(
@@ -1054,14 +1068,6 @@ class TestReshaping:
                     a=vbt.BCO(vbt.Param(1, level=0)),
                     b=vbt.BCO(vbt.Param([False, True], level=1)),
                     c=vbt.BCO(vbt.Param(["x", "y", "z"])),
-                )
-            )
-        with pytest.raises(Exception):
-            reshaping.broadcast(
-                dict(
-                    a=vbt.BCO(vbt.Param(1, level=-1)),
-                    b=vbt.BCO(vbt.Param([False, True], level=0)),
-                    c=vbt.BCO(vbt.Param(["x", "y", "z"], level=1)),
                 )
             )
         with pytest.raises(Exception):

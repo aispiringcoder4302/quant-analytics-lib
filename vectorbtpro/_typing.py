@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""General types used across vectorbtpro."""
+"""Module providing general type definitions used across vectorbtpro.
+
+This module provides foundational type aliases, protocols, and utilities for common data structures
+such as sequences, scalars, arrays, and datetime representations within vectorbtpro.
+"""
 
 from datetime import datetime, timedelta, tzinfo, date, time
 from enum import EnumMeta
@@ -23,23 +27,31 @@ from typing import *
 
 import numpy as np
 import pandas as pd
-from mypy_extensions import VarArg
-from pandas import Series, DataFrame as Frame, Index
+from mypy_extensions import VarArg, KwArg
+from pandas import (
+    Series,
+    DataFrame as Frame,
+    Index,
+    Timedelta as PandasTimedelta,
+    Timestamp,
+    MultiIndex,
+    DatetimeIndex,
+    PeriodIndex,
+    TimedeltaIndex,
+)
 from pandas.core.groupby import GroupBy as PandasGroupBy
 from pandas.core.indexing import _IndexSlice as IndexSlice
 from pandas.core.resample import Resampler as PandasResampler
 from pandas.tseries.offsets import BaseOffset
 
-try:
-    if not TYPE_CHECKING:
-        raise ImportError
+if TYPE_CHECKING:
     from plotly.graph_objects import Figure, FigureWidget
     from plotly.basedatatypes import BaseFigure, BaseTraceType
-except ImportError:
-    Figure = Any
-    FigureWidget = Any
-    BaseFigure = Any
-    BaseTraceType = Any
+else:
+    Figure = "plotly.graph_objects.Figure"
+    FigureWidget = "plotly.graph_objects.FigureWidget"
+    BaseFigure = "plotly.basedatatypes.BaseFigure"
+    BaseTraceType = "plotly.basedatatypes.BaseTraceType"
 try:
     from typing import Protocol
 except ImportError:
@@ -52,7 +64,13 @@ except ImportError:
 if TYPE_CHECKING:
     from vectorbtpro.utils.parsing import Regex
     from vectorbtpro.utils.execution import Task, ExecutionEngine
-    from vectorbtpro.utils.chunking import Sizer, NotChunked, ChunkTaker, ChunkMeta, ChunkMetaGenerator
+    from vectorbtpro.utils.chunking import (
+        Sizer,
+        NotChunked,
+        ChunkTaker,
+        ChunkMeta,
+        ChunkMetaGenerator,
+    )
     from vectorbtpro.utils.jitting import Jitter
     from vectorbtpro.utils.template import CustomTemplate
     from vectorbtpro.utils.datetime_ import DTC, DTCNT
@@ -71,12 +89,32 @@ if TYPE_CHECKING:
         EmbeddedDocument,
         ScoredDocument,
     )
-    from vectorbtpro.utils.knowledge.custom_assets import VBTAsset, PagesAsset, MessagesAsset
+    from vectorbtpro.utils.knowledge.custom_assets import (
+        VBTAsset,
+        PagesAsset,
+        MessagesAsset,
+    )
     from vectorbtpro.utils.knowledge.formatting import ContentFormatter
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
     from vectorbtpro.base.resampling.base import Resampler
+    from vectorbtpro.base.wrapping import ArrayWrapper
+    from vectorbtpro.data.base import Data
     from vectorbtpro.generic.splitting.base import FixRange, RelRange
+    from vectorbtpro.indicators.factory import IndicatorBase
+    from vectorbtpro.portfolio.enums import (
+        SignalContext,
+        PostSignalContext,
+        SignalSegmentContext,
+        SimulationContext,
+        GroupContext,
+        RowContext,
+        SegmentContext,
+        OrderContext,
+        FlexOrderContext,
+        PostOrderContext,
+        Order,
+    )
 else:
     Regex = "Regex"
     Task = "Task"
@@ -112,8 +150,22 @@ else:
     hslice = "hslice"
     Grouper = "Grouper"
     Resampler = "Resampler"
+    ArrayWrapper = "ArrayWrapper"
+    Data = "Data"
     FixRange = "FixRange"
     RelRange = "RelRange"
+    IndicatorBase = "IndicatorBase"
+    SignalContext = "SignalContext"
+    PostSignalContext = "PostSignalContext"
+    SignalSegmentContext = "SignalSegmentContext"
+    SimulationContext = "SimulationContext"
+    GroupContext = "GroupContext"
+    RowContext = "RowContext"
+    SegmentContext = "SegmentContext"
+    OrderContext = "OrderContext"
+    FlexOrderContext = "FlexOrderContext"
+    PostOrderContext = "PostOrderContext"
+    Order = "Order"
 
 __all__ = []
 
@@ -178,6 +230,7 @@ FlexArray1d = Array1d
 FlexArray2d = Array2d
 FlexArray1dLike = Union[Scalar, Array1d, Array2d]
 FlexArray2dLike = Union[Scalar, Array1d, Array2d]
+IndexFromLike = Union[None, str, int, Any]
 
 # Templates
 CustomTemplateLike = Union[str, Callable, CustomTemplate]
@@ -190,18 +243,24 @@ LevelSequence = Sequence[Level]
 MaybeLevelSequence = Union[Level, LevelSequence]
 
 # Datetime
-Datetime = Union[pd.Timestamp, np.datetime64, datetime]
+Datetime = Union[Timestamp, np.datetime64, datetime]
 DatetimeLike = Union[str, int, float, Datetime]
-Timedelta = Union[pd.Timedelta, np.timedelta64, timedelta]
+Timedelta = Union[PandasTimedelta, np.timedelta64, timedelta]
 TimedeltaLike = Union[str, int, float, Timedelta]
 Frequency = Union[BaseOffset, Timedelta]
 FrequencyLike = Union[BaseOffset, TimedeltaLike]
 TimezoneLike = Union[None, str, int, float, timedelta, tzinfo]
 TimeLike = Union[str, time]
-PandasFrequency = Union[BaseOffset, pd.Timedelta]
-PandasDatetimeIndex = Union[pd.DatetimeIndex, pd.PeriodIndex]
+PandasFrequency = Union[BaseOffset, PandasTimedelta]
+PandasDatetimeIndex = Union[DatetimeIndex, PeriodIndex]
 AnyPandasFrequency = Union[None, int, float, PandasFrequency]
 DTCLike = Union[None, str, int, time, date, Datetime, DTC, DTCNT]
+
+
+class SupportsTZInfoT(Protocol):
+    @property
+    def tzinfo(self) -> tzinfo: ...
+
 
 # Indexing
 Slice = Union[slice, hslice]
@@ -211,6 +270,7 @@ PandasIndexingFunc = Callable[[SeriesFrame], MaybeSeriesFrame]
 PandasGroupByLike = Union[PandasGroupBy, PandasResampler, FrequencyLike]
 GroupByLike = Union[None, bool, MaybeLevelSequence, IndexLike, CustomTemplate]
 AnyGroupByLike = Union[Grouper, PandasGroupByLike, GroupByLike]
+GroupBy = Union[None, bool, Index]
 AnyRuleLike = Union[Resampler, PandasResampler, FrequencyLike, IndexLike]
 GroupIdxs = Array1d
 GroupLens = Array1d
@@ -253,10 +313,20 @@ Column = Key = Feature = Symbol = Hashable
 Columns = Keys = Features = Symbols = Sequence[Hashable]
 MaybeColumns = MaybeKeys = MaybeFeatures = MaybeSymbols = Union[Hashable, Sequence[Hashable]]
 KeyData = FeatureData = SymbolData = Union[None, SeriesFrame, Tuple[SeriesFrame, Kwargs]]
+PullOutput = Union[Data, List[Any]]
 
 # Plotting
 TraceName = Union[str, None]
 TraceNames = MaybeSequence[TraceName]
+
+# Combining
+R0ApplyFunc = Callable[[int, VarArg()], None]
+R1ApplyFunc = Callable[[int, VarArg()], Array]
+RMApplyFunc = Callable[[int, VarArg()], Tuple[Array, ...]]
+CApplyFunc = Union[R0ApplyFunc, R1ApplyFunc, RMApplyFunc]
+CombineFunc = Callable[[Any, Any, VarArg()], Any]
+PyCombineFunc = Callable[[Any, Any, VarArg(), KwArg()], Any]
+AnyCombineFunc = Union[CombineFunc, PyCombineFunc]
 
 # Generic
 MapFunc = Callable[[Scalar, VarArg()], Scalar]
@@ -278,6 +348,33 @@ GroupSqueezeMetaFunc = Callable[[int, GroupIdxs, int, VarArg()], Scalar]
 GroupByTransformFunc = Callable[[Array2d, VarArg()], MaybeArray]
 GroupByTransformMetaFunc = Callable[[GroupIdxs, int, VarArg()], MaybeArray]
 
+AnyMapFunc = Union[MapFunc, MapMetaFunc]
+AnyApplyFunc = Union[ApplyFunc, ApplyMetaFunc]
+AnyReduceFunc = Union[ReduceFunc, ReduceMetaFunc]
+AnyGroupByReduceFunc = Union[ReduceFunc, GroupByReduceMetaFunc]
+AnyGroupByTransformFunc = Union[GroupByTransformFunc, GroupByTransformMetaFunc]
+AnyResampleReduceFunc = Union[ReduceFunc, GroupByReduceMetaFunc, RangeReduceMetaFunc]
+AnyFlexReduceFunc = Union[
+    ReduceFunc,
+    ReduceMetaFunc,
+    ReduceToArrayFunc,
+    ReduceToArrayMetaFunc,
+    ReduceGroupedFunc,
+    ReduceGroupedMetaFunc,
+    ReduceGroupedToArrayFunc,
+    ReduceGroupedToArrayMetaFunc,
+]
+AnyProximityReduceFunc = Union[ReduceFunc, ProximityReduceMetaFunc]
+AnyGroupSqueezeFunc = Union[ReduceFunc, GroupSqueezeMetaFunc]
+AnyRangeReduceFunc = Union[ReduceFunc, RangeReduceMetaFunc]
+
+
+class TransformerT(Protocol):
+    def __init__(self, **kwargs) -> None: ...
+    def transform(self, *args, **kwargs) -> Array2d: ...
+    def fit_transform(self, *args, **kwargs) -> Array2d: ...
+
+
 # Signals
 PlaceFunc = Callable[[NamedTuple, VarArg()], int]
 RankFunc = Callable[[NamedTuple, VarArg()], int]
@@ -287,6 +384,9 @@ RecordsMapFunc = Callable[[np.void, VarArg()], Scalar]
 RecordsMapMetaFunc = Callable[[int, VarArg()], Scalar]
 MappedReduceMetaFunc = Callable[[GroupIdxs, int, VarArg()], Scalar]
 MappedReduceToArrayMetaFunc = Callable[[GroupIdxs, int, VarArg()], Array1d]
+
+AnyRecordsMapFunc = Union[RecordsMapFunc, RecordsMapMetaFunc]
+AnyMappedReduceFunc = Union[ReduceFunc, MappedReduceMetaFunc, ReduceToArrayFunc, MappedReduceToArrayMetaFunc]
 
 # Indicators
 ParamValue = Any
@@ -299,6 +399,30 @@ ParamsOrDict = Union[Params, Dict[Hashable, ParamValues]]
 ParamGrid = Union[ParamsOrLens, Dict[Hashable, ParamsOrLens]]
 ParamComb = Sequence[ParamValue]
 ParamCombOrDict = Union[ParamComb, Dict[Hashable, ParamValue]]
+IFCacheOutput = Any
+IFRawOutput = Tuple[
+    List[Array2d],
+    List[Tuple[ParamValue, ...]],
+    int,
+    List[Any],
+]
+IFArrayList = List[Array2d]
+IFInputMapper = Optional[Array1d]
+IFParamList = List[List[ParamValue]]
+IFMapperList = List[Index]
+IFOtherList = List[Any]
+IFPipelineOutput = Tuple[
+    ArrayWrapper,
+    IFArrayList,
+    IFInputMapper,
+    IFArrayList,
+    IFArrayList,
+    IFParamList,
+    IFMapperList,
+    IFOtherList,
+]
+IFRunOutput = Union[IndicatorBase, Tuple[Any, ...], IFRawOutput, IFCacheOutput]
+IFRunCombsOutput = Tuple[IndicatorBase, ...]
 
 # Mappings
 MappingLike = Union[str, Mapping, NamedTuple, EnumMeta, IndexLike]
@@ -349,6 +473,8 @@ ChunkedOption = Union[None, bool, str, Callable, Kwargs]
 # Decorators
 ClassWrapper = Callable[[Type[T]], Type[T]]
 FlexClassWrapper = Union[Callable[[Type[T]], Type[T]], Type[T]]
+UnaryTranslateFunc = Callable[[Any, Callable], Any]
+BinaryTranslateFunc = Callable[[Any, Any, Callable], Any]
 
 # Splitting
 FixRangeLike = Union[Slice, Sequence[int], Sequence[bool], Callable, CustomTemplate, FixRange]
@@ -393,6 +519,7 @@ TSSegment = Tuple[int, int, bool]
 TSSegmentChunks = Iterator[TSRange]
 TSTextChunks = Iterator[str]
 ObjectStoreLike = Union[None, str, MaybeType[ObjectStore]]
+SplitDocuments = List[List[StoreDocument]]
 EmbeddedDocuments = List[EmbeddedDocument]
 ScoredDocuments = List[Union[float, ScoredDocument]]
 RankedDocuments = List[Union[StoreDocument, ScoredDocument]]
@@ -405,3 +532,30 @@ PipeTasks = Iterable[PipeTask]
 
 # Pickling
 CompressionLike = Union[None, bool, str]
+
+# Formatting
+SourceChunk = Union[str, Tuple[str, int, int], Tuple[str, int], Tuple[str, int, int, int]]
+SourceChunks = List[SourceChunk]
+RefineSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
+RefineSourceOutputs = List[Tuple[Any, RefineSourceOutput]]
+
+# Simulation
+SignalFunc = Callable[[SignalContext, VarArg()], Tuple[bool, bool, bool, bool]]
+PostSignalFunc = Callable[[PostSignalContext, VarArg()], None]
+PostSignalSegmentFunc = Callable[[SignalSegmentContext, VarArg()], None]
+AdjustFunc = Callable[[SignalContext, VarArg()], None]
+PreSimFunc = Callable[[SimulationContext, VarArg()], Args]
+PostSimFunc = Callable[[SimulationContext, VarArg()], None]
+PreGroupFunc = Callable[[GroupContext, VarArg()], Args]
+PostGroupFunc = Callable[[GroupContext, VarArg()], None]
+PreRowFunc = Callable[[RowContext, VarArg()], Args]
+PostRowFunc = Callable[[RowContext, VarArg()], None]
+PreSegmentFunc = Callable[[SegmentContext, VarArg()], Args]
+PostSegmentFunc = Callable[[SegmentContext, VarArg()], None]
+OrderFunc = Callable[[OrderContext, VarArg()], Order]
+FlexOrderFunc = Callable[[FlexOrderContext, VarArg()], Tuple[int, Order]]
+PostOrderFunc = Callable[[PostOrderContext, VarArg()], None]
+
+# Portfolio optimization
+AllocateFunc = Callable[[int, int, VarArg()], MaybeArray]
+OptimizeFunc = Callable[[int, int, int, VarArg()], MaybeArray]

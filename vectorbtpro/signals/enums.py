@@ -8,12 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Named tuples and enumerated types for signals.
-
-Defines enums and other schemas for `vectorbtpro.signals`."""
+"""Module providing named tuples and enumerated types for signals."""
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = [
     "StopType",
@@ -45,10 +43,10 @@ StopType = StopTypeT()
 
 __pdoc__[
     "StopType"
-] = f"""Stop type.
+] = f"""Stop type enumeration.
 
 ```python
-{prettify(StopType)}
+{prettify_doc(StopType)}
 ```
 """
 
@@ -67,13 +65,13 @@ SignalRelation = SignalRelationT()
 
 __pdoc__[
     "SignalRelation"
-] = f"""SignalRelation between two masks.
+] = f"""Signal relation enumeration.
 
 ```python
-{prettify(SignalRelation)}
+{prettify_doc(SignalRelation)}
 ```
 
-Attributes:
+Fields:
     OneOne: One source signal maps to exactly one succeeding target signal.
     OneMany: One source signal can map to one or more succeeding target signals.
     ManyOne: One or more source signals can map to exactly one succeeding target signal.
@@ -95,13 +93,13 @@ FactoryMode = FactoryModeT()
 
 __pdoc__[
     "FactoryMode"
-] = f"""Factory mode.
+] = f"""Factory mode enumeration.
 
 ```python
-{prettify(FactoryMode)}
+{prettify_doc(FactoryMode)}
 ```
 
-Attributes:
+Fields:
     Entries: Generate entries only using `generate_func_nb`.
     
         Takes no input signal arrays.
@@ -120,7 +118,7 @@ Attributes:
         Produces two output signal arrays - `entries` and `exits`.
         
         Such generators often have suffix 'NX'.
-    Chain: Generate chain of entries and exits using `generate_enex_func_nb`.
+    Chain: Generate a chain of entries and exits using `generate_enex_func_nb`.
                 
         Takes one input signal array - `entries`.
         Produces two output signal arrays - `new_entries` and `exits`.
@@ -143,7 +141,7 @@ class GenEnContext(tp.NamedTuple):
     col: int
 
 
-__pdoc__["GenEnContext"] = "Context of an entry signal generator."
+__pdoc__["GenEnContext"] = "Named tuple representing the context for an entry signal generator."
 __pdoc__["GenEnContext.target_shape"] = "Target shape."
 __pdoc__["GenEnContext.only_once"] = "Whether to run the placement function only once."
 __pdoc__["GenEnContext.wait"] = "Number of ticks to wait before placing the next entry."
@@ -166,7 +164,7 @@ class GenExContext(tp.NamedTuple):
     col: int
 
 
-__pdoc__["GenExContext"] = "Context of an exit signal generator."
+__pdoc__["GenExContext"] = "Named tuple representing the context for an exit signal generator."
 __pdoc__["GenExContext.entries"] = "Input array with entries."
 __pdoc__["GenExContext.until_next"] = "Whether to place signals up to the next entry signal."
 __pdoc__["GenExContext.skip_until_exit"] = "Whether to skip processing entry signals until the next exit."
@@ -192,7 +190,7 @@ class GenEnExContext(tp.NamedTuple):
     col: int
 
 
-__pdoc__["GenExContext"] = "Context of an entry/exit signal generator."
+__pdoc__["GenExContext"] = "Named tuple representing the context for an entry/exit signal generator."
 __pdoc__["GenExContext.target_shape"] = "Target shape."
 __pdoc__["GenExContext.entry_wait"] = "Number of ticks to wait before placing entries."
 __pdoc__["GenExContext.exit_wait"] = "Number of ticks to wait before placing exits."
@@ -227,36 +225,45 @@ class RankContext(tp.NamedTuple):
     sig_in_part_cnt: int
 
 
-__pdoc__["RankContext"] = "Context of a ranker."
+__pdoc__["RankContext"] = "Named tuple representing the context for ranking signals."
 __pdoc__["RankContext.mask"] = "Source mask."
-__pdoc__["RankContext.reset_by"] = "Resetting mask."
+__pdoc__["RankContext.reset_by"] = "Mask used for resetting."
 __pdoc__["RankContext.after_false"] = (
-    """Whether to disregard the first partition of True values if there is no False value before them."""
+    """Indicates whether to disregard the first partition of True values when no preceding False value exists."""
 )
 __pdoc__["RankContext.after_reset"] = (
-    """Whether to disregard the first partition of True values coming before the first reset signal."""
+    """Indicates whether to disregard the first partition of True values that occur before the first reset signal."""
 )
-__pdoc__["RankContext.reset_wait"] = """Number of ticks to wait before resetting the current partition."""
+__pdoc__["RankContext.reset_wait"] = "Number of ticks to wait before resetting the current partition."
 __pdoc__["RankContext.col"] = "Current column."
 __pdoc__["RankContext.i"] = "Current row."
 __pdoc__["RankContext.last_false_i"] = "Row of the last False value in the main mask."
 __pdoc__[
     "RankContext.last_reset_i"
-] = """Row of the last True value in the resetting mask. 
+] = """Row index of the last True value in the resetting mask.
 
-Doesn't take into account `reset_wait`."""
-__pdoc__["RankContext.all_sig_cnt"] = """Number of all signals encountered including this."""
-__pdoc__["RankContext.all_part_cnt"] = """Number of all partitions encountered including this."""
+Does not account for `reset_wait`.
+"""
+__pdoc__["RankContext.all_sig_cnt"] = """Total number of signals encountered, including the current one."""
+__pdoc__["RankContext.all_part_cnt"] = """Total number of partitions encountered, including the current partition."""
 __pdoc__["RankContext.all_sig_in_part_cnt"] = (
-    """Number of signals encountered in the current partition including this."""
+    """Total number of signals encountered in the current partition, including the current signal."""
 )
-__pdoc__["RankContext.nonres_sig_cnt"] = """Number of non-resetting signals encountered including this."""
-__pdoc__["RankContext.nonres_part_cnt"] = """Number of non-resetting partitions encountered including this."""
+__pdoc__["RankContext.nonres_sig_cnt"] = (
+    """Total number of non-resetting signals encountered, including the current one."""
+)
+__pdoc__["RankContext.nonres_part_cnt"] = (
+    """Total number of non-resetting partitions encountered, including the current partition."""
+)
 __pdoc__["RankContext.nonres_sig_in_part_cnt"] = (
-    """Number of signals encountered in the current non-resetting partition including this."""
+    """Total number of signals encountered in the current non-resetting partition, including the current signal."""
 )
-__pdoc__["RankContext.sig_cnt"] = """Number of valid and resetting signals encountered including this."""
-__pdoc__["RankContext.part_cnt"] = """Number of valid and resetting partitions encountered including this."""
+__pdoc__["RankContext.sig_cnt"] = (
+    """Total number of valid and resetting signals encountered, including the current one."""
+)
+__pdoc__["RankContext.part_cnt"] = (
+    """Total number of valid and resetting partitions encountered, including the current partition."""
+)
 __pdoc__["RankContext.sig_in_part_cnt"] = (
-    """Number of signals encountered in the current valid and resetting partition including this."""
+    """Total number of signals encountered in the current valid and resetting partition, including the current signal."""
 )

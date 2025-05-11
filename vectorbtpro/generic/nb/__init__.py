@@ -8,25 +8,25 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for generic data.
+"""Package providing Numba-compiled functions for generic data.
 
-Provides an arsenal of Numba-compiled functions that are used by accessors
-and in many other parts of a backtesting pipeline, such as technical indicators.
-These only accept NumPy arrays and other Numba-compatible types.
+This package offers a collection of functions compiled with Numba that are used by accessors
+and various parts of a backtesting pipeline, including technical indicators. All functions
+accept only NumPy arrays and other Numba-compatible types.
 
 !!! note
-    vectorbt treats matrices as first-class citizens and expects input arrays to be
-    2-dim, unless function has suffix `_1d` or is meant to be input to another function.
-    Data is processed along index (axis 0).
+    Vectorbtpro treats matrices as first-class citizens and expects input arrays to be 2-dim,
+    unless a function has the `_1d` suffix or is intended for use as input to another function.
+    Data is processed along the index (axis 0).
 
-    Rolling functions with `minp=None` have `min_periods` set to the window size.
+    Rolling functions with `minp=None` set `min_periods` to the window size.
 
-    All functions passed as argument must be Numba-compiled.
+    All functions passed as arguments must be Numba-compiled.
 
-    Records must retain the order they were created in.
+    Records retain the order in which they are created.
 
 !!! warning
-    Make sure to use `parallel=True` only if your columns are independent.
+    Use `parallel=True` only if your columns are independent.
 """
 
 from vectorbtpro.generic.nb.apply_reduce import *

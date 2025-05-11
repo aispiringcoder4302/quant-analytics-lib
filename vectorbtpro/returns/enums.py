@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Named tuples and enumerated types for returns."""
+"""Module providing named tuples and enumerated types for representing returns."""
 
 from vectorbtpro import _typing as tp
 
@@ -38,7 +38,7 @@ class RollSharpeAIS(tp.NamedTuple):
 
 __pdoc__[
     "RollSharpeAIS"
-] = """A named tuple representing the input state of 
+] = """Named tuple representing the input state for 
 `vectorbtpro.returns.nb.rolling_sharpe_ratio_acc_nb`."""
 
 
@@ -51,5 +51,5 @@ class RollSharpeAOS(tp.NamedTuple):
 
 __pdoc__[
     "RollSharpeAOS"
-] = """A named tuple representing the output state of 
+] = """Named tuple representing the output state for 
 `vectorbtpro.returns.nb.rolling_sharpe_ratio_acc_nb`."""

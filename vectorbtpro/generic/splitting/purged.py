@@ -30,9 +30,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Classes for purged cross-validation in time series.
+"""Module providing classes for purged cross-validation in time series.
 
-As described in Advances in Financial Machine Learning, Marcos Lopez de Prado, 2018."""
+As described in Advances in Financial Machine Learning by Marcos Lopez de Prado (2018).
+"""
 
 from abc import abstractmethod
 from itertools import combinations
@@ -53,11 +54,18 @@ __all__ = [
 class BasePurgedCV(Base):
     """Abstract class for purged time series cross-validation.
 
-    Time series cross-validation requires each sample has a prediction time, at which the features are used to
-    predict the response, and an evaluation time, at which the response is known and the error can be
-    computed. Importantly, it means that unlike in standard sklearn cross-validation, the samples X, response y,
-    `pred_times` and `eval_times` must all be pandas DataFrames/Series having the same index. It is also
-    assumed that the samples are time-ordered with respect to the prediction time."""
+    Time series cross-validation requires each sample to have:
+
+    * a prediction time at which features are used to predict the response,
+    * an evaluation time at which the true response is observed and errors can be computed.
+
+    Unlike standard scikit-learn cross-validation, the inputs `X`, `y`, `pred_times`, and `eval_times`
+    must be Pandas DataFrame/Series with matching indices, and the samples must be ordered by prediction time.
+
+    Args:
+        n_folds (int): Total number of folds.
+        purge_td (TimedeltaLike): Time period added to evaluation times for purging training samples.
+    """
 
     def __init__(self, n_folds: int = 10, purge_td: tp.TimedeltaLike = 0) -> None:
         self._n_folds = n_folds
@@ -68,27 +76,47 @@ class BasePurgedCV(Base):
 
     @property
     def n_folds(self) -> int:
-        """Number of folds."""
+        """Number of folds used in cross-validation.
+
+        Returns:
+            int: Number of folds.
+        """
         return self._n_folds
 
     @property
-    def purge_td(self) -> pd.Timedelta:
-        """Purge period."""
+    def purge_td(self) -> tp.PandasTimedelta:
+        """Timedelta period added to evaluation times for purging training samples.
+
+        Returns:
+            PandasTimedelta: Purge period.
+        """
         return self._purge_td
 
     @property
-    def pred_times(self) -> tp.Optional[pd.Series]:
-        """Times at which predictions are made."""
+    def pred_times(self) -> tp.Optional[tp.Series]:
+        """Time stamps at which predictions are made for each sample.
+
+        Returns:
+            Optional[Series]: Prediction times.
+        """
         return self._pred_times
 
     @property
-    def eval_times(self) -> tp.Optional[pd.Series]:
-        """Times at which the response becomes available and the error can be computed."""
+    def eval_times(self) -> tp.Optional[tp.Series]:
+        """Time stamps at which responses become available for error computation.
+
+        Returns:
+            Optional[Series]: Evaluation times.
+        """
         return self._eval_times
 
     @property
     def indices(self) -> tp.Optional[tp.Array1d]:
-        """Indices."""
+        """Array of indices corresponding to the dataset samples.
+
+        Returns:
+            Optional[Array1d]: Array of indices.
+        """
         return self._indices
 
     def purge(
@@ -97,11 +125,16 @@ class BasePurgedCV(Base):
         test_fold_start: int,
         test_fold_end: int,
     ) -> tp.Array1d:
-        """Purge part of the train set.
+        """Remove training samples based on evaluation times and purge period.
 
-        Given a left boundary index `test_fold_start` of the test set and a right boundary index
-        `test_fold_end`, this method removes from the train set all the samples whose evaluation time
-        is posterior to the prediction time of the first test sample after the boundary."""
+        Args:
+            train_indices (Array1d): Array of indices corresponding to the training set.
+            test_fold_start (int): Left boundary index indicating the start of the test set.
+            test_fold_end (int): Right boundary index indicating the end of the test set.
+
+        Returns:
+            Array1d: Training indices after purging samples to prevent data leakage.
+        """
         time_test_fold_start = self.pred_times.iloc[test_fold_start]
         eval_times = self.eval_times + self.purge_td
         train_indices_1 = np.intersect1d(train_indices, self.indices[eval_times < time_test_fold_start])
@@ -116,7 +149,21 @@ class BasePurgedCV(Base):
         pred_times: tp.Union[None, tp.Index, tp.Series] = None,
         eval_times: tp.Union[None, tp.Index, tp.Series] = None,
     ):
-        """Yield the indices of the train and test sets."""
+        """Yield training and test indices for time series cross-validation.
+
+        Args:
+            X (SeriesFrame): DataFrame or Series containing the input data.
+            y (Optional[Series]): Series containing the target values.
+            pred_times (Union[None, Index, Series]): Indices for prediction times.
+
+                If None, the index of `X` is used.
+            eval_times (Union[None, Index, Series]): Indices for evaluation times.
+
+                If None, the index of `X` is used.
+
+        Yields:
+            Tuple[Array1d, Array1d]: A tuple containing training and test indices.
+        """
         checks.assert_instance_of(X, (pd.Series, pd.DataFrame), arg_name="X")
         if y is not None:
             checks.assert_instance_of(y, pd.Series, arg_name="y")
@@ -141,20 +188,30 @@ class BasePurgedCV(Base):
 
 
 class PurgedWalkForwardCV(BasePurgedCV):
-    """Purged walk-forward cross-validation.
+    """Class for purged walk-forward cross-validation.
 
-    The samples are decomposed into `n_folds` folds containing equal numbers of samples, without
-    shuffling. In each cross validation round, `n_test_folds` contiguous folds are used as the
-    test set, while the train set consists in between `min_train_folds` and `max_train_folds`
-    immediately preceding folds.
+    The samples are decomposed into `n_folds` folds with an equal number of samples or equal
+    time intervals without shuffling. In each cross-validation round, `n_test_folds` contiguous
+    folds are used as the test set while the training set consists of between `min_train_folds`
+    and `max_train_folds` immediately preceding folds.
 
-    Each sample should be tagged with a prediction time and an evaluation time.
-    The split is such that the intervals [`pred_times`, `eval_times`] associated to samples in
-    the train and test set do not overlap. (The overlapping samples are dropped.)
+    Each sample must be tagged with a prediction time and an evaluation time.
+    The splitting ensures that the intervals [`pred_times`, `eval_times`] associated with samples
+    in the train and test sets do not overlap, with overlapping samples being dropped.
 
-    With `split_by_time=True` in the `PurgedWalkForwardCV.split` method, it is also possible to
-    split the samples in folds spanning equal time intervals (using the prediction time as a time tag),
-    instead of folds containing equal numbers of samples."""
+    With `split_by_time=True` in `PurgedWalkForwardCV.split`, folds can span equal time intervals
+    based on prediction times, rather than containing an equal number of samples.
+
+    Args:
+        n_folds (int): Total number of folds.
+        n_test_folds (int): Total number of folds allocated for testing.
+        min_train_folds (int): Minimum number of consecutive folds to use
+            for training preceding the test set.
+        max_train_folds (Optional[int]): Maximum number of consecutive folds to use
+            for training preceding the test set.
+        split_by_time (bool): Whether to partition folds based on equal time intervals using prediction times.
+        purge_td (TimedeltaLike): Duration used to purge overlapping samples between train and test sets.
+    """
 
     def __init__(
         self,
@@ -183,32 +240,61 @@ class PurgedWalkForwardCV(BasePurgedCV):
 
     @property
     def n_test_folds(self) -> int:
-        """Number of folds used in the test set."""
+        """Number of folds used as the test set.
+
+        Returns:
+            int: Number of test folds.
+        """
         return self._n_test_folds
 
     @property
     def min_train_folds(self) -> int:
-        """Minimal number of folds to be used in the train set."""
+        """Minimum number of folds for the training set.
+
+        Returns:
+            int: Minimum number of training folds.
+        """
         return self._min_train_folds
 
     @property
     def max_train_folds(self) -> int:
-        """Maximal number of folds to be used in the train set."""
+        """Maximum number of folds for the training set.
+
+        Returns:
+            int: Maximum number of training folds.
+        """
         return self._max_train_folds
 
     @property
-    def split_by_time(self) -> int:
-        """Whether the folds span identical time intervals. Otherwise, the folds contain
-        an (approximately) equal number of samples."""
+    def split_by_time(self) -> bool:
+        """Flag indicating whether folds are based on equal time intervals.
+
+        If False, the folds contain an approximately equal number of samples.
+
+        Returns:
+            bool: True if folds are based on equal time intervals, False otherwise.
+        """
         return self._split_by_time
 
     @property
     def fold_bounds(self) -> tp.List[int]:
-        """Fold boundaries."""
+        """List of indices representing the left boundaries of folds.
+
+        Returns:
+            List[int]: List of indices representing the left boundaries of folds.
+        """
         return self._fold_bounds
 
     def compute_fold_bounds(self) -> tp.List[int]:
-        """Compute a list containing the fold (left) boundaries."""
+        """Compute the left boundary indices of folds used to partition the data.
+
+        When `split_by_time` is True, the boundaries are determined based on equal time
+        intervals from prediction times. Otherwise, the indices are split into groups with
+        an approximately equal number of samples.
+
+        Returns:
+            List[int]: List of left boundary indices for each fold.
+        """
         if self.split_by_time:
             full_time_span = self.pred_times.max() - self.pred_times.min()
             fold_time_span = full_time_span / self.n_folds
@@ -218,7 +304,15 @@ class PurgedWalkForwardCV(BasePurgedCV):
             return [fold[0] for fold in np.array_split(self.indices, self.n_folds)]
 
     def compute_train_set(self, fold_bound: int, count_folds: int) -> tp.Array1d:
-        """Compute the position indices of the samples in the train set."""
+        """Compute the indices of training samples for a given fold.
+
+        Args:
+            fold_bound (int): Boundary index of the current fold.
+            count_folds (int): Number of folds processed so far.
+
+        Returns:
+            Array1d: Array of indices representing the training samples after purging.
+        """
         if count_folds > self.max_train_folds:
             start_train = self.fold_bounds[count_folds - self.max_train_folds]
         else:
@@ -228,7 +322,15 @@ class PurgedWalkForwardCV(BasePurgedCV):
         return train_indices
 
     def compute_test_set(self, fold_bound: int, count_folds: int) -> tp.Array1d:
-        """Compute the position indices of the samples in the test set."""
+        """Compute the indices of test samples for a given fold.
+
+        Args:
+            fold_bound (int): Boundary index of the current fold.
+            count_folds (int): Number of folds processed so far.
+
+        Returns:
+            Array1d: Array of indices representing the test samples.
+        """
         if self.n_folds - count_folds > self.n_test_folds:
             end_test = self.fold_bounds[count_folds + self.n_test_folds]
         else:
@@ -261,18 +363,27 @@ class PurgedWalkForwardCV(BasePurgedCV):
 
 
 class PurgedKFoldCV(BasePurgedCV):
-    """Purged and embargoed combinatorial cross-validation.
+    """Class for purged and embargoed combinatorial cross-validation.
 
-    The samples are decomposed into `n_folds` folds containing equal numbers of samples, without shuffling.
-    In each cross validation round, `n_test_folds` folds are used as the test set, while the other folds
-    are used as the train set. There are as many rounds as `n_test_folds` folds among the `n_folds` folds.
+    The samples are decomposed into `n_folds` folds containing equal numbers of samples,
+    without shuffling. In each cross-validation round, `n_test_folds` folds are used as
+    the test set, while the remaining folds form the training set. There are as many rounds
+    as there are combinations of `n_test_folds` folds among the `n_folds` folds.
 
-    Each sample should be tagged with a prediction time and an evaluation time. The split is such
-    that the intervals [`pred_times`, `eval_times`] associated to samples in the train and test set
-    do not overlap. (The overlapping samples are dropped.) In addition, an "embargo" period is defined,
-    giving the minimal time between an evaluation time in the test set and a prediction time in the
-    training set. This is to avoid, in the presence of temporal correlation, a contamination of the
-    test set by the train set."""
+    Each sample should be tagged with a prediction time and an evaluation time. The split
+    is such that the intervals [`pred_times`, `eval_times`] associated with samples in the
+    train and test sets do not overlap (overlapping samples are dropped). In addition, an
+    embargo period is defined to enforce a minimum time gap between a test set evaluation time
+    and a training set prediction time, avoiding potential contamination.
+
+    Args:
+        n_folds (int): Total number of folds.
+        n_test_folds (int): Total number of folds allocated for testing.
+        purge_td (TimedeltaLike): Time interval used to purge samples with overlapping
+            prediction and evaluation periods.
+        embargo_td (TimedeltaLike): Time interval defining the embargo period between
+            test set evaluation times and training predictions.
+    """
 
     def __init__(
         self,
@@ -290,12 +401,21 @@ class PurgedKFoldCV(BasePurgedCV):
 
     @property
     def n_test_folds(self) -> int:
-        """Number of folds used in the test set."""
+        """Number of folds reserved for testing in each cross-validation round.
+
+        Returns:
+            int: Number of test folds.
+        """
         return self._n_test_folds
 
     @property
-    def embargo_td(self) -> pd.Timedelta:
-        """Embargo period."""
+    def embargo_td(self) -> tp.PandasTimedelta:
+        """Embargo period duration enforcing a minimum gap between test set evaluation times
+        and training set prediction times.
+
+        Returns:
+            PandasTimedelta: Embargo period.
+        """
         return self._embargo_td
 
     def embargo(
@@ -304,12 +424,22 @@ class PurgedKFoldCV(BasePurgedCV):
         test_indices: tp.Array1d,
         test_fold_end: int,
     ) -> tp.Array1d:
-        """Apply the embargo procedure to part of the train set.
+        """Apply embargo to the training set by excluding samples with prediction times falling
+        within the embargo period after the test set evaluation.
 
-        This amounts to dropping the train set samples whose prediction time occurs within
-        `PurgedKFoldCV.embargo_td` of the test set sample evaluation times. This method applies
-        the embargo only to the part of the training set immediately following the end of the test
-        set determined by `test_fold_end`."""
+        This procedure removes training samples whose prediction time occurs within
+        `PurgedKFoldCV.embargo_td` after the latest evaluation time among the test set samples.
+        The embargo is applied only to the segment of the training set immediately following
+        the end of the test fold specified by `test_fold_end`.
+
+        Args:
+            train_indices (Array1d): Array of indices corresponding to the training set.
+            test_indices (Array1d): Array of indices corresponding to the test set.
+            test_fold_end (int): Right boundary index indicating the end of the test set.
+
+        Returns:
+            Array1d: Modified training sample indices after applying the embargo procedure.
+        """
         last_test_eval_time = self.eval_times.iloc[test_indices[test_indices <= test_fold_end]].max()
         min_train_index = len(self.pred_times[self.pred_times <= last_test_eval_time + self.embargo_td])
         if min_train_index < self.indices.shape[0]:
@@ -322,7 +452,17 @@ class PurgedKFoldCV(BasePurgedCV):
         test_fold_bounds: tp.List[tp.Tuple[int, int]],
         test_indices: tp.Array1d,
     ) -> tp.Array1d:
-        """Compute the position indices of the samples in the train set."""
+        """Compute the training set indices after applying purging and embargo procedures.
+
+        Args:
+            test_fold_bounds (List[Tuple[int, int]]): List of tuples specifying the start
+                and end indices of test folds.
+            test_indices (Array1d): Array of indices corresponding to the test set.
+
+        Returns:
+            Array1d: Array of training sample indices after purging overlapping samples
+                and applying the embargo.
+        """
         train_indices = np.setdiff1d(self.indices, test_indices)
         for test_fold_start, test_fold_end in test_fold_bounds:
             train_indices = self.purge(train_indices, test_fold_start, test_fold_end)
@@ -333,7 +473,16 @@ class PurgedKFoldCV(BasePurgedCV):
         self,
         fold_bound_list: tp.List[tp.Tuple[int, int]],
     ) -> tp.Tuple[tp.List[tp.Tuple[int, int]], tp.Array1d]:
-        """Compute the position indices of the samples in the test set."""
+        """Compute consolidated test fold boundaries and corresponding sample indices.
+
+        Args:
+            fold_bound_list (List[Tuple[int, int]]): List of tuples representing fold
+                boundaries for the test set.
+
+        Returns:
+            Tuple[List[Tuple[int, int]], Array1d]: A tuple containing the consolidated
+                test fold boundaries and an array of test set sample indices.
+        """
         test_indices = np.empty(0)
         test_fold_bounds = []
         for fold_start, fold_end in fold_bound_list:

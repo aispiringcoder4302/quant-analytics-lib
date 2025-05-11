@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for chaining."""
+"""Module providing utilities for chaining operations."""
 
 import inspect
 
@@ -22,20 +22,35 @@ __all__ = [
 
 
 class Chainable(Base):
-    """Class representing an object that can be chained."""
+    """Class for chainable objects providing a fluent interface.
+
+    Instances can chain functions or tasks sequentially using the `pipe` and `chain` methods.
+    """
 
     @hybrid_method
     def pipe(cls_or_self, func: tp.PipeFunc, *args, **kwargs) -> tp.Any:
-        """Apply a chainable function that expects a `Chainable` instance.
+        """Apply a chainable function to a chainable object.
 
-        Can be called as a class method, but then will pass only `*args` and `**kwargs`.
+        This method can be invoked as an instance or a class method. When called on an instance,
+        the instance is automatically passed to the provided function unless a tuple argument specifies
+        a custom insertion point or the function is already bound. When called on the class, only
+        `*args` and `**kwargs` are passed.
 
-        Argument `func` can be a function, a string denoting a (deep) attribute to be resolved
-        with `vectorbtpro.utils.attr_.deep_getattr`, or a tuple where the first element is one
-        of the above and the second element is a positional argument or keyword argument where
-        to pass the instance. If not a tuple, passes the instance as the first positional argument.
-        If a string and the target function is an instance method, won't pass the instance since
-        it's already bound to this instance."""
+        Args:
+            func (PipeFunc): Function to apply.
+            
+                It can be:
+
+                * A callable function.
+                * A string representing an attribute path to resolve via `vectorbtpro.utils.attr_.deep_getattr`.
+                * A tuple where the first element is a callable or attribute path and the second element indicates
+                    the positional or keyword argument where to pass the chainable instance.
+            *args: Positional arguments for `func`.
+            **kwargs: Keyword arguments for `func`.
+
+        Returns:
+            Any: Result of invoking the chainable function.
+        """
         if isinstance(func, tuple):
             func, arg_name = func
             if not isinstance(cls_or_self, type):
@@ -62,7 +77,25 @@ class Chainable(Base):
 
     @hybrid_method
     def chain(cls_or_self, tasks: tp.PipeTasks) -> tp.Any:
-        """Chain multiple tasks with `Chainable.pipe`."""
+        """Chain multiple tasks sequentially using the `pipe` method.
+
+        This method iterates over a sequence of tasks, converting each task to a
+        `vectorbtpro.utils.execution.Task` if necessary, and applies them one after the other
+        via the `pipe` method.
+
+        Args:
+            tasks (PipeTasks): Collection of tasks to chain.
+
+                Each task can be:
+
+                * An instance of `vectorbtpro.utils.execution.Task`.
+                * A tuple convertible to a `vectorbtpro.utils.execution.Task` via
+                    `vectorbtpro.utils.execution.Task.from_tuple`.
+                * A callable function to be wrapped as a `vectorbtpro.utils.execution.Task`.
+
+        Returns:
+            Any: Final result after applying all tasks sequentially.
+        """
         from vectorbtpro.utils.execution import Task
 
         result = cls_or_self

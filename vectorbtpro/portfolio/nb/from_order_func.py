@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for portfolio simulation based on an order function."""
+"""Module providing Numba-compiled functions for portfolio simulation based on an order function."""
 
 from numba import prange
 
@@ -32,7 +32,18 @@ def calc_group_value_nb(
     last_position: tp.Array1d,
     last_val_price: tp.Array1d,
 ) -> float:
-    """Calculate group value."""
+    """Calculate the group value by summing available cash with the value of positions.
+
+    Args:
+        from_col (int): Starting column index of the group.
+        to_col (int): Ending column index of the group.
+        cash_now (float): Available cash at the current moment.
+        last_position (Array1d): Array of last positions for each column.
+        last_val_price (Array1d): Array of last valuation prices for each column.
+
+    Returns:
+        float: Total group value.
+    """
     group_value = cash_now
     group_len = to_col - from_col
     for k in range(group_len):
@@ -44,15 +55,19 @@ def calc_group_value_nb(
 
 @register_jitted
 def calc_ctx_group_value_nb(seg_ctx: SegmentContext) -> float:
-    """Calculate group value from context.
+    """Calculate the group value using the provided segment context.
 
-    Accepts `vectorbtpro.portfolio.enums.SegmentContext`.
+    Best called from `pre_segment_func_nb`. Modify `last_val_price` in-place to update the valuation price.
 
-    Best called once from `pre_segment_func_nb`. To set the valuation price, change `last_val_price`
-    of the context in-place.
+    Args:
+        seg_ctx (SegmentContext): Simulation segment context.
+
+    Returns:
+        float: Calculated group value.
 
     !!! note
-        Cash sharing must be enabled."""
+        Cash sharing must be enabled.
+    """
     if not seg_ctx.cash_sharing:
         raise ValueError("Cash sharing must be enabled")
     return calc_group_value_nb(
@@ -66,58 +81,63 @@ def calc_ctx_group_value_nb(seg_ctx: SegmentContext) -> float:
 
 @register_jitted
 def sort_call_seq_out_1d_nb(
-    ctx: SegmentContext,
+    c: SegmentContext,
     size: tp.FlexArray1d,
     size_type: tp.FlexArray1d,
     direction: tp.FlexArray1d,
     order_value_out: tp.Array1d,
     call_seq_out: tp.Array1d,
 ) -> None:
-    """Sort call sequence `call_seq_out` based on the value of each potential order.
+    """Sort the call sequence array `call_seq_out` by computing order values for each potential order.
 
-    Accepts `vectorbtpro.portfolio.enums.SegmentContext` and other arguments, sorts `call_seq_out` in place,
-    and returns nothing.
+    Best called from `pre_segment_func_nb`.
 
-    Arrays `size`, `size_type`, and `direction` utilize flexible indexing; they must be 1-dim arrays
-    that broadcast to `group_len`.
+    Args:
+        c (SegmentContext): Segment context.
+        size (FlexArray1d): 1D array of order sizes.
+        size_type (FlexArray1d): 1D array of order size types.
 
-    The lengths of `order_value_out` and `call_seq_out` must match the number of columns in the group.
-    Array `order_value_out` must be empty and will contain sorted order values after execution.
-    Array `call_seq_out` must be filled with integers ranging from 0 to the number of columns in the group
-    (in this exact order).
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (FlexArray1d): 1D array of order directions.
 
-    Best called once from `pre_segment_func_nb`.
+            See `vectorbtpro.portfolio.enums.Direction`.
+        order_value_out (Array1d): Array to hold computed order values; must be empty initially.
+        call_seq_out (Array1d): Array containing default call sequence indices, which will be sorted in place.
+
+    Returns:
+        None: Function modifies `call_seq_out` in place.
 
     !!! note
-        Cash sharing must be enabled and `call_seq_out` must follow `CallSeqType.Default`."""
-    if not ctx.cash_sharing:
+        Cash sharing must be enabled and `call_seq_out` must follow `CallSeqType.Default`.
+    """
+    if not c.cash_sharing:
         raise ValueError("Cash sharing must be enabled")
 
-    group_value_now = calc_ctx_group_value_nb(ctx)
-    group_len = ctx.to_col - ctx.from_col
-    for c in range(group_len):
-        if call_seq_out[c] != c:
+    group_value_now = calc_ctx_group_value_nb(c)
+    group_len = c.to_col - c.from_col
+    for ci in range(group_len):
+        if call_seq_out[ci] != ci:
             raise ValueError("call_seq_out must follow CallSeqType.Default")
-        col = ctx.from_col + c
-        _size = flex_select_1d_pc_nb(size, c)
-        _size_type = flex_select_1d_pc_nb(size_type, c)
-        _direction = flex_select_1d_pc_nb(direction, c)
-        if ctx.cash_sharing:
-            cash_now = ctx.last_cash[ctx.group]
-            free_cash_now = ctx.last_free_cash[ctx.group]
+        col = c.from_col + ci
+        _size = flex_select_1d_pc_nb(size, ci)
+        _size_type = flex_select_1d_pc_nb(size_type, ci)
+        _direction = flex_select_1d_pc_nb(direction, ci)
+        if c.cash_sharing:
+            cash_now = c.last_cash[c.group]
+            free_cash_now = c.last_free_cash[c.group]
         else:
-            cash_now = ctx.last_cash[col]
-            free_cash_now = ctx.last_free_cash[col]
+            cash_now = c.last_cash[col]
+            free_cash_now = c.last_free_cash[col]
         exec_state = ExecState(
             cash=cash_now,
-            position=ctx.last_position[col],
-            debt=ctx.last_debt[col],
-            locked_cash=ctx.last_locked_cash[col],
+            position=c.last_position[col],
+            debt=c.last_debt[col],
+            locked_cash=c.last_locked_cash[col],
             free_cash=free_cash_now,
-            val_price=ctx.last_val_price[col],
+            val_price=c.last_val_price[col],
             value=group_value_now,
         )
-        order_value_out[c] = approx_order_value_nb(
+        order_value_out[ci] = approx_order_value_nb(
             exec_state,
             _size,
             _size_type,
@@ -129,61 +149,96 @@ def sort_call_seq_out_1d_nb(
 
 @register_jitted
 def sort_call_seq_1d_nb(
-    ctx: SegmentContext,
+    c: SegmentContext,
     size: tp.FlexArray1d,
     size_type: tp.FlexArray1d,
     direction: tp.FlexArray1d,
     order_value_out: tp.Array1d,
 ) -> None:
-    """Sort call sequence attached to `vectorbtpro.portfolio.enums.SegmentContext`.
+    """Sort the call sequence associated with the segment context using 1D flexible arrays.
 
-    See `sort_call_seq_out_1d_nb`.
+    Args:
+        c (SegmentContext): Segment context.
+        size (FlexArray1d): 1D array of order sizes.
+        size_type (FlexArray1d): 1D array of order size types.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (FlexArray1d): 1D array of order directions.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+        order_value_out (Array1d): Array to hold computed order values; must be empty initially.
+
+    Returns:
+        None: Function modifies `call_seq_now` in place.
+
+    See:
+        `sort_call_seq_out_1d_nb`
 
     !!! note
-        Can only be used in non-flexible simulation functions."""
-    if ctx.call_seq_now is None:
+        Can only be used in non-flexible simulation functions.
+    """
+    if c.call_seq_now is None:
         raise ValueError("Call sequence array is None. Use sort_call_seq_out_1d_nb to sort a custom array.")
-    sort_call_seq_out_1d_nb(ctx, size, size_type, direction, order_value_out, ctx.call_seq_now)
+    sort_call_seq_out_1d_nb(c, size, size_type, direction, order_value_out, c.call_seq_now)
 
 
 @register_jitted
 def sort_call_seq_out_nb(
-    ctx: SegmentContext,
+    c: SegmentContext,
     size: tp.FlexArray2d,
     size_type: tp.FlexArray2d,
     direction: tp.FlexArray2d,
     order_value_out: tp.Array1d,
     call_seq_out: tp.Array1d,
 ) -> None:
-    """Same as `sort_call_seq_out_1d_nb` but with `size`, `size_type`, and `direction` being 2-dim arrays."""
-    if not ctx.cash_sharing:
+    """Sort the call sequence array `call_seq_out` by computing order values using 2D flexible arrays.
+
+    Args:
+        c (SegmentContext): Segment context.
+        size (FlexArray2d): Array of order sizes.
+        size_type (FlexArray2d): 2D array of order size types.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (FlexArray2d): Array indicating the order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+        order_value_out (Array1d): Array to hold computed order values; must be empty initially.
+        call_seq_out (Array1d): Array containing default call sequence indices, which will be sorted in place.
+
+    Returns:
+        None: Function modifies `call_seq_out` in place.
+
+    !!! note
+        Cash sharing must be enabled.
+    """
+    if not c.cash_sharing:
         raise ValueError("Cash sharing must be enabled")
 
-    group_value_now = calc_ctx_group_value_nb(ctx)
-    group_len = ctx.to_col - ctx.from_col
-    for c in range(group_len):
-        if call_seq_out[c] != c:
+    group_value_now = calc_ctx_group_value_nb(c)
+    group_len = c.to_col - c.from_col
+    for ci in range(group_len):
+        if call_seq_out[ci] != ci:
             raise ValueError("call_seq_out must follow CallSeqType.Default")
-        col = ctx.from_col + c
-        _size = select_from_col_nb(ctx, col, size)
-        _size_type = select_from_col_nb(ctx, col, size_type)
-        _direction = select_from_col_nb(ctx, col, direction)
-        if ctx.cash_sharing:
-            cash_now = ctx.last_cash[ctx.group]
-            free_cash_now = ctx.last_free_cash[ctx.group]
+        col = c.from_col + ci
+        _size = select_from_col_nb(c, col, size)
+        _size_type = select_from_col_nb(c, col, size_type)
+        _direction = select_from_col_nb(c, col, direction)
+        if c.cash_sharing:
+            cash_now = c.last_cash[c.group]
+            free_cash_now = c.last_free_cash[c.group]
         else:
-            cash_now = ctx.last_cash[col]
-            free_cash_now = ctx.last_free_cash[col]
+            cash_now = c.last_cash[col]
+            free_cash_now = c.last_free_cash[col]
         exec_state = ExecState(
             cash=cash_now,
-            position=ctx.last_position[col],
-            debt=ctx.last_debt[col],
-            locked_cash=ctx.last_locked_cash[col],
+            position=c.last_position[col],
+            debt=c.last_debt[col],
+            locked_cash=c.last_locked_cash[col],
             free_cash=free_cash_now,
-            val_price=ctx.last_val_price[col],
+            val_price=c.last_val_price[col],
             value=group_value_now,
         )
-        order_value_out[c] = approx_order_value_nb(
+        order_value_out[ci] = approx_order_value_nb(
             exec_state,
             _size,
             _size_type,
@@ -195,70 +250,108 @@ def sort_call_seq_out_nb(
 
 @register_jitted
 def sort_call_seq_nb(
-    ctx: SegmentContext,
+    c: SegmentContext,
     size: tp.FlexArray2d,
     size_type: tp.FlexArray2d,
     direction: tp.FlexArray2d,
     order_value_out: tp.Array1d,
 ) -> None:
-    """Sort call sequence attached to `vectorbtpro.portfolio.enums.SegmentContext`.
+    """Sort the call sequence associated with the segment context using 2D flexible arrays.
 
-    See `sort_call_seq_out_nb`.
+    Args:
+        c (SegmentContext): Segment context.
+        size (FlexArray2d): Array of order sizes.
+        size_type (FlexArray2d): 2D array of order size types.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (FlexArray2d): Array indicating the order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+        order_value_out (Array1d): Array to hold computed order values; must be empty initially.
+
+    Returns:
+        None: Function modifies `call_seq_now` in place.
 
     !!! note
-        Can only be used in non-flexible simulation functions."""
-    if ctx.call_seq_now is None:
+        Can only be used in non-flexible simulation functions.
+    """
+    if c.call_seq_now is None:
         raise ValueError("Call sequence array is None. Use sort_call_seq_out_1d_nb to sort a custom array.")
-    sort_call_seq_out_nb(ctx, size, size_type, direction, order_value_out, ctx.call_seq_now)
+    sort_call_seq_out_nb(c, size, size_type, direction, order_value_out, c.call_seq_now)
 
 
 @register_jitted
-def try_order_nb(ctx: OrderContext, order: Order) -> tp.Tuple[OrderResult, ExecState]:
-    """Execute an order without persistence."""
+def try_order_nb(c: OrderContext, order: Order) -> tp.Tuple[OrderResult, ExecState]:
+    """Execute an order without persistence.
+
+    Args:
+        c (OrderContext): Order context.
+        order (Order): Order to execute.
+
+            See `vectorbtpro.portfolio.enums.Order`.
+
+    Returns:
+        Tuple[OrderResult, ExecState]: A tuple containing the order execution result and
+            the updated execution state.
+    """
     exec_state = ExecState(
-        cash=ctx.cash_now,
-        position=ctx.position_now,
-        debt=ctx.debt_now,
-        locked_cash=ctx.locked_cash_now,
-        free_cash=ctx.free_cash_now,
-        val_price=ctx.val_price_now,
-        value=ctx.value_now,
+        cash=c.cash_now,
+        position=c.position_now,
+        debt=c.debt_now,
+        locked_cash=c.locked_cash_now,
+        free_cash=c.free_cash_now,
+        val_price=c.val_price_now,
+        value=c.value_now,
     )
     price_area = PriceArea(
-        open=flex_select_nb(ctx.open, ctx.i, ctx.col),
-        high=flex_select_nb(ctx.high, ctx.i, ctx.col),
-        low=flex_select_nb(ctx.low, ctx.i, ctx.col),
-        close=flex_select_nb(ctx.close, ctx.i, ctx.col),
+        open=flex_select_nb(c.open, c.i, c.col),
+        high=flex_select_nb(c.high, c.i, c.col),
+        low=flex_select_nb(c.low, c.i, c.col),
+        close=flex_select_nb(c.close, c.i, c.col),
     )
     return execute_order_nb(exec_state=exec_state, order=order, price_area=price_area)
 
 
 @register_jitted
 def no_pre_func_nb(c: tp.NamedTuple, *args) -> tp.Args:
-    """Placeholder preprocessing function that forwards received arguments down the stack."""
+    """Forward received arguments for preprocessing.
+
+    Args:
+        c (NamedTuple): Context.
+        *args: Additional positional arguments.
+
+    Returns:
+        Args: Forwarded positional arguments.
+    """
     return args
 
 
 @register_jitted
 def no_order_func_nb(c: OrderContext, *args) -> Order:
-    """Placeholder order function that returns no order."""
+    """Return a placeholder order indicating no order is placed.
+
+    Args:
+        c (OrderContext): Order context.
+        *args: Additional positional arguments.
+
+    Returns:
+        Order: Placeholder order, represented by `vectorbtpro.portfolio.enums.NoOrder`.
+    """
     return NoOrder
 
 
 @register_jitted
 def no_post_func_nb(c: tp.NamedTuple, *args) -> None:
-    """Placeholder postprocessing function that returns nothing."""
+    """Perform placeholder postprocessing with no effect.
+
+    Args:
+        c (NamedTuple): Context.
+        *args: Additional positional arguments.
+
+    Returns:
+        None
+    """
     return None
-
-
-PreSimFuncT = tp.Callable[[SimulationContext, tp.VarArg()], tp.Args]
-PostSimFuncT = tp.Callable[[SimulationContext, tp.VarArg()], None]
-PreGroupFuncT = tp.Callable[[GroupContext, tp.VarArg()], tp.Args]
-PostGroupFuncT = tp.Callable[[GroupContext, tp.VarArg()], None]
-PreSegmentFuncT = tp.Callable[[SegmentContext, tp.VarArg()], tp.Args]
-PostSegmentFuncT = tp.Callable[[SegmentContext, tp.VarArg()], None]
-OrderFuncT = tp.Callable[[OrderContext, tp.VarArg()], Order]
-PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 
 
 # % <block pre_sim_func_nb>
@@ -269,7 +362,15 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     c: SimulationContext,
 #     *args,
 # ) -> tp.Args:
-#     """Custom simulation pre-processing function."""
+#     """Custom simulation pre-processing function.
+#
+#     Args:
+#         c (SimulationContext): Simulation context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
 #     return args
 #
 #
@@ -285,7 +386,15 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     c: SimulationContext,
 #     *args,
 # ) -> None:
-#     """Custom simulation post-processing function."""
+#     """Custom simulation post-processing function.
+#
+#     Args:
+#         c (SimulationContext): Simulation context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         None
+#     """
 #     return None
 #
 #
@@ -301,7 +410,15 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     c: GroupContext,
 #     *args,
 # ) -> tp.Args:
-#     """Custom group pre-processing function."""
+#     """Custom group pre-processing function.
+#
+#     Args:
+#         c (GroupContext): Group context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
 #     return args
 #
 #
@@ -317,7 +434,15 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     c: GroupContext,
 #     *args,
 # ) -> None:
-#     """Custom group post-processing function."""
+#     """Custom group post-processing function.
+#
+#     Args:
+#         c (GroupContext): Group context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         None
+#     """
 #     return None
 #
 #
@@ -333,7 +458,15 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     c: SegmentContext,
 #     *args,
 # ) -> tp.Args:
-#     """Custom segment pre-processing function."""
+#     """Custom segment pre-processing function.
+#
+#     Args:
+#         c (SegmentContext): Segment context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
 #     return args
 #
 #
@@ -349,7 +482,15 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     c: SegmentContext,
 #     *args,
 # ) -> None:
-#     """Custom segment post-processing function."""
+#     """Custom segment post-processing function.
+#
+#     Args:
+#         c (SegmentContext): Segment context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         None
+#     """
 #     return None
 #
 #
@@ -365,7 +506,17 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     c: OrderContext,
 #     *args,
 # ) -> Order:
-#     """Custom order function."""
+#     """Custom order processing function.
+#
+#     Args:
+#         c (OrderContext): Order context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Order: Created order.
+#
+#           In this placeholder, it returns `vectorbtpro.portfolio.enums.NoOrder`.
+#     """
 #     return NoOrder
 #
 #
@@ -381,7 +532,15 @@ PostOrderFuncT = tp.Callable[[PostOrderContext, tp.VarArg()], None]
 #     c: PostOrderContext,
 #     *args,
 # ) -> None:
-#     """Custom order post-processing function."""
+#     """Custom order post-processing function.
+#
+#     Args:
+#         c (PostOrderContext): Post-order context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         None
+#     """
 #     return None
 #
 #
@@ -483,21 +642,21 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
     segment_mask: tp.FlexArray2dLike = True,
     call_pre_segment: bool = False,
     call_post_segment: bool = False,
-    pre_sim_func_nb: PreSimFuncT = no_pre_func_nb,  # % None
+    pre_sim_func_nb: tp.PreSimFunc = no_pre_func_nb,  # % None
     pre_sim_args: tp.Args = (),
-    post_sim_func_nb: PostSimFuncT = no_post_func_nb,  # % None
+    post_sim_func_nb: tp.PostSimFunc = no_post_func_nb,  # % None
     post_sim_args: tp.Args = (),
-    pre_group_func_nb: PreGroupFuncT = no_pre_func_nb,  # % None
+    pre_group_func_nb: tp.PreGroupFunc = no_pre_func_nb,  # % None
     pre_group_args: tp.Args = (),
-    post_group_func_nb: PostGroupFuncT = no_post_func_nb,  # % None
+    post_group_func_nb: tp.PostGroupFunc = no_post_func_nb,  # % None
     post_group_args: tp.Args = (),
-    pre_segment_func_nb: PreSegmentFuncT = no_pre_func_nb,  # % None
+    pre_segment_func_nb: tp.PreSegmentFunc = no_pre_func_nb,  # % None
     pre_segment_args: tp.Args = (),
-    post_segment_func_nb: PostSegmentFuncT = no_post_func_nb,  # % None
+    post_segment_func_nb: tp.PostSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.Args = (),
-    order_func_nb: OrderFuncT = no_order_func_nb,  # % None
+    order_func_nb: tp.OrderFunc = no_order_func_nb,  # % None
     order_args: tp.Args = (),
-    post_order_func_nb: PostOrderFuncT = no_post_func_nb,  # % None
+    post_order_func_nb: tp.PostOrderFunc = no_post_func_nb,  # % None
     post_order_args: tp.Args = (),
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
@@ -516,171 +675,202 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
     max_log_records: tp.Optional[int] = 0,
     in_outputs: tp.Optional[tp.NamedTuple] = None,
 ) -> SimulationOutput:
-    """Fill order and log records by iterating over a shape and calling a range of user-defined functions.
+    """Fill order and log records by iterating over a target shape and executing a
+    sequence of user-defined functions.
 
-    Starting with initial cash `init_cash`, iterates over each group and column in `target_shape`,
-    and for each data point, generates an order using `order_func_nb`. Tries then to fulfill that
-    order. Upon success, updates the current state including the cash balance and the position.
-    Returns `vectorbtpro.portfolio.enums.SimulationOutput`.
+    Starting with an initial cash balance (`init_cash`), this function iterates over
+    each group and each column in `target_shape`. For every data point, it generates an
+    order using `order_func_nb` and attempts to process it. Upon a successful order execution,
+    the simulation state (including cash, positions, and valuation) is updated. The simulation
+    output is returned as a `SimulationOutput`.
 
-    As opposed to `from_order_func_rw_nb`, order processing happens in column-major order.
-    Column-major order means processing the entire column/group with all rows before moving to the next one.
+    Unlike `from_order_func_rw_nb`, order processing is performed in column-major order
+    (i.e. processing the entire column or group across all rows before moving to the next).
     See [Row- and column-major order](https://en.wikipedia.org/wiki/Row-_and_column-major_order).
 
     Args:
-        target_shape (tuple): See `vectorbtpro.portfolio.enums.SimulationContext.target_shape`.
-        group_lens (array_like of int): See `vectorbtpro.portfolio.enums.SimulationContext.group_lens`.
+        target_shape (Shape): See `vectorbtpro.portfolio.enums.SimulationContext.target_shape`.
+        group_lens (GroupLens): See `vectorbtpro.portfolio.enums.SimulationContext.group_lens`.
         cash_sharing (bool): See `vectorbtpro.portfolio.enums.SimulationContext.cash_sharing`.
-        call_seq (array_like of int): See `vectorbtpro.portfolio.enums.SimulationContext.call_seq`.
-        init_cash (array_like of float): See `vectorbtpro.portfolio.enums.SimulationContext.init_cash`.
-        init_position (array_like of float): See `vectorbtpro.portfolio.enums.SimulationContext.init_position`.
-        init_price (array_like of float): See `vectorbtpro.portfolio.enums.SimulationContext.init_price`.
-        cash_deposits (array_like of float): See `vectorbtpro.portfolio.enums.SimulationContext.cash_deposits`.
-        cash_earnings (array_like of float): See `vectorbtpro.portfolio.enums.SimulationContext.cash_earnings`.
-        segment_mask (array_like of bool): See `vectorbtpro.portfolio.enums.SimulationContext.segment_mask`.
+        call_seq (Optional[Array2d]): See `vectorbtpro.portfolio.enums.SimulationContext.call_seq`.
+        init_cash (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_cash`.
+        
+            Provided as a scalar or per column or group with cash sharing.
+        init_position (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_position`.
+        
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_price`.
+        
+            Provided as a scalar or per column.
+        cash_deposits (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_deposits`.
+        
+            Provided as a scalar, or per row, column or group with cash sharing, or element.
+        cash_earnings (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_earnings`.
+        
+            Provided as a scalar, or per row, column, or element.
+        segment_mask (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.segment_mask`.
+        
+            Provided as a scalar, or per row, group, or element.
         call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
         call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
-        pre_sim_func_nb (callable): Function called before simulation.
+        pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
 
-            Can be used for creation of global arrays and setting the seed.
+            This function is used for creating global arrays and setting the seed.
+            
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`, 
+            and returns a tuple that is passed to `pre_group_func_nb` and `post_group_func_nb`.
+        pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
+        post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
 
-            Must accept `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`.
-            Must return a tuple of any content, which is then passed to `pre_group_func_nb` and
-            `post_group_func_nb`.
-        pre_sim_args (tuple): Packed arguments passed to `pre_sim_func_nb`.
-        post_sim_func_nb (callable): Function called after simulation.
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
+            and returns nothing.
+        post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
+        pre_group_func_nb (PreGroupFunc): Callback function to be called before processing a group.
 
-            Must accept `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`.
-            Must return nothing.
-        post_sim_args (tuple): Packed arguments passed to `post_sim_func_nb`.
-        pre_group_func_nb (callable): Function called before each group.
-
-            Must accept `vectorbtpro.portfolio.enums.GroupContext`, unpacked tuple from `pre_sim_func_nb`,
-            and `*pre_group_args`. Must return a tuple of any content, which is then passed to
+            Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*pre_group_args`, and returns a tuple that is passed to 
             `pre_segment_func_nb` and `post_segment_func_nb`.
-        pre_group_args (tuple): Packed arguments passed to `pre_group_func_nb`.
-        post_group_func_nb (callable): Function called after each group.
+        pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
+        post_group_func_nb (PostGroupFunc): Callback function to be called after processing a group.
 
-            Must accept `vectorbtpro.portfolio.enums.GroupContext`, unpacked tuple from `pre_sim_func_nb`,
-            and `*post_group_args`. Must return nothing.
-        post_group_args (tuple): Packed arguments passed to `post_group_func_nb`.
-        pre_segment_func_nb (callable): Function called before each segment.
+            Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_group_args`, and returns nothing.
+        post_group_args (Args): Positional arguments for `post_group_func_nb`.
+        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment
+            if `segment_mask` or `call_pre_segment` is True.
 
-            Called if `segment_mask` or `call_pre_segment` is True.
-
-            Must accept `vectorbtpro.portfolio.enums.SegmentContext`, unpacked tuple from `pre_group_func_nb`,
-            and `*pre_segment_args`. Must return a tuple of any content, which is then passed to
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
+            `pre_group_func_nb`, and `*pre_segment_args`, and returns a tuple that is passed to
             `order_func_nb` and `post_order_func_nb`.
 
-            This is the right place to change call sequence and set the valuation price.
-            Group re-valuation and update of the open position stats happens right after this function,
-            regardless of whether it has been called.
+            This is the appropriate place to adjust the call sequence or set the valuation price.
+            Group re-valuation and updates of open position stats occur immediately after this function
+            executes, regardless of whether it is called.
 
             !!! note
-                To change the call sequence of a segment, access
-                `vectorbtpro.portfolio.enums.SegmentContext.call_seq_now` and change it in-place.
-                Make sure to not generate any new arrays as it may negatively impact performance.
-                Assigning `vectorbtpro.portfolio.enums.SegmentContext.call_seq_now` as any other context
-                (named tuple) value is not supported. See `vectorbtpro.portfolio.enums.SegmentContext.call_seq_now`.
+                To change the call sequence of a segment, modify
+                `vectorbtpro.portfolio.enums.SegmentContext.call_seq_now` in-place.
+                Avoid creating new arrays to prevent performance degradation.
+                Assigning a new context is not supported.
 
             !!! note
-                You can override elements of `last_val_price` to manipulate group valuation.
+                You can override elements of `last_val_price` to influence group valuation.
                 See `vectorbtpro.portfolio.enums.SimulationContext.last_val_price`.
-        pre_segment_args (tuple): Packed arguments passed to `pre_segment_func_nb`.
-        post_segment_func_nb (callable): Function called after each segment.
+        pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
+        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment 
+            if `segment_mask` or `call_post_segment` is True.
 
-            Called if `segment_mask` or `call_post_segment` is True.
+            Handles the addition of `cash_earnings`, final group re-valuation, and the final update
+            of open position stats. 
+            
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
+            `pre_group_func_nb`, and `*post_segment_args`, and returns nothing.
+        post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
+        order_func_nb (OrderFunc): Callback function to be called to generate an order.
 
-            Addition of cash_earnings, the final group re-valuation, and the final update of the open
-            position stats happens right before this function, regardless of whether it has been called.
-
-            The passed context represents the final state of each segment, thus makes sure
-            to do any changes before this function is called.
-
-            Must accept `vectorbtpro.portfolio.enums.SegmentContext`, unpacked tuple from `pre_group_func_nb`,
-            and `*post_segment_args`. Must return nothing.
-        post_segment_args (tuple): Packed arguments passed to `post_segment_func_nb`.
-        order_func_nb (callable): Order generation function.
-
-            Used for either generating an order or skipping.
-
-            Must accept `vectorbtpro.portfolio.enums.OrderContext`, unpacked tuple from `pre_segment_func_nb`,
-            and `*order_args`. Must return `vectorbtpro.portfolio.enums.Order`.
+            Used for generating or skipping an order. 
+            
+            Accepts `vectorbtpro.portfolio.enums.OrderContext`, the unpacked output from 
+            `pre_segment_func_nb`, and `*order_args`, and returns `vectorbtpro.portfolio.enums.Order`.
 
             !!! note
-                If the returned order has been rejected, there is no way of issuing a new order.
-                You should make sure that the order passes, for example, by using `try_order_nb`.
+                If the returned order is rejected, a new order cannot be issued. Ensure that the order
+                passes (e.g., by using `try_order_nb`). For greater flexibility, use `from_flex_order_func_nb`.
+        order_args (Args): Positional arguments for `order_func_nb`.
+        post_order_func_nb (PostOrderFunc): Callback function to be called after processing an order.
 
-                To have a greater freedom in order management, use `from_flex_order_func_nb`.
-        order_args (tuple): Arguments passed to `order_func_nb`.
-        post_order_func_nb (callable): Callback that is called after the order has been processed.
-
-            Used for checking the order status and doing some post-processing.
-
-            Must accept `vectorbtpro.portfolio.enums.PostOrderContext`, unpacked tuple from
-            `pre_segment_func_nb`, and `*post_order_args`. Must return nothing.
-        post_order_args (tuple): Arguments passed to `post_order_func_nb`.
-        index (array): See `vectorbtpro.portfolio.enums.SimulationContext.index`.
-        freq (int): See `vectorbtpro.portfolio.enums.SimulationContext.freq`.
-        open (array_like of float): See `vectorbtpro.portfolio.enums.SimulationContext.open`.
-        high (array_like of float): See `vectorbtpro.portfolio.enums.SimulationContext.high`.
-        low (array_like of float): See `vectorbtpro.portfolio.enums.SimulationContext.low`.
-        close (array_like of float): See `vectorbtpro.portfolio.enums.SimulationContext.close`.
-        bm_close (array_like of float): See `vectorbtpro.portfolio.enums.SimulationContext.bm_close`.
+            Accepts `vectorbtpro.portfolio.enums.PostOrderContext`, the unpacked output
+            from `pre_segment_func_nb`, and `*post_order_args`, and returns nothing.
+        post_order_args (Args): Positional arguments for `post_order_func_nb`.
+        index (Optional[Array1d]): See `vectorbtpro.portfolio.enums.SimulationContext.index`.
+        freq (Optional[int]): See `vectorbtpro.portfolio.enums.SimulationContext.freq`.
+        open (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.open`.
+        
+            Provided as a scalar, or per row, column, or element.
+        high (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.high`.
+        
+            Provided as a scalar, or per row, column, or element.
+        low (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.low`.
+        
+            Provided as a scalar, or per row, column, or element.
+        close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.close`.
+        
+            Provided as a scalar, or per row, column, or element.
+        bm_close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.bm_close`.
+        
+            Provided as a scalar, or per row, column, or element.
+        sim_start (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_start`.
+        
+            Provided as a scalar or per group.
+        sim_end (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_end`.
+        
+            Provided as a scalar or per group.
         ffill_val_price (bool): See `vectorbtpro.portfolio.enums.SimulationContext.ffill_val_price`.
         update_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.update_value`.
         fill_pos_info (bool): See `vectorbtpro.portfolio.enums.SimulationContext.fill_pos_info`.
         track_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.track_value`.
-        max_order_records (int): The max number of order records expected to be filled at each column.
-        max_log_records (int): The max number of log records expected to be filled at each column.
-        in_outputs (bool): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
+        in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
+
+    Returns:
+        SimulationOutput: Simulation output containing order records, log records, and
+            other simulation results.
 
     !!! note
-        Remember that indexing of 2-dim arrays in vectorbt follows that of pandas: `a[i, col]`.
+        Indexing of 2D arrays in vectorbtpro follows the Pandas convention: `a[i, col]`.
 
     !!! warning
-        You can only safely access data of columns that are to the left of the current group and
-        rows that are to the top of the current row within the same group. Other data points have
-        not been processed yet and thus empty. Accessing them will not trigger any errors or warnings,
-        but provide you with arbitrary data (see [np.empty](https://numpy.org/doc/stable/reference/generated/numpy.empty.html)).
+        You can only safely access data from columns left of the current group and rows above the
+        current row within the same group. Other data points may have not been processed yet.
+        Accessing unprocessed data may not trigger any errors or warnings but yield arbitrary values
+        (see [np.empty](https://numpy.org/doc/stable/reference/generated/numpy.empty.html)).
+
+    !!! tip
+        This function is parallelizable.
 
     Call hierarchy:
-        Like most things in the vectorbt universe, simulation is also done by iterating over a (imaginary) frame.
-        This frame consists of two dimensions: time (rows) and assets/features (columns).
-        Each element of this frame is a potential order, which gets generated by calling an order function.
+        Simulation is carried out by iterating over an imaginary frame with dimensions representing
+        time (rows) and assets/features (columns). Each element of this frame is a potential order
+        generated by an order function.
 
-        The question is: how do we move across this frame to simulate trading? There are two movement patterns:
-        column-major (as done by `from_order_func_nb`) and row-major order (as done by `from_order_func_rw_nb`).
-        In each of these patterns, we are always moving from top to bottom (time axis) and from left to right
-        (asset/feature axis); the only difference between them is across which axis we are moving faster:
-        do we want to process each column first (thus assuming that columns are independent) or each row?
-        Choosing between them is mostly a matter of preference, but it also makes different data being
-        available when generating an order.
+        There are two processing patterns:
 
-        The frame is further divided into "blocks": columns, groups, rows, segments, and elements.
-        For example, columns can be grouped into groups that may or may not share the same capital.
-        Regardless of capital sharing, each collection of elements within a group and a time step is called
-        a segment, which simply defines a single context (such as shared capital) for one or multiple orders.
-        Each segment can also define a custom sequence (a so-called call sequence) in which orders are executed.
+        * Column-major (used by `from_order_func_nb`): Processes all rows in a column/group
+            before moving to the next.
+        * Row-major (used by `from_order_func_rw_nb`): Processes all columns in a row
+            before moving to the next row.
 
-        You can imagine each of these blocks as a rectangle drawn over different parts of the frame,
-        and having its own context and pre/post-processing function. The pre-processing function is a
-        simple callback that is called before entering the block, and can be provided by the user to, for example,
-        prepare arrays or do some custom calculations. It must return a tuple (can be empty) that is then unpacked and
-        passed as arguments to the pre- and postprocessing function coming next in the call hierarchy.
-        The postprocessing function can be used, for example, to write user-defined arrays such as returns.
+        This choice affects the data available during order generation.
+
+        The frame is subdivided into blocks (columns, groups, rows, segments, elements). Columns can be
+        grouped into groups that may or may not share the same capital. Regardless of capital sharing,
+        each collection of elements within a group and a bar is called a segment, which simply
+        defines a single context (such as shared capital) for one or multiple orders. Each segment
+        can also define a custom sequence (a so-called call sequence) in which orders are executed.
+
+        Each block has its own context and pre/post-processing functions. Pre-processing functions
+        return a tuple (possibly empty) that is passed down, while post-processing functions can be
+        used to write custom arrays (e.g., returns).
 
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_group_out = pre_group_func_nb(GroupContext, *pre_sim_out, *pre_group_args)
-                3. if call_pre_segment or segment_mask: pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_group_out, *pre_segment_args)
-                    4. if segment_mask: order = order_func_nb(OrderContext, *pre_segment_out, *order_args)
-                    5. if order: post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                    ...
-                6. if call_post_segment or segment_mask: post_segment_func_nb(SegmentContext, *pre_group_out, *post_segment_args)
-                ...
+                3. if call_pre_segment or segment_mask:
+                    pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_group_out, *pre_segment_args)
+                    4. if segment_mask:
+                        order = order_func_nb(OrderContext, *pre_segment_out, *order_args)
+                    5. if order exists:
+                        post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
+                6. if call_post_segment or segment_mask:
+                    post_segment_func_nb(SegmentContext, *pre_group_out, *post_segment_args)
             7. post_group_func_nb(GroupContext, *pre_sim_out, *post_group_args)
-            ...
         8. post_sim_func_nb(SimulationContext, *post_sim_args)
         ```
 
@@ -698,9 +888,9 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 
         ![](/assets/images/api/context_info.svg){: loading=lazy style="width:700px;" }
 
-    Usage:
-        * Create a group of three assets together sharing 100$ and simulate an equal-weighted portfolio
-        that rebalances every second tick, all without leaving Numba:
+    Examples:
+        Example below demonstrates simulating a portfolio of three assets sharing $100,
+        rebalanced every second tick, with all processing performed in Numba:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -741,7 +931,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         >>> @njit
         ... def order_func_nb(c, size, price, size_type, direction, fees, fixed_fees, slippage):
         ...     print('\\t\\t\\tcreating order', c.call_idx, 'at column', c.col)
-        ...     # Create and return an order
+        ...     # Create and returns an order
         ...     return vbt.pf_nb.order_nb(
         ...         size=vbt.pf_nb.select_nb(c, size),
         ...         price=vbt.pf_nb.select_nb(c, price),
@@ -853,8 +1043,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         ![](/assets/images/api/from_order_func_nb_example.dark.svg#only-dark){: .iimg loading=lazy }
 
         Note that the last order in a group with cash sharing is always disadvantaged
-        as it has a bit less funds than the previous orders due to costs, which are not
-        included when valuating the group.
+        because it receives slightly fewer funds due to costs not accounted for during valuation.
     """
     check_group_lens_nb(group_lens, target_shape[1])
 
@@ -1023,8 +1212,8 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         for i in range(_sim_start, _sim_end):
 
             if call_seq is None:
-                for c in range(group_len):
-                    temp_call_seq[c] = c
+                for ci in range(group_len):
+                    temp_call_seq[ci] = ci
                 call_seq_now = temp_call_seq[:group_len]
             else:
                 call_seq_now = call_seq[i, from_col:to_col]
@@ -1159,12 +1348,12 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
             if is_segment_active:
                 for k in range(group_len):
                     if cash_sharing:
-                        c = call_seq_now[k]
-                        if c >= group_len:
+                        ci = call_seq_now[k]
+                        if ci >= group_len:
                             raise ValueError("Call index out of bounds of the group")
                     else:
-                        c = k
-                    col = from_col + c
+                        ci = k
+                    col = from_col + ci
 
                     # Get current values
                     position_now = last_position[col]
@@ -1340,7 +1529,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                                 order_id,
                             )
 
-                    # Post-order callback
+                    # Post-order function
                     post_order_ctx = PostOrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -1409,7 +1598,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                     )
                     post_order_func_nb(post_order_ctx, *pre_segment_out, *post_order_args)
 
-            # NOTE: Regardless of segment_mask, we still need to update stats to be accessed by future rows
+            # NOTE: Regardless of segment_mask, we still need to update stats for future rows
             # Add earnings in cash
             for col in range(from_col, to_col):
                 _cash_earnings = flex_select_nb(cash_earnings_, i, col)
@@ -1460,7 +1649,7 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 
             # Is this segment active?
             if call_post_segment or is_segment_active:
-                # Call function before the segment
+                # Call function after the segment
                 post_seg_ctx = SegmentContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
@@ -1628,9 +1817,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
 
 # % </section>
 
-PreRowFuncT = tp.Callable[[RowContext, tp.VarArg()], tp.Args]
-PostRowFuncT = tp.Callable[[RowContext, tp.VarArg()], None]
-
 
 # % <block pre_row_func_nb>
 # % <skip? skip_func(out_lines, "pre_row_func_nb")>
@@ -1640,7 +1826,15 @@ PostRowFuncT = tp.Callable[[RowContext, tp.VarArg()], None]
 #     c: RowContext,
 #     *args,
 # ) -> tp.Args:
-#     """Custom row pre-processing function."""
+#     """Custom row pre-processing function.
+#
+#     Args:
+#         c (RowContext): Row context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Args: Forwarded positional arguments.
+#     """
 #     return args
 #
 #
@@ -1656,7 +1850,15 @@ PostRowFuncT = tp.Callable[[RowContext, tp.VarArg()], None]
 #     c: RowContext,
 #     *args,
 # ) -> None:
-#     """Custom row post-processing function."""
+#     """Custom row post-processing function.
+#
+#     Args:
+#         c (RowContext): Row context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         None
+#     """
 #     return None
 #
 #
@@ -1758,21 +1960,21 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
     segment_mask: tp.FlexArray2dLike = True,
     call_pre_segment: bool = False,
     call_post_segment: bool = False,
-    pre_sim_func_nb: PreSimFuncT = no_pre_func_nb,  # % None
+    pre_sim_func_nb: tp.PreSimFunc = no_pre_func_nb,  # % None
     pre_sim_args: tp.Args = (),
-    post_sim_func_nb: PostSimFuncT = no_post_func_nb,  # % None
+    post_sim_func_nb: tp.PostSimFunc = no_post_func_nb,  # % None
     post_sim_args: tp.Args = (),
-    pre_row_func_nb: PreRowFuncT = no_pre_func_nb,  # % None
+    pre_row_func_nb: tp.PreRowFunc = no_pre_func_nb,  # % None
     pre_row_args: tp.Args = (),
-    post_row_func_nb: PostRowFuncT = no_post_func_nb,  # % None
+    post_row_func_nb: tp.PostRowFunc = no_post_func_nb,  # % None
     post_row_args: tp.Args = (),
-    pre_segment_func_nb: PreSegmentFuncT = no_pre_func_nb,  # % None
+    pre_segment_func_nb: tp.PreSegmentFunc = no_pre_func_nb,  # % None
     pre_segment_args: tp.Args = (),
-    post_segment_func_nb: PostSegmentFuncT = no_post_func_nb,  # % None
+    post_segment_func_nb: tp.PostSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.Args = (),
-    order_func_nb: OrderFuncT = no_order_func_nb,  # % None
+    order_func_nb: tp.OrderFunc = no_order_func_nb,  # % None
     order_args: tp.Args = (),
-    post_order_func_nb: PostOrderFuncT = no_post_func_nb,  # % None
+    post_order_func_nb: tp.PostOrderFunc = no_post_func_nb,  # % None
     post_order_args: tp.Args = (),
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
@@ -1793,33 +1995,173 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
 ) -> SimulationOutput:
     """Same as `from_order_func_nb`, but iterates in row-major order.
 
-    Row-major order means processing the entire row with all groups/columns before moving to the next one.
+    Row-major order processes each row (i.e., all groups/columns) entirely before moving to the next row.
 
-    The main difference is that instead of `pre_group_func_nb` it now exposes `pre_row_func_nb`,
-    which is executed per entire row. It must accept `vectorbtpro.portfolio.enums.RowContext`.
+    The primary difference from `from_order_func_nb` is that it exposes `pre_row_func_nb` instead
+    of `pre_group_func_nb`. The `pre_row_func_nb` function is executed for each entire row and must
+    accept a `vectorbtpro.portfolio.enums.RowContext`.
+
+    Args:
+        target_shape (Shape): See `vectorbtpro.portfolio.enums.SimulationContext.target_shape`.
+        group_lens (GroupLens): See `vectorbtpro.portfolio.enums.SimulationContext.group_lens`.
+        cash_sharing (bool): See `vectorbtpro.portfolio.enums.SimulationContext.cash_sharing`.
+        call_seq (Optional[Array2d]): See `vectorbtpro.portfolio.enums.SimulationContext.call_seq`.
+        init_cash (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_cash`.
+        
+            Provided as a scalar or per column or group with cash sharing.
+        init_position (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_position`.
+        
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_price`.
+        
+            Provided as a scalar or per column.
+        cash_deposits (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_deposits`.
+        
+            Provided as a scalar, or per row, column or group with cash sharing, or element.
+        cash_earnings (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_earnings`.
+        
+            Provided as a scalar, or per row, column, or element.
+        segment_mask (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.segment_mask`.
+        
+            Provided as a scalar, or per row, group, or element.
+        call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
+        call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
+        pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
+
+            This function is used for creating global arrays and setting the seed. 
+            
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`, 
+            and returns a tuple that is passed to `pre_row_func_nb` and `post_row_func_nb`.
+        pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
+        post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
+
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
+            and returns nothing.
+        post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
+        pre_row_func_nb (PreRowFunc): Callback function to be called before processing a row.
+
+            Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*pre_row_args`, and returns a tuple that is passed to
+            `pre_segment_func_nb` and `post_segment_func_nb`.
+        pre_row_args (Args): Positional arguments for `pre_row_func_nb`.
+        post_row_func_nb (PostRowFunc): Callback function to be called after processing a row.
+
+            Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_row_args`, and returns nothing.
+        post_row_args (Args): Positional arguments for `post_row_func_nb`.
+        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment 
+            if `segment_mask` or `call_pre_segment` is True.
+
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
+            `pre_row_func_nb`, and `*pre_segment_args`, and returns a tuple that is passed to
+            `order_func_nb` and `post_order_func_nb`.
+
+            This is the appropriate place to adjust the call sequence or set the valuation price.
+            Group re-valuation and updates of open position stats occur immediately after this function
+            executes, regardless of whether it is called.
+
+            !!! note
+                To change the call sequence of a segment, modify
+                `vectorbtpro.portfolio.enums.SegmentContext.call_seq_now` in-place.
+                Avoid creating new arrays to prevent performance degradation.
+                Assigning a new context is not supported.
+
+            !!! note
+                You can override elements of `last_val_price` to influence group valuation.
+                See `vectorbtpro.portfolio.enums.SimulationContext.last_val_price`.
+        pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
+        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment 
+            if `segment_mask` or `call_post_segment` is True.
+
+            Handles the addition of `cash_earnings`, final group re-valuation, and the final update
+            of open position stats.
+            
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
+            `pre_row_func_nb`, and `*post_segment_args`, and returns nothing.
+        post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
+        order_func_nb (OrderFunc): Callback function to be called to generate an order.
+
+            Used for generating or skipping an order.
+            
+            Accepts `vectorbtpro.portfolio.enums.OrderContext`, the unpacked output from 
+            `pre_segment_func_nb`, and `*order_args`, and returns `vectorbtpro.portfolio.enums.Order`.
+
+            !!! note
+                If the returned order is rejected, a new order cannot be issued. Ensure that the order
+                passes (e.g., by using `try_order_nb`). For greater flexibility, use `from_flex_order_func_nb`.
+        order_args (Args): Positional arguments for `order_func_nb`.
+        post_order_func_nb (PostOrderFunc): Callback function to be called after processing an order.
+
+            Accepts `vectorbtpro.portfolio.enums.PostOrderContext`, the unpacked output
+            from `pre_segment_func_nb`, and `*post_order_args`, and returns nothing.
+        post_order_args (Args): Positional arguments for `post_order_func_nb`.
+        index (Optional[Array1d]): See `vectorbtpro.portfolio.enums.SimulationContext.index`.
+        freq (Optional[int]): See `vectorbtpro.portfolio.enums.SimulationContext.freq`.
+        open (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.open`.
+        
+            Provided as a scalar, or per row, column, or element.
+        high (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.high`.
+        
+            Provided as a scalar, or per row, column, or element.
+        low (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.low`.
+        
+            Provided as a scalar, or per row, column, or element.
+        close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.close`.
+        
+            Provided as a scalar, or per row, column, or element.
+        bm_close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.bm_close`.
+        
+            Provided as a scalar, or per row, column, or element.
+        sim_start (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_start`.
+        
+            Provided as a scalar or per group.
+        sim_end (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_end`.
+        
+            Provided as a scalar or per group.
+        ffill_val_price (bool): See `vectorbtpro.portfolio.enums.SimulationContext.ffill_val_price`.
+        update_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.update_value`.
+        fill_pos_info (bool): See `vectorbtpro.portfolio.enums.SimulationContext.fill_pos_info`.
+        track_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.track_value`.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
+        in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
+
+    Returns:
+        SimulationOutput: Simulation output containing order records, log records, and
+            other simulation results.
 
     !!! note
-        Function `pre_row_func_nb` is only called if there is at least on active segment in
-        the row. Functions `pre_segment_func_nb` and `order_func_nb` are only called if their
-        segment is active. If the main task of `pre_row_func_nb` is to activate/deactivate segments,
-        all segments must be activated by default to allow `pre_row_func_nb` to be called.
+        The `pre_row_func_nb` function is only invoked if there is at least one active segment in the row.
+        Similarly, `pre_segment_func_nb` and `order_func_nb` are only called if their corresponding segment
+        is active. To ensure `pre_row_func_nb` is invoked when its primary task is to manage segment
+        activation, all segments should be activated by default.
 
     !!! warning
         You can only safely access data points that are to the left of the current group and
-        rows that are to the top of the current row.
+        rows that are above the current row.
+
+    !!! tip
+        This function is parallelizable.
 
     Call hierarchy:
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_row_out = pre_row_func_nb(RowContext, *pre_sim_out, *pre_row_args)
-                3. if call_pre_segment or segment_mask: pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_row_out, *pre_segment_args)
-                    4. if segment_mask: order = order_func_nb(OrderContext, *pre_segment_out, *order_args)
-                    5. if order: post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                    ...
-                6. if call_post_segment or segment_mask: post_segment_func_nb(SegmentContext, *pre_row_out, *post_segment_args)
-                ...
+                3. if call_pre_segment or segment_mask:
+                    pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_row_out, *pre_segment_args)
+                    4. if segment_mask:
+                        order = order_func_nb(OrderContext, *pre_segment_out, *order_args)
+                    5. if order exists:
+                        post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
+                6. if call_post_segment or segment_mask:
+                    post_segment_func_nb(SegmentContext, *pre_row_out, *post_segment_args)
             7. post_row_func_nb(RowContext, *pre_sim_out, *post_row_args)
-            ...
         8. post_sim_func_nb(SimulationContext, *post_sim_args)
         ```
 
@@ -1827,8 +2169,8 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
 
         ![](/assets/images/api/from_order_func_rw_nb.svg){: loading=lazy style="width:800px;" }
 
-    Usage:
-        * Running the same example as in `from_order_func_nb` but adapted for this function:
+    Examples:
+        Running the same example as in `from_order_func_nb` but adapted for this function:
 
         ```pycon
         >>> @njit
@@ -2063,8 +2405,8 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             group_len = to_col - from_col
 
             if call_seq is None:
-                for c in range(group_len):
-                    temp_call_seq[c] = c
+                for ci in range(group_len):
+                    temp_call_seq[ci] = ci
                 call_seq_now = temp_call_seq[:group_len]
             else:
                 call_seq_now = call_seq[i, from_col:to_col]
@@ -2199,12 +2541,12 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
             if is_segment_active:
                 for k in range(group_len):
                     if cash_sharing:
-                        c = call_seq_now[k]
-                        if c >= group_len:
+                        ci = call_seq_now[k]
+                        if ci >= group_len:
                             raise ValueError("Call index out of bounds of the group")
                     else:
-                        c = k
-                    col = from_col + c
+                        ci = k
+                    col = from_col + ci
 
                     # Get current values
                     position_now = last_position[col]
@@ -2380,7 +2722,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                                 order_id,
                             )
 
-                    # Post-order callback
+                    # Post-order function
                     post_order_ctx = PostOrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -2449,7 +2791,7 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                     )
                     post_order_func_nb(post_order_ctx, *pre_segment_out, *post_order_args)
 
-            # NOTE: Regardless of segment_mask, we still need to update stats to be accessed by future rows
+            # NOTE: Regardless of segment_mask, we still need to update stats for future rows
             # Add earnings in cash
             for col in range(from_col, to_col):
                 _cash_earnings = flex_select_nb(cash_earnings_, i, col)
@@ -2673,11 +3015,20 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
 
 @register_jitted
 def no_flex_order_func_nb(c: FlexOrderContext, *args) -> tp.Tuple[int, Order]:
-    """Placeholder flexible order function that returns "break" column and no order."""
+    """Placeholder flexible order processing function.
+
+    This function acts as a dummy flexible order function by always returning a break indicator (-1) and
+    `vectorbtpro.portfolio.enums.NoOrder`.
+
+    Args:
+        c (FlexOrderContext): Flexible order context.
+        *args: Additional positional arguments.
+
+    Returns:
+        Tuple[int, Order]: A tuple containing the break column indicator (-1) and
+            `vectorbtpro.portfolio.enums.NoOrder`.
+    """
     return -1, NoOrder
-
-
-FlexOrderFuncT = tp.Callable[[FlexOrderContext, tp.VarArg()], tp.Tuple[int, Order]]
 
 
 # % <block flex_order_func_nb>
@@ -2688,7 +3039,19 @@ FlexOrderFuncT = tp.Callable[[FlexOrderContext, tp.VarArg()], tp.Tuple[int, Orde
 #     c: FlexOrderContext,
 #     *args,
 # ) -> tp.Tuple[int, Order]:
-#     """Custom flexible order function."""
+#     """Custom flexible order processing function.
+#
+#     Implements custom flexible order processing by returning a break indicator (-1) and
+#   `vectorbtpro.portfolio.enums.NoOrder`.
+#
+#     Args:
+#         c (FlexOrderContext): Flexible order context.
+#         *args: Additional positional arguments.
+#
+#     Returns:
+#         Tuple[int, Order]: A tuple with the break column indicator (-1) and
+#               `vectorbtpro.portfolio.enums.NoOrder`.
+#     """
 #     return -1, NoOrder
 #
 #
@@ -2788,21 +3151,21 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
     segment_mask: tp.FlexArray2dLike = True,
     call_pre_segment: bool = False,
     call_post_segment: bool = False,
-    pre_sim_func_nb: PreSimFuncT = no_pre_func_nb,  # % None
+    pre_sim_func_nb: tp.PreSimFunc = no_pre_func_nb,  # % None
     pre_sim_args: tp.Args = (),
-    post_sim_func_nb: PostSimFuncT = no_post_func_nb,  # % None
+    post_sim_func_nb: tp.PostSimFunc = no_post_func_nb,  # % None
     post_sim_args: tp.Args = (),
-    pre_group_func_nb: PreGroupFuncT = no_pre_func_nb,  # % None
+    pre_group_func_nb: tp.PreGroupFunc = no_pre_func_nb,  # % None
     pre_group_args: tp.Args = (),
-    post_group_func_nb: PostGroupFuncT = no_post_func_nb,  # % None
+    post_group_func_nb: tp.PostGroupFunc = no_post_func_nb,  # % None
     post_group_args: tp.Args = (),
-    pre_segment_func_nb: PreSegmentFuncT = no_pre_func_nb,  # % None
+    pre_segment_func_nb: tp.PreSegmentFunc = no_pre_func_nb,  # % None
     pre_segment_args: tp.Args = (),
-    post_segment_func_nb: PostSegmentFuncT = no_post_func_nb,  # % None
+    post_segment_func_nb: tp.PostSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.Args = (),
-    flex_order_func_nb: FlexOrderFuncT = no_flex_order_func_nb,  # % None
+    flex_order_func_nb: tp.FlexOrderFunc = no_flex_order_func_nb,  # % None
     flex_order_args: tp.Args = (),
-    post_order_func_nb: PostOrderFuncT = no_post_func_nb,  # % None
+    post_order_func_nb: tp.PostOrderFunc = no_post_func_nb,  # % None
     post_order_args: tp.Args = (),
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
@@ -2823,41 +3186,179 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
 ) -> SimulationOutput:
     """Same as `from_order_func_nb`, but with no predefined call sequence.
 
-    In contrast to `order_func_nb` in`from_order_func_nb`, `post_order_func_nb` is a segment-level order function
-    that returns a column along with the order, and gets repeatedly called until some condition is met.
-    This allows multiple orders to be issued within a single element and in an arbitrary order.
+    In contrast to `from_order_func_nb`, the `post_order_func_nb` in this function is a segment-level
+    order function that returns both a column index and an order, and is repeatedly called until a break
+    condition is met. This design enables multiple orders to be issued within a single element in
+    an arbitrary order.
 
-    The order function must accept `vectorbtpro.portfolio.enums.FlexOrderContext`, unpacked tuple from
-    `pre_segment_func_nb`, and `*flex_order_args`. Must return column and `vectorbtpro.portfolio.enums.Order`.
-    To break out of the loop, return column of -1.
+    The order function must accept a `vectorbtpro.portfolio.enums.FlexOrderContext`, an unpacked
+    tuple output from `pre_segment_func_nb`, and additional positional arguments from `flex_order_args`.
+    It should return a tuple of (column, order), where returning a column index of -1 signals to
+    exit the order loop.
+
+    Args:
+        target_shape (Shape): See `vectorbtpro.portfolio.enums.SimulationContext.target_shape`.
+        group_lens (GroupLens): See `vectorbtpro.portfolio.enums.SimulationContext.group_lens`.
+        cash_sharing (bool): See `vectorbtpro.portfolio.enums.SimulationContext.cash_sharing`.
+        call_seq (Optional[Array2d]): See `vectorbtpro.portfolio.enums.SimulationContext.call_seq`.
+        init_cash (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_cash`.
+        
+            Provided as a scalar or per column or group with cash sharing.
+        init_position (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_position`.
+        
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_price`.
+        
+            Provided as a scalar or per column.
+        cash_deposits (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_deposits`.
+        
+            Provided as a scalar, or per row, column or group with cash sharing, or element.
+        cash_earnings (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_earnings`.
+        
+            Provided as a scalar, or per row, column, or element.
+        segment_mask (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.segment_mask`.
+        
+            Provided as a scalar, or per row, group, or element.
+        call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
+        call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
+        pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
+
+            This function is used for creating global arrays and setting the seed.
+            
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`, 
+            and returns a tuple that is passed to `pre_group_func_nb` and `post_group_func_nb`.
+        pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
+        post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
+
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
+            and returns nothing.
+        post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
+        pre_group_func_nb (PreGroupFunc): Callback function to be called before processing a group.
+
+            Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*pre_group_args`, and returns a tuple that is passed to
+            `pre_segment_func_nb` and `post_segment_func_nb`.
+        pre_group_args (Args): Positional arguments for `pre_group_func_nb`.
+        post_group_func_nb (PostGroupFunc): Callback function to be called after processing a group.
+
+            Accepts `vectorbtpro.portfolio.enums.GroupContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_group_args`, returning nothing.
+        post_group_args (Args): Positional arguments for `post_group_func_nb`.
+        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment
+            if `segment_mask` or `call_pre_segment` is True.
+
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
+            `pre_group_func_nb`, and `*pre_segment_args`, and returns a tuple that is passed to
+            `flex_order_func_nb` and `post_order_func_nb`.
+
+            This is the appropriate place to adjust the call sequence or set the valuation price.
+            Group re-valuation and updates of open position stats occur immediately after this function
+            executes, regardless of whether it is called.
+
+            !!! note
+                To change the call sequence of a segment, modify
+                `vectorbtpro.portfolio.enums.SegmentContext.call_seq_now` in-place.
+                Avoid creating new arrays to prevent performance degradation.
+                Assigning a new context is not supported.
+
+            !!! note
+                You can override elements of `last_val_price` to influence group valuation.
+                See `vectorbtpro.portfolio.enums.SimulationContext.last_val_price`.
+        pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
+        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment
+            if `segment_mask` or `call_post_segment` is True.
+
+            Handles the addition of `cash_earnings`, final group re-valuation, and the final update
+            of open position stats.
+            
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
+            `pre_group_func_nb`, and `*post_segment_args`, and returns nothing.
+        post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
+        flex_order_func_nb (FlexOrderFunc): Callback function to be called to generate a flexible order.
+
+            Used for generating an order in a column.
+            
+            Accepts `vectorbtpro.portfolio.enums.FlexOrderContext`, the unpacked output from 
+            `pre_segment_func_nb`, and `*order_args`, and returns a tuple of 
+            (column, `vectorbtpro.portfolio.enums.Order`).
+        flex_order_args (Args): Positional arguments for `flex_order_func_nb`.
+        post_order_func_nb (PostOrderFunc): Callback function to be called after processing an order.
+
+            Accepts `vectorbtpro.portfolio.enums.PostOrderContext`, the unpacked output
+            from `pre_segment_func_nb`, and `*post_order_args`, and returns nothing.
+        post_order_args (Args): Positional arguments for `post_order_func_nb`.
+        index (Optional[Array1d]): See `vectorbtpro.portfolio.enums.SimulationContext.index`.
+        freq (Optional[int]): See `vectorbtpro.portfolio.enums.SimulationContext.freq`.
+        open (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.open`.
+        
+            Provided as a scalar, or per row, column, or element.
+        high (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.high`.
+        
+            Provided as a scalar, or per row, column, or element.
+        low (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.low`.
+        
+            Provided as a scalar, or per row, column, or element.
+        close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.close`.
+        
+            Provided as a scalar, or per row, column, or element.
+        bm_close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.bm_close`.
+        
+            Provided as a scalar, or per row, column, or element.
+        sim_start (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_start`.
+        
+            Provided as a scalar or per group.
+        sim_end (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_end`.
+        
+            Provided as a scalar or per group.
+        ffill_val_price (bool): See `vectorbtpro.portfolio.enums.SimulationContext.ffill_val_price`.
+        update_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.update_value`.
+        fill_pos_info (bool): See `vectorbtpro.portfolio.enums.SimulationContext.fill_pos_info`.
+        track_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.track_value`.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
+        in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
+
+    Returns:
+        SimulationOutput: Simulation output containing order records, log records, and
+            other simulation results.
 
     !!! note
-        Since one element can now accommodate multiple orders, you may run into "order_records index out of range"
-        exception. In this case, you must increase `max_order_records`. This cannot be done automatically and
-        dynamically to avoid performance degradation.
+        Since multiple orders can be generated per element, an "order_records index out of range"
+        exception may occur. In such cases, increase `max_order_records` manually to avoid
+        performance degradation.
+
+    !!! tip
+        This function is parallelizable.
 
     Call hierarchy:
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_group_out = pre_group_func_nb(GroupContext, *pre_sim_out, *pre_group_args)
-                3. if call_pre_segment or segment_mask: pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_group_out, *pre_segment_args)
+                3. if call_pre_segment or segment_mask:
+                    pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_group_out, *pre_segment_args)
                     while col != -1:
-                        4. if segment_mask: col, order = flex_order_func_nb(FlexOrderContext, *pre_segment_out, *flex_order_args)
-                        5. if order: post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                        ...
-                6. if call_post_segment or segment_mask: post_segment_func_nb(SegmentContext, *pre_group_out, *post_segment_args)
-                ...
+                        4. if segment_mask:
+                            col, order = flex_order_func_nb(FlexOrderContext, *pre_segment_out, *flex_order_args)
+                        5. if order exists:
+                            post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
+                6. if call_post_segment or segment_mask:
+                    post_segment_func_nb(SegmentContext, *pre_group_out, *post_segment_args)
             7. post_group_func_nb(GroupContext, *pre_sim_out, *post_group_args)
-            ...
         8. post_sim_func_nb(SimulationContext, *post_sim_args)
         ```
 
-        Let's illustrate the same example as in `from_order_func_nb` but adapted for this function:
+        Let's illustrate a similar example as in `from_order_func_nb`, but adapted for this function:
 
         ![](/assets/images/api/from_flex_order_func_nb.svg){: loading=lazy style="width:800px;" }
 
-    Usage:
-        * The same example as in `from_order_func_nb`:
+    Examples:
+        Same example as in `from_order_func_nb`:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -2902,7 +3403,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         ...     if c.call_idx < c.group_len:
         ...         col = c.from_col + call_seq_out[c.call_idx]
         ...         print('\\t\\t\\tcreating order', c.call_idx, 'at column', col)
-        ...         # # Create and return an order
+        ...         # # Create and returns an order
         ...         return col, vbt.pf_nb.order_nb(
         ...             size=vbt.pf_nb.select_from_col_nb(c, col, size),
         ...             price=vbt.pf_nb.select_from_col_nb(c, col, price),
@@ -3470,7 +3971,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                                 order_id,
                             )
 
-                    # Post-order callback
+                    # Post-order function
                     post_order_ctx = PostOrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -3539,7 +4040,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                     )
                     post_order_func_nb(post_order_ctx, *pre_segment_out, *post_order_args)
 
-            # NOTE: Regardless of segment_mask, we still need to update stats to be accessed by future rows
+            # NOTE: Regardless of segment_mask, we still need to update stats for future rows
             # Add earnings in cash
             for col in range(from_col, to_col):
                 _cash_earnings = flex_select_nb(cash_earnings_, i, col)
@@ -3590,7 +4091,7 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
 
             # Is this segment active?
             if call_post_segment or is_segment_active:
-                # Call function before the segment
+                # Call function after the segment
                 post_seg_ctx = SegmentContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
@@ -3850,21 +4351,21 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
     segment_mask: tp.FlexArray2dLike = True,
     call_pre_segment: bool = False,
     call_post_segment: bool = False,
-    pre_sim_func_nb: PreSimFuncT = no_pre_func_nb,  # % None
+    pre_sim_func_nb: tp.PreSimFunc = no_pre_func_nb,  # % None
     pre_sim_args: tp.Args = (),
-    post_sim_func_nb: PostSimFuncT = no_post_func_nb,  # % None
+    post_sim_func_nb: tp.PostSimFunc = no_post_func_nb,  # % None
     post_sim_args: tp.Args = (),
-    pre_row_func_nb: PreRowFuncT = no_pre_func_nb,  # % None
+    pre_row_func_nb: tp.PreRowFunc = no_pre_func_nb,  # % None
     pre_row_args: tp.Args = (),
-    post_row_func_nb: PostRowFuncT = no_post_func_nb,  # % None
+    post_row_func_nb: tp.PostRowFunc = no_post_func_nb,  # % None
     post_row_args: tp.Args = (),
-    pre_segment_func_nb: PreSegmentFuncT = no_pre_func_nb,  # % None
+    pre_segment_func_nb: tp.PreSegmentFunc = no_pre_func_nb,  # % None
     pre_segment_args: tp.Args = (),
-    post_segment_func_nb: PostSegmentFuncT = no_post_func_nb,  # % None
+    post_segment_func_nb: tp.PostSegmentFunc = no_post_func_nb,  # % None
     post_segment_args: tp.Args = (),
-    flex_order_func_nb: FlexOrderFuncT = no_flex_order_func_nb,  # % None
+    flex_order_func_nb: tp.FlexOrderFunc = no_flex_order_func_nb,  # % None
     flex_order_args: tp.Args = (),
-    post_order_func_nb: PostOrderFuncT = no_post_func_nb,  # % None
+    post_order_func_nb: tp.PostOrderFunc = no_post_func_nb,  # % None
     post_order_args: tp.Args = (),
     index: tp.Optional[tp.Array1d] = None,
     freq: tp.Optional[int] = None,
@@ -3883,22 +4384,158 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
     max_log_records: tp.Optional[int] = 0,
     in_outputs: tp.Optional[tp.NamedTuple] = None,
 ) -> SimulationOutput:
-    """Same as `from_flex_order_func_nb`, but iterates using row-major order, with the rows
-    changing fastest, and the columns/groups changing slowest.
+    """Same as `from_flex_order_func_nb`, but iterates in row-major order with rows changing fastest
+    and columns/groups changing slowest.
+
+    Args:
+        target_shape (Shape): See `vectorbtpro.portfolio.enums.SimulationContext.target_shape`.
+        group_lens (GroupLens): See `vectorbtpro.portfolio.enums.SimulationContext.group_lens`.
+        cash_sharing (bool): See `vectorbtpro.portfolio.enums.SimulationContext.cash_sharing`.
+        call_seq (Optional[Array2d]): See `vectorbtpro.portfolio.enums.SimulationContext.call_seq`.
+        init_cash (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_cash`.
+        
+            Provided as a scalar or per column or group with cash sharing.
+        init_position (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_position`.
+        
+            Provided as a scalar or per column.
+        init_price (FlexArray1dLike): See `vectorbtpro.portfolio.enums.SimulationContext.init_price`.
+        
+            Provided as a scalar or per column.
+        cash_deposits (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_deposits`.
+        
+            Provided as a scalar, or per row, column or group with cash sharing, or element.
+        cash_earnings (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.cash_earnings`.
+        
+            Provided as a scalar, or per row, column, or element.
+        segment_mask (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.segment_mask`.
+        
+            Provided as a scalar, or per row, group, or element.
+        call_pre_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_pre_segment`.
+        call_post_segment (bool): See `vectorbtpro.portfolio.enums.SimulationContext.call_post_segment`.
+        pre_sim_func_nb (PreSimFunc): Callback function to be called before the simulation.
+
+            This function is used for creating global arrays and setting the seed.
+        
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*pre_sim_args`,
+            and returns a tuple that is passed to `pre_row_func_nb` and `post_row_func_nb`.
+        pre_sim_args (Args): Positional arguments for `pre_sim_func_nb`.
+        post_sim_func_nb (PostSimFunc): Callback function to be called after the simulation.
+
+            Accepts `vectorbtpro.portfolio.enums.SimulationContext` and `*post_sim_args`,
+            and returns nothing.
+        post_sim_args (Args): Positional arguments for `post_sim_func_nb`.
+        pre_row_func_nb (PreRowFunc): Callback function to be called before processing a row.
+
+            Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*pre_row_args`, and returns a tuple that is passed to 
+            `pre_segment_func_nb` and `post_segment_func_nb`.
+        pre_row_args (Args): Positional arguments for `pre_row_func_nb`.
+        post_row_func_nb (PostRowFunc): Callback function to be called after processing a row.
+
+            Accepts `vectorbtpro.portfolio.enums.RowContext`, the unpacked output from
+            `pre_sim_func_nb`, and `*post_row_args`, and returns nothing.
+        post_row_args (Args): Positional arguments for `post_row_func_nb`.
+        pre_segment_func_nb (PreSegmentFunc): Callback function to be called before processing a segment
+            if `segment_mask` or `call_pre_segment` is True.
+
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from
+            `pre_row_func_nb`, and `*pre_segment_args`, and returns a tuple that is passed to
+            `flex_order_func_nb` and `post_order_func_nb`.
+
+            This is the appropriate place to adjust the call sequence or set the valuation price.
+            Group re-valuation and updates of open position stats occur immediately after this function
+            executes, regardless of whether it is called.
+
+            !!! note
+                To change the call sequence of a segment, modify
+                `vectorbtpro.portfolio.enums.SegmentContext.call_seq_now` in-place.
+                Avoid creating new arrays to prevent performance degradation.
+                Assigning a new context is not supported.
+
+            !!! note
+                You can override elements of `last_val_price` to influence group valuation.
+                See `vectorbtpro.portfolio.enums.SimulationContext.last_val_price`.
+        pre_segment_args (Args): Positional arguments for `pre_segment_func_nb`.
+        post_segment_func_nb (PostSegmentFunc): Callback function to be called after processing a segment
+            if `segment_mask` or `call_post_segment` is True.
+
+            Handles the addition of `cash_earnings`, final group re-valuation, and the final update
+            of open position stats.
+            
+            Accepts `vectorbtpro.portfolio.enums.SegmentContext`, the unpacked output from 
+            `pre_row_func_nb`, and `*post_segment_args`, and returns nothing.
+        post_segment_args (Args): Positional arguments for `post_segment_func_nb`.
+        flex_order_func_nb (FlexOrderFunc): Callback function to be called to generate a flexible order.
+
+            Used for generating an order in a column. 
+            
+            Accepts `vectorbtpro.portfolio.enums.FlexOrderContext`, the unpacked output from 
+            `pre_segment_func_nb`, and `*order_args`, and returns a tuple of 
+            (column, `vectorbtpro.portfolio.enums.Order`).
+        flex_order_args (Args): Positional arguments for `flex_order_func_nb`.
+        post_order_func_nb (PostOrderFunc): Callback function to be called after processing an order.
+
+            Accepts `vectorbtpro.portfolio.enums.PostOrderContext`, the unpacked output
+            from `pre_segment_func_nb`, and `*post_order_args`, and returns nothing.
+        post_order_args (Args): Positional arguments for `post_order_func_nb`.
+        index (Optional[Array1d]): See `vectorbtpro.portfolio.enums.SimulationContext.index`.
+        freq (Optional[int]): See `vectorbtpro.portfolio.enums.SimulationContext.freq`.
+        open (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.open`.
+        
+            Provided as a scalar, or per row, column, or element.
+        high (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.high`.
+        
+            Provided as a scalar, or per row, column, or element.
+        low (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.low`.
+        
+            Provided as a scalar, or per row, column, or element.
+        close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.close`.
+        
+            Provided as a scalar, or per row, column, or element.
+        bm_close (FlexArray2dLike): See `vectorbtpro.portfolio.enums.SimulationContext.bm_close`.
+        
+            Provided as a scalar, or per row, column, or element.
+        sim_start (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_start`.
+        
+            Provided as a scalar or per group.
+        sim_end (Optional[FlexArray1dLike]): See `vectorbtpro.portfolio.enums.SimulationContext.sim_end`.
+        
+            Provided as a scalar or per group.
+        ffill_val_price (bool): See `vectorbtpro.portfolio.enums.SimulationContext.ffill_val_price`.
+        update_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.update_value`.
+        fill_pos_info (bool): See `vectorbtpro.portfolio.enums.SimulationContext.fill_pos_info`.
+        track_value (bool): See `vectorbtpro.portfolio.enums.SimulationContext.track_value`.
+        max_order_records (Optional[int]): Maximum number of order records expected per column.
+
+            Defaults to the number of rows in the broadcasted shape. Set to 0 to disable,
+            lower to reduce memory usage, or higher if multiple orders per timestamp are expected.
+        max_log_records (Optional[int]): Maximum number of log records expected per column.
+
+            Set to the number of rows in the broadcasted shape if logging is enabled. Set lower to
+            reduce memory usage, or higher if multiple logs per timestamp are expected.
+        in_outputs (Optional[NamedTuple]): See `vectorbtpro.portfolio.enums.SimulationContext.in_outputs`.
+
+    Returns:
+        SimulationOutput: Simulation output containing order records, log records, and
+            other simulation results.
+
+    !!! tip
+        This function is parallelizable.
 
     Call hierarchy:
         ```plaintext
         1. pre_sim_out = pre_sim_func_nb(SimulationContext, *pre_sim_args)
             2. pre_row_out = pre_row_func_nb(RowContext, *pre_sim_out, *pre_row_args)
-                3. if call_pre_segment or segment_mask: pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_row_out, *pre_segment_args)
+                3. if call_pre_segment or segment_mask:
+                    pre_segment_out = pre_segment_func_nb(SegmentContext, *pre_row_out, *pre_segment_args)
                     while col != -1:
-                        4. if segment_mask: col, order = flex_order_func_nb(FlexOrderContext, *pre_segment_out, *flex_order_args)
-                        5. if order: post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
-                        ...
-                6. if call_post_segment or segment_mask: post_segment_func_nb(SegmentContext, *pre_row_out, *post_segment_args)
-                ...
+                        4. if segment_mask:
+                            col, order = flex_order_func_nb(FlexOrderContext, *pre_segment_out, *flex_order_args)
+                        5. if order:
+                            post_order_func_nb(PostOrderContext, *pre_segment_out, *post_order_args)
+                6. if call_post_segment or segment_mask:
+                    post_segment_func_nb(SegmentContext, *pre_row_out, *post_segment_args)
             7. post_row_func_nb(RowContext, *pre_sim_out, *post_row_args)
-            ...
         8. post_sim_func_nb(SimulationContext, *post_sim_args)
         ```
 
@@ -4407,7 +5044,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                                 order_id,
                             )
 
-                    # Post-order callback
+                    # Post-order function
                     post_order_ctx = PostOrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -4476,7 +5113,7 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                     )
                     post_order_func_nb(post_order_ctx, *pre_segment_out, *post_order_args)
 
-            # NOTE: Regardless of segment_mask, we still need to update stats to be accessed by future rows
+            # NOTE: Regardless of segment_mask, we still need to update stats for future rows
             # Add earnings in cash
             for col in range(from_col, to_col):
                 _cash_earnings = flex_select_nb(cash_earnings_, i, col)
@@ -4700,10 +5337,21 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
 
 @register_jitted
 def set_val_price_nb(c: SegmentContext, val_price: tp.FlexArray2d, price: tp.FlexArray2d) -> None:
-    """Override valuation price in a context.
+    """Override valuation price in a segment context.
 
-    Allows specifying a valuation price of positive infinity (takes the current price)
-    and negative infinity (takes the latest valuation price)."""
+    Updates the valuation price in the context using the provided valuation and price arrays.
+    When a valuation price is positive infinity, the corresponding market price is used.
+    If that price is also positive infinity, the function falls back to the close or open price.
+    For a negative infinity valuation price, the last valuation price is retained.
+
+    Args:
+        c (SegmentContext): Segment context.
+        val_price (FlexArray2d): Array of valuation prices with special handling for infinity.
+        price (FlexArray2d): Array of current market prices.
+
+    Returns:
+        None: Function modifies the context in place.
+    """
     for col in range(c.from_col, c.to_col):
         _val_price = select_from_col_nb(c, col, val_price)
         if np.isinf(_val_price):
@@ -4732,7 +5380,27 @@ def def_pre_segment_func_nb(  # % line.replace("def_pre_segment_func_nb", "pre_s
     direction: tp.FlexArray2d,
     auto_call_seq: bool,
 ) -> tp.Args:
-    """Pre-segment function that overrides the valuation price and optionally sorts the call sequence."""
+    """Custom segment pre-processing function that sets valuation price and sorts the call sequence.
+
+    Adjusts the valuation price in the segment context using the provided valuation and price arrays.
+    If `auto_call_seq` is True, it also sorts the call sequence based on trade size parameters.
+
+    Args:
+        c (SegmentContext): Segment context.
+        val_price (FlexArray2d): Array of valuation prices with special handling for infinity.
+        price (FlexArray2d): Array of market prices.
+        size (FlexArray2d): Array of order sizes.
+        size_type (FlexArray2d): Array denoting the type for each trade size.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (FlexArray2d): Array indicating the order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+        auto_call_seq (bool): Flag to automatically sort the call sequence.
+
+    Returns:
+        Args: Empty tuple.
+    """
     set_val_price_nb(c, val_price, price)
     if auto_call_seq:
         order_value_out = np.empty(c.group_len, dtype=float_)
@@ -4765,7 +5433,43 @@ def def_order_func_nb(  # % line.replace("def_order_func_nb", "order_func_nb")
     raise_reject: tp.FlexArray2d,
     log: tp.FlexArray2d,
 ) -> tp.Tuple[int, Order]:
-    """Order function that creates an order based on default information."""
+    """Custom order processing function that creates an order with default parameters.
+
+    Constructs an order using the provided arrays for size, price, fees, and other order parameters
+    by selecting the appropriate value for the current context.
+
+    Args:
+        c (OrderContext): Order context.
+        size (FlexArray2d): Array of order sizes.
+        price (FlexArray2d): Array of order prices.
+        size_type (FlexArray2d): Array specifying the type of each order size.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (FlexArray2d): Array indicating the order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+        fees (FlexArray2d): Array of fee values.
+        fixed_fees (FlexArray2d): Array of fixed fee values.
+        slippage (FlexArray2d): Array representing slippage.
+        min_size (FlexArray2d): Array of minimum order sizes.
+        max_size (FlexArray2d): Array of maximum order sizes.
+        size_granularity (FlexArray2d): Array defining granularity for order sizes.
+        leverage (FlexArray2d): Array of leverage amounts.
+        leverage_mode (FlexArray2d): Array indicating leverage modes.
+
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
+        reject_prob (FlexArray2d): Array of rejection probabilities.
+        price_area_vio_mode (FlexArray2d): Array specifying handling of price area violations.
+
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+        allow_partial (FlexArray2d): Array indicating whether partial orders are allowed.
+        raise_reject (FlexArray2d): Array determining if rejections should raise errors.
+        log (FlexArray2d): Array containing logging configurations.
+
+    Returns:
+        Tuple[int, Order]: A tuple where the first element is an indicator (typically a column index)
+            and the second element is the created order.
+    """
     return order_nb(
         size=select_nb(c, size),
         price=select_nb(c, price),
@@ -4801,7 +5505,28 @@ def def_flex_pre_segment_func_nb(  # % line.replace("def_flex_pre_segment_func_n
     direction: tp.FlexArray2d,
     auto_call_seq: bool,
 ) -> tp.Args:
-    """Flexible pre-segment function that overrides the valuation price and optionally sorts the call sequence."""
+    """Custom flexible segment pre-processing function that sets valuation price and returns a call sequence.
+
+    Sets the valuation price in the segment context using the provided arrays and computes
+    a flexible call sequence array. If `auto_call_seq` is True, the function sorts the call
+    sequence using trade size parameters.
+
+    Args:
+        c (SegmentContext): Segment context.
+        val_price (FlexArray2d): Array of valuation prices with special handling for infinity.
+        price (FlexArray2d): Array of market prices.
+        size (FlexArray2d): Array of order sizes.
+        size_type (FlexArray2d): Array indicating the type of trade sizes.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (FlexArray2d): Array indicating the order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+        auto_call_seq (bool): Flag to automatically sort the call sequence.
+
+    Returns:
+        Args: Tuple containing a 1D array of indices representing the call sequence.
+    """
     set_val_price_nb(c, val_price, price)
     call_seq_out = np.arange(c.group_len)
     if auto_call_seq:
@@ -4836,7 +5561,44 @@ def def_flex_order_func_nb(  # % line.replace("def_flex_order_func_nb", "flex_or
     raise_reject: tp.FlexArray2d,
     log: tp.FlexArray2d,
 ) -> tp.Tuple[int, Order]:
-    """Flexible order function that creates an order based on default information."""
+    """Custom flexible order processing function that creates an order with default parameters.
+
+    Constructs an order for a flexible order context by selecting values from the provided arrays using
+    a column determined by the current call sequence. If no valid call index exists, a no-op order is returned.
+
+    Args:
+        c (FlexOrderContext): Flexible order context.
+        call_seq_now (Array1d): Array representing the current call sequence for column selection.
+        size (FlexArray2d): Array of order sizes.
+        price (FlexArray2d): Array of order prices.
+        size_type (FlexArray2d): Array specifying the type of each order size.
+
+            See `vectorbtpro.portfolio.enums.SizeType`.
+        direction (FlexArray2d): Array indicating the order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+        fees (FlexArray2d): Array of fee values.
+        fixed_fees (FlexArray2d): Array of fixed fee values.
+        slippage (FlexArray2d): Array representing slippage.
+        min_size (FlexArray2d): Array of minimum order sizes.
+        max_size (FlexArray2d): Array of maximum order sizes.
+        size_granularity (FlexArray2d): Array defining granularity for order sizes.
+        leverage (FlexArray2d): Array of leverage amounts.
+        leverage_mode (FlexArray2d): Array indicating leverage modes.
+
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
+        reject_prob (FlexArray2d): Array of rejection probabilities.
+        price_area_vio_mode (FlexArray2d): Array specifying handling of price area violations.
+
+            See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
+        allow_partial (FlexArray2d): Array indicating whether partial orders are allowed.
+        raise_reject (FlexArray2d): Array determining if rejections should raise errors.
+        log (FlexArray2d): Array containing logging configurations.
+
+    Returns:
+        Tuple[int, Order]: A tuple where the first element is the column index used to generate the order
+            (or -1 if no valid index exists) and the second element is the created order (or a no-op order).
+    """
     if c.call_idx < c.group_len:
         col = c.from_col + call_seq_now[c.call_idx]
         order = order_nb(

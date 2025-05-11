@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `STOCH`."""
+"""Module defining the `STOCH` class for calculating the Stochastic Oscillator indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -28,24 +28,56 @@ STOCH = IndicatorFactory(
     input_names=["high", "low", "close"],
     param_names=["fast_k_window", "slow_k_window", "slow_d_window", "wtype", "slow_k_wtype", "slow_d_wtype"],
     output_names=["fast_k", "slow_k", "slow_d"],
+    attr_settings=dict(
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        close=dict(
+            doc="Close price series.",
+        ),
+        fast_k=dict(
+            doc="Fast %K series.",
+        ),
+        slow_k=dict(
+            doc="Slow %K series.",
+        ),
+        slow_d=dict(
+            doc="Slow %D series.",
+        ),
+    ),
 ).with_apply_func(
     nb.stoch_nb,
     kwargs_as_args=["minp", "fast_k_minp", "slow_k_minp", "slow_d_minp", "adjust", "slow_k_adjust", "slow_d_adjust"],
     param_settings=dict(
+        fast_k_window=dict(
+            doc="Window size for Fast %K.",
+        ),
+        slow_k_window=dict(
+            doc="Window size for Slow %K.",
+        ),
+        slow_d_window=dict(
+            doc="Window size for Slow %D.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         ),
         slow_k_wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type for Slow %K (see `vectorbtpro.generic.enums.WType`).",
         ),
         slow_d_wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type for Slow %D (see `vectorbtpro.generic.enums.WType`).",
         ),
     ),
     fast_k_window=14,
@@ -65,17 +97,23 @@ STOCH = IndicatorFactory(
 
 
 class _STOCH(STOCH):
-    """Stochastic Oscillator (STOCH).
+    """Class representing the Stochastic Oscillator (STOCH) indicator.
 
-    A stochastic oscillator is a momentum indicator comparing a particular closing price
-    of a security to a range of its prices over a certain period of time. It is used to
-    generate overbought and oversold trading signals, utilizing a 0-100 bounded range of values.
+    Implements a stochastic oscillator, a momentum indicator that compares a security's closing
+    price to its price range over a specified period. It is used to identify overbought and oversold
+    conditions with values typically bounded between 0 and 100.
 
-    See [Stochastic Oscillator](https://www.investopedia.com/terms/s/stochasticoscillator.asp)."""
+    See [Investopedia – Stochastic Oscillator](https://www.investopedia.com/terms/s/stochasticoscillator.asp).
+
+    See:
+        * `STOCH.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.stoch_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/s/stochasticoscillator.asp for the definition of STOCH.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         limits: tp.Tuple[float, float] = (20, 80),
         fast_k_trace_kwargs: tp.KwargsLike = None,
         slow_k_trace_kwargs: tp.KwargsLike = None,
@@ -88,17 +126,24 @@ class _STOCH(STOCH):
         """Plot `STOCH.slow_k` and `STOCH.slow_d`.
 
         Args:
-            column (str): Name of the column to plot.
-            limits (tuple of float): Tuple of the lower and upper limit.
-            fast_k_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `STOCH.fast_k`.
-            slow_k_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `STOCH.slow_k`.
-            slow_d_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `STOCH.slow_d`.
-            add_shape_kwargs (dict): Keyword arguments passed to `fig.add_shape` when adding the range between both limits.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            limits (Tuple[float, float]): Lower and upper y-axis limits for the filled range.
+            fast_k_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `STOCH.fast_k`.
+            slow_k_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `STOCH.slow_k`.
+            slow_d_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `STOCH.slow_d`.
+            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated or newly created figure with the plotted STOCH traces and filled range.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.STOCH.run(ohlcv['High'], ohlcv['Low'], ohlcv['Close']).plot().show()
             ```
@@ -110,7 +155,7 @@ class _STOCH(STOCH):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fast_k_trace_kwargs is None:
             fast_k_trace_kwargs = {}

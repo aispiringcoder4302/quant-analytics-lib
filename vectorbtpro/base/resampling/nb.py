@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for resampling."""
+"""Module providing Numba-compiled functions for resampling."""
 
 import numpy as np
 
@@ -28,9 +28,20 @@ def date_range_nb(
     incl_left: bool = True,
     incl_right: bool = True,
 ) -> tp.Array1d:
-    """Generate a datetime index with nanosecond precision from a date range.
+    """Generate a datetime index with nanosecond precision for a given date range.
 
-    Inspired by [pandas.date_range](https://pandas.pydata.org/docs/reference/api/pandas.date_range.html)."""
+    Inspired by `pd.date_range`.
+
+    Args:
+        start (np.datetime64): Start datetime.
+        end (np.datetime64): End datetime.
+        freq (np.timedelta64): Frequency interval for datetime increments.
+        incl_left (bool): Include the start datetime if True.
+        incl_right (bool): Include the end datetime if True.
+
+    Returns:
+        Array1d: Array of datetime64[ns] values representing the index.
+    """
     values_len = int(np.floor((end - start) / freq)) + 1
     values = np.empty(values_len, dtype="datetime64[ns]")
     for i in range(values_len):
@@ -55,13 +66,24 @@ def map_to_target_index_nb(
     before: bool = False,
     raise_missing: bool = True,
 ) -> tp.Array1d:
-    """Get the index of each from `source_index` in `target_index`.
+    """Map each element of `source_index` to its corresponding index in `target_index`.
 
-    If `before` is True, applied on elements that come before and including that index.
-    Otherwise, applied on elements that come after and including that index.
+    The mapping is determined by the provided `target_freq` and `before` flag. When
+    `target_freq` is specified, the function restricts the mapping to a given frequency interval.
+    If no valid mapping is found and `raise_missing` is True, a ValueError is raised; otherwise,
+    the source element is mapped to -1.
 
-    If `raise_missing` is True, will throw an error if an index cannot be mapped.
-    Otherwise, the element for that index becomes -1."""
+    Args:
+        source_index (Array1d): Array of source indices.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
+        target_freq (Optional[Scalar]): Frequency offset for the target index.
+        before (bool): If True, include source indices preceding or equal to the target;
+            otherwise, include those following or equal.
+        raise_missing (bool): If True, raise an error when a source index cannot be mapped; otherwise, assign -1.
+
+    Returns:
+        Array1d: Array of integer indices from `target_index` corresponding to each element of `source_index`.
+    """
     out = np.empty(len(source_index), dtype=int_)
     from_j = 0
     for i in range(len(source_index)):
@@ -107,7 +129,18 @@ def index_difference_nb(
     source_index: tp.Array1d,
     target_index: tp.Array1d,
 ) -> tp.Array1d:
-    """Get the elements in `source_index` not present in `target_index`."""
+    """Return the positions in `source_index` whose values are not present in `target_index`.
+
+    The function iterates over `source_index` and identifies indices that are absent from
+    `target_index`. Both arrays must be strictly increasing.
+
+    Args:
+        source_index (Array1d): Array of source indices, expected to be strictly increasing.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
+
+    Returns:
+        Array1d: Array of integer positions from `source_index` that do not appear in `target_index`.
+    """
     out = np.empty(len(source_index), dtype=int_)
     from_j = 0
     k = 0
@@ -138,18 +171,29 @@ def map_index_to_source_ranges_nb(
     target_freq: tp.Optional[tp.Scalar] = None,
     before: bool = False,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-    """Get the source bounds that correspond to each target index.
+    """Map each element of `target_index` to a range of indices in `source_index`.
 
-    If `target_freq` is not None, the right bound is limited by the frequency in `target_freq`.
-    Otherwise, the right bound is the next index in `target_index`.
+    For each target index, determine the corresponding range in `source_index`. The start index
+    is inclusive and the end index is exclusive. If `target_freq` is provided, the right bound is limited
+    by the frequency interval; otherwise, it extends to the next target index. If no valid mapping is
+    found, both start and end are set to -1.
 
-    Returns a 2-dim array where the first column is the absolute start index (including) and
-    the second column is the absolute end index (excluding).
+    Args:
+        source_index (Array1d): Array of source indices in increasing order.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
+        target_freq (Optional[Scalar]): Frequency offset for the target index.
+        before (bool): If True, include source indices preceding or equal to the target; 
+            otherwise, include those following or equal.
 
-    If an element cannot be mapped, the start and end of the range becomes -1.
+    Returns:
+        Tuple[Array1d, Array1d]: A tuple containing:
+
+            * The inclusive start indices in `source_index`.
+            * The exclusive end indices in `source_index`.
 
     !!! note
-        Both index arrays must be increasing. Repeating values are allowed."""
+        Both index arrays must be increasing. Repeating values are allowed.
+    """
     range_starts_out = np.empty(len(target_index), dtype=int_)
     range_ends_out = np.empty(len(target_index), dtype=int_)
 
@@ -213,15 +257,27 @@ def map_bounds_to_source_ranges_nb(
     closed_rbound: bool = False,
     skip_not_found: bool = False,
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-    """Get the source bounds that correspond to the target bounds.
+    """Return the source bounds corresponding to the target bound indices.
 
-    Returns a 2-dim array where the first column is the absolute start index (including) nad
-    the second column is the absolute end index (excluding).
+    Each target range defined by `target_lbound_index` and `target_rbound_index` is mapped
+    to a contiguous range in `source_index`. If no valid mapping is found for a target range,
+    both the start and end indices are set to -1.
 
-    If an element cannot be mapped, the start and end of the range becomes -1.
+    Args:
+        source_index (Array1d): Array of source indices, sorted in increasing order.
+        target_lbound_index (Array1d): Array of target left-bound indices, sorted in increasing order.
+        target_rbound_index (Array1d): Array of target right-bound indices, sorted in increasing order.
+        closed_lbound (bool): Indicates if the left bound is inclusive.
+        closed_rbound (bool): Indicates if the right bound is inclusive.
+        skip_not_found (bool): Whether to drop indices that are -1 (not found).
+
+    Returns:
+        Tuple[Array1d, Array1d]: A tuple where the first array contains inclusive start indices and the
+        second array contains exclusive end indices corresponding to the source ranges.
 
     !!! note
-        Both index arrays must be increasing. Repeating values are allowed."""
+        Both index arrays must be increasing. Repeating values are allowed.
+    """
     range_starts_out = np.empty(len(target_lbound_index), dtype=int_)
     range_ends_out = np.empty(len(target_lbound_index), dtype=int_)
     k = 0
@@ -289,10 +345,23 @@ def resample_source_mask_nb(
     source_freq: tp.Optional[tp.Scalar] = None,
     target_freq: tp.Optional[tp.Scalar] = None,
 ) -> tp.Array1d:
-    """Resample a source mask to the target index.
+    """Return a resampled source mask aligned with the target index.
 
-    Becomes True only if the target bar is fully contained in the source bar. The source bar
-    is represented by a non-interrupting sequence of True values in the source mask."""
+    Each element in the output becomes True only if the target bar, defined by `target_index`
+    (and optionally adjusted with `target_freq`), is fully contained within a source bar.
+    A source bar is represented by a contiguous sequence of True values in `source_mask` derived
+    from `source_index` (and optionally adjusted with `source_freq`).
+
+    Args:
+        source_mask (Array1d): Boolean array representing the source mask.
+        source_index (Array1d): Array of source indices, sorted in increasing order.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
+        source_freq (Optional[Scalar]): Frequency offset for the source index.
+        target_freq (Optional[Scalar]): Frequency offset for the target index.
+
+    Returns:
+        Array1d: Boolean array indicating whether each target bar is fully covered by a source bar.
+    """
     out = np.full(len(target_index), False, dtype=np.bool_)
 
     from_j = 0
@@ -345,8 +414,22 @@ def last_before_target_index_nb(
     incl_source: bool = True,
     incl_target: bool = False,
 ) -> tp.Array1d:
-    """For each source index, find the position of the last source index between the original
-    source index and the corresponding target index."""
+    """Return an array of positions representing the last valid source index within each range
+    defined by `source_index` and `target_index`.
+
+    For each element in `source_index`, the function finds the last index in `source_index`
+    that lies between the original value and the corresponding value in `target_index`. The
+    inclusivity of the endpoints is controlled by `incl_source` and `incl_target`.
+
+    Args:
+        source_index (Array1d): Array of source indices, sorted in increasing order.
+        target_index (Array1d): Array of target indices, which must be strictly increasing.
+        incl_source (bool): Whether to include the original source index in the result.
+        incl_target (bool): Whether to include the target index if it matches a source index.
+
+    Returns:
+        Array1d: Array containing the position of the last valid source index for each element.
+    """
     out = np.empty(len(source_index), dtype=int_)
 
     last_j = -1

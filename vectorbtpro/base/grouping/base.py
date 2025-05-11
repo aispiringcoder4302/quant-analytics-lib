@@ -8,12 +8,12 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base classes and functions for grouping.
+"""Module providing base classes and functions for grouping.
 
-Class `Grouper` stores metadata related to grouping index. It can return, for example,
-the number of groups, the start indices of groups, and other information useful for reducing
-operations that utilize grouping. It also allows to dynamically enable/disable/modify groups
-and checks whether a certain operation is permitted."""
+The `Grouper` class encapsulates metadata related to grouping an index. It provides details such as the number
+of groups, the starting indices of groups, and other information useful for grouping reduction operations.
+It also supports dynamically enabling, disabling, or modifying groups while enforcing allowed operations.
+"""
 
 import numpy as np
 import pandas as pd
@@ -35,27 +35,124 @@ __all__ = [
     "Grouper",
 ]
 
-GroupByT = tp.Union[None, bool, tp.Index]
-
 GrouperT = tp.TypeVar("GrouperT", bound="Grouper")
 
 
 class Grouper(Configured):
-    """Class that exposes methods to group index.
+    """Class for grouping indices and managing group metadata.
 
-    `group_by` can be:
+    This class stores metadata and offers methods to create and manipulate groupings for a Pandas Index.
+    It provides information such as the number of groups, the starting indices for each group, and other details
+    that are useful for grouping reduction operations.
 
-    * boolean (False for no grouping, True for one group),
-    * integer (level by position),
-    * string (level by name),
-    * sequence of integers or strings that is shorter than `index` (multiple levels),
-    * any other sequence that has the same length as `index` (group per index).
+    Args:
+        index (Index): Original Pandas Index to group.
+        group_by (GroupByLike): Grouping specification.
 
-    Set `allow_enable` to False to prohibit grouping if `Grouper.group_by` is None.
-    Set `allow_disable` to False to prohibit disabling of grouping if `Grouper.group_by` is not None.
-    Set `allow_modify` to False to prohibit modifying groups (you can still change their labels).
+            Accepts:
 
-    All properties are read-only to enable caching."""
+            * boolean (False for no grouping, True for one group).
+            * integer (MultiIndex level by position).
+            * string (MultiIndex level by name).
+            * sequence of integers or strings that is shorter than `index` (multiple MultiIndex levels).
+            * any other sequence such as Pandas Index that has the same length as `index`.
+            * `vectorbtpro.base.indexes.ExceptLevel` object (to exclude levels).
+            * `vectorbtpro.utils.template.CustomTemplate` object with `index` as context (to substitute levels).
+        def_lvl_name (Hashable): Default level name for groups.
+        allow_enable (bool): Indicates if enabling grouping is permitted when `group_by` is None.
+        allow_disable (bool): Indicates if disabling grouping is permitted when `group_by` is not None.
+        allow_modify (bool): Indicates if modifying groups is allowed.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
+    """
+
+    def __init__(
+        self,
+        index: tp.Index,
+        group_by: tp.GroupByLike = None,
+        def_lvl_name: tp.Hashable = "group",
+        allow_enable: bool = True,
+        allow_disable: bool = True,
+        allow_modify: bool = True,
+        **kwargs,
+    ) -> None:
+        if not isinstance(index, pd.Index):
+            index = pd.Index(index)
+        if group_by is None or group_by is False:
+            group_by = None
+        else:
+            group_by = self.group_by_to_index(index, group_by, def_lvl_name=def_lvl_name)
+
+        self._index = index
+        self._group_by = group_by
+        self._def_lvl_name = def_lvl_name
+        self._allow_enable = allow_enable
+        self._allow_disable = allow_disable
+        self._allow_modify = allow_modify
+
+        Configured.__init__(
+            self,
+            index=index,
+            group_by=group_by,
+            def_lvl_name=def_lvl_name,
+            allow_enable=allow_enable,
+            allow_disable=allow_disable,
+            allow_modify=allow_modify,
+            **kwargs,
+        )
+
+    @property
+    def index(self) -> tp.Index:
+        """Original Pandas Index used for grouping.
+
+        Returns:
+            Index: Original Pandas Index.
+        """
+        return self._index
+
+    @property
+    def group_by(self) -> tp.GroupBy:
+        """Group-by mapping generated from the provided grouping criteria.
+
+        Returns:
+            GroupBy: Group-by mapping generated from the provided grouping criteria.
+        """
+        return self._group_by
+
+    @property
+    def def_lvl_name(self) -> tp.Hashable:
+        """Default group level name.
+
+        Returns:
+            Hashable: Default level name for groups.
+        """
+        return self._def_lvl_name
+
+    @property
+    def allow_enable(self) -> bool:
+        """Indicates if enabling grouping is permitted.
+
+        Returns:
+            bool: True if enabling grouping is allowed, False otherwise.
+        """
+        return self._allow_enable
+
+    @property
+    def allow_disable(self) -> bool:
+        """Indicates if disabling grouping is permitted.
+
+        Returns:
+            bool: True if disabling grouping is allowed, False otherwise.
+        """
+        return self._allow_disable
+
+    @property
+    def allow_modify(self) -> bool:
+        """Indicates if modifying groups is allowed.
+
+        Returns:
+            bool: True if modifying groups is allowed, False otherwise.
+        """
+        return self._allow_modify
 
     @classmethod
     def group_by_to_index(
@@ -63,11 +160,21 @@ class Grouper(Configured):
         index: tp.Index,
         group_by: tp.GroupByLike,
         def_lvl_name: tp.Hashable = "group",
-    ) -> GroupByT:
-        """Convert mapper `group_by` to `pd.Index`.
+    ) -> tp.GroupBy:
+        """Convert the provided `group_by` specification into a Pandas Index.
+
+        Args:
+            index (Index): Original Pandas Index.
+            group_by (GroupByLike): Grouping specification.
+            def_lvl_name (Hashable): Default level name for groups.
+
+        Returns:
+            GroupBy: Resulting group-by mapping as a Pandas Index,
+                or the original `group_by` if it is None or False.
 
         !!! note
-            Index and mapper must have the same length."""
+            The index and the `group_by` mapper must have the same length.
+        """
         if group_by is None or group_by is False:
             return group_by
         if isinstance(group_by, CustomTemplate):
@@ -116,7 +223,19 @@ class Grouper(Configured):
         group_by: tp.GroupByLike,
         def_lvl_name: tp.Hashable = "group",
     ) -> tp.Tuple[tp.Array1d, tp.Index]:
-        """Return array of group indices pointing to the original index, and grouped index."""
+        """Return an array of group indices corresponding to the original index and the grouped index.
+
+        Args:
+            index (Index): Original Pandas Index.
+            group_by (GroupByLike): Grouping specification.
+            def_lvl_name (Hashable): Default level name for groups.
+
+        Returns:
+            Tuple[ndarray, Index]: A tuple containing:
+
+                * An array of integer group codes for the original index.
+                * The grouped Pandas Index.
+        """
         if group_by is None or group_by is False:
             return np.arange(len(index)), index
 
@@ -134,7 +253,14 @@ class Grouper(Configured):
 
     @classmethod
     def iter_group_lens(cls, group_lens: tp.GroupLens) -> tp.Iterator[tp.GroupIdxs]:
-        """Iterate over indices of each group in group lengths."""
+        """Iterate over group indices based on group lengths.
+
+        Args:
+            group_lens (GroupLens): Array defining the number of columns in each group.
+
+        Yields:
+            GroupIdxs: Array of indices representing a single group.
+        """
         group_end_idxs = np.cumsum(group_lens)
         group_start_idxs = group_end_idxs - group_lens
         for group in range(len(group_lens)):
@@ -144,7 +270,14 @@ class Grouper(Configured):
 
     @classmethod
     def iter_group_map(cls, group_map: tp.GroupMap) -> tp.Iterator[tp.GroupIdxs]:
-        """Iterate over indices of each group in a group map."""
+        """Iterate over group indices based on a group map.
+
+        Args:
+            group_map (GroupMap): Tuple of indices and lengths for each group.
+
+        Yields:
+            GroupIdxs: Array of indices representing a single group.
+        """
         group_idxs, group_lens = group_map
         group_start = 0
         group_end = 0
@@ -160,9 +293,17 @@ class Grouper(Configured):
         pd_group_by: tp.PandasGroupByLike,
         **kwargs,
     ) -> GrouperT:
-        """Build a `Grouper` instance from a pandas `GroupBy` object.
+        """Build a `Grouper` instance from a Pandas `GroupBy` object.
 
-        Indices are stored under `index` and group labels under `group_by`."""
+        Args:
+            cls (Type[Grouper]): `Grouper` class.
+            pd_group_by (PandasGroupByLike): Pandas `GroupBy` or
+                `vectorbtpro.base.resampling.base.Resampler` object.
+            **kwargs: Keyword arguments for `Grouper`.
+
+        Returns:
+            Grouper: New instance of `Grouper`.
+        """
         from vectorbtpro.base.merging import concat_arrays
 
         if not isinstance(pd_group_by, (PandasGroupBy, PandasResampler)):
@@ -181,73 +322,17 @@ class Grouper(Configured):
             **kwargs,
         )
 
-    def __init__(
-        self,
-        index: tp.Index,
-        group_by: tp.GroupByLike = None,
-        def_lvl_name: tp.Hashable = "group",
-        allow_enable: bool = True,
-        allow_disable: bool = True,
-        allow_modify: bool = True,
-        **kwargs,
-    ) -> None:
-        if not isinstance(index, pd.Index):
-            index = pd.Index(index)
-        if group_by is None or group_by is False:
-            group_by = None
-        else:
-            group_by = self.group_by_to_index(index, group_by, def_lvl_name=def_lvl_name)
-
-        self._index = index
-        self._group_by = group_by
-        self._def_lvl_name = def_lvl_name
-        self._allow_enable = allow_enable
-        self._allow_disable = allow_disable
-        self._allow_modify = allow_modify
-
-        Configured.__init__(
-            self,
-            index=index,
-            group_by=group_by,
-            def_lvl_name=def_lvl_name,
-            allow_enable=allow_enable,
-            allow_disable=allow_disable,
-            allow_modify=allow_modify,
-            **kwargs,
-        )
-
-    @property
-    def index(self) -> tp.Index:
-        """Original index."""
-        return self._index
-
-    @property
-    def group_by(self) -> GroupByT:
-        """Mapper for grouping."""
-        return self._group_by
-
-    @property
-    def def_lvl_name(self) -> tp.Hashable:
-        """Default level name."""
-        return self._def_lvl_name
-
-    @property
-    def allow_enable(self) -> bool:
-        """Whether to allow enabling grouping."""
-        return self._allow_enable
-
-    @property
-    def allow_disable(self) -> bool:
-        """Whether to allow disabling grouping."""
-        return self._allow_disable
-
-    @property
-    def allow_modify(self) -> bool:
-        """Whether to allow changing groups."""
-        return self._allow_modify
-
     def is_grouped(self, group_by: tp.GroupByLike = None) -> bool:
-        """Check whether index are grouped."""
+        """Check whether the index is grouped.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if the index is grouped, False otherwise.
+        """
         if group_by is False:
             return False
         if group_by is None:
@@ -255,18 +340,43 @@ class Grouper(Configured):
         return group_by is not None
 
     def is_grouping_enabled(self, group_by: tp.GroupByLike = None) -> bool:
-        """Check whether grouping has been enabled."""
+        """Check whether grouping is enabled.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if grouping is enabled, False otherwise.
+        """
         return self.group_by is None and self.is_grouped(group_by=group_by)
 
     def is_grouping_disabled(self, group_by: tp.GroupByLike = None) -> bool:
-        """Check whether grouping has been disabled."""
+        """Check whether grouping is disabled.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if grouping is disabled, False otherwise.
+        """
         return self.group_by is not None and not self.is_grouped(group_by=group_by)
 
     @cached_method(whitelist=True)
     def is_grouping_modified(self, group_by: tp.GroupByLike = None) -> bool:
-        """Check whether grouping has been modified.
+        """Check whether the grouping has been modified, disregarding changes in group labels.
 
-        Doesn't care if grouping labels have been changed."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if the grouping has been modified, False otherwise.
+        """
         if group_by is None or (group_by is False and self.group_by is None):
             return False
         group_by = self.group_by_to_index(self.index, group_by, def_lvl_name=self.def_lvl_name)
@@ -289,7 +399,16 @@ class Grouper(Configured):
 
     @cached_method(whitelist=True)
     def is_grouping_changed(self, group_by: tp.GroupByLike = None) -> bool:
-        """Check whether grouping has been changed in any way."""
+        """Check whether the grouping has changed in any way.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if the grouping has changed, False otherwise.
+        """
         if group_by is None or (group_by is False and self.group_by is None):
             return False
         if isinstance(group_by, pd.Index) and isinstance(self.group_by, pd.Index):
@@ -298,7 +417,16 @@ class Grouper(Configured):
         return True
 
     def is_group_count_changed(self, group_by: tp.GroupByLike = None) -> bool:
-        """Check whether the number of groups has changed."""
+        """Check whether the number of groups has changed.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+
+        Returns:
+            bool: True if the number of groups has changed, False otherwise.
+        """
         if group_by is None or (group_by is False and self.group_by is None):
             return False
         if isinstance(group_by, pd.Index) and isinstance(self.group_by, pd.Index):
@@ -312,7 +440,19 @@ class Grouper(Configured):
         allow_disable: tp.Optional[bool] = None,
         allow_modify: tp.Optional[bool] = None,
     ) -> None:
-        """Check passed `group_by` object against restrictions."""
+        """Check the provided `group_by` object against grouping restrictions.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+            allow_enable (Optional[bool]): Whether enabling grouping is allowed.
+            allow_disable (Optional[bool]): Whether disabling grouping is allowed.
+            allow_modify (Optional[bool]): Whether modifying groups is allowed.
+
+        Returns:
+            None
+        """
         if allow_enable is None:
             allow_enable = self.allow_enable
         if allow_disable is None:
@@ -330,8 +470,18 @@ class Grouper(Configured):
             if not allow_modify:
                 raise ValueError("Modifying groups is not allowed")
 
-    def resolve_group_by(self, group_by: tp.GroupByLike = None, **kwargs) -> GroupByT:
-        """Resolve `group_by` from either object variable or keyword argument."""
+    def resolve_group_by(self, group_by: tp.GroupByLike = None, **kwargs) -> tp.GroupBy:
+        """Resolve the `group_by` value using either the provided argument or the object's attribute.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+            **kwargs: Keyword arguments for `Grouper.check_group_by`.
+
+        Returns:
+            GroupBy: Resolved grouping index.
+        """
         if group_by is None:
             group_by = self.group_by
         if group_by is False and self.group_by is None:
@@ -341,44 +491,120 @@ class Grouper(Configured):
 
     @cached_method(whitelist=True)
     def get_groups_and_index(self, group_by: tp.GroupByLike = None, **kwargs) -> tp.Tuple[tp.Array1d, tp.Index]:
-        """See `Grouper.group_by_to_groups_and_index`."""
+        """Return the groups array and associated index computed from the resolved grouping.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+            **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
+
+        Returns:
+            Tuple[Array1d, Index]: A tuple containing the groups array and the grouped index.
+        """
         group_by = self.resolve_group_by(group_by=group_by, **kwargs)
         return self.group_by_to_groups_and_index(self.index, group_by, def_lvl_name=self.def_lvl_name)
 
     def get_groups(self, **kwargs) -> tp.Array1d:
-        """Return groups array."""
+        """Return the groups array.
+
+        Args:
+            **kwargs: Keyword arguments for `Grouper.get_groups_and_index`.
+
+        Returns:
+            Array1d: Array representing group labels for each index entry.
+        """
         return self.get_groups_and_index(**kwargs)[0]
 
     def get_index(self, **kwargs) -> tp.Index:
-        """Return grouped index."""
+        """Return the grouped index.
+
+        Args:
+            **kwargs: Keyword arguments for `Grouper.get_groups_and_index`.
+
+        Returns:
+            Index: Grouped index.
+        """
         return self.get_groups_and_index(**kwargs)[1]
 
     get_grouped_index = get_index
 
     @property
     def grouped_index(self) -> tp.Index:
-        """Grouped index."""
+        """Grouped index computed from the current grouping configuration.
+
+        Returns:
+            Index: Grouped index obtained via `Grouper.get_grouped_index`.
+        """
         return self.get_grouped_index()
 
     def get_stretched_index(self, **kwargs) -> tp.Index:
-        """Return stretched index."""
+        """Return the stretched index, computed by applying the groups mapping to the index.
+
+        Args:
+            **kwargs: Keyword arguments for `Grouper.get_groups_and_index`.
+
+        Returns:
+            Index: Stretched index.
+        """
         groups, index = self.get_groups_and_index(**kwargs)
         return index[groups]
 
     def get_group_count(self, **kwargs) -> int:
-        """Get number of groups."""
+        """Return the number of groups computed from the grouped index.
+
+        Args:
+            **kwargs: Keyword arguments for `Grouper.get_index`.
+
+        Returns:
+            int: Number of groups.
+        """
         return len(self.get_index(**kwargs))
 
     @cached_method(whitelist=True)
     def is_sorted(self, group_by: tp.GroupByLike = None, **kwargs) -> bool:
-        """Return whether groups are monolithic, sorted."""
+        """Determine if groups are monolithic and sorted.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+            **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
+
+        Returns:
+            bool: True if groups are monolithic and sorted, False otherwise.
+        """
         group_by = self.resolve_group_by(group_by=group_by, **kwargs)
         groups = self.get_groups(group_by=group_by)
         return is_sorted(groups)
 
     @cached_method(whitelist=True)
-    def get_group_lens(self, group_by: tp.GroupByLike = None, jitted: tp.JittedOption = None, **kwargs) -> tp.GroupLens:
-        """See `vectorbtpro.base.grouping.nb.get_group_lens_nb`."""
+    def get_group_lens(
+        self,
+        group_by: tp.GroupByLike = None,
+        jitted: tp.JittedOption = None,
+        **kwargs,
+    ) -> tp.GroupLens:
+        """Return the lengths of each group computed from the current grouping.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
+
+        Returns:
+            GroupLens: Array containing the length of each group.
+
+        Raises:
+            ValueError: If the grouping is not monolithic and sorted.
+
+        See:
+            `vectorbtpro.base.grouping.nb.get_group_lens_nb`
+        """
         group_by = self.resolve_group_by(group_by=group_by, **kwargs)
         if group_by is None or group_by is False:  # no grouping
             return np.full(len(self.index), 1)
@@ -389,18 +615,56 @@ class Grouper(Configured):
         return func(groups)
 
     def get_group_start_idxs(self, **kwargs) -> tp.Array1d:
-        """Get first index of each group as an array."""
+        """Return the starting indices of each group.
+
+        Args:
+            **kwargs: Keyword arguments for `Grouper.get_group_lens`.
+
+        Returns:
+            Array1d: Array containing the first index of each group.
+        """
         group_lens = self.get_group_lens(**kwargs)
         return np.cumsum(group_lens) - group_lens
 
     def get_group_end_idxs(self, **kwargs) -> tp.Array1d:
-        """Get end index of each group as an array."""
+        """Return the ending indices of each group.
+
+        Args:
+            **kwargs: Keyword arguments for `Grouper.get_group_lens`.
+
+        Returns:
+            Array1d: Array containing the end index for each group.
+        """
         group_lens = self.get_group_lens(**kwargs)
         return np.cumsum(group_lens)
 
     @cached_method(whitelist=True)
-    def get_group_map(self, group_by: tp.GroupByLike = None, jitted: tp.JittedOption = None, **kwargs) -> tp.GroupMap:
-        """See get_group_map_nb."""
+    def get_group_map(
+        self,
+        group_by: tp.GroupByLike = None,
+        jitted: tp.JittedOption = None,
+        **kwargs,
+    ) -> tp.GroupMap:
+        """Return the group mapping computed from the resolved grouping.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, uses `Grouper.group_by`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
+
+        Returns:
+            GroupMap: Tuple containing the group mapping.
+
+        See:
+            `vectorbtpro.base.grouping.nb.get_group_map_nb`
+
+        !!! note
+            If no grouping is applied, a default mapping is returned.
+        """
         group_by = self.resolve_group_by(group_by=group_by, **kwargs)
         if group_by is None or group_by is False:  # no grouping
             return np.arange(len(self.index)), np.full(len(self.index), 1)
@@ -409,7 +673,14 @@ class Grouper(Configured):
         return func(groups, len(new_index))
 
     def iter_group_idxs(self, **kwargs) -> tp.Iterator[tp.GroupIdxs]:
-        """Iterate over indices of each group."""
+        """Iterate over the indices corresponding to each group.
+
+        Args:
+            **kwargs: Keyword arguments for `Grouper.get_group_map`.
+
+        Returns:
+            Iterator[GroupIdxs]: An iterator over the indices for each group.
+        """
         group_map = self.get_group_map(**kwargs)
         return self.iter_group_map(group_map)
 
@@ -417,8 +688,20 @@ class Grouper(Configured):
         self,
         key_as_index: bool = False,
         **kwargs,
-    ) -> tp.Iterator[tp.Tuple[tp.Union[tp.Hashable, pd.Index], tp.GroupIdxs]]:
-        """Iterate over groups and their indices."""
+    ) -> tp.Iterator[tp.Tuple[tp.Union[tp.Hashable, tp.Index], tp.GroupIdxs]]:
+        """Iterate over group keys and their associated indices.
+
+        Args:
+            key_as_index (bool): Whether to return the yielded key as an index.
+
+            **kwargs: Keyword arguments for `Grouper.get_index` and `Grouper.iter_group_idxs`.
+
+        Yields:
+            Iterator[Tuple[Union[Hashable, Index], GroupIdxs]]: A tuple containing:
+
+                * The identifier for the group.
+                * The indices corresponding to the group.
+        """
         index = self.get_index(**kwargs)
         for group, group_idxs in enumerate(self.iter_group_idxs(**kwargs)):
             if key_as_index:
@@ -426,10 +709,33 @@ class Grouper(Configured):
             else:
                 yield index[group], group_idxs
 
-    def select_groups(self, group_idxs: tp.Array1d, jitted: tp.JittedOption = None) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-        """Select groups.
+    def select_groups(
+        self,
+        group_idxs: tp.Array1d,
+        jitted: tp.JittedOption = None,
+    ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
+        """Select groups using provided indices while automatically choosing the selection method.
 
-        Returns indices and new group array. Automatically decides whether to use group lengths or group map."""
+        Args:
+            group_idxs (Array1d): Array of group indices to be selected.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+
+        Returns:
+            Tuple[Array1d, Array1d]: A tuple containing:
+
+                * New group indices after selection.
+                * New group array corresponding to the selected indices.
+
+        See:
+            * `vectorbtpro.base.grouping.nb.group_lens_select_nb` if `Grouper.is_sorted` returns True.
+            * `vectorbtpro.base.grouping.nb.group_map_select_nb` if `Grouper.is_sorted` returns False.
+
+        !!! note
+            If `Grouper.is_sorted` returns True, selection is performed using group lengths (faster).
+            Otherwise, selection is performed using a group map for greater flexibility.
+        """
         from vectorbtpro.base.reshaping import to_1d_array
 
         if self.is_sorted():

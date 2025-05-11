@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `MA`."""
+"""Module defining the `MA` class for calculating the moving average."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -28,14 +28,26 @@ MA = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype"],
     output_names=["ma"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        ma=dict(
+            doc="Moving Average (MA) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.ma_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         )
     ),
     window=14,
@@ -46,16 +58,20 @@ MA = IndicatorFactory(
 
 
 class _MA(MA):
-    """Moving Average (MA).
+    """Class representing the Moving Average (MA) indicator.
 
-    A moving average is a widely used indicator in technical analysis that helps smooth out
-    price action by filtering out the “noise” from random short-term price fluctuations.
+    A moving average is a popular technical analysis indicator that smooths out price
+    fluctuations by filtering out short-term noise from the price data.
 
-    See [Moving Average (MA)](https://www.investopedia.com/terms/m/movingaverage.asp)."""
+    See:
+        * `MA.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.ma_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/m/movingaverage.asp for the definition of MA.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         ma_trace_kwargs: tp.KwargsLike = None,
@@ -63,18 +79,25 @@ class _MA(MA):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `MA.ma` against `MA.close`.
+        """Plot the moving average alongside the close price.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `MA.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `MA.close`.
-            ma_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `MA.ma`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_close (bool): Whether to plot the close price.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MA.close`.
+            ma_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MA.ma`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Figure with the plotted moving average and close price traces.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.MA.run(ohlcv['Close']).plot().show()
             ```
@@ -87,7 +110,7 @@ class _MA(MA):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

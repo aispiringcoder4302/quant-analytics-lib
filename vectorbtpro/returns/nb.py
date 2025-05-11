@@ -8,17 +8,18 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled functions for returns.
-
-Provides an arsenal of Numba-compiled functions that are used by accessors and for measuring
-portfolio performance. These only accept NumPy arrays and other Numba-compatible types.
+"""Module providing Numba-compiled functions for calculating returns and portfolio performance metrics.
 
 !!! note
-    vectorbt treats matrices as first-class citizens and expects input arrays to be
-    2-dim, unless function has suffix `_1d` or is meant to be input to another function.
+    Vectorbtpro treats matrices as first-class citizens and expects input arrays to be
+    2-dim, unless the function has a `_1d` suffix or is intended as input to another function.
     Data is processed along index (axis 0).
 
-    All functions passed as argument must be Numba-compiled."""
+    All functions passed as arguments must be Numba-compiled.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.returns`.
+"""
 
 import numpy as np
 from numba import prange
@@ -53,7 +54,18 @@ def get_return_nb(
     inf_to_nan: bool = _inf_to_nan,
     nan_to_zero: bool = _nan_to_zero,
 ) -> float:
-    """Calculate return from input and output value."""
+    """Calculate return from given input and output values.
+
+    Args:
+        input_value (float): Initial value used for the return calculation.
+        output_value (float): Final value used for the return calculation.
+        log_returns (bool): Flag to compute logarithmic returns.
+        inf_to_nan (bool): If True, convert an infinite return to NaN.
+        nan_to_zero (bool): If True, convert a NaN return to 0.
+
+    Returns:
+        float: Calculated return value.
+    """
     if input_value == 0:
         if output_value == 0:
             r = 0.0
@@ -78,7 +90,18 @@ def returns_1d_nb(
     init_value: float = np.nan,
     log_returns: bool = False,
 ) -> tp.Array1d:
-    """Calculate returns."""
+    """Calculate returns from a 1-dimensional array.
+
+    Args:
+        arr (Array1d): 1-dimensional array of asset prices or values.
+        init_value (float): Initial value to use.
+
+            If NaN, the first element of `arr` is used.
+        log_returns (bool): Flag to compute logarithmic returns.
+
+    Returns:
+        Array1d: Array of calculated return values.
+    """
     out = np.empty(arr.shape, dtype=float_)
     if np.isnan(init_value) and arr.shape[0] > 0:
         input_value = arr[0]
@@ -110,7 +133,29 @@ def returns_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """2-dim version of `returns_1d_nb`."""
+    """Calculate returns for a 2-dimensional array.
+
+    Args:
+        arr (Array2d): 2-dimensional array of asset prices or values.
+        init_value (FlexArray1dLike): Initial value.
+
+            Provided as a scalar or per column.
+
+            If NaN, the first element of each column is used.
+        log_returns (bool): Flag to compute logarithmic returns.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2-dimensional array containing calculated return values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     init_value_ = to_1d_array_nb(np.asarray(init_value))
 
     out = np.full(arr.shape, np.nan, dtype=float_)
@@ -137,10 +182,18 @@ def returns_nb(
 
 @register_jitted(cache=True)
 def mirror_returns_1d_nb(returns: tp.Array1d, log_returns: bool = False) -> tp.Array1d:
-    """Calculate mirrored returns.
+    """Calculate mirrored returns for a 1-dimensional array.
 
-    A mirrored return is an inverse, or negative return. For log returns, it negates each return.
-    For simple returns, it uses the formula $\frac{1}{1 + R_t} - 1$."""
+    A mirrored return is the inverse of a return value. For logarithmic returns, each return is negated.
+    For simple returns, the mirrored return is calculated as `(1 / (1 + R_t)) - 1`.
+
+    Args:
+        returns (Array1d): Array of return values.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+
+    Returns:
+        Array1d: Array of mirrored return values.
+    """
     out = np.empty(returns.shape, dtype=float_)
     for i in range(returns.shape[0]):
         if log_returns:
@@ -170,7 +223,24 @@ def mirror_returns_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """2-dim version of `mirror_returns_1d_nb`."""
+    """Calculate mirrored returns for a 2-dimensional array.
+
+    Args:
+        returns (Array2d): 2-dimensional array of return values.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2-dimensional array of mirrored return values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -197,7 +267,16 @@ def cumulative_returns_1d_nb(
     start_value: float = 1.0,
     log_returns: bool = False,
 ) -> tp.Array1d:
-    """Cumulative returns."""
+    """Calculate cumulative returns from a 1-dimensional array of returns.
+
+    Args:
+        returns (Array1d): Array of individual return values.
+        start_value (float): Initial value used to scale the cumulative returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+
+    Returns:
+        Array1d: Array of cumulative return values.
+    """
     out = np.empty_like(returns, dtype=float_)
     if log_returns:
         cumsum = 0
@@ -239,7 +318,25 @@ def cumulative_returns_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """2-dim version of `cumulative_returns_1d_nb`."""
+    """Compute cumulative returns from a 2D array of returns.
+
+    Args:
+        returns (Array2d): 2D array of periodic returns.
+        start_value (float): Initial value used to scale the cumulative returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: Array of cumulative returns computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -267,7 +364,16 @@ def final_value_1d_nb(
     start_value: float = 1.0,
     log_returns: bool = False,
 ) -> float:
-    """Final value."""
+    """Compute the final portfolio value from a 1D array of returns.
+
+    Args:
+        returns (Array1d): 1D array of periodic returns.
+        start_value (float): Initial value used to scale the cumulative returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+
+    Returns:
+        float: Final value computed from the returns.
+    """
     if log_returns:
         cumsum = 0
         for i in range(returns.shape[0]):
@@ -305,7 +411,25 @@ def final_value_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `final_value_1d_nb`."""
+    """Compute final portfolio values for each column from a 2D array of returns.
+
+    Args:
+        returns (Array2d): 2D array of periodic returns.
+        start_value (float): Initial value used to scale the cumulative returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Array of final portfolio values computed for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -350,7 +474,27 @@ def rolling_final_value_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `final_value_1d_nb`."""
+    """Compute rolling final portfolio values from a 2D array of returns.
+
+    Args:
+        returns (Array2d): 2D array of periodic returns.
+        window (int): Window size.
+        start_value (float): Initial value used to scale the cumulative returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2D array containing rolling final portfolio values computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -377,7 +521,15 @@ def rolling_final_value_nb(
 
 @register_jitted(cache=True)
 def total_return_1d_nb(returns: tp.Array1d, log_returns: bool = False) -> float:
-    """Total return."""
+    """Compute the total return from a 1D array of returns.
+
+    Args:
+        returns (Array1d): 1D array of periodic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+
+    Returns:
+        float: Total return computed by setting the initial value to zero.
+    """
     return final_value_1d_nb(returns, start_value=0.0, log_returns=log_returns)
 
 
@@ -398,7 +550,24 @@ def total_return_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `total_return_1d_nb`."""
+    """Compute total returns for each column from a 2D array of returns.
+
+    Args:
+        returns (Array2d): 2D array of periodic returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Array of total returns computed for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -437,7 +606,26 @@ def rolling_total_return_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `total_return_1d_nb`."""
+    """Compute rolling total returns from a 2D array of returns.
+
+    Args:
+        returns (Array2d): 2D array of periodic returns.
+        window (int): Window size.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2D array containing rolling total returns computed for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -470,7 +658,19 @@ def annualized_return_1d_nb(
 ) -> float:
     """Annualized total return.
 
-    This is equivalent to the compound annual growth rate (CAGR)."""
+    Equivalent to the compound annual growth rate (CAGR).
+
+    Args:
+        returns (Array1d): Array of daily returns.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        periods (Optional[float]): Number of periods for annualization.
+
+            Defaults to the length of the returns array.
+
+    Returns:
+        float: Computed annualized return.
+    """
     if periods is None:
         periods = returns.shape[0]
     final_value = final_value_1d_nb(returns, log_returns=log_returns)
@@ -500,7 +700,30 @@ def annualized_return_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `annualized_return_1d_nb`."""
+    """2-dim version of `annualized_return_1d_nb`.
+
+    Args:
+        returns (Array2d): Two-dimensional array of returns.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        periods (Optional[FlexArray1dLike]): Number of periods for annualization.
+
+            Provided as a scalar or per column.
+
+            Defaults to the length of the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Annualized returns for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -551,7 +774,27 @@ def rolling_annualized_return_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `annualized_return_1d_nb`."""
+    """Rolling version of `annualized_return_1d_nb`.
+
+    Args:
+        returns (Array2d): Two-dimensional array of returns.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: Rolling annualized returns computed over the specified window.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -583,7 +826,17 @@ def annualized_volatility_1d_nb(
     levy_alpha: float = 2.0,
     ddof: int = 0,
 ) -> float:
-    """Annualized volatility of a strategy."""
+    """Annualized volatility of a strategy.
+
+    Args:
+        returns (Array1d): Array of returns.
+        ann_factor (float): Annualization factor.
+        levy_alpha (float): Levy alpha parameter.
+        ddof (int): Delta degrees of freedom.
+
+    Returns:
+        float: Computed annualized volatility.
+    """
     return generic_nb.nanstd_1d_nb(returns, ddof=ddof) * ann_factor ** (1.0 / levy_alpha)
 
 
@@ -608,7 +861,26 @@ def annualized_volatility_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `annualized_volatility_1d_nb`."""
+    """2-dim version of `annualized_volatility_1d_nb`.
+
+    Args:
+        returns (Array2d): Two-dimensional array of returns.
+        ann_factor (float): Annualization factor.
+        levy_alpha (float): Levy alpha parameter.
+        ddof (int): Delta degrees of freedom.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Annualized volatility for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -656,7 +928,28 @@ def rolling_annualized_volatility_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `annualized_volatility_1d_nb`."""
+    """Rolling version of `annualized_volatility_1d_nb`.
+
+    Args:
+        returns (Array2d): Two-dimensional array of returns.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        levy_alpha (float): Levy alpha parameter.
+        ddof (int): Delta degrees of freedom.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: Rolling annualized volatility computed over the window.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -684,7 +977,15 @@ def rolling_annualized_volatility_nb(
 
 @register_jitted(cache=True)
 def max_drawdown_1d_nb(returns: tp.Array1d, log_returns: bool = False) -> float:
-    """Total maximum drawdown (MDD)."""
+    """Total maximum drawdown (MDD).
+
+    Args:
+        returns (Array1d): Array of returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+
+    Returns:
+        float: Maximum drawdown value; returns nan if no valid returns are present.
+    """
     cum_ret = np.nan
     value_max = 1.0
     out = 0.0
@@ -725,7 +1026,24 @@ def max_drawdown_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `max_drawdown_1d_nb`."""
+    """Return the maximum drawdown values for each column using a 1-dimensional drawdown computation.
+
+    Args:
+        returns (Array2d): 2-dimensional array of returns.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Array containing the maximum drawdown for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -764,7 +1082,26 @@ def rolling_max_drawdown_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `max_drawdown_1d_nb`."""
+    """Return the rolling maximum drawdown values over a specified window for each column.
+
+    Args:
+        returns (Array2d): 2-dimensional array of returns.
+        window (int): Window size.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2-dimensional array of rolling maximum drawdown values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -795,7 +1132,21 @@ def calmar_ratio_1d_nb(
     log_returns: bool = False,
     periods: tp.Optional[float] = None,
 ) -> float:
-    """Calmar ratio, or drawdown ratio, of a strategy."""
+    """Return the Calmar ratio (drawdown ratio) of a strategy based on 1-dimensional returns.
+
+    Args:
+        returns (Array1d): 1-dimensional array of returns.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        periods (Optional[float]): Number of periods for annualization.
+
+            Defaults to the length of the returns array.
+
+    Returns:
+        float: Calmar ratio of the strategy.
+
+            Returns NaN if the maximum drawdown is zero, or infinity when appropriate.
+    """
     max_drawdown = max_drawdown_1d_nb(returns, log_returns=log_returns)
     if max_drawdown == 0:
         return np.nan
@@ -833,7 +1184,30 @@ def calmar_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `calmar_ratio_1d_nb`."""
+    """Return the Calmar ratio for each column of a 2-dimensional returns array.
+
+    Args:
+        returns (Array2d): 2-dimensional array of returns.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        periods (Optional[FlexArray1dLike]): Number of periods for annualization.
+
+            Provided as a scalar or per column.
+
+            Defaults to the length of the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Array containing the Calmar ratio for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -884,7 +1258,27 @@ def rolling_calmar_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `calmar_ratio_1d_nb`."""
+    """Return the rolling Calmar ratio values over a specified window for each column.
+
+    Args:
+        returns (Array2d): 2-dimensional array of returns.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2-dimensional array containing the rolling Calmar ratios for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -911,7 +1305,15 @@ def rolling_calmar_ratio_nb(
 
 @register_jitted(cache=True)
 def deannualized_return_nb(ret: float, ann_factor: float) -> float:
-    """Deannualized return."""
+    """Return the deannualized return based on the annualized return and annualization factor.
+
+    Args:
+        ret (float): Annualized return.
+        ann_factor (float): Annualization factor.
+
+    Returns:
+        float: Deannualized return.
+    """
     if ann_factor == 1:
         return ret
     if ann_factor <= -1:
@@ -921,7 +1323,18 @@ def deannualized_return_nb(ret: float, ann_factor: float) -> float:
 
 @register_jitted(cache=True)
 def omega_ratio_1d_nb(returns: tp.Array1d) -> float:
-    """Omega ratio of a strategy."""
+    """Return the Omega ratio of a strategy based on 1-dimensional returns.
+
+    Args:
+        returns (Array1d): 1-dimensional array of returns.
+
+    Returns:
+        float: Omega ratio, calculated as the sum of positive returns divided by
+            the absolute sum of negative returns.
+
+            Returns NaN if both sums are zero, or infinity if there are positive returns
+            with no negative returns.
+    """
     numer = 0.0
     denom = 0.0
     for i in range(returns.shape[0]):
@@ -952,7 +1365,25 @@ def omega_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `omega_ratio_1d_nb`."""
+    """2-dim version of `omega_ratio_1d_nb`.
+
+    Computes the omega ratio for each column in a 2D returns array using a specified simulation range.
+
+    Args:
+        returns (Array2d): 2D array of returns.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Computed omega ratio for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -989,7 +1420,27 @@ def rolling_omega_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `omega_ratio_1d_nb`."""
+    """Rolling version of `omega_ratio_1d_nb`.
+
+    Computes a rolling omega ratio for each column in a 2D returns array based on a given window.
+
+    Args:
+        returns (Array2d): 2D array of returns.
+        window (int): Window size.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: Array of rolling omega ratio values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1018,7 +1469,19 @@ def sharpe_ratio_1d_nb(
     ann_factor: float,
     ddof: int = 0,
 ) -> float:
-    """Sharpe ratio of a strategy."""
+    """Calculate the Sharpe ratio of a strategy from a 1D returns array.
+
+    Args:
+        returns (Array1d): 1D array of strategy returns.
+        ann_factor (float): Annualization factor.
+        ddof (int): Delta degrees of freedom.
+
+    Returns:
+        float: Computed Sharpe ratio.
+
+            Returns nan if the standard deviation is zero and mean is zero,
+            or inf if mean is non-zero.
+    """
     mean = np.nanmean(returns)
     std = generic_nb.nanstd_1d_nb(returns, ddof=ddof)
     if std == 0:
@@ -1047,7 +1510,27 @@ def sharpe_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `sharpe_ratio_1d_nb`."""
+    """2-dim version of `sharpe_ratio_1d_nb`.
+
+    Calculates the Sharpe ratio for each column in a 2D returns array.
+
+    Args:
+        returns (Array2d): 2D array of returns.
+        ann_factor (float): Annualization factor.
+        ddof (int): Delta degrees of freedom.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Sharpe ratio for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1071,10 +1554,16 @@ def sharpe_ratio_nb(
 
 @register_jitted(cache=True)
 def rolling_sharpe_ratio_acc_nb(in_state: RollSharpeAIS) -> RollSharpeAOS:
-    """Accumulator of `rolling_sharpe_ratio_stream_nb`.
+    """Accumulate rolling Sharpe ratio state.
 
-    Takes a state of type `vectorbtpro.returns.enums.RollSharpeAIS` and returns
-    a state of type `vectorbtpro.returns.enums.RollSharpeAOS`."""
+    Updates the current state by calculating the rolling Sharpe ratio using the provided returns and metrics.
+
+    Args:
+        in_state (RollSharpeAIS): Input state containing returns and accumulated metrics.
+
+    Returns:
+        RollSharpeAOS: Updated state with the computed Sharpe ratio.
+    """
     mean_in_state = generic_enums.RollMeanAIS(
         i=in_state.i,
         value=in_state.ret,
@@ -1135,9 +1624,30 @@ def rolling_sharpe_ratio_stream_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling Sharpe ratio in a streaming fashion.
+    """Calculate rolling Sharpe ratio in a streaming fashion.
 
-    Uses `rolling_sharpe_ratio_acc_nb` at each iteration."""
+    Computes the Sharpe ratio over a rolling window for each column of a 2D returns array,
+    updating the state iteratively via `rolling_sharpe_ratio_acc_nb`.
+
+    Args:
+        returns (Array2d): 2D array of strategy returns.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        ddof (int): Delta degrees of freedom.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: Array of rolling Sharpe ratio values for each asset.
+
+    !!! tip
+        This function is parallelizable.
+    """
     if window is None:
         window = returns.shape[0]
     if minp is None:
@@ -1208,7 +1718,30 @@ def rolling_sharpe_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
     stream_mode: bool = True,
 ) -> tp.Array2d:
-    """Rolling version of `sharpe_ratio_1d_nb`."""
+    """Compute rolling Sharpe ratio for each column of a 2D returns array.
+
+    Applies a rolling window to compute the Sharpe ratio using `sharpe_ratio_1d_nb`.
+
+    Args:
+        returns (Array2d): Two-dimensional array of returns.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        ddof (int): Delta degrees of freedom.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+        stream_mode (bool): Flag indicating whether to use stream mode.
+
+    Returns:
+        Array2d: Array containing the rolling Sharpe ratio for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     if stream_mode:
         return rolling_sharpe_ratio_stream_nb(
             returns,
@@ -1246,7 +1779,18 @@ def rolling_sharpe_ratio_nb(
 
 @register_jitted(cache=True)
 def downside_risk_1d_nb(returns: tp.Array1d, ann_factor: float) -> float:
-    """Downside deviation below a threshold."""
+    """Calculate downside deviation for a 1D returns array.
+
+    Computes the square root of the mean squared negative returns multiplied by the
+    square root of the annualization factor, representing the downside risk.
+
+    Args:
+        returns (Array1d): One-dimensional array of returns.
+        ann_factor (float): Annualization factor.
+
+    Returns:
+        float: Downside deviation value.
+    """
     cnt = 0
     adj_ret_sqrd_sum = np.nan
     for i in range(returns.shape[0]):
@@ -1279,7 +1823,26 @@ def downside_risk_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `downside_risk_1d_nb`."""
+    """Compute downside deviation for each column of a 2D returns array.
+
+    Applies `downside_risk_1d_nb` column-wise within a specified simulation range.
+
+    Args:
+        returns (Array2d): Two-dimensional array of returns.
+        ann_factor (float): Annualization factor.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: One-dimensional array of downside risk values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1318,7 +1881,28 @@ def rolling_downside_risk_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `downside_risk_1d_nb`."""
+    """Compute rolling downside deviation for each column of a 2D returns array.
+
+    Uses a rolling window to apply `downside_risk_1d_nb` along each column within a simulation range.
+
+    Args:
+        returns (Array2d): Two-dimensional array of returns.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: Array of rolling downside risk values computed column-wise.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1344,7 +1928,19 @@ def rolling_downside_risk_nb(
 
 @register_jitted(cache=True)
 def sortino_ratio_1d_nb(returns: tp.Array1d, ann_factor: float) -> float:
-    """Sortino ratio of a strategy."""
+    """Compute the Sortino ratio for a 1D returns array.
+
+    Calculates the ratio of the mean annualized return to the downside risk.
+    Returns `np.nan` if insufficient data or `np.inf` if the downside risk is zero but
+    the average return is non-zero.
+
+    Args:
+        returns (Array1d): One-dimensional array of returns.
+        ann_factor (float): Annualization factor.
+
+    Returns:
+        float: Sortino ratio for the given strategy.
+    """
     avg_annualized_return = np.nanmean(returns) * ann_factor
     downside_risk = downside_risk_1d_nb(returns, ann_factor)
     if downside_risk == 0:
@@ -1371,7 +1967,26 @@ def sortino_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `sortino_ratio_1d_nb`."""
+    """Compute the Sortino ratio for each column of a 2D returns array.
+
+    Applies `sortino_ratio_1d_nb` column-wise within a specified simulation range.
+
+    Args:
+        returns (Array2d): Two-dimensional array of returns.
+        ann_factor (float): Annualization factor.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: One-dimensional array of Sortino ratios for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1410,7 +2025,26 @@ def rolling_sortino_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `sortino_ratio_1d_nb`."""
+    """Calculate the rolling sortino ratio over a specified window.
+
+    Args:
+        returns (Array2d): Array of returns.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: Array with rolling sortino ratios.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1436,7 +2070,15 @@ def rolling_sortino_ratio_nb(
 
 @register_jitted(cache=True)
 def information_ratio_1d_nb(returns: tp.Array1d, ddof: int = 0) -> float:
-    """Information ratio of a strategy."""
+    """Calculate the information ratio for a strategy.
+
+    Args:
+        returns (Array1d): Array of strategy returns.
+        ddof (int): Delta degrees of freedom.
+
+    Returns:
+        float: Information ratio, computed as the ratio of the mean to the standard deviation.
+    """
     mean = np.nanmean(returns)
     std = generic_nb.nanstd_1d_nb(returns, ddof=ddof)
     if std == 0:
@@ -1463,7 +2105,24 @@ def information_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `information_ratio_1d_nb`."""
+    """Calculate the 2-dim information ratio for each column.
+
+    Args:
+        returns (Array2d): 2D array of strategy returns.
+        ddof (int): Delta degrees of freedom.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Array of information ratios for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1502,7 +2161,26 @@ def rolling_information_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `information_ratio_1d_nb`."""
+    """Calculate the rolling information ratio over a specified window.
+
+    Args:
+        returns (Array2d): 2D array of strategy returns.
+        window (int): Window size.
+        ddof (int): Delta degrees of freedom.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2D array with rolling information ratios.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1532,7 +2210,16 @@ def beta_1d_nb(
     bm_returns: tp.Array1d,
     ddof: int = 0,
 ) -> float:
-    """Beta."""
+    """Calculate the beta coefficient for a single dimension.
+
+    Args:
+        returns (Array1d): Array of strategy returns.
+        bm_returns (Array1d): Array of benchmark returns.
+        ddof (int): Delta degrees of freedom.
+
+    Returns:
+        float: Beta coefficient computed as covariance divided by variance.
+    """
     cov = generic_nb.nancov_1d_nb(returns, bm_returns, ddof=ddof)
     var = generic_nb.nanvar_1d_nb(bm_returns, ddof=ddof)
     if var == 0:
@@ -1561,7 +2248,25 @@ def beta_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `beta_1d_nb`."""
+    """Calculate the 2-dim beta for each column.
+
+    Args:
+        returns (Array2d): 2D array of strategy returns.
+        bm_returns (Array2d): 2D array of benchmark returns.
+        ddof (int): Delta degrees of freedom.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Array of beta coefficients for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1606,7 +2311,27 @@ def rolling_beta_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `beta_1d_nb`."""
+    """Calculate the rolling beta over a specified window.
+
+    Args:
+        returns (Array2d): 2D array of strategy returns.
+        bm_returns (Array2d): 2D array of benchmark returns.
+        window (int): Window size.
+        ddof (int): Delta degrees of freedom.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2D array with rolling beta coefficients.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1637,7 +2362,16 @@ def alpha_1d_nb(
     bm_returns: tp.Array1d,
     ann_factor: float,
 ) -> float:
-    """Annualized alpha."""
+    """Calculate the annualized alpha.
+
+    Args:
+        returns (Array1d): Array of returns.
+        bm_returns (Array1d): Array of benchmark returns.
+        ann_factor (float): Annualization factor.
+
+    Returns:
+        float: Annualized alpha.
+    """
     beta = beta_1d_nb(returns, bm_returns)
     return (np.nanmean(returns) - beta * np.nanmean(bm_returns) + 1) ** ann_factor - 1
 
@@ -1661,7 +2395,25 @@ def alpha_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `alpha_1d_nb`."""
+    """Calculate the annualized alpha for a 2-dimensional array of returns.
+
+    Args:
+        returns (Array2d): 2D array of returns.
+        bm_returns (Array2d): 2D array of benchmark returns.
+        ann_factor (float): Annualization factor.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Array containing annualized alpha values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1706,7 +2458,27 @@ def rolling_alpha_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `alpha_1d_nb`."""
+    """Calculate the rolling annualized alpha for a 2-dimensional array of returns.
+
+    Args:
+        returns (Array2d): 2D array of returns.
+        bm_returns (Array2d): 2D array of benchmark returns.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: Array with the rolling annualized alpha values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1733,7 +2505,14 @@ def rolling_alpha_nb(
 
 @register_jitted(cache=True)
 def tail_ratio_1d_nb(returns: tp.Array1d) -> float:
-    """Ratio between the right (95%) and left tail (5%)."""
+    """Calculate the tail ratio by dividing the absolute 95th percentile by the absolute 5th percentile.
+
+    Args:
+        returns (Array1d): Array of returns.
+
+    Returns:
+        float: Tail ratio value.
+    """
     perc_95 = np.abs(np.nanpercentile(returns, 95))
     perc_5 = np.abs(np.nanpercentile(returns, 5))
     if perc_5 == 0:
@@ -1745,7 +2524,14 @@ def tail_ratio_1d_nb(returns: tp.Array1d) -> float:
 
 @register_jitted(cache=True)
 def tail_ratio_noarr_1d_nb(returns: tp.Array1d) -> float:
-    """`tail_ratio_1d_nb` that does not allocate any arrays."""
+    """Calculate the tail ratio without allocating additional arrays.
+
+    Args:
+        returns (Array1d): Array of returns.
+
+    Returns:
+        float: Tail ratio value.
+    """
     perc_95 = np.abs(generic_nb.nanpercentile_noarr_1d_nb(returns, 95))
     perc_5 = np.abs(generic_nb.nanpercentile_noarr_1d_nb(returns, 5))
     if perc_5 == 0:
@@ -1772,7 +2558,25 @@ def tail_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
     noarr_mode: bool = True,
 ) -> tp.Array1d:
-    """2-dim version of `tail_ratio_1d_nb` and `tail_ratio_noarr_1d_nb`."""
+    """Calculate the tail ratio for each column of a 2-dimensional returns array using
+    either an array-allocating or no-array approach.
+
+    Args:
+        returns (Array2d): 2D array of returns.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
+
+    Returns:
+        Array1d: Array of tail ratio values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1814,7 +2618,26 @@ def rolling_tail_ratio_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
     noarr_mode: bool = True,
 ) -> tp.Array2d:
-    """Rolling version of `tail_ratio_1d_nb` and `tail_ratio_noarr_1d_nb`."""
+    """Calculate the rolling tail ratio for a 2-dimensional returns array.
+
+    Args:
+        returns (Array2d): 2D array of returns.
+        window (int): Window size.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
+
+    Returns:
+        Array2d: 2D array with rolling tail ratio values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1847,7 +2670,15 @@ def rolling_tail_ratio_nb(
 
 @register_jitted(cache=True)
 def profit_factor_1d_nb(returns: tp.Array1d) -> float:
-    """Profit factor."""
+    """Calculate the profit factor as the ratio of the sum of positive returns
+    to the sum of absolute negative returns.
+
+    Args:
+        returns (Array1d): Array of returns.
+
+    Returns:
+        float: Profit factor.
+    """
     numer = 0
     denom = 0
     for i in range(returns.shape[0]):
@@ -1878,7 +2709,23 @@ def profit_factor_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `profit_factor_1d_nb`."""
+    """Compute the profit factor for each column in a 2D returns array.
+
+    Args:
+        returns (Array2d): 2D array of returns where each column represents a distinct series.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: 1D array containing the profit factor for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1915,7 +2762,25 @@ def rolling_profit_factor_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `profit_factor_1d_nb`."""
+    """Compute the rolling profit factor over a specified window for each column of a 2D returns array.
+
+    Args:
+        returns (Array2d): 2D array of returns where each column represents a distinct series.
+        window (int): Window size.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2D array containing the rolling profit factor values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1940,7 +2805,16 @@ def rolling_profit_factor_nb(
 
 @register_jitted(cache=True)
 def common_sense_ratio_1d_nb(returns: tp.Array1d) -> float:
-    """Common Sense Ratio."""
+    """Compute the common sense ratio for a 1D returns array.
+
+    Combines the tail ratio and profit factor computed for the returns.
+
+    Args:
+        returns (Array1d): 1D array of returns.
+
+    Returns:
+        float: Common sense ratio calculated as the product of the tail ratio and profit factor.
+    """
     tail_ratio = tail_ratio_1d_nb(returns)
     profit_factor = profit_factor_1d_nb(returns)
     return tail_ratio * profit_factor
@@ -1961,7 +2835,23 @@ def common_sense_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `common_sense_ratio_1d_nb`."""
+    """Compute the common sense ratio for each column in a 2D returns array.
+
+    Args:
+        returns (Array2d): 2D array of returns where each column represents a distinct series.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: 1D array containing the common sense ratio for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -1998,7 +2888,25 @@ def rolling_common_sense_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `common_sense_ratio_1d_nb`."""
+    """Compute the rolling common sense ratio over a specified window for each column in a 2D returns array.
+
+    Args:
+        returns (Array2d): 2D array of returns where each column represents a distinct series.
+        window (int): Window size.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2D array containing the rolling common sense ratio for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -2023,13 +2931,29 @@ def rolling_common_sense_ratio_nb(
 
 @register_jitted(cache=True)
 def value_at_risk_1d_nb(returns: tp.Array1d, cutoff: float = 0.05) -> float:
-    """Value at risk (VaR) of a returns stream."""
+    """Compute the value at risk (VaR) for a 1D returns series.
+
+    Args:
+        returns (Array1d): 1D array of returns.
+        cutoff (float): Fractional cutoff level.
+
+    Returns:
+        float: VaR computed as the 100 * cutoff percentile of the returns.
+    """
     return np.nanpercentile(returns, 100 * cutoff)
 
 
 @register_jitted(cache=True)
 def value_at_risk_noarr_1d_nb(returns: tp.Array1d, cutoff: float = 0.05) -> float:
-    """`value_at_risk_1d_nb` that does not allocate any arrays."""
+    """Compute the value at risk (VaR) for a 1D returns series without allocating additional arrays.
+
+    Args:
+        returns (Array1d): 1D array of returns.
+        cutoff (float): Fractional cutoff level.
+
+    Returns:
+        float: VaR computed as the 100 * cutoff percentile of the returns.
+    """
     return generic_nb.nanpercentile_noarr_1d_nb(returns, 100 * cutoff)
 
 
@@ -2052,7 +2976,30 @@ def value_at_risk_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
     noarr_mode: bool = True,
 ) -> tp.Array1d:
-    """2-dim version of `value_at_risk_1d_nb` and `value_at_risk_noarr_1d_nb`."""
+    """Compute the value at risk (VaR) for each column in a 2D returns array.
+
+    Depending on the `noarr_mode` flag, this function uses either a no-allocation method or
+    the standard approach to compute VaR.
+
+    Args:
+        returns (Array2d): 2D array of returns where each column represents a distinct series.
+        cutoff (float): Fractional cutoff level.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
+
+            If True, uses `value_at_risk_noarr_1d_nb`; otherwise, uses `value_at_risk_1d_nb`.
+
+    Returns:
+        Array1d: 1D array containing the VaR values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -2096,7 +3043,29 @@ def rolling_value_at_risk_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
     noarr_mode: bool = True,
 ) -> tp.Array2d:
-    """Rolling version of `value_at_risk_1d_nb` and `value_at_risk_noarr_1d_nb`."""
+    """Compute rolling value at risk.
+
+    Computes the rolling value at risk for each column in a 2D returns array using the specified window.
+
+    Args:
+        returns (Array2d): 2D array of returns.
+        window (int): Window size.
+        cutoff (float): Fractional cutoff level.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
+
+    Returns:
+        Array2d: 2D array containing the computed rolling value at risk values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -2131,14 +3100,30 @@ def rolling_value_at_risk_nb(
 
 @register_jitted(cache=True)
 def cond_value_at_risk_1d_nb(returns: tp.Array1d, cutoff: float = 0.05) -> float:
-    """Conditional value at risk (CVaR) of a returns stream."""
+    """Compute conditional value at risk (CVaR) for a 1D returns stream.
+
+    Args:
+        returns (Array1d): 1D array of returns.
+        cutoff (float): Fractional cutoff level.
+
+    Returns:
+        float: Computed conditional value at risk.
+    """
     cutoff_index = int((len(returns) - 1) * cutoff)
     return np.mean(np.partition(returns, cutoff_index)[: cutoff_index + 1])
 
 
 @register_jitted(cache=True)
 def cond_value_at_risk_noarr_1d_nb(returns: tp.Array1d, cutoff: float = 0.05) -> float:
-    """`cond_value_at_risk_1d_nb` that does not allocate any arrays."""
+    """Compute conditional value at risk (CVaR) for a 1D returns stream without additional array allocation.
+
+    Args:
+        returns (Array1d): 1D array of returns.
+        cutoff (float): Fractional cutoff level.
+
+    Returns:
+        float: Computed conditional value at risk.
+    """
     return generic_nb.nanpartition_mean_noarr_1d_nb(returns, cutoff * 100)
 
 
@@ -2161,7 +3146,27 @@ def cond_value_at_risk_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
     noarr_mode: bool = True,
 ) -> tp.Array1d:
-    """2-dim version of `cond_value_at_risk_1d_nb` and `cond_value_at_risk_noarr_1d_nb`."""
+    """Compute conditional value at risk (CVaR) across a 2D returns array.
+
+    Computes the CVaR for each column in a 2D returns array based on the provided cutoff level.
+
+    Args:
+        returns (Array2d): 2D array of returns.
+        cutoff (float): Fractional cutoff level.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
+
+    Returns:
+        Array1d: Array of computed CVaR values for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -2205,7 +3210,29 @@ def rolling_cond_value_at_risk_nb(
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
     noarr_mode: bool = True,
 ) -> tp.Array2d:
-    """Rolling version of `cond_value_at_risk_1d_nb` and `cond_value_at_risk_noarr_1d_nb`."""
+    """Compute rolling conditional value at risk (CVaR).
+
+    Computes the rolling CVaR for each column in a 2D returns array using the specified rolling window.
+
+    Args:
+        returns (Array2d): 2D array of returns.
+        window (int): Window size.
+        cutoff (float): Fractional cutoff level.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+        noarr_mode (bool): Flag indicating whether to avoid allocating new arrays.
+
+    Returns:
+        Array2d: 2D array containing the computed rolling CVaR values.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -2246,7 +3273,24 @@ def capture_ratio_1d_nb(
     log_returns: bool = False,
     periods: tp.Optional[float] = None,
 ) -> float:
-    """Capture ratio."""
+    """Compute the capture ratio between asset returns and benchmark returns.
+
+    Calculates the capture ratio as the ratio of the asset's annualized return
+    to the benchmark's annualized return. If the benchmark's annualized return is zero,
+    returns infinity if the asset's return is non-zero, or NaN if both are zero.
+
+    Args:
+        returns (Array1d): 1D array of asset returns.
+        bm_returns (Array1d): 1D array of benchmark returns.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        periods (Optional[float]): Number of periods for annualization.
+
+            Defaults to the length of the returns array.
+
+    Returns:
+        float: Computed capture ratio.
+    """
     annualized_return1 = annualized_return_1d_nb(
         returns,
         ann_factor,
@@ -2289,7 +3333,31 @@ def capture_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `capture_ratio_1d_nb`."""
+    """Return the 2-d version of `capture_ratio_1d_nb`.
+
+    Args:
+        returns (Array2d): Returns array with shape (n_periods, n_assets).
+        bm_returns (Array2d): Benchmark returns array with matching dimensions.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        periods (Optional[FlexArray1dLike]): Number of periods for annualization.
+
+            Provided as a scalar or per column.
+
+            Defaults to the length of the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Capture ratios computed for each column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -2343,7 +3411,28 @@ def rolling_capture_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `capture_ratio_1d_nb`."""
+    """Return the rolling version of `capture_ratio_1d_nb`.
+
+    Args:
+        returns (Array2d): Array of returns with shape (n_periods, n_assets).
+        bm_returns (Array2d): Array of benchmark returns with matching dimensions.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: Rolling capture ratios with the same shape as `returns`.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -2377,7 +3466,20 @@ def up_capture_ratio_1d_nb(
     log_returns: bool = False,
     periods: tp.Optional[float] = None,
 ) -> float:
-    """Capture ratio for periods when the benchmark return is positive."""
+    """Return the capture ratio for periods with positive benchmark returns.
+
+    Args:
+        returns (Array1d): 1-d array of returns.
+        bm_returns (Array1d): 1-d array of benchmark returns.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        periods (Optional[float]): Number of periods for annualization.
+
+            Defaults to the length of the returns array.
+
+    Returns:
+        float: Calculated up capture ratio.
+    """
     if periods is None:
         periods = returns.shape[0]
 
@@ -2433,7 +3535,31 @@ def up_capture_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `up_capture_ratio_1d_nb`."""
+    """Return the 2-d version of `up_capture_ratio_1d_nb`.
+
+    Args:
+        returns (Array2d): 2-d array of returns.
+        bm_returns (Array2d): 2-d array of benchmark returns.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        periods (Optional[FlexArray1dLike]): Number of periods for annualization.
+
+            Provided as a scalar or per column.
+
+            Defaults to the length of the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Up capture ratios computed for each series.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -2487,7 +3613,28 @@ def rolling_up_capture_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `up_capture_ratio_1d_nb`."""
+    """Return the rolling version of `up_capture_ratio_1d_nb`.
+
+    Args:
+        returns (Array2d): 2-d array of returns.
+        bm_returns (Array2d): 2-d array of benchmark returns.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: Rolling up capture ratios with the same shape as `returns`.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -2521,7 +3668,27 @@ def down_capture_ratio_1d_nb(
     log_returns: bool = False,
     periods: tp.Optional[float] = None,
 ) -> float:
-    """Capture ratio for periods when the benchmark return is negative."""
+    """Compute the down capture ratio for periods with negative benchmark returns.
+
+    This function computes the ratio of the asset's annualized negative return
+    to the benchmark's annualized negative return. Only periods where the benchmark
+    return is negative are considered.
+
+    Args:
+        returns (Array1d): 1-dimensional array of asset returns.
+        bm_returns (Array1d): 1-dimensional array of benchmark returns.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        periods (Optional[float]): Number of periods for annualization.
+
+            Defaults to the length of the returns array.
+
+    Returns:
+        float: Computed down capture ratio.
+
+            Returns `np.nan` if no negative returns are found, or `np.inf` if the benchmark's
+            annualized negative return is zero while the asset's is non-zero.
+    """
     if periods is None:
         periods = returns.shape[0]
 
@@ -2577,7 +3744,37 @@ def down_capture_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array1d:
-    """2-dim version of `down_capture_ratio_1d_nb`."""
+    """Compute the down capture ratio for each column using 2-dimensional arrays.
+
+    This function calculates the down capture ratio for each column by computing the ratio of the
+    asset's annualized negative return to the benchmark's annualized negative return.
+    Only periods with negative benchmark returns are considered.
+
+    Args:
+        returns (Array2d): 2-dimensional array of asset returns.
+        bm_returns (Array2d): 2-dimensional array of benchmark returns.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        periods (Optional[FlexArray1dLike]): Number of periods for annualization.
+
+            Provided as a scalar or per column.
+
+            Defaults to the length of the simulation range.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array1d: Array of down capture ratios for each column.
+
+            Each element is `np.nan` or `np.inf` if the computation is invalid for that column.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(
@@ -2631,7 +3828,33 @@ def rolling_down_capture_ratio_nb(
     sim_start: tp.Optional[tp.FlexArray1dLike] = None,
     sim_end: tp.Optional[tp.FlexArray1dLike] = None,
 ) -> tp.Array2d:
-    """Rolling version of `down_capture_ratio_1d_nb`."""
+    """Compute the rolling down capture ratio over a moving window for each column.
+
+    This function calculates the down capture ratio over a rolling window by applying the computation
+    to segments of the asset and benchmark returns. It returns a 2-dimensional array where each column
+    contains the rolling down capture ratio.
+
+    Args:
+        returns (Array2d): 2-dimensional array of asset returns.
+        bm_returns (Array2d): 2-dimensional array of benchmark returns.
+        window (int): Window size.
+        ann_factor (float): Annualization factor.
+        log_returns (bool): Flag indicating whether returns are logarithmic.
+        minp (Optional[int]): Minimum number of observations required.
+        sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
+
+            Provided as a scalar or per column.
+        sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
+
+            Provided as a scalar or per column.
+
+    Returns:
+        Array2d: 2-dimensional array of rolling down capture ratios for each column,
+            with invalid computations represented by `np.nan`.
+
+    !!! tip
+        This function is parallelizable.
+    """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
     sim_start_, sim_end_ = generic_nb.prepare_sim_range_nb(

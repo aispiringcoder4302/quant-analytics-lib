@@ -8,12 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Named tuples and enumerated types for label generation.
-
-Defines enums and other schemas for `vectorbtpro.labels`."""
+"""Module providing named tuples and enumerated types for label generation."""
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = ["TrendLabelMode"]
 
@@ -33,13 +31,13 @@ TrendLabelMode = TrendLabelModeT()
 
 __pdoc__[
     "TrendLabelMode"
-] = f"""Trend label mode.
+] = f"""Trend label mode enumeration.
 
 ```python
-{prettify(TrendLabelMode)}
+{prettify_doc(TrendLabelMode)}
 ```
 
-Attributes:
+Fields:
     Binary: See `vectorbtpro.labels.nb.bin_trend_labels_nb`.
     BinaryCont: See `vectorbtpro.labels.nb.binc_trend_labels_nb`.
     BinaryContSat: See `vectorbtpro.labels.nb.bincs_trend_labels_nb`.

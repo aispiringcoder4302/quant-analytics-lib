@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for formatting."""
+"""Module providing utilities for formatting."""
 
 import inspect
 import io
@@ -33,7 +33,14 @@ __all__ = [
 
 
 def camel_to_snake_case(camel_str: str) -> str:
-    """Convert a camel case string to a snake case string."""
+    """Convert a camel case string to a snake case string.
+
+    Args:
+        camel_str (str): String formatted in camel case.
+
+    Returns:
+        str: String converted to snake case.
+    """
     snake_str = re.sub(r"(?<!^)(?<![A-Z_])([A-Z])", r"_\1", camel_str).lower()
     if snake_str.startswith("_"):
         snake_str = snake_str[1:]
@@ -41,18 +48,43 @@ def camel_to_snake_case(camel_str: str) -> str:
 
 
 class Prettified(Base):
-    """Abstract class that can be prettified."""
+    """Abstract class for objects that can be prettified."""
 
     def prettify(self, **kwargs) -> str:
         """Prettify the object.
 
+        Returns:
+            str: Prettified representation of the object.
+
         !!! warning
-            Calling `prettify` can lead to an infinite recursion.
-            Make sure to pre-process this object."""
+            Calling `prettify` can lead to an infinite recursion. Make sure to pre-process this object.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
+    def prettify_doc(self, **kwargs) -> str:
+        """Prettify the object for documentation, equivalent to using
+        `Prettified.prettify` with `repr_doc` as `repr_`.
+
+        Args:
+            **kwargs: Keyword arguments for `prettify`.
+
+        Returns:
+            str: Prettified representation of the object.
+        """
+        return self.prettify(repr_=repr_doc, **kwargs)
+
     def pprint(self, **kwargs) -> None:
-        """Pretty-print the object."""
+        """Pretty-print the object.
+
+        Args:
+            **kwargs: Keyword arguments for `prettify`.
+
+        Returns:
+            None
+        """
         print(self.prettify(**kwargs))
 
     def __str__(self) -> str:
@@ -70,39 +102,111 @@ def prettify_inited(
     htchar: str = "    ",
     lfchar: str = "\n",
     indent: int = 0,
-) -> tp.Any:
-    """Prettify an instance initialized with keyword arguments."""
+    indent_head: bool = True,
+    repr_: tp.Optional[tp.Callable] = None,
+) -> str:
+    """Prettify an instance initialized with keyword arguments.
+
+    Args:
+        cls (type): Class to instantiate for the new instance.
+        kwargs (Any): Dictionary of keyword arguments used for initialization.
+        replace (DictLike): Mapping for value replacement.
+        path (str): Current path in the object hierarchy.
+        htchar (str): String used for horizontal indentation.
+        lfchar (str): Line feed character.
+        indent (int): Current indentation level.
+        indent_head (bool): Whether to indent the head line.
+        repr_ (Optional[Callable]): Function to get the representation of an object.
+
+            Defaults to `repr`.
+
+    Returns:
+        str: Prettified string representation of the initialized instance.
+    """
+
+    def _indent_head(content):
+        if indent_head:
+            return htchar * indent + content
+        return content
+
+    def _indent_tail(content):
+        return htchar * indent + content
+
+    if repr_ is None:
+        repr_ = repr
+    if replace is None:
+        replace = {}
+
     items = []
     for k, v in kwargs.items():
-        if replace is None:
-            replace = {}
         if path is None:
             new_path = k
         else:
-            new_path = str(path) + "." + str(k)
+            new_path = f"{path}.{k}"
         if new_path in replace:
             new_v = replace[new_path]
         else:
-            new_v = prettify(v, replace=replace, path=new_path, htchar=htchar, lfchar=lfchar, indent=indent + 1)
+            new_v = prettify(
+                v,
+                replace=replace,
+                path=new_path,
+                htchar=htchar,
+                lfchar=lfchar,
+                indent=indent + 1,
+                indent_head=False,
+                repr_=repr_,
+            )
         k_repr = repr(k)
         if isinstance(k, str):
             k_repr = k_repr[1:-1]
         items.append(lfchar + htchar * (indent + 1) + k_repr + "=" + new_v)
     if len(items) == 0:
-        return "%s()" % (cls.__name__,)
-    return "%s(%s)" % (cls.__name__, ",".join(items) + lfchar + htchar * indent)
+        return _indent_head(f"{cls.__name__}()")
+    return _indent_head(f"{cls.__name__}(") + ",".join(items) + lfchar + _indent_tail(")")
 
 
 def prettify_dict(
-    obj: tp.Any,
+    obj: dict,
     replace: tp.DictLike = None,
     path: str = None,
     htchar: str = "    ",
     lfchar: str = "\n",
     indent: int = 0,
-) -> tp.Any:
-    """Prettify a dictionary."""
-    if all([isinstance(k, str) and k.isidentifier() for k in obj]):
+    indent_head: bool = True,
+    repr_: tp.Optional[tp.Callable] = None,
+) -> str:
+    """Prettify a dictionary.
+
+    Args:
+        obj (dict): Dictionary to prettify.
+        replace (DictLike): Mapping for value replacement.
+        path (str): Current path in the object hierarchy.
+        htchar (str): String used for horizontal indentation.
+        lfchar (str): Line feed character.
+        indent (int): Current indentation level.
+        indent_head (bool): Whether to indent the head line.
+        repr_ (Optional[Callable]): Function to get the representation of an object.
+
+            Defaults to `repr`.
+
+    Returns:
+        str: Prettified string representation of the dictionary.
+    """
+
+    def _indent_head(content):
+        if indent_head:
+            return htchar * indent + content
+        return content
+
+    def _indent_tail(content):
+        return htchar * indent + content
+
+    if repr_ is None:
+        repr_ = repr
+    if replace is None:
+        replace = {}
+
+    if all(isinstance(k, str) and k.isidentifier() for k in obj):
         return prettify_inited(
             type(obj),
             obj,
@@ -111,27 +215,37 @@ def prettify_dict(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            indent_head=indent_head,
+            repr_=repr_,
         )
     items = []
     for k, v in obj.items():
-        if replace is None:
-            replace = {}
         if path is None:
             new_path = k
         else:
-            new_path = str(path) + "." + str(k)
+            new_path = f"{path}.{k}"
+
         if new_path in replace:
             new_v = replace[new_path]
         else:
-            new_v = prettify(v, replace=replace, path=new_path, htchar=htchar, lfchar=lfchar, indent=indent + 1)
-        items.append(lfchar + htchar * (indent + 1) + repr(k) + ": " + new_v)
+            new_v = prettify(
+                v,
+                replace=replace,
+                path=new_path,
+                htchar=htchar,
+                lfchar=lfchar,
+                indent=indent + 1,
+                indent_head=False,
+                repr_=repr_,
+            )
+        items.append(lfchar + htchar * (indent + 1) + repr_(k) + ": " + new_v)
     if type(obj) is dict:
         if len(items) == 0:
-            return "{}"
-        return "{%s}" % (",".join(items) + lfchar + htchar * indent)
+            return _indent_head("{}")
+        return _indent_head("{") + ",".join(items) + lfchar + _indent_tail("}")
     if len(items) == 0:
-        return "%s({})" % (type(obj).__name__,)
-    return "%s({%s})" % (type(obj).__name__, ",".join(items) + lfchar + htchar * indent)
+        return _indent_head(f"{type(obj).__name__}({{}})")
+    return _indent_head(f"{type(obj).__name__}({{") + ",".join(items) + lfchar + _indent_tail("})")
 
 
 def prettify(
@@ -141,14 +255,54 @@ def prettify(
     htchar: str = "    ",
     lfchar: str = "\n",
     indent: int = 0,
-) -> tp.Any:
+    indent_head: bool = True,
+    repr_: tp.Optional[tp.Callable] = None,
+) -> str:
     """Prettify an object.
 
-    Unfolds regular Python data structures such as lists and tuples.
+    Unfolds regular Python data structures such as lists, tuples, and dictionaries.
 
-    If `obj` is an instance of `Prettified`, calls `Prettified.prettify`."""
+    If `obj` is an instance of `Prettified`, calls its `prettify` method.
+
+    Args:
+        obj (Any): Object to prettify.
+        replace (DictLike): Mapping for value replacement.
+        path (str): Current path in the object hierarchy.
+        htchar (str): String used for horizontal indentation.
+        lfchar (str): Line feed character.
+        indent (int): Current indentation level.
+        indent_head (bool): Whether to indent the head line.
+        repr_ (Optional[Callable]): Function to get the representation of an object.
+
+            Defaults to `repr`.
+
+    Returns:
+        str: Prettified string representation of the object.
+    """
+
+    def _indent_head(content):
+        if indent_head:
+            return htchar * indent + content
+        return content
+
+    def _indent_tail(content):
+        return htchar * indent + content
+
+    if repr_ is None:
+        repr_ = repr
+    if replace is None:
+        replace = {}
+
     if isinstance(obj, Prettified):
-        return obj.prettify(replace=replace, path=path, htchar=htchar, lfchar=lfchar, indent=indent)
+        return obj.prettify(
+            replace=replace,
+            path=path,
+            htchar=htchar,
+            lfchar=lfchar,
+            indent=indent,
+            indent_head=indent_head,
+            repr_=repr_,
+        )
     if attr.has(type(obj)):
         return prettify_inited(
             type(obj),
@@ -158,9 +312,20 @@ def prettify(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            indent_head=indent_head,
+            repr_=repr_,
         )
     if isinstance(obj, dict):
-        return prettify_dict(obj, replace=replace, path=path, htchar=htchar, lfchar=lfchar, indent=indent)
+        return prettify_dict(
+            obj,
+            replace=replace,
+            path=path,
+            htchar=htchar,
+            lfchar=lfchar,
+            indent=indent,
+            indent_head=indent_head,
+            repr_=repr_,
+        )
     if isinstance(obj, tuple) and hasattr(obj, "_asdict"):
         return prettify_inited(
             type(obj),
@@ -170,36 +335,49 @@ def prettify(
             htchar=htchar,
             lfchar=lfchar,
             indent=indent,
+            indent_head=indent_head,
+            repr_=repr_,
         )
     if isinstance(obj, (tuple, list, set, frozenset)):
         items = []
         for v in obj:
-            new_v = prettify(v, replace=replace, path=path, htchar=htchar, lfchar=lfchar, indent=indent + 1)
+            new_v = prettify(
+                v,
+                replace=replace,
+                path=path,
+                htchar=htchar,
+                lfchar=lfchar,
+                indent=indent + 1,
+                indent_head=False,
+                repr_=repr_,
+            )
             items.append(lfchar + htchar * (indent + 1) + new_v)
-        if type(obj) is tuple:
+        if isinstance(obj, tuple):
             if len(items) == 0:
-                return "()"
-            return "(%s)" % (",".join(items) + lfchar + htchar * indent)
-        if type(obj) is list:
+                return _indent_head("()")
+            return _indent_head("(") + ",".join(items) + lfchar + _indent_tail(")")
+        if isinstance(obj, list):
             if len(items) == 0:
-                return "[]"
-            return "[%s]" % (",".join(items) + lfchar + htchar * indent)
-        if type(obj) is set:
+                return _indent_head("[]")
+            return _indent_head("[") + ",".join(items) + lfchar + _indent_tail("]")
+        if isinstance(obj, set):
             if len(items) == 0:
-                return "set()"
-            return "{%s}" % (",".join(items) + lfchar + htchar * indent)
+                return _indent_head("set()")
+            return _indent_head("{") + ",".join(items) + lfchar + _indent_tail("}")
         if len(items) == 0:
-            return "%s([])" % (type(obj).__name__,)
-        return "%s([%s])" % (type(obj).__name__, ",".join(items) + lfchar + htchar * indent)
+            return _indent_head(f"{type(obj).__name__}([])")
+        return _indent_head(f"{type(obj).__name__}([") + ",".join(items) + lfchar + _indent_tail("])")
     if isinstance(obj, np.dtype) and hasattr(obj, "fields"):
         items = []
         for k, v in dict(obj.fields).items():
-            items.append(lfchar + htchar * (indent + 1) + repr((k, str(v[0]))))
-        return "np.dtype([%s])" % (",".join(items) + lfchar + htchar * indent)
+            items.append(lfchar + htchar * (indent + 1) + repr_((k, str(v[0]))))
+        if len(items) == 0:
+            return _indent_head("np.dtype([])")
+        return _indent_head("np.dtype([") + ",".join(items) + lfchar + _indent_tail("])")
     if hasattr(obj, "shape") and isinstance(obj.shape, tuple) and len(obj.shape) > 0:
         module = type(obj).__module__
         qualname = type(obj).__qualname__
-        return "<%s.%s object at %s with shape %s>" % (module, qualname, str(hex(id(obj))), obj.shape)
+        return _indent_head(f"<{module}.{qualname} object at {hex(id(obj))} with shape {obj.shape}>")
     if isinstance(obj, float):
         if np.isnan(obj):
             return "np.nan"
@@ -207,20 +385,69 @@ def prettify(
             return "np.inf"
         if np.isneginf(obj):
             return "-np.inf"
-    return repr(obj)
+    return "".join(_indent_head(line) for line in repr_(obj).splitlines(keepends=True))
+
+
+def repr_doc(obj: tp.Any) -> str:
+    """Representation function suited for documentation.
+
+    Args:
+        obj (Any): Object.
+
+    Returns:
+        str: Representation.
+    """
+    import re
+
+    obj_repr = repr(obj)
+    if obj_repr.startswith("environ({") and obj_repr.endswith("})"):
+        return "os.environ"
+    obj_repr = re.sub(r"\s+from\s+'[^']+'", "", obj_repr)
+    obj_repr = re.sub(r"\s+at\s+0x[0-9a-fA-F]+", "", obj_repr)
+    return obj_repr
+
+
+def prettify_doc(*args, **kwargs) -> str:
+    """Prettify for documentation, equivalent to using `prettify` with `repr_doc` as `repr_`.
+
+    Args:
+        *args: Positional arguments for `prettify`.
+        **kwargs: Keyword arguments for `prettify`.
+
+    Returns:
+        str: Prettified representation of the object.
+    """
+    return prettify(*args, repr_=repr_doc, **kwargs)
 
 
 def pprint(*args, **kwargs) -> None:
-    """Print the output of `prettify`."""
+    """Print the prettified representation of the given arguments.
+
+    Args:
+        *args: Positional arguments for `prettify`.
+        **kwargs: Keyword arguments for `prettify`.
+
+    Returns:
+        None
+    """
     print(prettify(*args, **kwargs))
 
 
 def format_array(array: tp.ArrayLike, tabulate: tp.Optional[bool] = None, html: bool = False, **kwargs) -> str:
-    """Format an array.
+    """Format an array for display.
 
-    Arguments are passed to `pd.DataFrame.to_string` or `pd.DataFrame.to_html` if `tabulate` is False,
-    otherwise to `tabulate.tabulate`. If `tabulate` is None, will be set to True if the `tabulate`
-    library is installed and `html` is disabled."""
+    Args:
+        array (ArrayLike): Array-like object to be formatted.
+        tabulate (Optional[bool]): If True, use `tabulate.tabulate` for formatting;
+            if False, use Pandas formatting functions (`DataFrame.to_string` or `DataFrame.to_html`).
+
+            If None, auto-detect based on the availability of the `tabulate` library and the `html` parameter.
+        html (bool): Format the output in HTML if True.
+        **kwargs: Keyword arguments for the formatting function.
+
+    Returns:
+        str: Formatted array as a string.
+    """
     from vectorbtpro.base.reshaping import to_pd_array
 
     pd_array = to_pd_array(array)
@@ -247,10 +474,18 @@ def format_array(array: tp.ArrayLike, tabulate: tp.Optional[bool] = None, html: 
 
 
 def ptable(*args, display_html: tp.Optional[bool] = None, **kwargs) -> None:
-    """Print the output of `format_array`.
+    """Print the formatted array.
 
-    If `display_html` is None, checks whether the code runs in a IPython notebook, and if so, becomes True.
-    If `display_html` is True, displays the table in HTML format."""
+    Args:
+        *args: Positional arguments for `format_array`.
+        display_html (Optional[bool]): Display output in HTML if True.
+
+            If None, auto-detect if running in an IPython notebook.
+        **kwargs: Keyword arguments for `format_array`.
+
+    Returns:
+        None
+    """
     from vectorbtpro.utils.checks import in_notebook
 
     if display_html is None:
@@ -264,7 +499,15 @@ def ptable(*args, display_html: tp.Optional[bool] = None, **kwargs) -> None:
 
 
 def format_parameter(param: inspect.Parameter, annotate: bool = False) -> str:
-    """Format a parameter of a signature."""
+    """Format a function parameter into a string representation.
+
+    Args:
+        param (inspect.Parameter): Parameter to format.
+        annotate (bool): Include type annotations if True.
+
+    Returns:
+        str: Formatted parameter.
+    """
     kind = param.kind
     formatted = param.name
 
@@ -292,7 +535,18 @@ def format_signature(
     separator: str = ",\n    ",
     end: str = "\n",
 ) -> str:
-    """Format a signature."""
+    """Format a function signature.
+
+    Args:
+        signature (Signature): Function signature to format.
+        annotate (bool): Include type annotations if True.
+        start (str): String inserted at the beginning of the parameter list.
+        separator (str): String used to separate parameters.
+        end (str): String appended after the parameter list.
+
+    Returns:
+        str: Formatted signature.
+    """
     result = []
     render_pos_only_separator = False
     render_kw_only_separator = True
@@ -332,8 +586,38 @@ def format_signature(
 
 
 def format_func(func: tp.Callable, incl_doc: bool = True, **kwargs) -> str:
-    """Format a function."""
-    if inspect.isclass(func):
+    """Format a function or class constructor.
+
+    Args:
+        func (Callable): Function or class to format.
+        
+            If a class, its `__init__` method is used.
+        incl_doc (bool): If True, include the function's docstring in the output if available.
+        **kwargs: Keyword arguments for `format_signature`.
+
+    Returns:
+        str: Formatted function description, including its signature and docstring if available.
+    """
+    from vectorbtpro.utils.checks import is_attrs_subclass
+    from vectorbtpro.utils.attr_ import DefineMixin
+
+    doc = func.__doc__
+    if is_attrs_subclass(func):
+        if issubclass(func, DefineMixin):
+            if func.__init__ is DefineMixin.__init__:
+                func_name = func.__name__ + ".__attrs_init__"
+                func = func.__attrs_init__
+            else:
+                func_name = func.__name__ + ".__init__"
+                func = func.__init__
+        else:
+            if hasattr(func, "__attrs_init__"):
+                func_name = func.__name__ + ".__attrs_init__"
+                func = func.__attrs_init__
+            else:
+                func_name = func.__name__ + ".__init__"
+                func = func.__init__
+    elif inspect.isclass(func):
         func_name = func.__name__ + ".__init__"
         func = func.__init__
     elif inspect.ismethod(func) and hasattr(func, "__self__"):
@@ -343,11 +627,13 @@ def format_func(func: tp.Callable, incl_doc: bool = True, **kwargs) -> str:
             func_name = type(func.__self__).__name__ + "." + func.__name__
     else:
         func_name = func.__qualname__
-    if incl_doc and func.__doc__ is not None:
+    if doc is None or (func.__doc__ is not None and not func.__doc__.startswith("Method generated by attrs")):
+        doc = func.__doc__
+    if incl_doc and doc is not None:
         return "{}{}:\n{}".format(
             func_name,
             format_signature(inspect.signature(func), **kwargs),
-            "    " + "\n    ".join(inspect.cleandoc(func.__doc__).splitlines()),
+            "    " + "\n    ".join(inspect.cleandoc(doc).splitlines()),
         )
     return "{}{}".format(
         func_name,
@@ -356,23 +642,62 @@ def format_func(func: tp.Callable, incl_doc: bool = True, **kwargs) -> str:
 
 
 def phelp(*args, **kwargs) -> None:
-    """Print the output of `format_func`."""
+    """Print the formatted representation of a function.
+
+    Args:
+        *args: Positional arguments for `format_func`.
+        **kwargs: Keyword arguments for `format_func`.
+
+    Returns:
+        None
+    """
     print(format_func(*args, **kwargs))
 
 
 def pdir(*args, **kwargs) -> None:
-    """Print the output of `vectorbtpro.utils.attr_.parse_attrs`."""
+    """Print parsed attributes of an object.
+
+    Args:
+        *args: Positional arguments for `vectorbtpro.utils.attr_.parse_attrs`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.attr_.parse_attrs`.
+
+    Returns:
+        None
+    """
     from vectorbtpro.utils.attr_ import parse_attrs
 
     ptable(parse_attrs(*args, **kwargs))
 
 
 def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
-    """Dump an object to a string."""
+    """Dump an object to a string using the specified dump engine.
+
+    Args:
+        obj (Any): Object to dump.
+        dump_engine (str): Name of the dump engine.
+
+            Options include:
+    
+            * "repr": Python's `repr` function
+            * "repr_doc": `repr_doc`
+            * "prettify": `prettify`
+            * "nestedtext": `nestedtext` (https://pypi.org/project/nestedtext/)
+            * "pyyaml": `pyyaml` (https://pypi.org/project/PyYAML/)
+            * "ruamel" or "ruamel.yaml": `ruamel` (https://pypi.org/project/ruamel.yaml/)
+            * "yaml": `pyyaml` or `ruamel`, depending on which is installed
+            * "toml": `toml` (https://pypi.org/project/toml/)
+            * "json": `json` (https://docs.python.org/3/library/json.html)
+        **kwargs: Keyword arguments for the dump engine.
+
+    Returns:
+        str: Dumped object as a string.
+    """
     if isinstance(obj, str):
         return obj
     if dump_engine.lower() == "repr":
         return repr(obj)
+    if dump_engine.lower() == "repr_doc":
+        return repr_doc(obj, **kwargs)
     if dump_engine.lower() == "prettify":
         return prettify(obj, **kwargs)
     if dump_engine.lower() == "nestedtext":
@@ -395,7 +720,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         assert_can_import("yaml")
         import yaml
 
-        def multiline_str_representer(dumper, data):
+        def _multiline_str_representer(dumper, data):
             if isinstance(data, str) and "\n" in data:
                 return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
             return dumper.represent_str(data)
@@ -403,7 +728,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         class CustomDumper(yaml.SafeDumper):
             pass
 
-        CustomDumper.add_representer(str, multiline_str_representer)
+        CustomDumper.add_representer(str, _multiline_str_representer)
 
         if "Dumper" not in kwargs:
             kwargs["Dumper"] = CustomDumper
@@ -415,7 +740,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         from ruamel.yaml import YAML
         from ruamel.yaml.representer import RoundTripRepresenter
 
-        def multiline_str_representer(dumper, data):
+        def _multiline_str_representer(dumper, data):
             if isinstance(data, str) and "\n" in data:
                 return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
             return dumper.represent_str(data)
@@ -423,7 +748,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         class CustomRepresenter(RoundTripRepresenter):
             pass
 
-        CustomRepresenter.add_representer(str, multiline_str_representer)
+        CustomRepresenter.add_representer(str, _multiline_str_representer)
 
         yaml = YAML(
             typ=kwargs.pop("typ", None),
@@ -460,7 +785,16 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
 
 
 def get_dump_language(dump_engine: str) -> str:
-    """Get language corresponding to the dump engine."""
+    """Return the language corresponding to the provided dump engine.
+
+    Args:
+        dump_engine (str): Name of the dump engine.
+
+            See `vectorbtpro.utils.formatting.dump`.
+
+    Returns:
+        str: Corresponding language name, or an empty string if the dump engine is unknown.
+    """
     if dump_engine.lower() == "repr":
         return "python"
     if dump_engine.lower() == "prettify":
@@ -478,4 +812,3 @@ def get_dump_language(dump_engine: str) -> str:
     if dump_engine.lower() == "json":
         return "json"
     return ""
-

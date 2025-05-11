@@ -8,57 +8,55 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for working with trade records.
+"""Module for working with trade records.
 
-Trade records capture information on trades.
-
-In vectorbt, a trade is a sequence of orders that starts with an opening order and optionally ends
-with a closing order. Every pair of opposite orders can be represented by a trade. Each trade has a PnL
-info attached to quickly assess its performance. An interesting effect of this representation
-is the ability to aggregate trades: if two or more trades are happening one after another in time,
-they can be aggregated into a bigger trade. This way, for example, single-order trades can be aggregated
-into positions; but also multiple positions can be aggregated into a single blob that reflects the performance
-of the entire symbol.
+This class encapsulates detailed information on trades executed within vectorbtpro. 
+In vectorbtpro, a trade is defined as a sequence of orders that begins with an opening order 
+and may optionally end with a closing order. Each pair of opposing orders is represented by 
+a trade with associated profit and loss (PnL) details for quick performance assessment. 
+A key advantage of this representation is the ability to aggregate consecutive trades—allowing, 
+for example, single-order trades to be combined into positions or multiple positions to be merged 
+into a single summary of a symbol's performance.
 
 !!! warning
-    All classes return both closed AND open trades/positions, which may skew your performance results.
-    To only consider closed trades/positions, you should explicitly query the `status_closed` attribute.
+    All classes return both closed and open trades/positions, which may skew performance results.
+    To consider only closed trades/positions, explicitly query the `status_closed` attribute.
 
 ## Trade types
 
-There are three main types of trades.
+There are three main types of trades:
 
 ### Entry trades
 
-An entry trade is created from each order that opens or adds to a position.
+Entry trades are generated from orders that open or add to a position.
 
-For example, if we have a single large buy order and 100 smaller sell orders, we will see
-a single trade with the entry information copied from the buy order and the exit information being
-a size-weighted average over the exit information of all sell orders. On the other hand,
-if we have 100 smaller buy orders and a single sell order, we will see 100 trades,
-each with the entry information copied from the buy order and the exit information being
-a size-based fraction of the exit information of the sell order.
+For example, if a single large buy order is followed by 100 smaller sell orders, 
+a single trade is created with the entry details copied from the buy order and 
+the exit details computed as a size-weighted average of all sell orders. 
+Conversely, if 100 smaller buy orders are followed by a single sell order, 
+100 trades are created, each carrying the entry details from the respective 
+buy order and exit details representing a size-based fraction of the sell order.
 
-Use `vectorbtpro.portfolio.trades.EntryTrades.from_orders` to build entry trades from orders.
-Also available as `vectorbtpro.portfolio.base.Portfolio.entry_trades`.
+Use `vectorbtpro.portfolio.trades.EntryTrades.from_orders` to build entry trades from orders. 
+They are also accessible via `vectorbtpro.portfolio.base.Portfolio.entry_trades`.
 
 ### Exit trades
 
-An exit trade is created from each order that closes or removes from a position.
+Exit trades are generated from orders that close or reduce a position.
 
-Use `vectorbtpro.portfolio.trades.ExitTrades.from_orders` to build exit trades from orders.
-Also available as `vectorbtpro.portfolio.base.Portfolio.exit_trades`.
+Use `vectorbtpro.portfolio.trades.ExitTrades.from_orders` to construct exit trades from orders. 
+They are also available as `vectorbtpro.portfolio.base.Portfolio.exit_trades`.
 
 ### Positions
 
-A position is created from a sequence of entry or exit trades.
+Positions are created by aggregating a sequence of entry or exit trades.
 
-Use `vectorbtpro.portfolio.trades.Positions.from_trades` to build positions from entry or exit trades.
-Also available as `vectorbtpro.portfolio.base.Portfolio.positions`.
+Use `vectorbtpro.portfolio.trades.Positions.from_trades` to build positions from entry or exit trades. 
+They are also accessible via `vectorbtpro.portfolio.base.Portfolio.positions`.
 
-## Example
+## Examples
 
-* Increasing position:
+Increasing position:
 
 ```pycon
 >>> from vectorbtpro import *
@@ -117,7 +115,7 @@ Also available as `vectorbtpro.portfolio.base.Portfolio.positions`.
 True
 ```
 
-* Decreasing position:
+Decreasing position:
 
 ```pycon
 >>> # Entry trades
@@ -174,7 +172,7 @@ True
 True
 ```
 
-* Multiple reversing positions:
+Multiple reversing positions:
 
 ```pycon
 >>> # Entry trades
@@ -249,7 +247,7 @@ True
 True
 ```
 
-* Open position:
+Open position:
 
 ```pycon
 >>> # Entry trades
@@ -317,7 +315,7 @@ Get trade count, trade PnL, and winning trade PnL:
 1.5
 ```
 
-Get count and PnL of trades with duration of more than 2 days:
+Get count and PnL of trades with a duration longer than 2 days:
 
 ```pycon
 >>> mask = (trades.records['exit_idx'] - trades.records['entry_idx']) > 2
@@ -482,7 +480,7 @@ Name: group, dtype: object
 !!! hint
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Trades.subplots`.
 
-`Trades` class has two subplots based on `Trades.plot` and `Trades.plot_pnl`:
+The `Trades` class provides two subplots based on `Trades.plot` and `Trades.plot_pnl`:
 
 ```pycon
 >>> pf.trades['a'].plots().show()
@@ -500,7 +498,7 @@ from vectorbtpro._dtypes import *
 from vectorbtpro.base.indexes import stack_indexes
 from vectorbtpro.base.reshaping import to_1d_array, to_2d_array, to_pd_array, broadcast_to
 from vectorbtpro.base.wrapping import ArrayWrapper
-from vectorbtpro.generic.enums import range_dt
+from vectorbtpro.generic.enums import range_dt, WType
 from vectorbtpro.generic.ranges import Ranges
 from vectorbtpro.portfolio import nb
 from vectorbtpro.portfolio.enums import TradeDirection, TradeStatus, trade_dt
@@ -512,6 +510,7 @@ from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils.array_ import min_rel_rescale, max_rel_rescale
 from vectorbtpro.utils.colors import adjust_lightness
 from vectorbtpro.utils.config import merge_dicts, Config, ReadonlyConfig, HybridConfig
+from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.template import Rep, RepEval, RepFunc
 
 __all__ = [
@@ -554,10 +553,10 @@ trades_field_config = ReadonlyConfig(
 
 __pdoc__[
     "trades_field_config"
-] = f"""Field config for `Trades`.
+] = f"""Field configuration for `Trades`.
 
 ```python
-{trades_field_config.prettify()}
+{trades_field_config.prettify_doc()}
 ```
 """
 
@@ -572,10 +571,10 @@ trades_attach_field_config = ReadonlyConfig(
 
 __pdoc__[
     "trades_attach_field_config"
-] = f"""Config of fields to be attached to `Trades`.
+] = f"""Configuration mapping for attaching extra properties to `Trades`.
 
 ```python
-{trades_attach_field_config.prettify()}
+{trades_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -645,10 +644,10 @@ trades_shortcut_config = ReadonlyConfig(
 
 __pdoc__[
     "trades_shortcut_config"
-] = f"""Config of shortcut properties to be attached to `Trades`.
+] = f"""Configuration for shortcut properties associated with `Trades`.
 
 ```python
-{trades_shortcut_config.prettify()}
+{trades_shortcut_config.prettify_doc()}
 ```
 """
 
@@ -659,15 +658,34 @@ TradesT = tp.TypeVar("TradesT", bound="Trades")
 @attach_fields(trades_attach_field_config)
 @override_field_config(trades_field_config)
 class Trades(Ranges):
-    """Extends `vectorbtpro.generic.ranges.Ranges` for working with trade-like records, such as
-    entry trades, exit trades, and positions."""
+    """Class for representing trade-like records, including entry trades, exit trades, and positions.
+
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.trade_dt`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.trades`.
+    """
 
     @property
     def field_config(self) -> Config:
+        """Field configuration.
+
+        Returns:
+            Config: Field configuration for the `Trades` class.
+        """
         return self._field_config
 
     def get_ranges(self, **kwargs) -> Ranges:
-        """Get records of type `vectorbtpro.generic.ranges.Ranges`."""
+        """Return trade records as a `vectorbtpro.generic.ranges.Ranges` instance.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
+
+        Returns:
+            Ranges: New instance of `vectorbtpro.generic.ranges.Ranges` constructed from trade record fields.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
+        """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
         new_records_arr["col"][:] = self.get_field_arr("col").copy()
@@ -687,37 +705,81 @@ class Trades(Ranges):
     # ############# Views ############# #
 
     def get_long_view(self: TradesT, **kwargs) -> TradesT:
-        """Get long view."""
+        """Return trade records filtered for long trades.
+
+        Args:
+            **kwargs: Keyword arguments for `Trades.apply_mask`.
+
+        Returns:
+            Trades: New instance of trade records containing only long trades.
+        """
         filter_mask = self.get_field_arr("direction") == TradeDirection.Long
         return self.apply_mask(filter_mask, **kwargs)
 
     def get_short_view(self: TradesT, **kwargs) -> TradesT:
-        """Get short view."""
+        """Return trade records filtered for short trades.
+
+        Args:
+            **kwargs: Keyword arguments for `Trades.apply_mask`.
+
+        Returns:
+            Trades: New instance of trade records containing only short trades.
+        """
         filter_mask = self.get_field_arr("direction") == TradeDirection.Short
         return self.apply_mask(filter_mask, **kwargs)
 
     # ############# Stats ############# #
 
     def get_winning(self: TradesT, **kwargs) -> TradesT:
-        """Get winning trades."""
+        """Return winning trades with positive profit and loss.
+
+        Args:
+            **kwargs: Keyword arguments for `Trades.apply_mask`.
+
+        Returns:
+            Trades: Trade records where profit and loss (pnl) is greater than 0.
+        """
         filter_mask = self.get_field_arr("pnl") > 0.0
         return self.apply_mask(filter_mask, **kwargs)
 
     def get_losing(self: TradesT, **kwargs) -> TradesT:
-        """Get losing trades."""
+        """Return losing trades with negative profit and loss.
+
+        Args:
+            **kwargs: Keyword arguments for `Trades.apply_mask`.
+
+        Returns:
+            Trades: Trade records where profit and loss (pnl) is less than 0.
+        """
         filter_mask = self.get_field_arr("pnl") < 0.0
         return self.apply_mask(filter_mask, **kwargs)
 
     def get_winning_streak(self, **kwargs) -> MappedArray:
-        """Get winning streak at each trade in the current column.
+        """Return the winning streak count for each trade in the current column.
 
-        See `vectorbtpro.portfolio.nb.records.trade_winning_streak_nb`."""
+        Args:
+            **kwargs: Keyword arguments for `Trades.apply`.
+
+        Returns:
+            MappedArray: Array of winning streak counts for each trade.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.trade_winning_streak_nb`
+        """
         return self.apply(nb.trade_winning_streak_nb, dtype=int_, **kwargs)
 
     def get_losing_streak(self, **kwargs) -> MappedArray:
-        """Get losing streak at each trade in the current column.
+        """Return the losing streak count for each trade in the current column.
 
-        See `vectorbtpro.portfolio.nb.records.trade_losing_streak_nb`."""
+        Args:
+            **kwargs: Keyword arguments for `Trades.apply`.
+
+        Returns:
+            MappedArray: Array of losing streak counts for each trade.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.trade_losing_streak_nb`
+        """
         return self.apply(nb.trade_losing_streak_nb, dtype=int_, **kwargs)
 
     def get_win_rate(
@@ -728,7 +790,26 @@ class Trades(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get rate of winning trades."""
+        """Return the rate of winning trades.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series containing the winning trade rates.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="win_rate"), wrap_kwargs)
         return self.get_map_field("pnl").reduce(
             nb.win_rate_reduce_nb,
@@ -748,7 +829,27 @@ class Trades(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get profit factor."""
+        """Return the profit factor based on trade returns or profit and loss.
+
+        Args:
+            use_returns (bool): Whether to use trade returns instead of profit and loss.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series containing profit factor values.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="profit_factor"), wrap_kwargs)
         if use_returns:
             mapped_arr = self.get_map_field("return")
@@ -772,7 +873,27 @@ class Trades(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get average profitability."""
+        """Return the average profitability (expectancy) from trades.
+
+        Args:
+            use_returns (bool): Whether to use trade returns instead of profit and loss.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series containing expectancy values.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="expectancy"), wrap_kwargs)
         if use_returns:
             mapped_arr = self.get_map_field("return")
@@ -797,7 +918,28 @@ class Trades(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get System Quality Number (SQN)."""
+        """Return the System Quality Number (SQN) based on trades.
+
+        Args:
+            ddof (int): Delta degrees of freedom.
+            use_returns (bool): Whether to use trade returns instead of profit and loss.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series containing SQN values.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="sqn"), wrap_kwargs)
         if use_returns:
             mapped_arr = self.get_map_field("return")
@@ -820,9 +962,20 @@ class Trades(Ranges):
         max_duration: tp.Optional[int] = None,
         **kwargs,
     ) -> MappedArray:
-        """Get best price.
+        """Return the best price computed from trade data.
 
-        See `vectorbtpro.portfolio.nb.records.best_price_nb`."""
+        Args:
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            **kwargs: Keyword arguments for `Trades.apply`.
+
+        Returns:
+            MappedArray: Array of best prices.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.best_price_nb`
+        """
         return self.apply(
             nb.best_price_nb,
             self._open,
@@ -842,9 +995,20 @@ class Trades(Ranges):
         max_duration: tp.Optional[int] = None,
         **kwargs,
     ) -> MappedArray:
-        """Get worst price.
+        """Return the worst price computed from trade data.
 
-        See `vectorbtpro.portfolio.nb.records.worst_price_nb`."""
+        Args:
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            **kwargs: Keyword arguments for `Trades.apply`.
+
+        Returns:
+            MappedArray: Array of worst prices.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.worst_price_nb`
+        """
         return self.apply(
             nb.worst_price_nb,
             self._open,
@@ -865,9 +1029,21 @@ class Trades(Ranges):
         relative: bool = True,
         **kwargs,
     ) -> MappedArray:
-        """Get (relative) index of best price.
+        """Return the index of the best price for each trade.
 
-        See `vectorbtpro.portfolio.nb.records.best_price_idx_nb`."""
+        Args:
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            relative (bool): Whether to return a relative index.
+            **kwargs: Keyword arguments for `Trades.apply`.
+
+        Returns:
+            MappedArray: Array of indices for the best price locations.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.best_price_idx_nb`
+        """
         return self.apply(
             nb.best_price_idx_nb,
             self._open,
@@ -890,9 +1066,21 @@ class Trades(Ranges):
         relative: bool = True,
         **kwargs,
     ) -> MappedArray:
-        """Get (relative) index of worst price.
+        """Return the index of the worst price for each trade.
 
-        See `vectorbtpro.portfolio.nb.records.worst_price_idx_nb`."""
+        Args:
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            relative (bool): Whether to return a relative index.
+            **kwargs: Keyword arguments for `Trades.apply`.
+
+        Returns:
+            MappedArray: Array of indices for the worst price locations.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.worst_price_idx_nb`
+        """
         return self.apply(
             nb.worst_price_idx_nb,
             self._open,
@@ -916,9 +1104,30 @@ class Trades(Ranges):
         clean_index_kwargs: tp.KwargsLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get expanding best price.
+        """Return an expanding best price series.
 
-        See `vectorbtpro.portfolio.nb.records.expanding_best_price_nb`."""
+        Computes the expanding best price over the duration of trades using the corresponding nb function.
+
+        Args:
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Wrapped Series or DataFrame of expanding best prices.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_best_price_nb`
+        """
         func = jit_reg.resolve_option(nb.expanding_best_price_nb, jitted)
         out = func(
             self.values,
@@ -954,9 +1163,30 @@ class Trades(Ranges):
         clean_index_kwargs: tp.KwargsLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get expanding worst price.
+        """Return an expanding worst price series.
 
-        See `vectorbtpro.portfolio.nb.records.expanding_worst_price_nb`."""
+        Computes the expanding worst price over the duration of trades using the corresponding nb function.
+
+        Args:
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Wrapped Series or DataFrame of expanding worst prices.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_worst_price_nb`
+        """
         func = jit_reg.resolve_option(nb.expanding_worst_price_nb, jitted)
         out = func(
             self.values,
@@ -993,9 +1223,29 @@ class Trades(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """Get MFE.
+        """Return the maximum favorable excursion (MFE) values.
 
-        See `vectorbtpro.portfolio.nb.records.mfe_nb`."""
+        Computes the MFE for trades based on price movements and trade directions.
+
+        Args:
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            use_returns (bool): Flag indicating whether to compute using return-based values.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Trades.map_array`.
+
+        Returns:
+            MappedArray: Mapped array containing the computed MFE values.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.mfe_nb`
+        """
         best_price = self.resolve_shortcut_attr(
             "best_price",
             entry_price_open=entry_price_open,
@@ -1025,9 +1275,29 @@ class Trades(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """Get MAE.
+        """Return the maximum adverse excursion (MAE) values.
 
-        See `vectorbtpro.portfolio.nb.records.mae_nb`."""
+        Computes the MAE for trades based on price movements and trade directions.
+
+        Args:
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            use_returns (bool): Flag indicating whether to compute using return-based values.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Trades.map_array`.
+
+        Returns:
+            MappedArray: Mapped array containing the computed MAE values.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.mae_nb`
+        """
         worst_price = self.resolve_shortcut_attr(
             "worst_price",
             entry_price_open=entry_price_open,
@@ -1057,9 +1327,29 @@ class Trades(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Get expanding MFE.
+        """Return an expanding MFE series.
 
-        See `vectorbtpro.portfolio.nb.records.expanding_mfe_nb`."""
+        Computes the expanding maximum favorable excursion (MFE) using an expanding best price as a reference.
+
+        Args:
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            use_returns (bool): Flag indicating whether to compute using return-based values.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Trades.get_expanding_best_price`.
+
+        Returns:
+            SeriesFrame: Wrapped Series or DataFrame containing the computed expanding MFE values.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_mfe_nb`
+        """
         expanding_best_price = self.resolve_shortcut_attr(
             "expanding_best_price",
             entry_price_open=entry_price_open,
@@ -1087,9 +1377,29 @@ class Trades(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Get expanding MAE.
+        """Return an expanding MAE series.
 
-        See `vectorbtpro.portfolio.nb.records.expanding_mae_nb`."""
+        Computes the expanding maximum adverse excursion (MAE) using an expanding worst price as a reference.
+
+        Args:
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            use_returns (bool): Flag indicating whether to compute using return-based values.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Trades.get_expanding_worst_price`.
+
+        Returns:
+            SeriesFrame: Wrapped Series or DataFrame containing the computed expanding MAE values.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_mae_nb`
+        """
         expanding_worst_price = self.resolve_shortcut_attr(
             "expanding_worst_price",
             entry_price_open=entry_price_open,
@@ -1110,6 +1420,8 @@ class Trades(Ranges):
     def get_edge_ratio(
         self,
         volatility: tp.Optional[tp.ArrayLike] = None,
+        window: int = 14,
+        wtype: tp.Union[int, str] = "wilder",
         entry_price_open: bool = False,
         exit_price_close: bool = False,
         max_duration: tp.Optional[int] = None,
@@ -1118,19 +1430,47 @@ class Trades(Ranges):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get edge ratio.
+        """Compute edge ratio.
 
-        See `vectorbtpro.portfolio.nb.records.edge_ratio_nb`.
+        Args:
+            volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
-        If `volatility` is None, calculates the 14-period ATR if both high and low are provided,
-        otherwise the 14-period rolling standard deviation."""
+                If None, an ATR is computed when high and low are available; 
+                otherwise, a rolling standard deviation is used.
+            window (int): Window size for the volatility calculation.
+            wtype (Union[int, str]): Weighting type.
+
+                Mapped using `vectorbtpro.generic.enums.WType` if provided as a string.
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            SeriesFrame: Computed edge ratio.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.edge_ratio_nb`
+        """
         if self._close is None:
             raise ValueError("Must provide close")
 
         if volatility is None:
+            if isinstance(wtype, str):
+                wtype = map_enum_fields(wtype, WType)
             if self._high is not None and self._low is not None:
                 from vectorbtpro.indicators.nb import atr_nb
-                from vectorbtpro.generic.enums import WType
 
                 if self._high is None or self._low is None:
                     raise ValueError("Must provide high and low for ATR calculation")
@@ -1139,17 +1479,16 @@ class Trades(Ranges):
                     high=to_2d_array(self._high),
                     low=to_2d_array(self._low),
                     close=to_2d_array(self._close),
-                    window=14,
-                    wtype=WType.Wilder,
+                    window=window,
+                    wtype=wtype,
                 )[1]
             else:
                 from vectorbtpro.indicators.nb import msd_nb
-                from vectorbtpro.generic.enums import WType
 
                 volatility = msd_nb(
                     close=to_2d_array(self._close),
-                    window=14,
-                    wtype=WType.Wilder,
+                    window=window,
+                    wtype=wtype,
                 )
         else:
             volatility = broadcast_to(volatility, self.wrapper, to_pd=False, keep_flex=True)
@@ -1175,6 +1514,8 @@ class Trades(Ranges):
     def get_running_edge_ratio(
         self,
         volatility: tp.Optional[tp.ArrayLike] = None,
+        window: int = 14,
+        wtype: tp.Union[int, str] = "wilder",
         entry_price_open: bool = False,
         exit_price_close: bool = False,
         max_duration: tp.Optional[int] = None,
@@ -1183,19 +1524,45 @@ class Trades(Ranges):
         jitted: tp.JittedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get running edge ratio.
+        """Compute running edge ratio.
 
-        See `vectorbtpro.portfolio.nb.records.running_edge_ratio_nb`.
+        Args:
+            volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
-        If `volatility` is None, calculates the 14-period ATR if both high and low are provided,
-        otherwise the 14-period rolling standard deviation."""
+                If None, an ATR is computed when high and low are available; 
+                otherwise, a rolling standard deviation is used.
+            window (int): Window size for the volatility calculation.
+            wtype (Union[int, str]): Weighting type.
+
+                Mapped using `vectorbtpro.generic.enums.WType` if provided as a string.
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            incl_shorter (bool): Whether to include trades shorter than the current duration step.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Computed running edge ratio.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.running_edge_ratio_nb`
+        """
         if self._close is None:
             raise ValueError("Must provide close")
 
         if volatility is None:
+            if isinstance(wtype, str):
+                wtype = map_enum_fields(wtype, WType)
             if self._high is not None and self._low is not None:
                 from vectorbtpro.indicators.nb import atr_nb
-                from vectorbtpro.generic.enums import WType
 
                 if self._high is None or self._low is None:
                     raise ValueError("Must provide high and low for ATR calculation")
@@ -1204,17 +1571,16 @@ class Trades(Ranges):
                     high=to_2d_array(self._high),
                     low=to_2d_array(self._low),
                     close=to_2d_array(self._close),
-                    window=14,
-                    wtype=WType.Wilder,
+                    window=window,
+                    wtype=wtype,
                 )[1]
             else:
                 from vectorbtpro.indicators.nb import msd_nb
-                from vectorbtpro.generic.enums import WType
 
                 volatility = msd_nb(
                     close=to_2d_array(self._close),
-                    window=14,
-                    wtype=WType.Wilder,
+                    window=window,
+                    wtype=wtype,
                 )
         else:
             volatility = broadcast_to(volatility, self.wrapper, to_pd=False, keep_flex=True)
@@ -1239,10 +1605,14 @@ class Trades(Ranges):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `Trades.stats`.
+        """Default configuration for `Trades.stats`.
 
-        Merges `vectorbtpro.generic.ranges.Ranges.stats_defaults` and
-        `stats` from `vectorbtpro._settings.trades`."""
+        Merges the defaults from `vectorbtpro.generic.ranges.Ranges.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.trades`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the stats builder.
+        """
         from vectorbtpro._settings import settings
 
         trades_stats_cfg = settings["trades"]["stats"]
@@ -1397,7 +1767,7 @@ class Trades(Ranges):
 
     def plot_pnl(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         group_by: tp.GroupByLike = False,
         pct_scale: bool = False,
         marker_size_range: tp.Tuple[float, float] = (7, 14),
@@ -1413,26 +1783,35 @@ class Trades(Ranges):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot trade PnL or returns.
+        """Plot trades' profit and loss (PnL) or returns.
 
         Args:
-            column (str): Name of the column to plot.
-            group_by (any): Group columns. See `vectorbtpro.base.grouping.base.Grouper`.
-            pct_scale (bool): Whether to set y-axis to `Trades.returns`, otherwise to `Trades.pnl`.
-            marker_size_range (tuple): Range of marker size.
-            opacity_range (tuple): Range of marker opacity.
-            closed_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Closed" markers.
-            closed_profit_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Closed - Profit" markers.
-            closed_loss_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Closed - Loss" markers.
-            open_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Open" markers.
-            hline_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for zeroline.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            xref (str): X coordinate axis.
-            yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            column (Optional[Column]): Identifier of the column or group to plot.
+            group_by (GroupByLike): Grouping specification.
 
-        Usage:
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            pct_scale (bool): Flag to display the y-axis on a percentage scale.
+            marker_size_range (Tuple[float, float]): Range for marker sizes.
+            opacity_range (Tuple[float, float]): Range for marker opacities.
+            closed_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade markers.
+            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade with profit markers.
+            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade with loss markers.
+            open_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for open trade markers.
+            hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
+
+        Returns:
+            BaseFigure: Plotly figure object containing the plot of trade PnL or returns.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=7)
             >>> price = pd.Series([1., 2., 3., 4., 3., 2., 1.], index=index)
@@ -1546,7 +1925,7 @@ class Trades(Ranges):
                 closed_profit_trace_kwargs,
             )
 
-            # Plot Closed - Profit scatter
+            # Plot Closed - Loss scatter
             _plot_scatter(
                 closed_loss_mask,
                 "Closed - Loss",
@@ -1579,7 +1958,15 @@ class Trades(Ranges):
         return fig
 
     def plot_returns(self, *args, **kwargs) -> tp.BaseFigure:
-        """`Trades.plot_pnl` for `Trades.returns`."""
+        """Plot trade returns using `Trades.plot_pnl`.
+
+        Args:
+            *args: Positional arguments for `Trades.plot_pnl`.
+            **kwargs: Keyword arguments for `Trades.plot_pnl`.
+
+        Returns:
+            BaseFigure: Plotly figure object containing the plot of trade returns.
+        """
         return self.plot_pnl(
             *args,
             pct_scale=True,
@@ -1590,7 +1977,7 @@ class Trades(Ranges):
         self,
         field: tp.Union[str, tp.Array1d, MappedArray],
         field_label: tp.Optional[str] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         group_by: tp.GroupByLike = False,
         pct_scale: bool = False,
         field_pct_scale: bool = False,
@@ -1609,27 +1996,36 @@ class Trades(Ranges):
         """Plot a field against PnL or returns.
 
         Args:
-            field (str, MappedArray, or array_like): Field to be plotted.
+            field (Union[str, Array1d, MappedArray]): Field to be plotted.
 
-                Can be also provided as a mapped array or 1-dim array.
-            field_label (str): Label of the field.
-            column (str): Name of the column to plot.
-            group_by (any): Group columns. See `vectorbtpro.base.grouping.base.Grouper`.
-            pct_scale (bool): Whether to set x-axis to `Trades.returns`, otherwise to `Trades.pnl`.
-            field_pct_scale (bool): Whether to make y-axis a percentage scale.
-            closed_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Closed" markers.
-            closed_profit_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Closed - Profit" markers.
-            closed_loss_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Closed - Loss" markers.
-            open_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Open" markers.
-            hline_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for horizontal zeroline.
-            vline_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for vertical zeroline.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            xref (str): X coordinate axis.
-            yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                The field can be specified as a string, a mapped array, or a 1-dimensional array.
+            field_label (Optional[str]): Label for the field.
+            column (Optional[Column]): Identifier of the column or group to plot.
+            group_by (GroupByLike): Grouping specification.
 
-        Usage:
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            pct_scale (bool): Flag to display the y-axis on a percentage scale.
+            field_pct_scale (bool): Flag to display the y-axis on a percentage scale.
+            closed_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade markers.
+            closed_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade with profit markers.
+            closed_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for closed trade with loss markers.
+            open_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for open trade markers.
+            hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
+            vline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the vertical line.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
+
+        Returns:
+            BaseFigure: Updated figure with the plotted field against PnL or returns.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=10)
             >>> price = pd.Series([1., 2., 3., 4., 5., 6., 5., 3., 2., 1.], index=index)
@@ -1750,7 +2146,7 @@ class Trades(Ranges):
                 closed_profit_trace_kwargs,
             )
 
-            # Plot Closed - Profit scatter
+            # Plot Closed - Loss scatter
             _plot_scatter(
                 closed_loss_mask,
                 "Closed - Loss",
@@ -1801,7 +2197,15 @@ class Trades(Ranges):
         return fig
 
     def plot_mfe(self, *args, **kwargs) -> tp.BaseFigure:
-        """`Trades.plot_against_pnl` for `Trades.mfe`."""
+        """Plot MFE.
+
+        Args:
+            *args: Positional arguments for `Trades.plot_against_pnl`.
+            **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
+
+        Returns:
+            BaseFigure: Updated figure with the MFE plot.
+        """
         return self.plot_against_pnl(
             *args,
             field="mfe",
@@ -1810,7 +2214,15 @@ class Trades(Ranges):
         )
 
     def plot_mfe_returns(self, *args, **kwargs) -> tp.BaseFigure:
-        """`Trades.plot_against_pnl` for `Trades.mfe_returns`."""
+        """Plot MFE returns.
+
+        Args:
+            *args: Positional arguments for `Trades.plot_against_pnl`.
+            **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
+
+        Returns:
+            BaseFigure: Figure object with the plotted MFE returns.
+        """
         return self.plot_against_pnl(
             *args,
             field="mfe_returns",
@@ -1821,7 +2233,15 @@ class Trades(Ranges):
         )
 
     def plot_mae(self, *args, **kwargs) -> tp.BaseFigure:
-        """`Trades.plot_against_pnl` for `Trades.mae`."""
+        """Plot MAE.
+
+        Args:
+            *args: Positional arguments for `Trades.plot_against_pnl`.
+            **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
+
+        Returns:
+            BaseFigure: Figure object with the plotted MAE.
+        """
         return self.plot_against_pnl(
             *args,
             field="mae",
@@ -1830,7 +2250,15 @@ class Trades(Ranges):
         )
 
     def plot_mae_returns(self, *args, **kwargs) -> tp.BaseFigure:
-        """`Trades.plot_against_pnl` for `Trades.mae_returns`."""
+        """Plot MAE returns.
+
+        Args:
+            *args: Positional arguments for `Trades.plot_against_pnl`.
+            **kwargs: Keyword arguments for `Trades.plot_against_pnl`.
+
+        Returns:
+            BaseFigure: Figure object with the plotted MAE returns.
+        """
         return self.plot_against_pnl(
             *args,
             field="mae_returns",
@@ -1844,7 +2272,7 @@ class Trades(Ranges):
         self,
         field: tp.Union[str, tp.Array1d, MappedArray],
         field_label: tp.Optional[str] = None,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         group_by: tp.GroupByLike = False,
         plot_bands: bool = False,
         colorize: tp.Union[bool, str, tp.Callable] = "last",
@@ -1856,20 +2284,30 @@ class Trades(Ranges):
         """Plot projections of an expanding field.
 
         Args:
-            field (str or array_like): Field to be plotted.
+            field (Union[str, Array1d, MappedArray]): Field to be plotted.
 
-                 Can be also provided as a 2-dim array.
-            field_label (str): Label of the field.
-            column (str): Name of the column to plot. Optional.
-            group_by (any): Group columns. See `vectorbtpro.base.grouping.base.Grouper`.
-            plot_bands (bool): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            colorize (bool, str or callable): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            field_pct_scale (bool): Whether to make y-axis a percentage scale.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **kwargs: Keyword arguments passed to `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
+                Can also be provided as a two-dimensional array.
+            field_label (Optional[str]): Label for the field.
+            column (Optional[Column]): Identifier of the column or group to plot.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            plot_bands (bool): Plot computed bands if True.
 
-        Usage:
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
+            colorize (Union[bool, str, Callable]): Strategy for colorizing projections or bands.
+
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
+            field_pct_scale (bool): Flag to display the y-axis on a percentage scale.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
+
+        Returns:
+            BaseFigure: Figure object with the plotted expanding field projections.
+
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=10)
             >>> price = pd.Series([1., 2., 3., 2., 4., 5., 6., 5., 6., 7.], index=index)
@@ -1916,7 +2354,15 @@ class Trades(Ranges):
         return fig
 
     def plot_expanding_mfe(self, *args, **kwargs) -> tp.BaseFigure:
-        """`Trades.plot_expanding` for `Trades.expanding_mfe`."""
+        """Plot expanding MFE.
+
+        Args:
+            *args: Positional arguments for `Trades.plot_expanding`.
+            **kwargs: Keyword arguments for `Trades.plot_expanding`.
+
+        Returns:
+            BaseFigure: Figure object with the plotted expanding MFE.
+        """
         return self.plot_expanding(
             *args,
             field="expanding_mfe",
@@ -1925,7 +2371,15 @@ class Trades(Ranges):
         )
 
     def plot_expanding_mfe_returns(self, *args, **kwargs) -> tp.BaseFigure:
-        """`Trades.plot_expanding` for `Trades.expanding_mfe_returns`."""
+        """Plot expanding MFE returns.
+
+        Args:
+            *args: Positional arguments for `Trades.plot_expanding`.
+            **kwargs: Keyword arguments for `Trades.plot_expanding`.
+
+        Returns:
+            BaseFigure: Figure object with the plotted expanding MFE returns.
+        """
         return self.plot_expanding(
             *args,
             field="expanding_mfe_returns",
@@ -1935,7 +2389,15 @@ class Trades(Ranges):
         )
 
     def plot_expanding_mae(self, *args, **kwargs) -> tp.BaseFigure:
-        """`Trades.plot_expanding` for `Trades.expanding_mae`."""
+        """Plot expanding MAE.
+
+        Args:
+            *args: Positional arguments for `Trades.plot_expanding`.
+            **kwargs: Keyword arguments for `Trades.plot_expanding`.
+
+        Returns:
+            BaseFigure: Figure object with the plotted expanding MAE.
+        """
         return self.plot_expanding(
             *args,
             field="expanding_mae",
@@ -1944,7 +2406,15 @@ class Trades(Ranges):
         )
 
     def plot_expanding_mae_returns(self, *args, **kwargs) -> tp.BaseFigure:
-        """`Trades.plot_expanding` for `Trades.expanding_mae_returns`."""
+        """Plot expanding MAE returns.
+
+        Args:
+            *args: Positional arguments for `Trades.plot_expanding`.
+            **kwargs: Keyword arguments for `Trades.plot_expanding`.
+
+        Returns:
+            BaseFigure: Figure object with the plotted expanding MAE returns.
+        """
         return self.plot_expanding(
             *args,
             field="expanding_mae_returns",
@@ -1955,8 +2425,10 @@ class Trades(Ranges):
 
     def plot_running_edge_ratio(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         volatility: tp.Optional[tp.ArrayLike] = None,
+        window: int = 14,
+        wtype: tp.Union[int, str] = "wilder",
         entry_price_open: bool = False,
         exit_price_close: bool = False,
         max_duration: tp.Optional[int] = None,
@@ -1968,14 +2440,43 @@ class Trades(Ranges):
         hline_shape_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.BaseFigure:
-        """Plot one column/group of edge ratio.
+        """Plot the running edge ratio for a specified column or group.
 
-        `**kwargs` are passed to `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`."""
+        Args:
+            column (Optional[Column]): Identifier of the column to plot.
+            volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
+
+                If None, an ATR is computed when high and low are available; 
+                otherwise, a rolling standard deviation is used.
+            window (int): Window size for the volatility calculation.
+            wtype (Union[int, str]): Weighting type.
+
+                Mapped using `vectorbtpro.generic.enums.WType` if provided as a string.
+            entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
+            exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
+            max_duration (Optional[int]): Maximum number of bars to evaluate price movements.
+            incl_shorter (bool): Whether to include trades shorter than the current duration step.
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
+            hline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for the horizontal line.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericSRAccessor.plot_against`.
+
+        Returns:
+            BaseFigure: Figure object with the plotted running edge ratio.
+        """
         from vectorbtpro.utils.figure import get_domain
 
         running_edge_ratio = self.resolve_shortcut_attr(
             "running_edge_ratio",
             volatility=volatility,
+            window=window,
+            wtype=wtype,
             entry_price_open=entry_price_open,
             exit_price_close=exit_price_close,
             max_duration=max_duration,
@@ -2017,7 +2518,7 @@ class Trades(Ranges):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_ohlc: bool = True,
         plot_close: bool = True,
         plot_markers: bool = True,
@@ -2039,36 +2540,43 @@ class Trades(Ranges):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot trades.
+        """Plot trades on a Plotly figure.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_ohlc (bool): Whether to plot OHLC.
-            plot_close (bool): Whether to plot close.
-            plot_markers (bool): Whether to plot markers.
-            plot_zones (bool): Whether to plot zones.
-            plot_by_type (bool): Whether to plot exit trades by type.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_ohlc (bool): Whether to plot the OHLC data.
+            plot_close (bool): Whether to plot the close price if OHLC data is not plotted.
+            plot_markers (bool): Display markers for trade entry and exit points.
+            plot_zones (bool): Display zones indicating profit and loss areas.
+            plot_by_type (bool): Plot exit markers categorized by trade type (neutral, profit, or loss).
 
-                Otherwise, the appearance will be controlled using `exit_trace_kwargs`.
-            ohlc_type: Either 'OHLC', 'Candlestick' or Plotly trace.
+                If False, marker appearance is controlled using `exit_trace_kwargs`.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            ohlc_trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `Trades.close`.
-            entry_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Entry" markers.
-            exit_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Exit" markers.
-            exit_profit_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Exit - Profit" markers.
-            exit_loss_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Exit - Loss" markers.
-            active_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Active" markers.
-            profit_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for profit zones.
-            loss_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for loss zones.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            xref (str): X coordinate axis.
-            yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for entry markers.
+            exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for exit markers.
+            exit_profit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for profit exit markers.
+            exit_loss_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for loss exit markers.
+            active_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for active trade markers.
+            profit_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for profit zone shapes.
+            loss_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for loss zone shapes.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated Plotly figure with the plotted trades.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=7)
             >>> price = pd.Series([1., 2., 3., 4., 3., 2., 1.], index=index)
@@ -2320,7 +2828,7 @@ class Trades(Ranges):
                 self_col.winning.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(
                             yref=Rep("yref"),
                             y0=RepFunc(lambda record: record["entry_price"]),
@@ -2339,7 +2847,7 @@ class Trades(Ranges):
                 self_col.losing.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(
                             yref=Rep("yref"),
                             y0=RepFunc(lambda record: record["entry_price"]),
@@ -2358,10 +2866,14 @@ class Trades(Ranges):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Trades.plots`.
+        """Default configuration for `Trades.plots`.
 
-        Merges `vectorbtpro.generic.ranges.Ranges.plots_defaults` and
-        `plots` from `vectorbtpro._settings.trades`."""
+        Merges the defaults from `vectorbtpro.generic.ranges.Ranges.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.trades`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the plots builder.
+        """
         from vectorbtpro._settings import settings
 
         trades_plots_cfg = settings["trades"]["plots"]
@@ -2405,10 +2917,10 @@ entry_trades_field_config = ReadonlyConfig(
 
 __pdoc__[
     "entry_trades_field_config"
-] = f"""Field config for `EntryTrades`.
+] = f"""Field configuration for `EntryTrades`.
 
 ```python
-{entry_trades_field_config.prettify()}
+{entry_trades_field_config.prettify_doc()}
 ```
 """
 
@@ -2417,7 +2929,12 @@ EntryTradesT = tp.TypeVar("EntryTradesT", bound="EntryTrades")
 
 @override_field_config(entry_trades_field_config)
 class EntryTrades(Trades):
-    """Extends `Trades` for working with entry trade records."""
+    """Class representing entry trade records, extending `Trades`.
+
+    Field configuration is overridden using `entry_trades_field_config`.
+
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.trade_dt`.
+    """
 
     @property
     def field_config(self) -> Config:
@@ -2439,7 +2956,40 @@ class EntryTrades(Trades):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> EntryTradesT:
-        """Build `EntryTrades` from `vectorbtpro.portfolio.orders.Orders`."""
+        """Build an `EntryTrades` instance from `vectorbtpro.portfolio.orders.Orders`.
+
+        Args:
+            orders (vectorbtpro.portfolio.orders.Orders): Orders instance from which to derive entry trades.
+            open (Optional[ArrayLike]): Open prices.
+
+                If None, uses `orders._open`.
+            high (Optional[ArrayLike]): High prices.
+
+                If None, uses `orders._high`.
+            low (Optional[ArrayLike]): Low prices.
+
+                If None, uses `orders._low`.
+            close (Optional[ArrayLike]): Close prices.
+
+                If None, uses `orders._close`.
+            init_position (ArrayLike): Initial position.
+            init_price (ArrayLike): Initial position price.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `EntryTrades.from_records`.
+
+        Returns:
+            EntryTrades: Constructed `EntryTrades` instance.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.get_entry_trades_nb`
+        """
         if open is None:
             open = orders._open
         if high is None:
@@ -2471,7 +3021,7 @@ class EntryTrades(Trades):
 
     def plot_signals(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_ohlc: bool = True,
         plot_close: bool = True,
         ohlc_type: tp.Union[None, str, tp.BaseTraceType] = None,
@@ -2486,21 +3036,28 @@ class EntryTrades(Trades):
         """Plot entry trade signals.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_ohlc (bool): Whether to plot OHLC.
-            plot_close (bool): Whether to plot close.
-            ohlc_type: Either 'OHLC', 'Candlestick' or Plotly trace.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_ohlc (bool): Whether to plot the OHLC data.
+            plot_close (bool): Whether to plot the close price if OHLC data is not plotted.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            ohlc_trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `EntryTrades.close`.
-            long_entry_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Long Entry" markers.
-            short_entry_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Short Entry" markers.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            long_entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for long entry markers.
+            short_entry_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for short entry markers.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated or newly created figure.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=7)
             >>> price = pd.Series([1, 2, 3, 2, 3, 4, 3], index=index)
@@ -2649,10 +3206,10 @@ exit_trades_field_config = ReadonlyConfig(dict(settings={"id": dict(title="Exit 
 
 __pdoc__[
     "exit_trades_field_config"
-] = f"""Field config for `ExitTrades`.
+] = f"""Field configuration for `ExitTrades`.
 
 ```python
-{exit_trades_field_config.prettify()}
+{exit_trades_field_config.prettify_doc()}
 ```
 """
 
@@ -2661,7 +3218,12 @@ ExitTradesT = tp.TypeVar("ExitTradesT", bound="ExitTrades")
 
 @override_field_config(exit_trades_field_config)
 class ExitTrades(Trades):
-    """Extends `Trades` for working with exit trade records."""
+    """Class representing exit trade records, extending `Trades`.
+
+    Field configuration is overridden using `exit_trades_field_config`.
+
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.trade_dt`.
+    """
 
     @property
     def field_config(self) -> Config:
@@ -2683,7 +3245,40 @@ class ExitTrades(Trades):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> ExitTradesT:
-        """Build `ExitTrades` from `vectorbtpro.portfolio.orders.Orders`."""
+        """Build an `ExitTrades` instance from `Orders`.
+
+        Args:
+            orders (vectorbtpro.portfolio.orders.Orders): Orders instance from which to derive exit trades.
+            open (Optional[ArrayLike]): Open prices.
+
+                If None, uses `orders._open`.
+            high (Optional[ArrayLike]): High prices.
+
+                If None, uses `orders._high`.
+            low (Optional[ArrayLike]): Low prices.
+
+                If None, uses `orders._low`.
+            close (Optional[ArrayLike]): Close prices.
+
+                If None, uses `orders._close`.
+            init_position (ArrayLike): Initial position.
+            init_price (ArrayLike): Initial position price.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `ExitTrades.from_records`.
+
+        Returns:
+            ExitTrades: An `ExitTrades` instance generated from the provided orders.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.get_exit_trades_nb`
+        """
         if open is None:
             open = orders._open
         if high is None:
@@ -2715,7 +3310,7 @@ class ExitTrades(Trades):
 
     def plot_signals(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_ohlc: bool = True,
         plot_close: bool = True,
         ohlc_type: tp.Union[None, str, tp.BaseTraceType] = None,
@@ -2730,21 +3325,28 @@ class ExitTrades(Trades):
         """Plot exit trade signals.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_ohlc (bool): Whether to plot OHLC.
-            plot_close (bool): Whether to plot close.
-            ohlc_type: Either 'OHLC', 'Candlestick' or Plotly trace.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_ohlc (bool): Whether to plot the OHLC data.
+            plot_close (bool): Whether to plot the close price if OHLC data is not plotted.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            ohlc_trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `ExitTrades.close`.
-            long_exit_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Long Exit" markers.
-            short_exit_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Short Exit" markers.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            long_exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for long exit markers.
+            short_exit_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for short exit markers.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Plotly figure with exit trade signals plotted.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=7)
             >>> price = pd.Series([1, 2, 3, 2, 3, 4, 3], index=index)
@@ -2891,10 +3493,10 @@ positions_field_config = ReadonlyConfig(
 
 __pdoc__[
     "positions_field_config"
-] = f"""Field config for `Positions`.
+] = f"""Field configuration for `Positions`.
 
 ```python
-{positions_field_config.prettify()}
+{positions_field_config.prettify_doc()}
 ```
 """
 
@@ -2903,7 +3505,12 @@ PositionsT = tp.TypeVar("PositionsT", bound="Positions")
 
 @override_field_config(positions_field_config)
 class Positions(Trades):
-    """Extends `Trades` for working with position records."""
+    """Class representing position records, extending `Trades`.
+
+    Field configuration is overridden using `positions_field_config`.
+
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.trade_dt`.
+    """
 
     @property
     def field_config(self) -> Config:
@@ -2921,7 +3528,43 @@ class Positions(Trades):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> PositionsT:
-        """Build `Positions` from `Trades`."""
+        """Construct a `Positions` instance from a given `Trades` instance.
+
+        Converts the provided trades into position records by applying default price arrays
+        when necessary and processing the data with optionally JIT-compiled and chunked functions.
+
+        Args:
+            trades (Trades): Source trades instance from which positions are derived.
+            open (Optional[ArrayLike]): Open prices.
+
+                If None, uses `trades._open`.
+            high (Optional[ArrayLike]): High prices.
+
+                If None, uses `trades._high`.
+            low (Optional[ArrayLike]): Low prices.
+
+                If None, uses `trades._low`.
+            close (Optional[ArrayLike]): Close prices.
+
+                If None, uses `trades._close`.
+            init_position (ArrayLike): Initial position.
+            init_price (ArrayLike): Initial position price.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Positions.from_records`.
+
+        Returns:
+            Positions: New instance of `Positions` created from the source trades.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.get_positions_nb`
+        """
         if open is None:
             open = trades._open
         if high is None:

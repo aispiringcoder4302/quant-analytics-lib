@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `HURST`."""
+"""Module defining the `HURST` class for calculating the rolling Hurst exponent."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators import nb
@@ -38,15 +38,48 @@ HURST = IndicatorFactory(
         "num_chunks",
     ],
     output_names=["hurst"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        hurst=dict(
+            doc="Hurst exponent series.",
+        ),
+    ),
 ).with_apply_func(
     nb.rolling_hurst_nb,
     kwargs_as_args=["minp", "stabilize"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         method=dict(
             dtype=HurstMethod,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
-        )
+            doc="Hurst exponent computation method (see `vectorbtpro.indicators.enums.HurstMethod`)",
+        ),
+        max_lag=dict(
+            doc="Maximum lag parameter for the standard computation.",
+        ),
+        min_log=dict(
+            doc="Minimum logarithmic scale for the LogRS method.",
+        ),
+        max_log=dict(
+            doc="Maximum logarithmic scale for the LogRS method.",
+        ),
+        log_step=dict(
+            doc="Increment on the logarithmic scale for the LogRS method.",
+        ),
+        min_chunk=dict(
+            doc="Minimum chunk size for RS and DMA methods.",
+        ),
+        max_chunk=dict(
+            doc="Maximum chunk size for RS and DMA methods.",
+        ),
+        num_chunks=dict(
+            doc="Number of chunks for RS and DMA methods.",
+        ),
     ),
     window=200,
     method="standard",
@@ -63,26 +96,41 @@ HURST = IndicatorFactory(
 
 
 class _HURST(HURST):
-    """Moving Hurst exponent (HURST)."""
+    """Class representing the moving Hurst exponent indicator.
+
+    This indicator measures the long-term memory of a time series.
+
+    See:
+        * `HURST.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.rolling_hurst_nb` for the underlying implementation.
+        * https://de.wikipedia.org/wiki/Hurst-Exponent for the definition of the Hurst exponent.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         hurst_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `HURST.hurst`.
+        """Plot the HURST traces.
 
         Args:
-            column (str): Name of the column to plot.
-            hurst_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `HURST.hurst`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            hurst_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `HURST.hurst`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Figure updated with the Hurst exponent plot.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> ohlcv = vbt.YFData.pull(
             ...     "BTC-USD",
@@ -99,7 +147,7 @@ class _HURST(HURST):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if hurst_trace_kwargs is None:
             hurst_trace_kwargs = {}

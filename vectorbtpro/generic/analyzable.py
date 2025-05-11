@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Class for analyzing data."""
+"""Module providing the `Analyzable` class for analyzing data."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.base.wrapping import ArrayWrapper, Wrapping
@@ -21,7 +21,8 @@ __all__ = [
 
 
 class MetaAnalyzable(type(Wrapping), type(StatsBuilderMixin), type(PlotsBuilderMixin)):
-    """Metaclass for `Analyzable`."""
+    """Metaclass for the `Analyzable` class."""
+
     pass
 
 
@@ -29,7 +30,14 @@ AnalyzableT = tp.TypeVar("AnalyzableT", bound="Analyzable")
 
 
 class Analyzable(Wrapping, StatsBuilderMixin, PlotsBuilderMixin, metaclass=MetaAnalyzable):
-    """Class that can be analyzed by computing and plotting attributes of any kind."""
+    """Class that can be analyzed by computing and plotting various attributes.
+
+    Args:
+        wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
+        **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping`.
+    """
 
     def __init__(self, wrapper: ArrayWrapper, **kwargs) -> None:
         Wrapping.__init__(self, wrapper, **kwargs)

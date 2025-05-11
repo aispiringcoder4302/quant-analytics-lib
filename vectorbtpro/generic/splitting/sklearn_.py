@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Scikit-learn compatible class for splitting."""
+"""Module providing a Scikit-learn compatible cross-validator for data splitting."""
 
 import numpy as np
 import pandas as pd
@@ -25,10 +25,29 @@ __all__ = [
 
 
 class SplitterCV(BaseCrossValidator, Base):
-    """Scikit-learn compatible cross-validator based on `vectorbtpro.generic.splitting.base.Splitter`.
+    """Class representing a scikit-learn compatible cross-validator based on
+    `vectorbtpro.generic.splitting.base.Splitter`.
 
-    Usage:
-        * Replicate `TimeSeriesSplit` from scikit-learn:
+    Args:
+        splitter (Union[None, str, Splitter, Callable]): Splitter instance, the name of a factory method
+            (e.g. "from_n_rolling"), or the factory method itself.
+
+            If None, the appropriate splitter is determined using
+            `vectorbtpro.generic.splitting.base.Splitter.guess_method`.
+        splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+            Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
+        split_group_by (AnyGroupByLike): Grouping specification for defining splits.
+        
+            See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+        set_group_by (AnyGroupByLike): Grouping specification for defining sets.
+        
+            See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+        template_context (KwargsLike): Additional context for template substitution.
+        **splitter_kwargs: Keyword arguments for the splitter factory method.
+
+    Examples:
+        Replicate `TimeSeriesSplit` from scikit-learn:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -84,45 +103,70 @@ class SplitterCV(BaseCrossValidator, Base):
 
     @property
     def splitter(self) -> tp.Union[str, Splitter, tp.Callable]:
-        """Splitter.
+        """Splitter instance, factory name, or factory function used for splitting.
 
-        Either as a `vectorbtpro.generic.splitting.base.Splitter` instance, a factory method name,
-        or the factory method itself.
+        If None, it is determined automatically based on `SplitterCV.splitter_kwargs`.
 
-        If None, will be determined automatically based on `SplitterCV.splitter_kwargs`."""
+        Returns:
+            Union[str, Splitter, Callable]: The splitter instance or factory.
+        """
         return self._splitter
 
     @property
     def splitter_cls(self) -> tp.Type[Splitter]:
-        """Splitter class.
+        """Splitter class used as the factory for creating splitter instances.
 
-        Defaults to `vectorbtpro.generic.splitting.base.Splitter`."""
+        Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
+
+        Returns:
+            Type[Splitter]: The splitter class used for creating splitter instances.
+        """
         return self._splitter_cls
 
     @property
     def splitter_kwargs(self) -> tp.KwargsLike:
-        """Keyword arguments passed to the factory method."""
+        """Keyword arguments for the splitter factory method.
+
+        Returns:
+            KwargsLike: Keyword arguments for the splitter factory method.
+        """
         return self._splitter_kwargs
 
     @property
     def split_group_by(self) -> tp.AnyGroupByLike:
-        """Split groups. See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+        """Group labels for splitting.
 
-        Not passed to the factory method."""
+        Not passed to the factory method.
+
+        Returns:
+            AnyGroupByLike: Group labels for splitting.
+
+        See:
+            `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`
+        """
         return self._split_group_by
 
     @property
     def set_group_by(self) -> tp.AnyGroupByLike:
-        """Set groups. See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+        """Group labels for setting.
 
-        Not passed to the factory method."""
+        Not passed to the factory method.
+
+        Returns:
+            AnyGroupByLike: Group labels for setting.
+
+        See:
+            `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`
+        """
         return self._set_group_by
 
     @property
     def template_context(self) -> tp.KwargsLike:
-        """Mapping used to substitute templates in ranges.
+        """Additional context for template substitution.
 
-        Passed to the factory method."""
+        Returns:
+            KwargsLike: Dictionary of context variables for template substitution.
+        """
         return self._template_context
 
     def get_splitter(
@@ -131,7 +175,20 @@ class SplitterCV(BaseCrossValidator, Base):
         y: tp.Any = None,
         groups: tp.Any = None,
     ) -> Splitter:
-        """Get splitter of type `vectorbtpro.generic.splitting.base.Splitter`."""
+        """Return a splitter instance of type `vectorbtpro.generic.splitting.base.Splitter`.
+
+        Args:
+            X (Any): Input data for splitting.
+            y (Any): Target values corresponding to `X`.
+            groups (Any): Group labels.
+
+        Returns:
+            Splitter: Splitter object configured with the provided data and splitter parameters.
+
+        !!! note
+            If the splitter is provided as a string, it is resolved as
+                an attribute of the splitter class.
+        """
         X, y, groups = indexable(X, y, groups)
         try:
             index = self.splitter_cls.get_obj_index(X)
@@ -156,7 +213,17 @@ class SplitterCV(BaseCrossValidator, Base):
         y: tp.Any = None,
         groups: tp.Any = None,
     ) -> tp.Iterator[tp.Tuple[tp.Array1d, tp.Array1d]]:
-        """Generates boolean masks corresponding to train and test sets."""
+        """Generate boolean masks corresponding to train and test splits.
+
+        Args:
+            X (Any): Input data.
+            y (Any): Target values.
+            groups (Any): Group labels.
+
+        Returns:
+            Iterator[Tuple[Array1d, Array1d]]: An iterator over tuples of
+                boolean arrays for train and test masks.
+        """
         splitter = self.get_splitter(X=X, y=y, groups=groups)
         for mask_arr in splitter.get_iter_split_mask_arrs(
             split_group_by=self.split_group_by,
@@ -171,7 +238,16 @@ class SplitterCV(BaseCrossValidator, Base):
         y: tp.Any = None,
         groups: tp.Any = None,
     ) -> tp.Iterator[tp.Array1d]:
-        """Generates boolean masks corresponding to train sets."""
+        """Generate boolean masks corresponding to train splits.
+
+        Args:
+            X (Any): Input data.
+            y (Any): Target values.
+            groups (Any): Group labels.
+
+        Returns:
+            Iterator[Array1d]: An iterator over boolean arrays for train masks.
+        """
         for train_mask_arr, _ in self._iter_masks(X=X, y=y, groups=groups):
             yield train_mask_arr
 
@@ -181,7 +257,16 @@ class SplitterCV(BaseCrossValidator, Base):
         y: tp.Any = None,
         groups: tp.Any = None,
     ) -> tp.Iterator[tp.Array1d]:
-        """Generates boolean masks corresponding to test sets."""
+        """Generate boolean masks corresponding to test splits.
+
+        Args:
+            X (Any): Input data.
+            y (Any): Target values.
+            groups (Any): Group labels.
+
+        Returns:
+            Iterator[Array1d]: An iterator over boolean arrays for test masks.
+        """
         for _, test_mask_arr in self._iter_masks(X=X, y=y, groups=groups):
             yield test_mask_arr
 
@@ -191,7 +276,17 @@ class SplitterCV(BaseCrossValidator, Base):
         y: tp.Any = None,
         groups: tp.Any = None,
     ) -> tp.Iterator[tp.Tuple[tp.Array1d, tp.Array1d]]:
-        """Generates integer indices corresponding to train and test sets."""
+        """Generate integer indices corresponding to train and test splits.
+
+        Args:
+            X (Any): Input data.
+            y (Any): Target values.
+            groups (Any): Group labels.
+
+        Returns:
+            Iterator[Tuple[Array1d, Array1d]]: An iterator over tuples of integer indices
+                for train and test splits.
+        """
         for train_mask_arr, test_mask_arr in self._iter_masks(X=X, y=y, groups=groups):
             yield np.flatnonzero(train_mask_arr), np.flatnonzero(test_mask_arr)
 
@@ -201,7 +296,16 @@ class SplitterCV(BaseCrossValidator, Base):
         y: tp.Any = None,
         groups: tp.Any = None,
     ) -> tp.Iterator[tp.Array1d]:
-        """Generates integer indices corresponding to train sets."""
+        """Generate integer indices corresponding to train splits.
+
+        Args:
+            X (Any): Input data.
+            y (Any): Target values.
+            groups (Any): Group labels.
+
+        Returns:
+            Iterator[Array1d]: An iterator over integer indices for train splits.
+        """
         for train_indices, _ in self._iter_indices(X=X, y=y, groups=groups):
             yield train_indices
 
@@ -211,7 +315,16 @@ class SplitterCV(BaseCrossValidator, Base):
         y: tp.Any = None,
         groups: tp.Any = None,
     ) -> tp.Iterator[tp.Array1d]:
-        """Generates integer indices corresponding to test sets."""
+        """Generate integer indices corresponding to test splits.
+
+        Args:
+            X (Any): Input data.
+            y (Any): Target values.
+            groups (Any): Group labels.
+
+        Returns:
+            Iterator[Array1d]: An iterator over integer indices for test splits.
+        """
         for _, test_indices in self._iter_indices(X=X, y=y, groups=groups):
             yield test_indices
 
@@ -221,7 +334,16 @@ class SplitterCV(BaseCrossValidator, Base):
         y: tp.Any = None,
         groups: tp.Any = None,
     ) -> int:
-        """Returns the number of splitting iterations in the cross-validator."""
+        """Return the number of splitting iterations in the cross-validator.
+
+        Args:
+            X (Any): Input data.
+            y (Any): Target values.
+            groups (Any): Group labels.
+
+        Returns:
+            int: Number of splits provided by the splitter.
+        """
         splitter = self.get_splitter(X=X, y=y, groups=groups)
         return splitter.get_n_splits(split_group_by=self.split_group_by)
 
@@ -231,5 +353,14 @@ class SplitterCV(BaseCrossValidator, Base):
         y: tp.Any = None,
         groups: tp.Any = None,
     ) -> tp.Iterator[tp.Tuple[tp.Array1d, tp.Array1d]]:
-        """Generate indices to split data into training and test set."""
+        """Generate indices to split data into training and test sets.
+
+        Args:
+            X (Any): Input data.
+            y (Any): Target values.
+            groups (Any): Group labels.
+
+        Returns:
+            Iterator[Tuple[Array1d, Array1d]]: An iterator yielding tuples of train and test indices.
+        """
         return self._iter_indices(X=X, y=y, groups=groups)

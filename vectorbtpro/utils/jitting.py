@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for jitting."""
+"""Module providing utilities for jitting.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.jitting` and `vectorbtpro._settings.numba`.
+"""
 
 from numba import jit as nb_jit
 
@@ -21,18 +25,25 @@ __all__ = [
 
 
 class Jitter(Configured):
-    """Abstract class for decorating jitable functions.
+    """Abstract class for jitting function decoration.
 
-    Represents a single configuration for jitting.
+    Represents a configuration for jitting.
 
-    When overriding `Jitter.decorate`, make sure to check whether wrapping is disabled
-    globally using `Jitter.wrapping_disabled`."""
+    When overriding `decorate`, ensure to check whether wrapping is globally disabled using `wrapping_disabled`.
+    """
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
 
     @property
     def wrapping_disabled(self) -> bool:
-        """Whether wrapping is disabled globally."""
+        """Global flag indicating whether jitting wrapping is disabled.
+
+        Returns:
+            bool: True if jitting wrapping is disabled, False otherwise.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.jitting`.
+        """
         from vectorbtpro._settings import settings
 
         jitting_cfg = settings["jitting"]
@@ -40,7 +51,18 @@ class Jitter(Configured):
         return jitting_cfg["disable_wrapping"]
 
     def decorate(self, py_func: tp.Callable, tags: tp.Optional[set] = None) -> tp.Callable:
-        """Decorate a jitable function."""
+        """Apply jitting decoration to a Python function.
+
+        Args:
+            py_func (Callable): Python function to decorate.
+            tags (Optional[set]): Tags associated with the function.
+
+        Returns:
+            Callable: Decorated function.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         if self.wrapping_disabled:
             return py_func
         raise NotImplementedError
@@ -49,7 +71,8 @@ class Jitter(Configured):
 class NumPyJitter(Jitter):
     """Class for decorating functions that use NumPy.
 
-    Returns the function without decorating."""
+    The decoration is a no-op and returns the original function unmodified.
+    """
 
     def decorate(self, py_func: tp.Callable, tags: tp.Optional[set] = None) -> tp.Callable:
         return py_func
@@ -58,8 +81,19 @@ class NumPyJitter(Jitter):
 class NumbaJitter(Jitter):
     """Class for decorating functions using Numba.
 
+    Args:
+        fix_cannot_parallel (bool): Flag indicating whether to disable parallel execution if
+            the 'can_parallel' tag is missing.
+        nopython (bool): Flag indicating whether functions should be compiled in nopython mode.
+        nogil (bool): Flag indicating whether to release the Global Interpreter Lock (GIL) during execution.
+        parallel (bool): Flag indicating whether automatic parallelization is enabled.
+        cache (bool): Flag indicating whether the compiled function should be cached on disk.
+        boundscheck (bool): Flag indicating whether array bounds checking is enabled.
+        **options: Keyword arguments provided to the Numba decorator.
+
     !!! note
-        If `fix_cannot_parallel` is True, `parallel=True` will be ignored if there is no `can_parallel` tag."""
+        If `fix_cannot_parallel` is True, then `parallel=True` is ignored when the 'can_parallel' tag is absent.
+    """
 
     def __init__(
         self,
@@ -92,38 +126,66 @@ class NumbaJitter(Jitter):
 
     @property
     def fix_cannot_parallel(self) -> bool:
-        """Whether to set `parallel` to False if there is no 'can_parallel' tag."""
+        """Flag indicating whether to disable parallel execution if the 'can_parallel' tag is missing.
+
+        Returns:
+            bool: True if parallel execution should be disabled when 'can_parallel' is absent, False otherwise.
+        """
         return self._fix_cannot_parallel
 
     @property
-    def options(self) -> tp.Kwargs:
-        """Options passed to the Numba decorator."""
-        return self._options
-
-    @property
     def nopython(self) -> bool:
-        """Whether to run in nopython mode."""
+        """Flag indicating whether functions should be compiled in nopython mode.
+
+        Returns:
+            bool: True if nopython mode is enabled, False otherwise.
+        """
         return self._nopython
 
     @property
     def nogil(self) -> bool:
-        """Whether to release the GIL."""
+        """Flag indicating whether to release the Global Interpreter Lock (GIL) during execution.
+
+        Returns:
+            bool: True if the GIL should be released during execution, False otherwise.
+        """
         return self._nogil
 
     @property
     def parallel(self) -> bool:
-        """Whether to enable automatic parallelization."""
+        """Flag indicating whether automatic parallelization is enabled.
+
+        Returns:
+            bool: True if parallel execution is enabled, False otherwise.
+        """
         return self._parallel
 
     @property
     def boundscheck(self) -> bool:
-        """Whether to enable bounds checking for array indices."""
+        """Flag indicating whether array bounds checking is enabled.
+
+        Returns:
+            bool: True if array bounds checking is turned on, False otherwise.
+        """
         return self._boundscheck
 
     @property
     def cache(self) -> bool:
-        """Whether to write the result of function compilation into a file-based cache."""
+        """Flag indicating whether the compiled function should be cached on disk.
+
+        Returns:
+            bool: True if caching of the compiled function is enabled, False otherwise.
+        """
         return self._cache
+
+    @property
+    def options(self) -> tp.Kwargs:
+        """Dictionary of additional keyword arguments provided to the Numba decorator.
+
+        Returns:
+            Kwargs: Dictionary containing extra options for the Numba decorator.
+        """
+        return self._options
 
     def decorate(self, py_func: tp.Callable, tags: tp.Optional[set] = None) -> tp.Callable:
         if self.wrapping_disabled:
@@ -149,7 +211,17 @@ class NumbaJitter(Jitter):
 
 
 def get_func_suffix(py_func: tp.Callable) -> tp.Optional[str]:
-    """Get the suffix of the function."""
+    """Retrieve the suffix from a function's name if it corresponds to a registered jitter configuration.
+
+    Args:
+        py_func (Callable): Python function to decorate.
+
+    Returns:
+        Optional[str]: The suffix in lowercase if recognized; otherwise, None.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+    """
     from vectorbtpro._settings import settings
 
     jitting_cfg = settings["jitting"]
@@ -167,13 +239,25 @@ def resolve_jitter_type(
     jitter: tp.Optional[tp.JitterLike] = None,
     py_func: tp.Optional[tp.Callable] = None,
 ) -> tp.Type[Jitter]:
-    """Resolve `jitter`.
+    """Resolve the jitter type based on the provided parameter.
 
-    * If `jitter` is None and `py_func` is not None, uses `get_func_suffix`
-    * If `jitter` is a string, looks in `jitters` in `vectorbtpro._settings.jitting`
-    * If `jitter` is a subclass of `Jitter`, returns it
-    * If `jitter` is an instance of `Jitter`, returns its class
-    * Otherwise, throws an error"""
+    Args:
+        jitter (Optional[JitterLike]): Identifier, subclass, or instance of `Jitter`.
+
+            * If `jitter` is None and a Python function is provided, infer the jitter type from
+                the function's name via `get_func_suffix`.
+            * If `jitter` is a string, retrieve the corresponding jitter class from
+                `vectorbtpro._settings.jitting`.
+            * If `jitter` is a subclass of `Jitter` or an instance thereof, return the appropriate class.
+            * Otherwise, an error is raised.
+        py_func (Optional[Callable]): Function used to infer the jitter type if `jitter` is None
+
+    Returns:
+        Type[Jitter]: The resolved jitter class.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+    """
     from vectorbtpro._settings import settings
 
     jitting_cfg = settings["jitting"]
@@ -211,7 +295,17 @@ def resolve_jitter_type(
 
 
 def get_id_of_jitter_type(jitter_type: tp.Type[Jitter]) -> tp.Optional[tp.Hashable]:
-    """Get id of a jitter type using `jitters` in `vectorbtpro._settings.jitting`."""
+    """Retrieve the identifier of a jitter type from the configuration in `vectorbtpro._settings.jitting`.
+
+    Args:
+        jitter_type (Type[Jitter]): Jitter class to look up.
+
+    Returns:
+        Optional[Hashable]: The identifier if found; otherwise, None.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+    """
     from vectorbtpro._settings import settings
 
     jitting_cfg = settings["jitting"]
@@ -230,16 +324,22 @@ def get_id_of_jitter_type(jitter_type: tp.Type[Jitter]) -> tp.Optional[tp.Hashab
 
 
 def resolve_jitted_option(option: tp.JittedOption = None) -> tp.KwargsLike:
-    """Return keyword arguments for `jitted`.
+    """Resolve and return keyword arguments for jitting based on the provided option.
 
-    `option` can be:
+    Args:
+        option (JittedOption): Option to control JIT compilation.
 
-    * True: Decorate using default settings
-    * False: Do not decorate (returns None)
-    * string: Use `option` as the name of the jitter
-    * dict: Use `option` as keyword arguments for jitting
+            * True: Apply jitting with default settings.
+            * False: Disable jitting (returns None).
+            * str: Use the option as the jitter name.
+            * dict: Interpret the option as a dictionary of keyword arguments for jitting.
 
-    For defaults, see `option` in `vectorbtpro._settings.jitting`."""
+    Returns:
+        KwargsLike: Dictionary of keyword arguments for jitting, or None if jitting is disabled.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+    """
     from vectorbtpro._settings import settings
 
     jitting_cfg = settings["jitting"]
@@ -259,8 +359,17 @@ def resolve_jitted_option(option: tp.JittedOption = None) -> tp.KwargsLike:
 
 
 def specialize_jitted_option(option: tp.JittedOption = None, **kwargs) -> tp.KwargsLike:
-    """Resolve `option` and merge it with `kwargs` if it's not None so the dict can be passed
-    as an option to other functions."""
+    """Resolve a jitted option by merging its resolved keyword arguments with additional keyword arguments.
+
+    Args:
+        option (JittedOption): Option to control JIT compilation.
+
+            See `resolve_jitted_option`.
+        **kwargs: Keyword arguments to merge.
+
+    Returns:
+        KwargsLike: Merged dictionary of keyword arguments, or None if the option cannot be resolved.
+    """
     jitted_kwargs = resolve_jitted_option(option)
     if jitted_kwargs is None:
         return None
@@ -268,12 +377,24 @@ def specialize_jitted_option(option: tp.JittedOption = None, **kwargs) -> tp.Kwa
 
 
 def resolve_jitted_kwargs(option: tp.JittedOption = None, **kwargs) -> tp.KwargsLike:
-    """Resolve keyword arguments for `jitted`.
+    """Resolve keyword arguments for a jitted function by resolving an option and merging it with
+    additional keyword arguments.
 
-    Resolves `option` using `resolve_jitted_option`.
+    Args:
+        option (JittedOption): Option to control JIT compilation.
+
+            See `resolve_jitted_option`.
+        **kwargs: Keyword arguments to merge.
+
+    Returns:
+        KwargsLike: Merged dictionary of keyword arguments with keys from `option` taking precedence.
 
     !!! note
-        Keys in `option` have more priority than in `kwargs`."""
+        Keys in `option` have more priority than in `kwargs`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+    """
     from vectorbtpro._settings import settings
 
     jitting_cfg = settings["jitting"]
@@ -293,10 +414,21 @@ def resolve_jitter(
     py_func: tp.Optional[tp.Callable] = None,
     **jitter_kwargs,
 ) -> Jitter:
-    """Resolve jitter.
+    """Resolve a jitter instance.
+
+    Args:
+        jitter (Optional[JitterLike]): Identifier, subclass, or instance of `Jitter`.
+
+            See `resolve_jitter_type`.
+        py_func (Optional[Callable]): Function used to infer the jitter type if `jitter` is None
+        **jitter_kwargs: Keyword arguments for configuring the jitter.
+
+    Returns:
+        Jitter: Jitter instance based on the resolved configuration.
 
     !!! note
-        If `jitter` is already an instance of `Jitter` and there are other keyword arguments, discards them."""
+        If `jitter` is already an instance of `Jitter` and there are other keyword arguments, they are discarded.
+    """
     if not isinstance(jitter, Jitter):
         jitter_type = resolve_jitter_type(jitter=jitter, py_func=py_func)
         jitter = jitter_type(**jitter_kwargs)
@@ -304,14 +436,20 @@ def resolve_jitter(
 
 
 def jitted(*args, tags: tp.Optional[set] = None, **jitted_kwargs) -> tp.Callable:
-    """Decorate a jitable function.
+    """Decorate a jitable function by applying jitting to the wrapped function.
 
-    Resolves `jitter` using `resolve_jitter`.
+    The jitting configuration is resolved using `resolve_jitter`. The wrapping mechanism can be disabled by
+    setting the global `disable_wrapping` option.
 
-    The wrapping mechanism can be disabled by using the global setting `disable_wrapping`
-    (=> returns the wrapped function).
+    Args:
+        *args: Positional arguments for the decorator.
+        tags (Optional[set]): Tags associated with the function.
+        **jitted_kwargs: Keyword arguments to resolve `jitter`.
 
-    Usage:
+    Returns:
+        Callable: Decorated function with jitting applied.
+
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 

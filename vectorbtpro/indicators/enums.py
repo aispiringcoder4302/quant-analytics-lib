@@ -8,10 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Named tuples and enumerated types for indicators."""
+"""Module defining named tuples and enumerated types for financial indicators."""
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __pdoc__all__ = __all__ = [
     "Pivot",
@@ -37,10 +37,14 @@ Pivot = PivotT()
 
 __pdoc__[
     "Pivot"
-] = f"""Pivot.
+] = f"""Pivot enumeration.
+
+Fields:
+    Valley: Valley point.
+    Peak: Peak point.
 
 ```python
-{prettify(Pivot)}
+{prettify_doc(Pivot)}
 ```
 """
 
@@ -55,10 +59,14 @@ TrendMode = TrendModeT()
 
 __pdoc__[
     "TrendMode"
-] = f"""Trend mode.
+] = f"""Trend mode enumeration.
+
+Fields:
+    Downtrend: Downtrend direction.
+    Uptrend: Uptrend direction.
 
 ```python
-{prettify(TrendMode)}
+{prettify_doc(TrendMode)}
 ```
 """
 
@@ -76,10 +84,17 @@ HurstMethod = HurstMethodT()
 
 __pdoc__[
     "HurstMethod"
-] = f"""Hurst method.
+] = f"""Hurst method enumeration.
+
+Fields:
+    Standard: Standard method.
+    LogRS: Rescaled range (R/S) method with logarithmically distributed window sizes.
+    RS: Rescaled range (R/S) method with linearly distributed window sizes.
+    DMA: Detrending moving average method with linearly distributed window sizes.
+    DSOD: Discrete second order derivative method.
 
 ```python
-{prettify(HurstMethod)}
+{prettify_doc(HurstMethod)}
 ```
 """
 
@@ -105,7 +120,7 @@ class SuperTrendAIS(tp.NamedTuple):
 
 __pdoc__[
     "SuperTrendAIS"
-] = """A named tuple representing the input state of 
+] = """A named tuple representing the input state for the Super Trend indicator calculation in 
 `vectorbtpro.indicators.nb.supertrend_acc_nb`."""
 
 
@@ -123,5 +138,5 @@ class SuperTrendAOS(tp.NamedTuple):
 
 __pdoc__[
     "SuperTrendAOS"
-] = """A named tuple representing the output state of 
+] = """A named tuple representing the output state for the Super Trend indicator calculation in 
 `vectorbtpro.indicators.nb.supertrend_acc_nb`."""

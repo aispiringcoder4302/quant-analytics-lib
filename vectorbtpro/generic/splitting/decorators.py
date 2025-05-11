@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Decorators for splitting."""
+"""Module providing decorators for splitting functionality."""
 
 import inspect
 from functools import wraps
@@ -51,30 +51,51 @@ def split(
 ) -> tp.Callable:
     """Decorator that splits the inputs of a function.
 
-    Does the following:
+    Resolves a `Splitter` instance and applies splitting to the inputs of the decorated function.
 
-    1. Resolves the splitter of the type `vectorbtpro.generic.splitting.base.Splitter` using
-    the argument `splitter`. It can be either an already provided splitter instance, the
-    name of a factory method (such as "from_n_rolling"), or the factory method itself.
-    If `splitter` is None, the right method will be guessed based on the supplied arguments
-    using `vectorbtpro.generic.splitting.base.Splitter.guess_method`. To construct a splitter,
-    it will pass `index` and `**splitter_kwargs`. Index is getting resolved either using an already
-    provided `index`, by parsing the argument under a name/position provided in `index_from`,
-    or by parsing the first argument from `takeable_args` (in this order).
-    2. Wraps arguments in `takeable_args` with `vectorbtpro.generic.splitting.base.Takeable`
-    3. Runs `vectorbtpro.generic.splitting.base.Splitter.apply` with arguments passed
-    to the function as `args` and `kwargs`, but also `apply_kwargs` (the ones passed to
-    the decorator)
+    The decorator performs the following operations:
 
-    Keyword arguments `splitter_kwargs` are passed to the factory method. Keyword arguments
-    `apply_kwargs` are passed to `vectorbtpro.generic.splitting.base.Splitter.apply`. If variable
-    keyword arguments are provided, they will be used as `splitter_kwargs` if `apply_kwargs` is already set,
-    and vice versa. If `splitter_kwargs` and `apply_kwargs` aren't set, they will be used as `splitter_kwargs`
-    if a splitter instance hasn't been built yet, otherwise as `apply_kwargs`. If both arguments are set,
-    will raise an error.
+    1. Resolves a splitter of type `vectorbtpro.generic.splitting.base.Splitter` using the
+        `splitter` argument. The splitter is constructed using the provided `index` and `splitter_kwargs`.
+    2. Wraps arguments specified in `takeable_args` using `vectorbtpro.generic.splitting.base.Takeable`.
+    3. Applies the splitter operation using `vectorbtpro.generic.splitting.base.Splitter.apply`
+        with the function's arguments and additional `apply_kwargs`.
 
-    Usage:
-        * Split a Series and return its sum:
+    Arguments `splitter_kwargs` are forwarded to the splitter factory method, and `apply_kwargs`
+    are passed to `vectorbtpro.generic.splitting.base.Splitter.apply`. If variable keyword arguments
+    are provided, they are used to update `splitter_kwargs` or `apply_kwargs` based on the context.
+    An error is raised if both `splitter_kwargs` and `apply_kwargs` are explicitly set.
+
+    Args:
+        func (Callable): Function to be decorated.
+        splitter (Union[None, str, Splitter, Callable]): Splitter instance, the name of a factory method
+            (e.g. "from_n_rolling"), or the factory method itself.
+
+            If None, the appropriate splitter is determined using
+            `vectorbtpro.generic.splitting.base.Splitter.guess_method`.
+        splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+            Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
+        splitter_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter`.
+        index (Optional[IndexLike]): Index used for splitting.
+
+            If not provided, it is derived from `index_from` or by parsing the first argument in `takeable_args`.
+        index_from (Optional[AnnArgQuery]): Argument name or position used to extract the index
+            when `index` is not supplied.
+        takeable_args (Optional[MaybeIterable[AnnArgQuery]]): Argument name(s) or position(s)
+            to be wrapped with `vectorbtpro.generic.splitting.base.Takeable`.
+        template_context (KwargsLike): Additional context for template substitution.
+        forward_kwargs_as (KwargsLike): Mapping for renaming keyword arguments when forwarding them.
+        return_splitter (bool): If True, returns the constructed splitter instance instead of
+            applying it to the function.
+        apply_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.apply`.
+        **var_kwargs: Keyword arguments to be distributed between `splitter_kwargs` and `apply_kwargs`.
+
+    Returns:
+        Callable: Wrapper function that executes the original function using the splitter.
+
+    Examples:
+        Split a Series and return its sum:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -96,7 +117,7 @@ def split(
         dtype: int64
         ```
 
-        * Perform a split manually:
+        Perform a split manually:
 
         ```pycon
         >>> @vbt.split(
@@ -114,10 +135,11 @@ def split(
         dtype: int64
         ```
 
-        * Construct splitter and mark arguments as "takeable" manually:
+        Construct splitter and mark arguments as "takeable" manually:
 
         ```pycon
         >>> splitter = vbt.Splitter.from_n_rolling(index, n=2)
+
         >>> @vbt.split(splitter=splitter)
         ... def f(sr):
         ...     return sr.sum()
@@ -129,7 +151,7 @@ def split(
         dtype: int64
         ```
 
-        * Split multiple timeframes using a custom index:
+        Split multiple timeframes using a custom index:
 
         ```pycon
         >>> @vbt.split(
@@ -319,32 +341,48 @@ def cv_split(
     template_context: tp.KwargsLike = None,
     **split_kwargs,
 ) -> tp.Callable:
-    """Decorator that combines `split` and `vectorbtpro.utils.params.parameterized` for cross-validation.
+    """Combine cross-validation splitting and parameterized execution for decorated functions.
 
-    Creates a new apply function that is going to be decorated with `split` and thus applied
-    at each single range using `vectorbtpro.generic.splitting.base.Splitter.apply`. Inside
-    this apply function, there is a test whether the current range belongs to the first (training) set.
-    If yes, parameterizes the underlying function and runs it on the entire grid of parameters.
-    The returned results are then stored in a global list. These results are then read by the other
-    (testing) sets in the same split. If `selection` is a template, it can evaluate the grid results
-    (available as `grid_results`) and return the best parameter combination. This parameter combination
-    is then executed by each set (including training).
+    Decorator that integrates `split` and `vectorbtpro.utils.params.parameterized`
+    to facilitate cross-validation. For each split/set range, the decorated function is applied as follows:
 
-    Argument `selection` also accepts "min" for `np.argmin` and "max" for `np.argmax`.
+    * In the training set, the function is parameterized across the entire grid of parameters
+        and its results are stored.
+    * For testing sets, the stored grid results are used to evaluate a selection
+        that determines the best parameter combination, which is then executed.
+    * Optionally, grid results can be returned in addition to the selection,
+        controlled by `return_grid`.
 
-    Keyword arguments `parameterized_kwargs` will be passed to `vectorbtpro.utils.params.parameterized`
-    and will have their templates substituted with a context that will also include the split-related context
-    (including `split_idx`, `set_idx`, etc., see `vectorbtpro.generic.splitting.base.Splitter.apply`).
+    Handles errors by either skipping an iteration (if `skip_errored` is True or a
+    `NoResultsException` is raised) or propagating the exception based on `raise_no_results`.
 
-    If `return_grid` is True or 'first', returns both the grid and the selection. If `return_grid`
-    is 'all', executes the grid on each set and returns along with the selection.
-    Otherwise, returns only the selection.
+    Args:
+        func (Callable): Function to be decorated.
+        parameterized_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.params.parameterized`.
 
-    If `vectorbtpro.utils.execution.NoResultsException` is raised or `skip_errored` is True and
-    any exception is raised, will skip the current iteration and remove it from the final index.
+            Their templates are substituted with a context that includes split-related information
+            (including `split_idx`, `set_idx`, etc., see `vectorbtpro.generic.splitting.base.Splitter.apply`).
+        selection (Union[str, Selection]): Selection method for evaluating grid results.
 
-    Usage:
-        * Permutate a series and pick the first value. Make the seed parameterizable.
+            Can be a template evaluating `grid_results`, or "min" for `np.nanargmin`
+            and "max" for `np.nanargmax`.
+        return_grid (Union[bool, str]): Determines whether to return grid results along with the selection.
+
+            If True or "first", returns both the grid for the training set (it gets duplicated for
+            each set for technical reasons) and selection. If "all", executes the grid on each set
+            and returns both. Otherwise, returns only the selection.
+        skip_errored (bool): If True, skips the current iteration upon encountering
+            an error or `NoResultsException`, omitting it from the final results.
+        raise_no_results (bool): Flag indicating whether to raise a 
+            `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
+        template_context (KwargsLike): Additional context for template substitution.
+        **split_kwargs: Keyword arguments for `split`.
+
+    Returns:
+        Callable: Decorated function that applies cross-validation via splitting and parameterized execution.
+
+    Examples:
+        Permutate a series and pick the first value. Make the seed parameterizable.
         Cross-validate based on the highest picked value:
 
         ```pycon
@@ -366,15 +404,15 @@ def cv_split(
         >>> f(sr, vbt.Param([41, 42, 43]))
         split  set    seed
         0      set_0  41      22
-               set_1  41      28
+             set_1  41      28
         1      set_0  43       8
-               set_1  43      31
+             set_1  43      31
         2      set_0  43      19
-               set_1  43       0
+             set_1  43       0
         dtype: int64
         ```
 
-        * Extend the example above to also return the grid results of each set:
+        Extend the example above to also return the grid results of each set:
 
         ```pycon
         >>> f(sr, vbt.Param([41, 42, 43]), _return_grid="all")
@@ -447,8 +485,10 @@ def cv_split(
             all_grid_results = []
 
             @wraps(func)
-            def apply_wrapper(*_args, __template_context=None, **_kwargs):
+            def apply_wrapper(*_args, __template_context: tp.KwargsLike = None, **_kwargs) -> tp.Any:
                 try:
+                    if __template_context is None:
+                        __template_context = {}
                     __template_context = dict(__template_context)
                     __template_context["all_grid_results"] = all_grid_results
                     _parameterized_kwargs = substitute_templates(

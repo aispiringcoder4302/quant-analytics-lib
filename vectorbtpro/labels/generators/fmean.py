@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FMEAN`."""
+"""Module defining the `FMEAN` generator class for the future mean."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -28,14 +28,29 @@ FMEAN = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype", "wait"],
     output_names=["fmean"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        fmean=dict(
+            doc="Future mean series.",
+        ),
+    ),
 ).with_apply_func(
     nb.future_mean_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             post_index_func=lambda index: index.str.lower(),
-        )
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
+        ),
+        wait=dict(
+            doc="Number of periods to wait before calculating the future mean.",
+        ),
     ),
     window=14,
     wtype="simple",
@@ -46,11 +61,16 @@ FMEAN = IndicatorFactory(
 
 
 class _FMEAN(FMEAN):
-    """Look-ahead indicator based on `vectorbtpro.labels.nb.future_mean_nb`."""
+    """Class representing the look-ahead future mean generator.
+
+    See:
+        * `FMEAN.run` for the main entry point.
+        * `vectorbtpro.labels.nb.future_mean_nb` for the underlying implementation.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         fmean_trace_kwargs: tp.KwargsLike = None,
@@ -58,18 +78,25 @@ class _FMEAN(FMEAN):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `FMEAN.fmean` against `FMEAN.close`.
+        """Plot the `FMEAN.fmean` indicator against the `FMEAN.close` price.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `FMEAN.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FMEAN.close`.
-            fmean_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `FMEAN.fmean`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_close (bool): Whether to plot the close price.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMEAN.close`.
+            fmean_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FMEAN.fmean`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Figure object with the plotted indicators.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.FMEAN.run(ohlcv['Close']).plot().show()
             ```
@@ -82,7 +109,7 @@ class _FMEAN(FMEAN):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

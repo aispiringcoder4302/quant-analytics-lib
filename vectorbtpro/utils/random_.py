@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for random number generation."""
+"""Module providing utilities for random number generation."""
 
 import random
 
@@ -23,12 +23,26 @@ __all__ = [
 
 @register_jitted(cache=True)
 def set_seed_nb(seed: int) -> None:
-    """Set seed in numba."""
+    """Set the seed for numba jitted functions.
+
+    Args:
+        seed (int): Random seed for deterministic output.
+
+    Returns:
+        None
+    """
     np.random.seed(seed)
 
 
 def set_seed(seed: int) -> None:
-    """Set seed."""
+    """Set seeds across random, NumPy, and numba contexts.
+
+    Args:
+        seed (int): Random seed for deterministic output.
+
+    Returns:
+        None
+    """
     random.seed(seed)
     np.random.seed(seed)
     set_seed_nb(seed)

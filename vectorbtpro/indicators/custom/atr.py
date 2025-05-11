@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `ATR`."""
+"""Module defining the `ATR` class for calculating the Average True Range indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -28,14 +28,35 @@ ATR = IndicatorFactory(
     input_names=["high", "low", "close"],
     param_names=["window", "wtype"],
     output_names=["tr", "atr"],
+    attr_settings=dict(
+        high=dict(
+            doc="High price series.",
+        ),
+        low=dict(
+            doc="Low price series.",
+        ),
+        close=dict(
+            doc="Close price series.",
+        ),
+        tr=dict(
+            doc="True Range (TR) series.",
+        ),
+        atr=dict(
+            doc="Average True Range (ATR) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.atr_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         )
     ),
     window=14,
@@ -46,34 +67,45 @@ ATR = IndicatorFactory(
 
 
 class _ATR(ATR):
-    """Average True Range (ATR).
+    """Class representing the Average True Range (ATR) indicator.
 
-    The indicator provide an indication of the degree of price volatility.
-    Strong moves, in either direction, are often accompanied by large ranges,
-    or large True Ranges.
+    Calculates the average true range to measure price volatility.
+    Large price movements that result in extensive trading ranges typically yield a higher ATR,
+    indicating periods of increased market volatility.
 
-    See [Average True Range - ATR](https://www.investopedia.com/terms/a/atr.asp)."""
+    See:
+        * `ATR.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.atr_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/a/atr.asp for the definition of ATR.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         tr_trace_kwargs: tp.KwargsLike = None,
         atr_trace_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `ATR.tr` and `ATR.atr`.
+        """Plot the TR and ATR series.
 
         Args:
-            column (str): Name of the column to plot.
-            tr_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `ATR.tr`.
-            atr_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `ATR.atr`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            tr_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ATR.tr`.
+            atr_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ATR.atr`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated figure with the TR and ATR traces plotted.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.ATR.run(ohlcv['High'], ohlcv['Low'], ohlcv['Close']).plot().show()
             ```
@@ -86,7 +118,7 @@ class _ATR(ATR):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

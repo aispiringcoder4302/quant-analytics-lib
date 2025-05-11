@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `SQLData`."""
+"""Module providing the `SQLData` class for fetching data from SQL databases using SQLAlchemy."""
 
 from typing import Iterator
 
@@ -19,14 +19,12 @@ from vectorbtpro.data.custom.db import DBData
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from sqlalchemy import Engine as EngineT, Selectable as SelectableT, Table as TableT
-except ImportError:
-    EngineT = "Engine"
-    SelectableT = "Selectable"
-    TableT = "Table"
+else:
+    EngineT = "sqlalchemy.Engine"
+    SelectableT = "sqlalchemy.Selectable"
+    TableT = "sqlalchemy.Table"
 
 __all__ = [
     "SQLData",
@@ -40,14 +38,18 @@ SQLDataT = tp.TypeVar("SQLDataT", bound="SQLData")
 class SQLData(DBData):
     """Data class for fetching data from a database using SQLAlchemy.
 
-    See https://www.sqlalchemy.org/ for the SQLAlchemy's API.
+    See:
+        * https://www.sqlalchemy.org/ for the SQLAlchemy API.
+        * https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for the Pandas read method.
+        * `SQLData.pull` and `SQLData.fetch_key` for argument details.
 
-    See https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for the read method.
+    !!! info
+        For default settings, see `custom.sql` in `vectorbtpro._settings.data`.
 
-    See `SQLData.pull` and `SQLData.fetch_key` for arguments.
+        Global settings can be provided per engine name using the `engines` dictionary.
 
-    Usage:
-        * Set up the engine settings globally (optional):
+    Examples:
+        Set up the engine settings globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -61,7 +63,7 @@ class SQLData(DBData):
         ... )
         ```
 
-        * Pull tables:
+        Pull tables:
 
         ```pycon
         >>> data = vbt.SQLData.pull(
@@ -72,7 +74,7 @@ class SQLData(DBData):
         ... )
         ```
 
-        * Pull queries:
+        Pull queries:
 
         ```pycon
         >>> data = vbt.SQLData.pull(
@@ -90,7 +92,16 @@ class SQLData(DBData):
 
     @classmethod
     def get_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> dict:
-        """`SQLData.get_custom_settings` with `sub_path=engine_name`."""
+        """Return custom engine settings with `sub_path` set to the engine name.
+
+        Args:
+            *args: Positional arguments for `SQLData.get_custom_settings`.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
+            **kwargs: Keyword arguments for `SQLData.get_custom_settings`.
+
+        Returns:
+            dict: Resolved engine settings.
+        """
         if engine_name is not None:
             sub_path = "engines." + engine_name
         else:
@@ -99,7 +110,16 @@ class SQLData(DBData):
 
     @classmethod
     def has_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> bool:
-        """`SQLData.has_custom_settings` with `sub_path=engine_name`."""
+        """Return whether custom engine settings exist with `sub_path` set to the engine name.
+
+        Args:
+            *args: Positional arguments for `SQLData.has_custom_settings`.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
+            **kwargs: Keyword arguments for `SQLData.has_custom_settings`.
+
+        Returns:
+            bool: True if custom engine settings exist, False otherwise.
+        """
         if engine_name is not None:
             sub_path = "engines." + engine_name
         else:
@@ -108,7 +128,16 @@ class SQLData(DBData):
 
     @classmethod
     def get_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> tp.Any:
-        """`SQLData.get_custom_setting` with `sub_path=engine_name`."""
+        """Return the custom engine setting with `sub_path` set to the engine name.
+
+        Args:
+            *args: Positional arguments for `SQLData.get_custom_setting`.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
+            **kwargs: Keyword arguments for `SQLData.get_custom_setting`.
+
+        Returns:
+            Any: Retrieved engine setting.
+        """
         if engine_name is not None:
             sub_path = "engines." + engine_name
         else:
@@ -117,7 +146,16 @@ class SQLData(DBData):
 
     @classmethod
     def has_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> bool:
-        """`SQLData.has_custom_setting` with `sub_path=engine_name`."""
+        """Return whether a custom engine setting exists with `sub_path` set to the engine name.
+
+        Args:
+            *args: Positional arguments for `SQLData.has_custom_setting`.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
+            **kwargs: Keyword arguments for `SQLData.has_custom_setting`.
+
+        Returns:
+            bool: True if the custom engine setting exists, False otherwise.
+        """
         if engine_name is not None:
             sub_path = "engines." + engine_name
         else:
@@ -126,7 +164,16 @@ class SQLData(DBData):
 
     @classmethod
     def resolve_engine_setting(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> tp.Any:
-        """`SQLData.resolve_custom_setting` with `sub_path=engine_name`."""
+        """Resolve the custom engine setting with `sub_path` set to the engine name.
+
+        Args:
+            *args: Positional arguments for `SQLData.resolve_custom_setting`.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
+            **kwargs: Keyword arguments for `SQLData.resolve_custom_setting`.
+
+        Returns:
+            Any: Resolved engine setting.
+        """
         if engine_name is not None:
             sub_path = "engines." + engine_name
         else:
@@ -135,7 +182,16 @@ class SQLData(DBData):
 
     @classmethod
     def set_engine_settings(cls, *args, engine_name: tp.Optional[str] = None, **kwargs) -> None:
-        """`SQLData.set_custom_settings` with `sub_path=engine_name`."""
+        """Set custom engine settings with `sub_path` set to the engine name.
+
+        Args:
+            *args: Positional arguments for `SQLData.set_custom_settings`.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
+            **kwargs: Keyword arguments for `SQLData.set_custom_settings`.
+
+        Returns:
+            None
+        """
         if engine_name is not None:
             sub_path = "engines." + engine_name
         else:
@@ -150,20 +206,26 @@ class SQLData(DBData):
         return_meta: bool = False,
         **engine_config,
     ) -> tp.Union[EngineT, dict]:
-        """Resolve the engine.
+        """Resolve and return the database engine.
 
-        Argument `engine` can be
+        Args:
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
 
-        1) an object of the type `sqlalchemy.engine.base.Engine`,
-        2) a URL of the engine as a string, which will be used to create an engine with
-        `sqlalchemy.engine.create.create_engine` and `engine_config` passed as keyword arguments
-        (you should not include `url` in the `engine_config`), or
-        3) an engine name, which is the name of a sub-config with engine settings under `custom.sql.engines`
-        in `vectorbtpro._settings.data`. Such a sub-config can then contain the actual engine as an object or a URL.
+                * An instance of `sqlalchemy.engine.base.Engine`.
+                * A URL (string) to create an engine using `sqlalchemy.engine.create.create_engine`.
+                * A sub-config name under `custom.sql.engines` in `vectorbtpro._settings.data`
+                    to retrieve the engine.
+            engine_name (Optional[str]): Name of the engine for retrieving custom settings.
+            return_meta (bool): If True, return a metadata dictionary containing the engine,
+                engine name, and disposal flag.
+            **engine_config: Keyword arguments for engine creation when `engine` is a URL.
 
-        Argument `engine_name` can be provided instead of `engine`, or also together with `engine`
-        to pull other settings from a sub-config. URLs can also be used as engine names, but not the
-        other way around."""
+        Returns:
+            Union[Engine, dict]: The resolved engine, or a metadata dictionary if `return_meta` is True.
+
+        !!! note
+            Engine URLs can be provided as engine names, but not vice versa.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("sqlalchemy")
@@ -217,13 +279,25 @@ class SQLData(DBData):
         dispose_engine: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.List[str]:
-        """List all schemas.
+        """List all database schemas.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each symbol against `pattern`.
+        Args:
+            pattern (Optional[str]): Pattern to filter schema names.
 
-        Keyword arguments `**kwargs` are passed to `inspector.get_schema_names`.
+                Schema names are matched using `SQLData.key_match`.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
+            sort (bool): Flag indicating whether to sort the returned schema names.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
+            engine_name (Optional[str]): Name of the engine.
+            engine_config (KwargsLike): Additional configuration for the engine.
+            dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
 
-        If `dispose_engine` is None, disposes the engine if it wasn't provided."""
+                If None, disposal is based on engine metadata.
+            **kwargs: Keyword arguments for `inspector.get_schema_names`.
+
+        Returns:
+            List[str]: The list of available schema names, excluding `information_schema`.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("sqlalchemy")
@@ -274,19 +348,35 @@ class SQLData(DBData):
         dispose_engine: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.List[str]:
-        """List all tables and views.
+        """List all tables and views from the database.
 
-        If `schema` is None, searches for all schema names in the database and prefixes each table
-        with the respective schema name (unless there's only one schema "main"). If `schema` is False,
-        sets the schema to None. If `schema` is provided, returns the tables corresponding to this
-        schema without a prefix.
+        This method retrieves a list of table and view names using SQLAlchemy's inspector. If `schema`
+        is None, all database schemas are searched and each table is prefixed with its respective
+        schema name unless only a single default schema ("main") exists. If `schema` is False, the
+        schema is disregarded. If a specific `schema` is provided, tables within that schema are
+        returned without a prefix.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each schema against
-        `schema_pattern` and each table against `table_pattern`.
+        Each schema and table is filtered using `vectorbtpro.data.custom.custom.CustomData.key_match`
+        against the provided patterns.
 
-        Keyword arguments `**kwargs` are passed to `inspector.get_table_names`.
+        Args:
+            schema_pattern (Optional[str]): Pattern to filter schema names.
+            table_pattern (Optional[str]): Pattern to filter table names.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
+            sort (bool): Whether to return the list of table names in sorted order.
+            schema (Optional[str]): Specific schema for the search.
 
-        If `dispose_engine` is None, disposes the engine if it wasn't provided."""
+                If None, all schemas are considered.
+            incl_views (bool): Whether to include view names along with table names.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
+            engine_name (Optional[str]): Name of the engine.
+            engine_config (KwargsLike): Additional configuration for the engine.
+            dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
+            **kwargs: Keyword arguments for SQLAlchemy's inspector methods.
+
+        Returns:
+            List[str]: A list of table and view names.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("sqlalchemy")
@@ -363,7 +453,17 @@ class SQLData(DBData):
         engine_name: tp.Optional[str] = None,
         engine_config: tp.KwargsLike = None,
     ) -> bool:
-        """Check whether the database has a schema."""
+        """Check whether the database contains the specified schema.
+
+        Args:
+            schema (str): Name of the schema.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
+            engine_name (Optional[str]): Name of the engine.
+            engine_config (KwargsLike): Additional configuration for the engine.
+
+        Returns:
+            bool: True if the schema exists, False otherwise.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("sqlalchemy")
@@ -386,7 +486,17 @@ class SQLData(DBData):
         engine_name: tp.Optional[str] = None,
         engine_config: tp.KwargsLike = None,
     ) -> None:
-        """Create a schema if it doesn't exist yet."""
+        """Create the specified schema in the database if it does not already exist.
+
+        Args:
+            schema (str): Name of the schema to create.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
+            engine_name (Optional[str]): Name of the engine.
+            engine_config (KwargsLike): Additional configuration for the engine.
+
+        Returns:
+            None
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("sqlalchemy")
@@ -400,9 +510,9 @@ class SQLData(DBData):
             **engine_config,
         )
         if not cls.has_schema(schema, engine=engine, engine_name=engine_name):
-            with engine.connect() as connection:
-                connection.execute(CreateSchema(schema))
-                connection.commit()
+            with engine.connect() as conn:
+                conn.execute(CreateSchema(schema))
+                conn.commit()
 
     @classmethod
     def has_table(
@@ -413,7 +523,18 @@ class SQLData(DBData):
         engine_name: tp.Optional[str] = None,
         engine_config: tp.KwargsLike = None,
     ) -> bool:
-        """Check whether the database has a table."""
+        """Check if the specified table exists in the database.
+
+        Args:
+            table (str): Name of the table.
+            schema (Optional[str]): Schema in which to search for the table.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
+            engine_name (Optional[str]): Name of the engine.
+            engine_config (KwargsLike): Additional configuration for the engine.
+
+        Returns:
+            bool: True if the table exists, False otherwise.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("sqlalchemy")
@@ -437,7 +558,18 @@ class SQLData(DBData):
         engine_name: tp.Optional[str] = None,
         engine_config: tp.KwargsLike = None,
     ) -> TableT:
-        """Get table relation."""
+        """Get the SQLAlchemy table relation for the specified table.
+
+        Args:
+            table (str): Name of the table.
+            schema (Optional[str]): Schema where the table is located.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
+            engine_name (Optional[str]): Name of the engine.
+            engine_config (KwargsLike): Additional configuration for the engine.
+
+        Returns:
+            Table: SQLAlchemy table object representing the table relation.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("sqlalchemy")
@@ -467,7 +599,19 @@ class SQLData(DBData):
         engine_name: tp.Optional[str] = None,
         engine_config: tp.KwargsLike = None,
     ) -> TableT:
-        """Get last row number."""
+        """Get the last row number from the specified table.
+
+        Args:
+            table (str): Name of the table.
+            schema (Optional[str]): Schema where the table is located.
+            row_number_column (Optional[str]): Name of the column containing row numbers.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
+            engine_name (Optional[str]): Name of the engine.
+            engine_config (KwargsLike): Additional configuration for the engine.
+
+        Returns:
+            Table: Last row number retrieved from the table.
+        """
         if engine_config is None:
             engine_config = {}
         engine_meta = cls.resolve_engine(
@@ -495,10 +639,10 @@ class SQLData(DBData):
             .order_by(table_relation.columns.get(row_number_column).desc())
             .limit(1)
         )
-        with engine.connect() as connection:
-            results = connection.execute(query)
+        with engine.connect() as conn:
+            results = conn.execute(query)
             last_row_number = results.first()[0]
-            connection.commit()
+            conn.commit()
         return last_row_number
 
     @classmethod
@@ -559,8 +703,28 @@ class SQLData(DBData):
         share_engine: tp.Optional[bool] = None,
         **kwargs,
     ) -> SQLDataT:
-        """Override `vectorbtpro.data.base.Data.pull` to resolve and share the engine among the keys
-        and use the table names available in the database in case no keys were provided."""
+        """Override `vectorbtpro.data.base.Data.pull` to resolve the database engine and table keys
+        prior to retrieving data from the SQL database.
+
+        Args:
+            keys (Union[MaybeKeys]): Feature or symbol identifier(s) for the database tables.
+            keys_are_features (Optional[bool]): Flag indicating whether the keys represent features.
+            features (Union[MaybeFeatures]): Feature identifier(s) associated with the database tables.
+            symbols (Union[MaybeSymbols]): Symbol identifier(s) associated with the database tables.
+            schema (Optional[str]): Database schema name for table identification.
+            list_tables_kwargs (KwargsLike): Keyword arguments for listing database tables.
+            
+                See `SQLData.list_tables`.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
+            engine_name (Optional[str]): Name of the engine.
+            engine_config (KwargsLike): Additional configuration for the engine.
+            dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
+            share_engine (Optional[bool]): Flag indicating whether to share the engine among keys.
+            **kwargs: Keyword arguments for `vectorbtpro.data.custom.db.DBData.pull`.
+
+        Returns:
+            SQLData: Data retrieved from the SQL database.
+        """
         if share_engine is None:
             if (
                 not cls.has_key_dict(engine)
@@ -582,6 +746,7 @@ class SQLData(DBData):
             engine = engine_meta["engine"]
             engine_name = engine_meta["engine_name"]
             should_dispose = engine_meta["should_dispose"]
+            engine_config = {}
             if dispose_engine is None:
                 dispose_engine = should_dispose
         else:
@@ -616,7 +781,7 @@ class SQLData(DBData):
     @classmethod
     def fetch_key(
         cls,
-        key: str,
+        key: tp.Key,
         table: tp.Union[None, str, TableT] = None,
         schema: tp.Optional[str] = None,
         query: tp.Union[None, str, SelectableT] = None,
@@ -644,94 +809,97 @@ class SQLData(DBData):
     ) -> tp.KeyData:
         """Fetch a feature or symbol from a SQL database.
 
-        Can use a table name (which defaults to the key) or a custom query.
+        Fetch data from a SQL database using either a table name or a custom SQL query.
 
         Args:
-            key (str): Feature or symbol.
+            key (Key): Feature or symbol identifier.
 
-                If `table` and `query` are both None, becomes the table name.
+                If both `table` and `query` are None, the key is used as the table name.
+                If the key contains a colon (`:`), it must follow the `SCHEMA:TABLE` format,
+                and the `schema` argument is ignored.
+            table (Optional[Union[str, Table]]): Table name or table object.
 
-                Key can be in the `SCHEMA:TABLE` format, in this case `schema` argument will be ignored.
-            table (str or Table): Table name or actual object.
+                Must not be provided together with `query`.
+            schema (Optional[str]): Database schema.
+            
+                Must not be used with `query`.
+            query (Optional[Union[str, Selectable]]): Custom SQL query.
 
-                Cannot be used together with `query`.
-            schema (str): Schema.
+                Must not be provided together with `table` or `schema`.
+            engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
 
-                Cannot be used together with `query`.
-            query (str or Selectable): Custom query.
+                See `SQLData.resolve_engine`.
+            engine_name (Optional[str]): Name of the engine.
 
-                Cannot be used together with `table` and `schema`.
-            engine (str or object): See `SQLData.resolve_engine`.
-            engine_name (str): See `SQLData.resolve_engine`.
-            engine_config (dict): See `SQLData.resolve_engine`.
-            dispose_engine (bool): See `SQLData.resolve_engine`.
-            start (any): Start datetime (if datetime index) or any other start value.
+                See `SQLData.resolve_engine`.
+            engine_config (KwargsLike): Additional configuration for the engine.
 
-                Will parse with `vectorbtpro.utils.datetime_.to_timestamp` if `align_dates` is True
-                and the index is a datetime index. Otherwise, you must ensure the correct type is provided.
+                See `SQLData.resolve_engine`.
+            dispose_engine (Optional[bool]): Flag indicating whether to dispose the engine after use.
 
-                If the index is a multi-index, start value must be a tuple.
+                See `SQLData.resolve_engine`.
+            start (Optional[Any]): Start value for filtering.
 
-                Cannot be used together with `query`. Include the condition into the query.
-            end (any): End datetime (if datetime index) or any other end value.
+                If the index is datetime and `align_dates` is True, it is parsed with
+                `vectorbtpro.utils.datetime_.to_timestamp`.
 
-                Will parse with `vectorbtpro.utils.datetime_.to_timestamp` if `align_dates` is True
-                and the index is a datetime index. Otherwise, you must ensure the correct type is provided.
+                For a multi-index, provide a tuple. Must not be used with `query`.
+            end (Optional[Any]): End value for filtering.
 
-                If the index is a multi-index, end value must be a tuple.
+                If the index is datetime and `align_dates` is True, it is parsed with
+                `vectorbtpro.utils.datetime_.to_timestamp`.
 
-                Cannot be used together with `query`. Include the condition into the query.
-            align_dates (bool): Whether to align `start` and `end` to the timezone of the index.
+                For a multi-index, provide a tuple. Must not be used with `query`.
+            align_dates (Optional[bool]): Whether to align `start` and `end` to the index timezone.
 
-                Will pull one row (using `LIMIT 1`) and use `SQLData.prepare_dt` to get the index.
-            parse_dates (bool, list, or dict): Whether to parse dates and how to do it.
+                Retrieves one row (using `LIMIT 1`) and uses `SQLData.prepare_dt` to obtain the index.
+            parse_dates (Optional[Union[bool, List[IntStr], Dict[IntStr, Any]]]):
+                Configuration for parsing date columns.
 
-                If `query` is not used, will get mapped into column names. Otherwise,
-                usage of integers is not allowed and column names directly must be used.
-                If enabled, will also try to parse the datetime columns that couldn't be parsed
-                by Pandas after the object has been fetched.
+                If `query` is not used, it maps to column names; otherwise, integer values are disallowed.
 
-                For dict format, see `pd.read_sql_query`.
-            to_utc (bool, str, or sequence of str): See `SQLData.prepare_dt`.
-            tz (any): Timezone.
+                Enabled parsing also attempts to process datetime columns that Pandas fails to parse.
+            to_utc (Optional[Union[bool, str, Sequence[str]]]): Parameter for UTC conversion.
+
+                See `SQLData.prepare_dt`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            start_row (int): Start row.
+            start_row (Optional[int]): Index of the starting row (inclusive).
 
-                Table must contain the column defined in `row_number_column`.
+                The table must contain the column specified by `row_number_column`.
 
-                Cannot be used together with `query`. Include the condition into the query.
-            end_row (int): End row.
+                Must not be used with `query`.
+            end_row (Optional[int]): Index of the ending row (exclusive).
 
-                Table must contain the column defined in `row_number_column`.
+                The table must contain the column specified by `row_number_column`.
 
-                Cannot be used together with `query`. Include the condition into the query.
-            keep_row_number (bool): Whether to return the column defined in `row_number_column`.
-            row_number_column (str): Name of the column with row numbers.
-            index_col (int, str, or list): One or more columns that should become the index.
+                Must not be used with `query`.
+            keep_row_number (Optional[bool]): Determines whether to include the row number column
+                (specified by `row_number_column`) in the output.
+            row_number_column (Optional[str]): Name of the column containing row numbers.
+            index_col (Optional[Union[None, bool, MaybeList[IntStr]]]): Column(s) to use as the index.
 
-                If `query` is not used, will get mapped into column names. Otherwise,
-                usage of integers is not allowed and column names directly must be used.
-            columns (int, str, or list): One or more columns to select.
+                If `query` is not used, integers map to column positions; otherwise,
+                only column names are allowed.
+            columns (Optional[MaybeList[IntStr]]): Column(s) to select from the table.
 
-                Will get mapped into column names. Cannot be used together with `query`.
-            dtype (dtype_like or dict): Data type of each column.
+                Must not be used with `query`.
+            dtype (Optional[Union[None, DTypeLike, Dict[IntStr, DTypeLike]]]): Data type for each column.
 
-                If `query` is not used, will get mapped into column names. Otherwise,
-                usage of integers is not allowed and column names directly must be used.
+                If `query` is not used, integers map to column positions;
+                otherwise, only column names are allowed.
+            chunksize (Optional[int]): Number of rows per chunk for processing.
 
-                For dict format, see `pd.read_sql_query`.
-            chunksize (int): See `pd.read_sql_query`.
-            chunk_func (callable): Function to select and concatenate chunks from `Iterator`.
+                See `pd.read_sql_query` for details on this argument.
+            chunk_func (Optional[Callable]): Function to process and concatenate chunks when `chunksize` is set.
+            squeeze (Optional[bool]): Flag indicating whether to convert a single-column DataFrame to a Series.
+            **read_sql_kwargs: Keyword arguments for `pd.read_sql_query`.
 
-                Gets called only if `chunksize` is set.
-            squeeze (int): Whether to squeeze a DataFrame with one column into a Series.
-            **read_sql_kwargs: Other keyword arguments passed to `pd.read_sql_query`.
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for arguments.
 
-        See https://pandas.pydata.org/docs/reference/api/pandas.read_sql_query.html for other arguments.
-
-        For defaults, see `custom.sql` in `vectorbtpro._settings.data`.
-        Global settings can be provided per engine name using the `engines` dictionary.
+        Returns:
+            KeyData: Fetched data and a metadata dictionary.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -880,15 +1048,16 @@ class SQLData(DBData):
                 if index_col is None:
                     raise ValueError("Must provide index column for filtering by start and end")
                 if align_dates:
-                    first_obj = pd.read_sql_query(
-                        query.limit(1),
-                        engine.connect(),
-                        index_col=index_col,
-                        parse_dates=None if isinstance(parse_dates, bool) else parse_dates,  # bool not accepted
-                        dtype=dtype,
-                        chunksize=None,
-                        **read_sql_kwargs,
-                    )
+                    with engine.connect() as conn:
+                        first_obj = pd.read_sql_query(
+                            query.limit(1),
+                            conn,
+                            index_col=index_col,
+                            parse_dates=None if isinstance(parse_dates, bool) else parse_dates,  # bool not accepted
+                            dtype=dtype,
+                            chunksize=None,
+                            **read_sql_kwargs,
+                        )
                     first_obj = cls.prepare_dt(
                         first_obj,
                         parse_dates=list(parse_dates) if isinstance(parse_dates, dict) else parse_dates,
@@ -989,15 +1158,16 @@ class SQLData(DBData):
 
         if isinstance(query, str):
             query = text(query)
-        obj = pd.read_sql_query(
-            query,
-            engine.connect(),
-            index_col=index_col,
-            parse_dates=None if isinstance(parse_dates, bool) else parse_dates,  # bool not accepted
-            dtype=dtype,
-            chunksize=chunksize,
-            **read_sql_kwargs,
-        )
+        with engine.connect() as conn:
+            obj = pd.read_sql_query(
+                query,
+                conn,
+                index_col=index_col,
+                parse_dates=None if isinstance(parse_dates, bool) else parse_dates,  # bool not accepted
+                dtype=dtype,
+                chunksize=chunksize,
+                **read_sql_kwargs,
+            )
         if isinstance(obj, Iterator):
             if chunk_func is None:
                 obj = pd.concat(list(obj), axis=0)
@@ -1025,27 +1195,49 @@ class SQLData(DBData):
         return obj, dict(tz=tz)
 
     @classmethod
-    def fetch_feature(cls, feature: str, **kwargs) -> tp.FeatureData:
-        """Fetch the table of a feature.
+    def fetch_feature(cls, feature: tp.Feature, **kwargs) -> tp.FeatureData:
+        """Fetch table for a feature.
 
-        Uses `SQLData.fetch_key`."""
+        Args:
+            feature (Feature): Feature identifier.
+            **kwargs: Keyword arguments for `SQLData.fetch_key`.
+
+        Returns:
+            FeatureData: Fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(feature, **kwargs)
 
     @classmethod
-    def fetch_symbol(cls, symbol: str, **kwargs) -> tp.SymbolData:
-        """Fetch the table for a symbol.
+    def fetch_symbol(cls, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
+        """Fetch table for a symbol.
 
-        Uses `SQLData.fetch_key`."""
+        Args:
+            symbol (Symbol): Symbol identifier.
+            **kwargs: Keyword arguments for `SQLData.fetch_key`.
+
+        Returns:
+            SymbolData: Fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(symbol, **kwargs)
 
     def update_key(
         self,
-        key: str,
+        key: tp.Key,
         from_last_row: tp.Optional[bool] = None,
         from_last_index: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.KeyData:
-        """Update data of a feature or symbol."""
+        """Update data for a feature or symbol.
+
+        Args:
+            key (Key): Feature or symbol identifier.
+            from_last_row (Optional[bool]): Flag indicating whether to update starting from the last row.
+            from_last_index (Optional[bool]): Flag indicating whether to update data starting from the last index.
+            **kwargs: Keyword arguments for `SQLData.fetch_feature` or `SQLData.fetch_symbol`.
+
+        Returns:
+            KeyData: Updated data and a metadata dictionary.
+        """
         fetch_kwargs = self.select_fetch_kwargs(key)
         returned_kwargs = self.select_returned_kwargs(key)
         pre_kwargs = merge_dicts(fetch_kwargs, kwargs)
@@ -1083,14 +1275,8 @@ class SQLData(DBData):
             return self.fetch_feature(key, **kwargs)
         return self.fetch_symbol(key, **kwargs)
 
-    def update_feature(self, feature: str, **kwargs) -> tp.FeatureData:
-        """Update data of a feature.
-
-        Uses `SQLData.update_key`."""
+    def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
         return self.update_key(feature, **kwargs)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
-        """Update data for a symbol.
-
-        Uses `SQLData.update_key`."""
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         return self.update_key(symbol, **kwargs)

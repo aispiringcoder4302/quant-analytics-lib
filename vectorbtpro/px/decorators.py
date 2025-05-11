@@ -8,13 +8,13 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Class decorators for Plotly Express accessors."""
+"""Module containing class decorators for Plotly Express accessors."""
 
 from vectorbtpro.utils.module_ import assert_can_import
 
 assert_can_import("plotly")
 
-from inspect import getmembers, isfunction
+import inspect
 
 import pandas as pd
 import plotly.express as px
@@ -28,9 +28,21 @@ from vectorbtpro.utils.figure import make_figure
 
 
 def attach_px_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
-    """Class decorator to attach Plotly Express methods."""
+    """Attach Plotly Express methods to a class.
 
-    for px_func_name, px_func in getmembers(px, isfunction):
+    This decorator scans the functions defined in `plotly.express` and attaches those
+    that accept a `data_frame` parameter or are named `imshow` as methods to the given class.
+
+    Args:
+        cls (Type): Class to decorate by adding Plotly Express methods.
+
+    Returns:
+        Type: Decorated class with Plotly Express methods attached.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+    """
+    for px_func_name, px_func in inspect.getmembers(px, inspect.isfunction):
         if checks.func_accepts_arg(px_func, "data_frame") or px_func_name == "imshow":
 
             def plot_method(
@@ -76,6 +88,18 @@ def attach_px_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
             plot_method.__name__ = px_func_name
             plot_method.__module__ = cls.__module__
             plot_method.__qualname__ = f"{cls.__name__}.{plot_method.__name__}"
-            plot_method.__doc__ = f"""Plot using `{px_func.__module__ + '.' + px_func.__name__}`."""
+            plot_method.__doc__ = inspect.cleandoc(
+                f"""
+                Plot using `{px_func.__module__ + '.' + px_func.__name__}`.
+
+                Args:
+                    *args: Positional arguments for the Plotly Express function.
+                    layout (KwargsLike): Layout configuration overrides.
+                    **kwargs: Keyword arguments for the Plotly Express function.
+
+                Returns:
+                    BaseFigure: Plotly figure created by the Plotly Express function.
+                """
+            )
             setattr(cls, px_func_name, plot_method)
     return cls

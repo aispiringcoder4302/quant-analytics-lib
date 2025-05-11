@@ -8,11 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for working with mapped arrays.
+"""Module for working with mapped arrays.
 
-This class takes the mapped array and the corresponding column and (optionally) index arrays,
-and offers features to directly process the mapped array without converting it to pandas;
-for example, to compute various statistics by column, such as standard deviation.
+The base class below stores a mapped data array along with its corresponding column and (optionally)
+index arrays, and provides methods to process the mapped array directly without converting it to
+a Pandas DataFrame. For example, you can compute column-based statistics such as the standard deviation.
 
 Consider the following example:
 
@@ -29,9 +29,9 @@ Consider the following example:
 
 ## Reducing
 
-Using `MappedArray`, we can then reduce by column as follows:
+Reduce mapped array data by column in several ways.
 
-* Use already provided reducers such as `MappedArray.mean`:
+Use built-in reducers such as `MappedArray.mean`:
 
 ```pycon
 >>> ma.mean()
@@ -41,7 +41,8 @@ c    17.0
 dtype: float64
 ```
 
-* Use `MappedArray.to_pd` to map to pandas and then reduce manually (expensive):
+Alternatively, convert the mapped array to a Pandas DataFrame using `MappedArray.to_pd` and
+reduce manually (less efficient):
 
 ```pycon
 >>> ma.to_pd().mean()
@@ -51,11 +52,10 @@ c    17.0
 dtype: float64
 ```
 
-* Use `MappedArray.reduce` to reduce using a custom function:
+Use `MappedArray.reduce` with a custom function:
 
 ```pycon
 >>> # Reduce to a scalar
-
 >>> @njit
 ... def pow_mean_reduce_nb(a, pow):
 ...     return np.mean(a ** pow)
@@ -67,7 +67,6 @@ c    289.666667
 dtype: float64
 
 >>> # Reduce to an array
-
 >>> @njit
 ... def min_max_reduce_nb(a):
 ...     return np.array([np.min(a), np.max(a)])
@@ -79,7 +78,6 @@ min  10.0  13.0  16.0
 max  12.0  15.0  18.0
 
 >>> # Reduce to an array of indices
-
 >>> @njit
 ... def idxmin_idxmax_reduce_nb(a):
 ...     return np.array([np.argmin(a), np.argmax(a)])
@@ -91,7 +89,6 @@ idxmin  x  x  x
 idxmax  z  z  z
 
 >>> # Reduce using a meta function to combine multiple mapped arrays
-
 >>> @njit
 ... def mean_ratio_reduce_meta_nb(idxs, col, a, b):
 ...     return np.mean(a[idxs]) / np.mean(b[idxs])
@@ -106,9 +103,10 @@ Name: reduce, dtype: float64
 
 ## Mapping
 
-Use `MappedArray.apply` to apply a function on each column/group:
+Apply a function to each column or group using `MappedArray.apply`:
 
 ```pycon
+>>> # Apply using a regular function
 >>> @njit
 ... def cumsum_apply_nb(a):
 ...     return np.cumsum(a)
@@ -124,7 +122,6 @@ array([10., 21., 33., 13., 27., 42., 16., 33., 51.])
 array([10., 21., 33., 46., 60., 75., 16., 33., 51.])
 
 >>> # Apply using a meta function
-
 >>> @njit
 ... def cumsum_apply_meta_nb(ridxs, col, a):
 ...     return np.cumsum(a[ridxs])
@@ -133,13 +130,14 @@ array([10., 21., 33., 46., 60., 75., 16., 33., 51.])
 array([10., 21., 33., 13., 27., 42., 16., 33., 51.])
 ```
 
-Notice how cumsum resets at each column in the first example and at each group in the second example.
+Notice that the cumulative sum resets for each column in the first example and
+for each group in the second example.
 
 ## Conversion
 
-We can unstack any `MappedArray` instance to pandas:
+Convert a `MappedArray` instance to a Pandas DataFrame.
 
-* Given `idx_arr` was provided:
+When an `idx_arr` is provided:
 
 ```pycon
 >>> ma.to_pd()
@@ -150,9 +148,9 @@ z  12.0  15.0  18.0
 ```
 
 !!! note
-    Will throw a warning if there are multiple values pointing to the same position.
+    A warning is issued if multiple values correspond to the same index and column position.
 
-* In case `group_by` was provided, index can be ignored, or there are position conflicts:
+If a `group_by` specification is provided, the index may be ignored or conflicts resolved:
 
 ```pycon
 >>> ma.to_pd(group_by=np.array(['first', 'first', 'second']), ignore_index=True)
@@ -167,9 +165,8 @@ z  12.0  15.0  18.0
 
 ## Resolving conflicts
 
-Sometimes, we may encounter multiple values for each index and column combination.
-In such case, we can use `MappedArray.reduce_segments` to aggregate "duplicate" elements.
-For example, let's sum up duplicate values per each index and column combination:
+When multiple values exist for the same index and column combination,
+use `MappedArray.reduce_segments` to aggregate duplicates. For example, summing duplicate values:
 
 ```pycon
 >>> ma_conf = ma.replace(idx_arr=np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]))
@@ -197,7 +194,7 @@ z   NaN   NaN  51.0
 
 ## Filtering
 
-Use `MappedArray.apply_mask` to filter elements per column/group:
+Filter elements per column or group using `MappedArray.apply_mask`:
 
 ```pycon
 >>> mask = [True, False, True, False, True, False, True, False, True]
@@ -214,13 +211,11 @@ array([0, 2, 4, 6, 8])
 
 ## Grouping
 
-One of the key features of `MappedArray` is that we can perform reducing operations on a group
-of columns as if they were a single column. Groups can be specified by `group_by`, which
-can be anything from positions or names of column levels, to a NumPy array with actual groups.
+Grouping allows you to perform reductions on groups of columns as if they were a single column.
+There are multiple ways to define grouping.
 
-There are multiple ways of define grouping:
-
-* When creating `MappedArray`, pass `group_by` to `vectorbtpro.base.wrapping.ArrayWrapper`:
+When creating a `MappedArray`, specify `group_by` in `vectorbtpro.base.wrapping.ArrayWrapper`, which
+can be anything from positions or names of column levels, to a NumPy array with actual groups:
 
 ```pycon
 >>> group_by = np.array(['first', 'first', 'second'])
@@ -233,7 +228,7 @@ second    17.0
 dtype: float64
 ```
 
-* Regroup an existing `MappedArray`:
+Regroup an existing `MappedArray`:
 
 ```pycon
 >>> ma.regroup(group_by).mean()
@@ -242,7 +237,7 @@ second    17.0
 dtype: float64
 ```
 
-* Pass `group_by` directly to the reducing method:
+Pass `group_by` directly to a reduction method:
 
 ```pycon
 >>> ma.mean(group_by=group_by)
@@ -251,7 +246,7 @@ second    17.0
 dtype: float64
 ```
 
-By the same way we can disable or modify any existing grouping:
+Similarly, you can disable or modify grouping:
 
 ```pycon
 >>> grouped_ma.mean(group_by=False)
@@ -262,12 +257,11 @@ dtype: float64
 ```
 
 !!! note
-    Grouping applies only to reducing operations, there is no change to the arrays.
+    Grouping is applied only during reduction operations; the underlying arrays remain unchanged.
 
 ## Operators
 
-`MappedArray` implements arithmetic, comparison, and logical operators. We can perform basic
-operations (such as addition) on mapped arrays as if they were NumPy arrays.
+`MappedArray` supports arithmetic, comparison, and logical operations in a manner similar to NumPy arrays:
 
 ```pycon
 >>> ma ** 2
@@ -281,15 +275,14 @@ operations (such as addition) on mapped arrays as if they were NumPy arrays.
 ```
 
 !!! note
-    Ensure that your `MappedArray` operand is on the left if the other operand is an array.
-
-    If two `MappedArray` operands have different metadata, will copy metadata from the first one,
-    but at least their `id_arr` and `col_arr` must match.
+    Ensure that the `MappedArray` is the left operand when used with a NumPy array.
+    When operating on two `MappedArray` instances with differing metadata,
+    the metadata from the first operand is preserved, but their `id_arr` and `col_arr` must match.
 
 ## Indexing
 
-Like any other class subclassing `vectorbtpro.base.wrapping.Wrapping`, we can do pandas indexing
-on a `MappedArray` instance, which forwards indexing operation to each object with columns:
+`MappedArray`, being a subclass of `vectorbtpro.base.wrapping.Wrapping`,
+supports pandas-style indexing, which is forwarded to the underlying column objects:
 
 ```pycon
 >>> ma['a'].values
@@ -300,35 +293,34 @@ array([10., 11., 12., 13., 14., 15.])
 ```
 
 !!! note
-    Changing index (time axis) is not supported. The object should be treated as a Series
-    rather than a DataFrame; for example, use `some_field.iloc[0]` instead of `some_field.iloc[:, 0]`
-    to get the first column.
+    Changing the index (time axis) is not supported. Treat the object as a Series rather than a DataFrame;
+    for example, use `some_field.iloc[0]` instead of `some_field.iloc[:, 0]` to access the first column.
 
-    Indexing behavior depends solely upon `vectorbtpro.base.wrapping.ArrayWrapper`.
-    For example, if `group_select` is enabled indexing will be performed on groups,
-    otherwise on single columns.
+    Indexing behavior is governed by `vectorbtpro.base.wrapping.ArrayWrapper`. If `group_select` is enabled,
+    indexing is applied to groups; otherwise, indexing operates on individual columns.
 
 ## Caching
 
-`MappedArray` supports caching. If a method or a property requires heavy computation, it's wrapped
-with `vectorbtpro.utils.decorators.cached_method` and `vectorbtpro.utils.decorators.cached_property`
-respectively. Caching can be disabled globally in `vectorbtpro._settings.caching`.
+`MappedArray` supports caching for computationally expensive methods and properties.
+They are wrapped with `vectorbtpro.utils.decorators.cached_method` and
+`vectorbtpro.utils.decorators.cached_property` respectively.
+Caching can be disabled globally in `vectorbtpro._settings.caching`.
 
 !!! note
-    Because of caching, class is meant to be immutable and all properties are read-only.
-    To change any attribute, use the `MappedArray.replace` method and pass changes as keyword arguments.
+    Due to caching, `MappedArray` is designed to be immutable and all properties are read-only.
+    To modify an attribute, use the `MappedArray.replace` method with the appropriate keyword arguments.
 
 ## Saving and loading
 
-Like any other class subclassing `vectorbtpro.utils.pickling.Pickleable`, we can save a `MappedArray`
-instance to the disk with `MappedArray.save` and load it with `MappedArray.load`.
+Since `MappedArray` subclasses `vectorbtpro.utils.pickling.Pickleable`, you can save an instance to disk
+using `MappedArray.save` and load it using `MappedArray.load`.
 
 ## Stats
 
 !!! hint
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `MappedArray.metrics`.
 
-Metric for mapped arrays are similar to that for `vectorbtpro.generic.accessors.GenericAccessor`.
+Metrics for mapped arrays are computed similarly to those for `vectorbtpro.generic.accessors.GenericAccessor`:
 
 ```pycon
 >>> ma.stats(column='a')
@@ -346,9 +338,8 @@ Max Index                  z
 Name: a, dtype: object
 ```
 
-The main difference unfolds once the mapped array has a mapping:
-values are then considered as categorical and usual statistics are meaningless to compute.
-For this case, `MappedArray.stats` returns the value counts:
+When a mapping is applied, the values are treated as categorical and conventional statistics
+become less meaningful. In such cases, `MappedArray.stats` returns value counts:
 
 ```pycon
 >>> mapping = {v: "test_" + str(v) for v in np.unique(ma.values)}
@@ -369,7 +360,7 @@ Value Counts: test_18.0                  0
 Name: a, dtype: object
 ```
 
-`MappedArray.stats` also supports (re-)grouping:
+`MappedArray.stats` also supports (re-)grouping of metrics:
 
 ```pycon
 >>> grouped_ma.stats(column='first')
@@ -389,7 +380,7 @@ Name: first, dtype: object
 
 ## Plots
 
-We can build histograms and boxplots of `MappedArray` directly:
+Generate histograms and boxplots directly from a `MappedArray`:
 
 ```pycon
 >>> ma.boxplot().show()
@@ -398,7 +389,7 @@ We can build histograms and boxplots of `MappedArray` directly:
 ![](/assets/images/api/mapped_boxplot.light.svg#only-light){: .iimg loading=lazy }
 ![](/assets/images/api/mapped_boxplot.dark.svg#only-dark){: .iimg loading=lazy }
 
-To use scatterplots or any other plots that require index, convert to pandas first:
+For plots that require an index, such as scatterplots, first convert the mapped array to a Pandas DataFrame:
 
 ```pycon
 >>> ma.to_pd().vbt.plot().show()
@@ -410,7 +401,7 @@ To use scatterplots or any other plots that require index, convert to pandas fir
 !!! hint
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `MappedArray.subplots`.
 
-`MappedArray` class has a single subplot based on `MappedArray.to_pd` and
+`MappedArray` provides a single subplot derived from `MappedArray.to_pd` and
 `vectorbtpro.generic.accessors.GenericAccessor.plot`.
 """
 
@@ -450,9 +441,22 @@ def combine_mapped_with_other(
     other: tp.Union["MappedArray", tp.ArrayLike],
     np_func: tp.Callable[[tp.ArrayLike, tp.ArrayLike], tp.Array1d],
 ) -> MappedArrayT:
-    """Combine `MappedArray` with other compatible object.
+    """Combine a `MappedArray` with another compatible object.
 
-    If other object is also `MappedArray`, their `id_arr` and `col_arr` must match."""
+    This function combines the values of the current `MappedArray` instance with the input object
+    using a provided NumPy function. If the input object is a `MappedArray`, its `id_arr` and
+    `col_arr` must match those of the current instance.
+
+    Args:
+        other (Union[MappedArray, ArrayLike]): Object to combine with.
+
+            If a `MappedArray`, its `id_arr` and `col_arr` must match that of the current instance.
+        np_func (Callable[[ArrayLike, ArrayLike], Array1d]): Function that takes two arrays and
+            returns an array resulting from their combination.
+
+    Returns:
+        MappedArray: New `MappedArray` instance with the values updated by applying `np_func`.
+    """
     if isinstance(other, MappedArray):
         checks.assert_array_equal(self.id_arr, other.id_arr)
         checks.assert_array_equal(self.col_arr, other.col_arr)
@@ -463,40 +467,88 @@ def combine_mapped_with_other(
 @attach_binary_magic_methods(combine_mapped_with_other)
 @attach_unary_magic_methods(lambda self, np_func: self.replace(mapped_arr=np_func(self.values)))
 class MappedArray(Analyzable):
-    """Exposes methods for reducing, converting, and plotting arrays mapped by
-    `vectorbtpro.records.base.Records` class.
+    """Class for wrapping and analyzing mapped arrays.
+
+    Represents a mapped array for records derived from `vectorbtpro.records.base.Records`.
 
     Args:
-        wrapper (ArrayWrapper): Array wrapper.
+        wrapper (ArrayWrapper): Array wrapper instance.
 
             See `vectorbtpro.base.wrapping.ArrayWrapper`.
-        mapped_arr (array_like): A one-dimensional array of mapped record values.
-        col_arr (array_like): A one-dimensional column array.
+        mapped_arr (ArrayLike): One-dimensional array of mapped record values.
+        col_arr (ArrayLike): One-dimensional column array.
 
-            Must be of the same size as `mapped_arr`.
-        id_arr (array_like): A one-dimensional id array. Defaults to simple range.
+            Must be the same size as `mapped_arr`.
+        id_arr (Optional[ArrayLike]): One-dimensional ID array.
 
-            Must be of the same size as `mapped_arr`.
-        idx_arr (array_like): A one-dimensional index array. Optional.
+            Must be the same size as `mapped_arr` and defaults to a simple range.
+        idx_arr (Optional[ArrayLike]): One-dimensional row array.
 
-            Must be of the same size as `mapped_arr`.
-        mapping (namedtuple, dict or callable): Mapping.
-        col_mapper (ColumnMapper): Column mapper if already known.
+            Must be the same size as `mapped_arr`.
+        mapping (Optional[MappingLike]): Mapping configuration.
+        col_mapper (Optional[ColumnMapper]): Column mapper if already known.
 
             !!! note
-                It depends upon `wrapper` and `col_arr`, so make sure to invalidate `col_mapper` upon creating
-                a `MappedArray` instance with a modified `wrapper` or `col_arr.
+                Depends on `wrapper` and `col_arr`. Invalidate `col_mapper` if
+                `wrapper` or `col_arr` is modified. `MappedArray.replace` does this automatically.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
 
-                `MappedArray.replace` does it automatically.
-        **kwargs: Custom keyword arguments passed to the config.
-
-            Useful if any subclass wants to extend the config.
+    !!! info
+        For default settings, see `vectorbtpro._settings.mapped_array`.
     """
+
+    def __init__(
+        self,
+        wrapper: ArrayWrapper,
+        mapped_arr: tp.ArrayLike,
+        col_arr: tp.ArrayLike,
+        idx_arr: tp.Optional[tp.ArrayLike] = None,
+        id_arr: tp.Optional[tp.ArrayLike] = None,
+        mapping: tp.Optional[tp.MappingLike] = None,
+        col_mapper: tp.Optional[ColumnMapper] = None,
+        **kwargs,
+    ) -> None:
+
+        mapped_arr = np.asarray(mapped_arr)
+        col_arr = np.asarray(col_arr)
+        checks.assert_shape_equal(mapped_arr, col_arr, axis=0)
+        if idx_arr is not None:
+            idx_arr = np.asarray(idx_arr)
+            checks.assert_shape_equal(mapped_arr, idx_arr, axis=0)
+        if col_mapper is None:
+            col_mapper = ColumnMapper(wrapper, col_arr)
+        if id_arr is None:
+            id_arr = col_mapper.new_id_arr
+        else:
+            id_arr = np.asarray(id_arr)
+            checks.assert_shape_equal(mapped_arr, id_arr, axis=0)
+
+        Analyzable.__init__(
+            self,
+            wrapper,
+            mapped_arr=mapped_arr,
+            col_arr=col_arr,
+            idx_arr=idx_arr,
+            id_arr=id_arr,
+            mapping=mapping,
+            col_mapper=col_mapper,
+            **kwargs,
+        )
+
+        self._mapped_arr = mapped_arr
+        self._col_arr = col_arr
+        self._idx_arr = idx_arr
+        self._id_arr = id_arr
+        self._mapping = mapping
+        self._col_mapper = col_mapper
+
+        # Only slices of rows can be selected
+        self._range_only_select = True
 
     @hybrid_method
     def row_stack(
         cls_or_self: tp.MaybeType[MappedArrayT],
-        *objs: tp.MaybeTuple[MappedArrayT],
+        *objs: tp.MaybeSequence[MappedArrayT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> MappedArrayT:
@@ -504,8 +556,20 @@ class MappedArray(Analyzable):
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
 
+        Args:
+            *objs (MaybeSequence[MappedArray]): (Additional) `MappedArray` instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `MappedArray` through
+                `MappedArray.resolve_row_stack_kwargs` and `MappedArray.resolve_stack_kwargs`.
+
+        Returns:
+            MappedArray: New instance with rows stacked from the provided `MappedArray` objects.
+
         !!! note
-            Will produce a column-sorted array."""
+            Will produce a column-sorted array.
+        """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
             cls = type(cls_or_self)
@@ -588,21 +652,33 @@ class MappedArray(Analyzable):
     @hybrid_method
     def column_stack(
         cls_or_self: tp.MaybeType[MappedArrayT],
-        *objs: tp.MaybeTuple[MappedArrayT],
+        *objs: tp.MaybeSequence[MappedArrayT],
         wrapper_kwargs: tp.KwargsLike = None,
         get_indexer_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> MappedArrayT:
         """Stack multiple `MappedArray` instances along columns.
 
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers.
+        Stacks the provided `MappedArray` instances using `vectorbtpro.base.wrapping.ArrayWrapper.column_stack`
+        to merge their wrappers. The `get_indexer_kwargs` are forwarded to
+        [`pd.Index.get_indexer`](https://pandas.pydata.org/docs/reference/api/pandas.Index.get_indexer.html)
+        for translating old indices to new ones after reindexing.
 
-        `get_indexer_kwargs` are passed to
-        [pandas.Index.get_indexer](https://pandas.pydata.org/docs/reference/api/pandas.Index.get_indexer.html)
-        to translate old indices to new ones after the reindexing operation.
+        Args:
+            *objs (MaybeSequence[MappedArray]): (Additional) `MappedArray` instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            get_indexer_kwargs (KwargsLike): Keyword arguments for `pd.Index.get_indexer`.
+            **kwargs: Keyword arguments for `MappedArray` through
+                `MappedArray.resolve_column_stack_kwargs` and `MappedArray.resolve_stack_kwargs`.
+
+        Returns:
+            MappedArray: New instance with arrays stacked along columns.
 
         !!! note
-            Will produce a column-sorted array."""
+            Produces a column-sorted array.
+        """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
             cls = type(cls_or_self)
@@ -671,58 +747,7 @@ class MappedArray(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    def __init__(
-        self,
-        wrapper: ArrayWrapper,
-        mapped_arr: tp.ArrayLike,
-        col_arr: tp.ArrayLike,
-        idx_arr: tp.Optional[tp.ArrayLike] = None,
-        id_arr: tp.Optional[tp.ArrayLike] = None,
-        mapping: tp.Optional[tp.MappingLike] = None,
-        col_mapper: tp.Optional[ColumnMapper] = None,
-        **kwargs,
-    ) -> None:
-
-        mapped_arr = np.asarray(mapped_arr)
-        col_arr = np.asarray(col_arr)
-        checks.assert_shape_equal(mapped_arr, col_arr, axis=0)
-        if idx_arr is not None:
-            idx_arr = np.asarray(idx_arr)
-            checks.assert_shape_equal(mapped_arr, idx_arr, axis=0)
-        if col_mapper is None:
-            col_mapper = ColumnMapper(wrapper, col_arr)
-        if id_arr is None:
-            id_arr = col_mapper.new_id_arr
-        else:
-            id_arr = np.asarray(id_arr)
-            checks.assert_shape_equal(mapped_arr, id_arr, axis=0)
-
-        Analyzable.__init__(
-            self,
-            wrapper,
-            mapped_arr=mapped_arr,
-            col_arr=col_arr,
-            idx_arr=idx_arr,
-            id_arr=id_arr,
-            mapping=mapping,
-            col_mapper=col_mapper,
-            **kwargs,
-        )
-
-        self._mapped_arr = mapped_arr
-        self._col_arr = col_arr
-        self._idx_arr = idx_arr
-        self._id_arr = id_arr
-        self._mapping = mapping
-        self._col_mapper = col_mapper
-
-        # Only slices of rows can be selected
-        self._range_only_select = True
-
     def replace(self: MappedArrayT, **kwargs) -> MappedArrayT:
-        """See `vectorbtpro.utils.config.Configured.replace`.
-
-        Also, makes sure that `MappedArray.col_mapper` is not passed to the new instance."""
         if self.config.get("col_mapper", None) is not None:
             if "wrapper" in kwargs:
                 if self.wrapper is not kwargs.get("wrapper"):
@@ -733,7 +758,26 @@ class MappedArray(Analyzable):
         return Analyzable.replace(self, **kwargs)
 
     def indexing_func_meta(self, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> dict:
-        """Perform indexing on `MappedArray` and return metadata."""
+        """Perform indexing on `MappedArray` and return metadata.
+
+        Uses the underlying wrapper's indexing functionality to compute updated indices,
+        mapped array, column array, index array, and ID array based on the selection parameters.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
+
+        Returns:
+            dict: Dictionary containing:
+
+                * `wrapper_meta`: Metadata from the wrapper.
+                * `new_indices`: New indices after selection.
+                * `new_mapped_arr`: The mapped array after indexing.
+                * `new_col_arr`: The column array after indexing.
+                * `new_idx_arr`: The new index array, if available.
+                * `new_id_arr`: The new ID array after indexing.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(
                 *args,
@@ -768,7 +812,17 @@ class MappedArray(Analyzable):
         )
 
     def indexing_func(self: MappedArrayT, *args, mapped_meta: tp.DictLike = None, **kwargs) -> MappedArrayT:
-        """Perform indexing on `MappedArray`."""
+        """Perform indexing on `MappedArray` and return a new instance with selected data.
+
+        Args:
+            *args: Positional arguments for `MappedArray.indexing_func_meta`.
+            mapped_meta (DictLike): Metadata produced by `MappedArray.indexing_func_meta`;
+                if not provided, computed internally.
+            **kwargs: Keyword arguments for `MappedArray.indexing_func_meta`.
+
+        Returns:
+            MappedArray: New instance reflecting the indexing operation.
+        """
         if mapped_meta is None:
             mapped_meta = self.indexing_func_meta(*args, **kwargs)
         return self.replace(
@@ -780,7 +834,23 @@ class MappedArray(Analyzable):
         )
 
     def resample_meta(self: MappedArrayT, *args, wrapper_meta: tp.DictLike = None, **kwargs) -> dict:
-        """Perform resampling on `MappedArray` and return metadata."""
+        """Perform resampling on `MappedArray` and return metadata.
+
+        Computes new index values by applying resampling through the wrapper's resampling functionality.
+        Constructs or uses an existing `vectorbtpro.base.resampling.base.Resampler` to map indices
+        on the resampled data.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
+            wrapper_meta (DictLike): Metadata from the resampling operation on the wrapper.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample_meta`.
+
+        Returns:
+            dict: Dictionary containing:
+
+                * `wrapper_meta`: Resampling metadata from the wrapper.
+                * `new_idx_arr`: The new index array after resampling, if available.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)
         if isinstance(wrapper_meta["resampler"], Resampler):
@@ -795,7 +865,20 @@ class MappedArray(Analyzable):
         return dict(wrapper_meta=wrapper_meta, new_idx_arr=new_idx_arr)
 
     def resample(self: MappedArrayT, *args, mapped_meta: tp.DictLike = None, **kwargs) -> MappedArrayT:
-        """Perform resampling on `MappedArray`."""
+        """Resample `MappedArray` and return a new instance with updated indices.
+
+        Utilizes the resampling metadata to create a new instance with its index array (`idx_arr`)
+        replaced by the resampled index values.
+
+        Args:
+            *args: Positional arguments for `MappedArray.resample_meta`.
+            mapped_meta (DictLike): Metadata produced by `MappedArray.resample_meta`;
+                if not provided, computed internally.
+            **kwargs: Keyword arguments for `MappedArray.resample_meta`.
+
+        Returns:
+            MappedArray: New instance with resampled data.
+        """
         if mapped_meta is None:
             mapped_meta = self.resample_meta(*args, **kwargs)
         return self.replace(
@@ -805,12 +888,20 @@ class MappedArray(Analyzable):
 
     @property
     def mapped_arr(self) -> tp.Array1d:
-        """Mapped array."""
+        """Mapped array.
+
+        Returns:
+            Array1d: Mapped array.
+        """
         return self._mapped_arr
 
     @property
     def values(self) -> tp.Array1d:
-        """Mapped array."""
+        """1D array of mapped values.
+
+        Returns:
+            Array1d: Mapped values.
+        """
         return self.mapped_arr
 
     def to_readable(
@@ -820,7 +911,17 @@ class MappedArray(Analyzable):
         expand_columns: bool = False,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Get values in a human-readable format."""
+        """Get a human-readable representation of the mapped values.
+
+        Args:
+            title (str): Title for the values column.
+            only_values (bool): Return only the mapped values as a Series when True.
+            expand_columns (bool): Expand MultiIndex columns into separate columns if present.
+            **kwargs: Keyword arguments for `MappedArray.apply_mapping`.
+
+        Returns:
+            SeriesFrame: Pandas Series or DataFrame with human-readable mapped values.
+        """
         values = pd.Series(self.apply_mapping(**kwargs).values, name=title)
         if only_values:
             return pd.Series(values, name=title)
@@ -843,7 +944,12 @@ class MappedArray(Analyzable):
 
     @property
     def mapped_readable(self) -> tp.SeriesFrame:
-        """`MappedArray.to_readable` with default arguments."""
+        """Mapped data in a human-readable format using default parameters,
+        equivalent to calling `MappedArray.to_readable`.
+
+        Returns:
+            SeriesFrame: Pandas Series or DataFrame with human-readable mapped values.
+        """
         return self.to_readable()
 
     readable = mapped_readable
@@ -853,36 +959,70 @@ class MappedArray(Analyzable):
 
     @property
     def col_arr(self) -> tp.Array1d:
-        """Column array."""
+        """Column array of indices corresponding to the mapped array columns.
+
+        Returns:
+            Array1d: Column array.
+        """
         return self._col_arr
 
     @property
     def col_mapper(self) -> ColumnMapper:
-        """Column mapper.
+        """Column mapper instance.
 
-        See `vectorbtpro.records.col_mapper.ColumnMapper`."""
+        See `vectorbtpro.records.col_mapper.ColumnMapper`.
+
+        Returns:
+            ColumnMapper: Column mapper instance.
+        """
         return self._col_mapper
 
     @property
     def idx_arr(self) -> tp.Optional[tp.Array1d]:
-        """Index array."""
+        """Index array mapping each element to its corresponding index in the wrapper.
+
+        Returns:
+            Optional[Array1d]: The index array mapping each element if available; otherwise, None.
+        """
         return self._idx_arr
 
     @property
     def id_arr(self) -> tp.Array1d:
-        """Id array."""
+        """1D array of element identifiers.
+
+        Returns:
+            Array1d: ID array.
+        """
         return self._id_arr
 
     @property
     def mapping(self) -> tp.Optional[tp.MappingLike]:
-        """Mapping."""
+        """Mapping used for value conversion.
+
+        Returns:
+            Optional[MappingLike]: The mapping dictionary or None.
+        """
         return self._mapping
 
     # ############# Sorting ############# #
 
     @cached_method
     def is_sorted(self, incl_id: bool = False, jitted: tp.JittedOption = None) -> bool:
-        """Check whether mapped array is sorted."""
+        """Check if the mapped array is sorted.
+
+        Args:
+            incl_id (bool): If True, include record ids in the sorting criteria.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+
+        Returns:
+            bool: True if the mapped array is sorted; otherwise, False.
+
+        See:
+            * `vectorbtpro.records.nb.is_col_id_sorted_nb` for sorting with IDs.
+            * `vectorbtpro.records.nb.is_col_sorted_nb` for sorting without IDs.
+        """
         if incl_id:
             func = jit_reg.resolve_option(nb.is_col_id_sorted_nb, jitted)
             return func(self.col_arr, self.id_arr)
@@ -896,9 +1036,19 @@ class MappedArray(Analyzable):
         group_by: tp.GroupByLike = None,
         **kwargs,
     ) -> MappedArrayT:
-        """Sort mapped array by column array (primary) and id array (secondary, optional).
+        """Sort the mapped array by column array (primary) and id array (secondary) if requested.
 
-        `**kwargs` are passed to `MappedArray.replace`."""
+        Args:
+            incl_id (bool): If True, include record ids in the sorting criteria.
+            idx_arr (Array1d): Array of row indices.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
+
+        Returns:
+            MappedArray: New sorted mapped array instance, regrouped according to `group_by`.
+        """
         if idx_arr is None:
             idx_arr = self.idx_arr
         if self.is_sorted(incl_id=incl_id):
@@ -924,9 +1074,19 @@ class MappedArray(Analyzable):
         group_by: tp.GroupByLike = None,
         **kwargs,
     ) -> MappedArrayT:
-        """Return a new class instance, filtered by mask.
+        """Filter the mapped array based on a boolean mask.
 
-        `**kwargs` are passed to `MappedArray.replace`."""
+        Args:
+            mask (Array1d): Boolean array indicating which elements to retain.
+            idx_arr (Array1d): Array of row indices.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
+
+        Returns:
+            MappedArray: New instance of the mapped array filtered by the mask.
+        """
         if idx_arr is None:
             idx_arr = self.idx_arr
         mask_indices = np.flatnonzero(mask)
@@ -945,7 +1105,26 @@ class MappedArray(Analyzable):
         jitted: tp.JittedOption = None,
         chunked: tp.ChunkedOption = None,
     ) -> tp.Array1d:
-        """Return mask of top N elements in each column/group."""
+        """Compute a boolean mask that identifies the top N elements within each column or group.
+
+        Args:
+            n (int): Number of top elements to select.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+
+        Returns:
+            Array1d: Boolean mask array where True indicates selection of the top N elements.
+
+        See:
+            `vectorbtpro.records.nb.top_n_mapped_nb`
+        """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         func = jit_reg.resolve_option(nb.top_n_mapped_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -958,7 +1137,26 @@ class MappedArray(Analyzable):
         jitted: tp.JittedOption = None,
         chunked: tp.ChunkedOption = None,
     ) -> tp.Array1d:
-        """Return mask of bottom N elements in each column/group."""
+        """Compute a boolean mask that identifies the bottom N elements within each column or group.
+
+        Args:
+            n (int): Number of bottom elements to select.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+
+        Returns:
+            Array1d: Boolean mask array where True indicates selection of the bottom N elements.
+
+        See:
+            `vectorbtpro.records.nb.bottom_n_mapped_nb`
+        """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         func = jit_reg.resolve_option(nb.bottom_n_mapped_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -972,7 +1170,24 @@ class MappedArray(Analyzable):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArrayT:
-        """Filter top N elements from each column/group."""
+        """Filter the mapped array to include only the top N elements within each column or group.
+
+        Args:
+            n (int): Number of top elements to select.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
+
+        Returns:
+            MappedArray: New instance of the mapped array filtered to the top N elements.
+        """
         return self.apply_mask(self.top_n_mask(n, group_by=group_by, jitted=jitted, chunked=chunked), **kwargs)
 
     def bottom_n(
@@ -983,15 +1198,42 @@ class MappedArray(Analyzable):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArrayT:
-        """Filter bottom N elements from each column/group."""
+        """Filter the mapped array to include only the bottom N elements within each column or group.
+
+        Args:
+            n (int): Number of bottom elements to select.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
+
+        Returns:
+            MappedArray: New instance of the mapped array filtered to the bottom N elements.
+        """
         return self.apply_mask(self.bottom_n_mask(n, group_by=group_by, jitted=jitted, chunked=chunked), **kwargs)
 
     # ############# Mapping ############# #
 
     def resolve_mapping(self, mapping: tp.Union[None, bool, tp.MappingLike] = None) -> tp.Optional[tp.Mapping]:
-        """Resolve mapping.
+        """Resolve the mapping for converting mapped values.
 
-        Set `mapping` to False to disable mapping completely."""
+        If `mapping` is set to False, mapping is disabled completely.
+
+        Args:
+            mapping (Union[None, bool, MappingLike]): Mapping configuration.
+
+                If None or True, the instance's mapping is used.
+
+        Returns:
+            Optional[Mapping]: The resolved mapping used for value conversion,
+                or None if mapping is disabled.
+        """
         if mapping is None or mapping is True:
             mapping = self.mapping
         if isinstance(mapping, bool):
@@ -1013,16 +1255,36 @@ class MappedArray(Analyzable):
         mapping_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> MappedArrayT:
-        """Apply mapping on each element."""
+        """Apply the specified mapping to each element of the mapped array.
+
+        Args:
+            mapping (Union[None, bool, MappingLike]): Mapping configuration;
+                if None or True, the instance's mapping is used.
+            mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
+            
+                See `vectorbtpro.utils.mapping.apply_mapping`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
+
+        Returns:
+            MappedArray: New instance of the mapped array with the mapping applied.
+        """
         mapping = self.resolve_mapping(mapping)
         new_mapped_arr = apply_mapping(self.values, mapping, **resolve_dict(mapping_kwargs))
         return self.replace(mapped_arr=new_mapped_arr, **kwargs)
 
     def to_index(self, minus_one_to_zero: bool = False) -> tp.Index:
-        """Convert to index.
+        """Convert mapped array to an index.
 
-        If `minus_one_to_zero` is True, index -1 will automatically become 0.
-        Otherwise, will throw an error."""
+        If `minus_one_to_zero` is True, convert -1 in the mapped array to 0;
+        otherwise, raise an error if -1 is encountered.
+
+        Args:
+            minus_one_to_zero (bool): If True, convert index -1 to 0; if False,
+                raise an error when -1 is present.
+
+        Returns:
+            Index: Resulting index based on the mapped array values.
+        """
         if np.isin(-1, self.values):
             nan_mask = self.values == -1
             values = self.values.copy()
@@ -1043,7 +1305,11 @@ class MappedArray(Analyzable):
         return self.wrapper.index[self.values]
 
     def to_columns(self) -> tp.Index:
-        """Convert to columns."""
+        """Convert mapped array to columns.
+
+        Returns:
+            Index: Columns from the wrapper indexed by the mapped array values.
+        """
         if np.isin(-1, self.values):
             raise ValueError("Cannot get index at position -1")
         return self.wrapper.columns[self.values]
@@ -1051,7 +1317,7 @@ class MappedArray(Analyzable):
     @hybrid_method
     def apply(
         cls_or_self: tp.MaybeType[MappedArrayT],
-        apply_func_nb: tp.Union[tp.ApplyFunc, tp.ApplyMetaFunc],
+        apply_func_nb: tp.AnyApplyFunc,
         *args,
         group_by: tp.GroupByLike = None,
         apply_per_group: bool = False,
@@ -1061,15 +1327,34 @@ class MappedArray(Analyzable):
         col_mapper: tp.Optional[ColumnMapper] = None,
         **kwargs,
     ) -> MappedArrayT:
-        """Apply function on mapped array per column/group. Returns a new mapped array.
+        """Apply a function to the mapped array per column or group, returning a new mapped array.
 
-        Applies per group of columns if `apply_per_group` is True.
+        Applies the function on groups of columns if `apply_per_group` is True.
 
-        See `vectorbtpro.records.nb.apply_nb`.
+        Args:
+            apply_func_nb (AnyApplyFunc): Callback function for applying to a mapped array.
+            *args: Positional arguments for `apply_func_nb`.
+            group_by (GroupByLike): Grouping specification.
 
-        For details on the meta version, see `vectorbtpro.records.nb.apply_meta_nb`.
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            apply_per_group (bool): If True, apply the function per group of columns.
+            dtype (Optional[DTypeLike]): Data type for the resulting array.
+            jitted (JittedOption): Option to control JIT compilation.
 
-        `**kwargs` are passed to `MappedArray.replace`."""
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            col_mapper (Optional[ColumnMapper]): Column mapper used to obtain column mapping.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
+
+        Returns:
+            MappedArray: New mapped array after applying the function.
+
+        See:
+            * `vectorbtpro.records.nb.apply_nb` for applying a function to each column.
+            * `vectorbtpro.records.nb.apply_meta_nb` for applying a function to the entire array.
+        """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(col_mapper, arg_name="col_mapper")
             col_map = col_mapper.get_col_map(group_by=group_by if apply_per_group else False)
@@ -1101,29 +1386,55 @@ class MappedArray(Analyzable):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArrayT:
-        """Reduce each segment of values in mapped array. Returns a new mapped array.
+        """Reduce each segment of the mapped array values and return a new mapped array.
 
-        `segment_arr` must be an array of integers increasing per column, each indicating a segment.
-        It must have the same length as the mapped array. You can also pass a list of such arrays.
-        In this case, each unique combination of values will be considered a single segment.
-        Can also pass the string "idx" to use the index array.
+        The segments are defined by `segment_arr`, which should be an array of integers that increases
+        per column, or a tuple of such arrays. Each unique combination is treated as a distinct segment.
+        Alternatively, pass the string "idx" to utilize the index array.
 
-        `reduce_func_nb` can be a string denoting the suffix of a reducing function
-        from `vectorbtpro.generic.nb`. For example, "sum" will refer to "sum_reduce_nb".
+        If `reduce_func_nb` is provided as a string, it refers to the suffix of a reducing function
+        from `vectorbtpro.generic.nb` (e.g., "sum" corresponds to `sum_reduce_nb`).
+
+        Args:
+            segment_arr (Union[str, tuple[Array1d]]): Array of integers indicating segment
+                boundaries per column, or a tuple of such arrays.
+
+                Alternatively, pass "idx" to use the index array.
+            reduce_func_nb (Union[str, ReduceFunc]): Callback function for reducing a mapped array.
+
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
+            *args: Positional arguments for `reduce_func_nb`.
+            idx_arr (Optional[Array1d]): Array of row indices.
+
+                Uses `MappedArray.idx_arr` if not provided.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            apply_per_group (bool): If True, apply the function per group of columns.
+            dtype (Optional[DTypeLike]): Data type for the resulting mapped array.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `MappedArray.replace`.
+
+        Returns:
+            MappedArray: New mapped array after applying the reduction function.
+
+        See:
+            `vectorbtpro.records.nb.reduce_mapped_segments_nb`
 
         !!! warning
-            Each segment or combination of segments in `segment_arr` is assumed to be coherent and non-repeating.
-            That is, `np.array([0, 1, 0])` for a single column annotates three different segments, not two.
-            See `vectorbtpro.utils.array_.index_repeating_rows_nb`.
+            Each segment or combination in `segment_arr` is assumed to be coherent and non-repeating.
+            For instance, `np.array([0, 1, 0])` for a single column is interpreted as three distinct segments,
+            not two. See `vectorbtpro.utils.array_.index_repeating_rows_nb`.
 
         !!! hint
-            Use `MappedArray.sort` to bring the mapped array to the desired order, if required.
-
-        Applies per group of columns if `apply_per_group` is True.
-
-        See `vectorbtpro.records.nb.reduce_mapped_segments_nb`.
-
-        `**kwargs` are passed to `MappedArray.replace`."""
+            Use `MappedArray.sort` to order the mapped array appropriately before reduction if needed.
+        """
         if idx_arr is None:
             if self.idx_arr is None:
                 raise ValueError("Must pass idx_arr")
@@ -1163,9 +1474,7 @@ class MappedArray(Analyzable):
     @hybrid_method
     def reduce(
         cls_or_self,
-        reduce_func_nb: tp.Union[
-            tp.ReduceFunc, tp.MappedReduceMetaFunc, tp.ReduceToArrayFunc, tp.MappedReduceToArrayMetaFunc
-        ],
+        reduce_func_nb: tp.AnyMappedReduceFunc,
         *args,
         idx_arr: tp.Optional[tp.Array1d] = None,
         returns_array: bool = False,
@@ -1180,27 +1489,47 @@ class MappedArray(Analyzable):
     ) -> tp.MaybeSeriesFrame:
         """Reduce mapped array by column/group.
 
-        Set `returns_array` to True if `reduce_func_nb` returns an array.
+        Args:
+            reduce_func_nb (AnyMappedReduceFunc): Callback function for reducing a mapped array.
+            *args: Positional arguments for `reduce_func_nb`.
+            idx_arr (Optional[Array1d]): Array of row indices used when `returns_idx` is True.
+            returns_array (bool): Flag indicating that `reduce_func_nb` returns an array.
+            returns_idx (bool): Flag indicating that `reduce_func_nb` returns row indices.
 
-        Set `returns_idx` to True if `reduce_func_nb` returns row index/position. Must pass `idx_arr`.
+                Must pass `idx_arr` if True.
+            to_index (bool): Flag to convert positions to labels.
+            fill_value (Scalar): Value to use when a reduction cannot be computed.
+            jitted (JittedOption): Option to control JIT compilation.
 
-        Set `to_index` to True to return labels instead of positions.
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
 
-        Use `fill_value` to set the default value.
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            col_mapper (Optional[ColumnMapper]): Column mapper instance used when invoked on a class.
+            group_by (GroupByLike): Grouping specification.
 
-        For implementation details, see
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
-        * `vectorbtpro.records.nb.reduce_mapped_nb` if `returns_array` is False and `returns_idx` is False
-        * `vectorbtpro.records.nb.reduce_mapped_to_idx_nb` if `returns_array` is False and `returns_idx` is True
-        * `vectorbtpro.records.nb.reduce_mapped_to_array_nb` if `returns_array` is True and `returns_idx` is False
-        * `vectorbtpro.records.nb.reduce_mapped_to_idx_array_nb` if `returns_array` is True and `returns_idx` is True
+        Returns:
+            MaybeSeriesFrame: Reduced output wrapped in an appropriate structure.
 
-        For implementation details on the meta versions, see
+        See:
+            When invoked on a class:
 
-        * `vectorbtpro.records.nb.reduce_mapped_meta_nb` if `returns_array` is False and `returns_idx` is False
-        * `vectorbtpro.records.nb.reduce_mapped_to_idx_meta_nb` if `returns_array` is False and `returns_idx` is True
-        * `vectorbtpro.records.nb.reduce_mapped_to_array_meta_nb` if `returns_array` is True and `returns_idx` is False
-        * `vectorbtpro.records.nb.reduce_mapped_to_idx_array_meta_nb` if `returns_array` is True and `returns_idx` is True
+            * If `returns_array` is False and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_meta_nb`.
+            * If `returns_array` is False and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_meta_nb`.
+            * If `returns_array` is True and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_to_array_meta_nb`.
+            * If `returns_array` is True and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_array_meta_nb`.
+
+            When invoked on an instance:
+
+            * If `returns_array` is False and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_nb`.
+            * If `returns_array` is False and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_nb`.
+            * If `returns_array` is True and `returns_idx` is False, uses `vectorbtpro.records.nb.reduce_mapped_to_array_nb`.
+            * If `returns_array` is True and `returns_idx` is True, uses `vectorbtpro.records.nb.reduce_mapped_to_idx_array_nb`.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(col_mapper, arg_name="col_mapper")
@@ -1276,7 +1605,30 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Return n-th element of each column/group."""
+        """Return the n-th element for each column or group.
+
+        Args:
+            n (int): Index of the element to return.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series containing the n-th element for each column or group.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.nth_reduce_nb`
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="nth"), wrap_kwargs)
         chunked = ch.specialize_chunked_option(
             chunked,
@@ -1308,7 +1660,30 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Return index of n-th element of each column/group."""
+        """Return the index of the n-th element for each column or group.
+
+        Args:
+            n (int): Index of the element whose position is to be returned.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series containing the index of the n-th element for each column or group.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.nth_index_reduce_nb`
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="nth_index"), wrap_kwargs)
         chunked = ch.specialize_chunked_option(
             chunked,
@@ -1339,7 +1714,29 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Return min by column/group."""
+        """Return the minimum value for each column or group.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series containing the minimum values for each column or group.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.min_reduce_nb`
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="min"), wrap_kwargs)
         return self.reduce(
             jit_reg.resolve_option(generic_nb.min_reduce_nb, jitted),
@@ -1361,7 +1758,29 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Return max by column/group."""
+        """Return the maximum value for each column or group.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series containing the maximum values for each column or group.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.max_reduce_nb`
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="max"), wrap_kwargs)
         return self.reduce(
             jit_reg.resolve_option(generic_nb.max_reduce_nb, jitted),
@@ -1383,7 +1802,29 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Return mean by column/group."""
+        """Return mean values computed by column/group.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series with computed mean values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.mean_reduce_nb`
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="mean"), wrap_kwargs)
         return self.reduce(
             jit_reg.resolve_option(generic_nb.mean_reduce_nb, jitted),
@@ -1405,7 +1846,29 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Return median by column/group."""
+        """Return median values computed by column/group.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series with computed median values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.median_reduce_nb`
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="median"), wrap_kwargs)
         return self.reduce(
             jit_reg.resolve_option(generic_nb.median_reduce_nb, jitted),
@@ -1428,7 +1891,30 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Return std by column/group."""
+        """Return standard deviation values computed by column/group.
+
+        Args:
+            ddof (int): Delta degrees of freedom.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series with computed standard deviation values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.std_reduce_nb`
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="std"), wrap_kwargs)
         chunked = ch.specialize_chunked_option(
             chunked,
@@ -1460,7 +1946,30 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Return sum by column/group."""
+        """Return summation computed by column/group.
+
+        Args:
+            fill_value (Scalar): Value to use for filling missing data.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series with computed summation values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.sum_reduce_nb`
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="sum"), wrap_kwargs)
         return self.reduce(
             jit_reg.resolve_option(generic_nb.sum_reduce_nb, jitted),
@@ -1483,7 +1992,29 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Return index of min by column/group."""
+        """Return index corresponding to the minimum value by column/group.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series with indices corresponding to the minimum values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.argmin_reduce_nb`
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="idxmin"), wrap_kwargs)
         return self.reduce(
             jit_reg.resolve_option(generic_nb.argmin_reduce_nb, jitted),
@@ -1505,7 +2036,29 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Return index of max by column/group."""
+        """Return index corresponding to the maximum value by column/group.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series with indices corresponding to the maximum values.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.argmax_reduce_nb`
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="idxmax"), wrap_kwargs)
         return self.reduce(
             jit_reg.resolve_option(generic_nb.argmax_reduce_nb, jitted),
@@ -1529,7 +2082,37 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """Return statistics by column/group."""
+        """Return statistical summary by column/group.
+
+        Args:
+            percentiles (Optional[ArrayLike]): Percentiles to include in the summary.
+
+                If None, defaults are used.
+            ddof (int): Delta degrees of freedom.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `MappedArray.reduce`.
+
+        Returns:
+            SeriesFrame: DataFrame containing statistics such as count, mean,
+                standard deviation, min, percentiles, and max.
+
+        See:
+            `vectorbtpro.generic.nb.apply_reduce.describe_reduce_nb`
+
+        !!! note
+            The 0.5 percentile is always included in the calculation.
+        """
         if percentiles is not None:
             percentiles = to_1d_array(percentiles)
         else:
@@ -1566,7 +2149,19 @@ class MappedArray(Analyzable):
 
     @cached_method
     def count(self, group_by: tp.GroupByLike = None, wrap_kwargs: tp.KwargsLike = None) -> tp.MaybeSeries:
-        """Return number of values by column/group."""
+        """Return count of values by column/group.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            MaybeSeries: Series with the count of values per column or group.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="count"), wrap_kwargs)
         return self.wrapper.wrap_reduced(
             self.col_mapper.get_col_map(group_by=group_by)[1],
@@ -1594,7 +2189,51 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.generic.accessors.GenericAccessor.value_counts`."""
+        """Return counts of unique mapped values along the specified axis.
+
+        Factorizes the underlying values to compute frequency counts of unique mappings.
+        Depending on the specified axis, counts are computed per row, per column, or over the flattened array.
+
+        Args:
+            axis (int): Axis along which to compute counts.
+
+                Valid options:
+
+                * 0: Count per row.
+                * 1: Count per column.
+                * -1: Count across the entire object.
+            idx_arr (Optional[Array1d]): Array of row indices.
+
+                Uses `MappedArray.idx_arr` if not provided.
+            normalize (bool): If True, return relative frequencies of unique values.
+            sort_uniques (bool): Sort unique values before further processing.
+            sort (bool): Sort the results based on frequency counts.
+            ascending (bool): True for ascending order, False for descending.
+            dropna (bool): Exclude NaN values from the counts.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            mapping (Union[None, bool, MappingLike]): Mapping to relabel unique values.
+            incl_all_keys (bool): Include keys from `mapping` that are missing in the data.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.mapping.apply_mapping`.
+
+        Returns:
+            SeriesFrame: Series or DataFrame containing the counts of unique mapped values.
+
+        See:
+            * `vectorbtpro.records.nb.mapped_value_counts_per_row_nb` for `axis=0`.
+            * `vectorbtpro.records.nb.mapped_value_counts_per_col_nb` for `axis=1`.
+            * `vectorbtpro.records.nb.mapped_value_counts_nb` for `axis=-1`.
+        """
         checks.assert_in(axis, (-1, 0, 1))
 
         mapping = self.resolve_mapping(mapping)
@@ -1681,7 +2320,28 @@ class MappedArray(Analyzable):
         group_by: tp.GroupByLike = None,
         jitted: tp.JittedOption = None,
     ) -> bool:
-        """See `vectorbtpro.records.nb.mapped_has_conflicts_nb`."""
+        """Return whether conflicts exist in the mapped data.
+
+        Checks for conflicts within the mapped data using a JIT-compiled routine.
+        The detection is based on the column array and index array provided.
+
+        Args:
+            idx_arr (Optional[Array1d]): Array of row indices.
+            
+                Uses `MappedArray.idx_arr` if not provided.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+
+        Returns:
+            bool: True if conflicts are detected, otherwise False.
+
+        See:
+            `vectorbtpro.records.nb.mapped_has_conflicts_nb`
+        """
         if idx_arr is None:
             if self.idx_arr is None:
                 raise ValueError("Must pass idx_arr")
@@ -1698,7 +2358,31 @@ class MappedArray(Analyzable):
         jitted: tp.JittedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """See `vectorbtpro.records.nb.mapped_coverage_map_nb`."""
+        """Return a coverage map of the mapped data.
+
+        Computes a binary coverage map indicating the presence of data across the mapped array.
+        The resulting map is wrapped and returned as a Series or DataFrame.
+
+        Args:
+            idx_arr (Optional[Array1d]): Array of row indices.
+
+                Uses `MappedArray.idx_arr` if not provided.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Series or DataFrame representing the coverage map.
+
+        See:
+            `vectorbtpro.records.nb.mapped_coverage_map_nb`
+        """
         if idx_arr is None:
             if self.idx_arr is None:
                 raise ValueError("Must pass idx_arr")
@@ -1728,25 +2412,63 @@ class MappedArray(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         silence_warnings: bool = False,
     ) -> tp.SeriesFrame:
-        """Unstack mapped array to a Series/DataFrame.
+        """Unstack mapped array to a Series or DataFrame.
 
-        If `reduce_func_nb` is not None, will use it to reduce conflicting index segments
-        using `MappedArray.reduce_segments`.
+        Transform the mapped array into a Series/DataFrame. When `reduce_func_nb` is provided,
+        conflicting index segments are reduced using `MappedArray.reduce_segments`.
 
-        * If `ignore_index`, will ignore the index and place values on top of each other in every column/group.
-            See `vectorbtpro.records.nb.ignore_unstack_mapped_nb`.
-        * If `repeat_index`, will repeat any index pointed from multiple values.
-            Otherwise, in case of positional conflicts, will throw a warning and use the latest value.
-            See `vectorbtpro.records.nb.repeat_unstack_mapped_nb`.
-        * Otherwise, see `vectorbtpro.records.nb.unstack_mapped_nb`.
+        Args:
+            idx_arr (Optional[Array1d]): Array of row indices.
+
+                Uses `MappedArray.idx_arr` if not provided.
+            reduce_func_nb (Union[None, str, ReduceFunc]): Callable function for reducing conflicting segments.
+            
+                If provided as a string, selects the corresponding Numba callback function
+                from `vectorbtpro.generic.nb` with the suffix `_reduce_nb`.
+            reduce_args (ArgsLike): Additional arguments for the reduce function.
+            dtype (Optional[DTypeLike]): Data type of the output.
+            ignore_index (bool): Whether to ignore the original index and stack values vertically
+                in each column/group.
+            repeat_index (bool): Whether to repeat indices when multiple values map to the same index.
+
+                Otherwise, positional conflicts raise a warning and only the latest value is retained.
+            fill_value (float): Value used for positions with no data.
+            mapping (Union[None, bool, MappingLike]): Mapping configuration for processing.
+            mapping_kwargs (KwargsLike): Keyword arguments for applying the mapping.
+            
+                See `vectorbtpro.utils.mapping.apply_mapping`.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            silence_warnings (bool): Flag to suppress warning messages.
+
+        Returns:
+            SeriesFrame: Wrapped Series or DataFrame representing the unstacked mapped array.
+
+        See:
+            * `vectorbtpro.records.nb.ignore_unstack_mapped_nb` if `ignore_index=True`.
+            * `vectorbtpro.records.nb.mapped_coverage_map_nb` if has conflicts and `repeat_index=True`.
+            * `vectorbtpro.records.nb.unstack_index_nb` if has conflicts and `repeat_index=True`.
+            * `vectorbtpro.records.nb.repeat_unstack_mapped_nb` if has conflicts and `repeat_index=True`.
+            * `vectorbtpro.records.nb.unstack_mapped_nb` if has no conflicts or `repeat_index=False`.
 
         !!! note
-            Will raise an error if there are multiple values pointing to the same position.
-            Set `ignore_index` to True in this case.
+            Raises an error if multiple values map to the same position.
+            Set `ignore_index` to True to bypass this error.
 
         !!! warning
-            Mapped arrays represent information in the most memory-friendly format.
-            Mapping back to pandas may occupy lots of memory if records are sparse."""
+            Mapped arrays are optimized for memory. Converting them back to Pandas may consume
+            significant memory if records are sparse.
+        """
         if ignore_index:
             if self.wrapper.ndim == 1:
                 return self.wrapper.wrap(
@@ -1818,7 +2540,22 @@ class MappedArray(Analyzable):
         group_by: tp.GroupByLike = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get mask in form of a Series/DataFrame from row and column indices."""
+        """Get mask as a Series or DataFrame from row and column indices.
+
+        Args:
+            idx_arr (Optional[Array1d]): Array of row indices.
+
+                Uses `MappedArray.idx_arr` if not provided.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Wrapped mask array as a Series or DataFrame.
+        """
         if idx_arr is None:
             if self.idx_arr is None:
                 raise ValueError("Must pass idx_arr")
@@ -1831,17 +2568,25 @@ class MappedArray(Analyzable):
 
     @property
     def pd_mask(self) -> tp.SeriesFrame:
-        """`MappedArray.get_pd_mask` with default arguments."""
+        """Series/DataFrame mask produced by `MappedArray.get_pd_mask` with default arguments.
+
+        Returns:
+            SeriesFrame: Wrapped mask array as a Series or DataFrame.
+        """
         return self.get_pd_mask()
 
     # ############# Stats ############# #
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `MappedArray.stats`.
+        """Default configuration for `MappedArray.stats`.
 
-        Merges `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults` and
-        `stats` from `vectorbtpro._settings.mapped_array`."""
+        Merges the defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.mapped_array`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the stats builder.
+        """
         from vectorbtpro._settings import settings
 
         mapped_array_stats_cfg = settings["mapped_array"]["stats"]
@@ -1911,19 +2656,43 @@ class MappedArray(Analyzable):
     # ############# Plotting ############# #
 
     def histplot(self, group_by: tp.GroupByLike = None, **kwargs) -> tp.BaseFigure:
-        """Plot histogram by column/group."""
+        """Plot histogram for each column or group.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.histplot`.
+
+        Returns:
+            BaseFigure: Generated histogram figure.
+        """
         return self.to_pd(group_by=group_by, ignore_index=True).vbt.histplot(**kwargs)
 
     def boxplot(self, group_by: tp.GroupByLike = None, **kwargs) -> tp.BaseFigure:
-        """Plot box plot by column/group."""
+        """Plot box plot for each column or group.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.boxplot`.
+
+        Returns:
+            BaseFigure: Generated box plot figure.
+        """
         return self.to_pd(group_by=group_by, ignore_index=True).vbt.boxplot(**kwargs)
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `MappedArray.plots`.
+        """Default configuration for `MappedArray.plots`.
 
-        Merges `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` and
-        `plots` from `vectorbtpro._settings.mapped_array`."""
+        Merges the defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.mapped_array`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the plots builder.
+        """
         from vectorbtpro._settings import settings
 
         mapped_array_plots_cfg = settings["mapped_array"]["plots"]

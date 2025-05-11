@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `MEANLB`."""
+"""Module defining the `MEANLB` generator class for mean labels."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -27,14 +27,29 @@ MEANLB = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype", "wait"],
     output_names=["labels"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        labels=dict(
+            doc="Mean labels series.",
+        ),
+    ),
 ).with_apply_func(
     nb.mean_labels_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             post_index_func=lambda index: index.str.lower(),
-        )
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
+        ),
+        wait=dict(
+            doc="Number of periods to wait before calculating the mean labels.",
+        ),
     ),
     window=14,
     wtype="simple",
@@ -45,14 +60,24 @@ MEANLB = IndicatorFactory(
 
 
 class _MEANLB(MEANLB):
-    """Label generator based on `vectorbtpro.labels.nb.mean_labels_nb`."""
+    """Class representing the look-ahead mean label generator.
 
-    def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
-        """Plot `close` and overlay it with the heatmap of `MEANLB.labels`.
+    See:
+        * `MEANLB.run` for the main entry point.
+        * `vectorbtpro.labels.nb.mean_labels_nb` for the underlying implementation.
+    """
 
-        `**kwargs` are passed to `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+    def plot(self, column: tp.Optional[tp.Column] = None, **kwargs) -> tp.BaseFigure:
+        """Plot the `close` data and overlay it with a heatmap of `MEANLB.labels`.
 
-        Usage:
+        Args:
+            column (Optional[Column]): Identifier of the column to plot.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+
+        Returns:
+            BaseFigure: Figure displaying the overlaid heatmap.
+
+        Examples:
             ```pycon
             >>> vbt.MEANLB.run(ohlcv['Close']).plot().show()
             ```

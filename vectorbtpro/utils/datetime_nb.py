@@ -8,173 +8,271 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Numba-compiled utilities for working with dates and time."""
+"""Module providing Numba-compiled utilities for efficient date and time computations."""
 
 import numpy as np
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.registries.jit_registry import register_jitted
 from vectorbtpro.utils.datetime_ import DTCNT
-from vectorbtpro.utils.formatting import prettify
+from vectorbtpro.utils.formatting import prettify_doc
 
 __all__ = []
 
 __pdoc__ = {}
 
 us_ns = 1000
-"""Microsecond in nanoseconds."""
+"""Constant representing the number of nanoseconds in a microsecond."""
 
 ms_ns = us_ns * 1000
-"""Millisecond in nanoseconds."""
+"""Constant representing the number of nanoseconds in a millisecond."""
 
 s_ns = ms_ns * 1000
-"""Second in nanoseconds."""
+"""Constant representing the number of nanoseconds in a second."""
 
 m_ns = s_ns * 60
-"""Minute in nanoseconds."""
+"""Constant representing the number of nanoseconds in a minute."""
 
 h_ns = m_ns * 60
-"""Hour in nanoseconds."""
+"""Constant representing the number of nanoseconds in an hour."""
 
 d_ns = h_ns * 24
-"""Day in nanoseconds."""
+"""Constant representing the number of nanoseconds in a day."""
 
 w_ns = d_ns * 7
-"""Week in nanoseconds."""
+"""Constant representing the number of nanoseconds in a week."""
 
 y_ns = (d_ns * 438291) // 1200
-"""Year in nanoseconds."""
+"""Constant representing the number of nanoseconds in a year."""
 
 q_ns = y_ns // 4
-"""Quarter in nanoseconds."""
+"""Constant representing the number of nanoseconds in a quarter."""
 
 mo_ns = q_ns // 3
-"""Month in nanoseconds."""
+"""Constant representing the number of nanoseconds in a month."""
 
 semi_mo_ns = mo_ns // 2
-"""Semi-month in nanoseconds."""
+"""Constant representing the number of nanoseconds in a semi-month."""
 
 ns_td = np.timedelta64(1, "ns")
-"""Nanosecond as a timedelta."""
+"""Timedelta representing one nanosecond."""
 
 us_td = np.timedelta64(us_ns, "ns")
-"""Microsecond as a timedelta."""
+"""Timedelta representing one microsecond."""
 
 ms_td = np.timedelta64(ms_ns, "ns")
-"""Millisecond as a timedelta."""
+"""Timedelta representing one millisecond."""
 
 s_td = np.timedelta64(s_ns, "ns")
-"""Second as a timedelta."""
+"""Timedelta representing one second."""
 
 m_td = np.timedelta64(m_ns, "ns")
-"""Minute as a timedelta."""
+"""Timedelta representing one minute."""
 
 h_td = np.timedelta64(h_ns, "ns")
-"""Hour as a timedelta."""
+"""Timedelta representing one hour."""
 
 d_td = np.timedelta64(d_ns, "ns")
-"""Day as a timedelta."""
+"""Timedelta representing one day."""
 
 w_td = np.timedelta64(w_ns, "ns")
-"""Week as a timedelta."""
+"""Timedelta representing one week."""
 
 semi_mo_td = np.timedelta64(semi_mo_ns, "ns")
-"""Semi-month as a timedelta."""
+"""Timedelta representing one semi-month."""
 
 mo_td = np.timedelta64(mo_ns, "ns")
-"""Month as a timedelta."""
+"""Timedelta representing one month."""
 
 q_td = np.timedelta64(q_ns, "ns")
-"""Quarter as a timedelta."""
+"""Timedelta representing one quarter."""
 
 y_td = np.timedelta64(y_ns, "ns")
-"""Year as a timedelta."""
+"""Timedelta representing one year."""
 
 unix_epoch_dt = np.datetime64(0, "ns")
-"""Unix epoch (datetime)."""
+"""Datetime representing the Unix epoch."""
 
 
 @register_jitted(cache=True)
 def second_remainder_nb(ts: int) -> int:
-    """Get the nanosecond remainder after the second."""
+    """Return the nanosecond remainder of a timestamp after removing complete seconds.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Nanosecond remainder after full seconds.
+    """
     return ts % 1000000000
 
 
 @register_jitted(cache=True)
 def nanosecond_nb(ts: int) -> int:
-    """Get the nanosecond."""
+    """Return the nanosecond component of a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Nanosecond component.
+    """
     return ts % 1000
 
 
 @register_jitted(cache=True)
 def microseconds_nb(ts: int) -> int:
-    """Get the number of microseconds."""
+    """Return the total microseconds from a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Total microseconds.
+    """
     return ts // us_ns
 
 
 @register_jitted(cache=True)
 def microsecond_nb(ts: int) -> int:
-    """Get the microsecond."""
+    """Return the microsecond component within the current millisecond of a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Microsecond component within the current millisecond.
+    """
     return microseconds_nb(ts) % (ms_ns // us_ns)
 
 
 @register_jitted(cache=True)
 def milliseconds_nb(ts: int) -> int:
-    """Get the number of milliseconds."""
+    """Return the total milliseconds from a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Total milliseconds.
+    """
     return ts // ms_ns
 
 
 @register_jitted(cache=True)
 def millisecond_nb(ts: int) -> int:
-    """Get the millisecond."""
+    """Return the millisecond component within the current second of a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Millisecond component within the current second.
+    """
     return milliseconds_nb(ts) % (s_ns // ms_ns)
 
 
 @register_jitted(cache=True)
 def seconds_nb(ts: int) -> int:
-    """Get the number of seconds."""
+    """Return the total seconds from a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Total seconds.
+    """
     return ts // s_ns
 
 
 @register_jitted(cache=True)
 def second_nb(ts: int) -> int:
-    """Get the seconds."""
+    """Return the second component within the current minute of a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Second component within the current minute.
+    """
     return seconds_nb(ts) % (m_ns // s_ns)
 
 
 @register_jitted(cache=True)
 def minutes_nb(ts: int) -> int:
-    """Get the number of minutes."""
+    """Return the total minutes from a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Total minutes.
+    """
     return ts // m_ns
 
 
 @register_jitted(cache=True)
 def minute_nb(ts: int) -> int:
-    """Get the minute."""
+    """Return the minute component within the current hour of a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Minute component within the current hour.
+    """
     return minutes_nb(ts) % (h_ns // m_ns)
 
 
 @register_jitted(cache=True)
 def hours_nb(ts: int) -> int:
-    """Get the number of hours."""
+    """Return the total hours from a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Total hours.
+    """
     return ts // h_ns
 
 
 @register_jitted(cache=True)
 def hour_nb(ts: int) -> int:
-    """Get the hour."""
+    """Return the hour component within the current day of a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Hour component within the current day.
+    """
     return hours_nb(ts) % (d_ns // h_ns)
 
 
 @register_jitted(cache=True)
 def days_nb(ts: int) -> int:
-    """Get the number of days."""
+    """Return the total days from a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Total days.
+    """
     return ts // d_ns
 
 
 @register_jitted(cache=True)
 def to_civil_nb(ts: int) -> tp.Tuple[int, int, int]:
-    """Convert a timestamp into a tuple of the year, month, and day."""
+    """Return the civil date corresponding to a timestamp as a tuple (year, month, day).
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        Tuple[int, int, int]: A tuple containing the year, month, and day.
+    """
     z = days_nb(ts)
     z += 719468
     era = (z if z >= 0 else z - 146096) // 146097
@@ -190,7 +288,16 @@ def to_civil_nb(ts: int) -> tp.Tuple[int, int, int]:
 
 @register_jitted(cache=True)
 def from_civil_nb(y: int, m: int, d: int) -> int:
-    """Convert a year, month, and day into the timestamp."""
+    """Return the timestamp corresponding to a given civil date.
+
+    Args:
+        y (int): Year.
+        m (int): Month.
+        d (int): Day.
+
+    Returns:
+        int: Timestamp in nanoseconds.
+    """
     y -= m <= 2
     era = (y if y >= 0 else y - 399) // 400
     yoe = y - era * 400
@@ -201,8 +308,18 @@ def from_civil_nb(y: int, m: int, d: int) -> int:
 
 
 @register_jitted(cache=True)
-def matches_date_nb(ts: int, y: int, m: int, d: int) -> int:
-    """Check whether the timestamp match the date provided in the civil format."""
+def matches_date_nb(ts: int, y: int, m: int, d: int) -> bool:
+    """Return whether the timestamp corresponds to the given civil date.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+        y (int): Year.
+        m (int): Month.
+        d (int): Day.
+
+    Returns:
+        int: True if the timestamp matches the date, False otherwise.
+    """
     midnight_ts1 = midnight_nb(ts)
     midnight_ts2 = from_civil_nb(y, m, d)
     return midnight_ts1 == midnight_ts2
@@ -210,28 +327,57 @@ def matches_date_nb(ts: int, y: int, m: int, d: int) -> int:
 
 @register_jitted(cache=True)
 def day_nb(ts: int) -> int:
-    """Get the day of the month."""
+    """Return the day component from the civil date of a timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Day of the month.
+    """
     y, m, d = to_civil_nb(ts)
     return d
 
 
 @register_jitted(cache=True)
 def midnight_nb(ts: int) -> int:
-    """Get the midnight of this day."""
+    """Return the timestamp corresponding to midnight of the day for a given timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Timestamp at midnight.
+    """
     return ts - ts % d_ns
 
 
 @register_jitted(cache=True)
 def day_changed_nb(ts1: int, ts2: int) -> bool:
-    """Whether the day changed."""
+    """Return whether two timestamps occur on different days.
+
+    Args:
+        ts1 (int): First timestamp in nanoseconds.
+        ts2 (int): Second timestamp in nanoseconds.
+
+    Returns:
+        bool: True if the timestamps are on different days, False otherwise.
+    """
     return midnight_nb(ts1) != midnight_nb(ts2)
 
 
 @register_jitted(cache=True)
 def weekday_from_days_nb(days: int, zero_start: bool = True) -> int:
-    """Get the weekday from the total number of days.
+    """Return the weekday from the total number of days.
 
-    Weekdays are ranging from 0 (Monday) to 6 (Sunday)."""
+    Args:
+        days (int): Total number of days.
+        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday); 
+            otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
+
+    Returns:
+        int: Weekday index.
+    """
     c_weekday = (days + 4) % 7 if days >= -4 else (days + 5) % 7 + 6
     if c_weekday == 0:
         c_weekday = 7
@@ -242,15 +388,32 @@ def weekday_from_days_nb(days: int, zero_start: bool = True) -> int:
 
 @register_jitted(cache=True)
 def weekday_nb(ts: int, zero_start: bool = True) -> int:
-    """Get the weekday.
+    """Return the weekday corresponding to a timestamp.
 
-    Weekdays are ranging from 0 (Monday) to 6 (Sunday)."""
+    Args:
+        ts (int): Timestamp in nanoseconds.
+        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday); 
+            otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
+
+    Returns:
+        int: Weekday index.
+    """
     return weekday_from_days_nb(days_nb(ts), zero_start=zero_start)
 
 
 @register_jitted(cache=True)
 def weekday_diff_nb(weekday1: int, weekday2: int, zero_start: bool = True) -> int:
-    """Get the difference in days between two weekdays."""
+    """Calculate the forward difference in days from one weekday index to another.
+
+    Args:
+        weekday1 (int): Target weekday index.
+        weekday2 (int): Starting weekday index.
+        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday); 
+            otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
+
+    Returns:
+        int: Number of days from `weekday2` to the next occurrence of `weekday1`.
+    """
     if zero_start:
         if weekday1 > 6 or weekday1 < 0:
             raise ValueError("Weekday must be in [0, 6]")
@@ -269,7 +432,17 @@ def weekday_diff_nb(weekday1: int, weekday2: int, zero_start: bool = True) -> in
 
 @register_jitted(cache=True)
 def past_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
-    """Get the timestamp of a weekday in the past."""
+    """Determine the timestamp of the past occurrence of a specified weekday relative to a given timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+        weekday (int): Target weekday index.
+        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday); 
+            otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
+
+    Returns:
+        int: Timestamp corresponding to the past occurrence at midnight of the specified weekday.
+    """
     this_weekday = weekday_nb(ts, zero_start=zero_start)
     weekday_diff = weekday_diff_nb(this_weekday, weekday, zero_start=zero_start)
     return midnight_nb(ts) - weekday_diff * d_ns
@@ -277,7 +450,17 @@ def past_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
 
 @register_jitted(cache=True)
 def future_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
-    """Get the timestamp of a weekday in the future."""
+    """Determine the timestamp of the future occurrence of a specified weekday relative to a given timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+        weekday (int): Target weekday index.
+        zero_start (bool): Use 0-based weekday indexing if True (0 = Monday, 6 = Sunday); 
+            otherwise use 1-based indexing (1 = Monday, 7 = Sunday).
+
+    Returns:
+        int: Timestamp corresponding to the future occurrence at midnight of the specified weekday.
+    """
     this_weekday = weekday_nb(ts, zero_start=zero_start)
     weekday_diff = weekday_diff_nb(weekday, this_weekday, zero_start=zero_start)
     return midnight_nb(ts) + weekday_diff * d_ns
@@ -285,7 +468,14 @@ def future_weekday_nb(ts: int, weekday: int, zero_start: bool = True) -> int:
 
 @register_jitted(cache=True)
 def day_of_year_nb(ts: int) -> int:
-    """Get the day of the year."""
+    """Calculate the day of the year from a given timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Day of the year, starting at 1.
+    """
     y, m, d = to_civil_nb(ts)
     y_ts = from_civil_nb(y, 1, 1)
     return (ts - y_ts) // d_ns + 1
@@ -293,33 +483,69 @@ def day_of_year_nb(ts: int) -> int:
 
 @register_jitted(cache=True)
 def week_nb(ts: int) -> int:
-    """Get the week of the year."""
+    """Calculate the week number of the year based on the day of the year.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Week number of the year.
+    """
     return day_of_year_nb(ts) // 7
 
 
 @register_jitted(cache=True)
 def month_nb(ts: int) -> int:
-    """Get the month of the year."""
+    """Determine the month from a given timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Month number.
+    """
     y, m, d = to_civil_nb(ts)
     return m
 
 
 @register_jitted(cache=True)
 def year_nb(ts: int) -> int:
-    """Get the year."""
+    """Determine the year from a given timestamp.
+
+    Args:
+        ts (int): Timestamp in nanoseconds.
+
+    Returns:
+        int: Year.
+    """
     y, m, d = to_civil_nb(ts)
     return y
 
 
 @register_jitted(cache=True)
-def is_leap_year_nb(y: int) -> int:
-    """Get whether the year is a leap year."""
+def is_leap_year_nb(y: int) -> bool:
+    """Determine if a given year is a leap year.
+
+    Args:
+        y (int): Year to evaluate.
+
+    Returns:
+        int: True if the year is a leap year, False otherwise.
+    """
     return (y % 4 == 0) and (y % 100 != 0 or y % 400 == 0)
 
 
 @register_jitted(cache=True)
 def last_day_of_month_nb(y: int, m: int) -> int:
-    """Get the last day of the month."""
+    """Determine the last day for a given month and year.
+
+    Args:
+        y (int): Year.
+        m (int): Month.
+
+    Returns:
+        int: Last day of the month.
+    """
     if m == 1:
         return 31
     if m == 2:
@@ -349,7 +575,17 @@ def last_day_of_month_nb(y: int, m: int) -> int:
 
 @register_jitted(cache=True)
 def matches_dtc_nb(dtc: DTCNT, other_dtc: DTCNT) -> bool:
-    """Return whether one or more datetime components match other components."""
+    """Check if the specified datetime components in `dtc` match those in `other_dtc`.
+
+    Components with a value of -1 are considered unspecified and are ignored in the comparison.
+
+    Args:
+        dtc (DTCNT): Named tuple with datetime components, where missing values are indicated by -1.
+        other_dtc (DTCNT): Datetime components to match against.
+
+    Returns:
+        bool: True if the components match, False otherwise.
+    """
     if dtc.year != -1 and other_dtc.year != -1 and dtc.year != other_dtc.year:
         return False
     if dtc.month != -1 and other_dtc.month != -1 and dtc.month != other_dtc.month:
@@ -371,7 +607,15 @@ def matches_dtc_nb(dtc: DTCNT, other_dtc: DTCNT) -> bool:
 
 @register_jitted(cache=True)
 def index_matches_dtc_nb(index: tp.Array1d, other_dtc: DTCNT) -> tp.Array1d:
-    """Run `matches_dtc_nb` on each element in an index and return a mask."""
+    """Apply `matches_dtc_nb` to each element in the index array and return a boolean mask.
+
+    Args:
+        index (Array1d): Array of timestamps to compare.
+        other_dtc (DTCNT): Datetime components to match against.
+
+    Returns:
+        Array1d: Boolean mask indicating which elements match.
+    """
     out = np.empty_like(index, dtype=np.bool_)
     for i in range(len(index)):
         ns = index[i]
@@ -402,18 +646,20 @@ DTCS = DTCST()
 
 __pdoc__[
     "DTCS"
-] = f"""Status returned by `within_fixed_dtc_nb` and `within_periodic_dtc_nb`.
+] = f"""Datetime component status enumeration.
+
+Status codes returned by `within_fixed_dtc_nb` and `within_periodic_dtc_nb`.
 
 ```python
-{prettify(DTCS)}
+{prettify_doc(DTCS)}
 ```
 
-Attributes:
-    SU: Start matched, rest unknown. Move down the stack.
-    EU: End matched, rest unknown. Move down the stack.
-    U: Unknown. Move down the stack.
-    O: Outside
-    I: Inside
+Fields:
+    SU: Start matched; remaining components are unspecified.
+    EU: End matched; remaining components are unspecified.
+    U: Unknown status.
+    O: Outside.
+    I: Inside.
 """
 
 
@@ -427,9 +673,22 @@ def within_fixed_dtc_nb(
     closed_end: bool = False,
     is_last: bool = False,
 ) -> int:
-    """Return whether a single datetime component is within a fixed range.
+    """Return status indicating whether a datetime component is within a fixed range.
 
-    Returns a status of the type `DTCS`."""
+    Args:
+        c (int): Datetime component value.
+        start_c (int): Start boundary of the fixed range.
+        end_c (int): End boundary of the fixed range.
+        prev_status (int): Previous status code.
+
+            See `DTCS`.
+        closed_start (bool): Whether the start boundary is inclusive.
+        closed_end (bool): Whether the end boundary is inclusive.
+        is_last (bool): Flag specifying if this is the final evaluation.
+
+    Returns:
+        int: Status code from `DTCS` reflecting the component's position.
+    """
     if prev_status == DTCS.U:
         _start_c = start_c
         _end_c = end_c
@@ -521,9 +780,23 @@ def within_periodic_dtc_nb(
     overflow_later: bool = False,
     is_last: bool = False,
 ) -> int:
-    """Return whether a single datetime component is within a periodic range.
+    """Return status indicating whether a datetime component is within a periodic range.
 
-    Returns a status of the type `DTCS`."""
+    Args:
+        c (int): Datetime component value.
+        start_c (int): Start boundary of the periodic range.
+        end_c (int): End boundary of the periodic range.
+        prev_status (int): Previous status code.
+
+            See `DTCS`.
+        closed_start (bool): Whether the start boundary is inclusive.
+        closed_end (bool): Whether the end boundary is inclusive.
+        overflow_later (bool): Flag to handle overflow when the range wraps around.
+        is_last (bool): Flag specifying if this is the final evaluation.
+
+    Returns:
+        int: Status code from `DTCS` reflecting the component's position.
+    """
     if prev_status == DTCS.U:
         _start_c = start_c
         _end_c = end_c
@@ -594,7 +867,16 @@ def must_resolve_dtc_nb(
     start_c: int = -1,
     end_c: int = -1,
 ) -> bool:
-    """Return whether the component must be resolved."""
+    """Return whether the datetime component must be resolved.
+
+    Args:
+        c (int): Datetime component value.
+        start_c (int): Start boundary for resolution.
+        end_c (int): End boundary for resolution.
+
+    Returns:
+        bool: True if the component must be resolved, False otherwise.
+    """
     if c == -1:
         return False
     if start_c == -1 and end_c == -1:
@@ -608,7 +890,16 @@ def start_dtc_lt_nb(
     start_c: int = -1,
     end_c: int = -1,
 ) -> bool:
-    """Return whether the start component is less than the end component."""
+    """Return whether the start boundary is less than the end boundary.
+
+    Args:
+        c (int): Datetime component value.
+        start_c (int): Start boundary to compare.
+        end_c (int): End boundary to compare.
+
+    Returns:
+        bool: True if the start boundary is less than the end boundary, False otherwise.
+    """
     if c == -1:
         return False
     if start_c == -1:
@@ -624,7 +915,16 @@ def start_dtc_eq_nb(
     start_c: int = -1,
     end_c: int = -1,
 ) -> bool:
-    """Return whether the start component equals to the end component."""
+    """Return whether the start boundary is equal to the end boundary.
+
+    Args:
+        c (int): Datetime component value.
+        start_c (int): Start boundary to compare.
+        end_c (int): End boundary to compare.
+
+    Returns:
+        bool: True if the start boundary is equal to the end boundary, False otherwise.
+    """
     if c == -1:
         return False
     if start_c == -1:
@@ -640,7 +940,16 @@ def start_dtc_gt_nb(
     start_c: int = -1,
     end_c: int = -1,
 ) -> bool:
-    """Return whether the start component is greater than the end component."""
+    """Return whether the start boundary is greater than the end boundary.
+
+    Args:
+        c (int): Datetime component value.
+        start_c (int): Start boundary to compare.
+        end_c (int): End boundary to compare.
+
+    Returns:
+        bool: True if the start boundary is greater than the end boundary, False otherwise.
+    """
     if c == -1:
         return False
     if start_c == -1:
@@ -658,7 +967,18 @@ def within_dtc_range_nb(
     closed_start: bool = True,
     closed_end: bool = False,
 ) -> bool:
-    """Return whether one or more datetime components are within a range."""
+    """Determine if the given datetime components fall within a specified range.
+
+    Args:
+        dtc (DTCNT): Named tuple with datetime components, where missing values are indicated by -1.
+        start_dtc (DTCNT): Datetime component object representing the start boundary.
+        end_dtc (DTCNT): Datetime component object representing the end boundary.
+        closed_start (bool): Whether the start boundary is inclusive.
+        closed_end (bool): Whether the end boundary is inclusive.
+
+    Returns:
+        bool: True if the datetime components fall within the specified range, False otherwise.
+    """
     last = -1
     overflow_possible = True
     first_overflow = -1
@@ -856,7 +1176,19 @@ def index_within_dtc_range_nb(
     closed_start: bool = True,
     closed_end: bool = False,
 ) -> tp.Array1d:
-    """Run `within_dtc_range_nb` on each element in an index and return a mask."""
+    """Return a boolean mask indicating whether each element in `index` falls within the date-time
+    range defined by `start_dtc` and `end_dtc`.
+
+    Args:
+        index (Array1d): One-dimensional array of date-time elements.
+        start_dtc (DTCNT): Datetime component object representing the start boundary.
+        end_dtc (DTCNT): Datetime component object representing the end boundary.
+        closed_start (bool): Whether the start boundary is inclusive.
+        closed_end (bool): Whether the end boundary is inclusive.
+
+    Returns:
+        Array1d: Boolean mask with True for elements within the range and False otherwise.
+    """
     out = np.empty_like(index, dtype=np.bool_)
     for i in range(len(index)):
         ns = index[i]

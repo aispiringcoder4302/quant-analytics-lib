@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Global registry for chunkables."""
+"""Module providing a global registry for chunkable functions.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.chunking`.
+"""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
@@ -27,22 +31,23 @@ __all__ = [
 
 @define
 class ChunkedSetup(DefineMixin):
-    """Class that represents a chunkable setup.
+    """Class representing a chunkable setup.
 
     !!! note
-        Hashed solely by `setup_id`."""
+        The instance is hashed solely using its `setup_id`.
+    """
 
     setup_id: tp.Hashable = define.field()
-    """Setup id."""
+    """Unique identifier for the setup."""
 
     func: tp.Callable = define.field()
-    """Chunkable function."""
+    """Function registered as chunkable."""
 
     options: tp.DictLike = define.field(default=None)
-    """Options dictionary."""
+    """Dictionary of options for chunked processing."""
 
     tags: tp.SetLike = define.field(default=None)
-    """Set of tags."""
+    """Set of tags associated with the setup."""
 
     @staticmethod
     def get_hash(setup_id: tp.Hashable) -> int:
@@ -54,14 +59,18 @@ class ChunkedSetup(DefineMixin):
 
 
 class ChunkableRegistry(Base):
-    """Class for registering chunkable functions."""
+    """Class for registering and managing chunkable functions."""
 
     def __init__(self) -> None:
         self._setups = {}
 
     @property
     def setups(self) -> tp.Dict[tp.Hashable, ChunkedSetup]:
-        """Dict of registered `ChunkedSetup` instances by `ChunkedSetup.setup_id`."""
+        """Dictionary mapping setup IDs to registered `ChunkedSetup` instances.
+
+        Returns:
+            Dict[Hashable, ChunkedSetup]: The dictionary of registered setups.
+        """
         return self._setups
 
     def register(
@@ -71,14 +80,36 @@ class ChunkableRegistry(Base):
         options: tp.DictLike = None,
         tags: tp.SetLike = None,
     ) -> None:
-        """Register a new setup."""
+        """Register a new chunkable setup.
+
+        Args:
+            func (Callable): Function to register as chunkable.
+            setup_id (Optional[Hashable]): Unique identifier for the setup.
+
+                If omitted, it is derived from the function's module and name.
+            options (DictLike): Dictionary of options for chunking.
+            tags (SetLike): Tags associated with the function.
+
+        Returns:
+            None
+        """
         if setup_id is None:
             setup_id = func.__module__ + "." + func.__name__
         setup = ChunkedSetup(setup_id=setup_id, func=func, options=options, tags=tags)
         self.setups[setup_id] = setup
 
     def match_setups(self, expression: tp.Optional[str] = None, context: tp.KwargsLike = None) -> tp.Set[ChunkedSetup]:
-        """Match setups against an expression with each setup being a context."""
+        """Return a set of registered setups that match a given expression.
+
+        Args:
+            expression (Optional[str]): Expression to filter setups.
+
+                If None, all setups are matched.
+            context (KwargsLike): Additional context data used during evaluation.
+
+        Returns:
+            Set[ChunkedSetup]: The set of setups that satisfy the specified expression.
+        """
         matched_setups = set()
         for setup in self.setups.values():
             if expression is None:
@@ -92,10 +123,16 @@ class ChunkableRegistry(Base):
         return matched_setups
 
     def get_setup(self, setup_id_or_func: tp.Union[tp.Hashable, tp.Callable]) -> tp.Optional[ChunkedSetup]:
-        """Get setup by its id or function.
+        """Retrieve a chunkable setup by its identifier or function.
 
-        `setup_id_or_func` can be an identifier or a function.
-        If it's a function, will build the identifier using its module and name."""
+        Args:
+            setup_id_or_func (Union[Hashable, Callable]): Setup identifier or function.
+
+                If a function is provided, the identifier is constructed from its module and name.
+
+        Returns:
+            Optional[ChunkedSetup]: The corresponding chunkable setup if found; otherwise, None.
+        """
         if hasattr(setup_id_or_func, "py_func"):
             nb_setup_id = setup_id_or_func.__module__ + "." + setup_id_or_func.__name__
             if nb_setup_id in self.setups:
@@ -116,13 +153,25 @@ class ChunkableRegistry(Base):
         target_func: tp.Optional[tp.Callable] = None,
         **kwargs,
     ) -> tp.Callable:
-        """Decorate the setup's function using the `vectorbtpro.utils.chunking.chunked` decorator.
+        """Decorate a chunkable function using the `chunked` decorator.
 
-        Finds setup using `ChunkableRegistry.get_setup`.
+        The setup is retrieved using `ChunkableRegistry.get_setup` and its options are merged
+        with additional keyword arguments.
 
-        Merges setup's options with `options`.
+        Args:
+            setup_id_or_func (Union[Hashable, Callable]): Setup identifier or function.
 
-        Specify `target_func` to apply the found setup on another function."""
+                If a function is provided, the identifier is constructed from its module and name.
+            target_func (Optional[Callable]): Alternative function to decorate.
+
+                If omitted, the function from the setup is used.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.chunking.chunked`.
+
+                These options override the setup's options.
+
+        Returns:
+            Callable: Decorated function with chunked processing applied.
+        """
         setup = self.get_setup(setup_id_or_func)
         if setup is None:
             raise KeyError(f"Setup for {setup_id_or_func} not registered")
@@ -142,7 +191,23 @@ class ChunkableRegistry(Base):
         target_func: tp.Optional[tp.Callable] = None,
         **kwargs,
     ) -> tp.Callable:
-        """Same as `ChunkableRegistry.decorate` but using `vectorbtpro.utils.chunking.resolve_chunked`."""
+        """Resolve a chunkable function using the `resolve_chunked` function.
+
+        Similar to `ChunkableRegistry.decorate`, but applies a specific chunking option.
+
+        Args:
+            setup_id_or_func (Union[Hashable, Callable]): Setup identifier or function.
+
+                If a function is provided, the identifier is constructed from its module and name.
+            option (ChunkedOption): Option to control chunked processing.
+            target_func (Optional[Callable]): Alternative function to apply the setup on.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.chunking.resolve_chunked`.
+
+                These options override the setup's options.
+
+        Returns:
+            Callable: Function with the resolved chunking applied.
+        """
         setup = self.get_setup(setup_id_or_func)
         if setup is None:
             if callable(setup_id_or_func):
@@ -161,7 +226,7 @@ class ChunkableRegistry(Base):
 
 
 ch_reg = ChunkableRegistry()
-"""Default registry of type `ChunkableRegistry`."""
+"""Default registry instance of `ChunkableRegistry` for chunkable functions."""
 
 
 def register_chunkable(
@@ -174,22 +239,40 @@ def register_chunkable(
 ) -> tp.Callable:
     """Register a new chunkable function.
 
-    If `return_wrapped` is True, wraps with the `vectorbtpro.utils.chunking.chunked` decorator.
-    Otherwise, leaves the function as-is (preferred).
+    Wraps the given function with chunkable behavior using the `chunked` decorator if `return_wrapped` is True;
+    otherwise, the function remains unwrapped. Options are merged in the following order:
 
-    Options are merged in the following order:
+    * `options` from `vectorbtpro._settings.chunking`
+    * `setup_options.{setup_id}` from `vectorbtpro._settings.chunking`
+    * provided `options`
+    * `override_options` from `vectorbtpro._settings.chunking`
+    * `override_setup_options.{setup_id}` from `vectorbtpro._settings.chunking`
 
-    * `options` in `vectorbtpro._settings.chunking`
-    * `setup_options.{setup_id}` in `vectorbtpro._settings.chunking`
-    * `options`
-    * `override_options` in `vectorbtpro._settings.chunking`
-    * `override_setup_options.{setup_id}` in `vectorbtpro._settings.chunking`
+    Args:
+        func (Optional[Callable]): Function to register.
+
+            If omitted, a decorator is returned.
+        setup_id (Optional[Hashable]): Unique identifier for the setup.
+
+            If omitted, it is derived from the function's module and name.
+        registry (ChunkableRegistry): Registry to register the function in.
+        tags (SetLike): Tags associated with the function.
+        return_wrapped (bool): Flag indicating whether to wrap the function using the `chunked` decorator.
+        **options: Additional options for configuring the chunkable setup.
+
+    Returns:
+        Callable: Registered function, optionally wrapped with chunking.
 
     !!! note
-        Calling the `register_chunkable` decorator before (or below) the `vectorbtpro.registries.jit_registry.register_jitted`
-        decorator with `return_wrapped` set to True won't work. Doing the same after (or above)
-        `vectorbtpro.registries.jit_registry.register_jitted` will work for calling the function from Python but not from Numba.
-        Generally, avoid wrapping right away and use `ChunkableRegistry.decorate` to perform decoration."""
+        Calling the `register_chunkable` decorator before (or below) the
+        `vectorbtpro.registries.jit_registry.register_jitted` decorator with `return_wrapped` set
+        to True won't work. Using it after (or above) `vectorbtpro.registries.jit_registry.register_jitted`
+        works for Python calls but not for Numba. Generally, avoid wrapping immediately and use
+        `ChunkableRegistry.decorate` for decoration.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
+    """
 
     def decorator(_func: tp.Callable) -> tp.Callable:
         nonlocal setup_id, options

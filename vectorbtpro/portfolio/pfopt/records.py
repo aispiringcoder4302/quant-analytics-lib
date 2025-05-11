@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Classes for working with allocation records."""
+"""Module providing classes for working with allocation records."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic.ranges import Ranges
@@ -40,10 +40,10 @@ alloc_ranges_field_config = ReadonlyConfig(
 
 __pdoc__[
     "alloc_ranges_field_config"
-] = f"""Field config for `AllocRanges`.
+] = f"""Field configuration for `AllocRanges`.
 
 ```python
-{alloc_ranges_field_config.prettify()}
+{alloc_ranges_field_config.prettify_doc()}
 ```
 """
 
@@ -52,7 +52,10 @@ AllocRangesT = tp.TypeVar("AllocRangesT", bound="AllocRanges")
 
 @override_field_config(alloc_ranges_field_config)
 class AllocRanges(Ranges):
-    """Extends `vectorbtpro.records.base.Records` for working with allocation point records."""
+    """Class extending `vectorbtpro.generic.ranges.Ranges` for working with allocation range records.
+    
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.alloc_range_dt`.
+    """
 
     @property
     def field_config(self) -> Config:
@@ -77,10 +80,10 @@ alloc_points_field_config = ReadonlyConfig(
 
 __pdoc__[
     "alloc_points_field_config"
-] = f"""Field config for `AllocRanges`.
+] = f"""Field configuration for `AllocPoints`.
 
 ```python
-{alloc_points_field_config.prettify()}
+{alloc_points_field_config.prettify_doc()}
 ```
 """
 
@@ -89,7 +92,10 @@ AllocPointsT = tp.TypeVar("AllocPointsT", bound="AllocPoints")
 
 @override_field_config(alloc_points_field_config)
 class AllocPoints(Records):
-    """Extends `vectorbtpro.generic.ranges.Ranges` for working with allocation range records."""
+    """Class extending `vectorbtpro.records.base.Records` for working with allocation point records.
+    
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.alloc_point_dt`.
+    """
 
     @property
     def field_config(self) -> Config:

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules with base classes and utilities for pandas objects, such as broadcasting."""
+"""Package providing base classes and utilities for Pandas objects, such as broadcasting."""
 
 from typing import TYPE_CHECKING
 

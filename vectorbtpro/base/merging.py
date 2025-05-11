@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Functions for merging arrays."""
+"""Module providing functions for merging arrays via concatenation and stacking operations."""
 
 from functools import partial
 
@@ -39,7 +39,14 @@ __pdoc__ = {}
 
 
 def concat_arrays(*arrs: tp.MaybeSequence[tp.AnyArray]) -> tp.Array1d:
-    """Concatenate arrays."""
+    """Concatenate provided array-like objects into a single one-dimensional array.
+
+    Args:
+        *arrs (MaybeSequence[AnyArray]): Array-like objects to concatenate.
+
+    Returns:
+        Array1d: Concatenated one-dimensional array.
+    """
     if len(arrs) == 1:
         arrs = arrs[0]
     arrs = list(arrs)
@@ -49,7 +56,15 @@ def concat_arrays(*arrs: tp.MaybeSequence[tp.AnyArray]) -> tp.Array1d:
 
 
 def row_stack_arrays(*arrs: tp.MaybeSequence[tp.AnyArray], expand_axis: int = 1) -> tp.Array2d:
-    """Stack arrays along rows."""
+    """Stack provided array-like objects (converted to 2D arrays) vertically into a single 2D array.
+
+    Args:
+        *arrs (MaybeSequence[AnyArray]): Array-like objects to stack.
+        expand_axis (int): Axis along which to expand the array if necessary.
+
+    Returns:
+        Array2d: Two-dimensional array with the input arrays stacked row-wise.
+    """
     if len(arrs) == 1:
         arrs = arrs[0]
     arrs = list(arrs)
@@ -59,7 +74,18 @@ def row_stack_arrays(*arrs: tp.MaybeSequence[tp.AnyArray], expand_axis: int = 1)
 
 
 def column_stack_arrays(*arrs: tp.MaybeSequence[tp.AnyArray], expand_axis: int = 1) -> tp.Array2d:
-    """Stack arrays along columns."""
+    """Stack provided array-like objects (converted to 2D arrays) horizontally into a single 2D array.
+
+    If all arrays have a single dimension or a single column, they are concatenated vertically
+    and then transposed; otherwise, arrays are concatenated along columns.
+
+    Args:
+        *arrs (MaybeSequence[AnyArray]): Array-like objects to stack.
+        expand_axis (int): Axis along which to expand the array if necessary.
+
+    Returns:
+        Array2d: Two-dimensional array with the input arrays stacked column-wise.
+    """
     if len(arrs) == 1:
         arrs = arrs[0]
     arrs = list(arrs)
@@ -83,7 +109,7 @@ def column_stack_arrays(*arrs: tp.MaybeSequence[tp.AnyArray], expand_axis: int =
 
 
 def concat_merge(
-    *objs,
+    *objs: tp.MaybeSequence[tp.MaybeTuple[tp.Any]],
     keys: tp.Optional[tp.Index] = None,
     filter_results: bool = True,
     raise_no_results: bool = True,
@@ -93,21 +119,37 @@ def concat_merge(
     clean_index_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.MaybeTuple[tp.AnyArray]:
-    """Merge multiple array-like objects through concatenation.
+    """Merge multiple array-like objects by concatenation.
 
-    Supports a sequence of tuples.
+    Args:
+        *objs (MaybeSequence[MaybeTuple[Any]]): Array-like objects to merge.
 
-    If `wrap` is None, it will become True if `wrapper`, `keys`, or `wrap_kwargs` are not None.
-    If `wrap` is True, each array will be wrapped with Pandas Series and merged using `pd.concat`.
-    Otherwise, arrays will be kept as-is and merged using `concat_arrays`.
-    `wrap_kwargs` can be a dictionary or a list of dictionaries.
+            This function supports passing a sequence of tuples, where each element 
+            in the tuple is merged separately.
+        keys (Optional[Index]): Index or sequence of index objects to assign to the merged result.
+        filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
+        raise_no_results (bool): Flag indicating whether to raise a 
+            `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
+        wrap (Optional[bool]): If True, wrap each array with a Pandas Series using `pd.concat`.
 
-    If `wrapper` is provided, will use `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+            If None, the value is inferred from the presence of `wrapper`, `keys`, or `wrap_kwargs`.
+        wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+        wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
+            can be a dictionary or a list of dictionaries.
+            
+            See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+        clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
 
-    Keyword arguments `**kwargs` are passed to `pd.concat` only.
+            See `vectorbtpro.base.indexes.clean_index`.
+        **kwargs: Keyword arguments for `pd.concat`.
+
+    Returns:
+        MaybeTuple[AnyArray]: The merged array-like object, which may be a Pandas Series,
+            a NumPy array, or a tuple/namedtuple of such objects.
 
     !!! note
-        All arrays are assumed to have the same type and dimensionality."""
+        All arrays are assumed to have the same type and dimensionality.
+    """
     if len(objs) == 1:
         objs = objs[0]
     objs = list(objs)
@@ -223,7 +265,7 @@ def concat_merge(
 
 
 def row_stack_merge(
-    *objs,
+    *objs: tp.MaybeSequence[tp.MaybeTuple[tp.Any]],
     keys: tp.Optional[tp.Index] = None,
     filter_results: bool = True,
     raise_no_results: bool = True,
@@ -233,27 +275,42 @@ def row_stack_merge(
     clean_index_kwargs: tp.KwargsLikeSequence = None,
     **kwargs,
 ) -> tp.MaybeTuple[tp.AnyArray]:
-    """Merge multiple array-like or `vectorbtpro.base.wrapping.Wrapping` objects through row stacking.
+    """Merge multiple array-like or `vectorbtpro.base.wrapping.Wrapping` objects via row stacking.
 
-    Supports a sequence of tuples.
+    Args:
+        *objs (MaybeSequence[MaybeTuple[Any]]): Array-like or wrapping objects to merge.
 
-    Argument `wrap` supports the following options:
+            This function supports passing a sequence of tuples, where each element 
+            in the tuple is merged separately.
+        keys (Optional[Index]): Keys used for concatenating arrays along the row axis.
+        filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
+        raise_no_results (bool): Flag indicating whether to raise a 
+            `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
+        wrap (Union[None, str, bool]): Determines wrapping behavior for each object.
 
-    * None: will become True if `wrapper`, `keys`, or `wrap_kwargs` are not None
-    * True: each array will be wrapped with Pandas Series/DataFrame (depending on dimensions)
-    * 'sr', 'series': each array will be wrapped with Pandas Series
-    * 'df', 'frame', 'dataframe': each array will be wrapped with Pandas DataFrame
+            * None: Treated as True if `wrapper`, `keys`, or `wrap_kwargs` is provided.
+            * True: Wraps each array as a Pandas Series or DataFrame based on its dimensions.
+            * "sr" or "series": Wraps each array as a Pandas Series.
+            * "df", "frame", or "dataframe": Wraps each array as a Pandas DataFrame.
 
-    Without wrapping, arrays will be kept as-is and merged using `row_stack_arrays`.
-    Argument `wrap_kwargs` can be a dictionary or a list of dictionaries.
+            Without wrapping, arrays will be kept as-is and merged using `row_stack_arrays`.
+        wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+        wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
+            can be a dictionary or a list of dictionaries.
+            
+            See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+        clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning MultiIndex levels.
 
-    If `wrapper` is provided, will use `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            See `vectorbtpro.base.indexes.clean_index`.
+        **kwargs: Keyword arguments for `pd.concat` and
+            `vectorbtpro.base.wrapping.Wrapping.row_stack`.
 
-    Keyword arguments `**kwargs` are passed to `pd.concat` and
-    `vectorbtpro.base.wrapping.Wrapping.row_stack` only.
+    Returns:
+        MaybeTuple[AnyArray]: The merged result after row stacking.
 
     !!! note
-        All arrays are assumed to have the same type and dimensionality."""
+        All arrays are assumed to have the same type and dimensionality.
+    """
     if len(objs) == 1:
         objs = objs[0]
     objs = list(objs)
@@ -369,7 +426,7 @@ def row_stack_merge(
 
 
 def column_stack_merge(
-    *objs,
+    *objs: tp.MaybeSequence[tp.MaybeTuple[tp.Any]],
     reset_index: tp.Union[None, bool, str] = None,
     fill_value: tp.Scalar = np.nan,
     keys: tp.Optional[tp.Index] = None,
@@ -381,35 +438,52 @@ def column_stack_merge(
     clean_index_kwargs: tp.KwargsLikeSequence = None,
     **kwargs,
 ) -> tp.MaybeTuple[tp.AnyArray]:
-    """Merge multiple array-like or `vectorbtpro.base.wrapping.Wrapping` objects through column stacking.
+    """Merge multiple array-like or `vectorbtpro.base.wrapping.Wrapping` objects via column stacking.
 
-    Supports a sequence of tuples.
+    Args:
+        *objs (MaybeSequence[MaybeTuple[Any]]): Array-like or wrapping objects to merge.
 
-    Argument `wrap` supports the following options:
+            This function supports passing a sequence of tuples, where each element 
+            in the tuple is merged separately.
+        reset_index (Union[None, bool, str]): Option to reset indexes in each object.
 
-    * None: will become True if `wrapper`, `keys`, or `wrap_kwargs` are not None
-    * True: each array will be wrapped with Pandas Series/DataFrame (depending on dimensions)
-    * 'sr', 'series': each array will be wrapped with Pandas Series
-    * 'df', 'frame', 'dataframe': each array will be wrapped with Pandas DataFrame
+            * False or None: Retain the original index.
+            * True or "from_start": Reset indexes to start from zero.
+            * "from_end": Reset indexes to align at the end.
 
-    Without wrapping, arrays will be kept as-is and merged using `column_stack_arrays`.
-    Argument `wrap_kwargs` can be a dictionary or a list of dictionaries.
+            !!! note
+                Applicable to Pandas, NumPy, and `vectorbtpro.base.wrapping.Wrapping` instances.
+        fill_value (Scalar): Value to use for filling missing entries when arrays have different row counts.
+        keys (Optional[Index]): Keys used to label columns in the merged result.
+        filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
+        raise_no_results (bool): Flag indicating whether to raise a 
+            `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
+        wrap (Union[None, str, bool]): Determines wrapping behavior for each object.
 
-    If `wrapper` is provided, will use `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            * None: Treated as True if `wrapper`, `keys`, or `wrap_kwargs` is provided.
+            * True: Wraps each array as a Pandas Series or DataFrame based on its dimensions.
+            * "sr" or "series": Wraps each array as a Pandas Series.
+            * "df", "frame", or "dataframe": Wraps each array as a Pandas DataFrame.
 
-    Keyword arguments `**kwargs` are passed to `pd.concat` and
-    `vectorbtpro.base.wrapping.Wrapping.column_stack` only.
+            Without wrapping, arrays will be kept as-is and merged using `column_stack_arrays`.
+        wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+        wrap_kwargs (KwargsLikeSequence): Keyword arguments for wrapping the result;
+            can be a dictionary or a list of dictionaries.
+            
+            See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+        clean_index_kwargs (KwargsLikeSequence): Keyword arguments for cleaning MultiIndex levels.
 
-    Argument `reset_index` supports the following options:
+            See `vectorbtpro.base.indexes.clean_index`.
+        **kwargs: Keyword arguments for `pd.concat` and
+            `vectorbtpro.base.wrapping.Wrapping.column_stack`.
 
-    * False or None: Keep original index of each object
-    * True or 'from_start': Reset index of each object and align them at start
-    * 'from_end': Reset index of each object and align them at end
-
-    Options above work on Pandas, NumPy, and `vectorbtpro.base.wrapping.Wrapping` instances.
+    Returns:
+        MaybeTuple[AnyArray]: The merged column-stacked array-like object,
+            or a tuple of such objects when merging a sequence of tuples.
 
     !!! note
-        All arrays are assumed to have the same type and dimensionality."""
+        All arrays are assumed to have the same type and dimensionality.
+    """
     if len(objs) == 1:
         objs = objs[0]
     objs = list(objs)
@@ -592,7 +666,7 @@ def column_stack_merge(
 
 
 def imageio_merge(
-    *objs,
+    *objs: tp.MaybeSequence[tp.MaybeTuple[tp.Any]],
     keys: tp.Optional[tp.Index] = None,
     filter_results: bool = True,
     raise_no_results: bool = True,
@@ -600,13 +674,27 @@ def imageio_merge(
     imread_kwargs: tp.KwargsLike = None,
     **imwrite_kwargs,
 ) -> tp.MaybeTuple[tp.Union[None, bytes]]:
-    """Merge multiple figure-like objects by writing them with `imageio`.
+    """Merge multiple figure-like objects into a single image using `imageio`.
 
-    Keyword arguments `to_image_kwargs` are passed to `plotly.graph_objects.Figure.to_image`.
-    Keyword arguments `imread_kwargs` and `**imwrite_kwargs` are passed to
-    `imageio.imread` and `imageio.imwrite` respectively.
+    Args:
+        *objs (MaybeSequence[MaybeTuple[Any]]): Figure-like objects to merge.
 
-    Keys are not used in any way."""
+            This function supports passing a sequence of tuples, where each element 
+            in the tuple is merged separately.
+        keys (Optional[Index]): Not used.
+        filter_results (bool): Whether to filter out results that are `vectorbtpro.utils.execution.NoResult`.
+        raise_no_results (bool): Flag indicating whether to raise a 
+            `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
+        to_image_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Figure.to_image`.
+        imread_kwargs (KwargsLike): Keyword arguments for `imageio.imread`.
+        **imwrite_kwargs: Keyword arguments for `imageio.imwrite`.
+
+    Returns:
+        MaybeTuple[Union[None, bytes]]: The merged image data.
+
+            An individual `bytes` object is returned when a single merged image is produced,
+            or a tuple of `bytes` objects when multiple are merged.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("plotly")
@@ -673,12 +761,27 @@ def imageio_merge(
 
 
 def mixed_merge(
-    *objs,
+    *objs: tp.MaybeSequence[tp.Tuple[tp.Any]],
     merge_funcs: tp.Optional[tp.MergeFuncLike] = None,
     mixed_kwargs: tp.Optional[tp.Sequence[tp.KwargsLike]] = None,
     **kwargs,
 ) -> tp.MaybeTuple[tp.AnyArray]:
-    """Merge objects of mixed types."""
+    """Merge objects of mixed types element-wise using specified merging functions.
+
+    Args:
+        *objs (MaybeSequence[Tuple[Any]]): Tuples of objects to merge.
+
+            Each tuple should have the same length, and merging is performed
+            element-wise across these tuples.
+        merge_funcs (Optional[MergeFuncLike]): Merging function or a sequence of merging functions
+            (or their names) to apply to each group of objects.
+        mixed_kwargs (Optional[Sequence[KwargsLike]]): Sequence of keyword argument dictionaries
+            for each merging function.
+        **kwargs: Keyword arguments for the merging functions if not overridden by `mixed_kwargs`.
+
+    Returns:
+        MaybeTuple[AnyArray]: A tuple containing the merged result for each group of objects.
+    """
     if len(objs) == 1:
         objs = objs[0]
     objs = list(objs)
@@ -718,12 +821,15 @@ merge_func_config = HybridConfig(
 )
 """_"""
 
+
 __pdoc__[
     "merge_func_config"
-] = f"""Config for merging functions.
+] = f"""Configuration for merging functions.
+
+This configuration maps merging function names to their respective implementations:
 
 ```python
-{merge_func_config.prettify()}
+{merge_func_config.prettify_doc()}
 ```
 """
 
@@ -731,9 +837,18 @@ __pdoc__[
 def resolve_merge_func(merge_func: tp.MergeFuncLike) -> tp.Optional[tp.Callable]:
     """Resolve a merging function into a callable.
 
-    If a string, looks up into `merge_func_config`. If a sequence, uses `mixed_merge` with
-    `merge_funcs=merge_func`. If an instance of `vectorbtpro.utils.merging.MergeFunc`, calls
-    `vectorbtpro.utils.merging.MergeFunc.resolve_merge_func` to get the actual callable."""
+    Args:
+        merge_func (MergeFuncLike): Merging function to resolve.
+        
+            * If provided as a string, it is looked up in `merge_func_config`.
+            * If provided as a sequence, a partial application of `mixed_merge` with
+                `merge_funcs=merge_func` is returned.
+            * If provided as an instance of `vectorbtpro.utils.merging.MergeFunc`,
+                its `resolve_merge_func` method is called to obtain the actual callable.
+
+    Returns:
+        Optional[Callable]: The resolved merging function as a callable, or None if `merge_func` is None.
+    """
     if merge_func is None:
         return None
     if isinstance(merge_func, str):
@@ -748,7 +863,14 @@ def resolve_merge_func(merge_func: tp.MergeFuncLike) -> tp.Optional[tp.Callable]
 
 
 def is_merge_func_from_config(merge_func: tp.MergeFuncLike) -> bool:
-    """Return whether the merging function can be found in `merge_func_config`."""
+    """Determine if the provided merging function is defined in `merge_func_config`.
+
+    Args:
+        merge_func (MergeFuncLike): Merging function (or its representation) to check.
+
+    Returns:
+        bool: True if `merge_func` is found in `merge_func_config`, False otherwise.
+    """
     if merge_func is None:
         return False
     if isinstance(merge_func, str):

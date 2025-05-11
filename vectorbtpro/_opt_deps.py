@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Optional dependencies."""
+"""Module providing configuration for optional dependencies for internal use."""
 
 from vectorbtpro.utils.config import HybridConfig
 
@@ -20,7 +20,7 @@ opt_dep_config = HybridConfig(
     dict(
         yfinance=dict(
             link="https://pypi.org/project/yfinance/",
-            version=">=0.2.20",
+            version=">=0.2.56",
         ),
         binance=dict(
             dist_name="python-binance",
@@ -84,6 +84,7 @@ opt_dep_config = HybridConfig(
         alpaca=dict(
             dist_name="alpaca-py",
             link="https://pypi.org/project/alpaca-py/",
+            version=">=0.40.0",
         ),
         polygon=dict(
             dist_name="polygon-api-client",
@@ -163,6 +164,7 @@ opt_dep_config = HybridConfig(
         ),
         alpha_vantage=dict(
             link="https://pypi.org/project/alpha_vantage/",
+            version=">=3.0.0",
         ),
         databento=dict(
             link="https://pypi.org/project/databento/",
@@ -234,16 +236,27 @@ opt_dep_config = HybridConfig(
         ),
         lmdbm=dict(
             link="https://pypi.org/project/lmdbm/",
-        )
+        ),
+        bm25s=dict(
+            link="https://pypi.org/project/bm25s/",
+        ),
+        PyStemmer=dict(
+            link="https://pypi.org/project/PyStemmer/",
+        ),
+        pyperclip=dict(
+            link="https://pypi.org/project/pyperclip/",
+        ),
     )
 )
 """_"""
 
 __pdoc__[
     "opt_dep_config"
-] = f"""Config for optional packages.
+] = f"""Configuration for optional dependencies used internally by vectorbtpro.
+
+Contains package metadata including download links, version requirements, and distribution names where applicable.
 
 ```python
-{opt_dep_config.prettify()}
+{opt_dep_config.prettify_doc()}
 ```
 """

@@ -8,16 +8,19 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for working with drawdown records.
+"""Module providing the base class for managing drawdown records.
 
-Drawdown records capture information on drawdowns. Since drawdowns are ranges,
-they subclass `vectorbtpro.generic.ranges.Ranges`.
+Drawdown records capture critical information about drawdown intervals and are
+implemented as a subclass of `vectorbtpro.generic.ranges.Ranges`.
 
 !!! warning
-    `Drawdowns` return both recovered AND active drawdowns, which may skew your performance results.
-    To only consider recovered drawdowns, you should explicitly query `status_recovered` attribute.
+    `Drawdowns` include both recovered and active drawdowns, which may skew performance
+    results.
 
-Using `Drawdowns.from_price`, you can generate drawdown records for any time series and analyze them right away.
+    To focus on recovered drawdowns only, explicitly use the `status_recovered` attribute.
+
+Call `Drawdowns.from_price` to generate drawdown records from any time series for
+immediate analysis.
 
 ```pycon
 >>> from vectorbtpro import *
@@ -53,7 +56,7 @@ Timedelta('66 days 00:00:00')
 
 ## From accessors
 
-Moreover, all generic accessors have a property `drawdowns` and a method `get_drawdowns`:
+Generic accessors provide a `drawdowns` property and a `get_drawdowns` method:
 
 ```pycon
 >>> # vectorbtpro.generic.accessors.GenericAccessor.drawdowns.coverage
@@ -99,8 +102,8 @@ Avg Recovery Duration Ratio                1.0
 Name: a, dtype: object
 ```
 
-By default, the metrics `max_dd`, `avg_dd`, `max_dd_duration`, and `avg_dd_duration` do
-not include active drawdowns. To change that, pass `incl_active=True`:
+By default, metrics `max_dd`, `avg_dd`, `max_dd_duration`, and `avg_dd_duration`
+exclude active drawdowns. To include active drawdowns, pass `incl_active=True`:
 
 ```pycon
 >>> drawdowns['a'].stats(settings=dict(incl_active=True))
@@ -162,7 +165,7 @@ Name: group, dtype: object
 !!! hint
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Drawdowns.subplots`.
 
-`Drawdowns` class has a single subplot based on `Drawdowns.plot`:
+The `Drawdowns` class provides a single subplot through `Drawdowns.plot`:
 
 ```pycon
 >>> drawdowns['a'].plots().show()
@@ -218,10 +221,10 @@ dd_field_config = ReadonlyConfig(
 
 __pdoc__[
     "dd_field_config"
-] = f"""Field config for `Drawdowns`.
+] = f"""Field configuration for `Drawdowns`.
 
 ```python
-{dd_field_config.prettify()}
+{dd_field_config.prettify_doc()}
 ```
 """
 
@@ -230,10 +233,10 @@ dd_attach_field_config = ReadonlyConfig(dict(status=dict(attach_filters=True)))
 
 __pdoc__[
     "dd_attach_field_config"
-] = f"""Config of fields to be attached to `Drawdowns`.
+] = f"""Field attachment configuration for `Drawdowns`.
 
 ```python
-{dd_attach_field_config.prettify()}
+{dd_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -262,10 +265,10 @@ dd_shortcut_config = ReadonlyConfig(
 
 __pdoc__[
     "dd_shortcut_config"
-] = f"""Config of shortcut properties to be attached to `Drawdowns`.
+] = f"""Shortcut properties configuration for `Drawdowns`.
 
 ```python
-{dd_shortcut_config.prettify()}
+{dd_shortcut_config.prettify_doc()}
 ```
 """
 
@@ -276,9 +279,13 @@ DrawdownsT = tp.TypeVar("DrawdownsT", bound="Drawdowns")
 @attach_fields(dd_attach_field_config)
 @override_field_config(dd_field_config)
 class Drawdowns(Ranges):
-    """Extends `vectorbtpro.generic.ranges.Ranges` for working with drawdown records.
+    """Class extending `vectorbtpro.generic.ranges.Ranges` for working with drawdown records.
 
-    Requires `records_arr` to have all fields defined in `vectorbtpro.generic.enums.drawdown_dt`."""
+    Requires `records_arr` to have all fields defined in `vectorbtpro.generic.enums.drawdown_dt`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.drawdowns`.
+    """
 
     @property
     def field_config(self) -> Config:
@@ -301,9 +308,34 @@ class Drawdowns(Ranges):
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> DrawdownsT:
-        """Build `Drawdowns` from price.
+        """Create a new `Drawdowns` instance from price data.
 
-        `**kwargs` will be passed to `Drawdowns.__init__`."""
+        Args:
+            close (ArrayLike): Array of close prices.
+            open (Optional[ArrayLike]): Array of open prices.
+            high (Optional[ArrayLike]): Array of high prices.
+            low (Optional[ArrayLike]): Array of low prices.
+            sim_start (Optional[ArrayLike]): Start index of the simulation range.
+            sim_end (Optional[ArrayLike]): End index of the simulation range.
+            attach_data (bool): Flag indicating whether to attach the OHLC data.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `Drawdowns`.
+
+        Returns:
+            Drawdowns: New instance of `Drawdowns` created from the provided price data.
+
+        See:
+            `vectorbtpro.generic.nb.records.get_drawdowns_nb`
+        """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
 
@@ -337,7 +369,16 @@ class Drawdowns(Ranges):
         )
 
     def get_ranges(self, **kwargs) -> Ranges:
-        """Get records of type `vectorbtpro.generic.ranges.Ranges` for peak-to-end ranges."""
+        """Return peak-to-end range records.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
+
+        Returns:
+            Ranges: Instance of `Ranges` representing peak-to-end records.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
+        """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
         new_records_arr["col"][:] = self.get_field_arr("col").copy()
@@ -355,7 +396,16 @@ class Drawdowns(Ranges):
         )
 
     def get_decline_ranges(self, **kwargs) -> Ranges:
-        """Get records of type `vectorbtpro.generic.ranges.Ranges` for peak-to-valley ranges."""
+        """Return peak-to-valley range records.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
+
+        Returns:
+            Ranges: Instance of `Ranges` representing peak-to-valley records.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
+        """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
         new_records_arr["col"][:] = self.get_field_arr("col").copy()
@@ -373,7 +423,16 @@ class Drawdowns(Ranges):
         )
 
     def get_recovery_ranges(self, **kwargs) -> Ranges:
-        """Get records of type `vectorbtpro.generic.ranges.Ranges` for valley-to-end ranges."""
+        """Return valley-to-end range records.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
+
+        Returns:
+            Ranges: Instance of `Ranges` representing valley-to-end records.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
+        """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
         new_records_arr["col"][:] = self.get_field_arr("col").copy()
@@ -393,9 +452,26 @@ class Drawdowns(Ranges):
     # ############# Drawdown ############# #
 
     def get_drawdown(self, jitted: tp.JittedOption = None, chunked: tp.ChunkedOption = None, **kwargs) -> MappedArray:
-        """See `vectorbtpro.generic.nb.records.dd_drawdown_nb`.
+        """Return the drawdown values.
 
-        Takes into account both recovered and active drawdowns."""
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Drawdowns.map_array`.
+
+        Returns:
+            MappedArray: Array of computed drawdown values.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_drawdown_nb`
+
+        !!! note
+            Both recovered and active drawdowns are considered.
+        """
         func = jit_reg.resolve_option(nb.dd_drawdown_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         drawdown = func(self.get_field_arr("start_val"), self.get_field_arr("valley_val"))
@@ -409,9 +485,26 @@ class Drawdowns(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get average drawdown (ADD).
+        """Return the average drawdown computed from `Drawdowns.drawdown`.
 
-        Based on `Drawdowns.drawdown`."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
+
+        Returns:
+            MaybeSeries: Average drawdown value.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="avg_drawdown"), wrap_kwargs)
         return self.drawdown.mean(group_by=group_by, jitted=jitted, chunked=chunked, wrap_kwargs=wrap_kwargs, **kwargs)
 
@@ -423,9 +516,26 @@ class Drawdowns(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get maximum drawdown (MDD).
+        """Return the maximum drawdown computed from `Drawdowns.drawdown`.
 
-        Based on `Drawdowns.drawdown`."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.min`.
+
+        Returns:
+            MaybeSeries: Maximum drawdown value.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="max_drawdown"), wrap_kwargs)
         return self.drawdown.min(group_by=group_by, jitted=jitted, chunked=chunked, wrap_kwargs=wrap_kwargs, **kwargs)
 
@@ -437,9 +547,26 @@ class Drawdowns(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """See `vectorbtpro.generic.nb.records.dd_recovery_return_nb`.
+        """Return the recovery return values.
 
-        Takes into account both recovered and active drawdowns."""
+        !!! note
+            Both recovered and active drawdowns are considered.
+
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Drawdowns.map_array`.
+
+        Returns:
+            MappedArray: Array containing the computed recovery return values.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_return_nb`
+        """
         func = jit_reg.resolve_option(nb.dd_recovery_return_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         recovery_return = func(self.get_field_arr("valley_val"), self.get_field_arr("end_val"))
@@ -453,9 +580,26 @@ class Drawdowns(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get average recovery return.
+        """Return the average recovery return computed from `Drawdowns.recovery_return`.
 
-        Based on `Drawdowns.recovery_return`."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
+
+        Returns:
+            MaybeSeries: Average recovery return.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="avg_recovery_return"), wrap_kwargs)
         return self.recovery_return.mean(
             group_by=group_by,
@@ -473,9 +617,26 @@ class Drawdowns(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get maximum recovery return.
+        """Return the maximum recovery return computed from `Drawdowns.recovery_return`.
 
-        Based on `Drawdowns.recovery_return`."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
+
+        Returns:
+            MaybeSeries: Maximum recovery return.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="max_recovery_return"), wrap_kwargs)
         return self.recovery_return.max(
             group_by=group_by,
@@ -493,9 +654,26 @@ class Drawdowns(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """See `vectorbtpro.generic.nb.records.dd_decline_duration_nb`.
+        """Compute the decline duration.
 
-        Takes into account both recovered and active drawdowns."""
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Drawdowns.map_array`.
+
+        Returns:
+            MappedArray: Computed decline duration.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_decline_duration_nb`
+
+        !!! note
+            Calculation accounts for both recovered and active drawdowns.
+        """
         func = jit_reg.resolve_option(nb.dd_decline_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         decline_duration = func(self.get_field_arr("start_idx"), self.get_field_arr("valley_idx"))
@@ -507,11 +685,27 @@ class Drawdowns(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """See `vectorbtpro.generic.nb.records.dd_recovery_duration_nb`.
+        """Compute the recovery duration.
 
-        A value higher than 1 means the recovery was slower than the decline.
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
 
-        Takes into account both recovered and active drawdowns."""
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Drawdowns.map_array`.
+
+        Returns:
+            MappedArray: Computed recovery duration.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_duration_nb`
+
+        !!! note
+            A value higher than 1 indicates that recovery was slower than the decline.
+            Calculation accounts for both recovered and active drawdowns.
+        """
         func = jit_reg.resolve_option(nb.dd_recovery_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         recovery_duration = func(self.get_field_arr("valley_idx"), self.get_field_arr("end_idx"))
@@ -523,9 +717,26 @@ class Drawdowns(Ranges):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """See `vectorbtpro.generic.nb.records.dd_recovery_duration_ratio_nb`.
+        """Compute the recovery duration ratio.
 
-        Takes into account both recovered and active drawdowns."""
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Drawdowns.map_array`.
+
+        Returns:
+            MappedArray: Computed recovery duration ratio.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_duration_ratio_nb`
+
+        !!! note
+            Calculation accounts for both recovered and active drawdowns.
+        """
         func = jit_reg.resolve_option(nb.dd_recovery_duration_ratio_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         recovery_duration_ratio = func(
@@ -544,9 +755,28 @@ class Drawdowns(Ranges):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Get drawdown of the last active drawdown only.
+        """Return the drawdown of the last active drawdown.
 
-        Does not support grouping."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            MaybeSeries: Active drawdown.
+
+        !!! note
+            Grouping is not supported by this method.
+        """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
         wrap_kwargs = merge_dicts(dict(name_or_index="active_drawdown"), wrap_kwargs)
@@ -564,9 +794,29 @@ class Drawdowns(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get duration of the last active drawdown only.
+        """Return the duration of the last active drawdown.
 
-        Does not support grouping."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
+
+        Returns:
+            MaybeSeries: Duration of the active drawdown.
+
+        !!! note
+            Grouping is not supported by this method.
+        """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
         wrap_kwargs = merge_dicts(dict(to_timedelta=True, name_or_index="active_duration"), wrap_kwargs)
@@ -586,9 +836,28 @@ class Drawdowns(Ranges):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Get recovery of the last active drawdown only.
+        """Return the recovery of the last active drawdown.
 
-        Does not support grouping."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            MaybeSeries: Active recovery.
+
+        !!! note
+            Grouping is not supported by this method.
+        """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
         wrap_kwargs = merge_dicts(dict(name_or_index="active_recovery"), wrap_kwargs)
@@ -607,9 +876,29 @@ class Drawdowns(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get recovery return of the last active drawdown only.
+        """Return the recovery return of the last active drawdown.
 
-        Does not support grouping."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
+
+        Returns:
+            MaybeSeries: Recovery return of the active drawdown.
+
+        !!! note
+            Grouping is not supported by this method.
+        """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
         wrap_kwargs = merge_dicts(dict(name_or_index="active_recovery_return"), wrap_kwargs)
@@ -630,9 +919,29 @@ class Drawdowns(Ranges):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get recovery duration of the last active drawdown only.
+        """Return the recovery duration of the last active drawdown.
 
-        Does not support grouping."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.nth`.
+
+        Returns:
+            MaybeSeries: Recovery duration of the active drawdown.
+
+        !!! note
+            Grouping is not supported by this method.
+        """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
         wrap_kwargs = merge_dicts(dict(to_timedelta=True, name_or_index="active_recovery_duration"), wrap_kwargs)
@@ -649,10 +958,14 @@ class Drawdowns(Ranges):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `Drawdowns.stats`.
+        """Default configuration for `Drawdowns.stats`.
 
-        Merges `vectorbtpro.generic.ranges.Ranges.stats_defaults` and
-        `stats` from `vectorbtpro._settings.drawdowns`."""
+        Merges the defaults from `vectorbtpro.generic.ranges.Ranges.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.drawdowns`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the stats builder.
+        """
         from vectorbtpro._settings import settings
 
         drawdowns_stats_cfg = settings["drawdowns"]["stats"]
@@ -792,7 +1105,7 @@ class Drawdowns(Ranges):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         top_n: tp.Optional[int] = 5,
         plot_ohlc: bool = True,
         plot_close: bool = True,
@@ -817,31 +1130,38 @@ class Drawdowns(Ranges):
         """Plot drawdowns.
 
         Args:
-            column (str): Name of the column to plot.
-            top_n (int): Filter top N drawdown records by maximum drawdown.
-            plot_ohlc (bool): Whether to plot OHLC.
-            plot_close (bool): Whether to plot close.
-            plot_markers (bool): Whether to plot markers.
-            plot_zones (bool): Whether to plot zones.
-            ohlc_type: Either 'OHLC', 'Candlestick' or Plotly trace.
+            column (Optional[Column]): Identifier of the column to plot.
+            top_n (Optional[int]): Display only the top N records sorted by maximum duration.
+            plot_ohlc (bool): Whether to plot the OHLC data.
+            plot_close (bool): Whether to plot the close price if OHLC data is not plotted.
+            plot_markers (bool): Plot markers for significant drawdown events.
+            plot_zones (bool): Plot zones delineating drawdown phases.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            ohlc_trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `Drawdowns.close`.
-            peak_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for peak values.
-            valley_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for valley values.
-            recovery_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for recovery values.
-            active_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for active recovery values.
-            decline_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for decline zones.
-            recovery_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for recovery zones.
-            active_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for active recovery zones.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            xref (str): X coordinate axis.
-            yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            peak_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for peak markers.
+            valley_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for valley markers.
+            recovery_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for recovery markers.
+            active_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for active recovery markers.
+            decline_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for shapes representing decline zones.
+            recovery_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for shapes representing recovery zones.
+            active_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for shapes representing active recovery zones.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Figure object containing the plotted drawdowns and price data.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=8)
             >>> price = pd.Series([1, 2, 1, 2, 3, 2, 1, 2], index=index)
@@ -1103,7 +1423,7 @@ class Drawdowns(Ranges):
                 self_col.status_recovered.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(
                             x0=RepFunc(lambda i: start_idx[recovered_mask][i]),
                             x1=RepFunc(lambda i: valley_idx[recovered_mask][i]),
@@ -1121,7 +1441,7 @@ class Drawdowns(Ranges):
                 self_col.status_recovered.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(
                             x0=RepFunc(lambda i: valley_idx[recovered_mask][i]),
                             x1=RepFunc(lambda i: end_idx[recovered_mask][i]),
@@ -1139,7 +1459,7 @@ class Drawdowns(Ranges):
                 self_col.status_active.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(
                             x0=RepFunc(lambda i: start_idx[active_mask][i]),
                             x1=RepFunc(lambda i: end_idx[active_mask][i]),
@@ -1157,10 +1477,14 @@ class Drawdowns(Ranges):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Drawdowns.plots`.
+        """Default configuration for `Drawdowns.plots`.
 
-        Merges `vectorbtpro.generic.ranges.Ranges.plots_defaults` and
-        `plots` from `vectorbtpro._settings.drawdowns`."""
+        Merges the defaults from `vectorbtpro.generic.ranges.Ranges.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.drawdowns`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the plots builder.
+        """
         from vectorbtpro._settings import settings
 
         drawdowns_plots_cfg = settings["drawdowns"]["plots"]

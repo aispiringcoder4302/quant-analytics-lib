@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RSI`."""
+"""Module defining the `RSI` class for calculating the Relative Strength Index indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.generic import enums as generic_enums
@@ -28,14 +28,26 @@ RSI = IndicatorFactory(
     input_names=["close"],
     param_names=["window", "wtype"],
     output_names=["rsi"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        rsi=dict(
+            doc="Relative Strength Index (RSI) series.",
+        ),
+    ),
 ).with_apply_func(
     nb.rsi_nb,
     kwargs_as_args=["minp", "adjust"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
         )
     ),
     window=14,
@@ -46,18 +58,24 @@ RSI = IndicatorFactory(
 
 
 class _RSI(RSI):
-    """Relative Strength Index (RSI).
+    """Class representing the Relative Strength Index (RSI) indicator.
 
-    Compares the magnitude of recent gains and losses over a specified time
-    period to measure speed and change of price movements of a security. It is
-    primarily used to attempt to identify overbought or oversold conditions in
-    the trading of an asset.
+    Represents the Relative Strength Index indicator, which measures the speed
+    and change of price movements of a security by comparing the magnitude of
+    recent gains and losses over a specified period. It is primarily used to
+    identify overbought or oversold conditions.
 
-    See [Relative Strength Index (RSI)](https://www.investopedia.com/terms/r/rsi.asp)."""
+    See [Relative Strength Index (RSI)](https://www.investopedia.com/terms/r/rsi.asp).
+
+    See:
+        * `RSI.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.rsi_nb` for the underlying implementation.
+        * https://www.investopedia.com/terms/r/rsi.asp for the definition of RSI.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         limits: tp.Tuple[float, float] = (30, 70),
         rsi_trace_kwargs: tp.KwargsLike = None,
         add_shape_kwargs: tp.KwargsLike = None,
@@ -65,18 +83,26 @@ class _RSI(RSI):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `RSI.rsi`.
+        """Plot the `RSI.rsi` output of the RSI indicator.
 
         Args:
-            column (str): Name of the column to plot.
-            limits (tuple of float): Tuple of the lower and upper limit.
-            rsi_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `RSI.rsi`.
-            add_shape_kwargs (dict): Keyword arguments passed to `fig.add_shape` when adding the range between both limits.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            limits (Tuple[float, float]): Tuple representing the lower and upper boundaries for the RSI plot.
+            rsi_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `RSI.rsi`.
+            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Figure object containing the RSI line plot and
+                the shaded area between the specified limits.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.RSI.run(ohlcv['Close']).plot().show()
             ```
@@ -88,7 +114,7 @@ class _RSI(RSI):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if rsi_trace_kwargs is None:
             rsi_trace_kwargs = {}

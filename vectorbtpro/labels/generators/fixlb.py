@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FIXLB`."""
+"""Module defining the `FIXLB` generator class for fixed labels."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.indicators.factory import IndicatorFactory
@@ -26,21 +26,44 @@ FIXLB = IndicatorFactory(
     input_names=["close"],
     param_names=["n"],
     output_names=["labels"],
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        labels=dict(
+            doc="Fixed labels.",
+        ),
+    ),
 ).with_apply_func(
     nb.fixed_labels_nb,
+    param_settings=dict(
+        n=dict(
+            doc="Period offset into the future.",
+        ),
+    ),
     n=1,
 )
 
 
 class _FIXLB(FIXLB):
-    """Label generator based on `vectorbtpro.labels.nb.fixed_labels_nb`."""
+    """Class representing the look-ahead fixed label generator.
 
-    def plot(self, column: tp.Optional[tp.Label] = None, **kwargs) -> tp.BaseFigure:
-        """Plot `FIXLB.close` and overlay it with the heatmap of `FIXLB.labels`.
+    See:
+        * `FIXLB.run` for the main entry point.
+        * `vectorbtpro.labels.nb.fixed_labels_nb` for the underlying implementation.
+    """
 
-        `**kwargs` are passed to `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+    def plot(self, column: tp.Optional[tp.Column] = None, **kwargs) -> tp.BaseFigure:
+        """Plot `FIXLB.close` and overlay it with a heatmap of `FIXLB.labels`.
 
-        Usage:
+        Args:
+            column (Optional[Column]): Identifier of the column to plot.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.overlay_with_heatmap`.
+
+        Returns:
+            BaseFigure: Resulting figure object.
+
+        Examples:
             ```pycon
             >>> vbt.FIXLB.run(ohlcv['Close']).plot().show()
             ```

@@ -37,6 +37,7 @@ if typing.TYPE_CHECKING:
 from vectorbtpro import _typing as tp
 from vectorbtpro._settings import settings
 from vectorbtpro._version import __version__ as version, __release__ as release
+from vectorbtpro.utils.formatting import prettify_doc
 
 # Silence warnings
 import warnings
@@ -136,36 +137,44 @@ def _import_more_stuff():
     return locals()
 
 
+imported_star = {}
+"""_"""
+
+
 star_import = settings["importing"]["star_import"]
 if star_import.lower() == "all":
     globals().update(_import_more_stuff())
-    imported_stuff = globals()
+    imported_star.update(globals())
 elif star_import.lower() == "vbt":
-    imported_stuff = globals()
+    imported_star.update(globals())
 elif star_import.lower() == "minimal":
-    import sys
+    import vectorbtpro as vbt
 
-    vbt = sys.modules[__name__]
     more_stuff = _import_more_stuff()
     globals().update(more_stuff)
-    imported_stuff = {"vbt": vbt, "tp": tp, **more_stuff}
+    imported_star.update({"vbt": vbt, "tp": tp, **more_stuff})
     __all__ = ["vbt", "tp", *more_stuff.keys()]
 elif star_import.lower() == "none":
-    imported_stuff = dict()
     __all__ = []
 else:
     raise ValueError(f"Invalid star import: '{star_import}'")
 
 
-def whats_imported():
-    """Print references and their values that got imported when running `from vectorbtpro import *`."""
+def whats_imported() -> None:
+    """Prints a formatted table of names and values for all references imported with `from vectorbtpro import *`.
+
+    The table is constructed using a Pandas Series and displayed via the `ptable` utility function.
+
+    Returns:
+        None
+    """
     import pandas as pd
 
     from vectorbtpro.utils.formatting import ptable
     from vectorbtpro.utils.module_ import get_refname
 
     values = {}
-    for k, v in imported_stuff.items():
+    for k, v in imported_star.items():
         refname = get_refname(v)
         if refname is not None and str(v).startswith("<"):
             values[k] = refname
@@ -183,3 +192,11 @@ __pdoc__ = dict()
 __pdoc__["_dtypes"] = True
 __pdoc__["_opt_deps"] = True
 __pdoc__["_settings"] = True
+__pdoc__[
+    "imported_star"
+] = f"""Modules and objects that are imported by default with `from vectorbtpro import *`.
+
+```python
+{prettify_doc(imported_star)}
+```
+"""

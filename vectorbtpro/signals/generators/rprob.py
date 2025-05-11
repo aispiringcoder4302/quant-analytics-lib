@@ -8,13 +8,12 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `RPROB`."""
-
-import numpy as np
+"""Module providing the `RPROB` class for generating random entry signals based on probabilities."""
 
 from vectorbtpro.indicators.configs import flex_elem_param_config
 from vectorbtpro.signals.factory import SignalFactory
 from vectorbtpro.signals.nb import rand_by_prob_place_nb
+from vectorbtpro.utils.config import merge_dicts
 
 __all__ = [
     "RPROB",
@@ -35,22 +34,31 @@ RPROB = SignalFactory(
         pass_kwargs=["pick_first"],
     ),
     param_settings=dict(
-        prob=flex_elem_param_config,
+        prob=merge_dicts(
+            flex_elem_param_config,
+            dict(
+                doc="Probability of placing an entry, as a scalar or an array.",
+            ),
+        ),
     ),
     seed=None,
 )
 
 
 class _RPROB(RPROB):
-    """Random entry signal generator based on probabilities.
+    """Class representing a random entry signal generator based on probabilities.
 
-    Generates `entries` based on `vectorbtpro.signals.nb.rand_by_prob_place_nb`.
+    See:
+        * `RPROB.run` for the main entry point.
+        * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the entry placement.
 
     !!! hint
-        All parameters can be either a single value (per frame) or a NumPy array (per row, column,
-        or element). To generate multiple combinations, pass them as lists.
+        All parameters can be provided as a single value (per frame) or as a NumPy array
+        (per row, column, or element).
 
-    Usage:
+        To generate multiple combinations, pass them as lists.
+
+    Examples:
         Generate three columns with different entry probabilities:
 
         ```pycon

@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules with classes and utilities for portfolio optimization."""
+"""Package providing classes and utilities for portfolio optimization.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.pfopt`.
+"""
 
 from typing import TYPE_CHECKING
 

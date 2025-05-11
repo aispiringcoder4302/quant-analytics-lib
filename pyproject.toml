@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vectorbtpro"
-version = "2025.3.1"
+version = "2025.5.11"
 description = "Next-Generation Quantitative Analysis Tool"
 license = { file = "LICENSE" }
 authors = [{ name = "Oleg Polakow", email = "olegpolakow@vectorbt.pro" }]
@@ -61,19 +61,19 @@ data-base = [
     "SQLAlchemy>=2.0.0",
     "duckdb",
     "pyarrow",
-    "yfinance>=0.2.20",
+    "yfinance>=0.2.56",
 ]
 data = [
     "vectorbtpro[data-base]",
     "duckdb-engine",
     "fastparquet",
     "python-binance>=1.0.16",
-    "alpaca-py",
+    "alpaca-py>=0.40.0",
     "ccxt>=1.89.14",
     "polygon-api-client>=1.0.0",
     "beautifulsoup4",
     "nasdaq-data-link",
-    "alpha_vantage",
+    "alpha_vantage>=3.0.0",
     "databento",
     "findatapy",
 ]
@@ -112,7 +112,7 @@ exec = [
 ]
 plot-base = [
     "matplotlib>=3.2.0",
-    "plotly>=5.0.0, <6.0.0",
+    "plotly>=5.0.0",
     "ipywidgets>=7.0.0",
     "kaleido",
 ]
@@ -126,7 +126,6 @@ pfopt-base = [
 ]
 pfopt = [
     "vectorbtpro[pfopt-base]",
-    "universal-portfolios"
 ]
 stats-base = [
     "quantstats>=0.0.37"
@@ -143,7 +142,8 @@ io-base = [
 ]
 io = [
     "vectorbtpro[io-base]",
-    "lz4"
+    "lz4",
+    "pyperclip"
 ]
 knwl-base = [
     "tabulate",
@@ -153,6 +153,8 @@ knwl-base = [
     "openai",
     "tiktoken",
     "lmdbm",
+    "bm25s",
+    "PyStemmer",
 ]
 knwl = [
     "vectorbtpro[knwl-base]",
@@ -183,6 +185,3 @@ include-package-data = true
 [tool.setuptools.packages.find]
 include = ["vectorbtpro", "vectorbtpro.*"]
 namespaces = false
-
-[tool.setuptools.package-data]
-vectorbtpro = ["templates/*.json"]

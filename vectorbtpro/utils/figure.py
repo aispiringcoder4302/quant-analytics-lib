@@ -8,12 +8,17 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for constructing and displaying figures."""
+"""Module providing utilities for constructing and displaying figures.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.plotting`.
+"""
 
 from vectorbtpro.utils.module_ import assert_can_import
 
 assert_can_import("plotly")
 
+import inspect
 from pathlib import Path
 
 import numpy as np
@@ -41,7 +46,21 @@ def resolve_axis_refs(
     xref: tp.Optional[str] = None,
     yref: tp.Optional[str] = None,
 ) -> tp.Tuple[str, str]:
-    """Get x-axis and y-axis references."""
+    """Calculate x-axis and y-axis references based on provided trace settings.
+
+    Args:
+        add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+            for example, `dict(row=1, col=1)`.
+        xref (Optional[str]): Reference for the x-axis (e.g., "x", "x2").
+
+            If None, it is inferred from the figure.
+        yref (Optional[str]): Reference for the y-axis (e.g., "y", "y2").
+
+            If None, it is inferred from the figure.
+
+    Returns:
+        tuple[str, str]: Calculated x-axis and y-axis references.
+    """
     if add_trace_kwargs is None:
         add_trace_kwargs = {}
     row = add_trace_kwargs.get("row", 1)
@@ -60,7 +79,15 @@ def resolve_axis_refs(
 
 
 def get_domain(ref: str, fig: tp.BaseFigure) -> tp.Tuple[int, int]:
-    """Get domain of a coordinate axis."""
+    """Retrieve the domain boundaries of a coordinate axis from the given figure.
+
+    Args:
+        ref (str): Axis reference (e.g., 'x', 'x2', 'y', 'y2').
+        fig (BaseFigure): Plotly figure containing the axis.
+
+    Returns:
+        tuple[int, int]: Lower and upper boundaries of the axis domain.
+    """
     axis = ref[0] + "axis" + ref[1:]
     if axis in fig.layout:
         if "domain" in fig.layout[axis]:
@@ -73,10 +100,18 @@ FigureMixinT = tp.TypeVar("FigureMixinT", bound="FigureMixin")
 
 
 class FigureMixin(Base):
-    """Mixin class for figures."""
+    """Mixin class that provides additional methods for copying, modifying, and displaying figures."""
 
     def copy(self: FigureMixinT, *args, **kwargs) -> FigureMixinT:
-        """Create a copy of the figure."""
+        """Return a copy of the figure.
+
+        Args:
+            *args: Positional arguments for `FigureMixin`.
+            **kwargs: Keyword arguments for `FigureMixin`.
+
+        Returns:
+            FigureMixin: New figure instance copied from the original.
+        """
         return type(self)(self, *args, empty_layout=True, **kwargs)
 
     def select_range(
@@ -85,9 +120,16 @@ class FigureMixin(Base):
         end: tp.Union[None, int, tp.DatetimeLike] = None,
         inplace: bool = False,
     ) -> FigureMixinT:
-        """Select a range.
+        """Select a range of data in the figure.
 
-        Start and end index can be integers but also datetime-like objects."""
+        Args:
+            start (Union[None, int, DatetimeLike]): Starting index or datetime for the range.
+            end (Union[None, int, DatetimeLike]): Ending index or datetime for the range.
+            inplace (bool): Whether to modify the figure in place.
+
+        Returns:
+            FigureMixin: Updated figure with data limited to the specified range.
+        """
         if inplace:
             fig = self
         else:
@@ -191,7 +233,16 @@ class FigureMixin(Base):
         inplace: bool = True,
         **kwargs,
     ) -> FigureMixinT:
-        """Set range breaks automatically based on `vectorbtpro.utils.datetime_.get_rangebreaks`."""
+        """Automatically set x-axis range breaks using `vectorbtpro.utils.datetime_.get_rangebreaks`.
+
+        Args:
+            index (Optional[IndexLike]): Index used to determine range breaks.
+            inplace (bool): Whether to update the figure in place.
+            **kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.get_rangebreaks`.
+
+        Returns:
+            FigureMixin: Figure with updated x-axis range breaks.
+        """
         if inplace:
             fig = self
         else:
@@ -212,7 +263,15 @@ class FigureMixin(Base):
         return fig.update_xaxes(rangebreaks=rangebreaks)
 
     def skip_index(self: FigureMixinT, skip_index: tp.IndexLike, inplace: bool = True) -> FigureMixinT:
-        """Skip index values."""
+        """Skip specified index values in the figure's x-axis.
+
+        Args:
+            skip_index (IndexLike): Index values to skip.
+            inplace (bool): Whether to update the figure in place.
+
+        Returns:
+            FigureMixin: Updated figure with the specified index values skipped.
+        """
         if inplace:
             fig = self
         else:
@@ -225,7 +284,21 @@ class FigureMixin(Base):
         auto_rangebreaks: tp.Union[None, bool, dict] = None,
         **kwargs,
     ) -> tp.Tuple[tp.Args, tp.Kwargs]:
-        """Display the figure."""
+        """Resolve and return arguments for displaying the figure.
+
+        Args:
+            *args: Positional arguments passed for display.
+            auto_rangebreaks (Union[None, bool, dict]): Configuration for auto range breaks.
+
+                If True, apply default settings; if a dict, use it as keyword arguments.
+            **kwargs: Keyword arguments passed for display.
+
+        Returns:
+            Tuple[Args, Kwargs]: A tuple containing the resolved positional and keyword arguments.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+        """
         from vectorbtpro._settings import settings
 
         plotting_cfg = settings["plotting"]
@@ -250,15 +323,70 @@ class FigureMixin(Base):
         return args, kwargs
 
     def show(self, *args, **kwargs) -> None:
-        """Display the figure."""
+        """Display the figure.
+
+        Args:
+            *args: Positional arguments for displaying the figure.
+            **kwargs: Keyword arguments for displaying the figure.
+
+        Returns:
+            None
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
+        raise NotImplementedError
+
+    def write_image(self, *args, **kwargs) -> None:
+        """Write the figure to disk.
+
+        Args:
+            *args: Positional arguments for writing the figure.
+            **kwargs: Keyword arguments for writing the figure.
+
+        Returns:
+            None
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
+        raise NotImplementedError
+
+    def update_layout(self, *args, **kwargs) -> None:
+        """Update layout of the figure.
+
+        Args:
+            *args: Positional arguments for updating the layout.
+            **kwargs: Keyword arguments for updating the layout.
+
+        Returns:
+            None
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def show_png(self, **kwargs) -> None:
-        """Display the figure in PNG format."""
+        """Display the figure in PNG format.
+
+        Args:
+            **kwargs: Keyword arguments for `FigureMixin.show` for PNG rendering.
+
+        Returns:
+            None
+        """
         self.show(renderer="png", **kwargs)
 
     def show_svg(self, **kwargs) -> None:
-        """Display the figure in SVG format."""
+        """Display the figure in SVG format.
+
+        Args:
+            **kwargs: Keyword arguments for `FigureMixin.show` for SVG rendering.
+
+        Returns:
+            None
+        """
         self.show(renderer="svg", **kwargs)
 
     def save_svg_for_docs(
@@ -269,8 +397,22 @@ class FigureMixin(Base):
         show: bool = True,
         show_kwargs: tp.KwargsLike = None,
         **kwargs,
-    ) -> None:
-        """Save the figure in both light and dark SVG format for documentation."""
+    ) -> tp.Path:
+        """Save the figure as both light and dark themed SVG files for documentation.
+
+        Args:
+            figure_name (str): Base name for the saved SVG files (without extension).
+            dir_path (PathLike): Directory where SVG files will be saved.
+            mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
+            
+                See `vectorbtpro.utils.path_.check_mkdir`.
+            show (bool): Whether to display the SVG after saving.
+            show_kwargs (KwargsLike): Keyword arguments for `FigureMixin.show_svg`.
+            **kwargs: Keyword arguments for `FigureMixin.write_image`.
+
+        Returns:
+            Path: Directory path where SVG files are saved.
+        """
         if not isinstance(dir_path, Path):
             dir_path = Path(dir_path)
         if mkdir_kwargs is None:
@@ -286,12 +428,22 @@ class FigureMixin(Base):
             if show_kwargs is None:
                 show_kwargs = {}
             self.show_svg(**show_kwargs)
+        return dir_path
 
 
 class Figure(_Figure, FigureMixin):
-    """Figure.
+    """Class for Plotly figures.
 
-    Extends `plotly.graph_objects.Figure`."""
+    Extends `plotly.graph_objects.Figure`.
+
+    Args:
+        *args: Positional arguments for `plotly.graph_objects.Figure`.
+        empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
+        **kwargs: Keyword arguments for `plotly.graph_objects.Figure`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+    """
 
     def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
         if empty_layout:
@@ -311,9 +463,18 @@ class Figure(_Figure, FigureMixin):
 
 
 class FigureWidget(_FigureWidget, FigureMixin):
-    """Figure widget.
+    """Class for Plotly figure widgets.
 
-    Extends `plotly.graph_objects.FigureWidget`."""
+    Extends `plotly.graph_objects.FigureWidget`.
+
+    Args:
+        *args: Positional arguments for `plotly.graph_objects.FigureWidget`.
+        empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
+        **kwargs: Keyword arguments for `plotly.graph_objects.FigureWidget`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+    """
 
     def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
         if empty_layout:
@@ -336,9 +497,18 @@ try:
     from plotly_resampler import FigureResampler as _FigureResampler, FigureWidgetResampler as _FigureWidgetResampler
 
     class FigureResampler(_FigureResampler, FigureMixin):
-        """Figure resampler.
+        """Class for resampling Plotly figures.
 
-        Extends `plotly.graph_objects.Figure`."""
+        Extends `plotly.graph_objects.Figure`.
+
+        Args:
+            *args: Positional arguments for `plotly_resampler.FigureResampler`.
+            empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
+            **kwargs: Keyword arguments for `plotly_resampler.FigureResampler`.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+        """
 
         def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
             if empty_layout:
@@ -357,9 +527,18 @@ try:
             _FigureResampler.show(self, *args, **kwargs)
 
     class FigureWidgetResampler(_FigureWidgetResampler, FigureMixin):
-        """Figure widget resampler.
+        """Class for resampling Plotly figure widgets.
 
-        Extends `plotly.graph_objects.FigureWidget`."""
+        Extends `plotly.graph_objects.FigureWidget`.
+
+        Args:
+            *args: Positional arguments for `plotly_resampler.FigureWidgetResampler`.
+            empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
+            **kwargs: Keyword arguments for `plotly_resampler.FigureWidgetResampler`.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+        """
 
         def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
             if empty_layout:
@@ -388,13 +567,24 @@ def make_figure(
     use_resampler: tp.Optional[bool] = None,
     **kwargs,
 ) -> tp.BaseFigure:
-    """Make a new Plotly figure.
+    """Create a new Plotly figure.
 
-    If `use_widgets` is True, returns `FigureWidget`, otherwise `Figure`.
+    Creates either a `FigureWidget` or a `Figure` based on `use_widgets`.
 
-    If `use_resampler` is True, additionally wraps the class using `plotly_resampler`.
+    If `use_resampler` is True, the figure is wrapped using `plotly_resampler`.
 
-    Defaults are defined under `vectorbtpro._settings.plotting`."""
+    Args:
+        *args: Positional arguments for the Plotly figure constructor.
+        use_widgets (Optional[bool]): Determines whether to use a widget-based figure.
+        use_resampler (Optional[bool]): Determines whether to enable resampling functionality.
+        **kwargs: Keyword arguments for the Plotly figure constructor.
+
+    Returns:
+        BaseFigure: Plotly figure instance.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+    """
     from vectorbtpro._settings import settings
 
     plotting_cfg = settings["plotting"]
@@ -425,5 +615,65 @@ def make_subplots(
     use_resampler: tp.Optional[bool] = None,
     **kwargs,
 ) -> tp.BaseFigure:
-    """Make Plotly subplots using `make_figure`."""
+    """Create Plotly subplots using `make_figure`.
+
+    Args:
+        *args: Positional arguments for `plotly.subplots.make_subplots`.
+        use_widgets (Optional[bool]): Determines whether to use a widget-based figure.
+        use_resampler (Optional[bool]): Determines whether to enable resampling functionality.
+        **kwargs: Keyword arguments for `plotly.subplots.make_subplots`.
+
+    Returns:
+        BaseFigure: Plotly figure containing subplots.
+    """
     return make_figure(_make_subplots(*args, **kwargs), use_widgets=use_widgets, use_resampler=use_resampler)
+
+
+if _Figure.__init__.__doc__:
+    Figure.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.Figure`:
+```text
+{inspect.cleandoc(_Figure.__init__.__doc__)}
+```
+"""
+if _Figure.show.__doc__:
+    Figure.show.__doc__ = f"""Docstring of `plotly.graph_objects.Figure.show`:
+```text
+{inspect.cleandoc(_Figure.show.__doc__)}
+```
+"""
+if _FigureWidget.__init__.__doc__:
+    FigureWidget.__init__.__doc__ = f"""Docstring of `plotly.graph_objects.FigureWidget`:
+```text
+{inspect.cleandoc(_FigureWidget.__init__.__doc__)}
+```
+"""
+if _FigureWidget.show.__doc__:
+    FigureWidget.show.__doc__ = f"""Docstring of `plotly.graph_objects.FigureWidget.show`:
+```text
+{inspect.cleandoc(_FigureWidget.show.__doc__)}
+```
+"""
+if _FigureResampler.__init__.__doc__:
+    FigureResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureResampler`:
+```text
+{inspect.cleandoc(_FigureResampler.__init__.__doc__)}
+```
+"""
+if _FigureResampler.show.__doc__:
+    FigureResampler.show.__doc__ = f"""Docstring of `plotly_resampler.FigureResampler.show`:
+```text
+{inspect.cleandoc(_FigureResampler.show.__doc__)}
+```
+"""
+if _FigureWidgetResampler.__init__.__doc__:
+    FigureWidgetResampler.__init__.__doc__ = f"""Docstring of `plotly_resampler.FigureWidgetResampler`:
+```text
+{inspect.cleandoc(_FigureWidgetResampler.__init__.__doc__)}
+```
+"""
+if _FigureWidgetResampler.show.__doc__:
+    FigureWidgetResampler.show.__doc__ = f"""Docstring of `plotly_resampler.FigureWidgetResampler.show`:
+```text
+{inspect.cleandoc(_FigureWidgetResampler.show.__doc__)}
+```
+"""

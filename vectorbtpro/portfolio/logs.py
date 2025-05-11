@@ -8,10 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for working with log records.
+"""Module for working with log records.
 
-Order records capture information on simulation logs. Logs are populated when
-simulating a portfolio and can be accessed as `vectorbtpro.portfolio.base.Portfolio.logs`.
+This module provides the base class for managing log records generated during portfolio simulations.
+Log records capture detailed information on simulation events and can be accessed via
+`vectorbtpro.portfolio.base.Portfolio.logs`.
 
 ```pycon
 >>> from vectorbtpro import *
@@ -23,7 +24,7 @@ simulating a portfolio and can be accessed as `vectorbtpro.portfolio.base.Portfo
 ... }, index=[datetime(2020, 1, 1) + timedelta(days=i) for i in range(100)])
 >>> size = pd.DataFrame({
 ...     'a': np.random.uniform(-100, 100, size=100),
-...     'b': np.random.uniform(-100, 100, size=100),
+...     'b': np.random.uniform(-100, 100, size=100)
 ... }, index=[datetime(2020, 1, 1) + timedelta(days=i) for i in range(100)])
 >>> pf = vbt.Portfolio.from_orders(price, size, fees=0.01, freq='d', log=True)
 >>> logs = pf.logs
@@ -170,10 +171,12 @@ logs_field_config = ReadonlyConfig(
 
 __pdoc__[
     "logs_field_config"
-] = f"""Field config for `Logs`.
+] = f"""Field configuration for `Logs`.
+
+This configuration defines the data types and display settings for the log record fields used in `Logs`.
 
 ```python
-{logs_field_config.prettify()}
+{logs_field_config.prettify_doc()}
 ```
 """
 
@@ -188,10 +191,12 @@ logs_attach_field_config = ReadonlyConfig(
 
 __pdoc__[
     "logs_attach_field_config"
-] = f"""Config of fields to be attached to `Logs`.
+] = f"""Field attachment configuration for `Logs`.
+
+This configuration specifies which log record fields should have filters attached.
 
 ```python
-{logs_attach_field_config.prettify()}
+{logs_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -201,7 +206,16 @@ LogsT = tp.TypeVar("LogsT", bound="Logs")
 @attach_fields(logs_attach_field_config)
 @override_field_config(logs_field_config)
 class Logs(PriceRecords):
-    """Extends `vectorbtpro.generic.price_records.PriceRecords` for working with log records."""
+    """Class for managing log records.
+
+    Extends `vectorbtpro.generic.price_records.PriceRecords` to integrate log-specific configurations,
+    including statistics defaults, metrics, and plotting options.
+
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.log_dt`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.logs`.
+    """
 
     @property
     def field_config(self) -> Config:
@@ -211,10 +225,14 @@ class Logs(PriceRecords):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `Logs.stats`.
+        """Default configuration for `Logs.stats`.
 
-        Merges `vectorbtpro.generic.price_records.PriceRecords.stats_defaults` and
-        `stats` from `vectorbtpro._settings.logs`."""
+        Merges the defaults from `vectorbtpro.generic.price_records.PriceRecords.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.logs`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the stats builder.
+        """
         from vectorbtpro._settings import settings
 
         logs_stats_cfg = settings["logs"]["stats"]
@@ -267,10 +285,14 @@ class Logs(PriceRecords):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Logs.plots`.
+        """Default configuration for `Logs.plots`.
 
-        Merges `vectorbtpro.generic.price_records.PriceRecords.plots_defaults` and
-        `plots` from `vectorbtpro._settings.logs`."""
+        Merges the defaults from `vectorbtpro.generic.price_records.PriceRecords.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.logs`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the plots builder.
+        """
         from vectorbtpro._settings import settings
 
         logs_plots_cfg = settings["logs"]["plots"]

@@ -8,7 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Classes for wrapping NumPy arrays into Series/DataFrames."""
+"""Module providing classes for wrapping NumPy arrays into Pandas Series and DataFrames.
+
+!!! info
+    For default settings, see `vectorbtpro._settings.wrapping`.
+"""
 
 import numpy as np
 import pandas as pd
@@ -36,8 +40,8 @@ if tp.TYPE_CHECKING:
     from vectorbtpro.base.accessors import BaseIDXAccessor as BaseIDXAccessorT
     from vectorbtpro.generic.splitting.base import Splitter as SplitterT
 else:
-    BaseIDXAccessorT = "BaseIDXAccessor"
-    SplitterT = "Splitter"
+    BaseIDXAccessorT = "vectorbtpro.base.accessors.BaseIDXAccessor"
+    SplitterT = "vectorbtpro.generic.splitting.base.Splitter"
 
 __all__ = [
     "ArrayWrapper",
@@ -49,44 +53,103 @@ HasWrapperT = tp.TypeVar("HasWrapperT", bound="HasWrapper")
 
 
 class HasWrapper(ExtPandasIndexer, ItemParamable):
-    """Abstract class that manages a wrapper."""
+    """Abstract class for managing a wrapper that supports advanced indexing, grouping,
+    and splitting operations on wrapped arrays."""
 
     @property
     def unwrapped(self) -> tp.Any:
-        """Unwrapped object."""
+        """Underlying unwrapped object.
+
+        Returns:
+            Any: Unwrapped object.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @hybrid_method
     def should_wrap(cls_or_self) -> bool:
-        """Whether to wrap where applicable."""
+        """Return whether wrapping should be applied.
+
+        Returns:
+            bool: True if wrapping is needed, False otherwise."""
         return True
 
     @property
     def wrapper(self) -> "ArrayWrapper":
-        """Array wrapper of the type `ArrayWrapper`."""
+        """Underlying array wrapper of type `ArrayWrapper` used for data manipulation.
+
+        Returns:
+            ArrayWrapper: Array wrapper instance.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def column_only_select(self) -> bool:
-        """Whether to perform indexing on columns only."""
+        """Indicates whether indexing is restricted to columns.
+
+        Returns:
+            bool: True if indexing is limited to columns, False otherwise.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def range_only_select(self) -> bool:
-        """Whether to perform indexing on rows using slices only."""
+        """Indicates whether row indexing should be performed using slices only.
+
+        Returns:
+            bool: True if row indexing is limited to slices, False otherwise.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def group_select(self) -> bool:
-        """Whether to allow indexing on groups."""
+        """Indicates whether indexing operations can be performed on groups.
+
+        Returns:
+            bool: True if indexing operations can be performed on groups, False otherwise.
+
+        !!! abstract
+            This property should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def regroup(self: HasWrapperT, group_by: tp.GroupByLike, **kwargs) -> HasWrapperT:
-        """Regroup this instance."""
+        """Regroup the instance based on the specified grouping criterion.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments passed for regrouping.
+
+        Returns:
+            HasWrapper: Regrouped instance.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def ungroup(self: HasWrapperT, **kwargs) -> HasWrapperT:
-        """Ungroup this instance."""
+        """Ungroup the instance by removing any grouping.
+
+        Args:
+            **kwargs: Keyword arguments for `HasWrapper.regroup`
+
+        Returns:
+            HasWrapper: Ungrouped instance.
+        """
         return self.regroup(False, **kwargs)
 
     # ############# Selection ############# #
@@ -97,9 +160,18 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         group_by: tp.GroupByLike = None,
         **kwargs,
     ) -> HasWrapperT:
-        """Select one column/group.
+        """Select one column or group from the instance.
 
-        `column` can be a label-based position as well as an integer position (if label fails)."""
+        Args:
+            column (Any): Column identifier, which can be a label-based position or an integer position.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `HasWrapper.regroup`.
+
+        Returns:
+            HasWrapper: Instance narrowed down to a single column or group.
+        """
         _self = self.regroup(group_by, **kwargs)
 
         def _check_out_dim(out: HasWrapperT) -> HasWrapperT:
@@ -155,9 +227,21 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         wrapper: tp.Optional["ArrayWrapper"] = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Select one column/group from a Pandas object.
+        """Select one column or group from a Pandas object.
 
-        `column` can be a label-based position as well as an integer position (if label fails)."""
+        Args:
+            obj (Optional[SeriesFrame]): Pandas object from which to select a column or group.
+            column (Any): Column identifier, which can be a label-based position or an integer position.
+            obj_ungrouped (bool): Flag indicating whether the Pandas object is ungrouped.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+            **kwargs: Keyword arguments for `ArrayWrapper.regroup`.
+
+        Returns:
+            MaybeSeries: Selected column or group from the Pandas object.
+        """
         if obj is None:
             return None
         if not isinstance(cls_or_self, type):
@@ -234,9 +318,19 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         wrap: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.Any:
-        """Split this instance.
+        """Split the instance using the specified splitter.
 
-        Uses `vectorbtpro.generic.splitting.base.Splitter.split_and_take`."""
+        Args:
+            *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
+            splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+                Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
+            wrap (Optional[bool]): Flag indicating whether the instance should be wrapped.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_take`.
+
+        Returns:
+            Any: Result of the splitting operation.
+        """
         from vectorbtpro.generic.splitting.base import Splitter
 
         if splitter_cls is None:
@@ -254,13 +348,26 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         wrap: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.Any:
-        """Split this instance and apply a function to each split.
+        """Split the instance and apply a given function to each split.
 
-        Uses `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`."""
+        Args:
+            apply_func (Union[str, Callable]): Function or attribute name to apply to each split.
+            *args: Positional arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
+            splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+                Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
+            wrap (Optional[bool]): Flag indicating whether the instance should be wrapped.
+            **kwargs: Keyword arguments for `vectorbtpro.generic.splitting.base.Splitter.split_and_apply`.
+
+        Returns:
+            Any: Result of applying the function to each split.
+        """
         from vectorbtpro.generic.splitting.base import Splitter, Takeable
 
         if isinstance(apply_func, str):
-            apply_func = getattr(type(self), apply_func)
+            from vectorbtpro.utils.attr_ import deep_getattr
+
+            apply_func = deep_getattr(type(self), apply_func, call_last_attr=False)
         if splitter_cls is None:
             splitter_cls = Splitter
         if wrap is None:
@@ -281,11 +388,28 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         wrap: tp.Optional[bool] = None,
         return_chunk_meta: bool = False,
     ) -> tp.Iterator[tp.Union[HasWrapperT, tp.Tuple[ChunkMeta, HasWrapperT]]]:
-        """Chunk this instance.
+        """Divide the instance into chunks.
 
-        If `axis` is None, becomes 0 if the instance is one-dimensional and 1 otherwise.
+        This method splits the instance into smaller segments along a specified axis.
+        If `axis` is not provided, it defaults to 0 for one-dimensional instances and 1
+        for multi-dimensional instances.
 
-        For arguments related to chunking meta, see `vectorbtpro.utils.chunking.iter_chunk_meta`."""
+        Args:
+            axis (Optional[int]): Axis along which to split the instance.
+            min_size (Optional[int]): Minimum number of elements to split.
+            n_chunks (Union[None, int, str]): Specification for the number of chunks.
+            chunk_len (Union[None, int, str]): Specification for the length of each chunk.
+            chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each chunk.
+
+                See `vectorbtpro.utils.chunking.iter_chunk_meta`.
+            select (bool): Flag indicating whether to select chunks using `ArraySelector`.
+            wrap (Optional[bool]): Flag to specify whether to wrap the result.
+            return_chunk_meta (bool): Flag indicating whether to yield chunk metadata alongside each chunk.
+
+        Yields:
+            Union[HasWrapper, Tuple[ChunkMeta, HasWrapper]]: A chunk of the instance,
+                or a tuple containing the chunk metadata and the chunk if `return_chunk_meta` is True.
+        """
         if axis is None:
             axis = 0 if self.wrapper.ndim == 1 else 1
         if self.wrapper.ndim == 1 and axis == 1:
@@ -320,13 +444,26 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         execute_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MergeableResults:
-        """Chunk this instance and apply a function to each chunk.
+        """Apply a function to each chunk of the instance.
 
-        If `apply_func` is a string, becomes the method name.
+        This method first divides the instance into chunks and then applies the specified
+        function to each chunk. If `apply_func` is a string, it is treated as the name of
+        the method to invoke on each chunk.
 
-        For arguments related to chunking, see `Wrapping.chunk`."""
-        if isinstance(apply_func, str):
-            apply_func = getattr(type(self), apply_func)
+        Args:
+            apply_func (Union[str, Callable]): Function or method name to apply to each chunk.
+            *args: Positional arguments for `apply_func`.
+            chunk_kwargs (KwargsLike): Keyword arguments for the chunking handler.
+            
+                See `HasWrapper.chunk`.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
+
+                See `vectorbtpro.utils.execution.execute`.
+            **kwargs: Keyword arguments for `apply_func`.
+
+        Returns:
+            MergeableResults: Aggregated results obtained from applying the function to each chunk.
+        """
         if chunk_kwargs is None:
             chunk_arg_names = set(get_func_arg_names(self.chunk))
             chunk_kwargs = {}
@@ -339,7 +476,12 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         tasks = []
         keys = []
         for _chunk_meta, chunk in chunks:
-            tasks.append(Task(apply_func, chunk, *args, **kwargs))
+            if isinstance(apply_func, str):
+                from vectorbtpro.utils.attr_ import deep_getattr
+
+                tasks.append(Task(deep_getattr(chunk, apply_func, call_last_attr=False), *args, **kwargs))
+            else:
+                tasks.append(Task(apply_func, chunk, *args, **kwargs))
             keys.append(get_chunk_meta_key(_chunk_meta))
         keys = pd.Index(keys, name="chunk_indices")
         return execute(tasks, size=len(tasks), keys=keys, **execute_kwargs)
@@ -347,7 +489,20 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
     # ############# Iteration ############# #
 
     def get_item_keys(self, group_by: tp.GroupByLike = None) -> tp.Index:
-        """Get keys for `Wrapping.items`."""
+        """Retrieve the keys for iterating over items.
+
+        This method returns the key indices used for `Wrapping.items`. If the instance is grouped
+        and group selection is enabled, the keys are obtained via `wrapper.get_columns`;
+        otherwise, `wrapper.columns` is used.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
+        Returns:
+            Index: Index containing the keys for iterating over the items.
+        """
         _self = self.regroup(group_by=group_by)
         if _self.group_select and _self.wrapper.grouper.is_grouped():
             return _self.wrapper.get_columns()
@@ -361,16 +516,34 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
         key_as_index: bool = False,
         wrap: tp.Optional[bool] = None,
     ) -> tp.Items:
-        """Iterate over columns or groups (if grouped and `Wrapping.group_select` is True).
+        """Iterate over columns or groups of the instance.
 
-        If `apply_group_by` is False, `group_by` becomes a grouping instruction for the iteration,
-        not for the final object. In this case, will raise an error if the instance is grouped
-        and that grouping must be changed."""
+        This method yields key-item pairs where keys represent column or group identifiers
+        and items are the corresponding sub-instances. The iteration behavior is determined
+        by the provided `group_by` and `apply_group_by` parameters, as well as whether the
+        instance is grouped with group selection enabled.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            apply_group_by (bool): If True, applies the grouping to both iteration and the final output.
+
+                If False, `group_by` is used solely as an iteration instruction.
+            keep_2d (bool): Whether to maintain the output data in a two-dimensional format.
+            key_as_index (bool): Whether to return the yielded key as an index.
+            wrap (Optional[bool]): Flag indicating whether to wrap the yielded items
+                with additional functionality.
+
+        Yields:
+            Items: Tuple where the first element is a key (column or group identifier)
+                and the second element is the corresponding sub-instance.
+        """
         if wrap is None:
             wrap = self.should_wrap()
 
-        def _resolve_v(self):
-            return self if wrap else self.unwrapped
+        def _resolve_v(_self):
+            return _self if wrap else _self.unwrapped
 
         if group_by is None or apply_group_by:
             _self = self.regroup(group_by=group_by)
@@ -429,21 +602,116 @@ ArrayWrapperT = tp.TypeVar("ArrayWrapperT", bound="ArrayWrapper")
 
 
 class ArrayWrapper(Configured, HasWrapper, IndexApplier):
-    """Class that stores index, columns, and shape metadata for wrapping NumPy arrays.
-    Tightly integrated with `vectorbtpro.base.grouping.base.Grouper` for grouping columns.
+    """Class for storing index, columns, and shape metadata for wrapping NumPy arrays,
+    with integration with `vectorbtpro.base.grouping.base.Grouper` for grouping columns.
 
     If the underlying object is a Series, pass `[sr.name]` as `columns`.
 
-    `**kwargs` are passed to `vectorbtpro.base.grouping.base.Grouper`.
+    Args:
+        index (IndexLike): Index to be associated with the array.
+
+            It is processed using `vectorbtpro.utils.datetime_.prepare_dt_index`.
+        columns (Optional[IndexLike]): Set of column labels.
+        ndim (Optional[int]): Number of dimensions of the array.
+
+            Deduced from the columns if not provided.
+        freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
+
+            See `vectorbtpro.utils.datetime_.infer_index_freq`.
+        parse_index (Optional[bool]): Flag to convert the index to a datetime index with `pd.to_datetime`.
+        column_only_select (Optional[bool]): If True, index the wrapper as a Series of columns/groups.
+        range_only_select (Optional[bool]): If True, allow row selection only by slicing.
+        group_select (Optional[bool]): If True, enable group-based selection when grouping is active.
+        grouped_ndim (Optional[int]): Number of dimensions after grouping columns.
+        grouper (Optional[Grouper]): A `vectorbtpro.base.grouping.base.Grouper` instance for grouping columns.
+        **kwargs: Keyword arguments for `vectorbtpro.base.grouping.base.Grouper`
+            and `vectorbtpro.utils.config.Configured`.
 
     !!! note
-        This class is meant to be immutable. To change any attribute, use `ArrayWrapper.replace`.
+        This class is immutable. To modify attributes, use `ArrayWrapper.replace`.
 
-        Use methods that begin with `get_` to get group-aware results."""
+        Use methods starting with `get_` for group-aware results.
+    """
+
+    def __init__(
+        self,
+        index: tp.IndexLike,
+        columns: tp.Optional[tp.IndexLike] = None,
+        ndim: tp.Optional[int] = None,
+        freq: tp.Optional[tp.FrequencyLike] = None,
+        parse_index: tp.Optional[bool] = None,
+        column_only_select: tp.Optional[bool] = None,
+        range_only_select: tp.Optional[bool] = None,
+        group_select: tp.Optional[bool] = None,
+        grouped_ndim: tp.Optional[int] = None,
+        grouper: tp.Optional[Grouper] = None,
+        **kwargs,
+    ) -> None:
+        checks.assert_not_none(index, arg_name="index")
+        index = dt.prepare_dt_index(index, parse_index=parse_index)
+        if columns is None:
+            columns = [None]
+        if not isinstance(columns, pd.Index):
+            columns = pd.Index(columns)
+        if ndim is None:
+            if len(columns) == 1 and not isinstance(columns, pd.MultiIndex):
+                ndim = 1
+            else:
+                ndim = 2
+        else:
+            if len(columns) > 1:
+                ndim = 2
+
+        grouper_arg_names = get_func_arg_names(Grouper.__init__)
+        grouper_kwargs = dict()
+        for k in list(kwargs.keys()):
+            if k in grouper_arg_names:
+                grouper_kwargs[k] = kwargs.pop(k)
+        if grouper is None:
+            grouper = Grouper(columns, **grouper_kwargs)
+        elif not checks.is_index_equal(columns, grouper.index) or len(grouper_kwargs) > 0:
+            grouper = grouper.replace(index=columns, **grouper_kwargs)
+
+        HasWrapper.__init__(self)
+        Configured.__init__(
+            self,
+            index=index,
+            columns=columns,
+            ndim=ndim,
+            freq=freq,
+            parse_index=parse_index,
+            column_only_select=column_only_select,
+            range_only_select=range_only_select,
+            group_select=group_select,
+            grouped_ndim=grouped_ndim,
+            grouper=grouper,
+            **kwargs,
+        )
+
+        self._index = index
+        self._columns = columns
+        self._ndim = ndim
+        self._freq = freq
+        self._parse_index = parse_index
+        self._column_only_select = column_only_select
+        self._range_only_select = range_only_select
+        self._group_select = group_select
+        self._grouper = grouper
+        self._grouped_ndim = grouped_ndim
 
     @classmethod
     def from_obj(cls: tp.Type[ArrayWrapperT], obj: tp.ArrayLike, **kwargs) -> ArrayWrapperT:
-        """Derive metadata from an object."""
+        """Derive array wrapper metadata from the given object.
+
+        Args:
+            obj (ArrayLike): Input object from which to derive metadata.
+
+                This may be an instance of `Data`, `Wrapping`, or `ArrayWrapper`.
+            **kwargs: Keyword arguments for `ArrayWrapper`.
+
+        Returns:
+            ArrayWrapper: New instance with metadata derived from the input object.
+        """
         from vectorbtpro.base.reshaping import to_pd_array
         from vectorbtpro.data.base import Data
 
@@ -473,7 +741,19 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         *args,
         **kwargs,
     ) -> ArrayWrapperT:
-        """Derive metadata from shape."""
+        """Derive array wrapper metadata based on the given shape.
+
+        Args:
+            shape (ShapeLike): Shape representing the array dimensions.
+            index (Optional[IndexLike]): Index labels.
+            columns (Optional[IndexLike]): Column labels.
+            ndim (Optional[int]): Number of dimensions.
+            *args: Positional arguments for `ArrayWrapper`.
+            **kwargs: Keyword arguments for `ArrayWrapper`.
+
+        Returns:
+            ArrayWrapper: New instance with metadata derived from the provided shape.
+        """
         shape = reshaping.to_tuple_shape(shape)
         if index is None:
             index = pd.RangeIndex(stop=shape[0])
@@ -485,7 +765,19 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @staticmethod
     def extract_init_kwargs(**kwargs) -> tp.Tuple[tp.Kwargs, tp.Kwargs]:
-        """Extract keyword arguments that can be passed to `ArrayWrapper` or `Grouper`."""
+        """Extract keyword arguments relevant for constructing an `ArrayWrapper` or
+        `vectorbtpro.base.grouping.base.Grouper` instance.
+
+        Args:
+            **kwargs: Keyword arguments for `ArrayWrapper` or `vectorbtpro.base.grouping.base.Grouper`.
+
+        Returns:
+            Tuple[Kwargs, Kwargs]: A tuple containing two dictionaries:
+
+                * The first dictionary comprises keyword arguments applicable to `ArrayWrapper` or
+                    `vectorbtpro.base.grouping.base.Grouper`.
+                * The second dictionary contains the remaining keyword arguments.
+        """
         wrapper_arg_names = get_func_arg_names(ArrayWrapper.__init__)
         grouper_arg_names = get_func_arg_names(Grouper.__init__)
         init_kwargs = dict()
@@ -495,8 +787,16 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         return init_kwargs, kwargs
 
     @classmethod
-    def resolve_stack_kwargs(cls, *wrappers: tp.MaybeTuple[ArrayWrapperT], **kwargs) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `ArrayWrapper` after stacking."""
+    def resolve_stack_kwargs(cls, *wrappers: tp.MaybeSequence[ArrayWrapperT], **kwargs) -> tp.Kwargs:
+        """Resolve keyword arguments for initializing `ArrayWrapper` after stacking.
+
+        Args:
+            *wrappers (MaybeSequence[ArrayWrapper]): `ArrayWrapper` instances to be stacked.
+            **kwargs: Keyword arguments to override configuration parameters.
+
+        Returns:
+            Kwargs: Dictionary of resolved keyword arguments for `ArrayWrapper` initialization.
+        """
         if len(wrappers) == 1:
             wrappers = wrappers[0]
         wrappers = list(wrappers)
@@ -539,7 +839,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @hybrid_method
     def row_stack(
         cls_or_self: tp.MaybeType[ArrayWrapperT],
-        *wrappers: tp.MaybeTuple[ArrayWrapperT],
+        *wrappers: tp.MaybeSequence[ArrayWrapperT],
         index: tp.Optional[tp.IndexLike] = None,
         columns: tp.Optional[tp.IndexLike] = None,
         freq: tp.Optional[tp.FrequencyLike] = None,
@@ -554,17 +854,40 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Stack multiple `ArrayWrapper` instances along rows.
 
         Concatenates indexes using `vectorbtpro.base.indexes.concat_indexes`.
+        All wrappers must share the same frequency unless a custom frequency is provided via `freq`.
+        If the column levels differ among wrappers, they are stacked together if `stack_columns` is True;
+        otherwise, an error is raised. When `group_by` is not provided, all wrappers must be uniformly
+        grouped or ungrouped and have consistent group labels. Furthermore, all wrappers are expected
+        to have compatible configuration values, except where explicitly overridden via `kwargs`.
 
-        Frequency must be the same across all indexes. A custom frequency can be provided via `freq`.
+        Args:
+            *wrappers (MaybeSequence[ArrayWrapper]): (Additional) `ArrayWrapper` instances to stack.
+            index (Optional[IndexLike]): Custom index for the stacked result.
 
-        If column levels in some instances differ, they will be stacked upon each other.
-        Custom columns can be provided via `columns`.
+                If not provided, indexes are concatenated.
+            columns (Optional[IndexLike]): Custom columns for the stacked result.
 
-        If `group_by` is None, all instances must be either grouped or not, and they must
-        contain the same group values and labels.
+                If not provided, columns are derived from the wrappers.
+            freq (Optional[FrequencyLike]): Custom frequency for the stacked result 
+                (e.g., "daily", "15 min", "index_mean").
 
-        All instances must contain the same keys and values in their configs and configs of their
-        grouper instances, apart from those arguments provided explicitly via `kwargs`."""
+                If not provided, frequency is derived from the wrappers.
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            stack_columns (bool): Whether to stack differing column levels from wrappers.
+            index_concat_method (MaybeTuple[Union[str, Callable]]): Method used for concatenating indexes.
+            keys (Optional[IndexLike]): Keys used during index concatenation.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index`.
+            verify_integrity (bool): Flag to verify the integrity of the concatenated index.
+            **kwargs: Keyword arguments for `ArrayWrapper`.
+
+        Returns:
+            ArrayWrapper: New `ArrayWrapper` instance representing the row-stacked result.
+        """
         if not isinstance(cls_or_self, type):
             wrappers = (cls_or_self, *wrappers)
             cls = type(cls_or_self)
@@ -633,7 +956,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                         grouped = wrapper_grouped
                     else:
                         if grouped is not wrapper_grouped:
-                            raise ValueError("Objects to be merged must be either grouped or not")
+                            raise ValueError("Objects to be merged must have either all grouped or all ungrouped")
                 if grouped:
                     new_group_by = None
                     for wrapper in wrappers:
@@ -661,7 +984,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     @hybrid_method
     def column_stack(
         cls_or_self: tp.MaybeType[ArrayWrapperT],
-        *wrappers: tp.MaybeTuple[ArrayWrapperT],
+        *wrappers: tp.MaybeSequence[ArrayWrapperT],
         index: tp.Optional[tp.IndexLike] = None,
         columns: tp.Optional[tp.IndexLike] = None,
         freq: tp.Optional[tp.FrequencyLike] = None,
@@ -676,21 +999,51 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     ) -> ArrayWrapperT:
         """Stack multiple `ArrayWrapper` instances along columns.
 
-        If indexes are the same in each wrapper index, will use that index. If indexes differ and
-        `union_index` is True, they will be merged into a single one by the set union operation.
-        Otherwise, an error will be raised. The merged index must have no duplicates or mixed data,
-        and must be monotonically increasing. A custom index can be provided via `index`.
+        Merge the column data and configurations from multiple `ArrayWrapper` instances.
 
-        Frequency must be the same across all indexes. A custom frequency can be provided via `freq`.
+        This function performs the following:
 
-        Concatenates columns and groups using `vectorbtpro.base.indexes.concat_indexes`.
+        * Determines the final index. If all wrappers share the same index, that index is used.
+        
+            Otherwise, if `union_index` is True, the union of the indexes is computed.
+            The merged index must contain no duplicates, have a consistent data type,
+            and be monotonically increasing. A custom index can be provided via the `index` parameter.
+        * Verifies that frequency is consistent across wrappers, unless overridden by the `freq` parameter.
+        * Concatenates columns and groups using `vectorbtpro.base.indexes.concat_indexes`.
+        * Propagates settings such as `column_only_select` and `group_select` from the input wrappers.
+        * Ensures that all wrappers have matching configurations, aside from parameters explicitly
+            provided via `kwargs`.
 
-        If any of the instances has `column_only_select` being enabled, the final wrapper will also enable it.
-        If any of the instances has `group_select` or other grouping-related flags being disabled, the final
-        wrapper will also disable them.
+        Args:
+            *wrappers (MaybeSequence[ArrayWrapper]): (Additional) `ArrayWrapper` instances to stack.
+            index (Optional[IndexLike]): Custom index for the resulting wrapper.
 
-        All instances must contain the same keys and values in their configs and configs of their
-        grouper instances, apart from those arguments provided explicitly via `kwargs`."""
+                If not provided, derived from the wrappers.
+            columns (Optional[IndexLike]): Custom columns for the stacked result.
+
+                If not provided, columns are derived from the wrappers.
+            freq (Optional[FrequencyLike]): Custom frequency for the stacked result 
+                (e.g., "daily", "15 min", "index_mean").
+
+                If not provided, frequency is derived from the wrappers.
+                See `vectorbtpro.utils.datetime_.infer_index_freq`.
+            group_by (GroupByLike): Grouping specification.
+
+                If not provided, groups are concatenated if any wrapper is grouped, otherwise not applied.
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            union_index (bool): Whether to merge differing indexes via a union operation.
+            col_concat_method (MaybeTuple[Union[str, Callable]]): Method used to concatenate column indexes.
+            group_concat_method (MaybeTuple[Union[str, Callable]]): Method used to concatenate group indexes.
+            keys (Optional[IndexLike]): Keys used for concatenating indexes.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index`.
+            verify_integrity (bool): Flag to verify the integrity of the concatenated index.
+            **kwargs: Keyword arguments for `ArrayWrapper`.
+
+        Returns:
+            ArrayWrapper: New instance with combined array data and merged configuration.
+        """
         if not isinstance(cls_or_self, type):
             wrappers = (cls_or_self, *wrappers)
             cls = type(cls_or_self)
@@ -822,72 +1175,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         return cls(**ArrayWrapper.resolve_stack_kwargs(*wrappers, **kwargs))
 
-    def __init__(
-        self,
-        index: tp.IndexLike,
-        columns: tp.Optional[tp.IndexLike] = None,
-        ndim: tp.Optional[int] = None,
-        freq: tp.Optional[tp.FrequencyLike] = None,
-        parse_index: tp.Optional[bool] = None,
-        column_only_select: tp.Optional[bool] = None,
-        range_only_select: tp.Optional[bool] = None,
-        group_select: tp.Optional[bool] = None,
-        grouped_ndim: tp.Optional[int] = None,
-        grouper: tp.Optional[Grouper] = None,
-        **kwargs,
-    ) -> None:
-        checks.assert_not_none(index, arg_name="index")
-        index = dt.prepare_dt_index(index, parse_index=parse_index)
-        if columns is None:
-            columns = [None]
-        if not isinstance(columns, pd.Index):
-            columns = pd.Index(columns)
-        if ndim is None:
-            if len(columns) == 1 and not isinstance(columns, pd.MultiIndex):
-                ndim = 1
-            else:
-                ndim = 2
-        else:
-            if len(columns) > 1:
-                ndim = 2
-
-        grouper_arg_names = get_func_arg_names(Grouper.__init__)
-        grouper_kwargs = dict()
-        for k in list(kwargs.keys()):
-            if k in grouper_arg_names:
-                grouper_kwargs[k] = kwargs.pop(k)
-        if grouper is None:
-            grouper = Grouper(columns, **grouper_kwargs)
-        elif not checks.is_index_equal(columns, grouper.index) or len(grouper_kwargs) > 0:
-            grouper = grouper.replace(index=columns, **grouper_kwargs)
-
-        HasWrapper.__init__(self)
-        Configured.__init__(
-            self,
-            index=index,
-            columns=columns,
-            ndim=ndim,
-            freq=freq,
-            parse_index=parse_index,
-            column_only_select=column_only_select,
-            range_only_select=range_only_select,
-            group_select=group_select,
-            grouped_ndim=grouped_ndim,
-            grouper=grouper,
-            **kwargs,
-        )
-
-        self._index = index
-        self._columns = columns
-        self._ndim = ndim
-        self._freq = freq
-        self._parse_index = parse_index
-        self._column_only_select = column_only_select
-        self._range_only_select = range_only_select
-        self._group_select = group_select
-        self._grouper = grouper
-        self._grouped_ndim = grouped_ndim
-
     def indexing_func_meta(
         self: ArrayWrapperT,
         pd_indexing_func: tp.PandasIndexingFunc,
@@ -902,29 +1189,48 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         group_by: tp.GroupByLike = None,
         wrapper_kwargs: tp.KwargsLike = None,
     ) -> dict:
-        """Perform indexing on `ArrayWrapper` and also return metadata.
+        """Perform indexing on an `ArrayWrapper` and return updated metadata.
 
-        Takes into account column grouping.
+        Indexing respects column grouping and various indexing options without flipping
+        rows and columns. When indexing a Series, selecting one row always returns a Series;
+        when indexing a DataFrame, it returns a DataFrame.
 
-        Flipping rows and columns is not allowed. If one row is selected, the result will still be
-        a Series when indexing a Series and a DataFrame when indexing a DataFrame.
+        Set `column_only_select` to True to treat the array wrapper as a Series of columns/groups,
+        avoiding selection along the index (axis 0). Use `range_only_select` to restrict row
+        selection to slices. If `group_select` is True and grouping is enabled, selection is
+        performed based on groups; otherwise, indexing is applied to columns.
 
-        Set `column_only_select` to True to index the array wrapper as a Series of columns/groups.
-        This way, selection of index (axis 0) can be avoided. Set `range_only_select` to True to
-        allow selection of rows only using slices. Set `group_select` to True to allow selection of groups.
-        Otherwise, indexing is performed on columns, even if grouping is enabled. Takes effect only if
-        grouping is enabled.
+        Args:
+            pd_indexing_func (PandasIndexingFunc): Function to perform Pandas-style indexing.
+            index (Optional[IndexLike]): Index for selecting rows.
+            columns (Optional[IndexLike]): Index for selecting columns.
+            column_only_select (Optional[bool]): If True, index the wrapper as a Series of columns/groups.
+            range_only_select (Optional[bool]): If True, allow row selection only by slicing.
+            group_select (Optional[bool]): If True, enable group-based selection when grouping is active.
+            return_slices (bool): If True, return indices as slice objects when they represent a continuous range.
+            return_none_slices (bool): If True, return a slice `(None, None, None)` if an axis remains unchanged.
+            return_scalars (bool): If True, return scalar values for single integer selections.
+            group_by (GroupByLike): Grouping specification.
 
-        Returns the new array wrapper, row indices, column indices, and group indices.
-        If `return_slices` is True (default), indices will be returned as a slice if they were
-        identified as a range. If `return_none_slices` is True (default), indices will be returned as a slice
-        `(None, None, None)` if the axis hasn't been changed.
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+        Returns:
+            dict: Dictionary containing:
+
+                * `new_wrapper`: The updated `ArrayWrapper` after applying indexing.
+                * `row_idxs`: The selected row indices, possibly returned as a slice if identified as a range.
+                * `rows_changed`: Boolean indicating whether the row axis was changed in any way.
+                * `col_idxs`: The selected column indices, possibly returned as a slice if identified as a range.
+                * `columns_changed`: Boolean indicating whether the column axis was changed in any way.
+                * `group_idxs`: The selected group indices, or the same as column indices if grouping is disabled.
+                * `groups_changed`: Boolean indicating whether the group axis was changed in any way.
 
         !!! note
-            If `column_only_select` is True, make sure to index the array wrapper
-            as a Series of columns rather than a DataFrame. For example, the operation
-            `.iloc[:, :2]` should become `.iloc[:2]`. Operations are not allowed if the
-            object is already a Series and thus has only one column/group."""
+            If `column_only_select` is True, ensure that the array wrapper is indexed as a Series
+            of columns rather than a DataFrame. For example, use `.iloc[:2]` instead of `.iloc[:, :2]`.
+            Operations are not allowed if the instance already contains a single column/group.
+        """
         if column_only_select is None:
             column_only_select = self.column_only_select
         if range_only_select is None:
@@ -1169,7 +1475,15 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         )
 
     def indexing_func(self: ArrayWrapperT, *args, **kwargs) -> ArrayWrapperT:
-        """Perform indexing on `ArrayWrapper`."""
+        """Perform indexing on the `ArrayWrapper` instance by delegating to `ArrayWrapper.indexing_func_meta`.
+
+        Args:
+            *args: Positional arguments for `ArrayWrapper.indexing_func_meta`.
+            **kwargs: Keyword arguments for `ArrayWrapper.indexing_func_meta`.
+
+        Returns:
+            ArrayWrapper: New `ArrayWrapper` instance produced by indexing.
+        """
         return self.indexing_func_meta(*args, **kwargs)["new_wrapper"]
 
     @staticmethod
@@ -1182,9 +1496,20 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         rotate_rows: bool = False,
         rotate_cols: bool = True,
     ) -> tp.Array2d:
-        """Select rows and columns from a flexible array.
+        """Select specific rows and columns from a flexible array after converting it to a 2-dim array.
 
-        Always returns a 2-dim NumPy array."""
+        Args:
+            arr (ArrayLike): Input array to be indexed.
+            row_idxs (Union[int, Array1d, slice]): Row indices or a slice specifying rows to select.
+            col_idxs (Union[int, Array1d, slice]): Column indices or a slice specifying columns to select.
+            rows_changed (bool): Whether to apply row selection.
+            columns_changed (bool): Whether to apply column selection.
+            rotate_rows (bool): Flag indicating whether to apply rotational indexing along rows.
+            rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
+
+        Returns:
+            Array2d: Two-dimensional NumPy array after applying the selection.
+        """
         new_arr = arr_2d = reshaping.to_2d_array(arr)
         if row_idxs is not None and rows_changed:
             if arr_2d.shape[0] > 1:
@@ -1217,13 +1542,31 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         return new_arr
 
     def get_resampler(self, *args, **kwargs) -> tp.Union[Resampler, tp.PandasResampler]:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.get_resampler`."""
+        """Return a resampler by delegating to `vectorbtpro.base.accessors.BaseIDXAccessor.get_resampler`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_resampler`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_resampler`.
+
+        Returns:
+            Union[Resampler, PandasResampler]: The resampler object.
+        """
         return self.index_acc.get_resampler(*args, **kwargs)
 
     def resample_meta(self: ArrayWrapperT, *args, wrapper_kwargs: tp.KwargsLike = None, **kwargs) -> dict:
-        """Perform resampling on `ArrayWrapper` and also return metadata.
+        """Perform resampling on the `ArrayWrapper` and return metadata.
 
-        `*args` and `**kwargs` are passed to `ArrayWrapper.get_resampler`."""
+        Args:
+            *args: Positional arguments for `ArrayWrapper.get_resampler`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            **kwargs: Keyword arguments for `ArrayWrapper.get_resampler`.
+
+        Returns:
+            dict: Dictionary containing:
+
+                * `resampler`: The resampler object.
+                * `new_wrapper`: The new `ArrayWrapper` instance after resampling.
+        """
         resampler = self.get_resampler(*args, **kwargs)
         if isinstance(resampler, Resampler):
             _resampler = resampler
@@ -1239,9 +1582,15 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         return dict(resampler=resampler, new_wrapper=new_wrapper)
 
     def resample(self: ArrayWrapperT, *args, **kwargs) -> ArrayWrapperT:
-        """Perform resampling on `ArrayWrapper`.
+        """Perform resampling on the `ArrayWrapper` instance using `ArrayWrapper.resample_meta`.
 
-        Uses `ArrayWrapper.resample_meta`."""
+        Args:
+            *args: Positional arguments for `ArrayWrapper.resample_meta`.
+            **kwargs: Keyword arguments for `ArrayWrapper.resample_meta`.
+
+        Returns:
+            ArrayWrapper: New `ArrayWrapper` instance after resampling.
+        """
         return self.resample_meta(*args, **kwargs)["new_wrapper"]
 
     @property
@@ -1250,37 +1599,76 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def index(self) -> tp.Index:
-        """Index."""
+        """The index associated with the wrapped array.
+
+        Returns:
+            Index: Index of the wrapped array.
+        """
         return self._index
 
     @cached_property(whitelist=True)
     def index_acc(self) -> BaseIDXAccessorT:
-        """Get index accessor of the type `vectorbtpro.base.accessors.BaseIDXAccessor`."""
+        """Index accessor for the `ArrayWrapper`.
+
+        Returns:
+            BaseIDXAccessor: Instance of `vectorbtpro.base.accessors.BaseIDXAccessor`
+                used for index operations.
+        """
         from vectorbtpro.base.accessors import BaseIDXAccessor
 
         return BaseIDXAccessor(self.index, freq=self._freq)
 
     @property
     def ns_index(self) -> tp.Array1d:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.to_ns`."""
+        """Nanosecond index representation obtained from `vectorbtpro.base.accessors.BaseIDXAccessor.to_ns`.
+
+        Returns:
+            Array1d: Nanosecond index.
+        """
         return self.index_acc.to_ns()
 
     def get_period_ns_index(self, *args, **kwargs) -> tp.Array1d:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.to_period_ns`."""
+        """Return a period-based nanosecond index computed via
+        `vectorbtpro.base.accessors.BaseIDXAccessor.to_period_ns`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.to_period_ns`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.to_period_ns`.
+
+        Returns:
+            Array1d: Period-based nanosecond index.
+        """
         return self.index_acc.to_period_ns(*args, **kwargs)
 
     @property
     def columns(self) -> tp.Index:
-        """Columns."""
+        """The columns associated with the wrapped array.
+
+        Returns:
+            Index: Columns of the wrapped array.
+        """
         return self._columns
 
     def get_columns(self, group_by: tp.GroupByLike = None) -> tp.Index:
-        """Get group-aware `ArrayWrapper.columns`."""
+        """Return the group-aware columns index of the `ArrayWrapper`.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
+        Returns:
+            Index: Columns index.
+        """
         return self.resolve(group_by=group_by).columns
 
     @property
     def name(self) -> tp.Any:
-        """Name."""
+        """The name of the `ArrayWrapper` when applicable.
+
+        Returns:
+            Any: Name derived from the columns if the instance is one-dimensional; otherwise, None.
+        """
         if self.ndim == 1:
             if self.columns[0] == 0:
                 return None
@@ -1288,78 +1676,169 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         return None
 
     def get_name(self, group_by: tp.GroupByLike = None) -> tp.Any:
-        """Get group-aware `ArrayWrapper.name`."""
+        """Return the group-aware name of the `ArrayWrapper`.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
+        Returns:
+            Any: Name for the group-aware `ArrayWrapper`.
+        """
         return self.resolve(group_by=group_by).name
 
     @property
     def ndim(self) -> int:
-        """Number of dimensions."""
+        """The number of dimensions of the wrapped array.
+
+        Returns:
+            int: Number of dimensions.
+        """
         return self._ndim
 
     def get_ndim(self, group_by: tp.GroupByLike = None) -> int:
-        """Get group-aware `ArrayWrapper.ndim`."""
+        """Return the group-aware number of dimensions of the `ArrayWrapper`.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
+        Returns:
+            int: Number of dimensions.
+        """
         return self.resolve(group_by=group_by).ndim
 
     @property
     def shape(self) -> tp.Shape:
-        """Shape."""
+        """The shape of the `ArrayWrapper`.
+
+        Returns:
+            Shape: Tuple representing the dimensions of the instance.
+        """
         if self.ndim == 1:
             return (len(self.index),)
         return len(self.index), len(self.columns)
 
     def get_shape(self, group_by: tp.GroupByLike = None) -> tp.Shape:
-        """Get group-aware `ArrayWrapper.shape`."""
+        """Return the group-aware shape of the `ArrayWrapper`.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
+        Returns:
+            Shape: Tuple representing the dimensions.
+        """
         return self.resolve(group_by=group_by).shape
 
     @property
     def shape_2d(self) -> tp.Shape:
-        """Shape as if the instance was two-dimensional."""
+        """The shape of the `ArrayWrapper` as a two-dimensional structure.
+
+        Returns:
+            Shape: Tuple representing the 2D dimensions.
+        """
         if self.ndim == 1:
             return self.shape[0], 1
         return self.shape
 
     def get_shape_2d(self, group_by: tp.GroupByLike = None) -> tp.Shape:
-        """Get group-aware `ArrayWrapper.shape_2d`."""
+        """Return the group-aware two-dimensional shape of the `ArrayWrapper`.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+
+        Returns:
+            Shape: Tuple representing the 2D dimensions.
+        """
         return self.resolve(group_by=group_by).shape_2d
 
     def get_freq(self, *args, **kwargs) -> tp.Union[None, float, tp.PandasFrequency]:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.get_freq`."""
+        """Return the frequency determined by `vectorbtpro.base.accessors.BaseIDXAccessor.get_freq`.
+
+        Args:
+            *args: Positional arguments for `get_freq`.
+            **kwargs: Keyword arguments for `get_freq`.
+
+        Returns:
+            Union[None, float, PandasFrequency]: The frequency information.
+        """
         return self.index_acc.get_freq(*args, **kwargs)
 
     @property
     def freq(self) -> tp.Optional[tp.PandasFrequency]:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.freq`."""
+        """Frequency associated with the `ArrayWrapper` as defined by
+        `vectorbtpro.base.accessors.BaseIDXAccessor.freq`.
+
+        Returns:
+            Optional[PandasFrequency]: The frequency of the index.
+        """
         return self.index_acc.freq
 
     @property
     def ns_freq(self) -> tp.Optional[int]:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.ns_freq`."""
+        """Nanosecond frequency associated with the `ArrayWrapper` from
+        `vectorbtpro.base.accessors.BaseIDXAccessor.ns_freq`.
+
+        Returns:
+            Optional[int]: The nanosecond frequency of the index.
+        """
         return self.index_acc.ns_freq
 
     @property
     def any_freq(self) -> tp.Union[None, float, tp.PandasFrequency]:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.any_freq`."""
+        """Frequency value determined by `vectorbtpro.base.accessors.BaseIDXAccessor.any_freq`.
+
+        Returns:
+            Union[None, float, PandasFrequency]: The frequency of the index.
+        """
         return self.index_acc.any_freq
 
     @property
     def periods(self) -> int:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.periods`."""
+        """The number of periods defined by `vectorbtpro.base.accessors.BaseIDXAccessor.periods`.
+
+        Returns:
+            int: Number of periods in the index.
+        """
         return self.index_acc.periods
 
     @property
     def dt_periods(self) -> float:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.dt_periods`."""
+        """Time-based periods derived from `vectorbtpro.base.accessors.BaseIDXAccessor.dt_periods`.
+
+        Returns:
+            float: Number of periods in the index as a float.
+        """
         return self.index_acc.dt_periods
 
     def arr_to_timedelta(self, *args, **kwargs) -> tp.Union[pd.Index, tp.MaybeArray]:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.arr_to_timedelta`."""
+        """Return a timedelta array converted from the index using
+        `vectorbtpro.base.accessors.BaseIDXAccessor.arr_to_timedelta`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.arr_to_timedelta`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.arr_to_timedelta`.
+
+        Returns:
+            Union[pd.Index, MaybeArray]: An array representing time deltas.
+        """
         return self.index_acc.arr_to_timedelta(*args, **kwargs)
 
     @property
     def parse_index(self) -> tp.Optional[bool]:
-        """Whether to try to convert the index into a datetime index.
+        """Flag indicating whether to convert the index to a datetime index.
 
-        Applied during the initialization and passed to `vectorbtpro.utils.datetime_.prepare_dt_index`."""
+        Applied during initialization via `vectorbtpro.utils.datetime_.prepare_dt_index`.
+
+        Returns:
+            Optional[bool]: True if the index should be parsed; otherwise, False.
+        """
         return self._parse_index
 
     @property
@@ -1397,12 +1876,22 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def grouper(self) -> Grouper:
-        """Column grouper."""
+        """The `vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns.
+
+        Returns:
+            Grouper: Grouper instance.
+        """
         return self._grouper
 
     @property
     def grouped_ndim(self) -> int:
-        """Number of dimensions under column grouping."""
+        """The number of dimensions after applying column grouping.
+
+        If not explicitly set, it is derived from the grouper's state.
+
+        Returns:
+            int: Number of dimensions after grouping.
+        """
         if self._grouped_ndim is None:
             if self.grouper.is_grouped():
                 return 2 if self.grouper.get_group_count() > 1 else 1
@@ -1411,9 +1900,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @cached_method(whitelist=True)
     def regroup(self: ArrayWrapperT, group_by: tp.GroupByLike, **kwargs) -> ArrayWrapperT:
-        """Regroup this instance.
-
-        Only creates a new instance if grouping has changed, otherwise returns itself."""
         if self.grouper.is_grouping_changed(group_by=group_by):
             self.grouper.check_group_by(group_by=group_by)
             grouped_ndim = None
@@ -1426,16 +1912,36 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         return self  # important for keeping cache
 
     def flip(self: ArrayWrapperT, **kwargs) -> ArrayWrapperT:
-        """Flip index and columns."""
+        """Swap the index and columns of the `ArrayWrapper`.
+
+        Args:
+            **kwargs: Keyword arguments for `ArrayWrapper.replace`.
+
+        Returns:
+            ArrayWrapper: New `ArrayWrapper` instance with flipped index and columns.
+        """
         if "grouper" not in kwargs:
             kwargs["grouper"] = None
         return self.replace(index=self.columns, columns=self.index, **kwargs)
 
     @cached_method(whitelist=True)
     def resolve(self: ArrayWrapperT, group_by: tp.GroupByLike = None, **kwargs) -> ArrayWrapperT:
-        """Resolve this instance.
+        """Resolve the instance by regrouping and updating metadata.
 
-        Replaces columns and other metadata with groups."""
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `ArrayWrapper.regroup`.
+
+        Returns:
+            ArrayWrapper: Resolved `ArrayWrapper` instance.
+
+        !!! note
+            If the grouper indicates a valid grouping, replaces the instance's columns and
+            related attributes with the grouped configuration. Returns the updated instance
+            while preserving cache integrity.
+        """
         _self = self.regroup(group_by=group_by, **kwargs)
         if _self.grouper.is_grouped():
             return _self.replace(
@@ -1447,7 +1953,15 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         return _self  # important for keeping cache
 
     def get_index_grouper(self, *args, **kwargs) -> Grouper:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`."""
+        """Return the index grouper using `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
+
+        Returns:
+            Grouper: Index grouper instance.
+        """
         return self.index_acc.get_grouper(*args, **kwargs)
 
     def wrap(
@@ -1469,15 +1983,49 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         to_index: bool = False,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.SeriesFrame:
-        """Wrap a NumPy array using the stored metadata.
+        """Wrap the input array using stored metadata and configuration.
 
-        Runs the following pipeline:
+        The function performs the following steps:
 
-        1) Converts to NumPy array
-        2) Fills NaN (optional)
-        3) Wraps using index, columns, and dtype (optional)
-        4) Converts to index (optional)
-        5) Converts to timedelta using `ArrayWrapper.arr_to_timedelta` (optional)"""
+        * Convert the input to a NumPy array.
+        * Replace NaN values if a fill value is provided.
+        * Adjust the array shape to match the stored index and columns.
+        * Apply minimum and maximum precision casting if configured.
+        * Create a Pandas Series or DataFrame based on the array's dimensionality.
+        * Optionally map output values to the original index.
+        * Optionally convert data to timedelta using `ArrayWrapper.arr_to_timedelta`.
+
+        Args:
+            arr (ArrayLike): Array to be wrapped.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            index (Optional[IndexLike]): Index to assign to the wrapped object.
+
+                Uses the stored index if not provided.
+            columns (Optional[IndexLike]): Column labels for the wrapped object.
+
+                May be adjusted if a single zero-valued column is detected.
+            zero_to_none (Optional[bool]): If True, converts a zero column name to None
+                when a single column is present.
+            force_2d (bool): If True, force the output to be two-dimensional.
+            fillna (Optional[Scalar]): Value to replace missing data (NaN).
+            dtype (Optional[PandasDTypeLike]): Data type for converting the output.
+            min_precision (Union[None, int, str]): Minimum precision for numerical conversion.
+            max_precision (Union[None, int, str]): Maximum precision for numerical conversion.
+            prec_float_only (Optional[bool]): If True, apply precision conversion only to floating point numbers.
+            prec_check_bounds (Optional[bool]): If True, enforce bounds checking during precision conversion.
+            prec_strict (Optional[bool]): If True, apply strict checking during precision conversion.
+            to_timedelta (bool): Flag indicating whether to convert the output to timedelta format.
+            to_index (bool): If True, map output values to the original index.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            SeriesFrame: Wrapped Pandas Series or DataFrame with applied metadata.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
+        """
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]
@@ -1580,13 +2128,31 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         to_index: bool = False,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.MaybeSeriesFrame:
-        """Wrap result of reduction.
+        """Wrap the result of a reduction operation.
 
-        `name_or_index` can be the name of the resulting series if reducing to a scalar per column,
-        or the index of the resulting series/dataframe if reducing to an array per column.
-        `columns` can be set to override object's default columns.
+        Args:
+            arr (ArrayLike): Input array to be wrapped.
+            group_by (GroupByLike): Grouping specification.
 
-        See `ArrayWrapper.wrap` for the pipeline."""
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            name_or_index (NameIndex): Name for a scalar reduction per column or index for an array reduction.
+            columns (Optional[IndexLike]): Override for the object's default columns.
+            force_1d (bool): Flag to force the input array to be treated as one-dimensional.
+            fillna (Optional[Scalar]): Value to replace missing data (NaN).
+            dtype (Optional[PandasDTypeLike]): Data type for converting the output.
+            to_timedelta (bool): Flag indicating whether to convert the output to timedelta format.
+            to_index (bool): Flag indicating whether to map scalar results to the object's index.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            MaybeSeriesFrame: Wrapped Series or DataFrame resulting from the reduction operation.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
+
+        !!! info
+            See `ArrayWrapper.wrap` for details on the wrapping pipeline.
+        """
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]
@@ -1682,12 +2248,24 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     def concat_arrs(
         self,
-        *objs: tp.ArrayLike,
+        *objs: tp.MaybeSequence[tp.ArrayLike],
         group_by: tp.GroupByLike = None,
         wrap: bool = True,
         **kwargs,
     ) -> tp.AnyArray1d:
-        """Stack reduced objects along columns and wrap the final object."""
+        """Stack reduced arrays along columns and wrap the resulting object.
+
+        Args:
+            *objs (MaybeSequence[ArrayLike]): Arrays to concatenate.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap (bool): Flag indicating whether to apply wrapping to the concatenated result.
+            **kwargs: Keyword arguments for `ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            AnyArray1d: Stacked one-dimensional array after optional wrapping.
+        """
         from vectorbtpro.base.merging import concat_arrays
 
         if len(objs) == 1:
@@ -1706,12 +2284,24 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     def row_stack_arrs(
         self,
-        *objs: tp.ArrayLike,
+        *objs: tp.MaybeSequence[tp.ArrayLike],
         group_by: tp.GroupByLike = None,
         wrap: bool = True,
         **kwargs,
     ) -> tp.AnyArray:
-        """Stack objects along rows and wrap the final object."""
+        """Stack arrays along rows and wrap the resulting object.
+
+        Args:
+            *objs (MaybeSequence[ArrayLike]): Arrays to stack.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap (bool): Flag indicating whether to apply wrapping to the stacked result.
+            **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
+
+        Returns:
+            AnyArray: Stacked array after optional wrapping.
+        """
         from vectorbtpro.base.merging import row_stack_arrays
 
         _self = self.resolve(group_by=group_by)
@@ -1735,16 +2325,26 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     def column_stack_arrs(
         self,
-        *objs: tp.ArrayLike,
+        *objs: tp.MaybeSequence[tp.ArrayLike],
         reindex_kwargs: tp.KwargsLike = None,
         group_by: tp.GroupByLike = None,
         wrap: bool = True,
         **kwargs,
     ) -> tp.AnyArray2d:
-        """Stack objects along columns and wrap the final object.
+        """Stack arrays along columns and wrap the resulting object.
 
-        `reindex_kwargs` will be passed to
-        [pandas.DataFrame.reindex](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.reindex.html)."""
+        Args:
+            *objs (MaybeSequence[ArrayLike]): Arrays to stack.
+            reindex_kwargs (KwargsLike): Keyword arguments for `pd.DataFrame.reindex`.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            wrap (bool): Flag indicating whether to apply wrapping to the concatenated result.
+            **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
+
+        Returns:
+            AnyArray2d: Concatenated two-dimensional array after optional wrapping.
+        """
         from vectorbtpro.base.merging import column_stack_arrays
 
         _self = self.resolve(group_by=group_by)
@@ -1772,17 +2372,49 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         return stacked_obj
 
     def dummy(self, group_by: tp.GroupByLike = None, **kwargs) -> tp.SeriesFrame:
-        """Create a dummy Series/DataFrame."""
+        """Create a dummy Series or DataFrame with an empty array based on the internal shape.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Dummy Series or DataFrame.
+        """
         _self = self.resolve(group_by=group_by)
         return _self.wrap(np.empty(_self.shape), **kwargs)
 
     def fill(self, fill_value: tp.Scalar = np.nan, group_by: tp.GroupByLike = None, **kwargs) -> tp.SeriesFrame:
-        """Fill a Series/DataFrame."""
+        """Fill a Series or DataFrame with a specified value.
+
+        Args:
+            fill_value (Scalar): Value used to fill the Series or DataFrame.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Series or DataFrame with all elements filled with the specified value.
+        """
         _self = self.resolve(group_by=group_by)
         return _self.wrap(np.full(_self.shape_2d, fill_value), **kwargs)
 
     def fill_reduced(self, fill_value: tp.Scalar = np.nan, group_by: tp.GroupByLike = None, **kwargs) -> tp.SeriesFrame:
-        """Fill a reduced Series/DataFrame."""
+        """Fill a reduced Series or DataFrame with a specified value.
+
+        Args:
+            fill_value (Scalar): Value used to fill the reduced output.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            SeriesFrame: Reduced Series or DataFrame filled with the specified value.
+        """
         _self = self.resolve(group_by=group_by)
         return _self.wrap_reduced(np.full(_self.shape_2d[1], fill_value), **kwargs)
 
@@ -1793,6 +2425,19 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         axis: tp.Optional[int] = None,
         **kwargs,
     ) -> ArrayWrapperT:
+        """Apply a function to the index of the `ArrayWrapper`.
+
+        Args:
+            apply_func (Callable): Function to apply to the index.
+            *args: Positional arguments for `apply_func`.
+            axis (Optional[int]): Axis to apply the function to.
+
+                If None, defaults to 0 for one-dimensional arrays and 1 for two-dimensional arrays.
+            **kwargs: Keyword arguments for `apply_func`.
+
+        Returns:
+            ArrayWrapper: New `ArrayWrapper` instance with the modified index.
+        """
         if axis is None:
             axis = 0 if self.ndim == 1 else 1
         if self.ndim == 1 and axis == 1:
@@ -1804,11 +2449,27 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         return self.replace(index=apply_func(self.index, *args, **kwargs))
 
     def get_index_points(self, *args, **kwargs) -> tp.Array1d:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.get_points`."""
+        """Return index points using `vectorbtpro.base.accessors.BaseIDXAccessor.get_points`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_points`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_points`.
+
+        Returns:
+            Array1d: Array representing the index points.
+        """
         return self.index_acc.get_points(*args, **kwargs)
 
     def get_index_ranges(self, *args, **kwargs) -> tp.Tuple[tp.Array1d, tp.Array1d]:
-        """See `vectorbtpro.base.accessors.BaseIDXAccessor.get_ranges`."""
+        """Return index ranges using `vectorbtpro.base.accessors.BaseIDXAccessor.get_ranges`.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_ranges`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_ranges`.
+
+        Returns:
+            Tuple[Array1d, Array1d]: A tuple containing two arrays that represent the index ranges.
+        """
         return self.index_acc.get_ranges(*args, **kwargs)
 
     def fill_and_set(
@@ -1818,14 +2479,31 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         fill_value: tp.Scalar = np.nan,
         **kwargs,
     ) -> tp.AnyArray:
-        """Fill a new array using an index object such as `vectorbtpro.base.indexing.index_dict`.
+        """Fill and set values in a new array based on an index object.
 
-        Will be wrapped with `vectorbtpro.base.indexing.IdxSetter` if not already.
+        Fill a new array using an index object that specifies positions and associated values.
+        If `idx_setter` is not an instance of `vectorbtpro.base.indexing.IdxSetter`, it is wrapped accordingly.
+        The method `vectorbtpro.base.indexing.IdxSetter.fill_and_set` is then called to update the array.
 
-        Will call `vectorbtpro.base.indexing.IdxSetter.fill_and_set`.
+        Args:
+            idx_setter (Union[index_dict, IdxSetter, IdxSetterFactory]): Index object indicating
+                the positions and values to fill.
 
-        Usage:
-            * Set a single row:
+                If provided as a factory, it generates an `vectorbtpro.base.indexing.IdxSetter`.
+                Otherwise, if given as an index object (e.g. `index_dict`), it is wrapped with
+                    `vectorbtpro.base.indexing.IdxSetter`.
+            keep_flex (bool): Whether to preserve the flexible array structure.
+
+                If False, the resulting array is wrapped using `ArrayWrapper.wrap`.
+            fill_value (Scalar): Default value used to fill positions not explicitly set.
+            **kwargs: Keyword arguments for `vectorbtpro.base.indexing.IdxSetter.fill_and_set`.
+
+        Returns:
+            AnyArray: Resulting array with updated values, either wrapped or unwrapped
+                depending on `keep_flex`.
+
+        Examples:
+            Set a single row:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -1865,7 +2543,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  NaN  NaN  NaN
             ```
 
-            * Set multiple rows:
+            Set multiple rows:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -1899,7 +2577,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  NaN  NaN  NaN
             ```
 
-            * Set rows using slices:
+            Set rows using slices:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -1943,7 +2621,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  4.0  5.0  6.0
             ```
 
-            * Set rows using index points:
+            Set rows using index points:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -1957,7 +2635,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  2.0  2.0  2.0
             ```
 
-            * Set rows using index ranges:
+            Set rows using index ranges:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -1974,7 +2652,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  NaN  NaN  NaN
             ```
 
-            * Set column indices:
+            Set column indices:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -2026,7 +2704,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05 NaN NaN  3.0  4.0
             ```
 
-            * Set row and column indices:
+            Set row and column indices:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -2088,7 +2766,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             2020-01-05  3.0 NaN  3.0 NaN
             ```
 
-            * Set rows using a template:
+            Set rows using a template:
 
             ```pycon
             >>> wrapper.fill_and_set(vbt.index_dict({
@@ -2127,48 +2805,14 @@ WrappingT = tp.TypeVar("WrappingT", bound="Wrapping")
 
 
 class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
-    """Class that uses `ArrayWrapper` globally."""
+    """Class for wrapping functionalities with a global `ArrayWrapper`.
 
-    @classmethod
-    def resolve_row_stack_kwargs(cls, *wrappings: tp.MaybeTuple[WrappingT], **kwargs) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `Wrapping` after stacking along rows."""
-        return kwargs
+    Args:
+        wrapper (ArrayWrapper): Array wrapper instance.
 
-    @classmethod
-    def resolve_column_stack_kwargs(cls, *wrappings: tp.MaybeTuple[WrappingT], **kwargs) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `Wrapping` after stacking along columns."""
-        return kwargs
-
-    @classmethod
-    def resolve_stack_kwargs(cls, *wrappings: tp.MaybeTuple[WrappingT], **kwargs) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `Wrapping` after stacking.
-
-        Should be called after `Wrapping.resolve_row_stack_kwargs` or `Wrapping.resolve_column_stack_kwargs`."""
-        return cls.resolve_merge_kwargs(*[wrapping.config for wrapping in wrappings], **kwargs)
-
-    @hybrid_method
-    def row_stack(
-        cls_or_self: tp.MaybeType[WrappingT],
-        *objs: tp.MaybeTuple[WrappingT],
-        wrapper_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> WrappingT:
-        """Stack multiple `Wrapping` instances along rows.
-
-        Should use `ArrayWrapper.row_stack`."""
-        raise NotImplementedError
-
-    @hybrid_method
-    def column_stack(
-        cls_or_self: tp.MaybeType[WrappingT],
-        *objs: tp.MaybeTuple[WrappingT],
-        wrapper_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> WrappingT:
-        """Stack multiple `Wrapping` instances along columns.
-
-        Should use `ArrayWrapper.column_stack`."""
-        raise NotImplementedError
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
+    """
 
     def __init__(self, wrapper: ArrayWrapper, **kwargs) -> None:
         checks.assert_instance_of(wrapper, ArrayWrapper)
@@ -2178,8 +2822,112 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         HasWrapper.__init__(self)
         AttrResolverMixin.__init__(self)
 
+    @classmethod
+    def resolve_row_stack_kwargs(cls, *wrappings: tp.MaybeSequence[WrappingT], **kwargs) -> tp.Kwargs:
+        """Resolve keyword arguments for initializing `Wrapping` after stacking along rows.
+
+        Args:
+            *wrappings (MaybeSequence[Wrapping]): Wrapping instances to be stacked.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Kwargs: Resolved keyword arguments.
+        """
+        return kwargs
+
+    @classmethod
+    def resolve_column_stack_kwargs(cls, *wrappings: tp.MaybeSequence[WrappingT], **kwargs) -> tp.Kwargs:
+        """Resolve keyword arguments for initializing `Wrapping` after stacking along columns.
+
+        Args:
+            *wrappings (MaybeSequence[Wrapping]): Wrapping instances to be stacked.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Kwargs: Resolved keyword arguments.
+        """
+        return kwargs
+
+    @classmethod
+    def resolve_stack_kwargs(cls, *wrappings: tp.MaybeSequence[WrappingT], **kwargs) -> tp.Kwargs:
+        """Resolve keyword arguments for initializing `Wrapping` after stacking.
+
+        Args:
+            *wrappings (MaybeSequence[Wrapping]): Wrapping instances to be stacked.
+            **kwargs: Keyword arguments for `Wrapping.resolve_merge_kwargs`.
+
+        Returns:
+            Kwargs: Resolved keyword arguments.
+
+        !!! note
+            Should be called after `Wrapping.resolve_row_stack_kwargs` or `Wrapping.resolve_column_stack_kwargs`.
+        """
+        return cls.resolve_merge_kwargs(*[wrapping.config for wrapping in wrappings], **kwargs)
+
+    @hybrid_method
+    def row_stack(
+        cls_or_self: tp.MaybeType[WrappingT],
+        *objs: tp.MaybeSequence[WrappingT],
+        wrapper_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> WrappingT:
+        """Stack multiple `Wrapping` instances along rows.
+
+        Args:
+            *objs (MaybeSequence[Wrapping]): Wrapping instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `ArrayWrapper`.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Wrapping: New wrapping instance resulting from stacking.
+
+        !!! note
+            Should use `ArrayWrapper.row_stack` for stacking.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
+        raise NotImplementedError
+
+    @hybrid_method
+    def column_stack(
+        cls_or_self: tp.MaybeType[WrappingT],
+        *objs: tp.MaybeSequence[WrappingT],
+        wrapper_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> WrappingT:
+        """Stack multiple `Wrapping` instances along columns.
+
+        Args:
+            *objs (MaybeSequence[Wrapping]): Wrapping instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+
+                See `ArrayWrapper`.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Wrapping: New wrapping instance resulting from stacking.
+
+        !!! note
+            Should use `ArrayWrapper.column_stack` for stacking.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
+        raise NotImplementedError
+
     def indexing_func(self: WrappingT, *args, **kwargs) -> WrappingT:
-        """Perform indexing on `Wrapping`."""
+        """Perform indexing on `Wrapping` using the wrapper's indexing function.
+
+        Args:
+            *args: Positional arguments for `Wrapping.indexing_func`.
+            **kwargs: Keyword arguments for `Wrapping.indexing_func`.
+
+        Returns:
+            Wrapping: New wrapping instance resulting from indexing.
+        """
         new_wrapper = self.wrapper.indexing_func(
             *args,
             column_only_select=self.column_only_select,
@@ -2192,32 +2940,24 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
     def resample(self: WrappingT, *args, **kwargs) -> WrappingT:
         """Perform resampling on `Wrapping`.
 
-        When overriding, make sure to create a resampler by passing `*args` and `**kwargs`
-        to `ArrayWrapper.get_resampler`."""
+        Args:
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Wrapping: New wrapping instance resulting from resampling.
+
+        !!! note
+            When overriding, pass `*args` and `**kwargs` to `ArrayWrapper.get_resampler` to create a resampler.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     @property
     def wrapper(self) -> ArrayWrapper:
         return self._wrapper
-
-    def apply_to_index(
-        self: ArrayWrapperT,
-        apply_func: tp.Callable,
-        *args,
-        axis: tp.Optional[int] = None,
-        **kwargs,
-    ) -> ArrayWrapperT:
-        if axis is None:
-            axis = 0 if self.wrapper.ndim == 1 else 1
-        if self.wrapper.ndim == 1 and axis == 1:
-            raise TypeError("Axis 1 is not supported for one dimension")
-        checks.assert_in(axis, (0, 1))
-
-        if axis == 1:
-            new_wrapper = self.wrapper.replace(columns=apply_func(self.wrapper.columns, *args, **kwargs))
-        else:
-            new_wrapper = self.wrapper.replace(index=apply_func(self.wrapper.index, *args, **kwargs))
-        return self.replace(wrapper=new_wrapper)
 
     @property
     def column_only_select(self) -> bool:
@@ -2240,12 +2980,39 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
             return self.wrapper.group_select
         return group_select
 
+    def apply_to_index(
+        self: ArrayWrapperT,
+        apply_func: tp.Callable,
+        *args,
+        axis: tp.Optional[int] = None,
+        **kwargs,
+    ) -> ArrayWrapperT:
+        """Apply a function to the index of the `Wrapping`.
+        
+        Args:
+            apply_func (Callable): Function to apply to the index.
+            *args: Positional arguments for `apply_func`.
+            axis (Optional[int]): Axis to apply the function to.
+
+                If None, defaults to 0 for one-dimensional arrays and 1 for two-dimensional arrays.
+            **kwargs: Keyword arguments for `apply_func`.
+
+        Returns:
+            ArrayWrapper: New `Wrapping` instance with the modified index.
+        """
+        if axis is None:
+            axis = 0 if self.wrapper.ndim == 1 else 1
+        if self.wrapper.ndim == 1 and axis == 1:
+            raise TypeError("Axis 1 is not supported for one dimension")
+        checks.assert_in(axis, (0, 1))
+
+        if axis == 1:
+            new_wrapper = self.wrapper.replace(columns=apply_func(self.wrapper.columns, *args, **kwargs))
+        else:
+            new_wrapper = self.wrapper.replace(index=apply_func(self.wrapper.index, *args, **kwargs))
+        return self.replace(wrapper=new_wrapper)
+
     def regroup(self: WrappingT, group_by: tp.GroupByLike, **kwargs) -> WrappingT:
-        """Regroup this instance.
-
-        Only creates a new instance if grouping has changed, otherwise returns itself.
-
-        `**kwargs` will be passed to `ArrayWrapper.regroup`."""
         if self.wrapper.grouper.is_grouping_changed(group_by=group_by):
             self.wrapper.grouper.check_group_by(group_by=group_by)
             return self.replace(wrapper=self.wrapper.regroup(group_by, **kwargs))
@@ -2258,9 +3025,6 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
         impacts_caching: bool = True,
         silence_warnings: tp.Optional[bool] = None,
     ) -> AttrResolverMixinT:
-        """Resolve self.
-
-        Creates a copy of this instance if a different `freq` can be found in `cond_kwargs`."""
         from vectorbtpro._settings import settings
 
         wrapping_cfg = settings["wrapping"]

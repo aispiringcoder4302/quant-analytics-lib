@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `FeatherData`."""
+"""Module providing the `FeatherData` class for fetching Feather data using PyArrow."""
 
 from pathlib import Path
 
@@ -29,7 +29,14 @@ FeatherDataT = tp.TypeVar("FeatherDataT", bound="FeatherData")
 
 
 class FeatherData(FileData):
-    """Data class for fetching Feather data using PyArrow."""
+    """Data class class for fetching Feather data using PyArrow.
+
+    See:
+        * `FeatherData.fetch_key` for argument details.
+
+    !!! info
+        For default settings, see `custom.feather` in `vectorbtpro._settings.data`.
+    """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.feather")
 
@@ -70,25 +77,27 @@ class FeatherData(FileData):
         squeeze: tp.Optional[bool] = None,
         **read_kwargs,
     ) -> tp.KeyData:
-        """Fetch the Feather file of a feature or symbol.
+        """Fetch a Feather file for a given feature or symbol.
 
         Args:
-            key (hashable): Feature or symbol.
-            path (str): Path.
+            key (Key): Feature or symbol identifier.
+            path (str): File path for the Feather file.
 
-                If `path` is None, uses `key` as the path to the Feather file.
-            tz (any): Target timezone.
+                If None, `key` is used as the file path.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            index_col (int, str, or sequence): Position(s) or name(s) of column(s) that should become the index.
+            index_col (Optional[MaybeSequence[IntStr]]): Column position(s) or name(s) to use as the index.
 
-                Will only apply if the fetched object has a default index.
-            squeeze (int): Whether to squeeze a DataFrame with one column into a Series.
-            **read_kwargs: Other keyword arguments passed to `pd.read_feather`.
+                Applies if the fetched data has a default index.
+            squeeze (bool): Flag indicating whether to convert a single-column DataFrame to a Series.
+            **read_kwargs: Keyword arguments for `pd.read_feather`.
 
-        See https://pandas.pydata.org/docs/reference/api/pandas.read_feather.html for other arguments.
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_feather.html for arguments.
 
-        For defaults, see `custom.feather` in `vectorbtpro._settings.data`."""
+        Returns:
+            KeyData: Fetched data and a metadata dictionary.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("pyarrow")
@@ -131,20 +140,41 @@ class FeatherData(FileData):
 
     @classmethod
     def fetch_feature(cls, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Fetch the Feather file of a feature.
+        """Fetch a Feather file for a feature.
 
-        Uses `FeatherData.fetch_key`."""
+        Args:
+            feature (Feature): Feature identifier.
+            **kwargs: Keyword arguments for `FeatherData.fetch_key`.
+
+        Returns:
+            FeatureData: Fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(feature, **kwargs)
 
     @classmethod
     def fetch_symbol(cls, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Fetch the Feather file of a symbol.
+        """Fetch a Feather file for a symbol.
 
-        Uses `FeatherData.fetch_key`."""
+        Args:
+            symbol (Symbol): Symbol identifier.
+            **kwargs: Keyword arguments for `FeatherData.fetch_key`.
+
+        Returns:
+            SymbolData: Fetched data and a metadata dictionary.
+        """
         return cls.fetch_key(symbol, **kwargs)
 
     def update_key(self, key: tp.Key, key_is_feature: bool = False, **kwargs) -> tp.KeyData:
-        """Update data of a feature or symbol."""
+        """Update data for a given feature or symbol.
+
+        Args:
+            key (Key): Feature or symbol identifier.
+            key_is_feature (bool): Flag indicating whether the key represents a feature.
+            **kwargs: Keyword arguments for `FeatherData.fetch_feature` or `FeatherData.fetch_symbol`.
+
+        Returns:
+            KeyData: Updated data and a metadata dictionary.
+        """
         fetch_kwargs = self.select_fetch_kwargs(key)
         kwargs = merge_dicts(fetch_kwargs, kwargs)
         if key_is_feature:
@@ -152,13 +182,7 @@ class FeatherData(FileData):
         return self.fetch_symbol(key, **kwargs)
 
     def update_feature(self, feature: tp.Feature, **kwargs) -> tp.FeatureData:
-        """Update data of a feature.
-
-        Uses `FeatherData.update_key` with `key_is_feature=True`."""
         return self.update_key(feature, key_is_feature=True, **kwargs)
 
     def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
-        """Update data for a symbol.
-
-        Uses `FeatherData.update_key` with `key_is_feature=False`."""
         return self.update_key(symbol, key_is_feature=False, **kwargs)

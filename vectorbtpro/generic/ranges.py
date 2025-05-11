@@ -8,18 +8,18 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for working with range records.
+"""Module for working with range records.
 
-Range records capture information on ranges. They are useful for analyzing duration of processes,
-such as drawdowns, trades, and positions. They also come in handy when analyzing distance between events,
-such as entry and exit signals.
+Range records capture information on time intervals. They are useful for analyzing durations
+of processes, such as drawdowns, trades, and positions, as well as evaluating time between events
+(e.g., entry and exit signals).
 
-Each range has a starting point and an ending point. For example, the points for `range(20)`
-are 0 and 20 (not 19!) respectively.
+Each range has a starting and an ending point. For example, `range(20)` yields a start of 0 and
+an end of 20 (not 19).
 
 !!! note
-    Be aware that if a range hasn't ended in a column, its `end_idx` will point at the latest index.
-    Make sure to account for this when computing custom metrics involving duration.
+    If a range remains open in a column, its `end_idx` points to the latest index.
+    Ensure you account for this when calculating custom duration metrics.
 
 ```pycon
 >>> from vectorbtpro import *
@@ -55,7 +55,7 @@ Timedelta('156 days 00:00:00')
 
 ## From accessors
 
-Moreover, all generic accessors have a property `ranges` and a method `get_ranges`:
+All generic accessors have a `ranges` property and a `get_ranges` method:
 
 ```pycon
 >>> # vectorbtpro.generic.accessors.GenericAccessor.ranges.coverage
@@ -88,7 +88,7 @@ Duration: Max       2 days 00:00:00
 Name: a, dtype: object
 ```
 
-`Ranges.stats` also supports (re-)grouping:
+`Ranges.stats` also supports re-grouping:
 
 ```pycon
 >>> ranges.stats(group_by=True)
@@ -109,7 +109,7 @@ Name: group, dtype: object
 !!! hint
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Ranges.subplots`.
 
-`Ranges` class has a single subplot based on `Ranges.plot`:
+The `Ranges` class provides a single subplot via `Ranges.plot`:
 
 ```pycon
 >>> ranges['a'].plots().show()
@@ -171,10 +171,10 @@ ranges_field_config = ReadonlyConfig(
 
 __pdoc__[
     "ranges_field_config"
-] = f"""Field config for `Ranges`.
+] = f"""Field configuration for `Ranges`.
 
 ```python
-{ranges_field_config.prettify()}
+{ranges_field_config.prettify_doc()}
 ```
 """
 
@@ -183,10 +183,10 @@ ranges_attach_field_config = ReadonlyConfig(dict(status=dict(attach_filters=True
 
 __pdoc__[
     "ranges_attach_field_config"
-] = f"""Config of fields to be attached to `Ranges`.
+] = f"""Configuration for fields to be attached to `Ranges`.
 
 ```python
-{ranges_attach_field_config.prettify()}
+{ranges_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -212,10 +212,10 @@ ranges_shortcut_config = ReadonlyConfig(
 
 __pdoc__[
     "ranges_shortcut_config"
-] = f"""Config of shortcut properties to be attached to `Ranges`.
+] = f"""Configuration for shortcut properties attached to `Ranges`.
 
 ```python
-{ranges_shortcut_config.prettify()}
+{ranges_shortcut_config.prettify_doc()}
 ```
 """
 
@@ -226,9 +226,13 @@ RangesT = tp.TypeVar("RangesT", bound="Ranges")
 @attach_fields(ranges_attach_field_config)
 @override_field_config(ranges_field_config)
 class Ranges(PriceRecords):
-    """Extends `vectorbtpro.generic.price_records.PriceRecords` for working with range records.
+    """Class for handling range records that extends `vectorbtpro.generic.price_records.PriceRecords`.
 
-    Requires `records_arr` to have all fields defined in `vectorbtpro.generic.enums.range_dt`."""
+    Requires `records_arr` to have all fields defined in `vectorbtpro.generic.enums.range_dt`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.ranges`.
+    """
 
     @property
     def field_config(self) -> Config:
@@ -247,15 +251,35 @@ class Ranges(PriceRecords):
     ) -> RangesT:
         """Build `Ranges` from an array.
 
-        Searches for sequences of
+        Constructs a `Ranges` instance by identifying consecutive sequences of valid data points.
 
-        * True values in boolean data (False acts as a gap),
-        * positive values in integer data (-1 acts as a gap), and
-        * non-NaN values in any other data (NaN acts as a gap).
+        It searches for sequences of:
 
-        If `attach_as_close` is True, will attach `arr` as `close`.
+        * True values in boolean arrays (with False as a gap),
+        * Positive integers in integer arrays (with -1 as a gap), and
+        * Non-NaN values in other data types (with NaN acting as a gap).
 
-        `**kwargs` will be passed to `Ranges.__init__`."""
+        Args:
+            arr (ArrayLike): Input array to analyze.
+            gap_value (Optional[Scalar]): Value indicating a gap in the data.
+            attach_as_close (bool): Whether to attach the input array as the `close` field.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `Ranges`.
+
+        Returns:
+            Ranges: New instance constructed from the array.
+
+        See:
+            `vectorbtpro.generic.nb.records.get_ranges_nb`
+        """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
         wrapper = ArrayWrapper.from_obj(arr, **wrapper_kwargs)
@@ -277,7 +301,7 @@ class Ranges(PriceRecords):
 
     @classmethod
     def from_delta(
-        cls: tp.Type[RangesT],
+        cls,
         records_or_mapped: tp.Union[Records, MappedArray],
         delta: tp.Union[str, int, tp.FrequencyLike],
         shift: tp.Optional[int] = None,
@@ -285,16 +309,33 @@ class Ranges(PriceRecords):
         jitted: tp.JittedOption = None,
         chunked: tp.ChunkedOption = None,
         **kwargs,
-    ) -> RangesT:
-        """Build `Ranges` from a record/mapped array with a timedelta applied on its index field.
+    ) -> "Ranges":
+        """Build `Ranges` from a record or mapped array with an applied time delta on its index.
 
-        See `vectorbtpro.generic.nb.records.get_ranges_from_delta_nb`.
+        This method applies a time delta to the index field of the input records. When `delta`
+        is an integer, it represents a number of rows; otherwise, it is converted to a timedelta,
+        requiring the index to be datetime-like or have a defined frequency. Conversion is performed
+        using `vectorbtpro.utils.datetime_.to_timedelta64`.
 
-        Set `delta` to an integer to wait a certain amount of rows. Set it to anything else to
-        wait a timedelta. The conversion is done using `vectorbtpro.utils.datetime_.to_timedelta64`.
-        The second option requires the index to be datetime-like, or at least the frequency to be set.
+        Args:
+            records_or_mapped (Union[Records, MappedArray]): Record or mapped array to convert into ranges.
+            delta (Union[str, int, FrequencyLike]): Time difference to apply, as a row count or timedelta.
+            shift (Optional[int]): Number of rows to shift the delta application.
+            idx_field_or_arr (Union[None, str, Array1d]): Field name or array for extracting index values.
+            jitted (JittedOption): Option to control JIT compilation.
 
-        `**kwargs` will be passed to `Ranges.__init__`."""
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Ranges`.
+
+        Returns:
+            Ranges: New instance constructed based on the applied delta.
+
+        See:
+            `vectorbtpro.generic.nb.records.get_ranges_from_delta_nb`
+        """
         if idx_field_or_arr is None:
             if isinstance(records_or_mapped, Records):
                 idx_field_or_arr = records_or_mapped.get_field_arr("idx")
@@ -347,12 +388,27 @@ class Ranges(PriceRecords):
             )
         return Ranges.from_records(records_or_mapped.wrapper, new_records_arr, **kwargs)
 
-    def with_delta(self, *args, **kwargs):
-        """Pass self to `Ranges.from_delta`."""
+    def with_delta(self, *args, **kwargs) -> "Ranges":
+        """Call `Ranges.from_delta` using the current instance.
+
+        Args:
+            *args: Positional arguments for `Ranges.from_delta`.
+            **kwargs: Keyword arguments for `Ranges.from_delta`.
+
+        Returns:
+            Ranges: New instance resulting from the `from_delta` conversion.
+        """
         return Ranges.from_delta(self, *args, **kwargs)
 
-    def crop(self) -> RangesT:
-        """Remove any data outside the minimum start index and the maximum end index."""
+    def crop(self: RangesT) -> RangesT:
+        """Crop the range records to the valid index span.
+
+        Trims the data to include only records between the minimum start index and
+        one more than the maximum end index.
+
+        Returns:
+            Ranges: New instance containing the cropped data.
+        """
         min_start_idx = np.min(self.get_field_arr("start_idx"))
         max_start_idx = np.max(self.get_field_arr("end_idx")) + 1
         return self.iloc[min_start_idx:max_start_idx]
@@ -365,7 +421,16 @@ class Ranges(PriceRecords):
         real: bool = False,
         **kwargs,
     ) -> RangesT:
-        """Filter out ranges that last less than a minimum duration."""
+        """Filter out ranges shorter than a specified minimum duration.
+
+        Args:
+            min_duration (Union[str, int, FrequencyLike]): Minimum allowed duration.
+            real (bool): If True, use real durations; otherwise, use effective durations.
+            **kwargs: Keyword arguments for `Ranges.apply_mask`.
+
+        Returns:
+            Ranges: New instance with ranges meeting the minimum duration criteria.
+        """
         if isinstance(min_duration, int):
             return self.apply_mask(self.duration.values >= min_duration, **kwargs)
         min_duration = dt.to_timedelta64(min_duration)
@@ -379,7 +444,16 @@ class Ranges(PriceRecords):
         real: bool = False,
         **kwargs,
     ) -> RangesT:
-        """Filter out ranges that last more than a maximum duration."""
+        """Filter out ranges longer than a specified maximum duration.
+
+        Args:
+            max_duration (Union[str, int, FrequencyLike]): Maximum allowed duration.
+            real (bool): If True, use real durations; otherwise, use effective durations.
+            **kwargs: Keyword arguments for `Ranges.apply_mask`.
+
+        Returns:
+            Ranges: New instance with ranges meeting the maximum duration criteria.
+        """
         if isinstance(max_duration, int):
             return self.apply_mask(self.duration.values <= max_duration, **kwargs)
         max_duration = dt.to_timedelta64(max_duration)
@@ -390,11 +464,31 @@ class Ranges(PriceRecords):
     # ############# Masking ############# #
 
     def get_first_pd_mask(self, group_by: tp.GroupByLike = None, **kwargs) -> tp.SeriesFrame:
-        """Get mask from `Ranges.get_first_idx`."""
+        """Generate a mask based on the first index of each range.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `Ranges.get_pd_mask`.
+
+        Returns:
+            SeriesFrame: Mask indicating the first indices of each range.
+        """
         return self.get_pd_mask(idx_arr=self.first_idx.values, group_by=group_by, **kwargs)
 
     def get_last_pd_mask(self, group_by: tp.GroupByLike = None, **kwargs) -> tp.SeriesFrame:
-        """Get mask from `Ranges.get_last_idx`."""
+        """Generate a mask based on the last index of each range.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            **kwargs: Keyword arguments for `Ranges.get_pd_mask`.
+
+        Returns:
+            SeriesFrame: Mask indicating the last indices of each range.
+        """
         out = self.get_pd_mask(idx_arr=self.last_idx.values, group_by=group_by, **kwargs)
         return out
 
@@ -405,9 +499,31 @@ class Ranges(PriceRecords):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.SeriesFrame:
-        """Get mask from ranges.
+        """Generate a boolean mask for all ranges.
 
-        See `vectorbtpro.generic.nb.records.ranges_to_mask_nb`."""
+        This method converts range start and end indices, along with their statuses,
+        into a boolean mask.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+
+        Returns:
+            SeriesFrame: Boolean mask representing the ranges.
+
+        See:
+            `vectorbtpro.generic.nb.records.ranges_to_mask_nb`
+        """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         func = jit_reg.resolve_option(nb.ranges_to_mask_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -423,25 +539,55 @@ class Ranges(PriceRecords):
     # ############# Stats ############# #
 
     def get_valid(self: RangesT, **kwargs) -> RangesT:
-        """Get valid ranges.
+        """Extract valid ranges by filtering out records with invalid indices.
 
-        A valid range doesn't have the start and end index set to -1."""
+        A valid range is defined as having both the start and end indices not equal to -1.
+
+        Args:
+            **kwargs: Keyword arguments for `Ranges.apply_mask`.
+
+        Returns:
+            Ranges: New instance containing only valid ranges.
+        """
         filter_mask = (self.get_field_arr("start_idx") != -1) & (self.get_field_arr("end_idx") != -1)
         return self.apply_mask(filter_mask, **kwargs)
 
     def get_invalid(self: RangesT, **kwargs) -> RangesT:
-        """Get invalid ranges.
+        """Return invalid ranges.
 
-        An invalid range has the start and/or end index set to -1."""
+        A range is considered invalid if its start or end index equals -1.
+
+        Args:
+            **kwargs: Keyword arguments for `Ranges.apply_mask`.
+
+        Returns:
+            Ranges: Ranges with indices marked as invalid.
+        """
         filter_mask = (self.get_field_arr("start_idx") == -1) | (self.get_field_arr("end_idx") == -1)
         return self.apply_mask(filter_mask, **kwargs)
 
-    def get_first_idx(self, **kwargs):
-        """Get the first index in each range."""
+    def get_first_idx(self, **kwargs) -> MappedArray:
+        """Return the first index for each range.
+
+        Args:
+            **kwargs: Keyword arguments for `Ranges.map_field`.
+
+        Returns:
+            MappedArray: First index in each range as a mapped array.
+        """
         return self.map_field("start_idx", **kwargs)
 
-    def get_last_idx(self, **kwargs):
-        """Get the last index in each range."""
+    def get_last_idx(self, **kwargs) -> MappedArray:
+        """Return the last index for each range.
+
+        Adjust the end index for ranges with a closed status by subtracting one.
+
+        Args:
+            **kwargs: Keyword arguments for `Ranges.map_array`.
+
+        Returns:
+            MappedArray: Adjusted last index for each range as a mapped array.
+        """
         last_idx = self.get_field_arr("end_idx", copy=True)
         status = self.get_field_arr("status")
         last_idx[status == enums.RangeStatus.Closed] -= 1
@@ -453,7 +599,25 @@ class Ranges(PriceRecords):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """Get the effective duration of each range in integer format."""
+        """Return the effective duration of each range in integer format.
+
+        The duration is computed based on the start and end indices and is adjusted by the range status.
+
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Ranges.map_array`.
+
+        Returns:
+            MappedArray: Array of effective durations for each range.
+
+        See:
+            `vectorbtpro.generic.nb.records.range_duration_nb`
+        """
         func = jit_reg.resolve_option(nb.range_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         duration = func(
@@ -470,7 +634,26 @@ class Ranges(PriceRecords):
         chunked: tp.ChunkedOption = None,
         **kwargs,
     ) -> MappedArray:
-        """Get the real duration of each range in timedelta format."""
+        """Return the real duration of each range in timedelta format.
+
+        The duration is calculated by converting start and end indices to nanoseconds and then
+        computing the difference based on the given frequency.
+
+        Args:
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            **kwargs: Keyword arguments for `Ranges.map_array`.
+
+        Returns:
+            MappedArray: Array of durations for each range expressed as timedelta.
+
+        See:
+            `vectorbtpro.generic.nb.records.range_duration_nb`
+        """
         func = jit_reg.resolve_option(nb.range_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         duration = func(
@@ -490,7 +673,29 @@ class Ranges(PriceRecords):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get average range duration (as timedelta)."""
+        """Return the average duration of ranges as a timedelta.
+
+        The duration is computed as the mean of either the real or effective range durations.
+
+        Args:
+            real (bool): If True, use real durations; otherwise, use effective durations.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.mean`.
+
+        Returns:
+            MaybeSeries: Average duration of the ranges in timedelta.
+        """
         if real:
             duration = self.real_duration
             duration = duration.replace(mapped_arr=dt.to_ns(duration.mapped_arr))
@@ -509,7 +714,29 @@ class Ranges(PriceRecords):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get maximum range duration (as timedelta)."""
+        """Return the maximum duration among ranges as a timedelta.
+
+        The duration is computed as the maximum of either the real or effective range durations.
+
+        Args:
+            real (bool): If True, use real durations; otherwise, use effective durations.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.max`.
+
+        Returns:
+            MaybeSeries: Maximum duration among the ranges in timedelta.
+        """
         if real:
             duration = self.real_duration
             duration = duration.replace(mapped_arr=dt.to_ns(duration.mapped_arr))
@@ -528,9 +755,30 @@ class Ranges(PriceRecords):
         chunked: tp.ChunkedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
     ) -> tp.MaybeSeries:
-        """Get coverage, that is, the number of steps that are covered by all ranges.
+        """Return the coverage of ranges, defined as the total number of steps covered by all ranges.
 
-        See `vectorbtpro.generic.nb.records.range_coverage_nb`."""
+        Args:
+            overlapping (bool): Whether to consider overlapping ranges.
+            normalize (bool): Whether to normalize the coverage.
+            group_by (GroupByLike): Grouping specification.
+
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
+
+        Returns:
+            MaybeSeries: Computed coverage of the ranges.
+
+        See:
+            `vectorbtpro.generic.nb.records.range_coverage_nb`
+        """
         col_map = self.col_mapper.get_col_map(group_by=group_by)
         index_lens = self.wrapper.grouper.get_group_lens(group_by=group_by) * self.wrapper.shape[0]
         func = jit_reg.resolve_option(nb.range_coverage_nb, jitted)
@@ -559,43 +807,69 @@ class Ranges(PriceRecords):
         ffill: bool = False,
         remove_empty: bool = True,
         return_raw: bool = False,
-        start_index: tp.Optional[pd.Timestamp] = None,
+        start_index: tp.Optional[tp.Timestamp] = None,
         id_level: tp.Union[None, str, tp.IndexLike] = None,
         jitted: tp.JittedOption = None,
         wrap_kwargs: tp.KwargsLike = None,
         clean_index_kwargs: tp.KwargsLike = None,
     ) -> tp.Union[tp.Tuple[tp.Array1d, tp.Array2d], tp.Frame]:
-        """Generate a projection for each range record.
+        """Generate projections for each range record.
 
-        See `vectorbtpro.generic.nb.records.map_ranges_to_projections_nb`.
+        This method generates projections based on range records and provided close price data.
 
-        Set `proj_start` to an integer to generate a projection after a certain row
-        after the start row. Set it to anything else to wait a timedelta.
-        The conversion is done using `vectorbtpro.utils.datetime_.to_timedelta64`.
-        The second option requires the index to be datetime-like, or at least the frequency to be set.
+        Args:
+            close (Optional[ArrayLike]): Array of close price values.
 
-        Set `proj_period` the same way as `proj_start` to generate a projection of a certain length.
-        Unless `extend` is True, it still respects the duration of the range.
+                If None, uses `Ranges.close`.
+            proj_start (Union[None, str, int, FrequencyLike]): Defines when to start the projection.
 
-        Set `extend` to True to extend the projection even after the end of the range.
-        The extending period is taken from the longest range duration if `proj_period` is None,
-        and from the longest `proj_period` if it's not None.
+                Use an integer for a specified number of rows after the start row or a timedelta-like value.
+                The second option requires the index to be datetime-like, or at least the frequency to be set.
+                The conversion uses `vectorbtpro.utils.datetime_.to_timedelta64`.
+            proj_period (Union[None, str, int, FrequencyLike]): Defines the projection length.
 
-        Set `rebase` to True to make each projection start with 1, otherwise, each projection
-        will consist of original `close` values during the projected period. Use `start_value`
-        to replace 1 with another start value. It can also be a flexible array with elements per column.
-        If `start_value` is -1, will set it to the latest row in `close`.
+                Use an integer for row count or a timedelta-like value.
+            incl_end_idx (bool): Whether the end index of a range is inclusive.
+            extend (bool): Whether to extend the projection to a fixed length (beyond the end).
 
-        Set `ffill` to True to forward fill NaN values, even if they are NaN in `close` itself.
+                The extension period is taken from the longest range duration if `proj_period`
+                is None, and from the longest `proj_period` if not None.
+            rebase (bool): Rebase projection values so that each projection starts with `start_value`.
 
-        Set `remove_empty` to True to remove projections that are either NaN or with only one element.
-        The index of each projection is still being tracked and will appear in the multi-index of the
-        returned DataFrame.
+                If False, the projection retains the original close values.
+            start_value (ArrayLike): Initial value for rebasing.
+
+                Can be a scalar or an array per column. If set to -1, uses the latest close value.
+            ffill (bool): Forward fill NaN values in the projection, even if they are NaN in `close`.
+            remove_empty (bool): Remove projections that are NaN or contain only a single element.
+            return_raw (bool): Return the raw output (range indices and projections)
+                instead of a wrapped DataFrame.
+            start_index (Optional[Timestamp]): Starting timestamp to define
+                the DataFrame index of the projection.
+            id_level (Union[None, str, IndexLike]): Identifier or key for naming range IDs.
+
+                If a string, it may refer to a field mapping.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index`.
+
+        Returns:
+            Union[Tuple[Array1d, Array2d], Frame]: If `return_raw` is True, returns a tuple with
+                a 1D array of record indices and a 2D array of projections, with each row corresponding
+                to a range; otherwise, returns a DataFrame with projections.
+
+        See:
+            `vectorbtpro.generic.nb.records.map_ranges_to_projections_nb`
 
         !!! note
-            As opposed to the Numba-compiled function, the returned DataFrame will have
-            projections stacked along columns rather than rows. Set `return_raw` to True
-            to return them in the original format.
+            As opposed to the Numba-compiled function, the returned DataFrame has projections
+            stacked along columns rather than rows. Set `return_raw` to True to obtain the original format.
         """
         if close is None:
             close = self.close
@@ -685,10 +959,14 @@ class Ranges(PriceRecords):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `Ranges.stats`.
+        """Default configuration for `Data.stats`.
 
-        Merges `vectorbtpro.records.base.Records.stats_defaults` and
-        `stats` from `vectorbtpro._settings.ranges`."""
+        Merges the defaults from `vectorbtpro.records.base.Records.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.ranges`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the stats builder.
+        """
         from vectorbtpro._settings import settings
 
         ranges_stats_cfg = settings["ranges"]["stats"]
@@ -751,7 +1029,7 @@ class Ranges(PriceRecords):
 
     def plot_projections(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         min_duration: tp.Union[str, int, tp.FrequencyLike] = None,
         max_duration: tp.Union[str, int, tp.FrequencyLike] = None,
         last_n: tp.Optional[int] = None,
@@ -773,7 +1051,7 @@ class Ranges(PriceRecords):
         plot_upper: tp.Union[bool, str, tp.Callable] = True,
         plot_aux_middle: tp.Union[bool, str, tp.Callable] = True,
         plot_fill: bool = True,
-        colorize: bool = True,
+        colorize: tp.Union[bool, str, tp.Callable] = True,
         ohlc_type: tp.Union[None, str, tp.BaseTraceType] = None,
         ohlc_trace_kwargs: tp.KwargsLike = None,
         close_trace_kwargs: tp.KwargsLike = None,
@@ -788,57 +1066,92 @@ class Ranges(PriceRecords):
     ) -> tp.BaseFigure:
         """Plot projections.
 
-        Combines generation of projections using `Ranges.get_projections` and
-        their plotting using `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
+        Generate and plot projection lines and bands based on filtered range records.
+        This method filters range records by duration constraints and selection criteria,
+        computes projections using `Ranges.get_projections`, and visualizes the results with
+        `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
+        It also overlays OHLC or close price data if available.
 
         Args:
-            column (str): Name of the column to plot.
-            min_duration (str, int, or frequency_like): Filter range records by minimum duration.
-            max_duration (str, int, or frequency_like): Filter range records by maximum duration.
-            last_n (int): Select last N range records.
-            top_n (int): Select top N range records by maximum duration.
-            random_n (int): Select N range records randomly.
-            seed (int): Seed to make output deterministic.
-            proj_start (str, int, or frequency_like): See `Ranges.get_projections`.
+            column (Optional[Column]): Identifier of the column to plot.
+            min_duration (Union[str, int, FrequencyLike]): Filter range records by minimum duration.
+            max_duration (Union[str, int, FrequencyLike]): Filter range records by maximum duration.
+            last_n (Optional[int]): Number of most recent range records to select.
+            top_n (Optional[int]): Display only the top N records sorted by maximum duration.
+            random_n (Optional[int]): Number of range records to select randomly.
+            seed (Optional[int]): Random seed for deterministic output.
+            proj_start (Union[None, str, int, FrequencyLike]): Defines when to start the projection.
+            
+                See `Ranges.get_projections`.
 
-                Allows an additional option "current_or_{value}", which sets `proj_start` to
-                the duration of the current open range, and to the specified value if there is no open range.
-            proj_period (str, int, or frequency_like): See `Ranges.get_projections`.
+                Allows an option "current_or_{value}", which sets `proj_start` to the duration
+                of the current open range or to the specified value if no open range exists.
+            proj_period (Union[None, str, int, FrequencyLike]): Defines the projection length.
+            
+                See `Ranges.get_projections`.
 
-                Allows additional options "current_or_{option}", "mean", "min", "max", "median", or
-                a percentage such as "50%" representing a quantile. All of those options are based
-                on the duration of all the closed ranges filtered by the arguments above.
-            incl_end_idx (bool): See `Ranges.get_projections`.
-            extend (bool): See `Ranges.get_projections`.
-            ffill (bool): See `Ranges.get_projections`.
-            plot_past_period (str, int, or frequency_like): Past period to plot.
+                Allows options such as "current_or_{option}", "mean", "min", "max", "median",
+                or a percentage like "50%" representing a quantile derived from closed ranges.
+            incl_end_idx (bool): Whether the end index of a range is inclusive.
+            
+                See `Ranges.get_projections`.
+            extend (bool): Whether to extend the projection to a fixed length (beyond the end).
+            
+                See `Ranges.get_projections`.
+            ffill (bool): Forward fill NaN values in the projection, even if they are NaN in `close`.
+            
+                See `Ranges.get_projections`.
+            plot_past_period (Union[None, str, int, FrequencyLike]): Past period for plotting.
 
-                Allows the same options as `proj_period` plus "proj_period" and "current_or_proj_period".
-            plot_ohlc (bool or DataFrame): Whether to plot OHLC.
-            plot_close (bool or Series): Whether to plot close.
-            plot_projections (bool): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            plot_bands (bool): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            plot_lower (bool, str, or callable): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            plot_middle (bool, str, or callable): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            plot_upper (bool, str, or callable): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            plot_aux_middle (bool, str, or callable): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            plot_fill (bool): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            colorize (bool, str, or callable): See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
-            ohlc_type: Either 'OHLC', 'Candlestick' or Plotly trace.
+                Accepts the same options as `proj_period` plus "proj_period" and "current_or_proj_period".
+            plot_ohlc (Union[bool, DataFrame]): Flag or data specifying whether to plot OHLC.
+            plot_close (Union[bool, Series]): Flag or data specifying whether to plot close prices.
+            plot_projections (bool): Plot each projection as a semi-transparent line if True.
 
-                Pass None to use the default.
-            ohlc_trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `Ranges.close`.
-            projection_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for projections.
-            lower_trace_kwargs (dict): Keyword arguments passed to `plotly.plotly.graph_objects.Scatter` for lower band.
-            middle_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for middle band.
-            upper_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for upper band.
-            aux_middle_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for auxiliary middle band.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
+            plot_bands (bool): Plot computed bands if True.
 
-        Usage:
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
+            plot_lower (Union[bool, str, Callable]): Specification for the lower band.
+
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
+            plot_middle (Union[bool, str, Callable]): Specification for the middle band.
+
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
+            plot_upper (Union[bool, str, Callable]): Specification for the upper band.
+
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
+            plot_aux_middle (Union[bool, str, Callable]): Specification for an auxiliary middle band.
+
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
+            plot_fill (bool): Fill the area between band traces if True.
+
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`
+            colorize (Union[bool, str, Callable]): Strategy for colorizing projections or bands.
+
+                See `vectorbtpro.generic.accessors.GenericDFAccessor.plot_projections`.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
+
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            projection_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the projections.
+            lower_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower band.
+            middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the middle band.
+            upper_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper band.
+            aux_middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the auxiliary middle band.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
+
+        Returns:
+            BaseFigure: Figure object containing the plotted projections and price data.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> price = pd.Series(
             ...     [11, 12, 13, 14, 11, 12, 13, 12, 11, 12],
@@ -1052,9 +1365,9 @@ class Ranges(PriceRecords):
                     colorize=colorize,
                     rename_levels=rename_levels,
                     projection_trace_kwargs=projection_trace_kwargs,
-                    upper_trace_kwargs=upper_trace_kwargs,
-                    middle_trace_kwargs=middle_trace_kwargs,
                     lower_trace_kwargs=lower_trace_kwargs,
+                    middle_trace_kwargs=middle_trace_kwargs,
+                    upper_trace_kwargs=upper_trace_kwargs,
                     aux_middle_trace_kwargs=aux_middle_trace_kwargs,
                     add_trace_kwargs=add_trace_kwargs,
                     fig=fig,
@@ -1064,39 +1377,46 @@ class Ranges(PriceRecords):
 
     def plot_shapes(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_ohlc: tp.Union[bool, tp.Frame] = True,
         plot_close: tp.Union[bool, tp.Series] = True,
         ohlc_type: tp.Union[None, str, tp.BaseTraceType] = None,
         ohlc_trace_kwargs: tp.KwargsLike = None,
         close_trace_kwargs: tp.KwargsLike = None,
-        shape_kwargs: tp.KwargsLike = None,
+        add_shape_kwargs: tp.KwargsLike = None,
         add_trace_kwargs: tp.KwargsLike = None,
         xref: str = "x",
         yref: str = "y",
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot range shapes.
+        """Plot range shapes on a figure.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_ohlc (bool or DataFrame): Whether to plot OHLC.
-            plot_close (bool or Series): Whether to plot close.
-            ohlc_type: Either 'OHLC', 'Candlestick' or Plotly trace.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_ohlc (Union[bool, DataFrame]): Flag or data specifying whether to plot OHLC.
+            plot_close (Union[bool, Series]): Flag or data specifying whether to plot close prices.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            ohlc_trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `Ranges.close`.
-            shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for shapes.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            xref (str): X coordinate axis.
-            yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
-            * Plot zones colored by duration:
+        Returns:
+            BaseFigure: Figure object containing the plotted shapes.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
+            Plot zones colored by duration:
 
             ```pycon
             >>> price = pd.Series(
@@ -1109,7 +1429,7 @@ class Ranges(PriceRecords):
             ...     return real_duration[i] / real_duration.max() * 0.5
 
             >>> vbt.Ranges.from_array(price >= 2).plot_shapes(
-            ...     shape_kwargs=dict(fillcolor="teal", opacity=vbt.RepFunc(get_opacity))
+            ...     add_shape_kwargs=dict(fillcolor="teal", opacity=vbt.RepFunc(get_opacity))
             ... ).show()
             ```
 
@@ -1134,8 +1454,8 @@ class Ranges(PriceRecords):
             dict(line=dict(color=plotting_cfg["color_schema"]["blue"]), name="Close"),
             close_trace_kwargs,
         )
-        if shape_kwargs is None:
-            shape_kwargs = {}
+        if add_shape_kwargs is None:
+            add_shape_kwargs = {}
         if add_trace_kwargs is None:
             add_trace_kwargs = {}
         if isinstance(plot_ohlc, bool):
@@ -1198,7 +1518,7 @@ class Ranges(PriceRecords):
                 start_index = start_idx[i]
                 end_index = end_idx[i]
                 _shape_kwargs = substitute_templates(
-                    shape_kwargs,
+                    add_shape_kwargs,
                     context=dict(
                         self_col=self_col,
                         i=i,
@@ -1212,7 +1532,7 @@ class Ranges(PriceRecords):
                         close=close,
                         ohlc=ohlc,
                     ),
-                    eval_id="shape_kwargs",
+                    eval_id="add_shape_kwargs",
                 )
                 _shape_kwargs = merge_dicts(
                     dict(
@@ -1236,7 +1556,7 @@ class Ranges(PriceRecords):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         top_n: tp.Optional[int] = None,
         plot_ohlc: tp.Union[bool, tp.Frame] = True,
         plot_close: tp.Union[bool, tp.Series] = True,
@@ -1256,32 +1576,40 @@ class Ranges(PriceRecords):
         return_close: bool = False,
         **layout_kwargs,
     ) -> tp.Union[tp.BaseFigure, tp.Tuple[tp.BaseFigure, tp.Series]]:
-        """Plot ranges.
+        """Plot range data including OHLC, close prices, start/end markers,
+        and shaded zones for open and closed ranges.
 
         Args:
-            column (str): Name of the column to plot.
-            top_n (int): Filter top N range records by maximum duration.
-            plot_ohlc (bool or DataFrame): Whether to plot OHLC.
-            plot_close (bool or Series): Whether to plot close.
-            plot_markers (bool): Whether to plot markers.
-            plot_zones (bool): Whether to plot zones.
-            ohlc_type: Either 'OHLC', 'Candlestick' or Plotly trace.
+            column (Optional[Column]): Identifier of the column to plot.
+            top_n (Optional[int]): Display only the top N records sorted by maximum duration.
+            plot_ohlc (Union[bool, Frame]): If True, plot OHLC data or pass a DataFrame to be used as OHLC.
+            plot_close (Union[bool, Series]): Flag or data specifying whether to plot close prices.
+            plot_markers (bool): Whether to plot markers at the start and end of ranges.
+            plot_zones (bool): Whether to plot shaded zones for open and closed ranges.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            ohlc_trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `Ranges.close`.
-            start_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for start values.
-            end_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for end values.
-            open_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for open zones.
-            closed_shape_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Figure.add_shape` for closed zones.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            xref (str): X coordinate axis.
-            yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            return_close (bool): Whether to return the close series along with the figure.
-            **layout_kwargs: Keyword arguments for layout.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            start_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for start markers.
+            end_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for end markers.
+            open_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for open zones.
+            closed_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for closed zones.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            return_close (bool): Whether to return the close Series along with the figure.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Figure object containing the plotted ranges.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> price = pd.Series(
             ...     [1, 2, 1, 2, 3, 2, 1, 2, 3],
@@ -1478,7 +1806,7 @@ class Ranges(PriceRecords):
                 self_col.status_closed.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(fillcolor=plotting_cfg["contrast_color_schema"]["green"]),
                         closed_shape_kwargs,
                     ),
@@ -1492,7 +1820,7 @@ class Ranges(PriceRecords):
                 self_col.status_open.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
-                    shape_kwargs=merge_dicts(
+                    add_shape_kwargs=merge_dicts(
                         dict(fillcolor=plotting_cfg["contrast_color_schema"]["orange"]),
                         open_shape_kwargs,
                     ),
@@ -1508,10 +1836,14 @@ class Ranges(PriceRecords):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Ranges.plots`.
+        """Default configuration for `Data.plots`.
 
-        Merges `vectorbtpro.records.base.Records.plots_defaults` and
-        `plots` from `vectorbtpro._settings.ranges`."""
+        Merges the defaults from `vectorbtpro.records.base.Records.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.ranges`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the plots builder.
+        """
         from vectorbtpro._settings import settings
 
         ranges_plots_cfg = settings["ranges"]["plots"]
@@ -1540,134 +1872,167 @@ Ranges.override_subplots_doc(__pdoc__)
 
 # ############# Pattern ranges ############# #
 
-
 PatternRangesT = tp.TypeVar("PatternRangesT", bound="PatternRanges")
 
 
 @define
 class PSC(DefineMixin):
-    """Class that represents a pattern search config.
+    """Class representing a pattern search configuration.
 
-    Every field will be resolved into the format suitable for Numba."""
+    Every field is resolved into a format suitable for Numba.
+    """
 
     pattern: tp.Union[tp.ArrayLike] = define.required_field()
-    """Flexible pattern array.
+    """Flexible array representing the pattern to locate.
     
-    Can be smaller or bigger than the source array; in such a case, the values of the smaller array
-    will be "stretched" by interpolation of the type in `PSC.interp_mode`."""
+    Can be smaller or larger than the source array. In such cases, 
+    the smaller array is stretched using the interpolation mode specified by `PSC.interp_mode`.
+    """
 
     window: tp.Optional[int] = define.optional_field()
-    """Minimum window.
+    """Base length of the rolling window for matching.
     
-    Defaults to the length of `PSC.pattern`."""
+    If None, defaults to the length of `PSC.pattern`.
+    """
 
     max_window: tp.Optional[int] = define.optional_field()
-    """Maximum window (including)."""
+    """Maximum length of the rolling window for matching.
+    
+    If None, defaults to `PSC.window`.
+    """
 
     row_select_prob: tp.Union[float] = define.optional_field()
-    """Row selection probability."""
+    """Probability of selecting a row."""
 
     window_select_prob: tp.Union[float] = define.optional_field()
-    """Window selection probability."""
+    """Probability of selecting a window size."""
 
     roll_forward: tp.Union[bool] = define.optional_field()
-    """Whether to roll windows to the left of the current row, otherwise to the right."""
+    """Process windows in forward direction if True; otherwise, in backward direction."""
 
     interp_mode: tp.Union[int, str] = define.optional_field()
-    """Interpolation mode. See `vectorbtpro.generic.enums.InterpMode`."""
+    """Interpolation mode for mapping array values.
+    
+    See `vectorbtpro.generic.enums.InterpMode`.
+    """
 
     rescale_mode: tp.Union[int, str] = define.optional_field()
-    """Rescaling mode. See `vectorbtpro.generic.enums.RescaleMode`."""
+    """Rescaling mode for adjusting the ranges of the input array and `PSC.pattern`.
+    
+    See `vectorbtpro.generic.enums.RescaleMode`.
+    """
 
     vmin: tp.Union[float] = define.optional_field()
-    """Minimum value of any window. Should only be used when the array has fixed bounds.
+    """Minimum value used for rescaling the input array.
+
+    Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax`
+    and for verifying `PSC.min_pct_change` and `PSC.max_pct_change`. 
     
-    Used in rescaling using `RescaleMode.MinMax` and checking against `PSC.min_pct_change` and `PSC.max_pct_change`.
-    
-    If `np.nan`, gets calculated dynamically."""
+    If set to NaN, it is calculated dynamically.
+    """
 
     vmax: tp.Union[float] = define.optional_field()
-    """Maximum value of any window. Should only be used when the array has fixed bounds.
+    """Maximum value used for rescaling the input array.
     
-    Used in rescaling using `RescaleMode.MinMax` and checking against `PSC.min_pct_change` and `PSC.max_pct_change`.
+    Use only when the array has fixed bounds. Used in rescaling with `RescaleMode.MinMax` 
+    and for verifying `PSC.min_pct_change` and `PSC.max_pct_change`. 
     
-    If `np.nan`, gets calculated dynamically."""
+    If set to NaN, it is calculated dynamically.
+    """
 
     pmin: tp.Union[float] = define.optional_field()
-    """Value to be considered as the minimum of `PSC.pattern`.
+    """Minimum value used for rescaling `PSC.pattern`.
     
-    Used in rescaling using `RescaleMode.MinMax` and calculating the maximum distance at each point 
-    if `PSC.max_error_as_maxdist` is disabled.
+    Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance 
+    at each point when `PSC.max_error_as_maxdist` is disabled.
     
-    If `np.nan`, gets calculated dynamically."""
+    If set to NaN, it is calculated dynamically.
+    """
 
     pmax: tp.Union[float] = define.optional_field()
-    """Value to be considered as the maximum of `PSC.pattern`.
+    """Maximum value used for rescaling `PSC.pattern`.
     
-    Used in rescaling using `RescaleMode.MinMax` and calculating the maximum distance at each point 
-    if `PSC.max_error_as_maxdist` is disabled.
+    Used in rescaling with `RescaleMode.MinMax` and for computing the maximum distance 
+    at each point when `PSC.max_error_as_maxdist` is disabled.
     
-    If `np.nan`, gets calculated dynamically."""
+    If set to NaN, it is calculated dynamically.
+    """
 
     invert: tp.Union[bool] = define.optional_field()
-    """Whether to invert the pattern vertically."""
+    """Invert the pattern by reflecting its values."""
 
     error_type: tp.Union[int, str] = define.optional_field()
-    """Error type. See `vectorbtpro.generic.enums.ErrorType`."""
+    """Error computation mode.
+
+    See `vectorbtpro.generic.enums.ErrorType`.
+    """
 
     distance_measure: tp.Union[int, str] = define.optional_field()
-    """Distance measure. See `vectorbtpro.generic.enums.DistanceMeasure`."""
+    """Method for measuring distance (e.g., MAE, MSE, RMSE).
+
+    See `vectorbtpro.generic.enums.DistanceMeasure`.
+    """
 
     max_error: tp.Union[tp.ArrayLike] = define.optional_field()
-    """Maximum error at each point. Can be provided as a flexible array.
-    
-    If `max_error` is an array, it must be of the same size as the pattern array.
-    It also should be provided within the same scale as the pattern."""
+    """Maximum error threshold for normalization.
+
+    If provided as an array, it must match the size of the pattern and be on the same scale.
+    """
 
     max_error_interp_mode: tp.Union[None, int, str] = define.optional_field()
-    """Interpolation mode for `PSC.max_error`. See `vectorbtpro.generic.enums.InterpMode`.
+    """Interpolation mode for `PSC.max_error`. 
     
-    If None, defaults to `PSC.interp_mode`."""
+    If None, defaults to `PSC.interp_mode`.
+    
+    See `vectorbtpro.generic.enums.InterpMode`.
+    """
 
     max_error_as_maxdist: tp.Union[bool] = define.optional_field()
-    """Whether `PSC.max_error` should be used as the maximum distance at each point.
+    """Indicates whether `PSC.max_error` represents the maximum distance at each point.
     
-    If False, crossing `PSC.max_error` will set the distance to the maximum distance
-    based on `PSC.pmin`, `PSC.pmax`, and the pattern value at that point.
-    
-    If True and any of the points in a window is `np.nan`, the point will be skipped."""
+    If False, exceeding `PSC.max_error` sets the distance to the maximum derived from 
+    `PSC.pmin`, `PSC.pmax`, and the pattern value at that point. If True and any point 
+    in a window is NaN, that point is skipped.
+    """
 
     max_error_strict: tp.Union[bool] = define.optional_field()
-    """Whether crossing `PSC.max_error` even once should yield the similarity of `np.nan`."""
+    """If True, any instance of exceeding `PSC.max_error` results in a similarity of NaN."""
 
     min_pct_change: tp.Union[float] = define.optional_field()
-    """Minimum percentage change of the window to stay a candidate for search.
+    """Minimum percentage change required for a window to remain a search candidate.
 
-    If any window doesn't cross this mark, its similarity becomes `np.nan`."""
+    Window similarity is set to NaN if this threshold is not met.
+    """
 
     max_pct_change: tp.Union[float] = define.optional_field()
-    """Maximum percentage change of the window to stay a candidate for search.
-
-    If any window crosses this mark, its similarity becomes `np.nan`."""
+    """Maximum percentage change allowed for a window to remain a search candidate.
+    
+    Window similarity is set to NaN if this threshold is exceeded.
+    """
 
     min_similarity: tp.Union[float] = define.optional_field()
-    """Minimum similarity.
-    
-    If any window doesn't cross this mark, its similarity becomes `np.nan`."""
+    """Minimum similarity threshold. 
+        
+    If the computed similarity falls below this, returns NaN.
+    """
 
     minp: tp.Optional[int] = define.optional_field()
-    """Minimum number of observations in price window required to have a value."""
+    """Minimum number of observations in the price window required to yield a value."""
 
     overlap_mode: tp.Union[int, str] = define.optional_field()
-    """Overlapping mode. See `vectorbtpro.generic.enums.OverlapMode`."""
+    """Mode for handling overlapping matches. 
+    
+    See `vectorbtpro.generic.enums.OverlapMode`.
+    """
 
     max_records: tp.Optional[int] = define.optional_field()
-    """Maximum number of records expected to be filled.
-    
-    Set to avoid creating empty arrays larger than needed."""
+    """Maximum number of records to be filled.
+
+    If None, defaults to the number of rows in the source array.
+    """
 
     name: tp.Optional[str] = define.field(default=None)
-    """Name of the config."""
+    """Optional name assigned to the configuration."""
 
     def __eq__(self, other):
         return checks.is_deep_equal(self, other)
@@ -1698,10 +2063,10 @@ pattern_ranges_field_config = ReadonlyConfig(
 
 __pdoc__[
     "pattern_ranges_field_config"
-] = f"""Field config for `PatternRanges`.
+] = f"""Field configuration for `PatternRanges`.
 
 ```python
-{pattern_ranges_field_config.prettify()}
+{pattern_ranges_field_config.prettify_doc()}
 ```
 """
 
@@ -1709,7 +2074,46 @@ __pdoc__[
 @attach_fields
 @override_field_config(pattern_ranges_field_config)
 class PatternRanges(Ranges):
-    """Extends `Ranges` for working with range records generated from pattern search."""
+    """Class for working with range records generated from pattern search, extending `Ranges`.
+
+    Requires `records_arr` to have all fields defined in `vectorbtpro.generic.enums.pattern_range_dt`.
+
+    Args:
+        wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
+        records_arr (RecordArray): Array of records.
+
+            Must adhere to the `vectorbtpro.generic.enums.pattern_range_dt` dtype.
+        search_configs (List[PSC]): List of `PSC` instances.
+        **kwargs: Keyword arguments for `Ranges`.
+    """
+
+    def __init__(
+        self,
+        wrapper: ArrayWrapper,
+        records_arr: tp.RecordArray,
+        search_configs: tp.List[PSC],
+        **kwargs,
+    ) -> None:
+        Ranges.__init__(
+            self,
+            wrapper,
+            records_arr,
+            search_configs=search_configs,
+            **kwargs,
+        )
+
+        self._search_configs = search_configs
+
+    @property
+    def search_configs(self) -> tp.List[PSC]:
+        """List of `PSC` instances, one for each column.
+
+        Returns:
+            List[PSC]: List of `PSC` instances.
+        """
+        return self._search_configs
 
     @property
     def field_config(self) -> Config:
@@ -1717,9 +2121,17 @@ class PatternRanges(Ranges):
 
     @classmethod
     def resolve_search_config(cls, search_config: tp.Union[None, dict, PSC] = None, **kwargs) -> PSC:
-        """Resolve search config for `PatternRanges.from_pattern_search`.
+        """Resolve search configuration for `PatternRanges.from_pattern_search`.
 
-        Converts array-like objects into arrays and enums into integers."""
+        Convert array-like inputs to one-dimensional arrays and map enumerated fields to integer values.
+
+        Args:
+            search_config (Union[None, dict, PSC]): Search configuration for the pattern search.
+            **kwargs: Keyword arguments for the search configuration.
+
+        Returns:
+            PSC: Resolved search configuration.
+        """
         if search_config is None:
             search_config = dict()
         if isinstance(search_config, dict):
@@ -1798,26 +2210,74 @@ class PatternRanges(Ranges):
     ) -> PatternRangesT:
         """Build `PatternRanges` from all occurrences of a pattern in an array.
 
-        Searches for parameters of the type `vectorbtpro.utils.params.Param`, and if found, broadcasts
-        and combines them using `vectorbtpro.utils.params.combine_params`. Then, converts them
-        into a list of search configurations. If none of such parameters was found among the passed arguments,
-        builds one search configuration using the passed arguments. If `search_configs` is not None, uses it
-        instead. In all cases, it uses the defaults defined in the signature of this method to augment
-        search configurations. For example, passing `min_similarity` of 95% will use it in all search
-        configurations except where it was explicitly overridden.
+        This class method searches for parameters of type `vectorbtpro.utils.params.Param` among the
+        provided arguments. If such parameters are found, they are broadcasted and combined via
+        `vectorbtpro.utils.params.combine_params` into one or more search configurations. If no `Param`
+        arguments are detected, a single search configuration is built from the given parameters.
+        When `search_configs` is supplied, it is used directly without modification. For example,
+        passing `min_similarity` of 95% will use it in all search configurations except where
+        it was explicitly overridden.
 
-        Argument `search_configs` must be provided as a sequence of `PSC` instances.
-        If any element is a list of `PSC` instances itself, it will be used per column in `arr`,
-        otherwise per entire `arr`. Each configuration will be resolved using `PatternRanges.resolve_search_config`
-        to prepare arguments for the use in Numba.
+        Each search configuration is resolved using `PatternRanges.resolve_search_config`.
+        The configurations are executed with `vectorbtpro.utils.execution.execute`, the resulting
+        records arrays are concatenated, and the outcome is wrapped in a `PatternRanges` instance.
 
-        After all the search configurations have been resolved, uses `vectorbtpro.utils.execution.execute`
-        to loop over each configuration and execute it using `vectorbtpro.generic.nb.records.find_pattern_1d_nb`.
-        The results are then concatenated into a single records array and wrapped with `PatternRanges`.
+        Args:
+            arr (ArrayLike): Input array for pattern search.
+            pattern (Union[Param, ArrayLike]): See `PSC.pattern`.
+            window (Union[Param, None, int]): See `PSC.window`.
+            max_window (Union[Param, None, int]): See `PSC.max_window`.
+            row_select_prob (Union[Param, float]): See `PSC.row_select_prob`.
+            window_select_prob (Union[Param, float]): See `PSC.window_select_prob`.
+            roll_forward (Union[Param, bool]): See `PSC.roll_forward`.
+            interp_mode (Union[Param, int, str]): See `PSC.interp_mode`.
+            rescale_mode (Union[Param, int, str]): See `PSC.rescale_mode`.
+            vmin (Union[Param, float]): See `PSC.vmin`.
+            vmax (Union[Param, float]): See `PSC.vmax`.
+            pmin (Union[Param, float]): See `PSC.pmin`.
+            pmax (Union[Param, float]): See `PSC.pmax`.
+            invert (bool): See `PSC.invert`.
+            error_type (Union[Param, int, str]): See `PSC.error_type`.
+            distance_measure (Union[Param, int, str]): See `PSC.distance_measure`.
+            max_error (Union[Param, ArrayLike]): See `PSC.max_error`.
+            max_error_interp_mode (Union[Param, None, int, str]): See `PSC.max_error_interp_mode`.
+            max_error_as_maxdist (Union[Param, bool]): See `PSC.max_error_as_maxdist`.
+            max_error_strict (Union[Param, bool]): See `PSC.max_error_strict`.
+            min_pct_change (Union[Param, float]): See `PSC.min_pct_change`.
+            max_pct_change (Union[Param, float]): See `PSC.max_pct_change`.
+            min_similarity (Union[Param, float]): See `PSC.min_similarity`.
+            minp (Union[Param, None, int]): See `PSC.minp`.
+            overlap_mode (Union[Param, int, str]): See `PSC.overlap_mode`.
+            max_records (Union[Param, None, int]): See `PSC.max_records`.
+            random_subset (Optional[int]): Select a random subset of parameter combinations.
 
-        If `attach_as_close` is True, will attach `arr` as `close`.
+                Set the seed for reproducibility.
+            seed (Optional[int]): Random seed for deterministic output.
+            search_configs (Optional[Sequence[MaybeSequence[PSC]]]): Sequence of search configuration instances.
 
-        `**kwargs` will be passed to `PatternRanges.__init__`."""
+                If a configuration is a list of `PSC` instances, it is applied per column in `arr`;
+                otherwise, per array.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
+
+                See `vectorbtpro.utils.execution.execute`.
+            attach_as_close (bool): Whether to attach the input array as the `close` field.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `PatternRanges`.
+
+        Returns:
+            PatternRanges: New `PatternRanges` instance with found pattern ranges.
+
+        See:
+            `vectorbtpro.generic.nb.records.find_pattern_1d_nb`
+        """
         if seed is not None:
             set_seed(seed)
         if clean_index_kwargs is None:
@@ -1981,8 +2441,18 @@ class PatternRanges(Ranges):
             kwargs["close"] = tile(kwargs["close"], len(wrapper.columns) // kwargs["close"].shape[1])
         return cls(wrapper, records_arr, new_search_configs, **kwargs)
 
-    def with_delta(self, *args, **kwargs):
-        """Pass self to `Ranges.from_delta` but with the index set to the last index."""
+    def with_delta(self, *args, **kwargs) -> Ranges:
+        """Return a new range by calling `Ranges.from_delta` with the instance's index set to its last index.
+
+        Args:
+            *args: Positional arguments for `Ranges.from_delta`.
+            **kwargs: Keyword arguments for `Ranges.from_delta`.
+
+                If 'idx_field_or_arr' is not provided, it defaults to the instance's last index values.
+
+        Returns:
+            Ranges: Resulting range object from `Ranges.from_delta`.
+        """
         if "idx_field_or_arr" not in kwargs:
             kwargs["idx_field_or_arr"] = self.last_idx.values
         return Ranges.from_delta(self, *args, **kwargs)
@@ -1990,10 +2460,9 @@ class PatternRanges(Ranges):
     @classmethod
     def resolve_row_stack_kwargs(
         cls: tp.Type[PatternRangesT],
-        *objs: tp.MaybeTuple[PatternRangesT],
+        *objs: tp.MaybeSequence[PatternRangesT],
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `PatternRanges` after stacking along columns."""
         kwargs = Ranges.resolve_row_stack_kwargs(*objs, **kwargs)
         if len(objs) == 1:
             objs = objs[0]
@@ -2016,10 +2485,19 @@ class PatternRanges(Ranges):
     @classmethod
     def resolve_column_stack_kwargs(
         cls: tp.Type[PatternRangesT],
-        *objs: tp.MaybeTuple[PatternRangesT],
+        *objs: tp.MaybeSequence[PatternRangesT],
         **kwargs,
     ) -> tp.Kwargs:
-        """Resolve keyword arguments for initializing `PatternRanges` after stacking along columns."""
+        """Resolve keyword arguments for initializing a `PatternRanges` instance after column stacking.
+
+        Args:
+            *objs (MaybeSequence[PatternRanges]): `PatternRanges` instances to be stacked.
+            **kwargs: Keyword arguments for `Ranges.resolve_column_stack_kwargs`.
+
+        Returns:
+            Kwargs: Resolved keyword arguments with an aggregated 'search_configs'
+                field from the merged objects.
+        """
         kwargs = Ranges.resolve_column_stack_kwargs(*objs, **kwargs)
         kwargs.pop("reindex_kwargs", None)
         if len(objs) == 1:
@@ -2031,25 +2509,20 @@ class PatternRanges(Ranges):
         kwargs["search_configs"] = [search_config for obj in objs for search_config in obj.search_configs]
         return kwargs
 
-    def __init__(
-        self,
-        wrapper: ArrayWrapper,
-        records_arr: tp.RecordArray,
-        search_configs: tp.List[PSC],
-        **kwargs,
-    ) -> None:
-        Ranges.__init__(
-            self,
-            wrapper,
-            records_arr,
-            search_configs=search_configs,
-            **kwargs,
-        )
-
-        self._search_configs = search_configs
-
     def indexing_func(self: PatternRangesT, *args, ranges_meta: tp.DictLike = None, **kwargs) -> PatternRangesT:
-        """Perform indexing on `PatternRanges`."""
+        """Index a `PatternRanges` instance and return a new instance with updated indexing
+        and search configurations.
+
+        Args:
+            *args: Positional arguments for `Ranges.indexing_func_meta`.
+            ranges_meta (DictLike): Metadata for indexing.
+
+                If None, it is generated using `Ranges.indexing_func_meta`.
+            **kwargs: Keyword arguments for `Ranges.indexing_func_meta`.
+
+        Returns:
+            PatternRanges: New `PatternRanges` instance with updated indexing information.
+        """
         if ranges_meta is None:
             ranges_meta = Ranges.indexing_func_meta(self, *args, **kwargs)
         col_idxs = ranges_meta["wrapper_meta"]["col_idxs"]
@@ -2068,11 +2541,6 @@ class PatternRanges(Ranges):
             low=ranges_meta["low"],
             close=ranges_meta["close"],
         )
-
-    @property
-    def search_configs(self) -> tp.List[PSC]:
-        """List of `PSC` instances, one per column."""
-        return self._search_configs
 
     # ############# Stats ############# #
 
@@ -2100,7 +2568,7 @@ class PatternRanges(Ranges):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         top_n: tp.Optional[int] = None,
         fit_ranges: tp.Union[bool, tp.MaybeSequence[int]] = False,
         plot_patterns: bool = True,
@@ -2120,24 +2588,32 @@ class PatternRanges(Ranges):
         Based on `Ranges.plot` and `vectorbtpro.generic.accessors.GenericSRAccessor.plot_pattern`.
 
         Args:
-            column (str): Name of the column to plot.
-            top_n (int): Filter top N range records by maximum duration.
-            fit_ranges (bool, int, or sequence of int): Whether or which range records to fit.
+            column (Optional[Column]): Identifier of the column to plot.
+            top_n (Optional[int]): Display only the top N records sorted by maximum duration.
+            fit_ranges (Union[bool, MaybeSequence[int]]): Select the range records to fit.
 
-                True to fit to all range records, integer or a sequence of such to fit to specific range records.
-            plot_patterns (bool or array_like): Whether to plot `PSC.pattern`.
-            plot_max_error (array_like): Whether to plot `PSC.max_error`.
-            fill_distance (bool): Whether to fill the space between close and pattern.
+                Use True to fit all records, or provide an integer or sequence of
+                integers to select specific records.
+            plot_patterns (bool): Indicates whether to plot the `PSC.pattern`.
+            plot_max_error (bool): Indicates whether to plot the `PSC.max_error`.
+            fill_distance (bool): Controls whether to fill the space between close and pattern.
 
                 Visible for every interpolation mode except discrete.
-            pattern_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for pattern.
-            lower_max_error_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for lower max error.
-            upper_max_error_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for upper max error.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            xref (str): X coordinate axis.
-            yref (str): Y coordinate axis.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **kwargs: Keyword arguments passed to `Ranges.plot`.
+            pattern_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the pattern.
+            lower_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the lower error bound.
+            upper_max_error_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the upper error bound.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            xref (str): Reference for the x-axis (e.g., "x", "x2").
+            yref (str): Reference for the y-axis (e.g., "y", "y2").
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **kwargs: Keyword arguments for `Ranges.plot`.
+
+        Returns:
+            BaseFigure: Figure with plotted pattern ranges.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 

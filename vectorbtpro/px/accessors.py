@@ -8,10 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Pandas accessors for Plotly Express.
+"""Module providing Pandas accessors for Plotly Express functions.
 
 !!! note
-    Accessors do not utilize caching."""
+    The accessors in this module do not utilize caching.
+"""
 
 from vectorbtpro.utils.module_ import assert_can_import
 
@@ -35,11 +36,16 @@ __all__ = [
 @register_vbt_accessor("px")
 @attach_px_methods
 class PXAccessor(BaseAccessor):
-    """Accessor for running Plotly Express functions.
+    """Class that provides a Pandas accessor to invoke Plotly Express functions on Series and DataFrame objects.
 
     Accessible via `pd.Series.vbt.px` and `pd.DataFrame.vbt.px`.
 
-    Usage:
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
+        obj (Optional[ArrayLike]): Object to be wrapped.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
+
+    Examples:
         ```pycon
         >>> from vectorbtpro import *
 
@@ -61,9 +67,15 @@ class PXAccessor(BaseAccessor):
 
 @register_sr_vbt_accessor("px")
 class PXSRAccessor(PXAccessor, BaseSRAccessor):
-    """Accessor for running Plotly Express functions. For Series only.
+    """Class that provides a Pandas accessor to apply Plotly Express functions on Series objects.
 
-    Accessible via `pd.Series.vbt.px`."""
+    Accessible via `pd.Series.vbt.px`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
+        obj (Optional[ArrayLike]): Object to be wrapped.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
+    """
 
     def __init__(
         self,
@@ -80,9 +92,15 @@ class PXSRAccessor(PXAccessor, BaseSRAccessor):
 
 @register_df_vbt_accessor("px")
 class PXDFAccessor(PXAccessor, BaseDFAccessor):
-    """Accessor for running Plotly Express functions. For DataFrames only.
+    """Class that provides a Pandas accessor to apply Plotly Express functions on DataFrame objects.
 
-    Accessible via `pd.DataFrame.vbt.px`."""
+    Accessible via `pd.DataFrame.vbt.px`.
+
+    Args:
+        wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
+        obj (Optional[ArrayLike]): Object to be wrapped.
+        **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseAccessor`.
+    """
 
     def __init__(
         self,

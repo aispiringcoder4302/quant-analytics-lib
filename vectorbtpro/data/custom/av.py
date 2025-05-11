@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `AVData`."""
+"""Module providing the `AVData` class for fetching data from the Alpha Vantage API."""
 
 import re
 import urllib.parse
@@ -26,12 +26,10 @@ from vectorbtpro.utils.module_ import check_installed
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.warnings_ import warn
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from alpha_vantage.alphavantage import AlphaVantage as AlphaVantageT
-except ImportError:
-    AlphaVantageT = "AlphaVantage"
+else:
+    AlphaVantageT = "alpha_vantage.alphavantage.AlphaVantage"
 
 __all__ = [
     "AVData",
@@ -43,25 +41,27 @@ AVDataT = tp.TypeVar("AVDataT", bound="AVData")
 
 
 class AVData(RemoteData):
-    """Data class for fetching from Alpha Vantage.
+    """Data class for fetching data from the Alpha Vantage API.
 
-    See https://www.alphavantage.co/documentation/ for API.
+    In addition to using the https://github.com/RomelTorres/alpha_vantage package,
+    this class can parse the API documentation with `AVData.parse_api_meta` (using BeautifulSoup4)
+    to dynamically build API queries (pass `use_parser=True`).
 
-    Apart of using https://github.com/RomelTorres/alpha_vantage package, this class can also
-    parse the API documentation with `AVData.parse_api_meta` using `BeautifulSoup4` and build
-    the API query based on this metadata (pass `use_parser=True`).
+    This flexible approach allows for rapid adaptation to changes in the API.
+    If the provider updates its documentation, override `AVData.parse_api_meta` to adjust the parsing logic.
 
-    This approach is the most flexible we can get since we can instantly react to Alpha Vantage's changes
-    in the API. If the data provider changes its API documentation, you can always adapt the parsing
-    procedure by overriding `AVData.parse_api_meta`.
+    If parsing fails, disable it and manually specify the required parameters by
+    setting `function` and disabling `match_params`.
 
-    If parser still fails, you can disable parsing entirely and specify all information manually
-    by setting `function` and disabling `match_params`
+    See:
+        * https://www.alphavantage.co/documentation/ for API endpoints and parameters.
+        * `AVData.fetch_symbol` for argument details.
 
-    See `AVData.fetch_symbol` for arguments.
+    !!! info
+        For default settings, see `custom.av` in `vectorbtpro._settings.data`.
 
-    Usage:
-        * Set up the API key globally (optional):
+    Examples:
+        Set up the API key globally (optional):
 
         ```pycon
         >>> from vectorbtpro import *
@@ -71,7 +71,7 @@ class AVData(RemoteData):
         ... )
         ```
 
-        * Pull data:
+        Pull data:
 
         ```pycon
         >>> data = vbt.AVData.pull(
@@ -104,7 +104,16 @@ class AVData(RemoteData):
 
     @classmethod
     def list_symbols(cls, keywords: str, apikey: tp.Optional[str] = None, sort: bool = True) -> tp.List[str]:
-        """List all symbols."""
+        """Return a list of unique symbols matching the specified keywords.
+
+        Args:
+            keywords (str): Search term used to find relevant symbols.
+            apikey (Optional[str]): API key for authenticating with Alpha Vantage.
+            sort (bool): Flag indicating whether to sort the symbols alphabetically.
+
+        Returns:
+            List[str]: A list of unique symbols.
+        """
         apikey = cls.resolve_custom_setting(apikey, "apikey")
 
         query = dict()
@@ -122,9 +131,15 @@ class AVData(RemoteData):
     @classmethod
     @lru_cache()
     def parse_api_meta(cls) -> dict:
-        """Parse API metadata from the documentation at https://www.alphavantage.co/documentation
+        """Parse metadata from the Alpha Vantage API documentation.
 
-        Cached class method. To avoid re-parsing the same metadata in different runtimes, save it manually."""
+        This cached class method downloads and parses the API documentation at
+        https://www.alphavantage.co/documentation using BeautifulSoup4. The resulting metadata includes
+        required and optional parameters for each API function.
+
+        Returns:
+            dict: Dictionary containing the parsed API metadata organized by documentation sections.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("bs4")
@@ -167,7 +182,7 @@ class AVData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         use_parser: tp.Optional[bool] = None,
         apikey: tp.Optional[str] = None,
         api_meta: tp.Optional[dict] = None,
@@ -186,31 +201,28 @@ class AVData(RemoteData):
         read_csv_kwargs: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.SymbolData:
-        """Fetch a symbol from Alpha Vantage.
+        """Fetch symbol data from Alpha Vantage.
 
-        If `use_parser` is False, or None and `alpha_vantage` is installed, uses the package.
-        Otherwise, parses the API documentation and pulls data directly.
+        Uses the `alpha_vantage` package if `use_parser` is False or if it is not specified and
+        the package is installed. Otherwise, parses the API documentation directly to retrieve data.
 
-        See https://www.alphavantage.co/documentation/ for API endpoints and their parameters.
-
-        !!! note
-            Supports the CSV format only.
+        See https://www.alphavantage.co/documentation/ for API endpoints and parameters.
 
         Args:
-            symbol (str): Symbol.
+            symbol (Symbol): Symbol identifier.
 
                 May combine symbol/from_currency and market/to_currency using an underscore.
-            use_parser (bool): Whether to use the parser instead of the `alpha_vantage` package.
-            apikey (str): API key.
-            api_meta (dict): API meta.
+            use_parser (Optional[bool]): Whether to use the parser instead of the `alpha_vantage` package.
+            apikey (Optional[str]): API key for authenticating with Alpha Vantage.
+            api_meta (Optional[dict]): API meta information.
 
-                If None, will use `AVData.parse_api_meta` if `function` is not provided
-                or `match_params` is True.
-            category (str or AlphaVantage): API category of your choice.
+                If None, `AVData.parse_api_meta` is used when `function` is not provided
+                or when `match_params` is True.
+            category (Union[None, str, AlphaVantage, Type[AlphaVantage]]): API category.
 
-                Used if `function` is not provided or `match_params` is True.
+                Used when `function` is not provided or when `match_params` is True.
 
-                Supported are:
+                Supported values include:
 
                 * `alpha_vantage.alphavantage.AlphaVantage` instance, class, or class name
                 * "time-series-data" or "time-series"
@@ -220,41 +232,46 @@ class AVData(RemoteData):
                 * "commodities"
                 * "economic-indicators"
                 * "technical-indicators" or "indicators"
-            function (str or callable): API function of your choice.
+            function (Union[None, str, callable]): API function.
 
-                If None, will try to resolve it based on other arguments, such as `timeframe`,
-                `adjusted`, and `extended`. Required for technical indicators, economic indicators,
-                and fundamental data.
-
+                If None, it is determined based on `timeframe`, `adjusted`, and `extended`.
+                Required for technical indicators, economic indicators, and fundamental data.
                 See the keys in sub-dictionaries returned by `AVData.parse_api_meta`.
-            timeframe (str): Timeframe.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
-                Allows human-readable strings such as "15 minutes".
-
-                For time series, forex, and crypto, looks for interval type in the function's name.
-                Defaults to "60min" if extended, otherwise to "daily".
-            tz (any): Timezone.
+                For time series, forex, and crypto, the interval is inferred from the function name.
+                Defaults to "60min" if `extended` is True, otherwise "daily".
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            adjusted (bool): Whether to return time series adjusted by historical split and dividend events.
-            extended (bool): Whether to return historical intraday time series for the trailing 2 years.
-            slice (str): Slice of the trailing 2 years.
-            series_type (str): The desired price type in the time series.
-            time_period (int): Number of data points used to calculate each window value.
-            outputsize (str): Output size.
+            adjusted (Optional[bool]): Whether to return time series adjusted for
+                historical splits and dividend events.
+            extended (Optional[bool]): Whether to return historical intraday time series for
+                the trailing 2 years.
+            slice (Optional[str]): Slice of the trailing 2 years.
+            series_type (Optional[str]): Desired price type in the time series.
+            time_period (Optional[int]): Number of data points used to calculate each window value.
+            outputsize (Optional[str]): Output size.
 
-                Supported are
+                Supported values:
 
-                * "compact" that returns only the latest 100 data points
-                * "full" that returns the full-length time series
-            match_params (bool): Whether to match parameters with the ones required by the endpoint.
+                * "compact": returns only the latest 100 data points
+                * "full": returns the complete time series
+            match_params (Optional[bool]): Whether to match parameters with those required by the endpoint.
 
-                Otherwise, uses only (resolved) `function`, `apikey`, `datatype="csv"`, and `params`.
-            params: Additional keyword arguments passed as key/value pairs in the URL.
-            read_csv_kwargs (dict): Keyword arguments passed to `pd.read_csv`.
-            silence_warnings (bool): Whether to silence all warnings.
+                Otherwise, only the resolved `function`, `apikey`, `datatype="csv"`, and `params` are used.
+            params (KwargsLike): Keyword arguments passed as key/value pairs in the URL.
+            read_csv_kwargs (KwargsLike): Keyword arguments for `pd.read_csv`.
 
-        For defaults, see `custom.av` in `vectorbtpro._settings.data`.
+                See https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html for arguments.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
+
+        Returns:
+            SymbolData: Fetched data and a metadata dictionary.
+
+        !!! note
+            Supports the CSV format only.
         """
         use_parser = cls.resolve_custom_setting(use_parser, "use_parser")
         apikey = cls.resolve_custom_setting(apikey, "apikey")
@@ -367,12 +384,16 @@ class AVData(RemoteData):
                     if use_parser:
                         category = "commodities"
                     else:
-                        raise NotImplementedError(f"Category '{category}' not supported by alpha_vantage. Use parser.")
+                        from alpha_vantage.commodities import Commodities
+
+                        category = Commodities
                 elif category.lower() in ("economic-indicators",):
                     if use_parser:
                         category = "economic-indicators"
                     else:
-                        raise NotImplementedError(f"Category '{category}' not supported by alpha_vantage. Use parser.")
+                        from alpha_vantage.econindicators import EconIndicators
+
+                        category = EconIndicators
                 elif category.lower() in ("technical-indicators", "techindicators", "indicators"):
                     if use_parser:
                         category = "technical-indicators"
@@ -499,11 +520,17 @@ class AVData(RemoteData):
             from alpha_vantage.fundamentaldata import FundamentalData
             from alpha_vantage.foreignexchange import ForeignExchange
             from alpha_vantage.cryptocurrencies import CryptoCurrencies
+            from alpha_vantage.commodities import Commodities
+            from alpha_vantage.econindicators import EconIndicators
             from alpha_vantage.techindicators import TechIndicators
 
             if isinstance(category, type) and issubclass(category, AlphaVantage):
                 category = category(key=apikey, output_format="pandas")
 
+            if function is None:
+                if category is not None:
+                    if isinstance(category, (Commodities, EconIndicators)):
+                        function = symbol
             if function is None:
                 if category is None:
                     category = TimeSeries(key=apikey, output_format="pandas")
@@ -596,13 +623,16 @@ class AVData(RemoteData):
                 matched_params = dict(params)
 
             df, df_metadata = function(**matched_params)
-            for k, v in df_metadata.items():
-                if "Time Zone" in k:
-                    if tz is None:
-                        if v.endswith(" Time"):
-                            v = v[: -len(" Time")]
-                        tz = v
+            if df_metadata is not None:
+                for k, v in df_metadata.items():
+                    if "Time Zone" in k:
+                        if tz is None:
+                            if v.endswith(" Time"):
+                                v = v[: -len(" Time")]
+                            tz = v
 
+        if "date" in df.columns:
+            df.set_index("date", drop=True, inplace=True)
         df.index.name = None
         new_columns = []
         for c in df.columns:
@@ -616,7 +646,14 @@ class AVData(RemoteData):
         for c in df.columns:
             if df[c].dtype == "O":
                 df[c] = df[c].replace({".": np.nan})
-        df = df.apply(pd.to_numeric, errors="ignore")
+
+        def _to_numeric(sr):
+            try:
+                return pd.to_numeric(sr)
+            except ValueError:
+                return sr
+
+        df = df.apply(_to_numeric)
         if not df.empty and df.index[0] > df.index[1]:
             df = df.iloc[::-1]
         if isinstance(df.index, pd.DatetimeIndex) and df.index.tz is None and tz is not None:
@@ -624,7 +661,7 @@ class AVData(RemoteData):
 
         return df, dict(tz=tz, freq=freq)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)
         return self.fetch_symbol(symbol, **kwargs)

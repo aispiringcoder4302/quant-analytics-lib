@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `PolygonData`."""
+"""Module providing the `PolygonData` class for fetching data from Polygon's API."""
 
 import time
 import traceback
@@ -24,12 +24,10 @@ from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.warnings_ import warn
 
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+if tp.TYPE_CHECKING:
     from polygon import RESTClient as PolygonClientT
-except ImportError:
-    PolygonClientT = "PolygonClient"
+else:
+    PolygonClientT = "polygon.RESTClient"
 
 __all__ = [
     "PolygonData",
@@ -39,14 +37,17 @@ PolygonDataT = tp.TypeVar("PolygonDataT", bound="PolygonData")
 
 
 class PolygonData(RemoteData):
-    """Data class for fetching from Polygon.
+    """Data class for fetching data from Polygon's API.
 
-    See https://github.com/polygon-io/client-python for API.
+    See:
+        * https://github.com/polygon-io/client-python for the official Polygon Python client.
+        * `PolygonData.fetch_symbol` for argument details.
 
-    See `PolygonData.fetch_symbol` for arguments.
+    !!! info
+        For default settings, see `custom.polygon` in `vectorbtpro._settings.data`.
 
-    Usage:
-        * Set up the API key globally:
+    Examples:
+        Set up the API key globally:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -58,7 +59,7 @@ class PolygonData(RemoteData):
         ... )
         ```
 
-        * Pull stock data:
+        Pull stock data:
 
         ```pycon
         >>> data = vbt.PolygonData.pull(
@@ -69,7 +70,7 @@ class PolygonData(RemoteData):
         ... )
         ```
 
-        * Pull crypto data:
+        Pull crypto data:
 
         ```pycon
         >>> data = vbt.PolygonData.pull(
@@ -93,11 +94,24 @@ class PolygonData(RemoteData):
         client_config: tp.DictLike = None,
         **list_tickers_kwargs,
     ) -> tp.List[str]:
-        """List all symbols.
+        """List symbols from Polygon's API.
 
-        Uses `vectorbtpro.data.custom.custom.CustomData.key_match` to check each symbol against `pattern`.
+        Retrieves and filters available symbols by matching each against a specified pattern using
+        `vectorbtpro.data.custom.custom.CustomData.key_match`.
 
-        For supported keyword arguments, see `polygon.RESTClient.list_tickers`."""
+        Args:
+            pattern (Optional[str]): Pattern to filter symbols.
+
+                Symbols that do not match this pattern are excluded.
+            use_regex (bool): Flag indicating whether the pattern is a regular expression.
+            sort (bool): Whether to return the symbols in sorted order.
+            client (Optional[PolygonClient]): Polygon API client instance.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
+            **list_tickers_kwargs: Keyword arguments for `polygon.RESTClient.list_tickers`.
+
+        Returns:
+            List[str]: A list of symbols.
+        """
         if client_config is None:
             client_config = {}
         client = cls.resolve_client(client=client, **client_config)
@@ -115,10 +129,18 @@ class PolygonData(RemoteData):
 
     @classmethod
     def resolve_client(cls, client: tp.Optional[PolygonClientT] = None, **client_config) -> PolygonClientT:
-        """Resolve the client.
+        """Resolve the Polygon API client.
 
-        If provided, must be of the type `polygon.rest.RESTClient`.
-        Otherwise, will be created using `client_config`."""
+        If a client is provided, it must be an instance of `polygon.rest.RESTClient`.
+        Otherwise, a new client is instantiated using the supplied `client_config`.
+
+        Args:
+            client (Optional[PolygonClient]): Polygon API client instance.
+            **client_config: Configuration parameters for creating a new client.
+
+        Returns:
+            PolygonClient: Instance of `polygon.rest.RESTClient` for API interactions.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("polygon")
@@ -138,9 +160,9 @@ class PolygonData(RemoteData):
     @classmethod
     def fetch_symbol(
         cls,
-        symbol: str,
+        symbol: tp.Symbol,
         client: tp.Optional[PolygonClientT] = None,
-        client_config: tp.DictLike = None,
+        client_config: tp.KwargsLike = None,
         start: tp.Optional[tp.DatetimeLike] = None,
         end: tp.Optional[tp.DatetimeLike] = None,
         timeframe: tp.Optional[str] = None,
@@ -154,53 +176,53 @@ class PolygonData(RemoteData):
         pbar_kwargs: tp.KwargsLike = None,
         silence_warnings: tp.Optional[bool] = None,
     ) -> tp.SymbolData:
-        """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Polygon.
+        """Overrides `vectorbtpro.data.base.Data.fetch_symbol` to fetch data for a given symbol from Polygon.
 
         Args:
-            symbol (str): Symbol.
+            symbol (Symbol): Symbol identifier.
 
                 Supports the following APIs:
 
                 * Stocks and equities
-                * Currencies - symbol must have the prefix `C:`
-                * Crypto - symbol must have the prefix `X:`
-            client (polygon.rest.RESTClient): Client.
+                * Currencies — symbol must be prefixed with `C:`
+                * Crypto — symbol must be prefixed with `X:`
+            client (Optional[PolygonClient]): Polygon API client instance.
 
                 See `PolygonData.resolve_client`.
-            client_config (dict): Client config.
+            client_config (KwargsLike): Configuration parameters for creating a new client.
 
                 See `PolygonData.resolve_client`.
-            start (any): The start of the aggregate time window.
+            start (Optional[DatetimeLike]): Start datetime (e.g., "2024-01-01", "1 year ago").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            end (any): The end of the aggregate time window.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            end (Optional[DatetimeLike]): End datetime (e.g., "2025-01-01", "now").
 
-                See `vectorbtpro.utils.datetime_.to_tzaware_datetime`.
-            timeframe (str): Timeframe.
+                See `vectorbtpro.utils.datetime_.to_timestamp`.
+            timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
-                Allows human-readable strings such as "15 minutes".
-            tz (any): Timezone.
+                See `vectorbtpro.utils.datetime_.split_freq_str`.
+            tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
-            adjusted (str): Whether the results are adjusted for splits.
+            adjusted (Optional[bool]): Whether to adjust data for splits.
 
-                By default, results are adjusted.
-                Set this to False to get results that are NOT adjusted for splits.
-            limit (int): Limits the number of base aggregates queried to create the aggregate results.
+                Set to False to return unadjusted data.
+            limit (Optional[int]): Limits the number of base aggregates queried.
 
-                Max 50000 and Default 5000.
-            params (dict): Any additional query params.
-            delay (float): Time to sleep after each request (in seconds).
-            retries (int): The number of retries on failure to fetch data.
-            show_progress (bool): Whether to show the progress bar.
-            pbar_kwargs (dict): Keyword arguments passed to `vectorbtpro.utils.pbar.ProgressBar`.
-            silence_warnings (bool): Whether to silence all warnings.
+                Maximum allowed is 50000.
+            params (DictLike): Additional query parameters.
+            delay (Optional[float]): Delay in seconds between requests.
+            retries (Optional[int]): Number of retries on failure to fetch data.
+            show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
+            pbar_kwargs (DictLike): Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
+            silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
-        For defaults, see `custom.polygon` in `vectorbtpro._settings.data`.
+        Returns:
+            SymbolData: Updated data and a metadata dictionary.
 
         !!! note
-            If you're using a free plan that has an API rate limit of several requests per minute,
-            make sure to set `delay` to a higher number, such as 12 (which makes 5 requests per minute).
+            If you're using a free plan with a rate limit of several requests per minute,
+            set `delay` to a higher value (e.g., 12 to allow 5 requests per minute).
         """
         if client_config is None:
             client_config = {}
@@ -256,7 +278,7 @@ class PolygonData(RemoteData):
 
         def _retry(method):
             @wraps(method)
-            def retry_method(*args, **kwargs):
+            def retry_method(*args, **kwargs) -> tp.Any:
                 for i in range(retries):
                     try:
                         return method(*args, **kwargs)
@@ -392,7 +414,7 @@ class PolygonData(RemoteData):
 
         return df, dict(tz=tz, freq=timeframe)
 
-    def update_symbol(self, symbol: str, **kwargs) -> tp.SymbolData:
+    def update_symbol(self, symbol: tp.Symbol, **kwargs) -> tp.SymbolData:
         fetch_kwargs = self.select_fetch_kwargs(symbol)
         fetch_kwargs["start"] = self.select_last_index(symbol)
         kwargs = merge_dicts(fetch_kwargs, kwargs)

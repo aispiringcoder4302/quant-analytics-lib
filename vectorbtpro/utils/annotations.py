@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for annotations."""
+"""Module providing utilities for annotations."""
 
 from collections import defaultdict
 
@@ -32,10 +32,27 @@ except ImportError:
     import types
     import functools
 
-    def get_raw_annotations(obj, *, globals=None, locals=None, eval_str=False):
-        """A backport of Python 3.10's inspect.get_annotations() function.
+    def get_raw_annotations(
+        obj: tp.Any,
+        *,
+        globals: tp.Optional[dict] = None,
+        locals: tp.Optional[dict] = None,
+        eval_str: bool = False,
+    ) -> dict:
+        """Return raw annotations for a module, class, or callable.
 
-        See https://github.com/python/cpython/blob/main/Lib/inspect.py"""
+        Backport of Python 3.10's `inspect.get_annotations` function.
+        See https://github.com/python/cpython/blob/main/Lib/inspect.py
+
+        Args:
+            obj (Any): Module, class, or callable to retrieve annotations from.
+            globals (Optional[dict]): Global namespace for evaluation.
+            locals (Optional[dict]): Local namespace for evaluation.
+            eval_str (bool): Whether to evaluate string annotations.
+
+        Returns:
+            dict: Dictionary containing the annotations.
+        """
         if isinstance(obj, type):
             # class
             obj_dict = getattr(obj, "__dict__", None)
@@ -107,7 +124,15 @@ except ImportError:
 
 
 def get_annotations(*args, **kwargs) -> tp.Annotations:
-    """Get annotations."""
+    """Return annotations for an object with union types resolved.
+
+    Args:
+        *args: Positional arguments for `get_raw_annotations`.
+        **kwargs: Keyword arguments for `get_raw_annotations`.
+
+    Returns:
+        Annotations: Dictionary of annotations with union types resolved.
+    """
     annotations = get_raw_annotations(*args, **kwargs)
     new_annotations = {}
     for k, v in annotations.items():
@@ -122,7 +147,17 @@ def flatten_annotations(
     only_var_args: bool = False,
     return_var_arg_maps: bool = False,
 ) -> tp.Union[tp.Annotations, tp.Tuple[tp.Annotations, tp.Dict[str, str], tp.Dict[str, str]]]:
-    """Flatten annotations of variable arguments."""
+    """Return flattened annotations by unpacking variable arguments.
+
+    Args:
+        annotations (Annotations): Mapping of annotation names to annotation values.
+        only_var_args (bool): If True, include only variable argument annotations.
+        return_var_arg_maps (bool): If True, also return maps for unpacked variable arguments.
+
+    Returns:
+        Union[Annotations, Tuple[Annotations, Dict[str, str], Dict[str, str]]]:
+            Flattened annotations and, optionally, maps for variable arguments.
+    """
     flat_annotations = {}
     var_args_map = {}
     var_kwargs_map = {}
@@ -152,7 +187,7 @@ def flatten_annotations(
 
 
 class MetaAnnotatable(type):
-    """Metaclass for `Annotatable`."""
+    """Metaclass for `Annotatable` supporting union operator overloads."""
 
     def __or__(cls, other: tp.Annotation) -> tp.Annotation:
         return Union(cls, other).resolve()
@@ -162,7 +197,7 @@ class MetaAnnotatable(type):
 
 
 class Annotatable(Base, metaclass=MetaAnnotatable):
-    """Class that can be used in annotations."""
+    """Class for representing annotatable types supporting union operations via the `|` operator."""
 
     def __or__(self, other: tp.Annotation) -> tp.Annotation:
         return Union(self, other).resolve()
@@ -172,7 +207,15 @@ class Annotatable(Base, metaclass=MetaAnnotatable):
 
 
 def has_annotatables(func: tp.Callable, target_cls: tp.Type[Annotatable] = Annotatable) -> bool:
-    """Check if a function has subclasses or instances of `Annotatable` in its signature."""
+    """Determine if a function's signature contains any subclass or instance of `Annotatable`.
+
+    Args:
+        func (Callable): Function to inspect.
+        target_cls (Type[Annotatable]): Class to check against.
+
+    Returns:
+        bool: True if any argument or return type is an instance of `Annotatable`, False otherwise.
+    """
     annotations = flatten_annotations(get_annotations(func))
     for k, v in annotations.items():
         if isinstance(v, type) and issubclass(v, target_cls):
@@ -184,10 +227,14 @@ def has_annotatables(func: tp.Callable, target_cls: tp.Type[Annotatable] = Annot
 
 @define
 class VarArgs(Annotatable, DefineMixin):
-    """Class representing annotations for variable positional arguments."""
+    """Class for representing annotations for variable positional arguments.
+
+    Args:
+        *args: Positional arguments.
+    """
 
     args: tp.Tuple[tp.Annotation, ...] = define.field()
-    """Tuple with annotations."""
+    """Tuple containing annotations for each positional argument."""
 
     def __init__(self, *args) -> None:
         DefineMixin.__init__(self, args=args)
@@ -195,10 +242,14 @@ class VarArgs(Annotatable, DefineMixin):
 
 @define
 class VarKwargs(Annotatable, DefineMixin):
-    """Class representing annotations for variable keyword arguments."""
+    """Class for representing annotations for variable keyword arguments.
+
+    Args:
+        **kwargs: Keyword arguments.
+    """
 
     kwargs: tp.Dict[str, tp.Annotation] = define.field()
-    """Dict with annotations."""
+    """Dictionary mapping argument names to their annotations."""
 
     def __init__(self, **kwargs) -> None:
         DefineMixin.__init__(self, kwargs=kwargs)
@@ -206,19 +257,33 @@ class VarKwargs(Annotatable, DefineMixin):
 
 @define
 class Union(Annotatable, DefineMixin):
-    """Class representing a union of one to multiple annotations."""
+    """Class representing a union of one or more annotations.
+
+    Args:
+        *annotations (Annotation): Additional annotations to include in the union.
+        resolved (bool): Indicates whether the union is marked as resolved.
+    """
 
     annotations: tp.Tuple[tp.Annotation, ...] = define.field()
-    """Annotations."""
+    """The tuple of annotations that comprise the union."""
 
     resolved: bool = define.field(default=False)
-    """Whether the instance is resolved."""
+    """Indicates if the union is resolved."""
 
     def __init__(self, *annotations, resolved: bool = False) -> None:
         DefineMixin.__init__(self, annotations=annotations, resolved=resolved)
 
     def resolve(self) -> tp.Annotation:
-        """Resolve the union."""
+        """Return the resolved union by merging nested annotations.
+
+        This method flattens any nested unions and combines their annotations.
+
+        If the union contains both `VarArgs` and `VarKwargs`, or if conflicting annotation
+        types are encountered during resolution, a ValueError is raised.
+
+        Returns:
+            Annotation: Resolved annotation.
+        """
         if self.resolved:
             return self
         annotations = []

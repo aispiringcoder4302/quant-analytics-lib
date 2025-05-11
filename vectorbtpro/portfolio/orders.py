@@ -8,10 +8,11 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base class for working with order records.
+"""Module for working with order records.
 
-Order records capture information on filled orders. Orders are mainly populated when simulating
-a portfolio and can be accessed as `vectorbtpro.portfolio.base.Portfolio.orders`.
+This module provides the base functionality for capturing and managing order records, which store details
+of filled orders during portfolio simulation. Order records can be accessed via
+`vectorbtpro.portfolio.base.Portfolio.orders`.
 
 ```pycon
 >>> from vectorbtpro import *
@@ -96,7 +97,7 @@ Name: group, dtype: object
 !!! hint
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Orders.subplots`.
 
-`Orders` class has a single subplot based on `Orders.plot`:
+The `Orders` class provides a method to generate a subplot from order records:
 
 ```pycon
 >>> pf.orders['a'].plots().show()
@@ -148,10 +149,10 @@ orders_field_config = ReadonlyConfig(
 
 __pdoc__[
     "orders_field_config"
-] = f"""Field config for `Orders`.
+] = f"""Field configuration for `Orders`.
 
 ```python
-{orders_field_config.prettify()}
+{orders_field_config.prettify_doc()}
 ```
 """
 
@@ -160,10 +161,10 @@ orders_attach_field_config = ReadonlyConfig(dict(side=dict(attach_filters=True))
 
 __pdoc__[
     "orders_attach_field_config"
-] = f"""Config of fields to be attached to `Orders`.
+] = f"""Configuration for fields to be attached to `Orders`.
 
 ```python
-{orders_attach_field_config.prettify()}
+{orders_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -181,10 +182,10 @@ orders_shortcut_config = ReadonlyConfig(
 
 __pdoc__[
     "orders_shortcut_config"
-] = f"""Config of shortcut properties to be attached to `Orders`.
+] = f"""Shortcut properties configuration for `Orders`.
 
 ```python
-{orders_shortcut_config.prettify()}
+{orders_shortcut_config.prettify_doc()}
 ```
 """
 
@@ -195,7 +196,16 @@ OrdersT = tp.TypeVar("OrdersT", bound="Orders")
 @attach_fields(orders_attach_field_config)
 @override_field_config(orders_field_config)
 class Orders(PriceRecords):
-    """Extends `vectorbtpro.generic.price_records.PriceRecords` for working with order records."""
+    """Class for representing and manipulating order records.
+
+    Extends `vectorbtpro.generic.price_records.PriceRecords` to provide functionalities for
+    transforming orders, computing order statistics, and generating various views of the order records.
+
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.order_dt`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.orders`.
+    """
 
     @property
     def field_config(self) -> Config:
@@ -210,7 +220,24 @@ class Orders(PriceRecords):
         jitted: tp.JittedOption = None,
         chunked: tp.ChunkedOption = None,
     ) -> OrdersT:
-        """See `vectorbtpro.portfolio.nb.records.get_long_view_orders_nb`."""
+        """Return a long view of order records.
+
+        Args:
+            init_position (ArrayLike): Initial position.
+            init_price (ArrayLike): Initial position price.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+
+        Returns:
+            Orders: New instance with long view orders.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.get_long_view_orders_nb`
+        """
         func = jit_reg.resolve_option(nb.get_long_view_orders_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         new_records_arr = func(
@@ -229,7 +256,24 @@ class Orders(PriceRecords):
         jitted: tp.JittedOption = None,
         chunked: tp.ChunkedOption = None,
     ) -> OrdersT:
-        """See `vectorbtpro.portfolio.nb.records.get_short_view_orders_nb`."""
+        """Return a short view of order records.
+
+        Args:
+            init_position (ArrayLike): Initial position.
+            init_price (ArrayLike): Initial position price.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+
+        Returns:
+            Orders: New instance with short view orders.
+
+        See:
+            `vectorbtpro.portfolio.nb.records.get_short_view_orders_nb`
+        """
         func = jit_reg.resolve_option(nb.get_short_view_orders_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
         new_records_arr = func(
@@ -244,13 +288,31 @@ class Orders(PriceRecords):
     # ############# Stats ############# #
 
     def get_signed_size(self, **kwargs) -> tp.MaybeSeries:
-        """Get signed size."""
+        """Return the signed order sizes.
+
+        Computes order sizes by negating values for sell orders.
+
+        Args:
+            **kwargs: Keyword arguments for `Orders.map_array`.
+
+        Returns:
+            MaybeSeries: Series representing the signed sizes.
+        """
         size = self.get_field_arr("size").copy()
         size[self.get_field_arr("side") == OrderSide.Sell] *= -1
         return self.map_array(size, **kwargs)
 
     def get_value(self, **kwargs) -> tp.MaybeSeries:
-        """Get value."""
+        """Return the order values.
+
+        Calculates the order value as the product of the signed size and price values.
+
+        Args:
+            **kwargs: Keyword arguments for `Orders.map_array`.
+
+        Returns:
+            MaybeSeries: Series representing the computed order values.
+        """
         return self.map_array(self.signed_size.values * self.price.values, **kwargs)
 
     def get_weighted_price(
@@ -261,7 +323,28 @@ class Orders(PriceRecords):
         wrap_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeSeries:
-        """Get size-weighted price average."""
+        """Return the size-weighted average price.
+
+        Calculates the weighted average price using order sizes and prices.
+
+        Args:
+            group_by (GroupByLike): Grouping specification.
+            
+                See `vectorbtpro.base.grouping.base.Grouper`.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            **kwargs: Keyword arguments for `vectorbtpro.records.mapped_array.MappedArray.reduce`.
+
+        Returns:
+            MaybeSeries: Series containing the weighted average prices.
+        """
         wrap_kwargs = merge_dicts(dict(name_or_index="weighted_price"), wrap_kwargs)
         return MappedArray.reduce(
             nb.weighted_price_reduce_meta_nb,
@@ -276,7 +359,17 @@ class Orders(PriceRecords):
         )
 
     def get_price_status(self, **kwargs) -> MappedArray:
-        """See `vectorbtpro.portfolio.nb.records.price_status_nb`."""
+        """Return the price status for each order.
+
+        Applies `vectorbtpro.portfolio.nb.records.price_status_nb` to determine the price status
+        based on high and low prices.
+
+        Args:
+            **kwargs: Keyword arguments for `Orders.apply`.
+
+        Returns:
+            MappedArray: Mapped array representing the price status of orders.
+        """
         return self.apply(
             nb.price_status_nb,
             self._high,
@@ -287,10 +380,14 @@ class Orders(PriceRecords):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `Orders.stats`.
+        """Default configuration for `Orders.stats`.
 
-        Merges `vectorbtpro.generic.price_records.PriceRecords.stats_defaults` and
-        `stats` from `vectorbtpro._settings.orders`."""
+        Merges the defaults from `vectorbtpro.generic.price_records.PriceRecords.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.orders`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the stats builder.
+        """
         from vectorbtpro._settings import settings
 
         orders_stats_cfg = settings["orders"]["stats"]
@@ -367,7 +464,7 @@ class Orders(PriceRecords):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_ohlc: bool = True,
         plot_close: bool = True,
         ohlc_type: tp.Union[None, str, tp.BaseTraceType] = None,
@@ -381,22 +478,31 @@ class Orders(PriceRecords):
     ) -> tp.BaseFigure:
         """Plot orders.
 
+        Plot the order data on a Plotly figure by overlaying OHLC and close price data with buy and sell markers.
+
         Args:
-            column (str): Name of the column to plot.
-            plot_ohlc (bool): Whether to plot OHLC.
-            plot_close (bool): Whether to plot close.
-            ohlc_type: Either 'OHLC', 'Candlestick' or Plotly trace.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_ohlc (bool): Whether to plot the OHLC data.
+            plot_close (bool): Whether to plot the close price if OHLC data is not plotted.
+            ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
-                Pass None to use the default.
-            ohlc_trace_kwargs (dict): Keyword arguments passed to `ohlc_type`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `Orders.close`.
-            buy_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Buy" markers.
-            sell_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for "Sell" markers.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+                Use 'OHLC', 'Candlestick', or a Plotly trace type. Pass None to use the default.
+            ohlc_trace_kwargs (KwargsLike): Keyword arguments for `ohlc_type` for the OHLC data.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for the close price.
+            buy_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for buy markers.
+            sell_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for sell markers.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated Plotly figure with the plotted orders.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> index = pd.date_range("2020", periods=5)
             >>> price = pd.Series([1., 2., 3., 2., 1.], index=index)
@@ -529,10 +635,14 @@ class Orders(PriceRecords):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `Orders.plots`.
+        """Default configuration for `Orders.plots`.
 
-        Merges `vectorbtpro.generic.price_records.PriceRecords.plots_defaults` and
-        `plots` from `vectorbtpro._settings.orders`."""
+        Merges the defaults from `vectorbtpro.generic.price_records.PriceRecords.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.orders`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the plots builder.
+        """
         from vectorbtpro._settings import settings
 
         orders_plots_cfg = settings["orders"]["plots"]
@@ -590,10 +700,10 @@ fs_orders_field_config = ReadonlyConfig(
 
 __pdoc__[
     "fs_orders_field_config"
-] = f"""Field config for `FSOrders`.
+] = f"""Field configuration for `FSOrders`.
 
 ```python
-{fs_orders_field_config.prettify()}
+{fs_orders_field_config.prettify_doc()}
 ```
 """
 
@@ -607,10 +717,10 @@ fs_orders_attach_field_config = ReadonlyConfig(
 
 __pdoc__[
     "fs_orders_attach_field_config"
-] = f"""Config of fields to be attached to `FSOrders`.
+] = f"""Field attachment configuration for `FSOrders`.
 
 ```python
-{fs_orders_attach_field_config.prettify()}
+{fs_orders_attach_field_config.prettify_doc()}
 ```
 """
 
@@ -629,10 +739,10 @@ fs_orders_shortcut_config = ReadonlyConfig(
 
 __pdoc__[
     "fs_orders_shortcut_config"
-] = f"""Config of shortcut properties to be attached to `FSOrders`.
+] = f"""Shortcut properties configuration for `FSOrders`.
 
 ```python
-{fs_orders_shortcut_config.prettify()}
+{fs_orders_shortcut_config.prettify_doc()}
 ```
 """
 
@@ -643,18 +753,37 @@ FSOrdersT = tp.TypeVar("FSOrdersT", bound="FSOrders")
 @attach_fields(fs_orders_attach_field_config)
 @override_field_config(fs_orders_field_config)
 class FSOrders(Orders):
-    """Extends `Orders` for working with order records generated from signals."""
+    """Class extending `Orders` for working with order records generated from signals.
+    
+    Requires `records_arr` to have all fields defined in `vectorbtpro.portfolio.enums.fs_order_dt`.
+    """
 
     @property
     def field_config(self) -> Config:
         return self._field_config
 
-    def get_stop_orders(self, **kwargs):
-        """Get stop orders."""
+    def get_stop_orders(self: FSOrdersT, **kwargs) -> FSOrdersT:
+        """Return stop orders filtered by valid stop type.
+
+        Args:
+            **kwargs: Keyword arguments for `FSOrders.apply_mask`.
+
+        Returns:
+            FSOrders: Filtered orders instance containing only stop orders.
+        """
         return self.apply_mask(self.get_field_arr("stop_type") != -1, **kwargs)
 
     def get_ranges(self, **kwargs) -> Ranges:
-        """Get records of type `vectorbtpro.generic.ranges.Ranges` for signal-to-fill ranges."""
+        """Return signal-to-fill ranges as a `vectorbtpro.generic.ranges.Ranges` object.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
+
+        Returns:
+            Ranges: Ranges instance representing the signal-to-fill ranges.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
+        """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
         new_records_arr["col"][:] = self.get_field_arr("col").copy()
@@ -672,7 +801,16 @@ class FSOrders(Orders):
         )
 
     def get_creation_ranges(self, **kwargs) -> Ranges:
-        """Get records of type `vectorbtpro.generic.ranges.Ranges` for signal-to-creation ranges."""
+        """Return signal-to-creation ranges as a `vectorbtpro.generic.ranges.Ranges` object.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
+
+        Returns:
+            Ranges: Ranges instance representing the signal-to-creation ranges.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
+        """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
         new_records_arr["col"][:] = self.get_field_arr("col").copy()
@@ -690,7 +828,16 @@ class FSOrders(Orders):
         )
 
     def get_fill_ranges(self, **kwargs) -> Ranges:
-        """Get records of type `vectorbtpro.generic.ranges.Ranges` for creation-to-fill ranges."""
+        """Return creation-to-fill ranges as a `vectorbtpro.generic.ranges.Ranges` object.
+
+        Args:
+            **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
+
+        Returns:
+            Ranges: Ranges instance representing the creation-to-fill ranges.
+
+                Has the `vectorbtpro.generic.enums.range_dt` dtype.
+        """
         new_records_arr = np.empty(self.values.shape, dtype=range_dt)
         new_records_arr["id"][:] = self.get_field_arr("id").copy()
         new_records_arr["col"][:] = self.get_field_arr("col").copy()
@@ -708,17 +855,41 @@ class FSOrders(Orders):
         )
 
     def get_signal_to_creation_duration(self, **kwargs) -> MappedArray:
-        """Get duration between signal and creation."""
+        """Return the duration between signal and creation indices as a
+        `vectorbtpro.records.mapped_array.MappedArray`.
+
+        Args:
+            **kwargs: Keyword arguments for `FSOrders.map_array`.
+
+        Returns:
+            MappedArray: Mapped array representing the duration between signal and creation.
+        """
         duration = self.get_field_arr("creation_idx") - self.get_field_arr("signal_idx")
         return self.map_array(duration, **kwargs)
 
     def get_creation_to_fill_duration(self, **kwargs) -> MappedArray:
-        """Get duration between creation and fill."""
+        """Return the duration between creation and fill indices as a
+        `vectorbtpro.records.mapped_array.MappedArray`.
+
+        Args:
+            **kwargs: Keyword arguments for `FSOrders.map_array`.
+
+        Returns:
+            MappedArray: Mapped array representing the duration between creation and fill.
+        """
         duration = self.get_field_arr("idx") - self.get_field_arr("creation_idx")
         return self.map_array(duration, **kwargs)
 
     def get_signal_to_fill_duration(self, **kwargs) -> MappedArray:
-        """Get duration between signal and fill."""
+        """Return the duration between signal and fill indices as a
+        `vectorbtpro.records.mapped_array.MappedArray`.
+
+        Args:
+            **kwargs: Keyword arguments for `FSOrders.map_array`.
+
+        Returns:
+            MappedArray: Mapped array representing the duration between signal and fill.
+        """
         duration = self.get_field_arr("idx") - self.get_field_arr("signal_idx")
         return self.map_array(duration, **kwargs)
 

@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module with `BBANDS`."""
+"""Module defining the `BBANDS` class for Bollinger Bands indicator."""
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.base.reshaping import to_2d_array
@@ -47,15 +47,42 @@ BBANDS = IndicatorFactory(
             ),
         ),
     ),
+    attr_settings=dict(
+        close=dict(
+            doc="Close price series.",
+        ),
+        upper=dict(
+            doc="Upper Bollinger Band series.",
+        ),
+        middle=dict(
+            doc="Middle Bollinger Band series.",
+        ),
+        lower=dict(
+            doc="Lower Bollinger Band series.",
+        ),
+        percent_b=dict(
+            doc="Percent B series.",
+        ),
+        bandwidth=dict(
+            doc="Bollinger Bandwidth series.",
+        ),
+    ),
 ).with_apply_func(
     nb.bbands_nb,
     kwargs_as_args=["minp", "adjust", "ddof"],
     param_settings=dict(
+        window=dict(
+            doc="Window size.",
+        ),
         wtype=dict(
             dtype=generic_enums.WType,
             dtype_kwargs=dict(enum_unkval=None),
             post_index_func=lambda index: index.str.lower(),
-        )
+            doc="Weighting type (see `vectorbtpro.generic.enums.WType`).",
+        ),
+        alpha=dict(
+            doc="Number of standard deviations from the middle band to the upper and lower bands.",
+        ),
     ),
     window=14,
     wtype="simple",
@@ -67,17 +94,27 @@ BBANDS = IndicatorFactory(
 
 
 class _BBANDS(BBANDS):
-    """Bollinger Bands (BBANDS).
+    """Class representing the Bollinger Bands (BBANDS) indicator.
 
-    A Bollinger Band® is a technical analysis tool defined by a set of lines plotted two standard
-    deviations (positively and negatively) away from a simple moving average (SMA) of the security's
-    price, but can be adjusted to user preferences.
+    Bollinger Bands is a technical analysis tool that plots three lines:
 
-    See [Bollinger Band®](https://www.investopedia.com/terms/b/bollingerbands.asp)."""
+    * The upper band (calculated a specified number of standard deviations above the middle band).
+    * The middle band (a simple moving average of the security's price).
+    * The lower band (calculated a specified number of standard deviations below the middle band).
+
+    These bands help identify market volatility and potential overbought or oversold conditions.
+
+    See:
+        * `BBANDS.run` for the main entry point.
+        * `vectorbtpro.indicators.nb.bbands_nb` for the underlying implementation.
+        * `vectorbtpro.indicators.nb.bbands_percent_b_nb` for the underlying implementation of `BBANDS.percent_b`.
+        * `vectorbtpro.indicators.nb.bbands_bandwidth_nb` for the underlying implementation of `BBANDS.bandwidth`.
+        * https://www.investopedia.com/terms/b/bollingerbands.asp for the definition of BBANDS.
+    """
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         plot_close: bool = True,
         close_trace_kwargs: tp.KwargsLike = None,
         upper_trace_kwargs: tp.KwargsLike = None,
@@ -87,20 +124,30 @@ class _BBANDS(BBANDS):
         fig: tp.Optional[tp.BaseFigure] = None,
         **layout_kwargs,
     ) -> tp.BaseFigure:
-        """Plot `BBANDS.upper`, `BBANDS.middle`, and `BBANDS.lower` against `BBANDS.close`.
+        """Plot the BBANDS traces.
+
+        Return the updated figure with plotted `BBANDS.upper`, `BBANDS.middle`, `BBANDS.lower`,
+        and optionally `BBANDS.close`.
 
         Args:
-            column (str): Name of the column to plot.
-            plot_close (bool): Whether to plot `BBANDS.close`.
-            close_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `BBANDS.close`.
-            upper_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `BBANDS.upper`.
-            middle_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `BBANDS.middle`.
-            lower_trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter` for `BBANDS.lower`.
-            add_trace_kwargs (dict): Keyword arguments passed to `fig.add_trace` when adding each trace.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments passed to `fig.update_layout`.
+            column (Optional[Column]): Identifier of the column to plot.
+            plot_close (bool): Whether to plot the close price.
+            close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `BBANDS.close`.
+            upper_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `BBANDS.upper`.
+            middle_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `BBANDS.middle`.
+            lower_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `BBANDS.lower`.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
+        Returns:
+            BaseFigure: Updated figure with BBANDS traces.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        Examples:
             ```pycon
             >>> vbt.BBANDS.run(ohlcv['Close']).plot().show()
             ```
@@ -113,7 +160,7 @@ class _BBANDS(BBANDS):
 
         plotting_cfg = settings["plotting"]
 
-        self_col = self.select_col(column=column)
+        self_col = self.select_col(column=column, group_by=False)
 
         if fig is None:
             fig = make_figure()

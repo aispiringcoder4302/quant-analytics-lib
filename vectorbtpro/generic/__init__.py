@@ -8,9 +8,10 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Modules for working with generic time series.
+"""Package providing utilities for working with generic time series.
 
-In contrast to the `vectorbtpro.base` sub-package, focuses on the data itself."""
+In contrast to the `vectorbtpro.base` sub-package, this module focuses on data manipulation and analysis.
+"""
 
 from typing import TYPE_CHECKING
 

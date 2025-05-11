@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for working with knowledge.
+"""Package providing utility functions and classes for constructing and managing knowledge assets.
 
 Run for the examples:
 
@@ -22,6 +22,9 @@ Run for the examples:
 ... ]
 >>> asset = vbt.KnowledgeAsset(dataset)
 ```
+
+!!! info
+    For default settings, see `vectorbtpro._settings.knowledge`.
 """
 
 from typing import TYPE_CHECKING

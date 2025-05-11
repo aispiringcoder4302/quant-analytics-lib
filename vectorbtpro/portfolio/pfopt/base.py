@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Base functions and classes for portfolio optimization."""
+"""Module providing the base functions and classes for portfolio optimization."""
 
 import inspect
 
@@ -53,33 +53,22 @@ from vectorbtpro.utils.warnings_ import warn, warn_stdout, WarningsFiltered
 if tp.TYPE_CHECKING:
     from vectorbtpro.portfolio.base import Portfolio as PortfolioT
 else:
-    PortfolioT = "Portfolio"
-
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
+    PortfolioT = "vectorbtpro.portfolio.base.Portfolio"
+if tp.TYPE_CHECKING:
     from pypfopt.base_optimizer import BaseOptimizer as BaseOptimizerT
-except ImportError:
-    BaseOptimizerT = "BaseOptimizer"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from riskfolio import Portfolio as RPortfolio, HCPortfolio as RHCPortfolio
-
-    RPortfolioT = tp.TypeVar("RPortfolioT", bound=tp.Union[RPortfolio, RHCPortfolio])
-except ImportError:
-    RPortfolioT = "RPortfolio"
-try:
-    if not tp.TYPE_CHECKING:
-        raise ImportError
-    from universal.algo import Algo
-    from universal.result import AlgoResult
-
-    AlgoT = tp.TypeVar("AlgoT", bound=Algo)
-    AlgoResultT = tp.TypeVar("AlgoResultT", bound=AlgoResult)
-except ImportError:
-    AlgoT = "Algo"
-    AlgoResultT = "AlgoResult"
+else:
+    BaseOptimizerT = "pypfopt.base_optimizer.BaseOptimizer"
+if tp.TYPE_CHECKING:
+    from riskfolio import Portfolio as RPortfolioT, HCPortfolio as RHCPortfolioT
+else:
+    RPortfolioT = "riskfolio.Portfolio"
+    RHCPortfolioT = "riskfolio.HCPortfolio"
+if tp.TYPE_CHECKING:
+    from universal.algo import Algo as AlgoT
+    from universal.result import AlgoResult as AlgoResultT
+else:
+    AlgoT = "universal.algo.Algo"
+    AlgoResultT = "universal.result.AlgoResult"
 
 __all__ = [
     "pfopt_func_dict",
@@ -96,9 +85,10 @@ __pdoc__ = {}
 
 
 class pfopt_func_dict(pdict):
-    """Dict that contains optimization functions as keys.
+    """Dictionary subclass containing optimization functions as keys.
 
-    Keys can be functions themselves, their names, or `_def` for the default value."""
+    Keys may be function objects, their names, or the special key `_def` to represent the default value.
+    """
 
     pass
 
@@ -107,7 +97,19 @@ def select_pfopt_func_kwargs(
     pypfopt_func: tp.Callable,
     kwargs: tp.Union[None, tp.Kwargs, pfopt_func_dict] = None,
 ) -> tp.Kwargs:
-    """Select keyword arguments belonging to `pypfopt_func`."""
+    """Select keyword arguments corresponding to `pypfopt_func`.
+
+    Determines and returns a dictionary of keyword arguments intended for the provided `pypfopt_func`
+    based on the structure of `kwargs`.
+
+    Args:
+        pypfopt_func (Callable): Function for which to select keyword arguments.
+        kwargs (Union[None, Kwargs, pfopt_func_dict]): Dictionary containing keyword arguments for one or
+            multiple functions.
+
+    Returns:
+        Kwargs: Dictionary of keyword arguments for `pypfopt_func`.
+    """
     if kwargs is None:
         return {}
     if isinstance(kwargs, pfopt_func_dict):
@@ -141,24 +143,34 @@ def resolve_pypfopt_func_kwargs(
     used_arg_names: tp.Optional[tp.Set[str]] = None,
     **kwargs,
 ) -> tp.Kwargs:
-    """Resolve keyword arguments passed to any optimization function with the layout of PyPortfolioOpt.
+    """Resolve keyword arguments for a PyPortfolioOpt optimization function.
 
-    Parses the signature of `pypfopt_func`, and for each accepted argument, looks for an argument
-    with the same name in `kwargs`. If not found, tries to resolve that argument using other arguments
-    or by calling other optimization functions.
+    Parses the signature of `pypfopt_func` and, for each accepted parameter, checks for a matching
+    name in `kwargs`. If a corresponding argument is not provided, the function attempts to resolve it
+    using other inputs or by invoking additional optimization functions.
 
-    Argument `frequency` gets resolved with (global) `freq` and `year_freq` using
-    `vectorbtpro.returns.accessors.ReturnsAccessor.get_ann_factor`.
+    The `frequency` parameter is resolved using the global `freq` and `year_freq` values via
+    `ReturnsAccessor.get_ann_factor`.
 
-    Any argument in `kwargs` can be wrapped using `pfopt_func_dict` to define the argument
-    per function rather than globally.
+    Any argument in `kwargs` may be wrapped with `pfopt_func_dict` to specify function-specific values.
+
+    Args:
+        pypfopt_func (Callable): PyPortfolioOpt optimization function whose signature is parsed.
+        cache (KwargsLike): Cache dictionary for storing resolved arguments.
+        var_kwarg_names (Optional[Iterable[str]]): Names of variable keyword arguments to process.
+        used_arg_names (Optional[Set[str]]): Set accumulating the names of arguments that have been resolved.
+        **kwargs: Keyword arguments for parameter resolution.
+
+    Returns:
+        Kwargs: Dictionary of resolved keyword arguments for use with `pypfopt_func`.
 
     !!! note
-        When providing custom functions, make sure that the arguments they accept are visible
-        in the signature (that is, no variable arguments) and have the same naming as in PyPortfolioOpt.
+        When using custom functions, ensure that their parameters are explicitly defined (i.e., avoid variable
+        arguments) and adhere to PyPortfolioOpt's naming conventions.
 
-        Functions `market_implied_prior_returns` and `BlackLittermanModel.bl_weights` take `risk_aversion`,
-        which is different from arguments with the same name in other functions. To set it, pass `delta`."""
+        Functions `market_implied_prior_returns` and `BlackLittermanModel.bl_weights` require `risk_aversion`,
+        which differs from similarly named parameters in other functions. To configure it, pass `delta`.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("pypfopt")
@@ -346,7 +358,18 @@ def resolve_pypfopt_func_kwargs(
 
 
 def resolve_pypfopt_func_call(pypfopt_func: tp.Callable, **kwargs) -> tp.Any:
-    """Resolve arguments using `resolve_pypfopt_func_kwargs` and call the function with that arguments."""
+    """Resolve keyword arguments and invoke a PyPortfolioOpt function.
+
+    This function resolves parameters by using `resolve_pypfopt_func_kwargs` with the supplied
+    `kwargs` and then calls `pypfopt_func` with the resolved arguments.
+
+    Args:
+        pypfopt_func (Callable): PyPortfolioOpt function to be called.
+        **kwargs: Keyword arguments for `resolve_pypfopt_func_kwargs`.
+
+    Returns:
+        Any: Result of calling `pypfopt_func` with the resolved keyword arguments.
+    """
     return pypfopt_func(**resolve_pypfopt_func_kwargs(pypfopt_func, **kwargs))
 
 
@@ -356,15 +379,25 @@ def resolve_pypfopt_expected_returns(
 ) -> tp.AnyArray:
     """Resolve the expected returns.
 
-    `expected_returns` can be an array, an attribute of `pypfopt.expected_returns`, a function,
-    or one of the following options:
+    This function resolves the expected returns for portfolio optimization using pypfopt.
 
-    * 'mean_historical_return': `pypfopt.expected_returns.mean_historical_return`
-    * 'ema_historical_return': `pypfopt.expected_returns.ema_historical_return`
-    * 'capm_return': `pypfopt.expected_returns.capm_return`
-    * 'bl_returns': `pypfopt.black_litterman.BlackLittermanModel.bl_returns`
+    Any provided function is invoked using `resolve_pypfopt_func_call`.
 
-    Any function is resolved using `resolve_pypfopt_func_call`."""
+    Args:
+        expected_returns (Union[Callable, AnyArray, str]): Expected returns indicator, function, or array.
+
+            * If an array, it is returned unchanged.
+            * If a callable, it is executed via `resolve_pypfopt_func_call`.
+            * If a string, it selects one of the following models:
+                * `mean_historical_return`: resolved from `pypfopt.expected_returns.mean_historical_return`
+                *  `ema_historical_return`: resolved from `pypfopt.expected_returns.ema_historical_return`
+                *  `capm_return`: resolved from `pypfopt.expected_returns.capm_return`
+                *  `bl_returns`: resolved from `pypfopt.black_litterman.BlackLittermanModel.bl_returns`
+        **kwargs: Keyword arguments for the expected returns function.
+
+    Returns:
+        AnyArray: Computed expected returns.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("pypfopt")
@@ -406,22 +439,32 @@ def resolve_pypfopt_cov_matrix(
 ) -> tp.AnyArray:
     """Resolve the covariance matrix.
 
-    `cov_matrix` can be an array, an attribute of `pypfopt.risk_models`, a function,
-    or one of the following options:
+    This function resolves the covariance matrix for portfolio optimization using pypfopt.
 
-    * 'sample_cov': `pypfopt.risk_models.sample_cov`
-    * 'semicovariance' or 'semivariance': `pypfopt.risk_models.semicovariance`
-    * 'exp_cov': `pypfopt.risk_models.exp_cov`
-    * 'ledoit_wolf' or 'ledoit_wolf_constant_variance': `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf`
-        with 'constant_variance' as shrinkage factor
-    * 'ledoit_wolf_single_factor': `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf`
-        with 'single_factor' as shrinkage factor
-    * 'ledoit_wolf_constant_correlation': `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf`
-        with 'constant_correlation' as shrinkage factor
-    * 'oracle_approximating': `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf`
-        with 'oracle_approximating' as shrinkage factor
+    Any provided function is invoked using `resolve_pypfopt_func_call`.
 
-    Any function is resolved using `resolve_pypfopt_func_call`."""
+    Args:
+        cov_matrix (Union[Callable, AnyArray, str]): Covariance matrix indicator, function, or array.
+
+            * If an array, it is returned unchanged.
+            * If a callable, it is executed via `resolve_pypfopt_func_call`.
+            * If a string, it selects one of the following risk models:
+                * `sample_cov`: resolved from `pypfopt.risk_models.sample_cov`
+                * `semicovariance` or `semivariance`: resolved from `pypfopt.risk_models.semicovariance`
+                * `exp_cov`: resolved from `pypfopt.risk_models.exp_cov`
+                * `ledoit_wolf` or `ledoit_wolf_constant_variance`: resolved from
+                    `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with constant variance shrinkage
+                * `ledoit_wolf_single_factor`: resolved from
+                    `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with single factor shrinkage
+                * `ledoit_wolf_constant_correlation`: resolved from
+                    `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with constant correlation shrinkage
+                * `oracle_approximating`: resolved from
+                    `pypfopt.risk_models.CovarianceShrinkage.ledoit_wolf` with oracle approximating shrinkage
+        **kwargs: Keyword arguments for the covariance model function.
+
+    Returns:
+        AnyArray: Computed covariance matrix.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("pypfopt")
@@ -473,20 +516,32 @@ def resolve_pypfopt_optimizer(
     optimizer: tp.Union[tp.Callable, BaseOptimizerT, str] = "efficient_frontier",
     **kwargs,
 ) -> BaseOptimizerT:
-    """Resolve the optimizer.
+    """Resolve the PyPortfolioOpt optimizer.
 
-    `optimizer` can be an instance of `pypfopt.base_optimizer.BaseOptimizer`, an attribute of `pypfopt`,
-    a subclass of  `pypfopt.base_optimizer.BaseOptimizer`, or one of the following options:
+    Resolves the given optimizer to a `pypfopt.base_optimizer.BaseOptimizer` instance based on the provided input.
+    The optimizer can be specified as an instance, callable, subclass, or a recognized string identifier.
 
-    * 'efficient_frontier': `pypfopt.efficient_frontier.EfficientFrontier`
-    * 'efficient_cdar': `pypfopt.efficient_frontier.EfficientCDaR`
-    * 'efficient_cvar': `pypfopt.efficient_frontier.EfficientCVaR`
-    * 'efficient_semivariance': `pypfopt.efficient_frontier.EfficientSemivariance`
-    * 'black_litterman' or 'bl': `pypfopt.black_litterman.BlackLittermanModel`
-    * 'hierarchical_portfolio', 'hrpopt', or 'hrp': `pypfopt.hierarchical_portfolio.HRPOpt`
-    * 'cla': `pypfopt.cla.CLA`
+    Args:
+        optimizer (Union[Callable, BaseOptimizerT, str]):
+            Either an instance, callable, or subclass of `pypfopt.base_optimizer.BaseOptimizer`.
 
-    Any function is resolved using `resolve_pypfopt_func_call`."""
+            Alternatively, one of the following string identifiers is supported:
+
+            * 'efficient_frontier': `pypfopt.efficient_frontier.EfficientFrontier`
+            * 'efficient_cdar': `pypfopt.efficient_frontier.EfficientCDaR`
+            * 'efficient_cvar': `pypfopt.efficient_frontier.EfficientCVaR`
+            * 'efficient_semivariance': `pypfopt.efficient_frontier.EfficientSemivariance`
+            * 'black_litterman' or 'bl': `pypfopt.black_litterman.BlackLittermanModel`
+            * 'hierarchical_portfolio', 'hrpopt', or 'hrp': `pypfopt.hierarchical_portfolio.HRPOpt`
+            * 'cla': `pypfopt.cla.CLA`
+        **kwargs: Keyword arguments for the optimization function.
+
+    Returns:
+        BaseOptimizer: Instance of `pypfopt.base_optimizer.BaseOptimizer`.
+
+    !!! note
+        Resolution is delegated to `resolve_pypfopt_func_call`.
+    """
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("pypfopt")
@@ -556,41 +611,67 @@ def pypfopt_optimize(
     ignore_errors: tp.Optional[bool] = None,
     **kwargs,
 ) -> tp.Dict[str, float]:
-    """Get allocation using PyPortfolioOpt.
+    """Return allocation using PyPortfolioOpt.
 
-    First, it resolves the optimizer using `resolve_pypfopt_optimizer`. Depending upon which arguments it takes,
-    it may further resolve expected returns, covariance matrix, etc. Then, it adds objectives and constraints
-    to the optimizer instance, calls the target metric, extracts the weights, and finally, converts
-    the weights to an integer allocation (if requested).
+    Resolves the optimizer using `resolve_pypfopt_optimizer` with the provided settings and
+    additional parameters. Depending on the inputs, it may further resolve expected returns,
+    covariance matrix, objectives, constraints, and sector constraints. It then applies the target
+    optimization—adding the target as a convex or non-convex objective, extracts the weights, and,
+    if requested, converts them to a discrete allocation using the specified method.
 
     To specify the optimizer, use `optimizer` (see `resolve_pypfopt_optimizer`).
     To specify the expected returns, use `expected_returns` (see `resolve_pypfopt_expected_returns`).
     To specify the covariance matrix, use `cov_matrix` (see `resolve_pypfopt_cov_matrix`).
-    All other keyword arguments in `**kwargs` are used by `resolve_pypfopt_func_call`.
+    All other keyword arguments in `**kwargs` are forwarded to `resolve_pypfopt_func_call`.
 
-    Each objective can be a function, an attribute of `pypfopt.objective_functions`, or an iterable of such.
+    Each objective can be a function, an attribute of `pypfopt.objective_functions`,
+    or an iterable of such. Each constraint can be a function or an iterable of such.
+    The target can be an attribute of the optimizer or a stand-alone function.
+    If `target_is_convex` is True, the target is added as a convex objective;
+    otherwise, it is added as a non-convex objective. The keyword arguments
+    `weights_sum_to_one` and those starting with `target` are passed to
+    `pypfopt.base_optimizer.BaseConvexOptimizer.convex_objective` and
+    `pypfopt.base_optimizer.BaseConvexOptimizer.nonconvex_objective` respectively.
 
-    Each constraint can be a function or an interable of such.
+    Set `ignore_opt_errors` to True to bypass errors specific to target optimization.
+    Set `ignore_errors` to True to bypass all errors, including those raised by user inputs.
 
-    The target can be an attribute of the optimizer, or a stand-alone function.
-    If `target_is_convex` is True, the function is added as a convex function.
-    Otherwise, the function is added as a non-convex function. The keyword arguments
-    `weights_sum_to_one` and those starting with `target` are passed
-    `pypfopt.base_optimizer.BaseConvexOptimizer.convex_objective`
-    and `pypfopt.base_optimizer.BaseConvexOptimizer.nonconvex_objective` respectively.
+    If `discrete_allocation` is True, the function resolves `pypfopt.discrete_allocation.DiscreteAllocation`
+    and invokes the specified attribute `allocation_method` on the resulting allocation object.
 
-    Set `ignore_opt_errors` to True to ignore any target optimization errors.
-    Set `ignore_errors` to True to ignore any errors, even those caused by the user.
+    All functions in this process are resolved using `resolve_pypfopt_func_call`.
 
-    If `discrete_allocation` is True, resolves `pypfopt.discrete_allocation.DiscreteAllocation`
-    and calls `allocation_method` as an attribute of the allocation object.
+    Args:
+        target (Optional[Union[Callable, str]]): Optimization target function or attribute.
+        target_is_convex (Optional[bool]): Indicates whether the target should be treated as convex.
+        weights_sum_to_one (Optional[bool]): Enforce that portfolio weights sum to one.
+        target_constraints (Optional[List[Kwargs]]): Additional constraints passed to the target function.
+        target_solver (Optional[str]): Solver to be used for target optimization.
+        target_initial_guess (Optional[Array]): Initial guess for the target optimization.
+        objectives (Optional[MaybeIterable[Union[Callable, str]]]): Objectives for the optimizer.
 
-    Any function is resolved using `resolve_pypfopt_func_call`.
+            Functions or string references to objectives in `pypfopt.objective_functions`.
+        constraints (Optional[MaybeIterable[Callable]]): Constraints to be applied to the optimizer.
+        sector_mapper (Optional[dict]): Mapping of assets to sectors for applying sector constraints.
+        sector_lower (Optional[dict]): Lower bounds for sector allocations.
+        sector_upper (Optional[dict]): Upper bounds for sector allocations.
+        discrete_allocation (Optional[bool]): If True, perform discrete allocation using
+            `pypfopt.discrete_allocation.DiscreteAllocation`.
+        allocation_method (Optional[str]): Method name used to compute discrete allocation.
+        silence_warnings (Optional[bool]): Flag to suppress warning messages.
+        ignore_opt_errors (Optional[bool]): Ignore errors related to target optimization if True.
+        ignore_errors (Optional[bool]): Whether to ignore errors and return an empty dictionary.
+        **kwargs: Keyword arguments for PyPortfolioOpt functions through
+            `resolve_pypfopt_func_kwargs` and `resolve_pypfopt_func_call`.
 
-    For defaults, see `pypfopt` under `vectorbtpro._settings.pfopt`.
+    Returns:
+        Dict[str, float]: Dictionary mapping asset symbols to their allocated weights.
 
-    Usage:
-        * Using mean historical returns, Ledoit-Wolf covariance matrix with constant variance,
+    !!! info
+        For default settings, see `pypfopt` in `vectorbtpro._settings.pfopt`.
+
+    Examples:
+        Using mean historical returns, Ledoit-Wolf covariance matrix with constant variance,
         and efficient frontier:
 
         ```pycon
@@ -606,7 +687,7 @@ def pypfopt_optimize(
         {'MSFT': 0.13324, 'AMZN': 0.10016, 'KO': 0.03229, 'MA': 0.73431}
         ```
 
-        * EMA historical returns and sample covariance:
+        EMA historical returns and sample covariance:
 
         ```pycon
         >>> vbt.pypfopt_optimize(
@@ -617,7 +698,7 @@ def pypfopt_optimize(
         {'MSFT': 0.08984, 'AMZN': 0.0, 'KO': 0.91016, 'MA': 0.0}
         ```
 
-        * EMA historical returns, efficient Conditional Value at Risk, and other parameters automatically
+        EMA historical returns, efficient Conditional Value at Risk, and other parameters automatically
         passed to their respective functions. Optimized towards lowest CVaR:
 
         ```pycon
@@ -632,7 +713,7 @@ def pypfopt_optimize(
         {'MSFT': 0.14779, 'AMZN': 0.07224, 'KO': 0.77552, 'MA': 0.00445}
         ```
 
-        * Adding custom objectives:
+        Adding custom objectives:
 
         ```pycon
         >>> vbt.pypfopt_optimize(
@@ -644,7 +725,7 @@ def pypfopt_optimize(
         {'MSFT': 0.22228, 'AMZN': 0.15685, 'KO': 0.28712, 'MA': 0.33375}
         ```
 
-        * Adding custom constraints:
+        Adding custom constraints:
 
         ```pycon
         >>> vbt.pypfopt_optimize(
@@ -654,7 +735,7 @@ def pypfopt_optimize(
         {'MSFT': 0.1, 'AMZN': 0.10676, 'KO': 0.04341, 'MA': 0.74982}
         ```
 
-        * Optimizing towards a custom convex objective (to add a non-convex objective,
+        Optimizing towards a custom convex objective (to add a non-convex objective,
         set `target_is_convex` to False):
 
         ```pycon
@@ -800,7 +881,23 @@ def prepare_returns(
     dropna_cols: bool = True,
     dropna_any: bool = True,
 ) -> tp.Frame:
-    """Prepare returns."""
+    """Prepare and clean return data.
+
+    Converts the input returns to a Pandas DataFrame and processes missing and infinite values
+    based on specified flags.
+
+    Args:
+        returns (AnyArray2d): Two-dimensional array containing return data.
+
+            Expected to be convertible to a Pandas DataFrame.
+        nan_to_zero (bool): Replace NaN values with 0.
+        dropna_rows (bool): Remove rows that have missing or, if NaN values are replaced, zero values.
+        dropna_cols (bool): Remove columns that have missing or, if NaN values are replaced, zero values.
+        dropna_any (bool): Drop rows where any entry is missing if NaN values are not replaced.
+
+    Returns:
+        Frame: Processed DataFrame of return values.
+    """
     returns = to_pd_array(returns)
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("Returns must be a two-dimensional array")
@@ -835,7 +932,22 @@ def resolve_riskfolio_func_kwargs(
     func_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.Kwargs:
-    """Select keyword arguments belonging to `riskfolio_func`."""
+    """Select keyword arguments for a given riskfolio function.
+
+    Extracts keyword arguments from the provided input that match the parameters of `riskfolio_func`.
+    If additional function-specific keyword arguments are provided via `func_kwargs`, they are merged.
+
+    Args:
+        riskfolio_func (Callable): Riskfolio function to filter keyword arguments for.
+        unused_arg_names (Optional[Set[str]]): Set of argument names to be excluded.
+
+            Matching keys found in kwargs will be removed.
+        func_kwargs (KwargsLike): Keyword arguments specific to the riskfolio function.
+        **kwargs: Keyword arguments to be filtered.
+
+    Returns:
+        Kwargs: Dictionary containing the keyword arguments relevant to `riskfolio_func`.
+    """
     func_arg_names = get_func_arg_names(riskfolio_func)
     matched_kwargs = dict()
     for k, v in kwargs.items():
@@ -859,22 +971,32 @@ def resolve_asset_classes(
 ) -> tp.Frame:
     """Resolve asset classes for Riskfolio-Lib.
 
-    Supports the following formats:
+    Converts various asset class specifications into a DataFrame accepted by Riskfolio-Lib.
 
-    * None: Takes columns where the bottom-most level is assumed to be assets
-    * Index: Each level in the index must be a different asset class set
-    * Nested dict: Each sub-dict must be a different asset class set
-    * Sequence of strings or ints: Matches them against level names in the columns.
-    If the columns have a single level, or some level names were not found, uses the sequence
-    directly as one class asset set named 'Class'.
-    * Sequence of dicts: Each dict becomes a row in the new DataFrame
-    * DataFrame where the first column is the asset list and the next columns are the
-    different asset’s classes sets (this is the target format accepted by Riskfolio-Lib).
-    See an example [here](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_constraints).
+    Supported formats:
+
+    * None: Uses the bottom-most level of `columns` as assets.
+    * Index: Each level in the index is treated as a different asset class set.
+    * Nested dict: Each sub-dict represents a different asset class set.
+    * Sequence of strings or ints: Matches items against level names in `columns`.
+        If the columns have a single level or names are not found, the sequence is used
+        directly as one asset class set named "Class".
+    * Sequence of dicts: Each dictionary becomes a row in the resulting DataFrame.
+    * DataFrame: First column contains assets and subsequent columns represent asset class sets
+        (the target format accepted by Riskfolio-Lib).
+
+    Args:
+        asset_classes (Union[None, Frame, Sequence]): Asset class information in various supported formats.
+        columns (Index): Index of columns from which asset classes are derived.
+        col_indices (Optional[Sequence[int]]): Specific indices to select from the asset class data.
+
+    Returns:
+        Frame: DataFrame formatted for Riskfolio-Lib containing asset classes.
 
     !!! note
         If `asset_classes` is neither None nor a DataFrame, the bottom-most level in `columns`
-        gets renamed to 'Assets' and becomes the first column of the new DataFrame."""
+        is renamed to "Assets" and becomes the first column of the new DataFrame.
+    """
     if asset_classes is None:
         asset_classes = columns.to_frame().reset_index(drop=True).iloc[:, ::-1]
         asset_classes = asset_classes.rename(columns={asset_classes.columns[0]: "Assets"})
@@ -905,9 +1027,18 @@ def resolve_asset_classes(
 def resolve_assets_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) -> tp.Frame:
     """Resolve asset constraints for Riskfolio-Lib.
 
-    Apart from the [target format](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_constraints),
-    also accepts a sequence of dicts such that each dict becomes a row in a new DataFrame.
-    Dicts don't have to specify all column names, the function will autofill any missing elements/columns."""
+    Converts the input constraints into a DataFrame matching the target format for asset constraints
+    as required by Riskfolio-Lib. In addition to the [target format](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_constraints),
+    a sequence of dictionaries is also accepted, with each dictionary representing a row in the DataFrame.
+    Missing column names are automatically filled.
+
+    Args:
+        constraints (Union[Frame, Sequence]): Asset constraints provided as a DataFrame, dictionary, or
+            list of dictionaries.
+
+    Returns:
+        Frame: DataFrame structured for asset constraints in Riskfolio-Lib.
+    """
     if not isinstance(constraints, pd.DataFrame):
         if isinstance(constraints, dict):
             constraints = pd.DataFrame(constraints)
@@ -941,9 +1072,18 @@ def resolve_assets_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) -> 
 def resolve_factors_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) -> tp.Frame:
     """Resolve factors constraints for Riskfolio-Lib.
 
-    Apart from the [target format](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.factors_constraints),
-    also accepts a sequence of dicts such that each dict becomes a row in a new DataFrame.
-    Dicts don't have to specify all column names, the function will autofill any missing elements/columns."""
+    Converts the input factor constraints into a DataFrame matching the target format for factors
+    constraints as required by Riskfolio-Lib. In addition to the [target format](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.factors_constraints),
+    a sequence of dictionaries is also accepted, with each dictionary representing a row in the DataFrame.
+    Missing column names are automatically filled.
+
+    Args:
+        constraints (Union[Frame, Sequence]): Factor constraints provided as a DataFrame, dictionary, or
+            list of dictionaries.
+
+    Returns:
+        Frame: DataFrame structured for factor constraints in Riskfolio-Lib.
+    """
     if not isinstance(constraints, pd.DataFrame):
         if isinstance(constraints, dict):
             constraints = pd.DataFrame(constraints)
@@ -972,9 +1112,19 @@ def resolve_factors_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) ->
 def resolve_assets_views(views: tp.Union[tp.Frame, tp.Sequence]) -> tp.Frame:
     """Resolve asset views for Riskfolio-Lib.
 
-    Apart from the [target format](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_views),
-    also accepts a sequence of dicts such that each dict becomes a row in a new DataFrame.
-    Dicts don't have to specify all column names, the function will autofill any missing elements/columns."""
+    Converts the input asset views into a DataFrame that complies with the target format for asset views
+    as required by Riskfolio-Lib. In addition to the [target format](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_views),
+    a sequence of dictionaries is also accepted, with each dictionary representing a row in the DataFrame.
+    Missing column names are automatically filled.
+
+    Args:
+        views (Union[Frame, Sequence]): Asset views provided as a DataFrame, dictionary, or list of dictionaries.
+
+            Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
+
+    Returns:
+        Frame: DataFrame structured for asset views in Riskfolio-Lib.
+    """
     if not isinstance(views, pd.DataFrame):
         if isinstance(views, dict):
             views = pd.DataFrame(views)
@@ -1008,8 +1158,16 @@ def resolve_factors_views(views: tp.Union[tp.Frame, tp.Sequence]) -> tp.Frame:
     """Resolve factors views for Riskfolio-Lib.
 
     Apart from the [target format](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.factors_views),
-    also accepts a sequence of dicts such that each dict becomes a row in a new DataFrame.
-    Dicts don't have to specify all column names, the function will autofill any missing elements/columns."""
+    the input can also be provided as a sequence of dictionaries.
+
+    Args:
+        views (Union[Frame, Sequence]): Factor views provided as a DataFrame, dictionary, or list of dictionaries.
+
+            Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
+
+    Returns:
+        Frame: Resolved DataFrame formatted for Riskfolio-Lib.
+    """
     if not isinstance(views, pd.DataFrame):
         if isinstance(views, dict):
             views = pd.DataFrame(views)
@@ -1039,8 +1197,17 @@ def resolve_hrp_constraints(constraints: tp.Union[tp.Frame, tp.Sequence]) -> tp.
     """Resolve HRP constraints for Riskfolio-Lib.
 
     Apart from the [target format](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.hrp_constraints),
-    also accepts a sequence of dicts such that each dict becomes a row in a new DataFrame.
-    Dicts don't have to specify all column names, the function will autofill any missing elements/columns."""
+    the input can also be provided as a sequence of dictionaries.
+
+    Args:
+        constraints (Union[Frame, Sequence]): HRP constraints provided as a DataFrame, dictionary, or
+            list of dictionaries.
+
+            Each dictionary is converted to a row in a new DataFrame. Missing columns are auto-filled.
+
+    Returns:
+        Frame: Resolved DataFrame formatted for Riskfolio-Lib.
+    """
     if not isinstance(constraints, pd.DataFrame):
         if isinstance(constraints, dict):
             constraints = pd.DataFrame(constraints)
@@ -1074,7 +1241,7 @@ def riskfolio_optimize(
     dropna_cols: tp.Optional[bool] = None,
     dropna_any: tp.Optional[bool] = None,
     factors: tp.Optional[tp.AnyArray2d] = None,
-    port: tp.Optional[RPortfolioT] = None,
+    port: tp.Optional[tp.Union[RPortfolioT, RHCPortfolioT]] = None,
     port_cls: tp.Union[None, str, tp.Type] = None,
     opt_method: tp.Union[None, str, tp.Callable] = None,
     stats_methods: tp.Optional[tp.Sequence[str]] = None,
@@ -1096,103 +1263,110 @@ def riskfolio_optimize(
     return_port: tp.Optional[bool] = None,
     ignore_errors: tp.Optional[bool] = None,
     **kwargs,
-) -> tp.Union[tp.Dict[str, float], tp.Tuple[tp.Dict[str, float], RPortfolioT]]:
+) -> tp.Union[tp.Dict[str, float], tp.Tuple[tp.Dict[str, float], tp.Union[RPortfolioT, RHCPortfolioT]]]:
     """Get allocation using Riskfolio-Lib.
 
+    Compute asset allocation weights using the Riskfolio-Lib library. This function resolves default
+    settings, prepares asset returns, optionally pre-optimizes the portfolio, builds the portfolio,
+    applies constraints and views, runs statistics, and finally performs the optimization.
+
     Args:
-        returns (array_like): A dataframe that contains the returns of the assets.
-        nan_to_zero (bool): Whether to convert NaN values to zero.
-        dropna_rows (bool): Whether to drop rows with all NaN/zero values.
+        returns (AnyArray2d): 2D array or DataFrame containing asset returns.
+        nan_to_zero (Optional[bool]): Whether to convert NaN values to zero.
+        dropna_rows (Optional[bool]): Whether to drop rows with all NaN/zero values.
 
-            Gets applied only if `nan_to_zero` is True or `dropna_any` is False.
-        dropna_cols (bool): Whether to drop columns with all NaN/zero values.
-        dropna_any (bool): Whether to drop any NaN values.
+            Applied only if `nan_to_zero` is True or `dropna_any` is False.
+        dropna_cols (Optional[bool]): Whether to drop columns with all NaN/zero values.
+        dropna_any (Optional[bool]): Whether to drop any NaN values.
 
-            Gets applied only if `nan_to_zero` is False.
-        factors (array_like): A dataframe that contains the factors.
-        port (Portfolio or HCPortfolio): Already initialized portfolio.
-        port_cls (str or type): Portfolio class.
-
-            Supports the following values:
+            Applied only if `nan_to_zero` is False.
+        factors (Optional[AnyArray2d]): 2D array or DataFrame containing factor values.
+        port (Optional[Union[RPortfolio, RHCPortfolio]]): Already initialized portfolio.
+        port_cls (Optional[Union[None, str, Type]]): Portfolio class.
+        
+            Supported values:
 
             * None: Uses `Portfolio`
-            * 'hc' or 'hcportfolio' (case-insensitive): Uses `HCPortfolio`
+            * "hc" or "hcportfolio" (case-insensitive): Uses `HCPortfolio`
             * Other string: Uses attribute of `riskfolio`
             * Class: Uses a custom class
-        opt_method (str or callable): Optimization method.
+        opt_method (Optional[Union[None, str, Callable]]): Optimization method.
+        
+            Supported values:
 
-            Supports the following values:
+            * None or "optimization": Uses `port.optimization`
+            * "wc" or "wc_optimization": Uses `port.wc_optimization`
+            * "rp" or "rp_optimization": Uses `port.rp_optimization`
+            * "rrp" or "rrp_optimization": Uses `port.rrp_optimization`
+            * "owa" or "owa_optimization": Uses `port.owa_optimization`
+            * String: Uses the corresponding attribute of `port`
+            * Callable: Custom optimization function
+        stats_methods (Optional[Sequence[str]]): Sequence of stats methods to call before optimization.
 
-            * None or 'optimization': Uses `port.optimization` (where `port` is a portfolio instance)
-            * 'wc' or 'wc_optimization': Uses `port.wc_optimization`
-            * 'rp' or 'rp_optimization': Uses `port.rp_optimization`
-            * 'rrp' or 'rrp_optimization': Uses `port.rrp_optimization`
-            * 'owa' or 'owa_optimization': Uses `port.owa_optimization`
-            * String: Uses attribute of `port`
-            * Callable: Uses a custom optimization function
-        stats_methods (str or sequence of str): Sequence of stats methods to call before optimization.
-
-            If None, tries to automatically populate the sequence using `opt_method` and `model`.
-            For example, calls `port.assets_stats` if `model="Classic"` is used.
-            Also, if `func_kwargs` is not empty, adds all functions whose name ends with '_stats'.
-        model (str): The model used to optimize the portfolio.
-        asset_classes (any): Asset classes matrix.
+            If not provided, the sequence is automatically populated based on `opt_method` and `model`.
+            Additionally, functions with names ending in "_stats" from `func_kwargs` may be added.
+        model (Optional[str]): Model used to optimize the portfolio.
+        asset_classes (Optional[Union[None, Frame, Sequence]]): Asset classes matrix.
 
             See `resolve_asset_classes` for possible formats.
-        constraints_method (str): Constraints method.
+        constraints_method (Optional[str]): Constraints method.
+        
+            Supported values:
 
-            Supports the following values:
+            * "assets" or "assets_constraints": Uses [assets constraints](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_constraints)
+            * "factors" or "factors_constraints": Uses [factors constraints](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.factors_constraints)
+            * "hrp" or "hrp_constraints": Uses [HRP constraints](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.hrp_constraints)
 
-            * 'assets' or 'assets_constraints': [assets constraints](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_constraints)
-            * 'factors' or 'factors_constraints': [factors constraints](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.factors_constraints)
-            * 'hrp' or 'hrp_constraints': [HRP constraints](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.hrp_constraints)
+            If None and a `Portfolio` is used, factors constraints are applied if `factors_stats` is used;
+            otherwise, assets constraints are applied. For `HCPortfolio`, HRP constraints are used.
+        constraints (Union[None, Frame, Sequence]): Constraints matrix.
 
-            If None and the class `Portfolio` is used, will use factors constraints if `factors_stats` is used,
-            otherwise assets constraints. If the class `HCPortfolio` is used, will use HRP constraints.
-        constraints (any): Constraints matrix.
+            See `resolve_assets_constraints` for assets constraints formats,
+            `resolve_factors_constraints` for factors constraints formats, and
+            `resolve_hrp_constraints` for HRP constraints formats.
+        views_method (Optional[str]): Views method.
+        
+            Supported values:
 
-            See `resolve_assets_constraints` for possible formats of assets constraints,
-            `resolve_factors_constraints` for possible formats of factors constraints, and
-            `resolve_hrp_constraints` for possible formats of HRP constraints.
-        views_method (str): Views method.
+            * "assets" or "assets_views": Uses [assets views](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_views)
+            * "factors" or "factors_views": Uses [factors views](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.factors_views)
 
-            Supports the following values:
+            If None, defaults to factors views if "blfactors_stats" is present; otherwise, assets views.
+        views (Union[None, Frame, Sequence]): Views matrix.
 
-            * 'assets' or 'assets_views': [assets views](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.assets_views)
-            * 'factors' or 'factors_views': [factors views](https://riskfolio-lib.readthedocs.io/en/latest/constraints.html#ConstraintsFunctions.factors_views)
+            See `resolve_assets_views` for assets views formats and
+            `resolve_factors_views` for factors views formats.
+        solvers (Optional[Sequence[str]]): Solvers.
+        sol_params (KwargsLike): Solver parameters.
+        freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min", "index_mean").
 
-            If None, will use factors views if `blfactors_stats` is used, otherwise assets views.
-        views (any): Views matrix.
+            Required when using views. See `vectorbtpro.utils.datetime_.infer_index_freq`.
+        year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
 
-            See `resolve_assets_views` for possible formats of assets views and
-            `resolve_factors_views` for possible formats of factors views.
-        solvers (list of str): Solvers.
-        sol_params (dict): Solver parameters.
-        freq (frequency_like): Frequency to be used to compute the annualization factor.
+            Required when using views.
+        pre_opt (Optional[bool]): Whether to pre-optimize the portfolio using `pre_opt_kwargs`.
+        pre_opt_kwargs (KwargsLike): Keyword arguments for pre-optimization.
 
-            Make sure to provide it when using views.
-        year_freq (frequency_like): Year frequency to be used to compute the annualization factor.
+            Passed to a recursive call of `riskfolio_optimize`.
+        pre_opt_as_w (Optional[bool]): Whether to use the weights from pre-optimization in subsequent optimization.
+        func_kwargs (KwargsLike): Keyword arguments for function calls.
 
-            Make sure to provide it when using views.
-        pre_opt (bool): Whether to pre-optimize the portfolio with `pre_opt_kwargs`.
-        pre_opt_kwargs (dict): Call `riskfolio_optimize` with these keyword arguments
-            and use the returned portfolio for further optimization.
-        pre_opt_as_w (bool): Whether to use the weights as `w` from the pre-optimization step.
-        func_kwargs (dict): Further keyword arguments by function.
+            Wrapped with `pfopt_func_dict` and used to override or add parameters.
+        silence_warnings (Optional[bool]): Flag to suppress warning messages.
+        return_port (Optional[bool]): Whether to return the portfolio along with the allocation weights.
+        ignore_errors (Optional[bool]): Whether to ignore errors and return an empty dictionary.
+        **kwargs: Keyword arguments for Riskfolio-Lib functions through `resolve_riskfolio_func_kwargs`.
 
-            Can be used to override any arguments from `kwargs` matched with the function,
-            or to add more arguments. Will be wrapped with `pfopt_func_dict` and passed to
-            `select_pfopt_func_kwargs` when calling each Riskfolio-Lib's function.
-        silence_warnings (bool): Whether to silence all warnings.
-        return_port (bool): Whether to also return the portfolio.
-        ignore_errors (bool): Whether to ignore any errors, even those caused by the user.
-        **kwargs: Keyword arguments that will be passed to any Riskfolio-Lib's function
-            that needs them (i.e., lists any of them in its signature).
+    Returns:
+        Union[Dict[str, float], Tuple[Dict[str, float], Union[RPortfolio, RHCPortfolio]]]:
+            Allocation weights as a dictionary mapping asset names to weights, or a tuple of the weights
+            and the portfolio if `return_port` is True.
 
-    For defaults, see `riskfolio` under `vectorbtpro._settings.pfopt`.
+    !!! info
+        For default settings, see `riskfolio` in `vectorbtpro._settings.pfopt`.
 
-    Usage:
-        * Classic Mean Risk Optimization:
+    Examples:
+        Classic Mean Risk Optimization:
 
         ```pycon
         >>> from vectorbtpro import *
@@ -1215,7 +1389,7 @@ def riskfolio_optimize(
          'MA': 0.238480902833802}
         ```
 
-        * The same by splitting arguments:
+        The same by splitting arguments:
 
         ```pycon
         >>> vbt.riskfolio_optimize(
@@ -1231,7 +1405,7 @@ def riskfolio_optimize(
          'MA': 0.238480902833802}
         ```
 
-        * Asset constraints:
+        Asset constraints:
 
         ```pycon
         >>> vbt.riskfolio_optimize(
@@ -1251,7 +1425,7 @@ def riskfolio_optimize(
          'MA': 0.336755163235327}
         ```
 
-        * Asset class constraints:
+        Asset class constraints:
 
         ```pycon
         >>> vbt.riskfolio_optimize(
@@ -1273,7 +1447,7 @@ def riskfolio_optimize(
          'MA': 0.4243375351611379}
         ```
 
-        * Hierarchical Risk Parity (HRP) Portfolio Optimization:
+        Hierarchical Risk Parity (HRP) Portfolio Optimization:
 
         ```pycon
         >>> vbt.riskfolio_optimize(
@@ -1666,18 +1840,60 @@ PortfolioOptimizerT = tp.TypeVar("PortfolioOptimizerT", bound="PortfolioOptimize
 
 
 class PortfolioOptimizer(Analyzable):
-    """Class that exposes methods for generating allocations."""
+    """Class that exposes methods for generating allocations.
+
+    Args:
+        wrapper (ArrayWrapper): Array wrapper instance.
+
+            See `vectorbtpro.base.wrapping.ArrayWrapper`.
+        alloc_records (Union[AllocRanges, AllocPoints]): Allocation records associated with the portfolio.
+        allocations (Array2d): 2D array containing allocation values.
+        **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
+    """
+
+    def __init__(
+        self,
+        wrapper: ArrayWrapper,
+        alloc_records: tp.Union[AllocRanges, AllocPoints],
+        allocations: tp.Array2d,
+        **kwargs,
+    ) -> None:
+        Analyzable.__init__(
+            self,
+            wrapper,
+            alloc_records=alloc_records,
+            allocations=allocations,
+            **kwargs,
+        )
+
+        self._alloc_records = alloc_records
+        self._allocations = allocations
+
+        # Only slices of rows can be selected
+        self._range_only_select = True
 
     @hybrid_method
     def row_stack(
         cls_or_self: tp.MaybeType[PortfolioOptimizerT],
-        *objs: tp.MaybeTuple[PortfolioOptimizerT],
+        *objs: tp.MaybeSequence[PortfolioOptimizerT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> PortfolioOptimizerT:
         """Stack multiple `PortfolioOptimizer` instances along rows.
 
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers."""
+        Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
+
+        Args:
+            *objs (MaybeSequence[PortfolioOptimizer]): (Additional) `PortfolioOptimizer` instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `PortfolioOptimizer` through
+                `PortfolioOptimizer.resolve_row_stack_kwargs` and `PortfolioOptimizer.resolve_stack_kwargs`.
+
+        Returns:
+            PortfolioOptimizer: New `PortfolioOptimizer` instance with row-stacked attributes.
+        """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
             cls = type(cls_or_self)
@@ -1722,13 +1938,25 @@ class PortfolioOptimizer(Analyzable):
     @hybrid_method
     def column_stack(
         cls_or_self: tp.MaybeType[PortfolioOptimizerT],
-        *objs: tp.MaybeTuple[PortfolioOptimizerT],
+        *objs: tp.MaybeSequence[PortfolioOptimizerT],
         wrapper_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> PortfolioOptimizerT:
         """Stack multiple `PortfolioOptimizer` instances along columns.
 
-        Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers."""
+        Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers.
+
+        Args:
+            *objs (MaybeSequence[PortfolioOptimizer]): (Additional) `PortfolioOptimizer` instances to stack.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `PortfolioOptimizer` through
+                `PortfolioOptimizer.resolve_column_stack_kwargs` and `PortfolioOptimizer.resolve_stack_kwargs`.
+
+        Returns:
+            PortfolioOptimizer: New `PortfolioOptimizer` instance with column-stacked attributes.
+        """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
             cls = type(cls_or_self)
@@ -1770,27 +1998,6 @@ class PortfolioOptimizer(Analyzable):
         kwargs = cls.resolve_stack_kwargs(*objs, **kwargs)
         return cls(**kwargs)
 
-    def __init__(
-        self,
-        wrapper: ArrayWrapper,
-        alloc_records: tp.Union[AllocRanges, AllocPoints],
-        allocations: tp.Array2d,
-        **kwargs,
-    ) -> None:
-        Analyzable.__init__(
-            self,
-            wrapper,
-            alloc_records=alloc_records,
-            allocations=allocations,
-            **kwargs,
-        )
-
-        self._alloc_records = alloc_records
-        self._allocations = allocations
-
-        # Only slices of rows can be selected
-        self._range_only_select = True
-
     def indexing_func(
         self: PortfolioOptimizerT,
         *args,
@@ -1799,7 +2006,18 @@ class PortfolioOptimizer(Analyzable):
         alloc_records_meta: tp.DictLike = None,
         **kwargs,
     ) -> PortfolioOptimizerT:
-        """Perform indexing on `PortfolioOptimizer`."""
+        """Perform indexing on a `PortfolioOptimizer` instance.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
+            wrapper_meta (DictLike): Metadata from the indexing operation on the wrapper.
+            alloc_wrapper_meta (DictLike): Metadata from the indexing operation on the allocation wrapper.
+            alloc_records_meta (DictLike): Metadata from the indexing operation on the allocation records.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.indexing_func_meta`.
+
+        Returns:
+            PortfolioOptimizer: New `PortfolioOptimizer` instance with updated indexing.
+        """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(*args, **kwargs)
         if alloc_records_meta is None:
@@ -1821,7 +2039,15 @@ class PortfolioOptimizer(Analyzable):
         )
 
     def resample(self: PortfolioOptimizerT, *args, **kwargs) -> PortfolioOptimizerT:
-        """Perform resampling on `PortfolioOptimizer`."""
+        """Perform resampling on a `PortfolioOptimizer` instance.
+
+        Args:
+            *args: Positional arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample`.
+            **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.ArrayWrapper.resample`.
+
+        Returns:
+            PortfolioOptimizer: New `PortfolioOptimizer` instance with resampled attributes.
+        """
         new_wrapper = self.wrapper.resample(*args, **kwargs)
         new_alloc_records = self.alloc_records.resample(*args, **kwargs)
         return self.replace(
@@ -1840,7 +2066,23 @@ class PortfolioOptimizer(Analyzable):
         group_idx: int,
         pre_group_func: tp.Optional[tp.Callable] = None,
     ) -> tp.Tuple[tp.RecordArray, tp.Array2d]:
-        """Run an allocation group."""
+        """Run an allocation group.
+
+        Args:
+            wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            group_configs (List[dict]): List of configurations for allocation groups.
+            group_index (Index): Index representing the allocation group.
+            group_idx (int): Index specifying which configuration in `group_configs` to use.
+            pre_group_func (Optional[Callable]): Function to preprocess and modify the group configuration.
+
+        Returns:
+            Tuple[RecordArray, Array2d]: A tuple containing allocation records and a 2D array of allocation values.
+
+        See:
+            * `vectorbtpro.portfolio.pfopt.nb.allocate_meta_nb` if `jitted_loop=True`
+        """
         group_config = dict(group_configs[group_idx])
         if pre_group_func is not None:
             pre_group_func(group_config)
@@ -2020,24 +2262,83 @@ class PortfolioOptimizer(Analyzable):
     ) -> PortfolioOptimizerT:
         """Generate allocations from an allocation function.
 
-        Generates date points and allocates at those points.
+        Generate allocation points based on dates and apply the allocation function at each point.
+        This method uses `vectorbtpro.base.wrapping.ArrayWrapper.get_index_points` to determine allocation
+        indices, making each point available as `index_point` in the template context. It creates allocation
+        records of type `vectorbtpro.portfolio.pfopt.records.AllocPoints`, unlike
+        `PortfolioOptimizer.from_optimize_func`.
 
-        Similar to `PortfolioOptimizer.from_optimize_func`, but generates points using
-        `vectorbtpro.base.wrapping.ArrayWrapper.get_index_points` and makes each point available
-        as `index_point` in the context.
+        Templates can use the variables:
 
-        Templates can use the following variables:
-
-        * `i`: Allocation step
-        * `index_point`: Allocation index
+        * `i`: Allocation step.
+        * `index_point`: Allocation index.
 
         If `jitted_loop` is True, see `vectorbtpro.portfolio.pfopt.nb.allocate_meta_nb`.
 
-        Also, in contrast to `PortfolioOptimizer.from_optimize_func`, creates records of type
-        `vectorbtpro.portfolio.pfopt.records.AllocPoints`.
+        Args:
+            cls (Type[PortfolioOptimizer]): Class to instantiate.
+            wrapper (ArrayWrapper): Array wrapper instance.
 
-        Usage:
-            * Allocate uniformly every day:
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            allocate_func (Callable): Function that computes allocations.
+            *args: Positional arguments for `allocate_func`.
+            every (Union[None, FrequencyLike, Param]): See `vectorbtpro.base.indexing.PointIdxr.every`.
+            normalize_every (Union[bool, Param]): See `vectorbtpro.base.indexing.PointIdxr.normalize_every`.
+            at_time (Union[None, TimeLike, Param]): See `vectorbtpro.base.indexing.PointIdxr.at_time`.
+            start (Union[None, int, DatetimeLike, Param]): See `vectorbtpro.base.indexing.PointIdxr.start`.
+            end (Union[None, int, DatetimeLike, Param]): See `vectorbtpro.base.indexing.PointIdxr.end`.
+            exact_start (Union[bool, Param]): See `vectorbtpro.base.indexing.PointIdxr.exact_start`.
+            on (Union[None, int, DatetimeLike, IndexLike, Param]): See `vectorbtpro.base.indexing.PointIdxr.on`.
+            add_delta (Union[None, FrequencyLike, Param]): See `vectorbtpro.base.indexing.PointIdxr.add_delta`.
+            kind (Union[None, str, Param]): See `vectorbtpro.base.indexing.PointIdxr.kind`.
+            indexer_method (Union[None, str, Param]): See `vectorbtpro.base.indexing.PointIdxr.indexer_method`.
+            indexer_tolerance (Union[None, str, Param]): See `vectorbtpro.base.indexing.PointIdxr.indexer_tolerance`.
+            skip_not_found (Union[bool, Param]): See `vectorbtpro.base.indexing.PointIdxr.skip_not_found`.
+            index_points (Union[None, MaybeSequence[int], Param]): Manually specified index points.
+            rescale_to (Union[None, Tuple[float, float], Param]): Tuple specifying the rescaling range for allocations.
+            parameterizer (Optional[MaybeType[Parameterizer]]): Parameterizer class or instance for handling parameters.
+            
+                Defaults to `vectorbtpro.utils.params.Parameterizer`.
+            param_search_kwargs (KwargsLike): Keyword arguments for parameter search.
+            
+                See `vectorbtpro.utils.params.Parameterizer.find_params_in_obj`.
+            name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to
+                strings for the parameter index.
+            group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]): Group configuration(s) for allocation.
+            pre_group_func (Optional[Callable]): Function to preprocess and modify the group configuration.
+            jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop over allocation groups.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            template_context (KwargsLike): Additional context for template substitution.
+            group_execute_kwargs (KwargsLike): Keyword arguments for the execution handler of allocation groups.
+            
+                See `vectorbtpro.utils.execution.execute`.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
+
+                See `vectorbtpro.utils.execution.execute`.
+            random_subset (Optional[int]): Select a random subset of parameter combinations.
+
+                Set the seed for reproducibility.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `allocate_func`.
+
+        Returns:
+            PortfolioOptimizer: Instance of portfolio optimizer containing allocation points and allocations.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.params`.
+
+        Examples:
+            Allocate uniformly every day:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -2075,7 +2376,7 @@ class PortfolioOptimizer(Analyzable):
             [2516 rows x 3 columns]
             ```
 
-            * Allocate randomly every first date of the year:
+            Allocate randomly every first date of the year:
 
             ```pycon
             >>> def random_allocate_func(n_cols):
@@ -2102,7 +2403,7 @@ class PortfolioOptimizer(Analyzable):
             2019-01-02 00:00:00+00:00  0.368748  0.195147  0.436106
             ```
 
-            * Specify index points manually:
+            Specify index points manually:
 
             ```pycon
             >>> pfo = vbt.PortfolioOptimizer.from_allocate_func(
@@ -2119,7 +2420,7 @@ class PortfolioOptimizer(Analyzable):
             2010-03-31 00:00:00+00:00  0.395855  0.148516  0.455629
             ```
 
-            * Specify allocations manually:
+            Specify allocations manually:
 
             ```pycon
             >>> def manual_allocate_func(weights):
@@ -2143,7 +2444,7 @@ class PortfolioOptimizer(Analyzable):
             2010-03-31 00:00:00+00:00     0     0     1
             ```
 
-            * Use Numba-compiled loop:
+            Use Numba-compiled loop:
 
             ```pycon
             >>> @njit
@@ -2167,9 +2468,8 @@ class PortfolioOptimizer(Analyzable):
             ```
 
             !!! hint
-                There is no big reason of using the Numba-compiled loop, apart from when having
-                to rebalance many thousands of times. Usually, using a regular Python loop
-                and a Numba-compiled allocation function should suffice.
+                There is little benefit to using a Numba-compiled loop unless rebalancing thousands
+                of times. Typically, a regular Python loop with a Numba-compiled allocation function suffices.
         """
         from vectorbtpro._settings import settings
 
@@ -2370,20 +2670,29 @@ class PortfolioOptimizer(Analyzable):
         allocations: tp.ArrayLike,
         **kwargs,
     ) -> PortfolioOptimizerT:
-        """Pick allocations from a (flexible) array.
+        """Pick allocations from a flexible array.
 
         Uses `PortfolioOptimizer.from_allocate_func`.
 
-        If `allocations` is a DataFrame, uses its index as labels. If it's a Series or dict, uses it
-        as a single allocation without index, which by default gets assigned to each index. If it's neither
-        one of the above nor a NumPy array, tries to convert it into a NumPy array.
+        If `allocations` is a DataFrame, its index is used as labels. If it is a Series or dict,
+        the allocation is applied uniformly across all indices. If the input is neither a DataFrame,
+        Series, nor a NumPy array, an attempt is made to convert it to a NumPy array.
 
-        If `allocations` is a NumPy array, uses `vectorbtpro.portfolio.pfopt.nb.pick_idx_allocate_func_nb`
-        and a Numba-compiled loop. Otherwise, uses a regular Python function to pick each allocation
-        (which can be a dict, Series, etc.). Selection of elements is done in a flexible manner,
-        meaning a single element will be applied to all rows, while one-dimensional arrays will be
-        also applied to all rows but also broadcast across columns (as opposed to rows)."""
+        If `allocations` is a NumPy array, the function uses
+        `vectorbtpro.portfolio.pfopt.nb.pick_idx_allocate_func_nb` with a Numba-compiled loop.
+        Otherwise, a regular Python function is used, where a single element is applied to all
+        rows and one-dimensional arrays are broadcast across columns.
 
+        Args:
+            wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            allocations (ArrayLike): Flexible array containing allocation data.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
+
+        Returns:
+            PortfolioOptimizer: Instance of the portfolio optimizer with the specified allocations.
+        """
         if isinstance(allocations, pd.Series):
             allocations = allocations.to_dict()
         if isinstance(allocations, dict):
@@ -2433,9 +2742,21 @@ class PortfolioOptimizer(Analyzable):
         allocations: tp.ArrayLike,
         **kwargs,
     ) -> PortfolioOptimizerT:
-        """Allocate once at the first index.
+        """Allocate allocations at the first index.
 
-        Uses `PortfolioOptimizer.from_allocations` with `on=0`."""
+        Uses `PortfolioOptimizer.from_allocations` with `on=0`.
+
+        Args:
+            wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            allocations (ArrayLike): Flexible array containing allocation data.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocations`.
+
+        Returns:
+            PortfolioOptimizer: Instance of the portfolio optimizer with the initial allocation
+                applied at the first index.
+        """
         return cls.from_allocations(wrapper, allocations, on=0, **kwargs)
 
     @classmethod
@@ -2448,13 +2769,25 @@ class PortfolioOptimizer(Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         **kwargs,
     ) -> PortfolioOptimizerT:
-        """Pick allocations from an already filled array.
+        """Pick allocations from an already filled allocation array.
 
-        Uses `PortfolioOptimizer.from_allocate_func`.
+        Uses `PortfolioOptimizer.from_allocate_func` with a Numba-compiled loop via
+        `vectorbtpro.portfolio.pfopt.nb.pick_point_allocate_func_nb`.
+        Allocation points are extracted using `vectorbtpro.portfolio.pfopt.nb.get_alloc_points_nb`.
 
-        Uses `vectorbtpro.portfolio.pfopt.nb.pick_point_allocate_func_nb` and a Numba-compiled loop.
+        Args:
+            allocations (AnyArray2d): Filled allocation array.
+            valid_only (bool): Skip rows where all values are NaN.
+            nonzero_only (bool): Skip rows where all values are zero.
+            unique_only (bool): Skip rows that are identical to the previous valid row.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
 
-        Extracts allocation points using `vectorbtpro.portfolio.pfopt.nb.get_alloc_points_nb`."""
+                Required if allocations is not a DataFrame.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
+
+        Returns:
+            PortfolioOptimizer: Instance of the portfolio optimizer with the filled allocations.
+        """
         if wrapper is None:
             if checks.is_frame(allocations):
                 wrapper = ArrayWrapper.from_obj(allocations)
@@ -2482,7 +2815,18 @@ class PortfolioOptimizer(Analyzable):
     def from_uniform(cls: tp.Type[PortfolioOptimizerT], wrapper: ArrayWrapper, **kwargs) -> PortfolioOptimizerT:
         """Generate uniform allocations.
 
-        Uses `PortfolioOptimizer.from_allocate_func`."""
+        Uses `PortfolioOptimizer.from_allocate_func` with a uniform allocation function that
+        assigns equal weights to all assets.
+
+        Args:
+            wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
+
+        Returns:
+            PortfolioOptimizer: Instance of the portfolio optimizer with uniform allocations.
+        """
 
         def _uniform_allocate_func():
             return np.full(wrapper.shape_2d[1], 1 / wrapper.shape_2d[1])
@@ -2500,9 +2844,25 @@ class PortfolioOptimizer(Analyzable):
     ) -> PortfolioOptimizerT:
         """Generate random allocations.
 
-        Uses `PortfolioOptimizer.from_allocate_func`.
+        Uses `PortfolioOptimizer.from_allocate_func` with a Numba-compiled random allocation function
+        (`vectorbtpro.portfolio.pfopt.nb.random_allocate_func_nb`).
 
-        Uses `vectorbtpro.portfolio.pfopt.nb.random_allocate_func_nb` and a Numba-compiled loop."""
+        Args:
+            wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            direction (Union[str, int]): Market direction for allocation, e.g. "longonly".
+
+                Mapped using `vectorbtpro.portfolio.enums.Direction` if provided as a string.
+            n (Optional[int]): Number of columns to assign random weights.
+
+                If None, assign weights to all columns.
+            seed (Optional[int]): Random seed for deterministic output.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
+
+        Returns:
+            PortfolioOptimizer: Instance of the portfolio optimizer with random allocations.
+        """
         if isinstance(direction, str):
             direction = map_enum_fields(direction, Direction)
         if seed is not None:
@@ -2530,12 +2890,36 @@ class PortfolioOptimizer(Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         **kwargs,
     ) -> PortfolioOptimizerT:
-        """Generate allocations using [Universal Portfolios](https://github.com/Marigold/universal-portfolios).
+        """Generate allocations using Universal Portfolios.
 
-        `S` can be any price, while `algo` must be either an attribute of the package, subclass of
-        `universal.algo.Algo`, instance of `universal.algo.Algo`, or instance of `universal.result.AlgoResult`.
+        Uses a universal portfolio algorithm from
+        [Universal Portfolios](https://github.com/Marigold/universal-portfolios) to generate allocations.
+        The parameter `S` represents price data, while `algo` must be either:
 
-        Extracts allocation points using `vectorbtpro.portfolio.pfopt.nb.get_alloc_points_nb`."""
+        * a package attribute,
+        * a subclass of `universal.algo.Algo`,
+        * an instance of `universal.algo.Algo`,
+        * or an instance of `universal.result.AlgoResult`.
+
+        Allocation points are extracted using `vectorbtpro.portfolio.pfopt.nb.get_alloc_points_nb`.
+
+        Args:
+            algo (Union[str, type, AlgoT, AlgoResult]): Universal portfolio algorithm identifier or instance.
+            S (Optional[AnyArray2d]): Price data for running the algorithm.
+            n_jobs (int): Number of parallel jobs for algorithm execution.
+            log_progress (bool): Flag to enable progress logging.
+            valid_only (bool): Skip rows where all values are NaN.
+            nonzero_only (bool): Skip rows where all values are zero.
+            unique_only (bool): Skip rows that are identical to the previous valid row.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+
+                Required if `S` is not a DataFrame.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_allocate_func`.
+
+        Returns:
+            PortfolioOptimizer: Instance of the portfolio optimizer with allocations generated
+                by the universal algorithm.
+        """
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("universal")
@@ -2596,7 +2980,25 @@ class PortfolioOptimizer(Analyzable):
         pre_group_func: tp.Optional[tp.Callable] = None,
         silence_warnings: bool = False,
     ) -> tp.Tuple[tp.RecordArray, tp.Array2d]:
-        """Run an optimization group."""
+        """Run optimization for a group of assets.
+
+        Args:
+            wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            group_configs (List[dict]): List of configurations for optimization groups.
+            group_index (Index): Index representing the optimization group.
+            group_idx (int): Index specifying which configuration in `group_configs` to use.
+            pre_group_func (Callable): Function to preprocess and modify the group configuration.
+            silence_warnings (bool): Flag to suppress warning messages.
+
+        Returns:
+            Tuple[RecordArray, Array2d]: A tuple containing the allocation records and
+                the corresponding 2D array of allocation values.
+
+        See:
+            * `vectorbtpro.portfolio.pfopt.nb.optimize_meta_nb` if `jitted_loop=True`
+        """
         group_config = dict(group_configs[group_idx])
         if pre_group_func is not None:
             pre_group_func(group_config)
@@ -2901,51 +3303,123 @@ class PortfolioOptimizer(Analyzable):
     ) -> PortfolioOptimizerT:
         """Generate allocations from an optimization function.
 
-        Generates date ranges, performs optimization on the subset of data that belongs to each date range,
-        and allocates at the end of each range.
+        Generates date ranges, executes an optimization function on the data subset corresponding
+        to each range, and allocates assets at the end of each range.
 
-        This is a parameterized method that allows testing multiple combinations on most arguments.
-        First, it checks whether any of the arguments is wrapped with `vectorbtpro.utils.params.Param`
-        and combines their values. It then combines them over `group_configs`, if provided.
-        Before execution, it additionally processes the group config using `pre_group_func`.
+        This parameterized method supports testing multiple combinations of arguments. It first checks if any
+        argument is wrapped with `vectorbtpro.utils.params.Param` and combines their values. These parameters
+        may then be aggregated over `group_configs` if provided. Before execution, the group configuration is
+        further processed using `pre_group_func`.
 
-        It then resolves the date ranges, either using the ready-to-use `index_ranges` or
-        by passing all the arguments ranging from `every` to `jitted` to
-        `vectorbtpro.base.wrapping.ArrayWrapper.get_index_ranges`. The optimization
-        function `optimize_func` is then called on each date range by first substituting
-        any templates found in `*args` and `**kwargs`. To forward any reserved arguments
-        such as `jitted` to the optimization function, specify their names in `forward_args`
-        and `forward_kwargs`.
+        Date ranges are resolved either by using the provided `index_ranges` or by passing all arguments
+        from `every` to `jitted` to `vectorbtpro.base.wrapping.ArrayWrapper.get_index_ranges`.
+        The optimization function `optimize_func` is then called on each date range after substituting
+        any templates in `*args` and `**kwargs`. To forward reserved arguments such as `jitted` to the
+        optimization function, list their names in `forward_args` and `forward_kwargs`.
 
         !!! note
-            Make sure to use vectorbt's own templates to select the current date range
-            (available as `index_slice` in the context mapping) from each array.
+            Use vectorbtpro's templates to select the current date range
+            (available as `index_slice` in the context mapping).
 
         If `jitted_loop` is True, see `vectorbtpro.portfolio.pfopt.nb.optimize_meta_nb`.
-        Otherwise, must take template-substituted `*args` and `**kwargs`, and return an array or
-        dictionary with asset allocations (also empty).
+        Otherwise, the optimization function should accept the template-substituted `*args` and `**kwargs`
+        and return an array or dictionary with asset allocations.
 
-        Templates can use the following variables:
+        Templates can utilize the following variables:
 
         * `i`: Optimization step
-        * `index_start`: Optimization start index (including)
-        * `index_end`: Optimization end index (excluding)
+        * `index_start`: Optimization start index (inclusive)
+        * `index_end`: Optimization end index (exclusive)
         * `index_slice`: `slice(index_start, index_end)`
 
         !!! note
-            When `jitted_loop` is True and in case of multiple groups, use templates
-            to substitute by the current group index (available as `group_idx` in the context mapping).
+            When `jitted_loop` is True and multiple groups exist, utilize templates to substitute
+            the current group index (available as `group_idx` in the context mapping).
 
-        All allocations of all groups are stacked into one big 2-dim array where columns are assets
-        and rows are allocations. Furthermore, date ranges are used to fill a record array of type
+        All allocations across groups are stacked into a 2D array where columns represent
+        assets and rows represent allocations. Date ranges are used to create a record array of type
         `vectorbtpro.portfolio.pfopt.records.AllocRanges` that acts as an indexer for allocations.
-        For example, the field `col` stores the group index corresponding to each allocation. Since
-        this record array does not hold any information on assets themselves, it has its own wrapper
-        that holds groups instead of columns, while the wrapper of the `PortfolioOptimizer` instance
-        contains regular columns grouped by groups.
+        For example, the field `col` indicates the group index for each allocation. This record array
+        has its own wrapper that holds groups instead of columns, while the wrapper of the `PortfolioOptimizer`
+        instance contains regular columns grouped by groups.
 
-        Usage:
-            * Allocate once:
+        !!! hint
+            Wrap arrays with `vectorbtpro.generic.splitting.base.Takeable` to split them automatically.
+
+        Args:
+            wrapper (ArrayWrapper): Array wrapper instance.
+
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            optimize_func (Callable): Optimization function that computes asset allocations
+                based on a given date range.
+            *args: Positional arguments for `optimize_func`.
+            every (Union[None, FrequencyLike, Param]): See `vectorbtpro.base.indexing.RangeIdxr.every`.
+            normalize_every (Union[bool, Param]): See `vectorbtpro.base.indexing.RangeIdxr.normalize_every`.
+            split_every (Union[bool, Param]): See `vectorbtpro.base.indexing.RangeIdxr.split_every`.
+            start_time (Union[None, TimeLike, Param]): See `vectorbtpro.base.indexing.RangeIdxr.start_time`.
+            end_time (Union[None, TimeLike, Param]): See `vectorbtpro.base.indexing.RangeIdxr.end_time`.
+            lookback_period (Union[None, FrequencyLike, Param]): See `vectorbtpro.base.indexing.RangeIdxr.lookback_period`.
+            start (Union[None, int, DatetimeLike, IndexLike, Param]): See `vectorbtpro.base.indexing.RangeIdxr.start`.
+            end (Union[None, int, DatetimeLike, IndexLike, Param]): See `vectorbtpro.base.indexing.RangeIdxr.end`.
+            exact_start (Union[bool, Param]): See `vectorbtpro.base.indexing.RangeIdxr.exact_start`.
+            fixed_start (Union[bool, Param]): See `vectorbtpro.base.indexing.RangeIdxr.fixed_start`.
+            closed_start (Union[bool, Param]): See `vectorbtpro.base.indexing.RangeIdxr.closed_start`.
+            closed_end (Union[bool, Param]): See `vectorbtpro.base.indexing.RangeIdxr.closed_end`.
+            add_start_delta (Union[None, FrequencyLike, Param]): See `vectorbtpro.base.indexing.RangeIdxr.add_start_delta`.
+            add_end_delta (Union[None, FrequencyLike, Param]): See `vectorbtpro.base.indexing.RangeIdxr.add_end_delta`.
+            kind (Union[None, str, Param]): See `vectorbtpro.base.indexing.RangeIdxr.kind`.
+            skip_not_found (Union[bool, Param]): See `vectorbtpro.base.indexing.RangeIdxr.skip_not_found`.
+            index_ranges (Union[None, MaybeSequence[MaybeSequence[int]], Param]): Manually provided index ranges.
+            index_loc (Union[None, MaybeSequence[int], Param]): Specific index locations.
+            rescale_to (Union[None, Tuple[float, float], Param]): Tuple specifying the rescaling range for allocations.
+            alloc_wait (Union[int, Param]): Wait parameter used during allocation processing.
+            parameterizer (Optional[MaybeType[Parameterizer]]): Parameterizer class or instance for handling parameters.
+            
+                Defaults to `vectorbtpro.utils.params.Parameterizer`.
+            param_search_kwargs (KwargsLike): Keyword arguments for parameter search.
+            
+                See `vectorbtpro.utils.params.Parameterizer.find_params_in_obj`.
+            name_tuple_to_str (Union[None, bool, Callable]): Flag or function to convert name tuples to
+                strings for the parameter index.
+            group_configs (Union[None, Dict[Hashable, Kwargs], Sequence[Kwargs]]): Group configuration(s) for optimization.
+            pre_group_func (Optional[Callable]): Function to preprocess and modify the group configuration.
+            splitter_cls (Optional[Type[Splitter]]): Splitter class to use.
+
+                Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
+            eval_id (Optional[Hashable]): Evaluation identifier.
+            jitted_loop (bool): Flag indicating whether to use a JIT-compiled loop over optimization groups.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+            chunked (ChunkedOption): Option to control chunked processing.
+
+                See `vectorbtpro.utils.chunking.resolve_chunked_option`.
+            template_context (KwargsLike): Additional context for template substitution.
+            group_execute_kwargs (KwargsLike): Keyword arguments for the execution handler of optimization groups.
+            
+                See `vectorbtpro.utils.execution.execute`.
+            execute_kwargs (KwargsLike): Keyword arguments for the execution handler.
+
+                See `vectorbtpro.utils.execution.execute`.
+            random_subset (Optional[int]): Select a random subset of parameter combinations.
+
+                Set the seed for reproducibility.
+            clean_index_kwargs (KwargsLike): Keyword arguments for cleaning MultiIndex levels.
+
+                See `vectorbtpro.base.indexes.clean_index`.
+            wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper`.
+            **kwargs: Keyword arguments for `optimize_func`.
+
+        Returns:
+            PortfolioOptimizer: New instance of `PortfolioOptimizer` with generated allocation results.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.params`.
+
+        Examples:
+            Allocate once:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -2974,7 +3448,7 @@ class PortfolioOptimizer(Analyzable):
             group       2015-01-02 00:00:00+00:00  0.402459  0.309351  0.288191
             ```
 
-            * Allocate every first date of the year:
+            Allocate every first date of the year:
 
             ```pycon
             >>> pfo = vbt.PortfolioOptimizer.from_optimize_func(
@@ -2997,7 +3471,7 @@ class PortfolioOptimizer(Analyzable):
                         2019-01-02 00:00:00+00:00  0.411852  0.282680  0.305468
             ```
 
-            * Specify index ranges manually:
+            Specify index ranges manually:
 
             ```pycon
             >>> pfo = vbt.PortfolioOptimizer.from_optimize_func(
@@ -3018,7 +3492,7 @@ class PortfolioOptimizer(Analyzable):
                         2010-05-12 00:00:00+00:00  0.437481  0.283160  0.279358
             ```
 
-            * Test multiple combinations of one argument:
+            Test multiple combinations of one argument:
 
             ```pycon
             >>> pfo = vbt.PortfolioOptimizer.from_optimize_func(
@@ -3042,7 +3516,7 @@ class PortfolioOptimizer(Analyzable):
                             2019-01-02 00:00:00+00:00  0.565691  0.234760  0.199549
             ```
 
-            * Test multiple cross-argument combinations:
+            Test multiple cross-argument combinations:
 
             ```pycon
             >>> pfo = vbt.PortfolioOptimizer.from_optimize_func(
@@ -3074,7 +3548,7 @@ class PortfolioOptimizer(Analyzable):
                          2014-01-02 00:00:00+00:00  0.339649  0.273997  0.386354
             ```
 
-            * Use Numba-compiled loop:
+            Use Numba-compiled loop:
 
             ```pycon
             >>> @njit
@@ -3104,9 +3578,8 @@ class PortfolioOptimizer(Analyzable):
             ```
 
             !!! hint
-                There is no big reason of using the Numba-compiled loop, apart from when having
-                to rebalance many thousands of times. Usually, using a regular Python loop
-                and a Numba-compiled optimization function suffice.
+                There is little reason to use a Numba-compiled loop, except when rebalancing thousands of times.
+                Typically, a regular Python loop with a Numba-compiled optimization function is sufficient.
         """
         from vectorbtpro._settings import settings
 
@@ -3314,9 +3787,18 @@ class PortfolioOptimizer(Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         **kwargs,
     ) -> PortfolioOptimizerT:
-        """`PortfolioOptimizer.from_optimize_func` applied on `pypfopt_optimize`.
+        """Instantiate a portfolio optimizer using `PortfolioOptimizer.from_optimize_func`
+        with `pypfopt_optimize` (PyPortfolioOpt).
 
-        If a wrapper is not provided, parses the wrapper from `prices` or `returns`, if provided."""
+        Args:
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+
+                Must be provided if `prices` and `returns` arguments are not available.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_optimize_func` and `pypfopt_optimize`.
+
+        Returns:
+            PortfolioOptimizer: Portfolio optimizer instance.
+        """
         if wrapper is None:
             if "prices" in kwargs:
                 wrapper = ArrayWrapper.from_obj(kwargs["prices"])
@@ -3339,7 +3821,19 @@ class PortfolioOptimizer(Analyzable):
         wrapper: tp.Optional[ArrayWrapper] = None,
         **kwargs,
     ) -> PortfolioOptimizerT:
-        """`PortfolioOptimizer.from_optimize_func` applied on Riskfolio-Lib."""
+        """Instantiate a portfolio optimizer using `PortfolioOptimizer.from_optimize_func`
+        with `riskfolio_optimize` (Riskfolio-Lib).
+
+        Args:
+            returns (AnyArray2d): 2D array representing asset returns data.
+            wrapper (Optional[ArrayWrapper]): Array wrapper instance.
+
+                Must be provided if `returns` is a template.
+            **kwargs: Keyword arguments for `PortfolioOptimizer.from_optimize_func` and `riskfolio_optimize`.
+
+        Returns:
+            PortfolioOptimizer: Portfolio optimizer instance.
+        """
         if wrapper is None:
             if not isinstance(returns, CustomTemplate):
                 wrapper = ArrayWrapper.from_obj(returns)
@@ -3355,12 +3849,23 @@ class PortfolioOptimizer(Analyzable):
 
     @property
     def alloc_records(self) -> tp.Union[AllocRanges, AllocPoints]:
-        """Allocation ranges of type `vectorbtpro.portfolio.pfopt.records.AllocRanges`
-        or points of type `vectorbtpro.portfolio.pfopt.records.AllocPoints`."""
+        """Allocation records as ranges (`AllocRanges`) or points (`AllocPoints`).
+
+        Returns:
+            Union[AllocRanges, AllocPoints]: The allocation records.
+        """
         return self._alloc_records
 
     def get_allocations(self, squeeze_groups: bool = True) -> tp.Frame:
-        """Get a DataFrame with allocation groups concatenated along the index axis."""
+        """Obtain a DataFrame with allocation groups concatenated along the index axis.
+
+        Args:
+            squeeze_groups (bool): If True and the data's grouped ndim is 1,
+                group levels are squeezed in the resulting DataFrame.
+
+        Returns:
+            DataFrame: DataFrame containing the allocation groups.
+        """
         idx_arr = self.alloc_records.get_field_arr("idx")
         group_arr = self.alloc_records.col_arr
         allocations = self._allocations
@@ -3379,12 +3884,20 @@ class PortfolioOptimizer(Analyzable):
 
     @property
     def allocations(self) -> tp.Frame:
-        """Calls `PortfolioOptimizer.get_allocations` with default arguments."""
+        """Allocation DataFrame computed using `PortfolioOptimizer.get_allocations` with default arguments.
+
+        Returns:
+            Frame: DataFrame of allocations.
+        """
         return self.get_allocations()
 
     @property
     def mean_allocation(self) -> tp.Series:
-        """Get the mean allocation per column."""
+        """Mean allocation per column.
+
+        Returns:
+            Series: Series representing the mean allocation for each column.
+        """
         group_level_names = self.wrapper.grouper.get_index().names
         return self.get_allocations(squeeze_groups=False).groupby(group_level_names).mean().transpose()
 
@@ -3395,10 +3908,23 @@ class PortfolioOptimizer(Analyzable):
         wrap_kwargs: tp.KwargsLike = None,
         squeeze_groups: bool = True,
     ) -> tp.Frame:
-        """Fill an empty DataFrame with allocations.
+        """Fill an empty DataFrame with allocation values.
 
-        Set `dropna` to 'all' to remove all NaN rows, or to 'head' to remove any rows coming before
-        the first allocation."""
+        If `dropna` is "all", rows with all NaN values are removed.
+        If `dropna` is "head", rows prior to the first allocation are removed.
+
+        Args:
+            dropna (Optional[str]): Strategy for handling missing allocations, either "all" or "head".
+            fill_value (Scalar): Value used to fill empty DataFrame entries.
+            wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
+            
+                See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
+            squeeze_groups (bool): If True and the data's grouped ndim is 1,
+                group levels are squeezed in the resulting DataFrame.
+
+        Returns:
+            DataFrame: DataFrame with filled allocation values.
+        """
         if wrap_kwargs is None:
             wrap_kwargs = {}
         out = self.wrapper.fill(fill_value, group_by=False, **wrap_kwargs)
@@ -3431,13 +3957,27 @@ class PortfolioOptimizer(Analyzable):
 
     @property
     def filled_allocations(self) -> tp.Frame:
-        """Calls `PortfolioOptimizer.fill_allocations` with default arguments."""
+        """Allocation DataFrame filled with allocation values by invoking
+        `PortfolioOptimizer.fill_allocations` with default parameters.
+
+        Returns:
+            Frame: DataFrame of filled allocations.
+        """
         return self.fill_allocations()
 
     # ############# Simulation ############# #
 
     def simulate(self, close: tp.Union[tp.ArrayLike, Data], **kwargs) -> PortfolioT:
-        """Run `vectorbtpro.portfolio.base.Portfolio.from_optimizer` on this instance."""
+        """Simulate a portfolio using `vectorbtpro.portfolio.base.Portfolio.from_optimizer`
+        applied to the current optimizer instance.
+
+        Args:
+            close (Union[ArrayLike, Data]): Asset close price data used for simulation.
+            **kwargs: Keyword arguments for `vectorbtpro.portfolio.base.Portfolio.from_optimizer`.
+
+        Returns:
+            Portfolio: Simulated portfolio instance.
+        """
         from vectorbtpro.portfolio.base import Portfolio
 
         return Portfolio.from_optimizer(close, self, **kwargs)
@@ -3446,10 +3986,14 @@ class PortfolioOptimizer(Analyzable):
 
     @property
     def stats_defaults(self) -> tp.Kwargs:
-        """Defaults for `PortfolioOptimizer.stats`.
+        """Default configuration for `PortfolioOptimizer.stats`.
 
-        Merges `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults` and
-        `stats` from `vectorbtpro._settings.pfopt`."""
+        Merges the defaults from `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats_defaults`
+        with the `stats` configuration from `vectorbtpro._settings.pfopt`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the stats builder.
+        """
         from vectorbtpro._settings import settings
 
         pfopt_stats_cfg = settings["pfopt"]["stats"]
@@ -3509,7 +4053,7 @@ class PortfolioOptimizer(Analyzable):
 
     def plot(
         self,
-        column: tp.Optional[tp.Label] = None,
+        column: tp.Optional[tp.Column] = None,
         dropna: tp.Optional[str] = "head",
         line_shape: str = "hv",
         plot_rb_dates: tp.Optional[bool] = None,
@@ -3522,20 +4066,26 @@ class PortfolioOptimizer(Analyzable):
         """Plot allocations.
 
         Args:
-            column (str): Name of the allocation group to plot.
-            dropna (int): See `PortfolioOptimizer.fill_allocations`.
-            line_shape (str): Line shape.
-            plot_rb_dates (bool): Whether to plot rebalancing dates.
+            column (Optional[Column]): Identifier of the column to plot.
+            dropna (Optional[str]): Strategy for handling missing allocations, either "all" or "head".
+
+                See `PortfolioOptimizer.fill_allocations`.
+            line_shape (str): Shape of the plot line (e.g. "hv").
+            plot_rb_dates (Optional[bool]): Whether to plot rebalancing dates.
 
                 Defaults to True if there are no more than 20 rebalancing dates.
-            trace_kwargs (dict): Keyword arguments passed to `plotly.graph_objects.Scatter`.
-            add_shape_kwargs (dict): Keyword arguments passed to `fig.add_shape` for rebalancing dates.
-            add_trace_kwargs (dict): Keyword arguments passed to `add_trace`.
-            fig (Figure or FigureWidget): Figure to add traces to.
-            **layout_kwargs: Keyword arguments for layout.
+            trace_kwargs (KwargsLikeSequence): Keyword arguments for `plotly.graph_objects.Scatter`.
+            add_shape_kwargs (KwargsLike): Keyword arguments for `fig.add_shape` for each shape.
+            add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
+                for example, `dict(row=1, col=1)`.
+            fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
+            **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
-        Usage:
-            * Continuing with the examples under `PortfolioOptimizer.from_optimize_func`:
+        Returns:
+            BaseFigure: Figure containing the allocation plot.
+
+        Examples:
+            Continuing with the examples under `PortfolioOptimizer.from_optimize_func`:
 
             ```pycon
             >>> from vectorbtpro import *
@@ -3602,10 +4152,14 @@ class PortfolioOptimizer(Analyzable):
 
     @property
     def plots_defaults(self) -> tp.Kwargs:
-        """Defaults for `PortfolioOptimizer.plots`.
+        """Default configuration for `PortfolioOptimizer.plots`.
 
-        Merges `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults` and
-        `plots` from `vectorbtpro._settings.pfopt`."""
+        Merges the defaults from `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots_defaults`
+        with the `plots` configuration from `vectorbtpro._settings.pfopt`.
+
+        Returns:
+            Kwargs: Dictionary containing the default configuration for the plots builder.
+        """
         from vectorbtpro._settings import settings
 
         pfopt_plots_cfg = settings["pfopt"]["plots"]
@@ -3637,6 +4191,6 @@ PortfolioOptimizer.override_metrics_doc(__pdoc__)
 PortfolioOptimizer.override_subplots_doc(__pdoc__)
 
 PFO = PortfolioOptimizer
-"""Shortcut for `PortfolioOptimizer`."""
+"""Alias for `PortfolioOptimizer`."""
 
 __pdoc__["PFO"] = False

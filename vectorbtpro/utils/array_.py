@@ -8,7 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Utilities for working with arrays."""
+"""Module providing utilities for working with arrays."""
 
 import numpy as np
 
@@ -20,13 +20,27 @@ __all__ = []
 
 
 def is_sorted(arr: tp.Array1d) -> bool:
-    """Checks if array is sorted."""
+    """Return whether the given array is sorted in non-decreasing order.
+
+    Args:
+        arr (Array1d): Input array.
+
+    Returns:
+        bool: True if the array is sorted, False otherwise.
+    """
     return np.all(arr[:-1] <= arr[1:])
 
 
 @register_jitted(cache=True)
 def is_sorted_nb(arr: tp.Array1d) -> bool:
-    """Numba-compiled version of `is_sorted`."""
+    """Return whether the given array is sorted in non-decreasing order using a Numba-compiled implementation.
+
+    Args:
+        arr (Array1d): Input array.
+
+    Returns:
+        bool: True if the array is sorted, False otherwise.
+    """
     for i in range(arr.size - 1):
         if arr[i + 1] < arr[i]:
             return False
@@ -34,13 +48,27 @@ def is_sorted_nb(arr: tp.Array1d) -> bool:
 
 
 def is_range(arr: tp.Array1d) -> bool:
-    """Checks if array is arr range."""
+    """Return whether the given array represents a consecutive integer sequence.
+
+    Args:
+        arr (Array1d): Input array.
+
+    Returns:
+        bool: True if the array is a consecutive integer sequence, False otherwise.
+    """
     return np.all(np.diff(arr) == 1)
 
 
 @register_jitted(cache=True)
 def is_range_nb(arr: tp.Array1d) -> bool:
-    """Numba-compiled version of `is_range`."""
+    """Return whether the given array represents a consecutive integer sequence using a Numba-compiled implementation.
+
+    Args:
+        arr (Array1d): Input array.
+
+    Returns:
+        bool: True if the array is a consecutive integer sequence, False otherwise.
+    """
     for i in range(arr.size):
         if arr[i] != arr[0] + i:
             return False
@@ -49,9 +77,17 @@ def is_range_nb(arr: tp.Array1d) -> bool:
 
 @register_jitted(cache=True)
 def insert_argsort_nb(A: tp.Array1d, I: tp.Array1d) -> None:
-    """Perform argsort using insertion sort.
+    """Sort the array and update its index array using an insertion sort algorithm.
 
-    In-memory and without recursion -> very fast for smaller arrays."""
+    This in-memory, non-recursive approach is optimized for small arrays.
+
+    Args:
+        A (Array1d): Array of values to sort.
+        I (Array1d): Array of indices to reorder alongside A.
+
+    Returns:
+        None: Function modifies the input arrays in place.
+    """
     for j in range(1, len(A)):
         A_j = A[j]
         I_j = I[j]
@@ -65,9 +101,17 @@ def insert_argsort_nb(A: tp.Array1d, I: tp.Array1d) -> None:
 
 
 def get_ranges_arr(starts: tp.ArrayLike, ends: tp.ArrayLike) -> tp.Array1d:
-    """Build array from start and end indices.
+    """Construct an array of cumulative indices based on given start and end indices.
 
-    Based on https://stackoverflow.com/a/37626057"""
+    Based on https://stackoverflow.com/a/37626057
+
+    Args:
+        starts (ArrayLike): Starting indices.
+        ends (ArrayLike): Ending indices.
+
+    Returns:
+        Array1d: 1-dimensional array of cumulative indices.
+    """
     starts_arr = np.asarray(starts)
     if starts_arr.ndim == 0:
         starts_arr = np.array([starts_arr])
@@ -85,9 +129,16 @@ def get_ranges_arr(starts: tp.ArrayLike, ends: tp.ArrayLike) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def uniform_summing_to_one_nb(n: int) -> tp.Array1d:
-    """Generate random floats summing to one.
+    """Generate an array of random floats that partition the unit interval.
 
-    See # https://stackoverflow.com/a/2640067/8141780"""
+    See https://stackoverflow.com/a/2640067/8141780
+
+    Args:
+        n (int): Number of random segments to generate.
+
+    Returns:
+        Array1d: Array of floats summing to one.
+    """
     rand_floats = np.empty(n + 1, dtype=float_)
     rand_floats[0] = 0.0
     rand_floats[1] = 1.0
@@ -102,7 +153,16 @@ def rescale(
     from_range: tp.Tuple[float, float],
     to_range: tp.Tuple[float, float],
 ) -> tp.MaybeArray:
-    """Renormalize `arr` from one range to another."""
+    """Return an array with values linearly rescaled from the original range to the target range.
+
+    Args:
+        arr (MaybeArray): Array to rescale.
+        from_range (Tuple[float, float]): Original value range.
+        to_range (Tuple[float, float]): Target value range.
+
+    Returns:
+        MaybeArray: Rescaled array.
+    """
     from_min, from_max = from_range
     to_min, to_max = to_range
     from_delta = from_max - from_min
@@ -116,7 +176,17 @@ def rescale_nb(
     from_range: tp.Tuple[float, float],
     to_range: tp.Tuple[float, float],
 ) -> tp.MaybeArray:
-    """Numba-compiled version of `rescale`."""
+    """Return an array with values linearly rescaled from the original range to the target
+    range using a Numba-compatible implementation.
+
+    Args:
+        arr (MaybeArray): Array to rescale.
+        from_range (Tuple[float, float]): Original value range.
+        to_range (Tuple[float, float]): Target value range.
+
+    Returns:
+        MaybeArray: Rescaled array.
+    """
     from_min, from_max = from_range
     to_min, to_max = to_range
     from_delta = from_max - from_min
@@ -125,7 +195,17 @@ def rescale_nb(
 
 
 def min_rel_rescale(arr: tp.Array, to_range: tp.Tuple[float, float]) -> tp.Array:
-    """Rescale elements in `arr` relatively to minimum."""
+    """Return an array with values rescaled relative to the minimum value in the array.
+
+    If all elements in the array are equal, returns an array filled with the lower bound of the target range.
+
+    Args:
+        arr (Array): Input array.
+        to_range (Tuple[float, float]): Target value range.
+
+    Returns:
+        Array: Rescaled array with values adjusted relative to the minimum.
+    """
     a_min = np.min(arr)
     a_max = np.max(arr)
     if a_max - a_min == 0:
@@ -143,7 +223,17 @@ def min_rel_rescale(arr: tp.Array, to_range: tp.Tuple[float, float]) -> tp.Array
 
 
 def max_rel_rescale(arr: tp.Array, to_range: tp.Tuple[float, float]) -> tp.Array:
-    """Rescale elements in `arr` relatively to maximum."""
+    """Return an array with values rescaled relative to the maximum value in the array.
+
+    If all elements in the array are equal, returns an array filled with the upper bound of the target range.
+
+    Args:
+        arr (Array): Input array.
+        to_range (Tuple[float, float]): Target value range.
+
+    Returns:
+        Array: Rescaled array with values adjusted relative to the maximum.
+    """
     a_min = np.min(arr)
     a_max = np.max(arr)
     if a_max - a_min == 0:
@@ -162,7 +252,19 @@ def max_rel_rescale(arr: tp.Array, to_range: tp.Tuple[float, float]) -> tp.Array
 
 @register_jitted(cache=True)
 def rescale_float_to_int_nb(floats: tp.Array, int_range: tp.Tuple[float, float], total: float) -> tp.Array:
-    """Rescale a float array into an int array."""
+    """Return an integer array obtained by rescaling a float array into a specified integer range.
+
+    The function floors the rescaled values and randomly distributes any remaining difference
+    to ensure the total sum matches the provided total.
+
+    Args:
+        floats (Array): Input array of floats.
+        int_range (Tuple[float, float]): Target integer range.
+        total (float): Desired total sum for the integer array.
+
+    Returns:
+        Array: Integer array after rescaling.
+    """
     ints = np.floor(rescale_nb(floats, (0.0, 1.0), int_range))
     leftover = int(total - ints.sum())
     for i in range(leftover):
@@ -172,7 +274,14 @@ def rescale_float_to_int_nb(floats: tp.Array, int_range: tp.Tuple[float, float],
 
 @register_jitted(cache=True)
 def int_digit_count_nb(number: int) -> int:
-    """Get the digit count in a number."""
+    """Return the number of digits in the given integer.
+
+    Args:
+        number (int): Integer to evaluate.
+
+    Returns:
+        int: Count of digits in the integer.
+    """
     out = 0
     while number != 0:
         number //= 10
@@ -182,10 +291,17 @@ def int_digit_count_nb(number: int) -> int:
 
 @register_jitted(cache=True)
 def hash_int_rows_nb(arr: tp.Array2d) -> tp.Array1d:
-    """Hash rows in a 2-dim array.
+    """Return an integer hash for each row in a 2-dimensional array.
 
-    First digits of each hash correspond to the left-most column, the last digits to the right-most column.
-    Thus, the resulting hashes are not suitable for sorting by value."""
+    Each hash is constructed so that digits corresponding to columns appear from left to right
+    in the resulting number, making the hash unsuitable for numerical sorting.
+
+    Args:
+        arr (Array2d): 2-dimensional input array.
+
+    Returns:
+        Array1d: Array of integer hashes for each row.
+    """
     out = np.full(arr.shape[0], 0, dtype=int_)
     prefix = 1
     for col in range(arr.shape[1]):
@@ -200,7 +316,16 @@ def hash_int_rows_nb(arr: tp.Array2d) -> tp.Array1d:
 
 @register_jitted(cache=True)
 def index_repeating_rows_nb(arr: tp.Array2d) -> tp.Array1d:
-    """Index repeating rows using monotonically increasing numbers."""
+    """Return an index array that assigns monotonically increasing numbers to repeating rows.
+
+    Increments the index each time a row differs from the preceding unique row.
+
+    Args:
+        arr (Array2d): 2-dimensional input array.
+
+    Returns:
+        Array1d: Array of row indices.
+    """
     out = np.empty(arr.shape[0], dtype=int_)
     temp = np.copy(arr[0])
 
@@ -218,7 +343,15 @@ def index_repeating_rows_nb(arr: tp.Array2d) -> tp.Array1d:
 
 
 def build_nan_mask(*arrs: tp.Array) -> tp.Optional[tp.Array]:
-    """Build a NaN mask out of one to multiple arrays via the OR rule."""
+    """Build a boolean mask for NaN values from one or more input arrays using an OR rule.
+
+    Args:
+        *arrs (Array): Input array(s) to check for NaN values.
+
+    Returns:
+        Optional[Array]: A boolean mask where each element is True if any corresponding element
+            in the input arrays is NaN.
+    """
     nan_mask = None
     for arr in arrs:
         if nan_mask is None:
@@ -231,7 +364,17 @@ def build_nan_mask(*arrs: tp.Array) -> tp.Optional[tp.Array]:
 
 
 def squeeze_nan(*arrs: tp.Array, nan_mask: tp.Optional[tp.Array1d] = None) -> tp.Tuple[tp.Array, ...]:
-    """Squeeze NaN values using a mask."""
+    """Remove entries corresponding to True values in the provided NaN mask from input arrays.
+
+    Args:
+        *arrs (Array): Input array(s) from which to remove elements.
+        nan_mask (Optional[Array1d]): Boolean mask indicating positions of NaN values.
+
+            If None or if no True values are detected, the original arrays are returned.
+
+    Returns:
+        Tuple[Array, ...]: Tuple of arrays with entries removed where `nan_mask` is True.
+    """
     if nan_mask is None or not np.any(nan_mask):
         return arrs
 
@@ -242,7 +385,17 @@ def squeeze_nan(*arrs: tp.Array, nan_mask: tp.Optional[tp.Array1d] = None) -> tp
 
 
 def unsqueeze_nan(*arrs: tp.Array, nan_mask: tp.Optional[tp.Array1d] = None) -> tp.Tuple[tp.Array, ...]:
-    """Un-squeeze NaN values using a mask."""
+    """Insert NaN values into input arrays at positions indicated by the provided mask.
+
+    Args:
+        *arrs (Array): Input array(s) where NaN values will be inserted.
+        nan_mask (Optional[Array1d]): Boolean mask indicating positions of NaN values.
+
+            If None or if no True values are detected, the original arrays are returned.
+
+    Returns:
+        Tuple[Array, ...]: Tuple of arrays with NaN values inserted according to the mask.
+    """
     if nan_mask is None or not np.any(nan_mask):
         return arrs
 
@@ -262,10 +415,17 @@ def cast_to_min_precision(
     min_precision: tp.Union[int, str],
     float_only: bool = True,
 ) -> tp.Array:
-    """Cast an array to a minimum integer/floating precision.
+    """Cast an array to at least the specified integer or floating-point precision.
 
-    Argument must be either an integer denoting the number of bits,
-    or one of 'half', 'single', and 'double'."""
+    Args:
+        arr (Array): Input array to cast.
+        min_precision (Union[int, str]): Minimum precision specified as a number of bits or
+            one of `half`, `single`, or `double`.
+        float_only (bool): If True, applies casting only to floating-point types.
+
+    Returns:
+        Array: Input array cast to at least the specified precision if applicable.
+    """
     if min_precision is None:
         return arr
     if np.issubdtype(arr.dtype, np.datetime64) or np.issubdtype(arr.dtype, np.timedelta64):
@@ -302,10 +462,19 @@ def cast_to_max_precision(
     check_bounds: bool = True,
     strict: bool = True,
 ) -> tp.Array:
-    """Cast an array to a maximum integer/floating precision.
+    """Cast an array to at most the specified integer or floating-point precision.
 
-    Argument must be either an integer denoting the number of bits,
-    or one of 'half', 'single', and 'double'."""
+    Args:
+        arr (Array): Input array to cast.
+        max_precision (Union[int, str]): Maximum precision specified as a number of bits or
+            one of `half`, `single`, or `double`.
+        float_only (bool): If True, applies casting only to floating-point types.
+        check_bounds (bool): Flag to validate that simulation positions are within bounds.
+        strict (bool): If True, raises an error when values exceed the bounds of the target precision.
+
+    Returns:
+        Array: Input array cast to at most the specified precision if applicable.
+    """
     if max_precision is None:
         return arr
     if np.issubdtype(arr.dtype, np.datetime64) or np.issubdtype(arr.dtype, np.timedelta64):
@@ -346,7 +515,16 @@ def cast_to_max_precision(
 
 @register_jitted(cache=True)
 def min_count_nb(arr: tp.Array1d) -> tp.Tuple[int, float, int]:
-    """Get the first position, the value, and the count of the array's minimum."""
+    """Return the index of the first occurrence, the minimum value, and the count of
+    occurrences of the minimum in a 1-D array.
+
+    Args:
+        arr (Array1d): One-dimensional input array.
+
+    Returns:
+        Tuple[int, float, int]: A tuple containing the index of the first minimum,
+            the minimum value, and its count.
+    """
     mini = 0
     minv = arr[0]
     minc = 1
@@ -362,7 +540,16 @@ def min_count_nb(arr: tp.Array1d) -> tp.Tuple[int, float, int]:
 
 @register_jitted(cache=True)
 def max_count_nb(arr: tp.Array1d) -> tp.Tuple[int, float, int]:
-    """Get the first position, the value, and the count of the array's maximum."""
+    """Return the index of the first occurrence, the maximum value, and the count of
+        occurrences of the maximum in a 1-D array.
+
+    Args:
+        arr (Array1d): One-dimensional input array.
+
+    Returns:
+        Tuple[int, float, int]: A tuple containing the index of the first maximum,
+            the maximum value, and its count.
+    """
     maxi = 0
     maxv = arr[0]
     maxc = 1
