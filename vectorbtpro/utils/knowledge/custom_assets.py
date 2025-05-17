@@ -693,8 +693,7 @@ class VBTAsset(KnowledgeAsset):
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         if cache:
-            if self.release_name:
-                template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
+            template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
             if isinstance(markdown_dir, CustomTemplate):
                 cache_dir = self.get_setting("cache_dir")
                 if isinstance(cache_dir, CustomTemplate):
@@ -906,8 +905,7 @@ class VBTAsset(KnowledgeAsset):
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
 
         if cache:
-            if self.release_name:
-                template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
+            template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
             if isinstance(html_dir, CustomTemplate):
                 cache_dir = self.get_setting("cache_dir")
                 if isinstance(cache_dir, CustomTemplate):

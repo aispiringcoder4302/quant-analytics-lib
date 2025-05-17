@@ -623,7 +623,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         range_only_select (Optional[bool]): If True, allow row selection only by slicing.
         group_select (Optional[bool]): If True, enable group-based selection when grouping is active.
         grouped_ndim (Optional[int]): Number of dimensions after grouping columns.
-        grouper (Optional[Grouper]): A `vectorbtpro.base.grouping.base.Grouper` instance for grouping columns.
+        grouper (Optional[Grouper]): `vectorbtpro.base.grouping.base.Grouper` instance for grouping columns.
         **kwargs: Keyword arguments for `vectorbtpro.base.grouping.base.Grouper`
             and `vectorbtpro.utils.config.Configured`.
 

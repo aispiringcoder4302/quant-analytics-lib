@@ -2412,7 +2412,7 @@ window.onload = function() {
         max_tokens=120_000,
         system_prompt=r"You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
         system_as_user=True,
-        context_prompt=r"""Context information is below.
+        context_template=r"""Context information is below.
 ---------------------
 $context
 ---------------------""",
@@ -2491,6 +2491,22 @@ $chunk_text""",
                 separators=[[r"\n\s*\n", r"(?<=[^\s.?!])[.?!]+(?:\s+|$)"], r"\s+", None],
                 min_chunk_size=0.8,
                 fixed_overlap=False,
+            ),
+            source=flex_cfg(
+                uniform_chunks=True,
+            ),
+            python=flex_cfg(
+                chunk_size=None,
+                chunk_overlap=0,
+                stmt_whitelist=["ClassDef"],
+                stmt_blacklist=[],
+                max_stmt_level=1,
+            ),
+            markdown=flex_cfg(
+                chunk_size=None,
+                chunk_overlap=0,
+                split_by="header",
+                max_section_level=None,
             ),
             llama_index=flex_cfg(
                 node_parser="sentence",

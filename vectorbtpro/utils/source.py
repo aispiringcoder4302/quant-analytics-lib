@@ -31,6 +31,7 @@ __all__ = [
     "cut_and_save_func",
     "refine_source",
     "refine_docstrings",
+    "refine_markdown",
 ]
 
 
@@ -327,154 +328,6 @@ def cut_and_save_func(func: tp.Union[str, FunctionType], *args, **kwargs) -> Pat
     return cut_and_save(source, section_name=func.__name__, *args, **kwargs)
 
 
-def split_source(
-    source: str,
-    should_split: tp.Optional[tp.Callable[[ast.AST, int, int, int], bool]] = None,
-    return_span: bool = False,
-    return_level: bool = False,
-) -> tp.SourceChunks:
-    """Split the source code into definition-based chunks, optionally returning spans and nesting levels.
-
-    The source code is divided into chunks based on code definitions such that the concatenation
-    of the chunks reconstructs the original source code exactly, with no lines duplicated or lost.
-
-    Args:
-        source (str): Python source code.
-        should_split (Optional[Callable]): Callback `should_split(node, start: int, end: int, level: int) -> bool`
-            to determine whether a node should be split into a header (with docstring) and body.
-
-            By default, nodes are not split.
-
-            !!! note
-                `start` and `end` are 1-based line numbers.
-        return_span (bool): Whether to also return the start and end line of each chunk.
-        return_level (bool): Whether to also return the nesting level of each chunk.
-
-    Returns:
-        SourceChunks: List of chunk source codes or tuples of chunk source codes and
-            their start line, end line, and/or nesting level.
-
-    """
-    if should_split is None:
-
-        def _should_split(node, start, end, level):
-            return False
-
-        should_split = _should_split
-
-    lines = source.splitlines(keepends=True)
-    tree = ast.parse(source, type_comments=True)
-
-    def _compute_end_lineno(node):
-        max_lineno = getattr(node, "lineno", 0)
-        for child in ast.iter_child_nodes(node):
-            child_end = _compute_end_lineno(child)
-            if child_end > max_lineno:
-                max_lineno = child_end
-        return max_lineno
-
-    def _get_stmt_range(stmt):
-        start = stmt.lineno
-        end = getattr(stmt, "end_lineno", _compute_end_lineno(stmt))
-        if isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and getattr(
-            stmt, "decorator_list", None
-        ):
-            dec_starts = [getattr(d, "lineno", start) for d in stmt.decorator_list]
-            if dec_starts:
-                start = min(start, min(dec_starts))
-        return start, end
-
-    def _find_header_end(def_start, lines):
-        header_end = def_start
-        for i in range(def_start - 1, len(lines)):
-            stripped = lines[i].strip()
-            if not stripped or stripped.startswith("#"):
-                continue
-            no_comment = stripped.split("#")[0].rstrip()
-            if no_comment.endswith(":"):
-                header_end = i + 1
-                break
-        return header_end
-
-    def _extract_docstring_chunk(node, start, lines: tp.List[str]):
-        if (
-            node.body
-            and isinstance(node.body[0], ast.Expr)
-            and isinstance(node.body[0].value, ast.Constant)
-            and isinstance(node.body[0].value.value, str)
-        ):
-            doc_stmt = node.body[0]
-            chunk_end = getattr(doc_stmt, "end_lineno", _compute_end_lineno(doc_stmt))
-            return (start, chunk_end), chunk_end + 1, sorted(node.body[1:], key=lambda s: s.lineno)
-        return None
-
-    def _split_def_node(node, start, end, level, lines):
-        if not node.body:
-            return [(start, end, level)]
-
-        doc_info = _extract_docstring_chunk(node, start, lines)
-        if doc_info is not None:
-            (header_start, header_end), body_start, remaining_stmts = doc_info
-            header_chunk = (header_start, header_end, level)
-        else:
-            header_end = _find_header_end(start, lines)
-            header_chunk = (start, header_end, level)
-            body_start = header_end + 1
-            remaining_stmts = sorted(node.body, key=lambda s: s.lineno)
-        chunks = [header_chunk]
-        subchunks = _split_body_into_chunks(
-            parent_start=body_start,
-            parent_end=end,
-            level=level,
-            body=remaining_stmts,
-            lines=lines,
-        )
-        chunks.extend(subchunks)
-        return chunks
-
-    def _split_body_into_chunks(parent_start, parent_end, level, body, lines):
-        stmts_sorted = sorted(body, key=lambda st: st.lineno)
-        chunks: tp.List[tp.Tuple[int, int, int]] = []
-        current_line = parent_start
-
-        for stmt in stmts_sorted:
-            stmt_start, stmt_end = _get_stmt_range(stmt)
-            if stmt_start > current_line:
-                chunks.append((current_line, stmt_start - 1, level))
-            if should_split(stmt, stmt_start, stmt_end, level):
-                def_chunks = _split_def_node(
-                    node=stmt,
-                    start=stmt_start,
-                    end=stmt_end,
-                    level=level + 1,
-                    lines=lines,
-                )
-                chunks.extend(def_chunks)
-            else:
-                chunks.append((stmt_start, stmt_end, level))
-            current_line = stmt_end + 1
-        if current_line <= parent_end:
-            chunks.append((current_line, parent_end, level))
-
-        return chunks
-
-    top_chunks = _split_body_into_chunks(
-        parent_start=1,
-        parent_end=len(lines),
-        level=0,
-        body=tree.body,
-        lines=lines,
-    )
-    if return_span and return_level:
-        return [("".join(lines[start - 1 : end]), start, end, lvl) for (start, end, lvl) in top_chunks]
-    if return_span:
-        return [("".join(lines[start - 1 : end]), start, end) for (start, end, lvl) in top_chunks]
-    if return_level:
-        return [("".join(lines[start - 1 : end]), lvl) for (start, end, lvl) in top_chunks]
-    else:
-        return ["".join(lines[start - 1 : end]) for (start, end, lvl) in top_chunks]
-
-
 def get_source_indent(source: str) -> int:
     """Return the minimum indentation, in spaces, of all non-empty lines in the source code.
 
@@ -635,8 +488,7 @@ any detected code smells or issues. You must:
 1. **Return the entire code block** in your output.
 2. **Never enclose your output in triple backticks**, and return no other text or explanation.
 3. **Do not add any comments** to the code, unless explicitly requested.
-4. If the code contains a TODO or FIXME comment, **follow the instructions in the comment**.
-"""
+4. If the code contains a TODO or FIXME comment, **follow the instructions in the comment**."""
 """Default system prompt for `refine_source`."""
 
 
@@ -645,25 +497,22 @@ def refine_source(
     *,
     source_name: tp.Optional[str] = None,
     as_package: bool = True,
+    glob_pattern: str = "*.py",
     start_line: tp.Optional[int] = None,
     end_line: tp.Optional[int] = None,
     system_prompt: tp.Optional[str] = None,
     context: tp.Optional[str] = None,
     attach_metadata: bool = True,
-    attach_imports: tp.Optional[bool] = True,
-    attach_map: tp.Optional[bool] = True,
+    attach_imports: tp.Optional[bool] = None,
+    attach_map: tp.Optional[bool] = None,
+    attach_prev_chunk: bool = True,
     attach_knowledge: bool = False,
     search_kwargs: tp.KwargsLike = None,
     to_context_kwargs: tp.KwargsLike = None,
     dump_engine: str = "yaml",
     dump_kwargs: tp.KwargsLike = None,
-    chunk_size: tp.Optional[int] = 2000,
     split: bool = True,
-    split_classes: bool = True,
-    split_functions: bool = False,
-    max_split_level: tp.Optional[int] = None,
-    uniform_chunks: bool = True,
-    tokenize_kwargs: tp.KwargsLike = None,
+    split_text_kwargs: tp.KwargsLike = None,
     show_progress: tp.Optional[bool] = None,
     pbar_kwargs: tp.KwargsLike = None,
     mult_show_progress: tp.Optional[bool] = None,
@@ -675,28 +524,30 @@ def refine_source(
     return_path: bool = False,
     **kwargs,
 ) -> tp.Union[tp.RefineSourceOutput, tp.RefineSourceOutputs]:
-    """Refine the source code by splitting it into manageable chunks and applying completion methods.
+    """Refine the source with Python code by splitting it into manageable chunks and applying completion methods.
 
     Args:
-        source (Any): Source(s) or object(s) from which to extract the source code.
+        source (Any): Source(s) or object(s) from which to extract the Python code.
 
             A source may be:
 
-            * a string containing code (e.g. "import vectorbtpro as vbt ..."),
-            * a file path (e.g. "strategies/sma_crossover.py"),
-            * a package name or object (e.g. `vectorbtpro`),
+            * a string containing Python code (e.g. "import vectorbtpro as vbt ..."),
+            * a file path (e.g. "./strategies/sma_crossover.py"),
+            * a directory path (e.g. "./strategies"),
+            * a Python object (e.g. `pipeline_nb`),
             * a module name or object (e.g. `vectorbtpro.utils`),
-            * a Python object (e.g. `pipeline_nb`), or
+            * a package name or object (e.g. `vectorbtpro`),
             * an iterable of the above.
 
-            When a directory or package is provided, all contained Python files are processed.
+            When a directory or package is provided, all contained Python code files are processed.
         source_name (Optional[str]): Name displayed in the progress bar and/or HTML file name.
         as_package (bool): Whether to process a package as multiple sources.
-        start_line (Optional[int]): Inclusive starting line number in the source code.
+        glob_pattern (str): Glob pattern for matching files in a directory.
+        start_line (Optional[int]): Inclusive starting line number in the source.
 
             !!! note
                 Counting starts at 1.
-        end_line (Optional[int]): Inclusive ending line number in the source code.
+        end_line (Optional[int]): Inclusive ending line number in the source.
 
             !!! note
                 Counting starts at 1.
@@ -711,10 +562,11 @@ def refine_source(
         attach_map (Optional[bool]): Whether to attach (dumped) source map to the context.
 
             If None, becomes True if `split` is True.
+        attach_prev_chunk (bool): Whether to attach the previous chunk to the context.
         attach_knowledge (bool): Whether to attach relevant knowledge to the context.
         search_kwargs (KwargsLike): Keyword arguments for searching for knowledge.
 
-            By default, uses the source code as the search query and top 20 results.
+            By default, uses the source as the search query and top 20 results.
             See `vectorbtpro.utils.knowledge.custom_assets.search`.
         to_context_kwargs (KwargsLike): Keyword arguments for converting the search results to context.
 
@@ -725,19 +577,11 @@ def refine_source(
         dump_kwargs (KwargsLike): Keyword arguments for dumping structured data.
 
             See `vectorbtpro.utils.formatting.dump`.
-        chunk_size (Optional[int]): Maximum token count for each chunk.
+        split (bool): Whether to split the source into chunks.
+        split_text_kwargs (KwargsLike): Keyword arguments for splitting the source.
 
-            If None, processes the entire source as a single chunk.
-        split (bool): Whether to split the source code into chunks.
-        split_classes (bool): Whether to split class definitions that exceed the chunk size.
-        split_functions (bool): Whether to split function definitions that exceed the chunk size.
-        max_split_level (Optional[int]): Maximum nesting level when splitting.
-        uniform_chunks (bool): Whether to each chunk should start and end at the same base level.
-
-            If nested chunks (with level > base) are present, includes them only if they fit as a whole.
-        tokenize_kwargs (KwargsLike): Keyword arguments for tokenization.
-
-            See `vectorbtpro.utils.knowledge.chatting.tokenize`.
+            By default, uses "python" as `text_splitter`.
+            See `vectorbtpro.utils.knowledge.chatting.split_text`.
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
@@ -748,8 +592,8 @@ def refine_source(
         mult_pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar for multiple sources.
 
             See `vectorbtpro.utils.pbar.ProgressBar`.
-        modify (bool): Whether to update the source file with the refined code.
-        copy_to_clipboard (bool): Whether to copy the refined source code to the clipboard.
+        modify (bool): Whether to update the source file with the refined Python code.
+        copy_to_clipboard (bool): Whether to copy the refined source to the clipboard.
 
             Does not apply when processing multiple sources.
         show_diff (bool): Whether to generate and display an HTML diff file using `difflib`.
@@ -764,7 +608,7 @@ def refine_source(
     Returns:
         Union[RefineSourceOutput, RefineSourceOutputs]: Result of the refinement process.
 
-            * Returns the refined source code if neither `modify` nor `copy_to_clipboard` is True.
+            * Returns the refined source if neither `modify` nor `copy_to_clipboard` is True.
             * Returns the path to the updated source file if `modify` is True.
             * Returns the path to the HTML diff file if `show_diff` is True.
             * For multiple sources, returns a zipped list of sources and their corresponding outputs.
@@ -774,7 +618,7 @@ def refine_source(
     from vectorbtpro.utils.module_ import assert_can_import
     from vectorbtpro.utils.path_ import get_common_prefix
     from vectorbtpro.utils.pbar import ProgressBar
-    from vectorbtpro.utils.knowledge.chatting import tokenize, completed
+    from vectorbtpro.utils.knowledge.chatting import split_text, completed
     from vectorbtpro.utils.knowledge.custom_assets import search
 
     pbar_kwargs = merge_dicts(
@@ -795,13 +639,13 @@ def refine_source(
         else:
             source = Path(package_path)
     if isinstance(source, Path) and source.is_dir():
-        source = list(source.rglob("*.py"))
+        source = list(source.rglob(glob_pattern))
     if is_complex_iterable(source):
         sources = source
         new_sources = []
         for source in sources:
             if isinstance(source, Path) and source.is_dir():
-                new_sources.extend(list(source.rglob("*.py")))
+                new_sources.extend(list(source.rglob(glob_pattern)))
             else:
                 new_sources.append(source)
         sources = new_sources
@@ -855,6 +699,7 @@ def refine_source(
                     source=source,
                     source_name=source_names[i],
                     as_package=False,
+                    glob_pattern=glob_pattern,
                     start_line=start_line,
                     end_line=end_line,
                     system_prompt=system_prompt,
@@ -862,18 +707,14 @@ def refine_source(
                     attach_metadata=attach_metadata,
                     attach_imports=attach_imports,
                     attach_map=attach_map,
+                    attach_prev_chunk=attach_prev_chunk,
                     attach_knowledge=attach_knowledge,
                     search_kwargs=search_kwargs,
                     to_context_kwargs=to_context_kwargs,
                     dump_engine=dump_engine,
                     dump_kwargs=dump_kwargs,
-                    chunk_size=chunk_size,
                     split=split,
-                    split_classes=split_classes,
-                    split_functions=split_functions,
-                    max_split_level=max_split_level,
-                    uniform_chunks=uniform_chunks,
-                    tokenize_kwargs=tokenize_kwargs,
+                    split_text_kwargs=split_text_kwargs,
                     show_progress=show_progress,
                     pbar_kwargs=pbar_kwargs,
                     modify=modify,
@@ -945,12 +786,7 @@ def refine_source(
         source_metadata_language = get_dump_language(dump_engine=dump_engine)
         if context:
             context += "\n\n====\n\n"
-        context += f"""Metadata of the current code context:
-
-```{source_metadata_language}
-{source_metadata}
-```
-"""
+        context += f"Metadata of the current code context:\n\n```{source_metadata_language}\n{source_metadata}\n```"
     if attach_imports is None:
         attach_imports = split
     if attach_imports:
@@ -958,12 +794,7 @@ def refine_source(
         if source_imports:
             if context:
                 context += "\n\n====\n\n"
-            context += f"""Complete list of global imports available to the current code context:
-
-```python
-{source_imports}
-```
-"""
+            context += f"Global imports available to the current code context:\n\n```python\n{source_imports}\n```"
     if attach_map is None:
         attach_map = split
     if attach_map:
@@ -973,12 +804,7 @@ def refine_source(
             source_map_language = get_dump_language(dump_engine=dump_engine)
             if context:
                 context += "\n\n====\n\n"
-            context += f"""High-level map of top-level objects available to the current code context:
-
-```{source_map_language}
-{source_map}
-```
-"""
+            context += f"Top-level objects available to the current code context:\n\n```{source_map_language}\n{source_map}\n```"
     if attach_knowledge:
         if search_kwargs is None:
             search_kwargs = {}
@@ -992,102 +818,22 @@ def refine_source(
         if asset:
             if context:
                 context += "\n\n====\n\n"
-            context += f"""Related knowledge:
+            context += f"Knowledge relevant to the current code context:\n\n{asset.to_context(**to_context_kwargs)}"
 
-{asset.to_context(**to_context_kwargs)}
-"""
-    if tokenize_kwargs is None:
-        tokenize_kwargs = {}
-    if copy_to_clipboard:
-        assert_can_import("pyperclip")
-
+    split_text_kwargs = merge_dicts(
+        dict(
+            text_splitter="python",
+        ),
+        split_text_kwargs,
+    )
     if split:
-
-        def _should_split(node, start, end, level):
-            if max_split_level is None or level <= max_split_level:
-                if (isinstance(node, ast.ClassDef) and split_classes) or (
-                    isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and split_functions
-                ):
-                    node_source = "".join(source_lines[start - 1 : end])
-                    if len(tokenize(node_source, **tokenize_kwargs)) > chunk_size:
-                        return True
-            return False
-
-        chunks_with_level = split_source(source, should_split=_should_split, return_level=True)
-        if uniform_chunks:
-            source_chunks = []
-            buffer = []
-            buffer_tokens = 0
-            buffer_level = None
-            i = 0
-
-            def _flush():
-                nonlocal buffer, buffer_tokens, buffer_level
-                if buffer:
-                    source_chunks.append("".join(chunk for chunk, _ in buffer))
-                    buffer = []
-                    buffer_tokens = 0
-                    buffer_level = None
-
-            while i < len(chunks_with_level):
-                chunk, level = chunks_with_level[i]
-                chunk_tokens = len(tokenize(chunk, **tokenize_kwargs))
-                if buffer_level is None:
-                    if chunk_tokens > chunk_size:
-                        source_chunks.append(chunk)
-                        i += 1
-                        continue
-                    buffer_level = level
-                if level < buffer_level:
-                    _flush()
-                    continue
-                if level > buffer_level:
-                    nested_group = []
-                    nested_tokens = 0
-                    j = i
-                    while j < len(chunks_with_level) and chunks_with_level[j][1] > buffer_level:
-                        nested_chunk, _ = chunks_with_level[j]
-                        tks = len(tokenize(nested_chunk, **tokenize_kwargs))
-                        nested_group.append((nested_chunk, level))
-                        nested_tokens += tks
-                        j += 1
-                    if buffer_tokens + nested_tokens <= chunk_size:
-                        buffer.extend(nested_group)
-                        buffer_tokens += nested_tokens
-                        i = j
-                        continue
-                    else:
-                        _flush()
-                        continue
-                if buffer_tokens + chunk_tokens > chunk_size:
-                    _flush()
-                    continue
-                else:
-                    buffer.append((chunk, level))
-                    buffer_tokens += chunk_tokens
-                    i += 1
-            _flush()
-        else:
-            source_chunks = []
-            buffer = []
-            buffer_tokens = 0
-            for chunk, level in chunks_with_level:
-                chunk_tokens = len(tokenize(chunk, **tokenize_kwargs))
-                if buffer_tokens + chunk_tokens > chunk_size:
-                    if buffer:
-                        source_chunks.append("".join(buffer))
-                    buffer = [chunk]
-                    buffer_tokens = chunk_tokens
-                else:
-                    buffer.append(chunk)
-                    buffer_tokens += chunk_tokens
-            if buffer:
-                source_chunks.append("".join(buffer))
+        source_chunks = split_text(source, **split_text_kwargs)
     else:
         source_chunks = [source]
 
     processed = []
     chunk_start_line = source_start_line
+    chat_history = []
     if show_progress is None:
         show_progress = len(source_chunks) > 1
     with ProgressBar(total=len(source_chunks), show_progress=show_progress, **pbar_kwargs) as pbar:
@@ -1110,7 +856,13 @@ def refine_source(
             trailing = chunk[-trailing_len:] if trailing_len > 0 else ""
             middle = chunk[leading_len : len(chunk) - trailing_len]
             if middle:
-                new_middle = completed(middle, system_prompt=system_prompt, context=context, **kwargs).strip("\n")
+                if not attach_prev_chunk:
+                    chat_history = []
+                new_middle = completed(
+                    middle, chat_history=chat_history, system_prompt=system_prompt, context=context, **kwargs
+                ).strip("\n")
+                if attach_prev_chunk:
+                    chat_history = chat_history[-2:]
             else:
                 new_middle = ""
             new_middle = add_source_indent(new_middle, indent)
@@ -1131,6 +883,7 @@ def refine_source(
             f.writelines(file_contents)
 
     if copy_to_clipboard:
+        assert_can_import("pyperclip")
         import pyperclip
 
         pyperclip.copy(new_source)
@@ -1177,200 +930,13 @@ def refine_source(
 
 REFINE_DOCSTR_PROMPT = """You are a code-refinement assistant.
 
-Your goal is to refine (rewrite for clarity, correctness, consistent format, and wording) **only** the docstrings of the given chunk of Python code. You must:
+Your goal is to refine (rewrite for clarity, correctness, consistent format, and wording) **only** 
+the docstrings of the given chunk of Python code. You must:
 
 1. **Return the entire code block** in your output.
 2. **Never enclose your output in triple backticks**, and return no other text or explanation.
 3. **Retain all non-docstring parts of the code** exactly as they are.
-4. **If the given chunk contains only text, consider it a docstring**.
-
-### 1. Scope of Edits
-
-- **Identify docstrings** in functions, classes, and methods, and edit them.
-- **Do not document** functions or methods whose names begin with one or two underscores (e.g., `_preprocess`, `__eq__`) as these are considered private or special methods.
-- **Keep the `__init__` docstring empty**. Instead, document its parameters in the class docstring inside the "Args" section.
-- **Keep the license text**.
-
-### 2. Content Requirements
-
-- **Use relevant details from the code** to make each docstring clear and self-explanatory for someone who cannot see the source code.
-- **Keep docstrings concise and correct** in grammar and content, but do not remove any valuable information unless it's duplicate.
-- **Mandatory sections**:
-    - Every docstring describing a function or method **with parameters** (excluding only `self`, `cls`, or `cls_or_self`) **must** have an "Args" section.
-    - Every docstring describing a function or method **returning a value other than None must** have a "Returns" section.
-    - If these sections are missing, **you must add them** using the correct format.
-- **Do not explicitly mention the default value of an argument**.
-- **Do not mention that an argument is optional**. For example: `x (Optional[int]): ...` rather than `x (int, optional): ...`.
-- **Retain any admonitions** like `"!!! note"` or `"!!! warning"` exactly as they are.
-- Instead of adding the section "Note", use the admonition "!!! note".
-- **Preserve indentation, whitespace, and formatting** in lists or multi-line text unless it is incorrect.
-- **Do not change code blocks** in the docstrings. 
-    - **Do not change the indentation** of those code blocks.
-    - **Do not prepend** sections to existing code blocks.
-- **Omit sections** such as "Raises," "Attributes," "Methods," or default values.
-- If a function is primarily based on another function, add a section "See" with the reference to the original function. For example:
-    ```
-    See:
-        `vectorbtpro.signals.nb.generate_enex_nb`
-    ```
-- If a function is decorated with `@register_chunkable` or `@register_jitted` with the `can_parallel` tag, add at the end of the docstring:
-    ```
-    !!! tip
-        This function is parallelizable.
-    ```
-
-### 3. Style and Format
-
-- **Use Markdown format**.
-- **Follow PEP 257 guidelines**.
-- **Use Google-style docstrings** for arguments and return values. For example:
-    ```
-    Args:
-        arg_name (type): Description of the argument.
-    
-    Returns:
-        type: Description of the return value.
-    ```
-    - If a docstring lacks one of these sections, you must add it in the correct format.
-- **Avoid using articles** like "the" or "a" at the **beginning of descriptions**.
-- If the description of an argument has multiple sentences, **separate them by an empty line**.
-- **Preserve type hints** as argument types are meant to be parsed.
-    - For instance, `tp.Union[None, int, tp.DatetimeLike, tp.MaybeList[RangeT]]` becomes `Union[None, int, DatetimeLike, MaybeList[Range]]`.
-    - **Do not** replace type hints by human-readable strings (e.g., "or" instead of `Union`).
-    - Remove module prefixes (such as `tp.`) and the suffix `T`.
-    - Keep any `Maybe` types as they are.
-    - Do not change type hints in function signatures.
-- **Always override existing types in the docstring** with the types from the signature.
-    - If a type is already present in the docstring, replace it with the type from the signature.
-- For classes decorated with `@define`, treat them as if decorated with `@attr.s`.
-    - **Do not duplicate fields and their descriptions** in the "Args" section unless the class defines its own `__init__`.
-- For module docstrings, retain the phrasing that **identifies them as a module** (e.g., "Module for/providing").
-- For `__init__.py` module docstrings (see the metadata of the current code context), retain the phrasing that **identifies them as a package** (e.g., "Package for/providing").
-- For class docstrings, retain the phrasing that **identifies them as a class** (e.g., "Class for/representing").
-- **Begin method docstrings with imperative verbs** (e.g., "Return," "Fetch," "Create").
-- **Properties** should describe what they represent rather than an action (e.g., instead of "Return a dictionary" use "Dictionary").
-- Bullet points must be at the **same indentation level as the parent sentence** and be separated by one empty line before the list.
-- When dealing with named tuples and enums, replace "Attributes:" with "Fields:" in their docstrings.
-- If an "Examples" section exists, **place it at the end** of the docstring.
-
-### 4. Referencing
-
-- References are an **integral part** of this documentation. The documentation is rendered on a website where the user can directly click on a reference to jump to its definition. Therefore:
-    - **All references to Python objects must be enclosed in backticks** (e.g., `ArrayWrapper` instead of ArrayWrapper).
-    - **Use fully qualified names** when referring to Python objects that exist outside the current scope (e.g., `vectorbtpro.indicators.custom.SMA.run` instead of `SMA.run` or `run`).
-    - If the referenced object belongs to the same class (e.g., via `self`, `cls`, or `cls_or_self`), prefix the reference with the class name (e.g., `SMA.run` instead of `run`).
-    - If a function forwards its arguments to another function, reference that target (e.g., "Arguments are forwarded to `combine_params`.")
-    - If an argument is a field from a named tuple or an enum, reference that type (e.g., "See `vectorbtpro.generic.enums.WType`.").
-    - **Do not remove existing references**.
-
-### 5. Special Arguments
-
-- When documenting functions that use `*args` and `**kwargs`:
-    1. If you do not know what these parameters are passed to:
-        - For `*args`, use: **"Additional positional arguments."**
-        - For `**kwargs`, use: **"Additional keyword arguments."**
-    2. If you know the target or the function/method/class these parameters are passed to:
-        - For `*args`, use: **"Positional arguments for [target]."**
-        - For `**kwargs`, use: **"Keyword arguments for [target]."**
-
-### 6. Miscellaneous
-
-- **Do not start any docstring with a blank line**.
-- **Do not end a docstring with a blank line** unless it contains multiple lines.
-- **Do not change any existing indentation or spacing** other than in docstrings. 
-- **Do not change usage examples or their formatting**.
-- **Use "vectorbtpro"** instead of "VectorBT® PRO" in docstrings.
-- Enclose docstrings in triple double quotes (\"\"\") and indent by at least 4 spaces after the opening quotes.
-- Do not replace `\"\"\"_\"\"\"`; refine the docstring in `__pdoc__` instead.
-- Do not change headers like "## Stats".
-
-### 7. Refined Docstring Example
-
-```python
-class Chatable(Configured):
-    \"\"\"Class that provides functionality for chatting.
-    
-    Args:
-        formatter (ResponseFormatter): Response formatter of type `ResponseFormatter`.
-        **kwargs: Keyword arguments for configuration.
-        
-    !!! info
-        For default settings, see `vectorbtpro._settings.chatting`.
-    \"\"\"
-    
-    def __init__(self, formatter: ResponseFormatter, **kwargs) -> None:
-        Configured.__init__(self, formatter=formatter, **kwargs)
-        
-        self._formatter = formatter
-        
-    @property
-    def formatter(self) -> ResponseFormatter:
-        \"\"\"Response formatter of type `ResponseFormatter`.\"\"\"
-        return self._formatter
-        
-    @hybrid_method
-    def chat(
-        cls_or_self: tp.MaybeType[ContextableT],
-        message: str,
-        chat_history: tp.Optional[tp.ChatHistory] = None,
-        *,
-        formatter: str = "markdown",
-        return_chat: bool = False,
-        **kwargs,
-    ) -> tp.MaybeChatOutput:
-        \"\"\"Chat with a language model using the instance as context.
-        
-        Generates a formatted response to the message using `Completions`.
-    
-        Args:
-            message (str): Message to send to the language model.
-            
-                Will be appended to `chat_history` with the role "user".
-            chat_history (Optional[ChatHistory]): Chat history, a list of dictionaries with defined roles.
-            
-                Will be modified in place.
-            formatter (str): Formatter.
-            
-                Supported formats:
-                
-                * "raw": Raw format.
-                * "markdown": Markdown format.
-                * "html": HTML format.
-            return_chat (bool): Flag indicating whether to return both the completion and 
-                the chat instance of type `Completions`.
-            **kwargs: Keyword arguments for `Contextable.create_chat`.
-    
-        Returns:
-            MaybeChatOutput: Completion response or a tuple of the response and the chat instance.
-            
-        !!! info
-            For default settings, see `chat` in `vectorbtpro._settings.chatting`.
-    
-        !!! note
-            Context is recalculated each time this method is invoked. For multiple turns,
-            it's more efficient to use `Contextable.create_chat`.
-    
-        Examples:
-            ```pycon
-            >>> asset.chat("What's the value under 'xyz'?")
-            The value under 'xyz' is 123.
-            ```
-        \"\"\"
-        if isinstance(cls_or_self, type):
-            args, kwargs = get_forward_args(super().chat, locals())
-            return super().chat(*args, **kwargs)
-    
-        completions = cls_or_self.create_chat(chat_history=chat_history, **kwargs)
-        if return_chat:
-            return completions.get_completion(message), completions
-        return completions.get_completion(message)
-```
-
-### 8. Penalty of Incorrect Formatting
-
-Failure to strictly adhere to these rules results in broken interactive documentation rendering. 
-
-**These rules are mandatory**."""
+4. **If the given chunk contains only text, consider it a docstring**."""
 """System prompt for `refine_docstrings`."""
 
 
@@ -1386,3 +952,52 @@ def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
         RefineSourceOutput: Result of the refinement process.
     """
     return refine_source(source, system_prompt=REFINE_DOCSTR_PROMPT, **kwargs)
+
+
+REFINE_MD_PROMPT = """You are a Markdown-documentation refinement assistant.
+
+You will receive one Markdown snippet and must return **only** the refined snippet, edited in place.
+
+Rewrite *prose content* for clarity, correctness, and consistency, following these rules:
+
+1. **Scope:** Edit narrative sentences. Leave intact: fenced code blocks, indented code, 
+    YAML front matter, diagrams, headings, emojis, filenames, and inline code, 
+    except to fix clear typos in surrounding prose.
+2. **Content integrity:** Rephrase; do not introduce new ideas, remove existing ideas, or alter facts.
+3. **Formatting:** Preserve Markdown structure, list markers, indentation, and blank lines. 
+    Where practical, re-wrap prose to ≤ 100 characters per line without breaking Markdown syntax.
+4. **Style & voice:** Use American English, active voice, and match the author's friendly-professional tone.
+
+**Output:** Return only the refined Markdown snippet—no commentary, explanations, or diff markers."""
+"""Default system prompt for `refine_markdown`."""
+
+
+def refine_markdown(source: tp.Any, split_text_kwargs: tp.KwargsLike = None, **kwargs) -> tp.RefineSourceOutput:
+    """Call `refine_source` with the system prompt from `REFINE_MD_PROMPT` to refine
+    Markdown documentation in the given source code.
+
+    Args:
+        source (Any): Source code to be refined.
+        split_text_kwargs (KwargsLike): Keyword arguments for splitting the source.
+
+            By default, uses "markdown" as `text_splitter`.
+            See `vectorbtpro.utils.knowledge.chatting.split_text`.
+        **kwargs: Keyword arguments for `refine_source`.
+
+    Returns:
+        RefineSourceOutput: Result of the refinement process.
+    """
+    from vectorbtpro.utils.config import merge_dicts
+    
+    split_text_kwargs = merge_dicts(
+        dict(
+            text_splitter="markdown",
+        ),
+        split_text_kwargs,
+    )
+    return refine_source(
+        source, 
+        system_prompt=REFINE_MD_PROMPT, 
+        split_text_kwargs=split_text_kwargs, 
+        **kwargs,
+    )

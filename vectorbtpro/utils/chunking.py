@@ -2347,7 +2347,7 @@ def chunked(
 
     Args:
         func (Callable): Function to be decorated.
-        chunker (Optional[Chunker]): A `Chunker` type used for splitting the inputs.
+        chunker (Optional[Chunker]): `Chunker` type used for splitting the inputs.
         replace_chunker (Optional[bool]): If True, create a new `Chunker` instance by replacing provided attributes.
         merge_to_execute_kwargs (Optional[bool]): Flag that determines whether to merge unspecified
             keyword arguments into `execute_kwargs`.
