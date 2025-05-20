@@ -991,7 +991,9 @@ class Completions(Configured):
 
             In streaming mode, chunks are appended and displayed incrementally; otherwise,
             the entire message is displayed.
-        max_tokens (Optional[int]): Maximum token limit configured for messages.
+        max_tokens (Union[None, bool, int]): Maximum token limit configured for messages.
+
+            If False, the limit is disabled.
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
 
             Resolved using `resolve_tokenizer`.
@@ -1035,7 +1037,7 @@ class Completions(Configured):
         context: str = "",
         chat_history: tp.Optional[tp.ChatHistory] = None,
         stream: tp.Optional[bool] = None,
-        max_tokens: tp.Optional[int] = None,
+        max_tokens: tp.Union[None, bool, int] = None,
         tokenizer: tp.TokenizerLike = None,
         tokenizer_kwargs: tp.KwargsLike = None,
         system_prompt: tp.Optional[str] = None,
@@ -1148,11 +1150,11 @@ class Completions(Configured):
         return self._max_tokens_set
 
     @property
-    def max_tokens(self) -> tp.Optional[int]:
+    def max_tokens(self) -> tp.Union[bool, int]:
         """Maximum token limit configured for messages.
 
         Returns:
-            Optional[int]: The maximum token limit; None if not set.
+            Union[bool, int]: The maximum token limit; False if disabled.
         """
         return self._max_tokens
 
@@ -1374,8 +1376,10 @@ class Completions(Configured):
             elif checks.is_function(context_template):
                 context_template = RepFunc(context_template)
             elif not isinstance(context_template, CustomTemplate):
-                raise TypeError(f"Context prompt must be a string, function, or template")
-            if max_tokens is not None:
+                raise TypeError("Context prompt must be a string, function, or template")
+            if max_tokens not in (None, False):
+                if max_tokens is True:
+                    raise ValueError("max_tokens cannot be True")
                 empty_context_template = context_template.substitute(
                     flat_merge_dicts(dict(context=""), template_context),
                     eval_id="context_template",
@@ -2522,7 +2526,7 @@ class SourceSplitter(TokenSplitter):
 
     This class is used to split source code into chunks by parsing the structure of the code.
     It divides nodes of the code into levels and performs splitting based on the specified chunk size and overlap.
-    
+
     Args:
         uniform_chunks (Optional[bool]): Whether each chunk should start and end at the same base level.
 
@@ -2563,7 +2567,7 @@ class SourceSplitter(TokenSplitter):
 
     def split_source(self, source: str) -> tp.TSSourceChunks:
         """Split the source code into chunks.
-        
+
         Args:
             source (str): Source code to be split.
 
@@ -2737,7 +2741,7 @@ class PythonSplitter(SourceSplitter):
     @property
     def stmt_blacklist(self) -> tp.Tuple[str, ...]:
         """Statement types to exclude from the split.
-        
+
         Returns:
             Tuple[str, ...]: Tuple of statement types.
         """
@@ -2746,7 +2750,7 @@ class PythonSplitter(SourceSplitter):
     @property
     def max_stmt_level(self) -> tp.Optional[int]:
         """Maximum level of statements to include in the split.
-        
+
         Returns:
             Optional[int]: Maximum statement level; None if all levels are included.
         """
@@ -2754,11 +2758,11 @@ class PythonSplitter(SourceSplitter):
 
     def should_split_stmt(self, stmt: ast.stmt, level: int) -> bool:
         """Check if the statement should be split based on its type and level.
-        
+
         Args:
             stmt (ast.stmt): Statement to check.
             level (int): Level of the statement.
-            
+
         Returns:
             bool: True if the statement should be split, False otherwise.
         """
@@ -3716,8 +3720,8 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         return None
 
     def open(self) -> None:
-        """Open the store. 
-        
+        """Open the store.
+
         If already open, close it first; purge if `purge_on_open` is True.
 
         Returns:
@@ -3765,13 +3769,13 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 
     def __getitem__(self, id_: str) -> StoreObjectT:
         """Retrieve an object from the store using its identifier.
-        
+
         Args:
             id_ (str): Identifier of the object to retrieve.
-            
+
         Returns:
             StoreObject: The object associated with the given identifier.
-            
+
         !!! abstract
             This method should be overridden in a subclass.
         """
@@ -3779,14 +3783,14 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 
     def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
         """Store an object in the store using its identifier.
-        
+
         Args:
             id_ (str): Identifier for the object to store.
             obj (StoreObject): Object to store.
-            
+
         Returns:
             None
-            
+
         !!! abstract
             This method should be overridden in a subclass.
         """
@@ -3794,13 +3798,13 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 
     def __delitem__(self, id_: str) -> None:
         """Delete an object from the store using its identifier.
-        
+
         Args:
             id_ (str): Identifier of the object to delete.
-            
+
         Returns:
             None
-        
+
         !!! abstract
             This method should be overridden in a subclass.
         """
@@ -3808,10 +3812,10 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 
     def __iter__(self) -> tp.Iterator[str]:
         """Return an iterator over the identifiers of the objects in the store.
-        
+
         Returns:
             Iterator[str]: An iterator over the identifiers of the objects in the store.
-            
+
         !!! abstract
             This method should be overridden in a subclass.
         """
@@ -3819,10 +3823,10 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 
     def __len__(self) -> int:
         """Return the number of objects in the store.
-        
+
         Returns:
             int: The number of objects in the store.
-            
+
         !!! abstract
             This method should be overridden in a subclass.
         """
@@ -5221,7 +5225,20 @@ class DocumentRanker(Configured):
             documents_to_split = []
             document_splits = {}
             for document in documents:
-                if refresh_documents or refresh_embeddings or document.id_ not in self.emb_store:
+                refresh_document = (
+                    refresh_documents
+                    or refresh_embeddings
+                    or document.id_ not in self.doc_store
+                    or document.id_ not in self.emb_store
+                )
+                if not refresh_document:
+                    obj = self.emb_store[document.id_]
+                    if obj.child_ids:
+                        for child_id in obj.child_ids:
+                            if child_id not in self.doc_store or child_id not in self.emb_store:
+                                refresh_document = True
+                                break
+                if refresh_document:
                     documents_to_split.append(document)
             if documents_to_split:
                 from vectorbtpro.utils.pbar import ProgressBar
@@ -5253,18 +5270,23 @@ class DocumentRanker(Configured):
                             else:
                                 child_obj = self.emb_store[document_chunk.id_]
                             obj.child_ids.append(child_obj.id_)
-                            if not child_obj.embedding:
-                                content = document_chunk.get_content(for_embed=True)
-                                if content:
-                                    obj_contents[child_obj.id_] = content
                     if refresh_documents or refresh_embeddings or document.id_ not in self.emb_store:
                         self.emb_store[obj.id_] = obj
                 else:
                     obj = self.emb_store[document.id_]
-                if not obj.child_ids and not obj.embedding:
-                    content = document.get_content(for_embed=True)
-                    if content:
-                        obj_contents[obj.id_] = content
+                if not obj.embedding:
+                    if obj.child_ids:
+                        for child_id in obj.child_ids:
+                            child_obj = self.emb_store[child_id]
+                            if not child_obj.embedding:
+                                child_document = self.doc_store[child_id]
+                                content = child_document.get_content(for_embed=True)
+                                if content:
+                                    obj_contents[child_id] = content
+                    else:
+                        content = document.get_content(for_embed=True)
+                        if content:
+                            obj_contents[obj.id_] = content
 
             if obj_contents:
                 total = 0
@@ -5544,7 +5566,19 @@ class DocumentRanker(Configured):
                 documents_to_split = []
                 document_splits = {}
                 for document in documents:
-                    if refresh_documents or document.id_ not in self.doc_store:
+                    refresh_document = (
+                        refresh_documents
+                        or document.id_ not in self.doc_store
+                        or document.id_ not in self.emb_store
+                    )
+                    if not refresh_document:
+                        obj = self.emb_store[document.id_]
+                        if obj.child_ids:
+                            for child_id in obj.child_ids:
+                                if child_id not in self.doc_store or child_id not in self.emb_store:
+                                    refresh_document = True
+                                    break
+                    if refresh_document:
                         documents_to_split.append(document)
                 if documents_to_split:
                     from vectorbtpro.utils.pbar import ProgressBar
@@ -5575,7 +5609,7 @@ class DocumentRanker(Configured):
                                 else:
                                     child_obj = self.emb_store[document_chunk.id_]
                                 obj.child_ids.append(child_obj.id_)
-                        if document.id_ not in self.emb_store:
+                        if refresh_documents or document.id_ not in self.emb_store:
                             self.emb_store[obj.id_] = obj
 
                 document_chunks = []

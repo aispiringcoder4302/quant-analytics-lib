@@ -3344,9 +3344,15 @@ class GenericAccessor(BaseAccessor, Analyzable):
             source_rbound (Union[bool, str, IndexLike]): Determines the right boundary of the source index.
 
                 If set to a string "pandas", the resampler uses the pandas-defined right bound.
+
+                !!! warning
+                    Make sure to use the same convention for `target_rbound` as well.
             target_rbound (Union[bool, str, IndexLike]): Determines the right boundary of the target index.
 
                 If set to a string "pandas", the resampler uses the pandas-defined right bound.
+
+                !!! warning
+                    Make sure to use the same convention for `source_rbound` as well.
             jitted (JittedOption): Option to control JIT compilation.
 
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.

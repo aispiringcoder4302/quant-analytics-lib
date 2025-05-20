@@ -2311,7 +2311,7 @@ def realign_1d_nb(
     source_freq: tp.Optional[tp.Scalar] = None,
     target_freq: tp.Optional[tp.Scalar] = None,
     source_rbound: bool = False,
-    target_rbound: bool = None,
+    target_rbound: bool = False,
     nan_value: tp.Scalar = np.nan,
     ffill: bool = True,
 ) -> tp.Array1d:

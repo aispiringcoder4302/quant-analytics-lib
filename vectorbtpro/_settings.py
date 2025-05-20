@@ -2409,7 +2409,7 @@ window.onload = function() {
             cutoff=None,
             return_chunks=False,
         ),
-        max_tokens=120_000,
+        max_tokens=100_000,
         system_prompt=r"You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
         system_as_user=True,
         context_template=r"""Context information is below.
@@ -2430,7 +2430,7 @@ $context
         ),
         embeddings="auto",
         embeddings_config=flex_cfg(
-            batch_size=512,
+            batch_size=256,
         ),
         embeddings_configs=flex_cfg(
             openai=flex_cfg(
@@ -2496,16 +2496,12 @@ $chunk_text""",
                 uniform_chunks=True,
             ),
             python=flex_cfg(
-                chunk_size=None,
-                chunk_overlap=0,
                 stmt_whitelist=["ClassDef"],
                 stmt_blacklist=[],
                 max_stmt_level=1,
             ),
             markdown=flex_cfg(
-                chunk_size=None,
-                chunk_overlap=0,
-                split_by="header",
+                split_by="paragraph",
                 max_section_level=None,
             ),
             llama_index=flex_cfg(
