@@ -22,6 +22,7 @@ from types import ModuleType, FunctionType
 from collections import defaultdict
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.formatting import dump, get_dump_language
 from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.template import CustomTemplate, RepEval
@@ -31,7 +32,7 @@ __all__ = [
     "cut_and_save_func",
     "refine_source",
     "refine_docstrings",
-    "refine_markdown",
+    "refine_docs",
 ]
 
 
@@ -480,10 +481,9 @@ def get_source_map(source: str) -> dict:
     return code_map
 
 
-REFINE_SRC_PROMPT = """You are a code-refinement assistant. 
+REFINE_SOURCE_PROMPT = """You are a code-refinement assistant. 
 
-Present the refined version of the given chunk of Python code to address 
-any detected code smells or issues. You must:
+Your goal is to address any detected code smells or issues in the given chunk of Python code. You must:
 
 1. **Return the entire code block** in your output.
 2. **Never enclose your output in triple backticks**, and return no other text or explanation.
@@ -505,7 +505,7 @@ def refine_source(
     attach_metadata: bool = True,
     attach_imports: tp.Optional[bool] = None,
     attach_map: tp.Optional[bool] = None,
-    attach_prev_chunk: bool = True,
+    attach_prev_chunk: tp.Union[bool, int] = True,
     attach_knowledge: bool = False,
     search_kwargs: tp.KwargsLike = None,
     to_context_kwargs: tp.KwargsLike = None,
@@ -518,6 +518,7 @@ def refine_source(
     mult_show_progress: tp.Optional[bool] = None,
     mult_pbar_kwargs: tp.KwargsLike = None,
     modify: bool = False,
+    write_chunks: bool = False,
     copy_to_clipboard: bool = False,
     show_diff: bool = False,
     open_browser: bool = True,
@@ -562,7 +563,9 @@ def refine_source(
         attach_map (Optional[bool]): Whether to attach (dumped) source map to the context.
 
             If None, becomes True if `split` is True.
-        attach_prev_chunk (bool): Whether to attach the previous chunk to the context.
+        attach_prev_chunk (Union[bool, int]): Whether to attach the previous chunk to the context.
+
+            If an integer, it specifies the number of previous chunks to attach.
         attach_knowledge (bool): Whether to attach relevant knowledge to the context.
         search_kwargs (KwargsLike): Keyword arguments for searching for knowledge.
 
@@ -580,7 +583,7 @@ def refine_source(
         split (bool): Whether to split the source into chunks.
         split_text_kwargs (KwargsLike): Keyword arguments for splitting the source.
 
-            By default, uses "python" as `text_splitter`.
+            By default, uses "python" as `text_splitter`, 2000 as `chunk_size`, and 0 as `chunk_overlap`.
             See `vectorbtpro.utils.knowledge.chatting.split_text`.
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
@@ -593,6 +596,7 @@ def refine_source(
 
             See `vectorbtpro.utils.pbar.ProgressBar`.
         modify (bool): Whether to update the source file with the refined Python code.
+        write_chunks (bool): Whether to write each chunk instead of the entire source.
         copy_to_clipboard (bool): Whether to copy the refined source to the clipboard.
 
             Does not apply when processing multiple sources.
@@ -614,7 +618,6 @@ def refine_source(
             * For multiple sources, returns a zipped list of sources and their corresponding outputs.
     """
     from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
-    from vectorbtpro.utils.config import merge_dicts
     from vectorbtpro.utils.module_ import assert_can_import
     from vectorbtpro.utils.path_ import get_common_prefix
     from vectorbtpro.utils.pbar import ProgressBar
@@ -718,6 +721,7 @@ def refine_source(
                     show_progress=show_progress,
                     pbar_kwargs=pbar_kwargs,
                     modify=modify,
+                    write_chunks=write_chunks,
                     copy_to_clipboard=False,
                     show_diff=False,
                     open_browser=False,
@@ -771,7 +775,7 @@ def refine_source(
     source_name = f"{source_name}#L{source_start_line}-L{source_end_line}"
 
     if system_prompt is None:
-        system_prompt = REFINE_SRC_PROMPT
+        system_prompt = REFINE_SOURCE_PROMPT
     if context is None:
         context = ""
     if dump_kwargs is None:
@@ -823,6 +827,8 @@ def refine_source(
     split_text_kwargs = merge_dicts(
         dict(
             text_splitter="python",
+            chunk_size=2000,
+            chunk_overlap=0,
         ),
         split_text_kwargs,
     )
@@ -830,6 +836,10 @@ def refine_source(
         source_chunks = split_text(source, **split_text_kwargs)
     else:
         source_chunks = [source]
+
+    if source_path and modify:
+        with source_path.open("r", encoding="utf-8") as f:
+            file_contents = f.readlines()
 
     processed = []
     chunk_start_line = source_start_line
@@ -855,32 +865,48 @@ def refine_source(
             trailing_len = len(chunk) - len(chunk.rstrip())
             trailing = chunk[-trailing_len:] if trailing_len > 0 else ""
             middle = chunk[leading_len : len(chunk) - trailing_len]
+
             if middle:
                 if not attach_prev_chunk:
                     chat_history = []
                 new_middle = completed(
-                    middle, chat_history=chat_history, system_prompt=system_prompt, context=context, **kwargs
+                    middle,
+                    chat_history=chat_history,
+                    system_prompt=system_prompt,
+                    context=context,
+                    **kwargs,
                 ).strip("\n")
                 if attach_prev_chunk:
-                    chat_history = chat_history[-2:]
+                    chat_history = chat_history[-2 * attach_prev_chunk:]
             else:
                 new_middle = ""
             new_middle = add_source_indent(new_middle, indent)
             new_chunk = leading + new_middle + trailing
             processed.append(new_chunk)
+
+            if middle and source_path and modify and write_chunks:
+                new_processed = processed + source_chunks[i + 1 :]
+                new_source = "".join(new_processed)
+                new_source_lines = new_source.splitlines(keepends=True)
+                if new_source_lines and not new_source_lines[-1].endswith("\n"):
+                    new_source_lines.append("\n")
+                new_file_contents = file_contents.copy()
+                new_file_contents[source_start_index:source_end_index] = new_source_lines
+                with source_path.open("w", encoding="utf-8") as f:
+                    f.writelines(new_file_contents)
             chunk_start_line += len(chunk_lines)
+
             pbar.update()
     new_source = "".join(processed)
 
-    if modify and source_path:
-        with source_path.open("r", encoding="utf-8") as f:
-            file_contents = f.readlines()
+    if source_path and modify and not write_chunks:
         new_source_lines = new_source.splitlines(keepends=True)
-        if not new_source_lines or not new_source_lines[-1].endswith("\n"):
+        if new_source_lines and not new_source_lines[-1].endswith("\n"):
             new_source_lines.append("\n")
-        file_contents[source_start_index:source_end_index] = new_source_lines
+        new_file_contents = file_contents.copy()
+        new_file_contents[source_start_index:source_end_index] = new_source_lines
         with source_path.open("w", encoding="utf-8") as f:
-            f.writelines(file_contents)
+            f.writelines(new_file_contents)
 
     if copy_to_clipboard:
         assert_can_import("pyperclip")
@@ -928,56 +954,63 @@ def refine_source(
     return new_source
 
 
-REFINE_DOCSTR_PROMPT = """You are a code-refinement assistant.
+REFINE_DOCSTRINGS_PROMPT = """You are a code-refinement assistant.
 
-Your goal is to refine (rewrite for clarity, correctness, consistent format, and wording) **only** 
-the docstrings of the given chunk of Python code. You must:
+Your goal is to refine **only** the docstrings of the given chunk of Python code. You must:
 
-1. **Return the entire code block** in your output.
-2. **Never enclose your output in triple backticks**, and return no other text or explanation.
-3. **Retain all non-docstring parts of the code** exactly as they are.
-4. **If the given chunk contains only text, consider it a docstring**."""
+1. **Edit docstrings** for clarity, correctness, and consistent format and wording.
+2. **Return the entire code block** in your output.
+3. **Never enclose your output in triple backticks**, and return no other text or explanation.
+4. **Retain all non-docstring parts of the code** exactly as they are.
+5. **If the given chunk contains only text, consider it a docstring**."""
 """System prompt for `refine_docstrings`."""
 
 
 def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
-    """Call `refine_source` with the system prompt from `REFINE_DOCSTR_PROMPT` to refine
+    """Call `refine_source` with the system prompt from `REFINE_DOCSTRINGS_PROMPT` to refine
     docstrings in the given source code.
 
     Args:
-        source (Any): Source code to be refined.
+        source (Any): Source(s) or object(s) from which to extract the Python code.
         **kwargs: Keyword arguments for `refine_source`.
 
     Returns:
         RefineSourceOutput: Result of the refinement process.
     """
-    return refine_source(source, system_prompt=REFINE_DOCSTR_PROMPT, **kwargs)
+    return refine_source(source, system_prompt=REFINE_DOCSTRINGS_PROMPT, **kwargs)
 
 
-REFINE_MD_PROMPT = """You are a Markdown-documentation refinement assistant.
+REFINE_DOCS_PROMPT = """You are a documentation refinement assistant.
 
-You will receive one Markdown snippet and must return **only** the refined snippet, edited in place.
+Your goal is to refine **only** the prose of the given chunk of documentation. You must:
 
-Rewrite *prose content* for clarity, correctness, and consistency, following these rules:
+1. Edit prose for **clarity, correctness, and consistent format and wording**.
+2. **Do not** introduce new ideas, remove existing ideas, or alter facts. **Only rephrase.**
+3. Use **American English** and match the author's **friendly-professional tone.**
+4. **Retain all non-prose parts of the chunk exactly as they are**, including but not limited to 
+    code blocks, YAML front matter, diagrams, headings, emojis, filenames, and inline code.
+5. **Preserve Markdown structure, list markers, indentation, and blank lines.**
+6. Paragraphs should be **separated by a blank line**.
+7. **Do not** use smart quotes and apostrophes, em dashes, or other special characters, unless already present.
+8. **End list items with a period** if they are complete sentences, and do not indent new lines.
+9. **Re-wrap prose to ≤ 100 characters per line** where possible without breaking Markdown structure.
+10. **Return only the refined Markdown chunk**—no commentary, explanations, or diff markers.
+11. **Never enclose your output in triple backticks**, unless the chunk is a fenced code block."""
+"""Default system prompt for `refine_docs`."""
 
-1. **Scope:** Edit narrative sentences. Leave intact: fenced code blocks, indented code, 
-    YAML front matter, diagrams, headings, emojis, filenames, and inline code, 
-    except to fix clear typos in surrounding prose.
-2. **Content integrity:** Rephrase; do not introduce new ideas, remove existing ideas, or alter facts.
-3. **Formatting:** Preserve Markdown structure, list markers, indentation, and blank lines. 
-    Where practical, re-wrap prose to ≤ 100 characters per line without breaking Markdown syntax.
-4. **Style & voice:** Use American English, active voice, and match the author's friendly-professional tone.
 
-**Output:** Return only the refined Markdown snippet—no commentary, explanations, or diff markers."""
-"""Default system prompt for `refine_markdown`."""
-
-
-def refine_markdown(source: tp.Any, split_text_kwargs: tp.KwargsLike = None, **kwargs) -> tp.RefineSourceOutput:
-    """Call `refine_source` with the system prompt from `REFINE_MD_PROMPT` to refine
+def refine_docs(
+    source: tp.Any, 
+    glob_pattern: str = "*.md",
+    split_text_kwargs: tp.KwargsLike = None, 
+    **kwargs,
+) -> tp.RefineSourceOutput:
+    """Call `refine_source` with the system prompt from `REFINE_DOCS_PROMPT` to refine
     Markdown documentation in the given source code.
 
     Args:
-        source (Any): Source code to be refined.
+        source (Any): Source(s) or object(s) from which to extract the Markdown documentation.
+        glob_pattern (str): Glob pattern for matching files in a directory.
         split_text_kwargs (KwargsLike): Keyword arguments for splitting the source.
 
             By default, uses "markdown" as `text_splitter`.
@@ -987,8 +1020,6 @@ def refine_markdown(source: tp.Any, split_text_kwargs: tp.KwargsLike = None, **k
     Returns:
         RefineSourceOutput: Result of the refinement process.
     """
-    from vectorbtpro.utils.config import merge_dicts
-    
     split_text_kwargs = merge_dicts(
         dict(
             text_splitter="markdown",
@@ -996,8 +1027,9 @@ def refine_markdown(source: tp.Any, split_text_kwargs: tp.KwargsLike = None, **k
         split_text_kwargs,
     )
     return refine_source(
-        source, 
-        system_prompt=REFINE_MD_PROMPT, 
-        split_text_kwargs=split_text_kwargs, 
+        source,
+        glob_pattern=glob_pattern,
+        system_prompt=REFINE_DOCS_PROMPT,
+        split_text_kwargs=split_text_kwargs,
         **kwargs,
     )
