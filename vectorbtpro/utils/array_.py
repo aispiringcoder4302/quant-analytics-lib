@@ -349,7 +349,7 @@ def build_nan_mask(*arrs: tp.Array) -> tp.Optional[tp.Array]:
         *arrs (Array): Input array(s) to check for NaN values.
 
     Returns:
-        Optional[Array]: A boolean mask where each element is True if any corresponding element
+        Optional[Array]: Boolean mask where each element is True if any corresponding element
             in the input arrays is NaN.
     """
     nan_mask = None
@@ -522,7 +522,7 @@ def min_count_nb(arr: tp.Array1d) -> tp.Tuple[int, float, int]:
         arr (Array1d): One-dimensional input array.
 
     Returns:
-        Tuple[int, float, int]: A tuple containing the index of the first minimum,
+        Tuple[int, float, int]: Tuple containing the index of the first minimum,
             the minimum value, and its count.
     """
     mini = 0
@@ -547,7 +547,7 @@ def max_count_nb(arr: tp.Array1d) -> tp.Tuple[int, float, int]:
         arr (Array1d): One-dimensional input array.
 
     Returns:
-        Tuple[int, float, int]: A tuple containing the index of the first maximum,
+        Tuple[int, float, int]: Tuple containing the index of the first maximum,
             the maximum value, and its count.
     """
     maxi = 0

@@ -330,7 +330,7 @@ class ChunkMetaGenerator(Base):
                 See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
-            Iterable[ChunkMeta]: The argument value.
+            Iterable[ChunkMeta]: Argument value.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -567,7 +567,7 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
             **kwargs: Keyword arguments for `ChunkTaker.get_size`.
 
         Returns:
-            Optional[int]: The suggested size of the object, or None if a mapper is configured.
+            Optional[int]: Suggested size of the object, or None if a mapper is configured.
         """
         if self.mapper is not None:
             return None
@@ -909,7 +909,7 @@ class SequenceTaker(ContainerTaker):
                                     f"{size} and {new_size}. Setting size to None."
                                 )
                                 return None
-                    except NotImplementedError as e:
+                    except NotImplementedError:
                         pass
         return size
 
@@ -1006,7 +1006,7 @@ class MappingTaker(ContainerTaker):
                                     f"{size} and {new_size}. Setting size to None."
                                 )
                                 return None
-                    except NotImplementedError as e:
+                    except NotImplementedError:
                         pass
         return size
 
@@ -1409,7 +1409,7 @@ class Chunker(Configured):
         See `Chunker.get_chunk_meta_from_args`.
 
         Returns:
-            Optional[int]: The configured chunk size.
+            Optional[int]: Configured chunk size.
         """
         return self._size
 
@@ -1420,7 +1420,7 @@ class Chunker(Configured):
         See `Chunker.get_chunk_meta_from_args`.
 
         Returns:
-            Optional[int]: The minimum allowable chunk size.
+            Optional[int]: Minimum allowable chunk size.
         """
         return self._min_size
 
@@ -1431,7 +1431,7 @@ class Chunker(Configured):
         See `Chunker.get_chunk_meta_from_args`.
 
         Returns:
-            Optional[SizeLike]: The target number of chunks.
+            Optional[SizeLike]: Target number of chunks.
         """
         return self._n_chunks
 
@@ -1442,7 +1442,7 @@ class Chunker(Configured):
         See `Chunker.get_chunk_meta_from_args`.
 
         Returns:
-            Optional[SizeLike]: The length assigned to each chunk.
+            Optional[SizeLike]: Length assigned to each chunk.
         """
         return self._chunk_len
 
@@ -1453,7 +1453,7 @@ class Chunker(Configured):
         See `Chunker.get_chunk_meta_from_args`.
 
         Returns:
-            Optional[ChunkMetaLike]: The custom chunk metadata configuration.
+            Optional[ChunkMetaLike]: Custom chunk metadata configuration.
         """
         return self._chunk_meta
 
@@ -1482,7 +1482,7 @@ class Chunker(Configured):
         """Specification for selecting function arguments during chunking.
 
         Returns:
-            Optional[ArgTakeSpecLike]: The specification dict or object for argument extraction.
+            Optional[ArgTakeSpecLike]: Specification dict or object for argument extraction.
 
         See:
             `Chunker.iter_tasks`
@@ -1505,7 +1505,7 @@ class Chunker(Configured):
         See `vectorbtpro.utils.merging.MergeFunc`.
 
         Returns:
-            Optional[MergeFuncLike]: The merging function or merge function configuration.
+            Optional[MergeFuncLike]: Merging function or merge function configuration.
         """
         return self._merge_func
 
@@ -1604,7 +1604,7 @@ class Chunker(Configured):
             **kwargs: Keyword arguments for the metadata generation process.
 
         Returns:
-            Iterable[ChunkMeta]: An iterable of chunk metadata.
+            Iterable[ChunkMeta]: Iterable of chunk metadata.
         """
         if chunk_meta is None:
             if size is not None:
@@ -1769,7 +1769,7 @@ class Chunker(Configured):
             **kwargs: Keyword arguments for `Chunker.take_from_arg`.
 
         Returns:
-            Tuple[tuple, dict]: A tuple containing the new positional arguments and keyword
+            Tuple[tuple, dict]: Tuple containing the new positional arguments and keyword
                 arguments for function execution.
         """
         new_args = ()
@@ -1883,7 +1883,7 @@ class Chunker(Configured):
             eval_id (Optional[Hashable]): Evaluation identifier.
 
         Returns:
-            Optional[Sizer]: The sizer instance that meets the evaluation criteria, or None if not found.
+            Optional[Sizer]: Sizer instance that meets the evaluation criteria, or None if not found.
         """
         annotations = flatten_annotations(get_annotations(func))
         sizer = None
@@ -2123,7 +2123,7 @@ class Chunker(Configured):
             **kwargs: Keyword arguments for `ChunkTaker.suggest_size`.
 
         Returns:
-            Optional[int]: The determined global size if found; otherwise, None.
+            Optional[int]: Determined global size if found; otherwise, None.
         """
         size_k = None
         size = None
@@ -2142,7 +2142,7 @@ class Chunker(Configured):
                                 f"{size} and {new_size}. Setting size to None."
                             )
                             return None
-                except NotImplementedError as e:
+                except NotImplementedError:
                     pass
         return size
 

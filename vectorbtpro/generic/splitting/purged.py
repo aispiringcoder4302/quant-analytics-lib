@@ -162,7 +162,7 @@ class BasePurgedCV(Base):
                 If None, the index of `X` is used.
 
         Yields:
-            Tuple[Array1d, Array1d]: A tuple containing training and test indices.
+            Tuple[Array1d, Array1d]: Tuple containing training and test indices.
         """
         checks.assert_instance_of(X, (pd.Series, pd.DataFrame), arg_name="X")
         if y is not None:
@@ -480,7 +480,7 @@ class PurgedKFoldCV(BasePurgedCV):
                 boundaries for the test set.
 
         Returns:
-            Tuple[List[Tuple[int, int]], Array1d]: A tuple containing the consolidated
+            Tuple[List[Tuple[int, int]], Array1d]: Tuple containing the consolidated
                 test fold boundaries and an array of test set sample indices.
         """
         test_indices = np.empty(0)

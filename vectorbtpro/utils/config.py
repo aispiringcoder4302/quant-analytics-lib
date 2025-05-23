@@ -184,7 +184,7 @@ def copy_dict(dct: tp.DictLike, copy_mode: str = "shallow", nested: bool = True)
             * 'none': No copy is performed.
             * 'shallow': Only the dictionary structure is copied.
             * 'hybrid': Keys are copied and values are shallow copied using `copy.copy`.
-            * 'deep': A deep copy is performed using `copy.deepcopy`.
+            * 'deep': Deep copy is performed using `copy.deepcopy`.
         nested (bool): If True, recursively copy nested dictionaries.
 
     Returns:
@@ -819,7 +819,7 @@ class Config(pdict):
             force (bool): Bypass configuration restrictions if True.
 
         Returns:
-            Tuple[str, Any]: The removed key-value pair.
+            Tuple[str, Any]: Removed key-value pair.
         """
         if not force and self.get_option("readonly"):
             raise TypeError("Config is read-only")
@@ -1401,12 +1401,12 @@ class HasSettings(Base):
             sub_path = combine_pathlike_keys(path, sub_path)
             try:
                 sub_path_settings = cls.get_path_settings(sub_path)
-            except SettingsNotFoundError as e:
+            except SettingsNotFoundError:
                 if sub_path_only:
                     raise SettingsNotFoundError(f"Found no settings under the path '{sub_path}'")
         try:
             path_settings = get_dict_item(settings, path)
-        except KeyError as e:
+        except KeyError:
             raise SettingsNotFoundError(f"Found no settings under the path '{path}'")
         if sub_path_settings is not None:
             return merge_dicts(path_settings, sub_path_settings)
@@ -1430,7 +1430,7 @@ class HasSettings(Base):
             unique_only (bool): Whether to return only unique settings paths.
 
         Returns:
-            List[Tuple[Type[HasSettings], PathLikeKey]]: A list of tuples with classes and their
+            List[Tuple[Type[HasSettings], PathLikeKey]]: List of tuples with classes and their
                 resolved settings paths.
         """
         from vectorbtpro.utils.search_ import resolve_pathlike_key, combine_pathlike_keys
@@ -1535,7 +1535,7 @@ class HasSettings(Base):
             try:
                 path_settings = cls_.get_path_settings(path, sub_path=sub_path, sub_path_only=sub_path_only)
                 setting_dicts.append(path_settings)
-            except SettingsNotFoundError as e:
+            except SettingsNotFoundError:
                 pass
         if len(setting_dicts) == 0:
             if path_id is not None:
@@ -1568,7 +1568,7 @@ class HasSettings(Base):
         try:
             cls.get_path_settings(path, sub_path=sub_path, sub_path_only=sub_path_only)
             return True
-        except SettingsNotFoundError as e:
+        except SettingsNotFoundError:
             return False
 
     @classmethod
@@ -1600,7 +1600,7 @@ class HasSettings(Base):
                 sub_path_only=sub_path_only,
             )
             return True
-        except SettingsNotFoundError as e:
+        except SettingsNotFoundError:
             return False
 
     @classmethod
@@ -1636,19 +1636,19 @@ class HasSettings(Base):
                 sub_path_settings = cls.get_path_settings(sub_path)
                 try:
                     return get_dict_item(sub_path_settings, key)
-                except KeyError as e:
+                except KeyError:
                     if sub_path_only:
                         raise SettingNotFoundError(f"Found no key '{key}' in the settings under the path '{sub_path}'")
-            except SettingsNotFoundError as e:
+            except SettingsNotFoundError:
                 if sub_path_only:
                     raise SettingsNotFoundError(f"Found no settings under the path '{sub_path}'")
         try:
             path_settings = get_dict_item(settings, path)
-        except KeyError as e:
+        except KeyError:
             raise SettingsNotFoundError(f"Found no settings under the path '{path}'")
         try:
             return get_dict_item(path_settings, key)
-        except KeyError as e:
+        except KeyError:
             if default is MISSING:
                 if sub_path is not None:
                     raise SettingNotFoundError(
@@ -1708,7 +1708,7 @@ class HasSettings(Base):
                 else:
                     return setting
                 found_setting = True
-            except (SettingsNotFoundError, SettingNotFoundError) as e:
+            except (SettingsNotFoundError, SettingNotFoundError):
                 continue
         if found_setting:
             return merged_setting
@@ -1759,7 +1759,7 @@ class HasSettings(Base):
         try:
             cls.get_path_setting(path, key, sub_path=sub_path, sub_path_only=sub_path_only)
             return True
-        except (SettingsNotFoundError, SettingNotFoundError) as e:
+        except (SettingsNotFoundError, SettingNotFoundError):
             return False
 
     @classmethod
@@ -1795,7 +1795,7 @@ class HasSettings(Base):
                 sub_path_only=sub_path_only,
             )
             return True
-        except (SettingsNotFoundError, SettingNotFoundError) as e:
+        except (SettingsNotFoundError, SettingNotFoundError):
             return False
 
     @classmethod
@@ -2081,7 +2081,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         """Return the writable attribute names for this class and its base classes.
 
         Returns:
-            Optional[Set[str]]: A set of writable attribute names if defined, otherwise None.
+            Optional[Set[str]]: Set of writable attribute names if defined, otherwise None.
         """
         if isinstance(cls_or_self, type):
             cls = cls_or_self
@@ -2142,7 +2142,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
                                     same_k = False
                             else:
                                 same_k = False
-                        except KeyError as e:
+                        except KeyError:
                             same_k = False
                         if not same_k:
                             raise ValueError(f"Objects to be merged must have compatible '{k}'. Pass to override.")

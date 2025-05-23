@@ -157,7 +157,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
 
                 The settings dictionary may include:
 
-                * `title`: The subplot title; defaults to the subplot name.
+                * `title`: Subplot title; defaults to the subplot name.
                 * `plot_func` (required): Plotting function for custom subplots.
                     It must modify the provided figure `fig` in-place.
                 * `xaxis_kwargs`: Layout keyword arguments for the x-axis;
@@ -178,8 +178,8 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                     use `pass_group_by=True` to force its inclusion).
                 * `column`
                 * `subplot_name`
-                * `trace_names`: A list containing the subplot name (cannot be used in templates).
-                * `add_trace_kwargs`: A dict with subplot row and column index.
+                * `trace_names`: List containing the subplot name (cannot be used in templates).
+                * `add_trace_kwargs`: Dict with subplot row and column index.
                 * `xref`
                 * `yref`
                 * `xaxis`
@@ -230,7 +230,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             **layout_kwargs: Keyword arguments for `fig.update_layout`.
 
         Returns:
-            Optional[BaseFigure]: A Plotly figure containing subplots.
+            Optional[BaseFigure]: Plotly figure containing subplots.
 
         !!! note
             `PlotsBuilderMixin` and `vectorbtpro.generic.stats_builder.StatsBuilderMixin`

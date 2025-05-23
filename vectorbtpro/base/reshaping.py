@@ -529,7 +529,7 @@ def broadcast_shapes(
             different axes for each shape-like object.
 
     Returns:
-        Tuple[Shape, ...]: A tuple of broadcasted shapes.
+        Tuple[Shape, ...]: Tuple of broadcasted shapes.
 
     !!! info
         For default settings, see `vectorbtpro._settings.broadcasting`.
@@ -647,7 +647,7 @@ def broadcast_arrays(
             different axes for each array-like object.
 
     Returns:
-        Tuple[Array, ...]: A tuple containing the broadcasted arrays.
+        Tuple[Array, ...]: Tuple containing the broadcasted arrays.
     """
     if target_shape is None:
         shapes = []
@@ -880,7 +880,7 @@ def align_pd_arrays(
         reindex_kwargs (KwargsLikeSequence): Keyword arguments for `pd.DataFrame.reindex`.
 
     Returns:
-        MaybeTuple[ArrayLike]: The aligned array if a single input is provided,
+        MaybeTuple[ArrayLike]: Aligned array if a single input is provided,
             otherwise a tuple of aligned arrays.
     """
     objs = list(objs)
@@ -2287,7 +2287,7 @@ def unstack_to_array(
         return_indexes (bool): If True, also return the list of new index values corresponding to each level.
 
     Returns:
-        Union[Array, Tuple[Array, List[Index]]]: A multi-dimensional array of unstacked data, or a tuple containing
+        Union[Array, Tuple[Array, List[Index]]]: Multi-dimensional array of unstacked data, or a tuple containing
             the array and the list of new index values if `return_indexes` is True.
 
     Examples:

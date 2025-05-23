@@ -344,7 +344,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
         """Mapping configuration.
 
         Returns:
-            Optional[MappingLike]: The mapping configuration.
+            Optional[MappingLike]: Mapping configuration.
         """
         return self._mapping
 
@@ -357,7 +357,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             mapping (Union[None, bool, MappingLike]): Mapping configuration to resolve.
 
         Returns:
-            Optional[Mapping]: The resolved mapping configuration.
+            Optional[Mapping]: Resolved mapping configuration.
         """
         if mapping is None:
             mapping = self.mapping
@@ -1179,7 +1179,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Tuple[SeriesFrame, SeriesFrame]: A tuple containing the slope and intercept arrays.
+            Tuple[SeriesFrame, SeriesFrame]: Tuple containing the slope and intercept arrays.
 
         See:
             `vectorbtpro.generic.nb.rolling.rolling_ols_nb`
@@ -1214,7 +1214,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `GenericAccessor.rolling_ols`.
 
         Returns:
-            Tuple[SeriesFrame, SeriesFrame]: A tuple containing the slope and intercept arrays.
+            Tuple[SeriesFrame, SeriesFrame]: Tuple containing the slope and intercept arrays.
         """
         return self.rolling_ols(other, None, minp=minp, **kwargs)
 
@@ -2413,7 +2413,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 if new_index.freq is not None:
                     try:
                         out_obj.index.freq = new_index.freq
-                    except ValueError as e:
+                    except ValueError:
                         pass
                 return out_obj
             resampled_arr = np.full((rule.ngroups, wrapper.shape_2d[1]), np.nan)
@@ -3418,7 +3418,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 try:
                     dt.to_freq(index)
                     one_index = False
-                except Exception as e:
+                except Exception:
                     one_index = True
             else:
                 one_index = True
@@ -4776,7 +4776,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Union[SeriesFrame, Tuple[SeriesFrame, dict]]: The digitized data.
+            Union[SeriesFrame, Tuple[SeriesFrame, dict]]: Digitized data.
 
                 If `return_mapping` is True, also returns a mapping of bin indices to bin intervals.
 
@@ -5661,7 +5661,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Scatter`.
 
         Returns:
-            Union[BaseFigure, TraceUpdater]: The plot figure or trace updater.
+            Union[BaseFigure, TraceUpdater]: Plot figure or trace updater.
 
         Examples:
             ```pycon
@@ -6403,7 +6403,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
             **kwargs: Keyword arguments for `vectorbtpro.generic.plotting.Volume`.
 
         Returns:
-            Union[BaseFigure, TraceUpdater]: The created 3D volume figure or trace updater object.
+            Union[BaseFigure, TraceUpdater]: Created 3D volume figure or trace updater object.
 
         Examples:
             ```pycon
@@ -7084,7 +7084,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
-            Tuple[Series, Series]: A tuple containing the fitted pattern series and the maximum error series.
+            Tuple[Series, Series]: Tuple containing the fitted pattern series and the maximum error series.
         """
         if isinstance(interp_mode, str):
             interp_mode = map_enum_fields(interp_mode, InterpMode)
@@ -7147,7 +7147,7 @@ class GenericSRAccessor(GenericAccessor, BaseSRAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Union[Series, Tuple[Series, Series]]: The Renko series or a tuple containing
+            Union[Series, Tuple[Series, Series]]: Renko series or a tuple containing
                 the Renko series and the uptrend series.
         """
         func = jit_reg.resolve_option(nb.to_renko_1d_nb, jitted)
@@ -7269,7 +7269,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
             return_meta (bool): Whether to return metadata including band details.
 
         Returns:
-            Union[Series, dict]: A computed band as a Series if `return_meta` is False, or a dict containing
+            Union[Series, dict]: Computed band as a Series if `return_meta` is False, or a dict containing
                 band metadata (`band_name`, `band_title`, and `band_func`) if `return_meta` is True.
         """
         band_name = band_name.lower().replace(" ", "")

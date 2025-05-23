@@ -92,7 +92,7 @@ class MergeFunc(Evaluable, Annotatable, DefineMixin):
         Uses `MergeFunc.context` for template substitution in `MergeFunc.merge_func` and `MergeFunc.merge_kwargs`.
 
         Returns:
-            Optional[Callable]: The merging function with pre-bound keyword arguments,
+            Optional[Callable]: Merging function with pre-bound keyword arguments,
                 or None if the merging function cannot be resolved.
         """
         from vectorbtpro.base.merging import resolve_merge_func
@@ -125,7 +125,7 @@ def parse_merge_func(func: tp.Callable, eval_id: tp.Optional[tp.Hashable] = None
         eval_id (Optional[Hashable]): Evaluation identifier.
 
     Returns:
-        Optional[MergeFunc]: The merging function(s) extracted from the annotations,
+        Optional[MergeFunc]: Merging function(s) extracted from the annotations,
             or None if not found.
     """
     annotations = get_annotations(func)

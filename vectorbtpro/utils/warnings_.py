@@ -121,7 +121,7 @@ class WarningsFiltered(warnings.catch_warnings, Base):
         """Simple entries to add to the warnings filters.
 
         Returns:
-            Optional[MaybeSequence[Union[str, Kwargs]]]: The entries for the warnings filters.
+            Optional[MaybeSequence[Union[str, Kwargs]]]: Entries for the warnings filters.
         """
         return self._entries
 

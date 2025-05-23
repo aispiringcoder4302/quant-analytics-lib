@@ -51,7 +51,7 @@ def list_any_files(path: tp.Optional[tp.PathLike] = None, recursive: bool = Fals
         recursive (bool): Whether to search subdirectories recursively.
 
     Returns:
-        List[Path]: A list of matching file and directory paths.
+        List[Path]: List of matching file and directory paths.
     """
     if path is None:
         path = Path.cwd()
@@ -75,7 +75,7 @@ def list_files(path: tp.Optional[tp.PathLike] = None, recursive: bool = False) -
         recursive (bool): Whether to search subdirectories recursively.
 
     Returns:
-        List[Path]: A list of file paths.
+        List[Path]: List of file paths.
     """
     return [p for p in list_any_files(path, recursive=recursive) if p.is_file()]
 
@@ -90,7 +90,7 @@ def list_dirs(path: tp.Optional[tp.PathLike] = None, recursive: bool = False) ->
         recursive (bool): Whether to search subdirectories recursively.
 
     Returns:
-        List[Path]: A list of directory paths.
+        List[Path]: List of directory paths.
     """
     return [p for p in list_any_files(path, recursive=recursive) if p.is_dir()]
 
@@ -134,7 +134,7 @@ def file_size(file_path: tp.PathLike, readable: bool = True, **kwargs) -> tp.Uni
         **kwargs: Keyword arguments for `humanize.naturalsize`.
 
     Returns:
-        Union[str, int]: The file size in bytes or as a human-readable string.
+        Union[str, int]: File size in bytes or as a human-readable string.
     """
     file_path = Path(file_path)
     if not file_exists(file_path):
@@ -155,7 +155,7 @@ def dir_size(dir_path: tp.PathLike, readable: bool = True, **kwargs) -> tp.Union
         **kwargs: Keyword arguments for `humanize.naturalsize`.
 
     Returns:
-        Union[str, int]: The cumulative size of the directory in bytes or as a human-readable string.
+        Union[str, int]: Cumulative size of the directory in bytes or as a human-readable string.
     """
     dir_path = Path(dir_path)
     if not dir_exists(dir_path):

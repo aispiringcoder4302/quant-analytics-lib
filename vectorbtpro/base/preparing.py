@@ -253,11 +253,11 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
                 try:
                     time.fromisoformat(dt_obj)
                     dt_obj = dt_obj_time_template
-                except Exception as e:
+                except Exception:
                     try:
                         dt.to_freq(dt_obj)
                         dt_obj = dt_obj_td_template
-                    except Exception as e:
+                    except Exception:
                         dt_obj = dt_obj_dt_template
             elif isinstance(dt_obj, time):
                 dt_obj = dt_obj_time_template
@@ -314,7 +314,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Index setters resolved from the `records` argument.
 
         Returns:
-            Optional[Dict[Label, IdxSetter]]: A mapping of record keys to their corresponding
+            Optional[Dict[Label, IdxSetter]]: Mapping of record keys to their corresponding
                 index setters, or None if records are not provided.
         """
         arg_config = self.arg_config["records"]
@@ -851,7 +851,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         """Target function to be invoked with broadcasted arguments.
 
         Returns:
-            Optional[Callable]: The target function to be invoked or None if no target function is defined.
+            Optional[Callable]: Target function to be invoked or None if no target function is defined.
         """
         return None
 

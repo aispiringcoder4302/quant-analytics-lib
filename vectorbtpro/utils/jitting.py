@@ -217,7 +217,7 @@ def get_func_suffix(py_func: tp.Callable) -> tp.Optional[str]:
         py_func (Callable): Python function to decorate.
 
     Returns:
-        Optional[str]: The suffix in lowercase if recognized; otherwise, None.
+        Optional[str]: Suffix in lowercase if recognized; otherwise, None.
 
     !!! info
         For default settings, see `vectorbtpro._settings.jitting`.
@@ -253,7 +253,7 @@ def resolve_jitter_type(
         py_func (Optional[Callable]): Function used to infer the jitter type if `jitter` is None
 
     Returns:
-        Type[Jitter]: The resolved jitter class.
+        Type[Jitter]: Resolved jitter class.
 
     !!! info
         For default settings, see `vectorbtpro._settings.jitting`.
@@ -301,7 +301,7 @@ def get_id_of_jitter_type(jitter_type: tp.Type[Jitter]) -> tp.Optional[tp.Hashab
         jitter_type (Type[Jitter]): Jitter class to look up.
 
     Returns:
-        Optional[Hashable]: The identifier if found; otherwise, None.
+        Optional[Hashable]: Identifier if found; otherwise, None.
 
     !!! info
         For default settings, see `vectorbtpro._settings.jitting`.

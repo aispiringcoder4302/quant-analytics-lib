@@ -659,7 +659,7 @@ class PathosEngine(ExecutionEngine):
         """Delay in seconds between successive task status checks.
 
         Returns:
-            Optional[float]: The delay in seconds between task status checks.
+            Optional[float]: Delay in seconds between task status checks.
         """
         return self._check_delay
 
@@ -1610,7 +1610,7 @@ class Executor(Configured):
         """Engine resolved using `Executor.resolve_engine`.
 
         Returns:
-            Union[ExecutionEngine, Callable]: The configured execution engine.
+            Union[ExecutionEngine, Callable]: Configured execution engine.
         """
         return self._engine
 
@@ -1782,7 +1782,7 @@ class Executor(Configured):
         """Callable to be executed before processing all tasks.
 
         Returns:
-            Optional[Callable]: A callable to be executed before processing all tasks; None if not set.
+            Optional[Callable]: Callable to be executed before processing all tasks; None if not set.
         """
         return self._pre_execute_func
 
@@ -1803,7 +1803,7 @@ class Executor(Configured):
         the results and the chunk is skipped.
 
         Returns:
-            Optional[Callable]: A callable executed before processing each chunk; None if not set.
+            Optional[Callable]: Callable executed before processing each chunk; None if not set.
         """
         return self._pre_chunk_func
 
@@ -1824,7 +1824,7 @@ class Executor(Configured):
         value replaces them.
 
         Returns:
-            Optional[Callable]: A callable executed after processing each chunk; None if not set.
+            Optional[Callable]: Callable executed after processing each chunk; None if not set.
         """
         return self._post_chunk_func
 
@@ -1844,7 +1844,7 @@ class Executor(Configured):
         If it returns None, the default results are preserved; otherwise, its return value replaces them.
 
         Returns:
-            Optional[Callable]: A callable executed after processing all tasks; None if not set.
+            Optional[Callable]: Callable executed after processing all tasks; None if not set.
         """
         return self._post_execute_func
 
@@ -1895,7 +1895,7 @@ class Executor(Configured):
         See `vectorbtpro.utils.merging.MergeFunc`.
 
         Returns:
-            Optional[MergeFuncLike]: A callable for merging results; None if not set.
+            Optional[MergeFuncLike]: Callable for merging results; None if not set.
         """
         return self._merge_func
 
@@ -2091,7 +2091,7 @@ class Executor(Configured):
             **engine_config: Additional engine configuration parameters.
 
         Returns:
-            Tuple[Union[ExecutionEngine, Callable], Optional[str]]: A tuple containing
+            Tuple[Union[ExecutionEngine, Callable], Optional[str]]: Tuple containing
                 the resolved engine and its name.
 
         !!! info
@@ -2300,7 +2300,7 @@ class Executor(Configured):
             template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
-            Optional[ExecResults]: The result from `pre_chunk_func` if provided; otherwise, the loaded chunk cache.
+            Optional[ExecResults]: Result from `pre_chunk_func` if provided; otherwise, the loaded chunk cache.
         """
         chunk_cache = None
         if cache_chunks:
@@ -2504,7 +2504,7 @@ class Executor(Configured):
             template_context (KwargsLike): Additional context for template substitution.
 
         Returns:
-            Optional[ExecResults]: The post-processed execution results if modified; otherwise,
+            Optional[ExecResults]: Post-processed execution results if modified; otherwise,
                 the aggregated results.
         """
         if cache_chunks and release_chunk_cache:
@@ -3281,7 +3281,7 @@ def parse_iterable_and_keys(
             `vectorbtpro.base.indexes.index_from_values`.
 
     Returns:
-        Tuple[Iterable, Optional[Index]]: A tuple containing the iterable values and the
+        Tuple[Iterable, Optional[Index]]: Tuple containing the iterable values and the
             derived or provided keys.
     """
     if keys is not None:

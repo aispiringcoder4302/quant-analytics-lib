@@ -69,7 +69,7 @@ class ChunkableRegistry(Base):
         """Dictionary mapping setup IDs to registered `ChunkedSetup` instances.
 
         Returns:
-            Dict[Hashable, ChunkedSetup]: The dictionary of registered setups.
+            Dict[Hashable, ChunkedSetup]: Dictionary of registered setups.
         """
         return self._setups
 
@@ -108,7 +108,7 @@ class ChunkableRegistry(Base):
             context (KwargsLike): Additional context data used during evaluation.
 
         Returns:
-            Set[ChunkedSetup]: The set of setups that satisfy the specified expression.
+            Set[ChunkedSetup]: Set of setups that satisfy the specified expression.
         """
         matched_setups = set()
         for setup in self.setups.values():
@@ -131,7 +131,7 @@ class ChunkableRegistry(Base):
                 If a function is provided, the identifier is constructed from its module and name.
 
         Returns:
-            Optional[ChunkedSetup]: The corresponding chunkable setup if found; otherwise, None.
+            Optional[ChunkedSetup]: Corresponding chunkable setup if found; otherwise, None.
         """
         if hasattr(setup_id_or_func, "py_func"):
             nb_setup_id = setup_id_or_func.__module__ + "." + setup_id_or_func.__name__

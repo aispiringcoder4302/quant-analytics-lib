@@ -184,7 +184,7 @@ class BasicAssetPipeline(AssetPipeline):
         """Tasks that have been added to the pipeline.
 
         Returns:
-            List[Task]: A list of tasks in the pipeline.
+            List[Task]: List of tasks in the pipeline.
         """
         return self._tasks
 
@@ -284,7 +284,7 @@ class ComplexAssetPipeline(AssetPipeline):
             **resolve_task_kwargs: Keyword arguments for task resolution.
 
         Returns:
-            Tuple[str, Kwargs]: A tuple containing the modified expression and the updated context.
+            Tuple[str, Kwargs]: Tuple containing the modified expression and the updated context.
         """
         import importlib
         import builtins

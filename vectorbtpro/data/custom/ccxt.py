@@ -209,7 +209,7 @@ class CCXTData(RemoteData):
             exchange_config (Optional[KwargsLike]): Additional configurations for the exchange.
 
         Returns:
-            List[str]: A list of matching symbols.
+            List[str]: List of matching symbols.
         """
         if exchange_config is None:
             exchange_config = {}
@@ -297,7 +297,7 @@ class CCXTData(RemoteData):
             for_internal_use (bool): Flag indicating whether the search is for internal processing.
 
         Returns:
-            Optional[Timestamp]: The earliest timestamp if data is available, otherwise None.
+            Optional[Timestamp]: Earliest timestamp if data is available, otherwise None.
         """
         if start is not None:
             start_ts = dt.datetime_to_ms(dt.to_tzaware_datetime(start, naive_tz=tz, tz="utc"))
@@ -356,7 +356,7 @@ class CCXTData(RemoteData):
             **kwargs: Keyword arguments for `CCXTData.fetch_symbol`.
 
         Returns:
-            Optional[Timestamp]: The earliest timestamp if data is available, otherwise None.
+            Optional[Timestamp]: Earliest timestamp if data is available, otherwise None.
         """
         return cls.fetch_find_earliest_date(
             **cls.fetch_symbol(symbol, return_fetch_method=True, **kwargs),
@@ -564,7 +564,7 @@ class CCXTData(RemoteData):
                         break
                     if delay is not None:
                         time.sleep(delay)  # be kind to api
-        except Exception as e:
+        except Exception:
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(

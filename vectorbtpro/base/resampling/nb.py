@@ -186,7 +186,7 @@ def map_index_to_source_ranges_nb(
             otherwise, include those following or equal.
 
     Returns:
-        Tuple[Array1d, Array1d]: A tuple containing:
+        Tuple[Array1d, Array1d]: Tuple containing:
 
             * The inclusive start indices in `source_index`.
             * The exclusive end indices in `source_index`.
@@ -272,7 +272,7 @@ def map_bounds_to_source_ranges_nb(
         skip_not_found (bool): Whether to drop indices that are -1 (not found).
 
     Returns:
-        Tuple[Array1d, Array1d]: A tuple where the first array contains inclusive start indices and the
+        Tuple[Array1d, Array1d]: Tuple where the first array contains inclusive start indices and the
         second array contains exclusive end indices corresponding to the source ranges.
 
     !!! note

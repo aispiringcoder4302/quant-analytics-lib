@@ -271,7 +271,7 @@ def to_civil_nb(ts: int) -> tp.Tuple[int, int, int]:
         ts (int): Timestamp in nanoseconds.
 
     Returns:
-        Tuple[int, int, int]: A tuple containing the year, month, and day.
+        Tuple[int, int, int]: Tuple containing the year, month, and day.
     """
     z = days_nb(ts)
     z += 719468

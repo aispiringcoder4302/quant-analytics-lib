@@ -508,7 +508,7 @@ class AttrResolverMixin(Base):
         """Set of alias names associated with the object.
 
         Returns:
-            Set[str]: A set of alias names.
+            Set[str]: Set of alias names.
         """
         return {"self"}
 
@@ -565,7 +565,7 @@ class AttrResolverMixin(Base):
         """Set of attribute names defined on the object's class.
 
         Returns:
-            Set[str]: A set of attribute names.
+            Set[str]: Set of attribute names.
         """
         return set(dir(type(self)))
 

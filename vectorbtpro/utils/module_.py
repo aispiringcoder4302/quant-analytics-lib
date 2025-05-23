@@ -95,7 +95,7 @@ def list_module_keys(
         blacklist (Optional[List[str]]): Names to exclude from the list.
 
     Returns:
-        List[str]: A list of public function and class names.
+        List[str]: List of public function and class names.
     """
     if whitelist is None:
         whitelist = []
@@ -202,7 +202,7 @@ def find_class(path: str) -> tp.Optional[tp.Type]:
         path (str): Dot-separated path to the class.
 
     Returns:
-        Optional[Type]: The class if found; otherwise, None.
+        Optional[Type]: Class if found; otherwise, None.
     """
     try:
         path_parts = path.split(".")
@@ -215,7 +215,7 @@ def find_class(path: str) -> tp.Optional[tp.Type]:
         module = importlib.import_module(module_path)
         if hasattr(module, class_name):
             return getattr(module, class_name)
-    except Exception as e:
+    except Exception:
         pass
     return None
 
@@ -236,7 +236,7 @@ def get_installed_overview() -> tp.Dict[str, bool]:
     """Return a dictionary mapping package names from `opt_dep_config` to their installation status.
 
     Returns:
-        Dict[str, bool]: A mapping where keys are package names and values indicate installation status.
+        Dict[str, bool]: Mapping where keys are package names and values indicate installation status.
     """
     return {pkg_name: check_installed(pkg_name) for pkg_name in opt_dep_config.keys()}
 
@@ -366,7 +366,7 @@ def get_caller_qualname() -> tp.Optional[str]:
     """Return the qualified name of the calling function or method.
 
     Returns:
-        Optional[str]: The qualified name of the function or method that invoked this function.
+        Optional[str]: Qualified name of the function or method that invoked this function.
     """
     frame = inspect.currentframe()
     try:
@@ -398,7 +398,7 @@ def get_method_class(meth: tp.Callable) -> tp.Optional[tp.Type]:
         meth (Callable): Method or function for which to determine the associated class.
 
     Returns:
-        Optional[type]: The class object if found, otherwise None.
+        Optional[type]: Class object if found, otherwise None.
     """
     if inspect.ismethod(meth) or (
         inspect.isbuiltin(meth)
@@ -465,7 +465,7 @@ def get_refname_module_and_qualname(
         module (Optional[ModuleType]): Module context for extraction.
 
     Returns:
-        Tuple[Optional[ModuleType], Optional[str]]: A tuple containing the module and the qualified name.
+        Tuple[Optional[ModuleType], Optional[str]]: Tuple containing the module and the qualified name.
     """
     refname_parts = refname.split(".")
     if module is None:
@@ -492,7 +492,7 @@ def resolve_refname(refname: str, module: tp.Union[None, str, ModuleType] = None
         module (Union[None, str, ModuleType]): Module context used in reference resolution.
 
     Returns:
-        Optional[MaybeList[str]]: The resolved reference name(s) as a string or a list of strings,
+        Optional[MaybeList[str]]: Resolved reference name(s) as a string or a list of strings,
             or None if unresolved.
     """
     if refname == "":
@@ -604,7 +604,7 @@ def get_refname(
         resolve (bool): Whether to resolve the parsed reference name.
 
     Returns:
-        Optional[MaybeList[str]]: The resolved reference name as a string,
+        Optional[MaybeList[str]]: Resolved reference name as a string,
             a list of strings if multiple names are found, or None.
     """
     if isinstance(obj, tuple):
@@ -691,7 +691,7 @@ def prepare_refname(
         raise_error (bool): Whether to raise an error if the reference name cannot be determined.
 
     Returns:
-        Union[None, str, Tuple[str, ModuleType, str]]: The prepared reference name as a string,
+        Union[None, str, Tuple[str, ModuleType, str]]: Prepared reference name as a string,
             or a tuple of (refname, module, qualified name) if `return_parts` is True; or None
             if the reference name cannot be determined.
     """
@@ -731,10 +731,10 @@ def annotate_refname_parts(refname: str) -> tp.Tuple[dict, ...]:
         refname (str): Dot-separated reference name.
 
     Returns:
-        Tuple[dict, ...]: A tuple of dictionaries, each containing:
+        Tuple[dict, ...]: Tuple of dictionaries, each containing:
 
-            * `name`: The reference name part.
-            * `obj`: The object corresponding to the reference name part.
+            * `name`: Reference name part.
+            * `obj`: Object corresponding to the reference name part.
     """
     refname_parts = refname.split(".")
     obj = None

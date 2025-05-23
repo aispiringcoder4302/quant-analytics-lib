@@ -214,7 +214,7 @@ def split_range_by_gap_nb(range_: tp.Array1d) -> tp.Tuple[tp.Array1d, tp.Array1d
         range_ (Array1d): 1-dimensional array of indices.
 
     Returns:
-        Tuple[Array1d, Array1d]: A tuple containing two arrays:
+        Tuple[Array1d, Array1d]: Tuple containing two arrays:
 
             * The first array contains the starting indices of each contiguous segment.
             * The second array contains the ending indices (exclusive) of each contiguous segment.

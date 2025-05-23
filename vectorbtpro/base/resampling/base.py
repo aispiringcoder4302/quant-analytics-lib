@@ -255,7 +255,7 @@ class Resampler(Configured):
             if not isinstance(source_freq, (int, float)):
                 try:
                     source_freq = dt.to_timedelta64(source_freq)
-                except ValueError as e:
+                except ValueError:
                     if not silence_warnings:
                         warn(f"Cannot convert {source_freq} to np.timedelta64. Setting to None.")
                         warned = True
@@ -283,7 +283,7 @@ class Resampler(Configured):
             if not isinstance(target_freq, (int, float)):
                 try:
                     target_freq = dt.to_timedelta64(target_freq)
-                except ValueError as e:
+                except ValueError:
                     if not silence_warnings:
                         warn(f"Cannot convert {target_freq} to np.timedelta64. Setting to None.")
                         warned = True
@@ -386,7 +386,7 @@ class Resampler(Configured):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            Union[Array1d, Index]: The mapped index values.
+            Union[Array1d, Index]: Mapped index values.
 
         See:
             `vectorbtpro.base.resampling.nb.map_to_target_index_nb`
@@ -428,7 +428,7 @@ class Resampler(Configured):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
-            Union[Array1d, Index]: The computed index difference mapping.
+            Union[Array1d, Index]: Computed index difference mapping.
 
         See:
             `vectorbtpro.base.resampling.nb.index_difference_nb`
@@ -459,7 +459,7 @@ class Resampler(Configured):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            Tuple[Array1d, Array1d]: A tuple with the start and end indices of the source ranges.
+            Tuple[Array1d, Array1d]: Tuple with the start and end indices of the source ranges.
 
         See:
             `vectorbtpro.base.resampling.nb.map_index_to_source_ranges_nb`
@@ -508,7 +508,7 @@ class Resampler(Configured):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
-            Tuple[Array1d, Array1d]: A pair of arrays representing the mapping from target bounds to source ranges.
+            Tuple[Array1d, Array1d]: Pair of arrays representing the mapping from target bounds to source ranges.
 
         See:
             `vectorbtpro.base.resampling.nb.map_bounds_to_source_ranges_nb`

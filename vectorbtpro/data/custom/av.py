@@ -112,7 +112,7 @@ class AVData(RemoteData):
             sort (bool): Flag indicating whether to sort the symbols alphabetically.
 
         Returns:
-            List[str]: A list of unique symbols.
+            List[str]: List of unique symbols.
         """
         apikey = cls.resolve_custom_setting(apikey, "apikey")
 
@@ -306,7 +306,7 @@ class AVData(RemoteData):
                 warn("Parsing API documentation...")
             try:
                 api_meta = cls.parse_api_meta()
-            except Exception as e:
+            except Exception:
                 raise ValueError("Can't fetch/parse the API documentation. Specify function and disable match_params.")
 
         freq = timeframe

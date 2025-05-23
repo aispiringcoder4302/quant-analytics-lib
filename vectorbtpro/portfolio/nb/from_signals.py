@@ -47,7 +47,7 @@ def resolve_pending_conflict_nb(
             See `vectorbtpro.portfolio.enums.PendingConflictMode`.
 
     Returns:
-        Tuple[bool, bool]: A tuple where the first element indicates whether to keep the pending signal,
+        Tuple[bool, bool]: Tuple where the first element indicates whether to keep the pending signal,
             and the second indicates whether to execute the user-defined signal.
     """
     if (is_pending_long and is_user_long) or (not is_pending_long and not is_user_long):
@@ -89,7 +89,7 @@ def generate_stop_signal_nb(
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
 
     Returns:
-        Tuple[bool, bool, bool, bool, int]: A tuple containing:
+        Tuple[bool, bool, bool, bool, int]: Tuple containing:
 
             * `is_long_entry`: Indicates a long entry signal.
             * `is_long_exit`: Indicates a long exit signal.
@@ -152,7 +152,7 @@ def resolve_signal_conflict_nb(
             See `vectorbtpro.portfolio.enums.ConflictMode`.
 
     Returns:
-        Tuple[bool, bool]: A tuple where the first element indicates the adjusted entry signal,
+        Tuple[bool, bool]: Tuple where the first element indicates the adjusted entry signal,
             and the second indicates the adjusted exit signal.
     """
     if is_entry and is_exit:
@@ -220,7 +220,7 @@ def resolve_dir_conflict_nb(
             See `vectorbtpro.portfolio.enums.DirectionConflictMode`.
 
     Returns:
-        Tuple[bool, bool]: A tuple where the first element indicates whether the long entry signal
+        Tuple[bool, bool]: Tuple where the first element indicates whether the long entry signal
             should be executed, and the second indicates whether the short entry signal should be executed.
     """
     if is_long_entry and is_short_entry:
@@ -279,7 +279,7 @@ def resolve_opposite_entry_nb(
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
 
     Returns:
-        Tuple[bool, bool, bool, bool, int]: A tuple containing:
+        Tuple[bool, bool, bool, bool, int]: Tuple containing:
 
             * `is_long_entry`: Adjusted long entry signal.
             * `is_long_exit`: Adjusted long exit signal.
@@ -355,11 +355,11 @@ def signal_to_size_nb(
             See `vectorbtpro.portfolio.enums.AccumulationMode`.
 
     Returns:
-        Tuple[float, int, int]: A tuple containing:
+        Tuple[float, int, int]: Tuple containing:
 
-            * `order_size`: The computed order size.
-            * `size_type`: The normalized size type after any adjustments.
-            * `direction`: The resulting trading direction.
+            * `order_size`: Computed order size.
+            * `size_type`: Normalized size type after any adjustments.
+            * `direction`: Resulting trading direction.
     """
     if (
         accumulate != AccumulationMode.Disabled
@@ -497,7 +497,7 @@ def prepare_fs_records_nb(
             reduce memory usage, or higher if multiple logs per timestamp are expected.
 
     Returns:
-        Tuple[RecordArray2d, RecordArray2d]: A tuple containing:
+        Tuple[RecordArray2d, RecordArray2d]: Tuple containing:
 
             `order_records`: Array for order records (dtype `vectorbtpro.portfolio.enums.fs_order_dt`).
             `log_records`: Array for log records (dtype `vectorbtpro.portfolio.enums.log_dt`).
@@ -4190,7 +4190,7 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
         *args: Additional positional arguments.
 
     Returns:
-        Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
+        Tuple[bool, bool, bool, bool]: Tuple containing booleans representing:
 
             * long entry signal,
             * long exit signal,
@@ -4213,7 +4213,7 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
 #         c (SignalContext): Signal context.
 #
 #     Returns:
-#         Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
+#         Tuple[bool, bool, bool, bool]: Tuple containing booleans representing:
 #
 #             * long entry signal,
 #             * long exit signal,
@@ -7245,7 +7245,7 @@ def dir_to_ls_signals_nb(
             See `vectorbtpro.portfolio.enums.Direction`.
 
     Returns:
-        Tuple[Array2d, Array2d, Array2d, Array2d]: A tuple containing:
+        Tuple[Array2d, Array2d, Array2d, Array2d]: Tuple containing:
 
             * long entries,
             * long exits,
@@ -7349,7 +7349,7 @@ def holding_enex_signal_func_nb(  # % line.replace("holding_enex_signal_func_nb"
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
-        Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
+        Tuple[bool, bool, bool, bool]: Tuple containing booleans representing:
 
             * long entry signal,
             * long exit signal,
@@ -7411,7 +7411,7 @@ def dir_signal_func_nb(  # % line.replace("dir_signal_func_nb", "signal_func_nb"
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
-        Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
+        Tuple[bool, bool, bool, bool]: Tuple containing booleans representing:
 
             * long entry signal,
             * long exit signal,
@@ -7469,7 +7469,7 @@ def ls_signal_func_nb(  # % line.replace("ls_signal_func_nb", "signal_func_nb")
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
-        Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
+        Tuple[bool, bool, bool, bool]: Tuple containing booleans representing:
 
             * long entry signal,
             * long exit signal,
@@ -7532,7 +7532,7 @@ def order_signal_func_nb(  # % line.replace("order_signal_func_nb", "signal_func
         adjust_args (Args): Positional arguments for `adjust_func_nb`.
 
     Returns:
-        Tuple[bool, bool, bool, bool]: A tuple containing booleans representing:
+        Tuple[bool, bool, bool, bool]: Tuple containing booleans representing:
 
             * long entry signal,
             * long exit signal,

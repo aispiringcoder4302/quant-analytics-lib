@@ -224,7 +224,7 @@ def flex_choose_i_and_col_nb(
         rotate_cols (bool): Flag indicating whether to apply rotational indexing along columns.
 
     Returns:
-        Tuple[int, int]: A tuple containing the computed row and column indices.
+        Tuple[int, int]: Tuple containing the computed row and column indices.
 
     !!! note
         Array must be two-dimensional.

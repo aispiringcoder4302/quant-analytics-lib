@@ -177,7 +177,7 @@ class FinPyData(RemoteData):
             combine_parts (bool): Whether to combine parts of symbol components into a single string.
 
         Returns:
-            List[str]: A list of symbols that match the specified filters.
+            List[str]: List of symbols that match the specified filters.
         """
         if config_manager_config is None:
             config_manager_config = {}

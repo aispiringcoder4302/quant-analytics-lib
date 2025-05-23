@@ -773,10 +773,10 @@ class MappedArray(Analyzable):
 
                 * `wrapper_meta`: Metadata from the wrapper.
                 * `new_indices`: New indices after selection.
-                * `new_mapped_arr`: The mapped array after indexing.
-                * `new_col_arr`: The column array after indexing.
-                * `new_idx_arr`: The new index array, if available.
-                * `new_id_arr`: The new ID array after indexing.
+                * `new_mapped_arr`: Mapped array after indexing.
+                * `new_col_arr`: Column array after indexing.
+                * `new_idx_arr`: New index array, if available.
+                * `new_id_arr`: New ID array after indexing.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(
@@ -849,7 +849,7 @@ class MappedArray(Analyzable):
             dict: Dictionary containing:
 
                 * `wrapper_meta`: Resampling metadata from the wrapper.
-                * `new_idx_arr`: The new index array after resampling, if available.
+                * `new_idx_arr`: New index array after resampling, if available.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)
@@ -982,7 +982,7 @@ class MappedArray(Analyzable):
         """Index array mapping each element to its corresponding index in the wrapper.
 
         Returns:
-            Optional[Array1d]: The index array mapping each element if available; otherwise, None.
+            Optional[Array1d]: Index array mapping each element if available; otherwise, None.
         """
         return self._idx_arr
 
@@ -1000,7 +1000,7 @@ class MappedArray(Analyzable):
         """Mapping used for value conversion.
 
         Returns:
-            Optional[MappingLike]: The mapping dictionary or None.
+            Optional[MappingLike]: Mapping dictionary or None.
         """
         return self._mapping
 
@@ -1231,7 +1231,7 @@ class MappedArray(Analyzable):
                 If None or True, the instance's mapping is used.
 
         Returns:
-            Optional[Mapping]: The resolved mapping used for value conversion,
+            Optional[Mapping]: Resolved mapping used for value conversion,
                 or None if mapping is disabled.
         """
         if mapping is None or mapping is True:

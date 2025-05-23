@@ -189,7 +189,7 @@ class CSVData(FileData):
                 if _path.suffix.lower() == ".tsv":
                     if sep is None:
                         sep = "\t"
-            except Exception as e:
+            except Exception:
                 pass
         if sep is None:
             sep = ","

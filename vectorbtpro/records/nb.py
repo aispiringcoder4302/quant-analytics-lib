@@ -599,7 +599,7 @@ def reduce_mapped_segments_nb(
         *args: Positional arguments for `reduce_func_nb`.
 
     Returns:
-        Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing the reduced values,
+        Tuple[Array1d, Array1d, Array1d, Array1d]: Tuple containing the reduced values,
             column indices, indices, and id values.
 
     !!! note

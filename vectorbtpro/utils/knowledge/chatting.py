@@ -490,7 +490,7 @@ class Embeddings(Configured):
         Use None to disable batching.
 
         Returns:
-            Optional[int]: The batch size.
+            Optional[int]: Batch size.
         """
         return self._batch_size
 
@@ -526,7 +526,7 @@ class Embeddings(Configured):
         """Model identifier.
 
         Returns:
-            Optional[str]: The model identifier; None by default.
+            Optional[str]: Model identifier; None by default.
         """
         return None
 
@@ -537,7 +537,7 @@ class Embeddings(Configured):
             query (str): Query text.
 
         Returns:
-            List[float]: The embedding vector.
+            List[float]: Embedding vector.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -551,7 +551,7 @@ class Embeddings(Configured):
             batch (List[str]): List of query texts.
 
         Returns:
-            List[List[float]]: A list containing an embedding vector for each query.
+            List[List[float]]: List containing an embedding vector for each query.
         """
         return [self.get_embedding(query) for query in batch]
 
@@ -562,7 +562,7 @@ class Embeddings(Configured):
             queries (List[str]): List of query texts.
 
         Returns:
-            Iterator[List[List[float]]]: An iterator yielding batches of embedding vectors.
+            Iterator[List[List[float]]]: Iterator yielding batches of embedding vectors.
         """
         from vectorbtpro.utils.pbar import ProgressBar
 
@@ -583,7 +583,7 @@ class Embeddings(Configured):
             queries (List[str]): List of query texts.
 
         Returns:
-            List[List[float]]: A list containing an embedding vector for each query.
+            List[List[float]]: List containing an embedding vector for each query.
         """
         return [embedding for batch in self.iter_embedding_batches(queries) for embedding in batch]
 
@@ -964,7 +964,7 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
         **kwargs: Keyword arguments to initialize or update `embeddings`.
 
     Returns:
-        MaybeList[List[float]]: The embedding vector(s) corresponding to the input query or queries.
+        MaybeList[List[float]]: Embedding vector(s) corresponding to the input query or queries.
     """
     embeddings = resolve_embeddings(embeddings=embeddings)
     if isinstance(embeddings, type):
@@ -1145,7 +1145,7 @@ class Completions(Configured):
         """Boolean indicating if `Completions.max_tokens` was explicitly provided by the user.
 
         Returns:
-            Optional[int]: The maximum token limit set by the user; None if not set.
+            Optional[int]: Maximum token limit set by the user; None if not set.
         """
         return self._max_tokens_set
 
@@ -1154,7 +1154,7 @@ class Completions(Configured):
         """Maximum token limit configured for messages.
 
         Returns:
-            Union[bool, int]: The maximum token limit; False if disabled.
+            Union[bool, int]: Maximum token limit; False if disabled.
         """
         return self._max_tokens
 
@@ -1165,7 +1165,7 @@ class Completions(Configured):
         Resolved using `resolve_tokenizer`.
 
         Returns:
-            MaybeType[Tokenizer]: The resolved tokenizer instance or subclass.
+            MaybeType[Tokenizer]: Resolved tokenizer instance or subclass.
         """
         return self._tokenizer
 
@@ -1222,7 +1222,7 @@ class Completions(Configured):
         This formatter is used to format the content of the response.
 
         Returns:
-            MaybeType[ContentFormatter]: The resolved content formatter instance or subclass.
+            MaybeType[ContentFormatter]: Resolved content formatter instance or subclass.
         """
         return self._formatter
 
@@ -1276,7 +1276,7 @@ class Completions(Configured):
         """Model name.
 
         Returns:
-            Optional[str]: The model name if specified; otherwise, None.
+            Optional[str]: Model name if specified; otherwise, None.
         """
         return None
 
@@ -1302,7 +1302,7 @@ class Completions(Configured):
             response (Any): Chat response object.
 
         Returns:
-            Optional[str]: The content extracted from the chat response.
+            Optional[str]: Content extracted from the chat response.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -1331,7 +1331,7 @@ class Completions(Configured):
             response (Any): Streaming response object.
 
         Returns:
-            Optional[str]: The content extracted from the streaming response chunk.
+            Optional[str]: Content extracted from the streaming response chunk.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -2029,7 +2029,7 @@ class TextSplitter(Configured):
             text (str): Input text to split.
 
         Yields:
-            Tuple[int, int]: A tuple representing the start and end indices of a text chunk.
+            Tuple[int, int]: Tuple representing the start and end indices of a text chunk.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -2173,7 +2173,7 @@ class TokenSplitter(TextSplitter):
             text (str): Text to tokenize.
 
         Yields:
-            Tuple[int, int]: The start and end indices of each token.
+            Tuple[int, int]: Start and end indices of each token.
         """
         tokens = self.tokenizer.encode(text)
         last_end = 0
@@ -2310,7 +2310,7 @@ class SegmentSplitter(TokenSplitter):
             separator (Optional[str]): Separator to insert between data items.
 
         Yields:
-            Tuple[int, int, bool]: A tuple containing the segment's start index, end index, and
+            Tuple[int, int, bool]: Tuple containing the segment's start index, end index, and
                 a flag indicating if the segment is a separator.
         """
         if not separator:
@@ -2572,7 +2572,7 @@ class SourceSplitter(TokenSplitter):
             source (str): Source code to be split.
 
         Yields:
-            Tuple[str, int]: A tuple containing the source code chunk and its base level.
+            Tuple[str, int]: Tuple containing the source code chunk and its base level.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -2914,8 +2914,8 @@ class MarkdownSplitter(SourceSplitter):
         """Determine whether to split the given section.
 
         Args:
-            section: The section to evaluate.
-            level: The current level of the section.
+            section: Section to evaluate.
+            level: Current level of the section.
 
         Returns:
             bool: True if the section should be split; False otherwise.
@@ -3287,7 +3287,7 @@ def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -
         **kwargs: Keyword arguments to initialize or update `text_splitter`.
 
     Returns:
-        List[str]: A list of text chunks.
+        List[str]: List of text chunks.
     """
     text_splitter = resolve_text_splitter(text_splitter=text_splitter)
     if isinstance(text_splitter, type):
@@ -3383,7 +3383,7 @@ class StoreDocument(StoreData, DefineMixin):
         """Return the document content.
 
         Returns:
-            Optional[str]: The content if available, otherwise None.
+            Optional[str]: Content if available, otherwise None.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -3394,7 +3394,7 @@ class StoreDocument(StoreData, DefineMixin):
         """Return a list of document instances resulting from splitting the current document.
 
         Returns:
-            List[StoreDocument]: A list of document chunks.
+            List[StoreDocument]: List of document chunks.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -3461,7 +3461,7 @@ class TextDocument(StoreDocument, DefineMixin):
         """Return the text content of the document.
 
         Returns:
-            Optional[str]: The document's text, or None if not available.
+            Optional[str]: Document's text, or None if not available.
         """
         from vectorbtpro.utils.search_ import get_pathlike_key
 
@@ -3490,7 +3490,7 @@ class TextDocument(StoreDocument, DefineMixin):
             for_embed (bool): Flag indicating if metadata for embeddings should be retrieved.
 
         Returns:
-            Optional[Any]: The metadata if available, otherwise None.
+            Optional[Any]: Metadata if available, otherwise None.
         """
         from vectorbtpro.utils.search_ import remove_pathlike_key
 
@@ -3520,7 +3520,7 @@ class TextDocument(StoreDocument, DefineMixin):
         for p in excl_metadata:
             try:
                 data = remove_pathlike_key(data, p, make_copy=True, prev_keys=prev_keys)
-            except (KeyError, IndexError, AttributeError) as e:
+            except (KeyError, IndexError, AttributeError):
                 continue
         return data
 
@@ -3531,7 +3531,7 @@ class TextDocument(StoreDocument, DefineMixin):
             for_embed (bool): Flag indicating if metadata for embeddings should be retrieved.
 
         Returns:
-            Optional[str]: The formatted metadata content, or None if metadata is missing.
+            Optional[str]: Formatted metadata content, or None if metadata is missing.
         """
         from vectorbtpro.utils.formatting import dump
 
@@ -3715,7 +3715,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         """Mirror store identifier.
 
         Returns:
-            Optional[str]: The mirror store ID if applicable; otherwise, None.
+            Optional[str]: Mirror store ID if applicable; otherwise, None.
         """
         return None
 
@@ -3774,7 +3774,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
             id_ (str): Identifier of the object to retrieve.
 
         Returns:
-            StoreObject: The object associated with the given identifier.
+            StoreObject: Object associated with the given identifier.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -3814,7 +3814,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         """Return an iterator over the identifiers of the objects in the store.
 
         Returns:
-            Iterator[str]: An iterator over the identifiers of the objects in the store.
+            Iterator[str]: Iterator over the identifiers of the objects in the store.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -3825,7 +3825,7 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         """Return the number of objects in the store.
 
         Returns:
-            int: The number of objects in the store.
+            int: Number of objects in the store.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -3871,7 +3871,7 @@ class DictStore(ObjectStore):
         """Underlying dictionary storing the objects.
 
         Returns:
-            Dict[str, StoreObject]: The dictionary holding the objects.
+            Dict[str, StoreObject]: Dictionary holding the objects.
         """
         return self._store
 
@@ -4034,7 +4034,7 @@ class FileStore(DictStore):
         """Directory path used for file storage.
 
         Returns:
-            Optional[Path]: The directory path, or None if not set.
+            Optional[Path]: Directory path, or None if not set.
         """
         return self._dir_path
 
@@ -4092,7 +4092,7 @@ class FileStore(DictStore):
         """Dictionary of newly added or modified objects.
 
         Returns:
-            Dict[str, StoreObject]: A mapping of object keys to their associated updated objects.
+            Dict[str, StoreObject]: Mapping of object keys to their associated updated objects.
         """
         return self._store_changes
 
@@ -4101,7 +4101,7 @@ class FileStore(DictStore):
         """Keys representing objects not yet added to the main store.
 
         Returns:
-            Set[str]: A set of new object keys.
+            Set[str]: Set of new object keys.
         """
         return self._new_keys
 
@@ -4347,7 +4347,7 @@ class LMDBStore(ObjectStore):
         """Directory path used for the LMDB store.
 
         Returns:
-            Optional[Path]: The directory path for the LMDB store, or None if not set.
+            Optional[Path]: Directory path for the LMDB store, or None if not set.
         """
         return self._dir_path
 
@@ -4417,7 +4417,7 @@ class LMDBStore(ObjectStore):
         """LMDB database instance.
 
         Returns:
-            Optional[Lmdb]: The LMDB database instance if the store is open; otherwise, None.
+            Optional[Lmdb]: LMDB database instance if the store is open; otherwise, None.
         """
         return self._db
 
@@ -4998,7 +4998,7 @@ class DocumentRanker(Configured):
         """BM25 tokenizer instance from `bm25s.tokenization.Tokenizer`.
 
         Returns:
-            Optional[BM25Tokenizer]: The BM25 tokenizer instance used for processing text; None if not set.
+            Optional[BM25Tokenizer]: BM25 tokenizer instance used for processing text; None if not set.
         """
         return self._bm25_tokenizer
 
@@ -5016,7 +5016,7 @@ class DocumentRanker(Configured):
         """BM25 retriever instance from `bm25s.BM25`.
 
         Returns:
-            Optional[BM25]: The BM25 retriever instance used for document retrieval; None if not set.
+            Optional[BM25]: BM25 retriever instance used for document retrieval; None if not set.
         """
         return self._bm25_retriever
 
@@ -5048,7 +5048,7 @@ class DocumentRanker(Configured):
         See `DocumentRanker.compute_score`.
 
         Returns:
-            Union[str, Callable]: The score function used for computing document scores.
+            Union[str, Callable]: Score function used for computing document scores.
         """
         return self._score_func
 
@@ -5112,7 +5112,7 @@ class DocumentRanker(Configured):
             **kwargs: Keyword arguments for initializing `bm25_tokenizer` and tokenization.
 
         Returns:
-            Tuple[BM25TokenizerT, Kwargs]: The resolved BM25 tokenizer and the tokenization keyword arguments.
+            Tuple[BM25TokenizerT, Kwargs]: Resolved BM25 tokenizer and the tokenization keyword arguments.
         """
         from vectorbtpro.utils.module_ import assert_can_import, check_installed
 
@@ -5161,7 +5161,7 @@ class DocumentRanker(Configured):
             **kwargs: Keyword arguments for initializing `bm25_retriever` and retrieval.
 
         Returns:
-            Tuple[BM25T, Kwargs]: The resolved BM25 retriever and the retrieval keyword arguments.
+            Tuple[BM25T, Kwargs]: Resolved BM25 retriever and the retrieval keyword arguments.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -5354,7 +5354,7 @@ class DocumentRanker(Configured):
             emb2 (Union[MaybeIterable[List[float]], ndarray]): Second embedding or collection of embeddings.
 
         Returns:
-            Union[float, ndarray]: The computed score or score matrix between the embeddings.
+            Union[float, ndarray]: Computed score or score matrix between the embeddings.
         """
         emb1 = np.asarray(emb1)
         emb2 = np.asarray(emb2)
@@ -5716,7 +5716,7 @@ class DocumentRanker(Configured):
                 a float percentage, a string ('elbow' or 'kmeans'), or a callable.
 
         Returns:
-            Optional[int]: The resolved `top_k` value, or None if `top_k` is not provided.
+            Optional[int]: Resolved `top_k` value, or None if `top_k` is not provided.
         """
         if top_k is None:
             return None
@@ -5753,7 +5753,7 @@ class DocumentRanker(Configured):
             cutoff (Optional[float]): Score threshold to filter documents.
 
         Returns:
-            Optional[int]: The count of scores greater than or equal to the cutoff, or None if cutoff is None.
+            Optional[int]: Count of scores greater than or equal to the cutoff, or None if cutoff is None.
         """
         if cutoff is None:
             return None
@@ -6052,7 +6052,7 @@ def embed_documents(
         **kwargs: Keyword arguments to initialize or update `doc_ranker`.
 
     Returns:
-        Optional[EmbeddedDocuments]: The embedded documents output.
+        Optional[EmbeddedDocuments]: Embedded documents output.
     """
     if doc_ranker is None:
         doc_ranker = DocumentRanker
@@ -6166,7 +6166,7 @@ class Rankable(HasSettings):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Optional[Rankable]: An updated instance with embedded documents, if available.
+            Optional[Rankable]: Updated instance with embedded documents, if available.
 
         !!! abstract
             This method should be overridden in a subclass.

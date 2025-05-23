@@ -2003,7 +2003,7 @@ def to_renko_1d_nb(
         max_out_len (Optional[int]): Maximum length of the output.
 
     Returns:
-        Tuple[Array1d, Array1d, Array1d]: A tuple containing:
+        Tuple[Array1d, Array1d, Array1d]: Tuple containing:
 
           * The array of calculated Renko brick values.
           * The indices corresponding to each brick.
@@ -2094,7 +2094,7 @@ def to_renko_ohlc_1d_nb(
         max_out_len (Optional[int]): Maximum length of the output.
 
     Returns:
-        Tuple[Array2d, Array1d]: A tuple containing:
+        Tuple[Array2d, Array1d]: Tuple containing:
 
           * A 2-dimensional array where each row represents an OHLC bar.
           * An array of indices corresponding to each OHLC bar.

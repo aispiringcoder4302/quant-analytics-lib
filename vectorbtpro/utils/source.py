@@ -46,7 +46,7 @@ def collect_blocks(lines: tp.Iterable[str]) -> tp.Dict[str, tp.List[str]]:
         lines (Iterable[str]): Lines of source code.
 
     Returns:
-        Dict[str, List[str]]: A mapping from block names to lists of lines for each block.
+        Dict[str, List[str]]: Mapping from block names to lists of lines for each block.
     """
     blocks = {}
     block_name = None
@@ -105,7 +105,7 @@ def cut_from_source(
         **kwargs: Additional context variables for expression evaluation.
 
     Returns:
-        Union[str, List[str]]: The processed section as a cleaned string, or as a list
+        Union[str, List[str]]: Processed section as a cleaned string, or as a list
             of lines if `return_lines` is True.
     """
     lines = source.split("\n")
@@ -633,7 +633,7 @@ def refine_source(
         try:
             if Path(source).exists():
                 source = Path(source)
-        except Exception as e:
+        except Exception:
             pass
     if isinstance(source, ModuleType) and hasattr(source, "__path__") and as_package:
         package_path = getattr(source, "__path__")
@@ -660,7 +660,7 @@ def refine_source(
                 try:
                     if Path(source).exists():
                         source = Path(source)
-                except Exception as e:
+                except Exception:
                     pass
             if isinstance(source, str):
                 source_name = "<string>"

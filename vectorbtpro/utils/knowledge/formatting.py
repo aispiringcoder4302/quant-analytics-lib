@@ -601,7 +601,7 @@ class ContentFormatter(Configured):
         """Output destination, which may be a file path or stream.
 
         Returns:
-            Optional[Union[str, TextIO]]: The output destination; None if not set.
+            Optional[Union[str, TextIO]]: Output destination; None if not set.
         """
         return self._output_to
 
@@ -637,7 +637,7 @@ class ContentFormatter(Configured):
         """Update interval in seconds.
 
         Returns:
-            Optional[float]: The time interval in seconds for updates; None if not set.
+            Optional[float]: Time interval in seconds for updates; None if not set.
         """
         return self._update_interval
 
@@ -664,7 +664,7 @@ class ContentFormatter(Configured):
         """Timestamp of the last update.
 
         Returns:
-            Optional[int]: The UNIX timestamp representing the last update time; None if not set.
+            Optional[int]: UNIX timestamp representing the last update time; None if not set.
         """
         return self._last_update
 
@@ -673,7 +673,7 @@ class ContentFormatter(Configured):
         """List of formatted lines.
 
         Returns:
-            List[str]: A list containing the formatted lines.
+            List[str]: List containing the formatted lines.
         """
         return self._lines
 
@@ -682,7 +682,7 @@ class ContentFormatter(Configured):
         """List of string segments constituting the current line.
 
         Returns:
-            List[str]: A list of string segments for the current line.
+            List[str]: List of string segments for the current line.
         """
         return self._current_line
 
@@ -709,7 +709,7 @@ class ContentFormatter(Configured):
         """List of buffered strings.
 
         Returns:
-            List[str]: A list containing the buffered strings.
+            List[str]: List containing the buffered strings.
         """
         return self._buffer
 
@@ -921,7 +921,7 @@ class IPythonFormatter(ContentFormatter):
         """IPython display handle.
 
         Returns:
-            Optional[DisplayHandleT]: The IPython display handle; None if not set.
+            Optional[DisplayHandleT]: IPython display handle; None if not set.
         """
         return self._display_handle
 
@@ -1215,7 +1215,7 @@ class HTMLFileFormatter(ContentFormatter):
         """Directory path for saving HTML files.
 
         Returns:
-            Optional[Path]: The directory path where the HTML files are stored, or None if not set.
+            Optional[Path]: Directory path where the HTML files are stored, or None if not set.
         """
         return self._dir_path
 
@@ -1316,7 +1316,7 @@ class HTMLFileFormatter(ContentFormatter):
         """File handle associated with the HTML output.
 
         Returns:
-            Optional[TextIO]: The open file object for the HTML output, or None if not initialized.
+            Optional[TextIO]: Open file object for the HTML output, or None if not initialized.
         """
         return self._file_handle
 

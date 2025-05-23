@@ -80,7 +80,7 @@ class Timer(Base):
             **kwargs: Keyword arguments for `humanize.precisedelta`.
 
         Returns:
-            Union[str, timedelta]: The elapsed time as a human-readable string or a timedelta.
+            Union[str, timedelta]: Elapsed time as a human-readable string or a timedelta.
         """
         elapsed = self.end_time - self.start_time
         elapsed_delta = timedelta(seconds=elapsed)
@@ -170,7 +170,7 @@ def timeit(func: tp.Callable, readable: bool = True, **kwargs) -> tp.Union[str, 
         **kwargs: Keyword arguments for `humanize.precisedelta`.
 
     Returns:
-        Union[str, timedelta]: The average execution time as a human-readable string or a timedelta.
+        Union[str, timedelta]: Average execution time as a human-readable string or a timedelta.
 
     Examples:
         ```pycon
@@ -282,7 +282,7 @@ class MemTracer(Base):
             **kwargs: Keyword arguments for `humanize.naturalsize`.
 
         Returns:
-            Union[str, int]: The final memory usage as a human-readable string or as an integer in bytes.
+            Union[str, int]: Final memory usage as a human-readable string or as an integer in bytes.
         """
         if self._final_usage is None:
             final_usage = tracemalloc.get_traced_memory()[0]
@@ -300,7 +300,7 @@ class MemTracer(Base):
             **kwargs: Keyword arguments for `humanize.naturalsize`.
 
         Returns:
-            Union[str, int]: The peak memory usage as a human-readable string or as an integer in bytes.
+            Union[str, int]: Peak memory usage as a human-readable string or as an integer in bytes.
         """
         if self._peak_usage is None:
             peak_usage = tracemalloc.get_traced_memory()[1]

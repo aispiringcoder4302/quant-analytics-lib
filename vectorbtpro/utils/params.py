@@ -298,7 +298,7 @@ def pick_from_param_grid(
             If None, a random index is chosen.
 
     Returns:
-        Union[ParamCombOrDict, List[Array1d]]: The selected parameter combination.
+        Union[ParamCombOrDict, List[Array1d]]: Selected parameter combination.
 
             Returns a dictionary if `param_grid` is a dict, or a list otherwise.
     """
@@ -1375,7 +1375,7 @@ class Parameterizer(Configured):
         See `combine_params`.
 
         Returns:
-            Union[None, slice, Sequence[int]]: The indices used to select specific combinations from the grid.
+            Union[None, slice, Sequence[int]]: Indices used to select specific combinations from the grid.
         """
         return self._grid_indices
 
@@ -1386,7 +1386,7 @@ class Parameterizer(Configured):
         See `combine_params`.
 
         Returns:
-            Union[None, int, float]: The size or fraction used to select a random subset of parameter combinations.
+            Union[None, int, float]: Size or fraction used to select a random subset of parameter combinations.
         """
         return self._random_subset
 
@@ -1419,7 +1419,7 @@ class Parameterizer(Configured):
         See `combine_params`.
 
         Returns:
-            Union[None, int, float]: The maximum number of parameter guesses allowed.
+            Union[None, int, float]: Maximum number of parameter guesses allowed.
         """
         return self._max_guesses
 
@@ -1430,7 +1430,7 @@ class Parameterizer(Configured):
         See `combine_params`.
 
         Returns:
-            Union[None, int, float]: The maximum number of misses allowed during parameter search.
+            Union[None, int, float]: Maximum number of misses allowed during parameter search.
         """
         return self._max_misses
 
@@ -1441,7 +1441,7 @@ class Parameterizer(Configured):
         See `combine_params`.
 
         Returns:
-            Optional[int]: The seed value used for random number generation.
+            Optional[int]: Seed value used for random number generation.
         """
         return self._seed
 
@@ -1452,7 +1452,7 @@ class Parameterizer(Configured):
         See `combine_params`.
 
         Returns:
-            Union[bool, Callable]: The flag or function used to convert name tuples to string format.
+            Union[bool, Callable]: Flag or function used to convert name tuples to string format.
         """
         return self._name_tuple_to_str
 
@@ -1472,7 +1472,7 @@ class Parameterizer(Configured):
         """Template or criteria to select specific parameter indices.
 
         Returns:
-            Optional[Selection]: The selection criteria used to filter parameter combinations.
+            Optional[Selection]: Selection criteria used to filter parameter combinations.
         """
         return self._selection
 
@@ -1490,7 +1490,7 @@ class Parameterizer(Configured):
         """Minimum number of parameter values to split, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
-            Optional[int]: The minimum allowed size for mono-chunks.
+            Optional[int]: Minimum allowed size for mono-chunks.
         """
         return self._mono_min_size
 
@@ -1499,7 +1499,7 @@ class Parameterizer(Configured):
         """Specification for the number of mono-chunks, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
-            Optional[Union[str, int]]: The number or method indicator for determining the number of chunks.
+            Optional[Union[str, int]]: Number or method indicator for determining the number of chunks.
         """
         return self._mono_n_chunks
 
@@ -1508,7 +1508,7 @@ class Parameterizer(Configured):
         """Specification for the length of each mono-chunk, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
-            Optional[Union[str, int]]: The length or method indicator for the size of each mono-chunk.
+            Optional[Union[str, int]]: Length or method indicator for the size of each mono-chunk.
         """
         return self._mono_chunk_len
 
@@ -1517,7 +1517,7 @@ class Parameterizer(Configured):
         """Custom metadata for mono-chunks, as defined in `vectorbtpro.utils.chunking.iter_chunk_meta`.
 
         Returns:
-            Optional[Iterable[ChunkMeta]]: The metadata information for each mono-chunk.
+            Optional[Iterable[ChunkMeta]]: Metadata information for each mono-chunk.
         """
         return self._mono_chunk_meta
 
@@ -1526,7 +1526,7 @@ class Parameterizer(Configured):
         """Flag or settings for reducing mono-chunk results.
 
         Returns:
-            Union[bool, Kwargs]: The configuration determining if mono-chunks should be reduced,
+            Union[bool, Kwargs]: Configuration determining if mono-chunks should be reduced,
                 or a dictionary of settings.
         """
         return self._mono_reduce
@@ -1538,7 +1538,7 @@ class Parameterizer(Configured):
         See `vectorbtpro.utils.merging.MergeFunc`.
 
         Returns:
-            MaybeDict[MergeFuncLike]: The merging function or a dictionary of such to combine parameter values.
+            MaybeDict[MergeFuncLike]: Merging function or a dictionary of such to combine parameter values.
         """
         return self._mono_merge_func
 
@@ -1651,7 +1651,7 @@ class Parameterizer(Configured):
             param_product (dict): Dictionary of parameter combinations.
 
         Returns:
-            List[Any]: A list of objects with parameter values replaced in the original object.
+            List[Any]: List of objects with parameter values replaced in the original object.
         """
         if len(param_product) == 0:
             return []
@@ -1711,7 +1711,7 @@ class Parameterizer(Configured):
                 See `vectorbtpro.utils.parsing.annotate_args`.
 
         Returns:
-            Tuple[str, str]: A tuple containing the names of variable positional and keyword arguments.
+            Tuple[str, str]: Tuple containing the names of variable positional and keyword arguments.
         """
         var_args_name = None
         var_kwargs_name = None
@@ -1798,7 +1798,7 @@ class Parameterizer(Configured):
                 `vectorbtpro.utils.execution.NoResultsException` exception if no results remain.
 
         Returns:
-            Tuple[List[Kwargs], Optional[Index], bool]: A tuple containing the selected configurations,
+            Tuple[List[Kwargs], Optional[Index], bool]: Tuple containing the selected configurations,
                 updated index, and a flag for single combination.
         """
         selection = substitute_templates(selection, template_context, eval_id="selection")
@@ -2081,7 +2081,7 @@ class Parameterizer(Configured):
             **kwargs: Keyword arguments for `func`.
 
         Returns:
-            Union[dict, MergeableResults, Tuple[MergeableResults, Optional[Index]]]: The result of
+            Union[dict, MergeableResults, Tuple[MergeableResults, Optional[Index]]]: Result of
                 executing `func` with parameterized arguments.
         """
         param_search_kwargs = self.param_search_kwargs

@@ -188,7 +188,7 @@ class ColumnMapper(Wrapping):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
-            Tuple[Array1d, Array1d]: A tuple containing the new indices and the updated column array.
+            Tuple[Array1d, Array1d]: Tuple containing the new indices and the updated column array.
 
         See:
             * `vectorbtpro.base.grouping.nb.group_lens_select_nb` if `ColumnMapper.is_sorted` returns True.
@@ -221,7 +221,7 @@ class ColumnMapper(Wrapping):
 
                 * `wrapper_meta`: Metadata from the wrapper's indexing function.
                 * `new_indices`: Indices after selecting columns.
-                * `new_col_arr`: The updated column array.
+                * `new_col_arr`: Updated column array.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.indexing_func_meta(

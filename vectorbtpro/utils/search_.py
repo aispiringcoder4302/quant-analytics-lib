@@ -1128,7 +1128,7 @@ def find_exact(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     if ignore_case:
         string_cmp = string.casefold()
@@ -1171,7 +1171,7 @@ def find_start(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     if ignore_case:
         string_cmp = string.casefold()
@@ -1214,7 +1214,7 @@ def find_end(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     if ignore_case:
         string_cmp = string.casefold()
@@ -1257,7 +1257,7 @@ def find_substring(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     if ignore_case:
         string_cmp = string.casefold()
@@ -1312,7 +1312,7 @@ def find_regex(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
 
     !!! note
         If `group` is None and the pattern contains exactly one group, that group is automatically selected.
@@ -1380,7 +1380,7 @@ def find_fuzzy(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
@@ -1435,7 +1435,7 @@ def find_rapidfuzz(
             Currently, only "bool" is supported.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
@@ -1490,7 +1490,7 @@ def find(
         **kwargs: Keyword arguments for the specific search function.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     if mode.lower() == "exact":
         return find_exact(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)

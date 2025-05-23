@@ -144,7 +144,7 @@ def concat_merge(
         **kwargs: Keyword arguments for `pd.concat`.
 
     Returns:
-        MaybeTuple[AnyArray]: The merged array-like object, which may be a Pandas Series,
+        MaybeTuple[AnyArray]: Merged array-like object, which may be a Pandas Series,
             a NumPy array, or a tuple/namedtuple of such objects.
 
     !!! note
@@ -306,7 +306,7 @@ def row_stack_merge(
             `vectorbtpro.base.wrapping.Wrapping.row_stack`.
 
     Returns:
-        MaybeTuple[AnyArray]: The merged result after row stacking.
+        MaybeTuple[AnyArray]: Merged result after row stacking.
 
     !!! note
         All arrays are assumed to have the same type and dimensionality.
@@ -478,7 +478,7 @@ def column_stack_merge(
             `vectorbtpro.base.wrapping.Wrapping.column_stack`.
 
     Returns:
-        MaybeTuple[AnyArray]: The merged column-stacked array-like object,
+        MaybeTuple[AnyArray]: Merged column-stacked array-like object,
             or a tuple of such objects when merging a sequence of tuples.
 
     !!! note
@@ -690,7 +690,7 @@ def imageio_merge(
         **imwrite_kwargs: Keyword arguments for `imageio.imwrite`.
 
     Returns:
-        MaybeTuple[Union[None, bytes]]: The merged image data.
+        MaybeTuple[Union[None, bytes]]: Merged image data.
 
             An individual `bytes` object is returned when a single merged image is produced,
             or a tuple of `bytes` objects when multiple are merged.
@@ -780,7 +780,7 @@ def mixed_merge(
         **kwargs: Keyword arguments for the merging functions if not overridden by `mixed_kwargs`.
 
     Returns:
-        MaybeTuple[AnyArray]: A tuple containing the merged result for each group of objects.
+        MaybeTuple[AnyArray]: Tuple containing the merged result for each group of objects.
     """
     if len(objs) == 1:
         objs = objs[0]
@@ -847,7 +847,7 @@ def resolve_merge_func(merge_func: tp.MergeFuncLike) -> tp.Optional[tp.Callable]
                 its `resolve_merge_func` method is called to obtain the actual callable.
 
     Returns:
-        Optional[Callable]: The resolved merging function as a callable, or None if `merge_func` is None.
+        Optional[Callable]: Resolved merging function as a callable, or None if `merge_func` is None.
     """
     if merge_func is None:
         return None

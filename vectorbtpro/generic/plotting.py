@@ -121,7 +121,7 @@ class TraceUpdater(Base):
         """A tuple of Plotly trace objects that will be updated.
 
         Returns:
-            Tuple[BaseTraceType, ...]: The tuple of Plotly trace objects.
+            Tuple[BaseTraceType, ...]: Tuple of Plotly trace objects.
         """
         return self._traces
 
@@ -260,7 +260,7 @@ class Gauge(TraceType, TraceUpdater):
         """The value range of the gauge as a tuple of minimum and maximum values.
 
         Returns:
-            Tuple[float, float]: The value range of the gauge.
+            Tuple[float, float]: Value range of the gauge.
         """
         return self._value_range
 

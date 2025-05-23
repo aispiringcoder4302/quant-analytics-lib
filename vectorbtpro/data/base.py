@@ -136,7 +136,7 @@ class BaseDataMixin(Base):
         """List of features obtained from the feature wrapper columns.
 
         Returns:
-            List[Feature]: The list of features.
+            List[Feature]: List of features.
         """
         return self.feature_wrapper.columns.tolist()
 
@@ -145,7 +145,7 @@ class BaseDataMixin(Base):
         """List of symbols obtained from the symbol wrapper columns.
 
         Returns:
-            List[Symbol]: The list of symbols.
+            List[Symbol]: List of symbols.
         """
         return self.symbol_wrapper.columns.tolist()
 
@@ -330,7 +330,7 @@ class BaseDataMixin(Base):
             **kwargs: Keyword arguments for data retrieval.
 
         Returns:
-            MaybeTuple[SeriesFrame]: The retrieved data.
+            MaybeTuple[SeriesFrame]: Retrieved data.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -395,7 +395,7 @@ class BaseDataMixin(Base):
             raise_error (bool): Whether to raise an error if the feature is not found.
 
         Returns:
-            Optional[SeriesFrame]: The data corresponding to the specified feature, or None if not found.
+            Optional[SeriesFrame]: Data corresponding to the specified feature, or None if not found.
         """
         if checks.is_int(feature):
             return self.get(features=self.features[feature])
@@ -416,7 +416,7 @@ class BaseDataMixin(Base):
             raise_error (bool): Whether to raise an error if the symbol is not found.
 
         Returns:
-            Optional[SeriesFrame]: The data corresponding to the specified symbol, or None if not found.
+            Optional[SeriesFrame]: Data corresponding to the specified symbol, or None if not found.
         """
         if checks.is_int(symbol):
             return self.get(symbol=self.symbols[symbol])
@@ -437,7 +437,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Series representing the open prices.
 
         Returns:
-            Optional[SeriesFrame]: The open prices for the data if available; otherwise, None.
+            Optional[SeriesFrame]: Open prices for the data if available; otherwise, None.
         """
         return self.get_feature("Open")
 
@@ -446,7 +446,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Series representing the high prices.
 
         Returns:
-            Optional[SeriesFrame]: The high prices for the data if available; otherwise, None.
+            Optional[SeriesFrame]: High prices for the data if available; otherwise, None.
         """
         return self.get_feature("High")
 
@@ -455,7 +455,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Series representing the low prices.
 
         Returns:
-            Optional[SeriesFrame]: The low prices for the data if available; otherwise, None.
+            Optional[SeriesFrame]: Low prices for the data if available; otherwise, None.
         """
         return self.get_feature("Low")
 
@@ -464,7 +464,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Series representing the close prices.
 
         Returns:
-            Optional[SeriesFrame]: The close prices for the data if available; otherwise, None.
+            Optional[SeriesFrame]: Close prices for the data if available; otherwise, None.
         """
         return self.get_feature("Close")
 
@@ -473,7 +473,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Series representing the volume data.
 
         Returns:
-            Optional[SeriesFrame]: The volume data for the data if available; otherwise, None.
+            Optional[SeriesFrame]: Volume data for the data if available; otherwise, None.
         """
         return self.get_feature("Volume")
 
@@ -482,7 +482,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Series representing the trade count.
 
         Returns:
-            Optional[SeriesFrame]: The trade count for the data if available; otherwise, None.
+            Optional[SeriesFrame]: Trade count for the data if available; otherwise, None.
         """
         return self.get_feature("Trade count")
 
@@ -491,7 +491,7 @@ class OHLCDataMixin(BaseDataMixin):
         """Series representing the volume-weighted average price (VWAP) data.
 
         Returns:
-            Optional[SeriesFrame]: The volume-weighted average price for the data if available; otherwise, None.
+            Optional[SeriesFrame]: Volume-weighted average price for the data if available; otherwise, None.
         """
         return self.get_feature("VWAP")
 
@@ -896,7 +896,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Either feature-oriented (`feature_dict`) or symbol-oriented (`symbol_dict`).
 
         Returns:
-            Union[feature_dict, symbol_dict]: The data dictionary.
+            Union[feature_dict, symbol_dict]: Data dictionary.
         """
         return self._data
 
@@ -908,7 +908,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         symbol-oriented (`symbol_dict`).
 
         Returns:
-            Type[Union[feature_dict, symbol_dict]]: The type of the data dictionary.
+            Type[Union[feature_dict, symbol_dict]]: Type of the data dictionary.
         """
         return type(self.data)
 
@@ -920,7 +920,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         otherwise, returns `feature_dict`.
 
         Returns:
-            Type[Union[feature_dict, symbol_dict]]: The column type.
+            Type[Union[feature_dict, symbol_dict]]: Column type.
         """
         if isinstance(self.data, feature_dict):
             return symbol_dict
@@ -1018,7 +1018,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Class definitions for the keys in the data dictionary.
 
         Returns:
-            Type[Union[feature_dict, symbol_dict]]: The type of the data dictionary.
+            Type[Union[feature_dict, symbol_dict]]: Type of the data dictionary.
         """
         return self._classes
 
@@ -1027,7 +1027,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Feature classes.
 
         Returns:
-            Optional[feature_dict]: The key classes if the data is feature-oriented; otherwise, returns None.
+            Optional[feature_dict]: Key classes if the data is feature-oriented; otherwise, returns None.
         """
         if self.feature_oriented:
             return self.classes
@@ -1038,7 +1038,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Symbol classes.
 
         Returns:
-            Optional[symbol_dict]: The key classes if the data is symbol-oriented; otherwise, returns None.
+            Optional[symbol_dict]: Key classes if the data is symbol-oriented; otherwise, returns None.
         """
         if self.symbol_oriented:
             return self.classes
@@ -1108,7 +1108,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         If set to `False`, no level names are used.
 
         Returns:
-            Optional[MaybeIterable[Hashable]]: The level name(s) for the keys.
+            Optional[MaybeIterable[Hashable]]: Level name(s) for the keys.
         """
         return self.get_level_name()
 
@@ -1157,7 +1157,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Keyword arguments originally passed to `Data.fetch_symbol`, maintained as a `symbol_dict`.
 
         Returns:
-            Union[feature_dict, symbol_dict]: The keyword arguments for fetching data.
+            Union[feature_dict, symbol_dict]: Keyword arguments for fetching data.
         """
         return self._fetch_kwargs
 
@@ -1166,7 +1166,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Keyword arguments returned by `Data.fetch_symbol`, stored as a `symbol_dict`.
 
         Returns:
-            Union[feature_dict, symbol_dict]: The keyword arguments returned from fetching data.
+            Union[feature_dict, symbol_dict]: Keyword arguments returned from fetching data.
         """
         return self._returned_kwargs
 
@@ -1175,7 +1175,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Last fetched index for each symbol, maintained as a `symbol_dict`.
 
         Returns:
-            Union[feature_dict, symbol_dict]: The last index for each symbol.
+            Union[feature_dict, symbol_dict]: Last index for each symbol.
         """
         return self._last_index
 
@@ -1184,7 +1184,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Delisting status for each symbol, stored as a `symbol_dict`.
 
         Returns:
-            Union[feature_dict, symbol_dict]: The delisting status for each symbol.
+            Union[feature_dict, symbol_dict]: Delisting status for each symbol.
         """
         return self._delisted
 
@@ -1193,7 +1193,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Timezone for localizing a datetime-naive index, initially provided to `Data.pull`.
 
         Returns:
-            Union[None, bool, TimezoneLike]: The timezone for localizing the index.
+            Union[None, bool, TimezoneLike]: Timezone for localizing the index.
         """
         return self._tz_localize
 
@@ -1202,7 +1202,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Timezone for converting a datetime-aware index, initially provided to `Data.pull`.
 
         Returns:
-            Union[None, bool, TimezoneLike]: The timezone for converting the index.
+            Union[None, bool, TimezoneLike]: Timezone for converting the index.
         """
         return self._tz_convert
 
@@ -1211,7 +1211,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """The `missing` argument provided to `Data.align_index`.
 
         Returns:
-            Optional[str]: The missing index argument.
+            Optional[str]: Missing index argument.
         """
         return self._missing_index
 
@@ -1220,7 +1220,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """The `missing` argument provided to `Data.align_columns`.
 
         Returns:
-            Optional[str]: The missing columns argument.
+            Optional[str]: Missing columns argument.
         """
         return self._missing_columns
 
@@ -1939,7 +1939,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         """Frequency based on the default symbol wrapper.
 
         Returns:
-            Optional[PandasFrequency]: The frequency of the default symbol wrapper.
+            Optional[PandasFrequency]: Frequency of the default symbol wrapper.
         """
         return self.symbol_wrapper.freq
 
@@ -1963,7 +1963,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_error (bool): Whether to raise an error if the feature is not found.
 
         Returns:
-            Optional[Feature]: The matching feature if found; otherwise, None.
+            Optional[Feature]: Matching feature if found; otherwise, None.
         """
         feature_idx = self.get_feature_idx(feature, raise_error=raise_error)
         if feature_idx == -1:
@@ -1978,7 +1978,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_error (bool): Whether to raise an error if the symbol is not found.
 
         Returns:
-            Optional[Symbol]: The matching symbol if found; otherwise, None.
+            Optional[Symbol]: Matching symbol if found; otherwise, None.
         """
         symbol_idx = self.get_symbol_idx(symbol, raise_error=raise_error)
         if symbol_idx == -1:
@@ -1996,7 +1996,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_error (bool): Whether to raise an error if the key is not found.
 
         Returns:
-            Optional[Key]: The matching key if found; otherwise, None.
+            Optional[Key]: Matching key if found; otherwise, None.
         """
         if self.feature_oriented:
             return self.resolve_feature(key, raise_error=raise_error)
@@ -2013,7 +2013,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             raise_error (bool): Whether to raise an error if the column is not found.
 
         Returns:
-            Optional[Column]: The matching column if found; otherwise, None.
+            Optional[Column]: Matching column if found; otherwise, None.
         """
         if self.feature_oriented:
             return self.resolve_symbol(column, raise_error=raise_error)
@@ -2120,7 +2120,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.get_key_wrapper`.
 
         Returns:
-            Union[feature_dict, symbol_dict]: A dictionary-like structure containing the concatenated data.
+            Union[feature_dict, symbol_dict]: Dictionary-like structure containing the concatenated data.
         """
         key_wrapper = self.get_key_wrapper(
             keys=keys,
@@ -2190,7 +2190,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.concat`.
 
         Returns:
-            Union[MaybeTuple[SeriesFrame], dict]: The retrieved data as a tuple or dictionary
+            Union[MaybeTuple[SeriesFrame], dict]: Retrieved data as a tuple or dictionary
                 based on the provided parameters.
         """
         if features is not None and feature is not None:
@@ -4028,7 +4028,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             Kwargs: Dictionary with metadata:
 
-                * `keys`: A mapping of keys to use.
+                * `keys`: Mapping of keys to use.
                 * `keys_are_features`: Flag indicating whether the keys represent features.
                 * `dict_type`: Dictionary type.
         """
@@ -6506,7 +6506,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 resolved DuckDB connection instead of disposing it automatically.
 
         Returns:
-            Union[feature_dict, symbol_dict, DuckDBPyConnection, None]: A metadata dictionary if
+            Union[feature_dict, symbol_dict, DuckDBPyConnection, None]: Metadata dictionary if
                 `return_meta` is True. The resolved DuckDB connection is returned if
                 `return_connection` is True, otherwise None.
         """
@@ -6924,7 +6924,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 `vectorbtpro.ohlcv.accessors.OHLCVDFAccessor.plot` for OHLC(V).
 
         Returns:
-            Union[BaseFigure, TraceUpdater]: A plot figure or trace updater instance.
+            Union[BaseFigure, TraceUpdater]: Plot figure or trace updater instance.
 
         Examples:
             Plot the lines of one feature across all symbols:

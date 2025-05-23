@@ -315,7 +315,7 @@ def talib_func(func_name: str) -> tp.Callable:
             **kwargs: Keyword arguments for the TA-Lib function.
         
         Returns:
-            Union[MaybeTuple[AnyArray], Dict[str, AnyArray]]: The result from the TA-Lib indicator function. 
+            Union[MaybeTuple[AnyArray], Dict[str, AnyArray]]: Result from the TA-Lib indicator function. 
                 
                 A single output array is returned if the indicator produces one output; otherwise, 
                 a tuple of arrays is returned. If `unpack_to` is specified, the output is unpacked 

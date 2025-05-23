@@ -110,7 +110,7 @@ class PolygonData(RemoteData):
             **list_tickers_kwargs: Keyword arguments for `polygon.RESTClient.list_tickers`.
 
         Returns:
-            List[str]: A list of symbols.
+            List[str]: List of symbols.
         """
         if client_config is None:
             client_config = {}
@@ -373,7 +373,7 @@ class PolygonData(RemoteData):
                         break
                     if delay is not None:
                         time.sleep(delay)  # be kind to api
-        except Exception as e:
+        except Exception:
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(

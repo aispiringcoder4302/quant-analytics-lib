@@ -60,7 +60,7 @@ class ToMarkdownAssetFunc(AssetFunc):
             **to_markdown_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -248,7 +248,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             **to_html_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -470,7 +470,7 @@ class AggMessageAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -593,7 +593,7 @@ class AggBlockAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 

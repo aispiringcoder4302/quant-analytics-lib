@@ -251,7 +251,7 @@ class ScheduleManager(Base):
         """The current asynchronous task, if any.
 
         Returns:
-            Optional[asyncio.Task]: The current asynchronous task.
+            Optional[asyncio.Task]: Current asynchronous task.
         """
         return self._async_task
 

@@ -811,7 +811,7 @@ class JITRegistry(Base):
             **kwargs: Keyword arguments for `vectorbtpro.utils.jitting.resolve_jitted_kwargs`.
 
         Returns:
-            Union[Hashable, Callable]: The resolved jitted function or the original task identifier/function.
+            Union[Hashable, Callable]: Resolved jitted function or the original task identifier/function.
         """
         kwargs = resolve_jitted_kwargs(option=option, **kwargs)
         if kwargs is None:

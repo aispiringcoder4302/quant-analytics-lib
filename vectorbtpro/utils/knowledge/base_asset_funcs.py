@@ -52,7 +52,7 @@ class AssetFunc(Base):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         return args, kwargs
 
@@ -127,7 +127,7 @@ class GetAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -252,7 +252,7 @@ class SetAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -359,7 +359,7 @@ class RemoveAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -442,7 +442,7 @@ class MoveAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -540,7 +540,7 @@ class RenameAssetFunc(MoveAssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -622,7 +622,7 @@ class ReorderAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -758,7 +758,7 @@ class QueryAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -875,7 +875,7 @@ class FindAssetFunc(AssetFunc):
                 and `vectorbtpro.utils.search_.find`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1304,7 +1304,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 and `vectorbtpro.utils.search_.replace`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1547,7 +1547,7 @@ class FindRemoveAssetFunc(FindAssetFunc):
                 and `vectorbtpro.utils.search_.find`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1694,7 +1694,7 @@ class FlattenAssetFunc(AssetFunc):
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.flatten_obj`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1781,7 +1781,7 @@ class UnflattenAssetFunc(AssetFunc):
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.unflatten_obj`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1896,7 +1896,7 @@ class DumpAssetFunc(AssetFunc):
             **kwargs: Keyword arguments for `vectorbtpro.utils.formatting.dump`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1986,7 +1986,7 @@ class ToDocsAssetFunc(AssetFunc):
             **document_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.StoreData.from_data`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -2077,7 +2077,7 @@ class SplitTextAssetFunc(AssetFunc):
             **split_text_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.split_text`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -2183,7 +2183,7 @@ class CollectAssetFunc(ReduceAssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset

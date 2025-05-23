@@ -148,7 +148,7 @@ def to_2d_multiple_nb(a: tp.Iterable[tp.Array]) -> tp.List[tp.Array2d]:
         a (Iterable[Array]): Iterable of arrays.
 
     Returns:
-        List[Array2d]: A list of arrays, each expanded along axis 1.
+        List[Array2d]: List of arrays, each expanded along axis 1.
     """
     lst = list()
     for _a in a:
@@ -172,7 +172,7 @@ def custom_apply_and_concat_multiple_nb(
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        List[Array2d]: A list of 2D arrays, each resulting from horizontally
+        List[Array2d]: List of 2D arrays, each resulting from horizontally
             concatenating the corresponding outputs across all calls.
     """
     outputs = list()
@@ -207,7 +207,7 @@ def apply_and_concat_multiple_nb(
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        List[Array2d]: A list of 2D arrays, each representing the concatenated outputs for
+        List[Array2d]: List of 2D arrays, each representing the concatenated outputs for
             one of the multiple return arrays.
 
     See:

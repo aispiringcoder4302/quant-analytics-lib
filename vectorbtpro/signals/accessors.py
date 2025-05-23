@@ -463,7 +463,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Tuple[SeriesFrame, SeriesFrame]: A tuple containing the entry signals and
+            Tuple[SeriesFrame, SeriesFrame]: Tuple containing the entry signals and
                 exit signals as wrapped arrays.
 
         See:
@@ -1000,7 +1000,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Tuple[SeriesFrame, SeriesFrame]: A tuple containing the wrapped entry and exit signal arrays.
+            Tuple[SeriesFrame, SeriesFrame]: Tuple containing the wrapped entry and exit signal arrays.
 
         See:
             * `vectorbtpro.signals.nb.generate_rand_enex_nb` if `n` is provided.
@@ -2863,7 +2863,7 @@ class SignalsAccessor(GenericAccessor):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            MaybeTuple[SeriesFrame]: The wrapped result containing the unraveled signals.
+            MaybeTuple[SeriesFrame]: Wrapped result containing the unraveled signals.
 
         See:
             `vectorbtpro.signals.nb.unravel_nb`
@@ -3594,7 +3594,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.lineplot`.
 
         Returns:
-            Union[BaseFigure, TraceUpdater]: A figure or trace updater instance produced by the line plot.
+            Union[BaseFigure, TraceUpdater]: Figure or trace updater instance produced by the line plot.
 
         Examples:
             ```pycon
@@ -3626,7 +3626,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
 
         Returns:
-            Union[BaseFigure, TraceUpdater]: A figure or trace updater instance produced by the scatter plot.
+            Union[BaseFigure, TraceUpdater]: Figure or trace updater instance produced by the scatter plot.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.
@@ -3705,7 +3705,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor.scatterplot`.
 
         Returns:
-            Union[BaseFigure, TraceUpdater]: A figure or trace updater instance representing the entry markers.
+            Union[BaseFigure, TraceUpdater]: Figure or trace updater instance representing the entry markers.
 
         See:
             `SignalsSRAccessor.plot_as_markers`

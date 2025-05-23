@@ -535,7 +535,7 @@ def fix_timedelta_precision(freq: tp.PandasTimedelta) -> tp.PandasTimedelta:
         freq (PandasTimedelta): Timedelta object to adjust.
 
     Returns:
-        pd.Timedelta: The adjusted timedelta with nanosecond precision.
+        pd.Timedelta: Adjusted timedelta with nanosecond precision.
     """
     if hasattr(freq, "unit") and freq.unit != "ns":
         freq = freq.as_unit("ns", round_ok=False)
@@ -591,7 +591,7 @@ def to_timedelta64(freq: tp.FrequencyLike = 1) -> np.timedelta64:
         freq (FrequencyLike): Frequency representation (string, offset, or timedelta).
 
     Returns:
-        np.timedelta64: The corresponding NumPy timedelta64 object.
+        np.timedelta64: Corresponding NumPy timedelta64 object.
     """
     if not isinstance(freq, np.timedelta64):
         if not isinstance(freq, pd.Timedelta):
@@ -623,13 +623,13 @@ def to_freq(freq: tp.FrequencyLike, allow_offset: bool = True, keep_offset: bool
                     freq = td_freq
                 else:
                     warn(f"Ambiguous frequency {freq}")
-            except Exception as e:
+            except Exception:
                 pass
         return freq
     if allow_offset:
         try:
             return to_freq(to_offset(freq), allow_offset=True, keep_offset=keep_offset)
-        except Exception as e:
+        except Exception:
             return to_timedelta(freq)
     return to_timedelta(freq)
 
@@ -864,7 +864,7 @@ class DTC(DefineMixin):
             if check_func is not None and not check_func(dtc):
                 return False
             return True
-        except Exception as e:
+        except Exception:
             pass
         return False
 
@@ -1136,14 +1136,14 @@ def to_timezone(
     if isinstance(tz, str):
         try:
             tz = pd.Timestamp("now", tz=tz).tz
-        except Exception as e:
+        except Exception:
             if parse_with_dateparser:
                 try:
                     dt = dateparser.parse("now %s" % tz, **dateparser_kwargs)
                     if dt is not None:
                         tz = dt.tzinfo
                         to_fixed_offset = True
-                except Exception as e:
+                except Exception:
                     pass
     if checks.is_number(tz):
         tz = timezone(timedelta(seconds=tz))
@@ -1219,7 +1219,7 @@ def to_timestamp(
                 dateparser_kwargs=dateparser_kwargs,
             )
             dt = " ".join(dt.split(" ")[:-1])
-        except Exception as e:
+        except Exception:
             pass
         if dt.lower() == "now":
             dt = pd.Timestamp.now(tz=tz)
@@ -1232,7 +1232,7 @@ def to_timestamp(
         else:
             try:
                 dt = pd.Timestamp(dt, **kwargs)
-            except Exception as e:
+            except Exception:
                 if parse_with_dateparser:
                     try:
                         import dateparser
@@ -1256,7 +1256,7 @@ def to_timestamp(
                             dt = pd.Timestamp(dt, **kwargs)
                         else:
                             raise ValueError(f"Could not parse the timestamp {dt}")
-                    except Exception as e:
+                    except Exception:
                         raise ValueError(f"Could not parse the timestamp {dt}")
                 else:
                     raise ValueError(f"Could not parse the timestamp {dt}")
@@ -1538,7 +1538,7 @@ def interval_to_ms(interval: str) -> tp.Optional[int]:
         interval (str): Time interval (e.g., '5m' for 5 minutes).
 
     Returns:
-        Optional[int]: The interval in milliseconds, or None if conversion fails.
+        Optional[int]: Interval in milliseconds, or None if conversion fails.
     """
     seconds_per_unit = {
         "m": 60,
@@ -1750,7 +1750,7 @@ def prepare_dt_index(
                     if not isinstance(parsed_index, pd.Timestamp) and "utc" not in kwargs:
                         parsed_index = pd.to_datetime(index, utc=True, **kwargs)
                     index = [parsed_index]
-                except Exception as e:
+                except Exception:
                     if parse_with_dateparser:
                         try:
                             parsed_index = dateparser.parse(index, **dateparser_kwargs)
@@ -1762,7 +1762,7 @@ def prepare_dt_index(
                             pass
         try:
             index = pd.Index(index)
-        except Exception as e:
+        except Exception:
             index = pd.Index([index])
     if isinstance(index, pd.DatetimeIndex):
         return index
@@ -1780,7 +1780,7 @@ def prepare_dt_index(
                     ):
                         parsed_index = pd.to_datetime(index, utc=True, **kwargs)
                     return parsed_index
-                except Exception as e:
+                except Exception:
                     if parse_with_dateparser:
                         try:
 
@@ -1793,7 +1793,7 @@ def prepare_dt_index(
                             return pd.to_datetime(index.map(_parse), **kwargs)
                         except Exception as e2:
                             pass
-            except Exception as e:
+            except Exception:
                 pass
     return index
 
@@ -1849,7 +1849,7 @@ def auto_detect_freq(index: tp.Index) -> tp.Optional[tp.PandasFrequency]:
         index (Index): Pandas datetime index.
 
     Returns:
-        Optional[PandasFrequency]: The detected frequency or None.
+        Optional[PandasFrequency]: Detected frequency or None.
     """
     diff_values = index.values[1:] - index.values[:-1]
     if len(diff_values) > 0:
@@ -1869,7 +1869,7 @@ def parse_index_freq(index: tp.DatetimeIndex) -> tp.Optional[tp.PandasFrequency]
         index (DatetimeIndex): Pandas datetime index.
 
     Returns:
-        Optional[PandasFrequency]: The parsed frequency or None if undetectable.
+        Optional[PandasFrequency]: Parsed frequency or None if undetectable.
     """
     if index.freqstr is not None:
         return to_freq(index.freqstr)
@@ -1928,7 +1928,7 @@ def infer_index_freq(
         freq_from_n (Union[None, bool, int]): Limit for inferring frequency from a subset of the index.
 
     Returns:
-        Union[None, int, float, PandasFrequency]: The inferred or converted frequency.
+        Union[None, int, float, PandasFrequency]: Inferred or converted frequency.
 
     !!! info
         For default settings, see `vectorbtpro._settings.datetime`.
@@ -1994,7 +1994,7 @@ def get_dt_index_gaps(
         **kwargs: Keyword arguments for `prepare_dt_index`.
 
     Returns:
-        Tuple[Index, Index]: A tuple containing the start and end indexes of the detected gaps.
+        Tuple[Index, Index]: Tuple containing the start and end indexes of the detected gaps.
     """
     index = prepare_dt_index(index, **kwargs)
     checks.assert_instance_of(index, pd.DatetimeIndex)

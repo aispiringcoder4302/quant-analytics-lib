@@ -458,7 +458,7 @@ def map_ranges_to_projections_nb(
         remove_empty (bool): Remove projections that are NaN or contain only a single element.
 
     Returns:
-        Tuple[Array1d, Array2d]: A tuple where the first element is a 1D array of
+        Tuple[Array1d, Array2d]: Tuple where the first element is a 1D array of
             record indices and the second element is a 2D array of projections,
             with each row corresponding to a range.
     """

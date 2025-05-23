@@ -207,7 +207,7 @@ def long_buy_nb(
         is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
-        Tuple[OrderResult, AccountState]: A tuple containing the order result and the updated account state.
+        Tuple[OrderResult, AccountState]: Tuple containing the order result and the updated account state.
     """
     _account_state = cast_account_state_nb(account_state)
 
@@ -398,7 +398,7 @@ def long_sell_nb(
         is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
-        Tuple[OrderResult, AccountState]: A tuple containing the created order result and
+        Tuple[OrderResult, AccountState]: Tuple containing the created order result and
             the updated account state.
     """
     _account_state = cast_account_state_nb(account_state)
@@ -545,7 +545,7 @@ def short_sell_nb(
         is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
-        Tuple[OrderResult, AccountState]: A tuple containing the filled order result and
+        Tuple[OrderResult, AccountState]: Tuple containing the filled order result and
             the updated account state.
     """
     _account_state = cast_account_state_nb(account_state)
@@ -718,7 +718,7 @@ def short_buy_nb(
         is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
-        Tuple[OrderResult, AccountState]: A tuple containing the executed order result and
+        Tuple[OrderResult, AccountState]: Tuple containing the executed order result and
             the updated account state.
     """
     _account_state = cast_account_state_nb(account_state)
@@ -923,7 +923,7 @@ def buy_nb(
         is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
-        Tuple[OrderResult, AccountState]: A tuple containing the order execution result and
+        Tuple[OrderResult, AccountState]: Tuple containing the order execution result and
             the updated account state.
     """
     _account_state = cast_account_state_nb(account_state)
@@ -1130,7 +1130,7 @@ def sell_nb(
         is_closing_price (bool): Flag indicating if the price is a close price.
 
     Returns:
-        Tuple[OrderResult, AccountState]: A tuple containing the order result and the updated account state.
+        Tuple[OrderResult, AccountState]: Tuple containing the order result and the updated account state.
     """
     _account_state = cast_account_state_nb(account_state)
 
@@ -1329,7 +1329,7 @@ def resolve_size_nb(
         as_requirement (bool): Whether to treat the size as a requirement adjustment.
 
     Returns:
-        Tuple[float, float]: A tuple containing the absolute asset amount and the percentage representation.
+        Tuple[float, float]: Tuple containing the absolute asset amount and the percentage representation.
     """
     percent = np.nan
     if size_type == target_size_type:
@@ -1485,7 +1485,7 @@ def execute_order_nb(
         update_value (bool): Flag to update portfolio value with each order.
 
     Returns:
-        Tuple[OrderResult, ExecState]: A tuple containing the order execution result and
+        Tuple[OrderResult, ExecState]: Tuple containing the order execution result and
             the updated execution state.
     """
     # numerical stability
@@ -1926,7 +1926,7 @@ def process_order_nb(
         log_counts (Optional[Array1d]): Counters for log records per column.
 
     Returns:
-        Tuple[OrderResult, ExecState]: A tuple containing the result of the order execution and
+        Tuple[OrderResult, ExecState]: Tuple containing the result of the order execution and
             the updated execution state.
     """
     # Execute the order
@@ -2163,7 +2163,7 @@ def prepare_records_nb(
             reduce memory usage, or higher if multiple logs per timestamp are expected.
 
     Returns:
-        Tuple[RecordArray2d, RecordArray2d]: A tuple containing:
+        Tuple[RecordArray2d, RecordArray2d]: Tuple containing:
 
             `order_records`: Array for order records (dtype `vectorbtpro.portfolio.enums.order_dt`).
             `log_records`: Array for log records (dtype `vectorbtpro.portfolio.enums.log_dt`).
@@ -2393,7 +2393,7 @@ def get_trade_stats_nb(
             See `vectorbtpro.portfolio.enums.TradeDirection`.
 
     Returns:
-        Tuple[float, float]: A tuple containing the profit and loss (pnl) and the return ratio.
+        Tuple[float, float]: Tuple containing the profit and loss (pnl) and the return ratio.
     """
     entry_val = size * entry_price
     exit_val = size * exit_price
@@ -2608,7 +2608,7 @@ def resolve_hl_nb(open: float, high: float, low: float, close: float) -> tp.Tupl
         close (float): Close price.
 
     Returns:
-        Tuple[float, float]: The resolved high and low prices.
+        Tuple[float, float]: Resolved high and low prices.
     """
     if np.isnan(high):
         if np.isnan(open):
@@ -2653,7 +2653,7 @@ def check_price_hit_nb(
         hard_price (bool): If True, enforces the target price when hit by the open price.
 
     Returns:
-        Tuple[float, bool, bool]: A tuple containing:
+        Tuple[float, bool, bool]: Tuple containing:
 
             * The effective stop price,
             * A flag indicating if the open price was used,
@@ -2820,7 +2820,7 @@ def check_limit_expired_nb(
         freq (Optional[int]): Frequency in nanosecond format.
 
     Returns:
-        Tuple[bool, bool]: A tuple where the first element indicates if the limit expires on open,
+        Tuple[bool, bool]: Tuple where the first element indicates if the limit expires on open,
             and the second element indicates if it expires during the current bar.
     """
     if tif == -1 and expiry == -1:
@@ -2962,7 +2962,7 @@ def check_limit_hit_nb(
         hard_limit (bool): Enforces a hard limit without fallback to the open price if True.
 
     Returns:
-        Tuple[float, bool, bool]: A tuple containing:
+        Tuple[float, bool, bool]: Tuple containing:
 
             * The computed limit price (which may be adjusted to the open price if conditions are met).
             * True if the limit was hit before open; otherwise, False.
@@ -3125,7 +3125,7 @@ def check_stop_hit_nb(
         hard_stop (bool): Whether the stop is considered a hard stop.
 
     Returns:
-        Tuple[float, bool, bool]: A tuple containing:
+        Tuple[float, bool, bool]: Tuple containing:
 
             * The resolved stop price.
             * True if the stop was hit on open.
@@ -3173,7 +3173,7 @@ def check_td_stop_hit_nb(
         freq (Optional[int]): Frequency in nanosecond format.
 
     Returns:
-        Tuple[bool, bool]: A tuple containing:
+        Tuple[bool, bool]: Tuple containing:
 
             * True if the stop was hit on open.
             * True if the stop was hit during the current bar.
@@ -3228,7 +3228,7 @@ def check_dt_stop_hit_nb(
         freq (Optional[int]): Frequency in nanosecond format.
 
     Returns:
-        Tuple[bool, bool]: A tuple containing:
+        Tuple[bool, bool]: Tuple containing:
 
             * True if the stop was hit on open.
             * True if the stop was hit during the current bar.

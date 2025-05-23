@@ -647,7 +647,7 @@ def is_equal(
     """
     try:
         return equality_func(obj1, obj2)
-    except:
+    except Exception:
         pass
     return False
 
@@ -768,7 +768,7 @@ def is_deep_equal(
             try:
                 if obj1 == obj2:
                     return True
-            except:
+            except Exception:
                 pass
             try:
                 import dill
@@ -776,12 +776,12 @@ def is_deep_equal(
                 _kwargs = _select_kwargs(dill.dumps, kwargs)
                 if dill.dumps(obj1, **_kwargs) == dill.dumps(obj2, **_kwargs):
                     return True
-            except:
+            except Exception:
                 pass
             if debug:
                 warn(f"\n############### {_key} ###############\nObjects do not match")
             return False
-    except Exception as e:
+    except Exception:
         if debug:
             if _key is None:
                 warn(traceback.format_exc())

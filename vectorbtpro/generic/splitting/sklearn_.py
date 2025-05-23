@@ -108,7 +108,7 @@ class SplitterCV(BaseCrossValidator, Base):
         If None, it is determined automatically based on `SplitterCV.splitter_kwargs`.
 
         Returns:
-            Union[str, Splitter, Callable]: The splitter instance or factory.
+            Union[str, Splitter, Callable]: Splitter instance or factory.
         """
         return self._splitter
 
@@ -119,7 +119,7 @@ class SplitterCV(BaseCrossValidator, Base):
         Defaults to `vectorbtpro.generic.splitting.base.Splitter`.
 
         Returns:
-            Type[Splitter]: The splitter class used for creating splitter instances.
+            Type[Splitter]: Splitter class used for creating splitter instances.
         """
         return self._splitter_cls
 
@@ -192,7 +192,7 @@ class SplitterCV(BaseCrossValidator, Base):
         X, y, groups = indexable(X, y, groups)
         try:
             index = self.splitter_cls.get_obj_index(X)
-        except ValueError as e:
+        except ValueError:
             index = pd.RangeIndex(stop=len(X))
         if isinstance(self.splitter, str):
             splitter = getattr(self.splitter_cls, self.splitter)
@@ -221,7 +221,7 @@ class SplitterCV(BaseCrossValidator, Base):
             groups (Any): Group labels.
 
         Returns:
-            Iterator[Tuple[Array1d, Array1d]]: An iterator over tuples of
+            Iterator[Tuple[Array1d, Array1d]]: Iterator over tuples of
                 boolean arrays for train and test masks.
         """
         splitter = self.get_splitter(X=X, y=y, groups=groups)
@@ -246,7 +246,7 @@ class SplitterCV(BaseCrossValidator, Base):
             groups (Any): Group labels.
 
         Returns:
-            Iterator[Array1d]: An iterator over boolean arrays for train masks.
+            Iterator[Array1d]: Iterator over boolean arrays for train masks.
         """
         for train_mask_arr, _ in self._iter_masks(X=X, y=y, groups=groups):
             yield train_mask_arr
@@ -265,7 +265,7 @@ class SplitterCV(BaseCrossValidator, Base):
             groups (Any): Group labels.
 
         Returns:
-            Iterator[Array1d]: An iterator over boolean arrays for test masks.
+            Iterator[Array1d]: Iterator over boolean arrays for test masks.
         """
         for _, test_mask_arr in self._iter_masks(X=X, y=y, groups=groups):
             yield test_mask_arr
@@ -284,7 +284,7 @@ class SplitterCV(BaseCrossValidator, Base):
             groups (Any): Group labels.
 
         Returns:
-            Iterator[Tuple[Array1d, Array1d]]: An iterator over tuples of integer indices
+            Iterator[Tuple[Array1d, Array1d]]: Iterator over tuples of integer indices
                 for train and test splits.
         """
         for train_mask_arr, test_mask_arr in self._iter_masks(X=X, y=y, groups=groups):
@@ -304,7 +304,7 @@ class SplitterCV(BaseCrossValidator, Base):
             groups (Any): Group labels.
 
         Returns:
-            Iterator[Array1d]: An iterator over integer indices for train splits.
+            Iterator[Array1d]: Iterator over integer indices for train splits.
         """
         for train_indices, _ in self._iter_indices(X=X, y=y, groups=groups):
             yield train_indices
@@ -323,7 +323,7 @@ class SplitterCV(BaseCrossValidator, Base):
             groups (Any): Group labels.
 
         Returns:
-            Iterator[Array1d]: An iterator over integer indices for test splits.
+            Iterator[Array1d]: Iterator over integer indices for test splits.
         """
         for _, test_indices in self._iter_indices(X=X, y=y, groups=groups):
             yield test_indices
@@ -361,6 +361,6 @@ class SplitterCV(BaseCrossValidator, Base):
             groups (Any): Group labels.
 
         Returns:
-            Iterator[Tuple[Array1d, Array1d]]: An iterator yielding tuples of train and test indices.
+            Iterator[Tuple[Array1d, Array1d]]: Iterator yielding tuples of train and test indices.
         """
         return self._iter_indices(X=X, y=y, groups=groups)

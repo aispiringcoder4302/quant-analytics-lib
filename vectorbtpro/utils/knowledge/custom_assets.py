@@ -129,7 +129,7 @@ class VBTAsset(KnowledgeAsset):
         """Release name of the asset.
 
         Returns:
-            Optional[str]: The release name of the asset, or None if not set.
+            Optional[str]: Release name of the asset, or None if not set.
         """
         return self._release_name
 
@@ -595,7 +595,7 @@ class VBTAsset(KnowledgeAsset):
             use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
 
         Returns:
-            List[Path]: A list of filesystem paths generated from the URLs.
+            List[Path]: List of filesystem paths generated from the URLs.
         """
         from urllib.parse import urlparse
         import hashlib
@@ -796,7 +796,7 @@ class VBTAsset(KnowledgeAsset):
                 contain a "link" key and may include a "parent" key.
 
         Returns:
-            List[str]: A list of links for items that have no parent or whose parent is not present
+            List[str]: List of links for items that have no parent or whose parent is not present
                 in the input data.
         """
         link_map = {d["link"]: dict(d) for d in data}
@@ -811,7 +811,7 @@ class VBTAsset(KnowledgeAsset):
         """Top-level parent links.
 
         Returns:
-            List[str]: The top-level parent links derived from the asset data.
+            List[str]: Top-level parent links derived from the asset data.
         """
         return self.get_top_parent_links(self.data)
 
@@ -888,7 +888,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
 
         Returns:
-            Union[Path, Tuple[Path, dict]]: The directory where HTML files are stored, and optionally
+            Union[Path, Tuple[Path, dict]]: Directory where HTML files are stored, and optionally
                 a mapping of links to file paths.
 
         !!! note
@@ -1145,7 +1145,7 @@ class VBTAsset(KnowledgeAsset):
             name (str): Class name in CamelCase.
 
         Returns:
-            List[str]: A list of substrings representing the parts of the class name.
+            List[str]: List of substrings representing the parts of the class name.
         """
         return re.findall(r"[A-Z]+(?=[A-Z][a-z]|$)|[A-Z][a-z]+", name)
 
@@ -1160,7 +1160,7 @@ class VBTAsset(KnowledgeAsset):
             name (str): Class name.
 
         Returns:
-            List[str]: A list of `snake_case` and abbreviated class name variants.
+            List[str]: List of `snake_case` and abbreviated class name variants.
         """
         from itertools import product
 
@@ -1220,7 +1220,7 @@ class VBTAsset(KnowledgeAsset):
             allow_suffix (Optional[bool]): Allow a suffix in target formatting.
 
         Returns:
-            List[str]: A sorted list of generated reference name targets.
+            List[str]: Sorted list of generated reference name targets.
         """
         from vectorbtpro.utils.module_ import annotate_refname_parts
         import vectorbtpro as vbt
@@ -1358,7 +1358,7 @@ class VBTAsset(KnowledgeAsset):
             allow_suffix (Optional[bool]): Allow a suffix in target formatting.
 
         Returns:
-            List[str]: A list of generated mention targets.
+            List[str]: List of generated mention targets.
         """
         from vectorbtpro.utils.module_ import prepare_refname
 
@@ -1617,7 +1617,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.embed`.
 
         Returns:
-            Optional[Rankable]: An updated instance with embedded documents, if available.
+            Optional[Rankable]: Updated instance with embedded documents, if available.
         """
         template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
         spec_settings_path = self.resolve_spec_settings_path()
@@ -1882,7 +1882,7 @@ class PagesAsset(VBTAsset):
             content (str): Content string to parse.
 
         Returns:
-            List[str]: A list of extracted link URLs.
+            List[str]: List of extracted link URLs.
         """
         link_pattern = r'(?<!\!)\[[^\]]+\]\((\S+?)(?:\s+(?:"[^"]*"|\'[^\']*\'))?\)'
         return re.findall(link_pattern, content)
@@ -1898,7 +1898,7 @@ class PagesAsset(VBTAsset):
             link (str): URL to parse.
 
         Returns:
-            Optional[str]: The extracted reference name or None.
+            Optional[str]: Extracted reference name or None.
         """
         if "/api/" not in link:
             return None
@@ -2004,7 +2004,7 @@ class PagesAsset(VBTAsset):
             return_refname_graph (bool): Return a tuple of the asset and reference name graph if True.
 
         Returns:
-            Union[PagesAsset, Tuple[PagesAsset, dict]]: The asset with relevant API pages and headings,
+            Union[PagesAsset, Tuple[PagesAsset, dict]]: Asset with relevant API pages and headings,
                 optionally accompanied by a reference name graph.
         """
         from vectorbtpro.utils.module_ import prepare_refname, annotate_refname_parts
@@ -3193,7 +3193,7 @@ class MessagesAsset(VBTAsset):
         * If all messages share the same `channel`, returns "channel".
 
         Returns:
-            Optional[str]: The lowest level by which messages are aggregated,
+            Optional[str]: Lowest level by which messages are aggregated,
                 or None if no level is consistently available.
         """
         try:
@@ -3225,7 +3225,7 @@ class MessagesAsset(VBTAsset):
         or if messages contain attachments. Returns the corresponding level name if found.
 
         Returns:
-            Optional[str]: The aggregation level ("channel", "thread", "block", or "message")
+            Optional[str]: Aggregation level ("channel", "thread", "block", or "message")
                 if a uniform attribute is found; otherwise, None.
         """
         try:
@@ -3829,7 +3829,7 @@ def find_assets(
             instead passed to `VBTAsset.rank`).
 
     Returns:
-        Dict[VBTAsset]: A dictionary mapping asset names to their corresponding assets;
+        Dict[VBTAsset]: Dictionary mapping asset names to their corresponding assets;
             entries with no content are omitted.
 
     !!! note
@@ -4147,7 +4147,7 @@ def search(
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.rank`.
 
     Returns:
-        Union[MaybeVBTAsset, Path]: The ranked asset or the path to the temporary file with displayed results.
+        Union[MaybeVBTAsset, Path]: Ranked asset or the path to the temporary file with displayed results.
     """
     find_arg_names = set(get_func_arg_names(find_assets))
     if find_assets_kwargs is None:
@@ -4225,7 +4225,7 @@ def quick_search(*args, **kwargs) -> tp.Union[tp.MaybeVBTAsset, tp.Path]:
         **kwargs: Keyword arguments for `search`.
 
     Returns:
-        Union[MaybeVBTAsset, Path]: The ranked asset or the path to the temporary file with displayed results.
+        Union[MaybeVBTAsset, Path]: Ranked asset or the path to the temporary file with displayed results.
     """
     return search(*args, search_method="bm25", **kwargs)
 

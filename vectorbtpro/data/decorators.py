@@ -28,7 +28,7 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
             Must be a subclass of `Data` that defines `_key_dict_attrs` and `_updatable_attrs`.
 
     Returns:
-        Type[T]: The decorated class with the attached methods.
+        Type[T]: Decorated class with the attached methods.
     """
     checks.assert_subclass_of(cls, "Data")
 
@@ -104,7 +104,7 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 **kwargs: Keyword arguments representing update values for each symbol key.
             
             Returns:
-                {cls.__name__}: A new instance with the updated attribute.
+                {cls.__name__}: New instance with the updated attribute.
             """
         )
         setattr(cls, update_method.__name__, update_method)

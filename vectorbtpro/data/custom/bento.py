@@ -93,7 +93,7 @@ class BentoData(RemoteData):
             **client_config: Configuration parameters for creating a new client.
 
         Returns:
-            databento.historical.client.Historical: The resolved client instance.
+            databento.historical.client.Historical: Resolved client instance.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

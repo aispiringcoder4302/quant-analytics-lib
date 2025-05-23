@@ -139,7 +139,7 @@ class AlpacaData(RemoteData):
             client_config (KwargsLike): Configuration parameters for creating a new client.
 
         Returns:
-            List[str]: A list of symbol strings.
+            List[str]: List of symbol strings.
 
         !!! note
             If encountering an authorization error, verify that the `paper` flag in `client_config` is set

@@ -351,7 +351,7 @@ class SignalFactory(IndicatorFactory):
             **kwargs: Keyword arguments for `IndicatorFactory.with_custom_func`.
 
         Returns:
-            Type[IndicatorBase]: A custom signal generator class configured with
+            Type[IndicatorBase]: Custom signal generator class configured with
                 the specified placement and generation functions.
 
         The settings dictionary of each function can have the following options:
@@ -378,7 +378,7 @@ class SignalFactory(IndicatorFactory):
                 * `skip_until_exit`: (Applied in `generate_ex_func_nb` only) Whether to skip
                     processing until the next exit.
                 * `pick_first`: Indicates whether to stop at the first exit signal.
-                * `temp_idx_arr`: An empty integer array for temporarily storing indices.
+                * `temp_idx_arr`: Empty integer array for temporarily storing indices.
             pass_cache (bool): Indicates whether to pass cache from `cache_func` to the placement function.
 
                 Defaults to False.

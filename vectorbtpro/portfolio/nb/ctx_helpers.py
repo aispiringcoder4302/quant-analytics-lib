@@ -1718,7 +1718,7 @@ def get_order_result_nb(
         update_value (bool): Flag to update portfolio value with each order.
 
     Returns:
-        Tuple[OrderResult, ExecState]: A tuple containing the order result and
+        Tuple[OrderResult, ExecState]: Tuple containing the order result and
             the updated execution state.
     """
     exec_state = get_exec_state_nb(c, val_price=val_price)

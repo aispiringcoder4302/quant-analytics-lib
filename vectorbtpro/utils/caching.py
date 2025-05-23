@@ -71,7 +71,7 @@ class Cacheable(Base):
         If called on a class, returns a `vectorbtpro.registries.ca_registry.CAClassSetup`.
 
         Returns:
-            Union[CAClassSetup, CAInstanceSetup]: The caching setup corresponding to the caller.
+            Union[CAClassSetup, CAInstanceSetup]: Caching setup corresponding to the caller.
         """
         from vectorbtpro.registries.ca_registry import CAClassSetup, CAInstanceSetup
 

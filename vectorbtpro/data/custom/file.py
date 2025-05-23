@@ -87,7 +87,7 @@ class FileData(LocalData):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            List[Path]: A list of paths that match the specified criteria.
+            List[Path]: List of paths that match the specified criteria.
         """
         if not isinstance(path, Path):
             path = Path(path)
@@ -119,7 +119,7 @@ class FileData(LocalData):
             **match_path_kwargs: Keyword arguments for `FileData.match_path`.
 
         Returns:
-            List[Path]: A list of matching paths.
+            List[Path]: List of matching paths.
         """
         return cls.match_path(path, **match_path_kwargs)
 

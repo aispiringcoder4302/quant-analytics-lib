@@ -177,7 +177,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 The settings dictionary can include:
 
                 * `title`: Metric title. Defaults to the metric name.
-                * `tags`: A single tag or multiple tags to associate with the metric.
+                * `tags`: Single tag or multiple tags to associate with the metric.
                     The metric is retained if any tag matches those in `tags`.
                 * `check_{filter}` and `inv_check_{filter}`: Flags to evaluate the metric against
                     a filter defined in `filters`. True indicates inclusion.
@@ -291,7 +291,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 Extend or override all global and metric settings on a per-metric basis.
 
         Returns:
-            Optional[SeriesFrame]: The computed metrics as a Pandas Series
+            Optional[SeriesFrame]: Computed metrics as a Pandas Series
                 (for single-dimensional output) or DataFrame (for multi-dimensional output).
 
         !!! info

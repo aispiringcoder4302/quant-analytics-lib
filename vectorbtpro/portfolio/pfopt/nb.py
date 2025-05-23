@@ -273,7 +273,7 @@ def prepare_alloc_points_nb(
         group (int): Identifier for the allocation group.
 
     Returns:
-        Tuple[RecordArray, Array2d]: A tuple containing:
+        Tuple[RecordArray, Array2d]: Tuple containing:
 
             * A record array of prepared allocation points (dtype `vectorbtpro.portfolio.enums.alloc_point_dt`).
             * A 2D array of updated allocation values.
@@ -322,7 +322,7 @@ def prepare_alloc_ranges_nb(
         group (int): Group identifier used to assign the corresponding column.
 
     Returns:
-        Tuple[RecordArray, Array2d]: A tuple containing:
+        Tuple[RecordArray, Array2d]: Tuple containing:
 
             * A record array of allocation ranges (dtype `vectorbtpro.portfolio.enums.alloc_point_dt`).
             * A 2D array of processed allocation values.
