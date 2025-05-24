@@ -483,13 +483,71 @@ def get_source_map(source: str) -> dict:
 
 REFINE_SOURCE_PROMPT = """You are a code-refinement assistant. 
 
-Your goal is to address any detected code smells or issues in the given chunk of Python code. You must:
-
-1. **Return the entire code block** in your output.
-2. **Never enclose your output in triple backticks**, and return no other text or explanation.
-3. **Do not add any comments** to the code, unless explicitly requested.
-4. If the code contains a TODO or FIXME comment, **follow the instructions in the comment**."""
+1. Your goal is to **address any detected code smells or issues** in the given chunk of Python code.
+2. If the code contains a TODO or FIXME comment, **follow the instructions in the comment**.
+3. **Do not add any comments** to the code, unless explicitly requested."""
 """Default system prompt for `refine_source`."""
+
+FULL_FORMAT_PROMPT = """You must produce output in exactly the format below.
+
+Return the **complete, modified version** of the input content.
+
+Rules (remember them):
+1. Output starts at the very first character and ends at the last.
+2. Return no other text or explanation.
+3. Do not wrap the output in triple backticks.
+4. Preserve original line breaks and indentation, except where you apply edits.
+
+Example (original lines shown only for illustration):
+
+1: def format_full_name(first, last):
+2:     full_name = f"{last} {first}"  # wrong order
+3:     retrn full_name.upper()        # typo
+4:
+5: print(format_fll_name("Ada", "Lovelace"))  # typo
+
+Expected output (note: only modified content, no line numbers, no commentary):
+
+def format_full_name(first, last):
+    full_name = f"{first} {last}"
+    return full_name.upper()
+
+print(format_full_name("Ada", "Lovelace"))"""
+
+PATCH_FORMAT_PROMPT = """You must produce output in exactly the format below.
+
+Return **only** the patches, each wrapped like:
+
+<<<PATCH:<oldStart>:<oldEnd>>>
+<replacement lines>
+<<<END PATCH>>>
+
+Rules (remember them):
+1. Output starts at the very first character and ends at the last.
+2. Return no other text or explanation.
+3. Do not wrap the output in triple backticks.
+4. Preserve original line breaks and indentation inside each block.
+5. 1-based, inclusive line numbers.
+6. One block per contiguous change, blocks in ascending order.
+7. If there are no changes, output <<<NO PATCHES>>>.
+
+Example (original lines numbered for clarity):
+
+1: def format_full_name(first, last):
+2:     full_name = f"{last} {first}"  # wrong order
+3:     retrn full_name.upper()        # typo
+4:
+5: print(format_fll_name("Ada", "Lovelace"))  # typo
+
+Expected output (note: only patches, no commentary):
+
+<<<PATCH:2:3>>>
+    full_name = f"{first} {last}"
+    return full_name.upper()
+<<<END PATCH>>>
+<<<PATCH:5:5>>>
+print(format_full_name("Ada", "Lovelace"))
+<<<END PATCH>>>"""
 
 
 def refine_source(
@@ -501,6 +559,8 @@ def refine_source(
     start_line: tp.Optional[int] = None,
     end_line: tp.Optional[int] = None,
     system_prompt: tp.Optional[str] = None,
+    output_format: str = "full",
+    format_prompt: tp.Optional[str] = None,
     context: tp.Optional[str] = None,
     attach_metadata: bool = True,
     attach_imports: tp.Optional[bool] = None,
@@ -555,6 +615,14 @@ def refine_source(
         system_prompt (Optional[str]): System prompt that precedes the context prompt.
 
             This prompt is used to set the system's behavior or context for the conversation.
+            If None, defaults to `REFINE_SOURCE_PROMPT`.
+        output_format (str): Format of the output.
+
+            Can be "full" or "patch". If "full", the entire source is returned as a string.
+            If "patch", only the changes are returned as a list of patches.
+        format_prompt (Optional[str]): Custom prompt for formatting the output.
+
+            If None, defaults to `FULL_FORMAT_PROMPT` or `PATCH_FORMAT_PROMPT` depending on `output_format`.
         context (Optional[str]): Custom context.
         attach_metadata (bool): Whether to attach (dumped) metadata to the context.
         attach_imports (Optional[bool]): Whether to attach global source imports to the context.
@@ -706,6 +774,8 @@ def refine_source(
                     start_line=start_line,
                     end_line=end_line,
                     system_prompt=system_prompt,
+                    output_format=output_format,
+                    format_prompt=format_prompt,
                     context=context,
                     attach_metadata=attach_metadata,
                     attach_imports=attach_imports,
@@ -776,6 +846,17 @@ def refine_source(
 
     if system_prompt is None:
         system_prompt = REFINE_SOURCE_PROMPT
+    if format_prompt is None:
+        if output_format.lower() == "full":
+            format_prompt = FULL_FORMAT_PROMPT
+        elif output_format.lower() == "patch":
+            format_prompt = PATCH_FORMAT_PROMPT
+        else:
+            raise ValueError(f"Invalid output format: '{output_format}'")
+    if system_prompt:
+        system_prompt += "\n\n====\n\n"
+    system_prompt += f"Output format:\n\n{format_prompt}"
+
     if context is None:
         context = ""
     if dump_kwargs is None:
@@ -867,6 +948,9 @@ def refine_source(
             middle = chunk[leading_len : len(chunk) - trailing_len]
 
             if middle:
+                if output_format.lower() == "patch":
+                    # TODO: add line numbers to middle
+                    
                 if not attach_prev_chunk:
                     chat_history = []
                 new_middle = completed(
@@ -880,6 +964,9 @@ def refine_source(
                     chat_history = chat_history[-2 * attach_prev_chunk:]
             else:
                 new_middle = ""
+            if new_middle and output_format.lower() == "patch":
+                # TODO: parse patches, iterate over them, apply to the source to produce new_middle
+
             new_middle = add_source_indent(new_middle, indent)
             new_chunk = leading + new_middle + trailing
             processed.append(new_chunk)
@@ -954,15 +1041,12 @@ def refine_source(
     return new_source
 
 
-REFINE_DOCSTRINGS_PROMPT = """You are a code-refinement assistant.
+REFINE_DOCSTRINGS_PROMPT = """You are a docstring-refinement assistant.
 
-Your goal is to refine **only** the docstrings of the given chunk of Python code. You must:
-
-1. **Edit docstrings** for clarity, correctness, and consistent format and wording.
-2. **Return the entire code block** in your output.
-3. **Never enclose your output in triple backticks**, and return no other text or explanation.
-4. **Retain all non-docstring parts of the code** exactly as they are.
-5. **If the given chunk contains only text, consider it a docstring**."""
+1. Your goal is to refine **only** the docstrings of the given chunk of Python code.
+2. **Edit docstrings** for clarity, correctness, and consistent format and wording.
+3. **Retain all non-docstring parts of the code** exactly as they are.
+4. **If the given chunk contains only text, consider it a docstring**."""
 """System prompt for `refine_docstrings`."""
 
 
@@ -980,22 +1064,13 @@ def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
     return refine_source(source, system_prompt=REFINE_DOCSTRINGS_PROMPT, **kwargs)
 
 
-REFINE_DOCS_PROMPT = """You are a documentation refinement assistant.
+REFINE_DOCS_PROMPT = """You are a Markdown-documentation refinement assistant.
 
-Your goal is to refine **only** the prose of the given chunk of documentation. You must:
-
-1. Edit prose for **clarity, correctness, and consistent format and wording**.
-2. **Do not** introduce new ideas, remove existing ideas, or alter facts. **Only rephrase.**
-3. Use **American English** and match the author's **friendly-professional tone.**
-4. **Retain all non-prose parts of the chunk exactly as they are**, including but not limited to 
-    code blocks, YAML front matter, diagrams, headings, emojis, filenames, and inline code.
-5. **Preserve Markdown structure, list markers, indentation, and blank lines.**
-6. Paragraphs should be **separated by a blank line**.
-7. **Do not** use smart quotes and apostrophes, em dashes, or other special characters, unless already present.
-8. **End list items with a period** if they are complete sentences, and do not indent new lines.
-9. **Re-wrap prose to ≤ 100 characters per line** where possible without breaking Markdown structure.
-10. **Return only the refined Markdown chunk**—no commentary, explanations, or diff markers.
-11. **Never enclose your output in triple backticks**, unless the chunk is a fenced code block."""
+1. Your goal is to refine **only** the prose of the given chunk of Markdown-documentation.
+2. Edit prose for **clarity, correctness, and consistent format and wording**.
+3. **Do not** introduce new ideas, remove existing ideas, or alter facts. **Only rephrase.**
+4. **Retain all non-prose parts of the chunk exactly as they are.**
+5. **Preserve Markdown structure, list markers, indentation, and blank lines.**"""
 """Default system prompt for `refine_docs`."""
 
 
