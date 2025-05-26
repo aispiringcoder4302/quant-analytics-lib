@@ -8,23 +8,29 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing utilities for working with source code."""
+"""Module providing utilities for working with source."""
 
-import re
 import ast
 import importlib
 import inspect
-import difflib
+import re
 import tempfile
 import webbrowser
+from collections import defaultdict
+from difflib import HtmlDiff, SequenceMatcher
+from textwrap import dedent
 from pathlib import Path
 from types import ModuleType, FunctionType
-from collections import defaultdict
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.formatting import dump, get_dump_language
-from vectorbtpro.utils.path_ import check_mkdir
+from vectorbtpro.utils.knowledge.chatting import split_text, completed
+from vectorbtpro.utils.knowledge.custom_assets import search
+from vectorbtpro.utils.module_ import assert_can_import
+from vectorbtpro.utils.path_ import check_mkdir, get_common_prefix
+from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.template import CustomTemplate, RepEval
 
 __all__ = [
@@ -481,6 +487,336 @@ def get_source_map(source: str) -> dict:
     return code_map
 
 
+LINE_NUMBER_RE = re.compile(r"^(\d+):\s?", re.MULTILINE)
+"""Regular expression to match line numbers."""
+
+
+def add_line_numbers(source: str, start_line: int = 1) -> str:
+    """Prefix every line in the source with `N: `.
+
+    Args:
+        source (str): Source to which line numbers will be added.
+        start_line (int): Starting line number for the source (1-based).
+
+    Returns:
+        str: Source with each line prefixed by its line number.
+    """
+    lines = source.splitlines(keepends=True)
+    out = []
+    for idx, line in enumerate(lines, start_line):
+        out.append(f"{idx}: " + line)
+    return "".join(out)
+
+
+def remove_line_numbers(source: str) -> str:
+    """Remove leading `N: ` from every line, if present.
+
+    Args:
+        source (str): Source from which line numbers will be removed.
+
+    Returns:
+        str: Source with line numbers removed.
+    """
+    return LINE_NUMBER_RE.sub("", source)
+
+
+def find_source(target: str, source: str, start_line: int = 1) -> tp.List[tp.Tuple[int, int]]:
+    """Find all occurrences of a target string in the source.
+
+    All lines in the source and target are stripped of leading and trailing whitespace,
+    and all empty lines are ignored.
+
+    Args:
+        target (str): Target string to search for in the source.
+        source (str): Source string in which to search for the target.
+        start_line (int): Starting line number for the source (1-based).
+
+    Returns:
+        List[Tuple[int, int]]: List of tuples where each tuple contains the start and end line numbers
+            (1-based) of the found occurrences of the target in the source.
+    """
+    tgt = [ln.strip() for ln in target.splitlines() if ln.strip()]
+    if not tgt:
+        return []
+    src = [(i + start_line, ln.strip()) for i, ln in enumerate(source.splitlines()) if ln.strip()]
+    res = []
+    t_len = len(tgt)
+    s_len = len(src)
+    i = 0
+    while i <= s_len - t_len:
+        if all(src[i + k][1] == tgt[k] for k in range(t_len)):
+            res.append((src[i][0], src[i + t_len - 1][0]))
+            i += t_len
+        else:
+            i += 1
+    return res
+
+
+def find_source_fuzzy(
+    target: str,
+    source: str,
+    start_line: int = 1,
+    threshold: float = 0.8,
+) -> tp.List[tp.Tuple[int, int]]:
+    """Find all occurrences of a target string in the source using fuzzy search.
+
+    All lines in the source and target are stripped of leading and trailing whitespace,
+    and all empty lines are ignored.
+
+    Uses `rapidfuzz` if available, otherwise falls back to `difflib.SequenceMatcher`.
+
+    Args:
+        target (str): Target string to search for in the source.
+        source (str): Source string in which to search for the target.
+        start_line (int): Starting line number for the source (1-based).
+
+    Returns:
+        List[Tuple[int, int]]: List of tuples where each tuple contains the start and end line numbers
+            (1-based) of the found occurrences of the target in the source.
+    """
+    from vectorbtpro.utils.module_ import check_installed
+
+    tgt = [ln.strip() for ln in target.splitlines() if ln.strip()]
+    if not tgt:
+        return []
+    src = [(i + start_line, ln.strip()) for i, ln in enumerate(source.splitlines()) if ln.strip()]
+    t_len = len(tgt)
+    s_len = len(src)
+
+    if check_installed("rapidfuzz"):
+        from rapidfuzz import fuzz
+
+        def _ratio(a, b):
+            return fuzz.ratio(a, b) / 100
+
+    else:
+
+        def _ratio(a, b):
+            return SequenceMatcher(None, a, b).ratio()
+
+    res = []
+    i = 0
+    while i <= s_len - t_len:
+        if all(_ratio(src[i + k][1], tgt[k]) >= threshold for k in range(t_len)):
+            res.append((src[i][0], src[i + t_len - 1][0]))
+            i += t_len
+        else:
+            i += 1
+    return res
+
+
+def find_source_fuzzy_window(
+    target: str,
+    source: str,
+    start_line: int = 1,
+    threshold: float = 0.8,
+) -> tp.List[tp.Tuple[int, int]]:
+    """Find all occurrences of a target string in the source using fuzzy search with a sliding window.
+
+    All lines in the source and target are stripped of leading and trailing whitespace,
+    and all empty lines are ignored.
+
+    Uses `rapidfuzz` if available, otherwise falls back to `difflib.SequenceMatcher`.
+
+    Args:
+        target (str): Target string to search for in the source.
+        source (str): Source string in which to search for the target.
+        start_line (int): Starting line number for the source (1-based).
+
+    Returns:
+        List[Tuple[int, int]]: List of tuples where each tuple contains the start and end line numbers
+            (1-based) of the found occurrences of the target in the source.
+    """
+    from vectorbtpro.utils.module_ import check_installed
+
+    tgt_norm = " ".join(ln.strip() for ln in target.splitlines() if ln.strip())
+    if not tgt_norm:
+        return []
+    win_len = len(tgt_norm)
+    src_norm = " ".join(ln.strip() for ln in source.splitlines())
+    src_len = len(src_norm)
+
+    if check_installed("rapidfuzz"):
+        from rapidfuzz import fuzz
+
+        def _ratio(a, b):
+            return fuzz.ratio(a, b) / 100
+
+    else:
+
+        def _ratio(a, b):
+            return SequenceMatcher(None, a, b).ratio()
+
+    res = []
+    i = 0
+    while i <= src_len - win_len:
+        window = src_norm[i : i + win_len]
+        if _ratio(window, tgt_norm) >= threshold:
+            start_char = i
+            end_char = i + win_len - 1
+            start_ln = source.count("\n", 0, start_char) + start_line
+            end_ln = source.count("\n", 0, end_char + 1) + start_line
+            res.append((start_ln, end_ln))
+            i += win_len
+        else:
+            i += 1
+    return res
+
+
+ANY_CODE_FENCE_RE = re.compile(r"^\s*```(?:\w+)?\s*\n(.*?)\n?```$", re.DOTALL)
+"""Regular expression to match code fences around code blocks with any language in the output."""
+
+PATCH_BLOCK_RE = re.compile(
+    r"<<<PATCH>>>\r?\n--- BEFORE\r?\n(.*?)\r?\n--- AFTER\r?\n(.*?)\r?\n<<<END PATCH>>>",
+    re.DOTALL,
+)
+"""Regular expression to match patch blocks in the output."""
+
+NO_PATCHES_SENTINEL = "<<<NO PATCHES>>>"
+"""Sentinel value indicating that no patch blocks are in the output."""
+
+
+def apply_patches(source: str, patch_output: str, start_line: int = 1, fuzzy_kwargs: tp.KwargsLike = None) -> str:
+    """Apply anchor-style patches to the source; exact match first, fuzzy-search fallback.
+
+    If the output contains no patch blocks (`NO_PATCHES_SENTINEL`), the function returns
+    the original text unchanged.
+
+    Args:
+        source (str): Original source to which patches will be applied.
+        patch_output (str): Output containing patch blocks.
+        start_line (int): Starting line number for the source (1-based).
+        fuzzy_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.search_.find_fuzzy`.
+
+    Returns:
+        str: Source with applied patches.
+
+    !!! note
+        Source should not contain line numbers.
+    """
+    m = ANY_CODE_FENCE_RE.match(patch_output.strip())
+    if m:
+        patch_output = m.group(1)
+    if patch_output.strip() == NO_PATCHES_SENTINEL:
+        return source
+    blocks = PATCH_BLOCK_RE.findall(patch_output)
+    if not blocks:
+        raise ValueError("No PATCH blocks found")
+    if fuzzy_kwargs is None:
+        fuzzy_kwargs = {}
+
+    all_matches = []
+    for i, (before, after) in enumerate(blocks):
+        if LINE_NUMBER_RE.match(before):
+            before = remove_line_numbers(before)
+        if LINE_NUMBER_RE.match(after):
+            after = remove_line_numbers(after)
+        if before and not before.endswith(("\n", "\r")):
+            before += "\n"
+        if after and not after.endswith(("\n", "\r")):
+            after += "\n"
+        matches = find_source(before, source, start_line=start_line)
+        if not matches:
+            matches = find_source_fuzzy(before, source, start_line=start_line, **fuzzy_kwargs)
+        if not matches:
+            matches = find_source_fuzzy_window(before, source, start_line=start_line, **fuzzy_kwargs)
+        if not matches:
+            raise ValueError(f"BEFORE block not found:\n{before}")
+        if all_matches and len(matches) > 1:
+            found_match = False
+            for s, e in matches:
+                if s > all_matches[-1][1]:
+                    found_match = True
+                    all_matches.append((s, e, after))
+                    break
+            if found_match:
+                continue
+        all_matches.append((*matches[0], after))
+
+    all_matches.sort(key=lambda x: x[0])
+    for s, e, after in reversed(all_matches):
+        source_lines = source.splitlines(keepends=True)
+        after_lines = after.splitlines(keepends=True)
+        source_lines[s - start_line : e - start_line + 1] = after_lines
+        source = "".join(source_lines)
+    return source
+
+
+DIFF_CODE_FENCE_RE = re.compile(r"^\s*```(?:diff)?\s*\n(.*?)\n?```$", re.DOTALL)
+"""Regular expression to match code fences around unified diffs in the output."""
+
+HUNK_HEADER_RE = re.compile(r"^@@\s*-(\d+)(?:,\d+)?\s+\+\d+(?:,\d+)?\s*@@[^\n]*\n", re.MULTILINE)
+"""Regular expression to split unified diff hunks by their headers."""
+
+HUNK_HEADER_LITE_RE = re.compile(r"^@@.*?@@\r?\n", re.MULTILINE)
+"""Regular expression to split unified diff-lite hunks by their headers."""
+
+HUNK_PREFIXES = {" ": "both", "-": "before", "+": "after"}
+"""Mapping of diff prefixes to their roles in hunks."""
+
+NO_DIFF_SENTINEL = "<<<NO DIFF>>>"
+"""Sentinel value indicating that no hunks are in the output."""
+
+
+def unidiff_to_patches(diff_output: str) -> str:
+    """Convert unified diff hunks to the anchor-style patch blocks expected by `apply_patches`.
+
+    Falls back to unified diff-lite if no full hunks are found.
+
+    Args:
+        diff_output (str): Diff output containing hunks.
+
+    Returns:
+        str: Anchor-style patch blocks.
+    """
+    m = DIFF_CODE_FENCE_RE.match(diff_output.strip())
+    if m:
+        diff_output = m.group(1)
+    if diff_output.strip() == NO_DIFF_SENTINEL:
+        return NO_PATCHES_SENTINEL
+    diff_output = re.sub(r"^(---|\+\+\+).*?$", "", diff_output, flags=re.MULTILINE).lstrip()
+    if not diff_output.strip():
+        return NO_PATCHES_SENTINEL
+
+    headers = list(HUNK_HEADER_RE.finditer(diff_output))
+    if not headers:
+        headers = list(HUNK_HEADER_LITE_RE.finditer(diff_output))
+    hunks = []
+    for idx, hdr in enumerate(headers):
+        orig_line = int(hdr.group(1)) if hdr.re is HUNK_HEADER_RE else idx
+        hunk_start = hdr.end()
+        hunk_end = headers[idx + 1].start() if idx + 1 < len(headers) else len(diff_output)
+        hunk_body = diff_output[hunk_start:hunk_end]
+        hunks.append((orig_line, hunk_body))
+    hunks.sort(key=lambda x: x[0])
+
+    patch_blocks = []
+    for _, hunk in hunks:
+        before_lines, after_lines = [], []
+        for line in hunk.splitlines(keepends=True):
+            if not line:
+                continue
+            tag, body = line[0], line[1:]
+            if tag == " " and body and body[0] in HUNK_PREFIXES:
+                tag, body = body[0], body[1:]
+            role = HUNK_PREFIXES.get(tag, "both")
+            if role in ("both", "before"):
+                before_lines.append(body)
+            if role in ("both", "after"):
+                after_lines.append(body)
+        if before_lines == after_lines:
+            continue
+        before = "".join(before_lines)
+        after = "".join(after_lines)
+        if before and not before.endswith(("\n", "\r")):
+            before += "\n"
+        if after and not after.endswith(("\n", "\r")):
+            after += "\n"
+        patch_blocks.append(f"<<<PATCH>>>\n--- BEFORE\n{before}--- AFTER\n{after}<<<END PATCH>>>")
+
+    return "\n".join(patch_blocks) if patch_blocks else NO_PATCHES_SENTINEL
+
+
 REFINE_SOURCE_PROMPT = """You are a code-refinement assistant. 
 
 1. Your goal is to **address any detected code smells or issues** in the given chunk of Python code.
@@ -488,66 +824,82 @@ REFINE_SOURCE_PROMPT = """You are a code-refinement assistant.
 3. **Do not add any comments** to the code, unless explicitly requested."""
 """Default system prompt for `refine_source`."""
 
-FULL_FORMAT_PROMPT = """You must produce output in exactly the format below.
+FULL_FORMAT_PROMPT = """\
+After reasoning privately, you must output **only** the complete, modified
+version of the input text.
 
-Return the **complete, modified version** of the input content.
+Strict formatting rules
+-----------------------
+1. **Single stream:** The first character you emit is the first character of the rewritten file;
+    the last character you emit is the final newline (if the original ended with one).  
+    → Absolutely no prologue, epilogue, headings, or explanations.
+2. **No line numbers.** Never insert numeric prefixes or other markers.
+3. **No fences or back-ticks.** Do not wrap the output in ``` ... ``` or any other delimiter.
+4. **Line integrity:**  
+    1. Leave every untouched line byte-for-byte identical (spaces, tabs, indentation, trailing whitespace).  
+    2. Only change, insert, or delete the exact lines required by the task.
+5. **Newline convention:** Preserve the original newline sequence (`\n`, `\r\n`, or `\r`) across the entire file; mirror it in any new lines.
+6. **No-change case:** If the text requires no edits, reproduce the input verbatim—still obeying every rule above.
 
-Rules (remember them):
-1. Output starts at the very first character and ends at the last.
-2. Return no other text or explanation.
-3. Do not wrap the output in triple backticks.
-4. Preserve original line breaks and indentation, except where you apply edits.
+Any deviation from these rules is a failure."""
+"""Default prompt for formatting the output in `refine_source` when `output_format` is "full"."""
 
-Example (original lines shown only for illustration):
+PATCH_FORMAT_PROMPT = """\
+Your ONLY permitted output is a sequence of zero or more patch blocks,
+each strictly formatted like this:
 
-1: def format_full_name(first, last):
-2:     full_name = f"{last} {first}"  # wrong order
-3:     retrn full_name.upper()        # typo
-4:
-5: print(format_fll_name("Ada", "Lovelace"))  # typo
+    <<<PATCH>>>
+    --- BEFORE
+    <original text EXACTLY as it appears in the input>
+    --- AFTER
+    <replacement text>
+    <<<END PATCH>>>
 
-Expected output (note: only modified content, no line numbers, no commentary):
+If no changes are required, output the single line
 
-def format_full_name(first, last):
-    full_name = f"{first} {last}"
-    return full_name.upper()
+    <<<NO PATCHES>>>
 
-print(format_full_name("Ada", "Lovelace"))"""
+**Never** wrap anything in markdown fences, back-ticks, or prose.
 
-PATCH_FORMAT_PROMPT = """You must produce output in exactly the format below.
+Strict formatting rules
+-----------------------
+1. A block begins with `<<<PATCH>>>`, ends with `<<<END PATCH>>>`.
+2. Inside each block:
+    1. `--- BEFORE` comes first, followed by one or more *complete* lines copied verbatim from the source, including leading/trailing space.
+    2. `--- AFTER` follows immediately, then one or more *complete* lines that replace the BEFORE lines.
+    3. Preserve the *exact* newline sequence (`\n`, `\r\n`, `\r`) that was present in BEFORE; replicate it in AFTER.
+3. One block = one contiguous changed region. If ≥ 4 unchanged lines separate two edits, emit another block.
+4. Blocks appear **in the same order** as they occur in the source.
+5. Never patch the same line twice. Never emit overlapping blocks.
+6. BEFORE and AFTER must **never** contain line numbers or extra markers.
+7. If you change nothing, output *only* `<<<NO PATCHES>>>`.
 
-Return **only** the patches, each wrapped like:
+Any deviation from these rules is a failure."""
+"""Default prompt for formatting the output in `refine_source` when `output_format` is "patch"."""
 
-<<<PATCH:<oldStart>:<oldEnd>>>
-<replacement lines>
-<<<END PATCH>>>
+DIFF_FORMAT_PROMPT = """\
+Your ONLY permitted output is a valid *unified diff* patch that can be
+directly applied with the Unix `patch -p0` command.
+Never echo the whole file; never wrap the diff in markdown back-ticks;
+never add explanations, comments, or prose outside the diff itself.
+If you make no changes, output the single line `<<<NO DIFF>>>`.
 
-Rules (remember them):
-1. Output starts at the very first character and ends at the last.
-2. Return no other text or explanation.
-3. Do not wrap the output in triple backticks.
-4. Preserve original line breaks and indentation inside each block.
-5. 1-based, inclusive line numbers.
-6. One block per contiguous change, blocks in ascending order.
-7. If there are no changes, output <<<NO PATCHES>>>.
+Strict formatting rules
+----------------------
+1. Begin with the header lines:
+    --- <original-path>
+    +++ <original-path>
+(omit timestamps)
+2. **Break hunks correctly**
+    1. If ≥ 4 unchanged lines separate two edited areas, start a new hunk with its own `@@ ... @@` header.
+    2. Show at most 3 unchanged context lines before/after each hunk (`-U3` behaviour).
+3. Show removed lines with `-`, added lines with `+`.
+4. Preserve Unix LF line endings.
+5. Do **not** abbreviate long diffs; output them completely.
+6. If no changes are necessary, output the single line `<<<NO DIFF>>>`.
 
-Example (original lines numbered for clarity):
-
-1: def format_full_name(first, last):
-2:     full_name = f"{last} {first}"  # wrong order
-3:     retrn full_name.upper()        # typo
-4:
-5: print(format_fll_name("Ada", "Lovelace"))  # typo
-
-Expected output (note: only patches, no commentary):
-
-<<<PATCH:2:3>>>
-    full_name = f"{first} {last}"
-    return full_name.upper()
-<<<END PATCH>>>
-<<<PATCH:5:5>>>
-print(format_full_name("Ada", "Lovelace"))
-<<<END PATCH>>>"""
+Any deviation from these rules is a failure."""
+"""Default prompt for formatting the output in `refine_source` when `output_format` is "unidiff"."""
 
 
 def refine_source(
@@ -558,8 +910,10 @@ def refine_source(
     glob_pattern: str = "*.py",
     start_line: tp.Optional[int] = None,
     end_line: tp.Optional[int] = None,
+    line_numbers: bool = False,
     system_prompt: tp.Optional[str] = None,
     output_format: str = "full",
+    fuzzy_kwargs: tp.KwargsLike = None,
     format_prompt: tp.Optional[str] = None,
     context: tp.Optional[str] = None,
     attach_metadata: bool = True,
@@ -585,14 +939,14 @@ def refine_source(
     return_path: bool = False,
     **kwargs,
 ) -> tp.Union[tp.RefineSourceOutput, tp.RefineSourceOutputs]:
-    """Refine the source with Python code by splitting it into manageable chunks and applying completion methods.
+    """Refine the source by splitting it into manageable chunks and applying completion methods.
 
     Args:
-        source (Any): Source(s) or object(s) from which to extract the Python code.
+        source (Any): Source(s) or object(s) from which to extract the source.
 
             A source may be:
 
-            * a string containing Python code (e.g. "import vectorbtpro as vbt ..."),
+            * a string containing any text, such as Python code (e.g. "import vectorbtpro as vbt ..."),
             * a file path (e.g. "./strategies/sma_crossover.py"),
             * a directory path (e.g. "./strategies"),
             * a Python object (e.g. `pipeline_nb`),
@@ -600,7 +954,8 @@ def refine_source(
             * a package name or object (e.g. `vectorbtpro`),
             * an iterable of the above.
 
-            When a directory or package is provided, all contained Python code files are processed.
+            When a directory or package is provided, all contained files matching `glob_pattern`
+            are processed as separate sources.
         source_name (Optional[str]): Name displayed in the progress bar and/or HTML file name.
         as_package (bool): Whether to process a package as multiple sources.
         glob_pattern (str): Glob pattern for matching files in a directory.
@@ -612,17 +967,19 @@ def refine_source(
 
             !!! note
                 Counting starts at 1.
+        line_numbers (bool): Whether to add line numbers to the source.
         system_prompt (Optional[str]): System prompt that precedes the context prompt.
 
             This prompt is used to set the system's behavior or context for the conversation.
             If None, defaults to `REFINE_SOURCE_PROMPT`.
         output_format (str): Format of the output.
 
-            Can be "full" or "patch". If "full", the entire source is returned as a string.
-            If "patch", only the changes are returned as a list of patches.
+            Can be "full", "patch", or "unidiff".
+        fuzzy_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.search_.find_fuzzy`.
         format_prompt (Optional[str]): Custom prompt for formatting the output.
 
-            If None, defaults to `FULL_FORMAT_PROMPT` or `PATCH_FORMAT_PROMPT` depending on `output_format`.
+            If None, defaults to `FULL_FORMAT_PROMPT`, `PATCH_FORMAT_PROMPT`, or `DIFF_FORMAT_PROMPT`
+            depending on `output_format`.
         context (Optional[str]): Custom context.
         attach_metadata (bool): Whether to attach (dumped) metadata to the context.
         attach_imports (Optional[bool]): Whether to attach global source imports to the context.
@@ -663,7 +1020,7 @@ def refine_source(
         mult_pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar for multiple sources.
 
             See `vectorbtpro.utils.pbar.ProgressBar`.
-        modify (bool): Whether to update the source file with the refined Python code.
+        modify (bool): Whether to update the source file with the refined source.
         write_chunks (bool): Whether to write each chunk instead of the entire source.
         copy_to_clipboard (bool): Whether to copy the refined source to the clipboard.
 
@@ -685,13 +1042,6 @@ def refine_source(
             * Returns the path to the HTML diff file if `show_diff` is True.
             * For multiple sources, returns a zipped list of sources and their corresponding outputs.
     """
-    from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
-    from vectorbtpro.utils.module_ import assert_can_import
-    from vectorbtpro.utils.path_ import get_common_prefix
-    from vectorbtpro.utils.pbar import ProgressBar
-    from vectorbtpro.utils.knowledge.chatting import split_text, completed
-    from vectorbtpro.utils.knowledge.custom_assets import search
-
     pbar_kwargs = merge_dicts(
         dict(desc_kwargs=dict(refresh=True)),
         pbar_kwargs,
@@ -773,8 +1123,10 @@ def refine_source(
                     glob_pattern=glob_pattern,
                     start_line=start_line,
                     end_line=end_line,
+                    line_numbers=line_numbers,
                     system_prompt=system_prompt,
                     output_format=output_format,
+                    fuzzy_kwargs=fuzzy_kwargs,
                     format_prompt=format_prompt,
                     context=context,
                     attach_metadata=attach_metadata,
@@ -851,6 +1203,8 @@ def refine_source(
             format_prompt = FULL_FORMAT_PROMPT
         elif output_format.lower() == "patch":
             format_prompt = PATCH_FORMAT_PROMPT
+        elif output_format.lower() == "unidiff":
+            format_prompt = DIFF_FORMAT_PROMPT
         else:
             raise ValueError(f"Invalid output format: '{output_format}'")
     if system_prompt:
@@ -945,33 +1299,41 @@ def refine_source(
             leading = chunk[:leading_len]
             trailing_len = len(chunk) - len(chunk.rstrip())
             trailing = chunk[-trailing_len:] if trailing_len > 0 else ""
-            middle = chunk[leading_len : len(chunk) - trailing_len]
+            input = chunk[leading_len : len(chunk) - trailing_len]
 
-            if middle:
-                if output_format.lower() == "patch":
-                    # TODO: add line numbers to middle
-                    
+            if input:
+                if line_numbers:
+                    num_input = add_line_numbers(input, start_line=chunk_start_line)
+                else:
+                    num_input = input
                 if not attach_prev_chunk:
                     chat_history = []
-                new_middle = completed(
-                    middle,
+                output = completed(
+                    num_input,
                     chat_history=chat_history,
                     system_prompt=system_prompt,
                     context=context,
                     **kwargs,
                 ).strip("\n")
                 if attach_prev_chunk:
-                    chat_history = chat_history[-2 * attach_prev_chunk:]
+                    chat_history = chat_history[-2 * attach_prev_chunk :]
             else:
-                new_middle = ""
-            if new_middle and output_format.lower() == "patch":
-                # TODO: parse patches, iterate over them, apply to the source to produce new_middle
-
-            new_middle = add_source_indent(new_middle, indent)
-            new_chunk = leading + new_middle + trailing
+                output = ""
+            if output:
+                if output_format.lower() == "patch":
+                    output = apply_patches(input, output, start_line=chunk_start_line, fuzzy_kwargs=fuzzy_kwargs)
+                elif output_format.lower() == "unidiff":
+                    print(output)
+                    output = unidiff_to_patches(output)
+                    print(output)
+                    output = apply_patches(input, output, start_line=chunk_start_line, fuzzy_kwargs=fuzzy_kwargs)
+                elif output_format.lower() != "full":
+                    raise ValueError(f"Invalid output format: '{output_format}'")
+            output = add_source_indent(output, indent)
+            new_chunk = leading + output + trailing
             processed.append(new_chunk)
 
-            if middle and source_path and modify and write_chunks:
+            if input and source_path and modify and write_chunks:
                 new_processed = processed + source_chunks[i + 1 :]
                 new_source = "".join(new_processed)
                 new_source_lines = new_source.splitlines(keepends=True)
@@ -1002,7 +1364,7 @@ def refine_source(
         pyperclip.copy(new_source)
 
     if show_diff:
-        differ = difflib.HtmlDiff()
+        differ = HtmlDiff()
         html_diff = differ.make_file(
             source.splitlines(),
             new_source.splitlines(),
@@ -1051,8 +1413,7 @@ REFINE_DOCSTRINGS_PROMPT = """You are a docstring-refinement assistant.
 
 
 def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
-    """Call `refine_source` with the system prompt from `REFINE_DOCSTRINGS_PROMPT` to refine
-    docstrings in the given source code.
+    """Call `refine_source` with the system prompt from `REFINE_DOCSTRINGS_PROMPT` to refine docstrings.
 
     Args:
         source (Any): Source(s) or object(s) from which to extract the Python code.
@@ -1075,13 +1436,12 @@ REFINE_DOCS_PROMPT = """You are a Markdown-documentation refinement assistant.
 
 
 def refine_docs(
-    source: tp.Any, 
+    source: tp.Any,
     glob_pattern: str = "*.md",
-    split_text_kwargs: tp.KwargsLike = None, 
+    split_text_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.RefineSourceOutput:
-    """Call `refine_source` with the system prompt from `REFINE_DOCS_PROMPT` to refine
-    Markdown documentation in the given source code.
+    """Call `refine_source` with the system prompt from `REFINE_DOCS_PROMPT` to refine Markdown documentation.
 
     Args:
         source (Any): Source(s) or object(s) from which to extract the Markdown documentation.

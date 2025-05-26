@@ -373,7 +373,7 @@ def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokeni
         found_tokenizer = None
         for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Tokenizer"):
-                _short_name: tp.ClassVar[tp.Optional[str]] = getattr(cls, "_short_name", None)
+                _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == tokenizer.lower():
                     found_tokenizer = cls
                     break
