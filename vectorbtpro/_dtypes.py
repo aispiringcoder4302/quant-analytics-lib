@@ -26,12 +26,14 @@ __all__ = [
 __pdoc__ = {}
 
 int_ = settings["numpy"]["int_"]
-int_.__doc__ = "Default integer data type retrieved from `vectorbtpro._settings.numpy`."
+
+__pdoc__["int_"] = "Default integer data type retrieved from `vectorbtpro._settings.numpy`."
 if np.issubdtype(int_, np.integer):
     __pdoc__["float_.bit_count"] = False
 
 float_ = settings["numpy"]["float_"]
-float_.__doc__ = "Default floating point data type retrieved from `vectorbtpro._settings.numpy`."
+
+__pdoc__["float_"] = "Default floating point data type retrieved from `vectorbtpro._settings.numpy`."
 if np.issubdtype(float_, np.floating):
     __pdoc__["int_.as_integer_ratio"] = False
     __pdoc__["int_.is_integer"] = False
