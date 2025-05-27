@@ -254,7 +254,7 @@ def get_package_meta(pkg_name: str) -> dict:
         raise KeyError(f"Package '{pkg_name}' not found in opt_dep_config")
     dist_name = opt_dep_config[pkg_name].get("dist_name", pkg_name)
     version = opt_dep_config[pkg_name].get("version", "")
-    link = opt_dep_config[pkg_name]["link"]
+    link = opt_dep_config[pkg_name].get("link", f"https://pypi.org/project/{dist_name}/")
     return dict(dist_name=dist_name, version=version, link=link)
 
 
