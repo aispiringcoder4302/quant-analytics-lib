@@ -36,9 +36,9 @@ from vectorbtpro.utils.template import CustomTemplate, RepEval
 __all__ = [
     "cut_and_save_module",
     "cut_and_save_func",
-    "refine_source",
-    "refine_docstrings",
-    "refine_docs",
+    "refactor_source",
+    "refactor_docstrings",
+    "refactor_docs",
 ]
 
 
@@ -667,7 +667,13 @@ ANY_CODE_FENCE_RE = re.compile(r"^\s*```(?:\w+)?\s*\n(.*?)\n?```$", re.DOTALL)
 """Regular expression to match code fences around code blocks with any language in the output."""
 
 PATCH_BLOCK_RE = re.compile(
-    r"<<<PATCH>>>\r?\n--- BEFORE\r?\n(.*?)\r?\n--- AFTER\r?\n(.*?)\r?\n<<<END PATCH>>>",
+    r"<<<PATCH(?::(\d+))?>>>\s*\r?\n"
+    r"<<<<<<< SEARCH\s*\r?\n"
+    r"(.*?)\r?\n"
+    r"=======\s*\r?\n"
+    r"(.*?)\r?\n"
+    r">>>>>>> REPLACE\s*\r?\n"
+    r"<<<END PATCH>>>",
     re.DOTALL,
 )
 """Regular expression to match patch blocks in the output."""
@@ -699,45 +705,60 @@ def apply_patches(source: str, patch_output: str, start_line: int = 1, fuzzy_kwa
         patch_output = m.group(1)
     if patch_output.strip() == NO_PATCHES_SENTINEL:
         return source
-    blocks = PATCH_BLOCK_RE.findall(patch_output)
+    blocks = []
+    for ln, search_bl, replace_bl in PATCH_BLOCK_RE.findall(patch_output):
+        ln = int(ln) if ln else None
+        if LINE_NUMBER_RE.match(search_bl):
+            search_bl = remove_line_numbers(search_bl)
+        if LINE_NUMBER_RE.match(replace_bl):
+            replace_bl = remove_line_numbers(replace_bl)
+        if search_bl and not search_bl.endswith(("\n", "\r")):
+            search_bl += "\n"
+        if replace_bl and not replace_bl.endswith(("\n", "\r")):
+            replace_bl += "\n"
+        blocks.append((ln, search_bl, replace_bl))
     if not blocks:
         raise ValueError("No PATCH blocks found")
     if fuzzy_kwargs is None:
         fuzzy_kwargs = {}
 
+    if all(ln is not None for ln, _, _ in blocks):
+        if all(ln < start_line for ln, _, _ in blocks):
+            blocks = [(ln + start_line - 1, search_bl, replace_bl) for ln, search_bl, replace_bl in blocks]
+        blocks.sort(key=lambda x: x[0])
+        lines_present = True
+    else:
+        lines_present = False
+
     all_matches = []
-    for i, (before, after) in enumerate(blocks):
-        if LINE_NUMBER_RE.match(before):
-            before = remove_line_numbers(before)
-        if LINE_NUMBER_RE.match(after):
-            after = remove_line_numbers(after)
-        if before and not before.endswith(("\n", "\r")):
-            before += "\n"
-        if after and not after.endswith(("\n", "\r")):
-            after += "\n"
-        matches = find_source(before, source, start_line=start_line)
+    for i, (_, search_bl, replace_bl) in enumerate(blocks):
+        matches = find_source(search_bl, source, start_line=start_line)
         if not matches:
-            matches = find_source_fuzzy(before, source, start_line=start_line, **fuzzy_kwargs)
+            matches = find_source_fuzzy(search_bl, source, start_line=start_line, **fuzzy_kwargs)
         if not matches:
-            matches = find_source_fuzzy_window(before, source, start_line=start_line, **fuzzy_kwargs)
-        if not matches:
-            raise ValueError(f"BEFORE block not found:\n{before}")
-        if all_matches and len(matches) > 1:
+            matches = find_source_fuzzy_window(search_bl, source, start_line=start_line, **fuzzy_kwargs)
+        if len(matches) == 1:
+            all_matches.append((*matches[0], replace_bl))
+            continue
+        if len(matches) > 1 and all_matches:
             found_match = False
             for s, e in matches:
                 if s > all_matches[-1][1]:
                     found_match = True
-                    all_matches.append((s, e, after))
+                    all_matches.append((s, e, replace_bl))
                     break
             if found_match:
                 continue
-        all_matches.append((*matches[0], after))
+            if not lines_present:
+                all_matches.append((*matches[0], replace_bl))
+        raise ValueError(f"Original block not found:\n{search_bl}")
 
-    all_matches.sort(key=lambda x: x[0])
-    for s, e, after in reversed(all_matches):
+    if not lines_present:
+        all_matches.sort(key=lambda x: x[0])
+    for s, e, replace_bl in reversed(all_matches):
         source_lines = source.splitlines(keepends=True)
-        after_lines = after.splitlines(keepends=True)
-        source_lines[s - start_line : e - start_line + 1] = after_lines
+        repl_lines = replace_bl.splitlines(keepends=True)
+        source_lines[s - start_line : e - start_line + 1] = repl_lines
         source = "".join(source_lines)
     return source
 
@@ -745,164 +766,232 @@ def apply_patches(source: str, patch_output: str, start_line: int = 1, fuzzy_kwa
 DIFF_CODE_FENCE_RE = re.compile(r"^\s*```(?:diff)?\s*\n(.*?)\n?```$", re.DOTALL)
 """Regular expression to match code fences around unified diffs in the output."""
 
-HUNK_HEADER_RE = re.compile(r"^@@\s*-(\d+)(?:,\d+)?\s+\+\d+(?:,\d+)?\s*@@[^\n]*\n", re.MULTILINE)
+HUNK_HEADER_RE = re.compile(r"^@@[^\n]*\n", re.MULTILINE)
 """Regular expression to split unified diff hunks by their headers."""
 
-HUNK_HEADER_LITE_RE = re.compile(r"^@@.*?@@\r?\n", re.MULTILINE)
-"""Regular expression to split unified diff-lite hunks by their headers."""
+HUNK_HEADER_PATH_RE = re.compile(r"^(---|\+\+\+).*?$", re.MULTILINE)
+"""Regular expression to match hunk header paths in unified diffs."""
 
-HUNK_PREFIXES = {" ": "both", "-": "before", "+": "after"}
+HUNK_HEADER_LO_RE = re.compile(r"^@@\s*-(\d+)")
+"""Regular expression to match the original line number in hunk headers."""
+
+HUNK_PREFIXES = {" ": "both", "-": "search_bl", "+": "replace_bl"}
 """Mapping of diff prefixes to their roles in hunks."""
 
 NO_DIFF_SENTINEL = "<<<NO DIFF>>>"
 """Sentinel value indicating that no hunks are in the output."""
 
 
-def unidiff_to_patches(diff_output: str) -> str:
+def udiff_to_patches(udiff_output: str, start_line: int = 1) -> str:
     """Convert unified diff hunks to the anchor-style patch blocks expected by `apply_patches`.
 
-    Falls back to unified diff-lite if no full hunks are found.
-
     Args:
-        diff_output (str): Diff output containing hunks.
+        udiff_output (str): Unified diff output containing hunks.
+        start_line (int): Starting line number for the source (1-based).
 
     Returns:
         str: Anchor-style patch blocks.
     """
-    m = DIFF_CODE_FENCE_RE.match(diff_output.strip())
+    m = DIFF_CODE_FENCE_RE.match(udiff_output.strip())
     if m:
-        diff_output = m.group(1)
-    if diff_output.strip() == NO_DIFF_SENTINEL:
+        udiff_output = m.group(1)
+    if udiff_output.strip() == NO_DIFF_SENTINEL:
         return NO_PATCHES_SENTINEL
-    diff_output = re.sub(r"^(---|\+\+\+).*?$", "", diff_output, flags=re.MULTILINE).lstrip()
-    if not diff_output.strip():
+    udiff_output = HUNK_HEADER_PATH_RE.sub("", udiff_output).lstrip()
+    if not udiff_output.strip():
         return NO_PATCHES_SENTINEL
 
-    headers = list(HUNK_HEADER_RE.finditer(diff_output))
-    if not headers:
-        headers = list(HUNK_HEADER_LITE_RE.finditer(diff_output))
+    headers = list(HUNK_HEADER_RE.finditer(udiff_output))
     hunks = []
     for idx, hdr in enumerate(headers):
-        orig_line = int(hdr.group(1)) if hdr.re is HUNK_HEADER_RE else idx
+        m = HUNK_HEADER_LO_RE.search(hdr.group(0))
+        ln = int(m.group(1)) if m else None
         hunk_start = hdr.end()
-        hunk_end = headers[idx + 1].start() if idx + 1 < len(headers) else len(diff_output)
-        hunk_body = diff_output[hunk_start:hunk_end]
-        hunks.append((orig_line, hunk_body))
-    hunks.sort(key=lambda x: x[0])
+        hunk_end = headers[idx + 1].start() if idx + 1 < len(headers) else len(udiff_output)
+        hunk_body = udiff_output[hunk_start:hunk_end]
+        hunks.append((ln, hunk_body))
+
+    if all(ln is not None for ln, _ in hunks):
+        if all(ln < start_line for ln, _ in hunks):
+            hunks = [(ln + start_line - 1, hunk) for ln, hunk in hunks]
+        hunks.sort(key=lambda x: x[0])
 
     patch_blocks = []
-    for _, hunk in hunks:
-        before_lines, after_lines = [], []
+    for ln, hunk in hunks:
+        orig_lines, repl_lines = [], []
         for line in hunk.splitlines(keepends=True):
             if not line:
                 continue
             tag, body = line[0], line[1:]
-            if tag == " " and body and body[0] in HUNK_PREFIXES:
-                tag, body = body[0], body[1:]
             role = HUNK_PREFIXES.get(tag, "both")
-            if role in ("both", "before"):
-                before_lines.append(body)
-            if role in ("both", "after"):
-                after_lines.append(body)
-        if before_lines == after_lines:
+            if role in ("both", "search_bl"):
+                orig_lines.append(body)
+            if role in ("both", "replace_bl"):
+                repl_lines.append(body)
+        if orig_lines == repl_lines:
             continue
-        before = "".join(before_lines)
-        after = "".join(after_lines)
-        if before and not before.endswith(("\n", "\r")):
-            before += "\n"
-        if after and not after.endswith(("\n", "\r")):
-            after += "\n"
-        patch_blocks.append(f"<<<PATCH>>>\n--- BEFORE\n{before}--- AFTER\n{after}<<<END PATCH>>>")
+        search_bl = "".join(orig_lines)
+        replace_bl = "".join(repl_lines)
+        if search_bl and not search_bl.endswith(("\n", "\r")):
+            search_bl += "\n"
+        if replace_bl and not replace_bl.endswith(("\n", "\r")):
+            replace_bl += "\n"
+        patch_blocks.append(
+            f"<<<PATCH{f':{ln}' if ln is not None else ''}>>>\n"
+            "<<<<<<< SEARCH\n"
+            f"{search_bl}"
+            "=======\n"
+            f"{replace_bl}"
+            ">>>>>>> REPLACE\n"
+            "<<<END PATCH>>>"
+        )
 
     return "\n".join(patch_blocks) if patch_blocks else NO_PATCHES_SENTINEL
 
 
-REFINE_SOURCE_PROMPT = """You are a code-refinement assistant. 
+FULL_FORMAT_PROMPT = """\
+Emit **only** the complete, modified file—nothing else.
+
+Strict formatting rules
+-----------------------
+1. **Single stream:**
+    * First character you output is the file's first character.
+    * Last character is the final newline (if one existed). 
+    * No prologue, epilogue, or commentary.
+2. **No line numbers.** Never insert numeric prefixes.
+3. **No fences or back-ticks.** Do not wrap output in ``` or any delimiter.
+4. **Line integrity:**  
+    * Unchanged lines must stay character-for-character identical (whitespace included).
+    * Change, insert, or delete **only** what the task demands.
+5. **Newline convention:** Mirror the original newline sequence (`\n`, `\r\n`, or `\r`) everywhere.
+6. **No-change case:** If nothing changes, reproduce the input exactly—still following every rule.
+
+**Any deviation from these rules is a failure.**"""
+"""Default prompt for formatting the output in `refactor_source` when `output_format` is "full"."""
+
+PATCH_FORMAT_PROMPT = """\
+Output exactly one of:
+
+* <<<NO PATCHES>>> if no changes are needed, or
+* One or more patch blocks, each in this Git-style form:
+
+<<<PATCH:<LN>>>
+<<<<<<< SEARCH
+<original text EXACTLY as in input>
+=======
+<replacement text>
+>>>>>>> REPLACE
+<<<END PATCH>>>
+
+Strict formatting rules
+-----------------------
+1. <LN> = 1-based line number of the first ORIGINAL line; blocks appear in strictly increasing order.
+2. ORIGINAL lines are copied **verbatim**, including their indentation and newline style; use the same style in REPLACEMENT.
+3. Start a new block if ≥ 4 unchanged lines separate two edits.
+4. Blocks must not overlap or touch the same line twice.
+5. **No other output:** No markdown fences, comments, prose, or full-file echo.
+
+**Any deviation from these rules is a failure.**
+
+Example input (line numbers added for clarity):
+
+1: def example():
+2:     x = 1
+3:     y = 2
+4:     sum = x + y
+5:     print(sum)
+6: 
+7: def greet():
+8:     print("Hello, world!")
+9:     return True
+
+Example output:
+
+<<<PATCH:2>>>
+<<<<<<< SEARCH
+    x = 1
+=======
+    x = 10
+>>>>>>> REPLACE
+<<<END PATCH>>>
+
+<<<PATCH:8>>>
+<<<<<<< SEARCH
+    print("Hello, world!")
+=======
+    print("Hi there!")
+>>>>>>> REPLACE
+<<<END PATCH>>>"""
+"""Default prompt for formatting the output in `refactor_source` when `output_format` is "patch"."""
+
+UDIFF_FORMAT_PROMPT = """\
+Your ONLY permitted output is a valid *unified diff* patch that applies with `patch -p0`.
+
+Strict formatting rules
+----------------------
+1. The first two lines **must be**:
+    --- <old-path>
+    +++ <new-path>
+    (no timestamps; paths may match)
+2. Each hunk header: @@ -<old-start>,<old-len> +<new-start>,<new-len> @@
+3. Within each hunk:
+    * ' '-prefixed lines are context.
+    * '-'-prefixed lines are removals.
+    * '+'-prefixed lines are additions.
+    * Preserve all whitespace.
+4. Start a new hunk if ≥ 4 unchanged lines separate two edits.
+5. Show ≤ 3 context lines before/after each hunk (`-U3` behavior).
+6. Hunks appear **in the same order** they occur in the input and never overlap.
+7. Do **not** abbreviate long diffs; output them completely.
+8. Unix LF endings only. Diff ends with a single LF.
+9. Do **not** echo the whole file; never wrap the diff in markdown fences.
+10. Do **not** add explanations, comments, or prose outside the diff itself.
+11. For binary diffs, output **exactly** <<<NO DIFF>>>.
+12. If nothing changes, output **exactly** <<<NO DIFF>>>.
+
+**Any deviation from these rules is a failure.**
+
+Example input (line numbers added for clarity):
+
+1: def example():
+2:     x = 1
+3:     y = 2
+4:     sum = x + y
+5:     print(sum)
+6: 
+7: def greet():
+8:     print("Hello, world!")
+9:     return True
+
+Example output:
+
+--- example.py
++++ example.py
+@@ -1,5 +1,5 @@
+ def example():
+-    x = 1
++    x = 10
+     y = 2
+     sum = x + y
+     print(sum)
+@@ -6,4 +6,4 @@
+ 
+ def greet():
+-    print("Hello, world!")
++    print("Hi there!")
+     return True"""
+"""Default prompt for formatting the output in `refactor_source` when `output_format` is "udiff"."""
+
+
+REFACTOR_SOURCE_PROMPT = """You are a code-refactoring assistant. 
 
 1. Your goal is to **address any detected code smells or issues** in the given chunk of Python code.
 2. If the code contains a TODO or FIXME comment, **follow the instructions in the comment**.
 3. **Do not add any comments** to the code, unless explicitly requested."""
-"""Default system prompt for `refine_source`."""
-
-FULL_FORMAT_PROMPT = """\
-After reasoning privately, you must output **only** the complete, modified
-version of the input text.
-
-Strict formatting rules
------------------------
-1. **Single stream:** The first character you emit is the first character of the rewritten file;
-    the last character you emit is the final newline (if the original ended with one).  
-    → Absolutely no prologue, epilogue, headings, or explanations.
-2. **No line numbers.** Never insert numeric prefixes or other markers.
-3. **No fences or back-ticks.** Do not wrap the output in ``` ... ``` or any other delimiter.
-4. **Line integrity:**  
-    1. Leave every untouched line byte-for-byte identical (spaces, tabs, indentation, trailing whitespace).  
-    2. Only change, insert, or delete the exact lines required by the task.
-5. **Newline convention:** Preserve the original newline sequence (`\n`, `\r\n`, or `\r`) across the entire file; mirror it in any new lines.
-6. **No-change case:** If the text requires no edits, reproduce the input verbatim—still obeying every rule above.
-
-Any deviation from these rules is a failure."""
-"""Default prompt for formatting the output in `refine_source` when `output_format` is "full"."""
-
-PATCH_FORMAT_PROMPT = """\
-Your ONLY permitted output is a sequence of zero or more patch blocks,
-each strictly formatted like this:
-
-    <<<PATCH>>>
-    --- BEFORE
-    <original text EXACTLY as it appears in the input>
-    --- AFTER
-    <replacement text>
-    <<<END PATCH>>>
-
-If no changes are required, output the single line
-
-    <<<NO PATCHES>>>
-
-**Never** wrap anything in markdown fences, back-ticks, or prose.
-
-Strict formatting rules
------------------------
-1. A block begins with `<<<PATCH>>>`, ends with `<<<END PATCH>>>`.
-2. Inside each block:
-    1. `--- BEFORE` comes first, followed by one or more *complete* lines copied verbatim from the source, including leading/trailing space.
-    2. `--- AFTER` follows immediately, then one or more *complete* lines that replace the BEFORE lines.
-    3. Preserve the *exact* newline sequence (`\n`, `\r\n`, `\r`) that was present in BEFORE; replicate it in AFTER.
-3. One block = one contiguous changed region. If ≥ 4 unchanged lines separate two edits, emit another block.
-4. Blocks appear **in the same order** as they occur in the source.
-5. Never patch the same line twice. Never emit overlapping blocks.
-6. BEFORE and AFTER must **never** contain line numbers or extra markers.
-7. If you change nothing, output *only* `<<<NO PATCHES>>>`.
-
-Any deviation from these rules is a failure."""
-"""Default prompt for formatting the output in `refine_source` when `output_format` is "patch"."""
-
-DIFF_FORMAT_PROMPT = """\
-Your ONLY permitted output is a valid *unified diff* patch that can be
-directly applied with the Unix `patch -p0` command.
-Never echo the whole file; never wrap the diff in markdown back-ticks;
-never add explanations, comments, or prose outside the diff itself.
-If you make no changes, output the single line `<<<NO DIFF>>>`.
-
-Strict formatting rules
-----------------------
-1. Begin with the header lines:
-    --- <original-path>
-    +++ <original-path>
-(omit timestamps)
-2. **Break hunks correctly**
-    1. If ≥ 4 unchanged lines separate two edited areas, start a new hunk with its own `@@ ... @@` header.
-    2. Show at most 3 unchanged context lines before/after each hunk (`-U3` behaviour).
-3. Show removed lines with `-`, added lines with `+`.
-4. Preserve Unix LF line endings.
-5. Do **not** abbreviate long diffs; output them completely.
-6. If no changes are necessary, output the single line `<<<NO DIFF>>>`.
-
-Any deviation from these rules is a failure."""
-"""Default prompt for formatting the output in `refine_source` when `output_format` is "unidiff"."""
+"""Default system prompt for `refactor_source`."""
 
 
-def refine_source(
+def refactor_source(
     source: tp.Any,
     *,
     source_name: tp.Optional[str] = None,
@@ -919,7 +1008,6 @@ def refine_source(
     attach_metadata: bool = True,
     attach_imports: tp.Optional[bool] = None,
     attach_map: tp.Optional[bool] = None,
-    attach_prev_chunk: tp.Union[bool, int] = True,
     attach_knowledge: bool = False,
     search_kwargs: tp.KwargsLike = None,
     to_context_kwargs: tp.KwargsLike = None,
@@ -927,6 +1015,7 @@ def refine_source(
     dump_kwargs: tp.KwargsLike = None,
     split: bool = True,
     split_text_kwargs: tp.KwargsLike = None,
+    keep_history: tp.Union[bool, int, slice] = False,
     show_progress: tp.Optional[bool] = None,
     pbar_kwargs: tp.KwargsLike = None,
     mult_show_progress: tp.Optional[bool] = None,
@@ -938,8 +1027,8 @@ def refine_source(
     open_browser: bool = True,
     return_path: bool = False,
     **kwargs,
-) -> tp.Union[tp.RefineSourceOutput, tp.RefineSourceOutputs]:
-    """Refine the source by splitting it into manageable chunks and applying completion methods.
+) -> tp.Union[tp.RefactorSourceOutput, tp.RefactorSourceOutputs]:
+    """Refactor the source by splitting it into manageable chunks and applying completion methods.
 
     Args:
         source (Any): Source(s) or object(s) from which to extract the source.
@@ -971,14 +1060,14 @@ def refine_source(
         system_prompt (Optional[str]): System prompt that precedes the context prompt.
 
             This prompt is used to set the system's behavior or context for the conversation.
-            If None, defaults to `REFINE_SOURCE_PROMPT`.
+            If None, defaults to `REFACTOR_SOURCE_PROMPT`.
         output_format (str): Format of the output.
 
-            Can be "full", "patch", or "unidiff".
+            Can be "full", "patch", or "udiff".
         fuzzy_kwargs (KwargsLike): Keyword arguments for `vectorbtpro.utils.search_.find_fuzzy`.
         format_prompt (Optional[str]): Custom prompt for formatting the output.
 
-            If None, defaults to `FULL_FORMAT_PROMPT`, `PATCH_FORMAT_PROMPT`, or `DIFF_FORMAT_PROMPT`
+            If None, defaults to `FULL_FORMAT_PROMPT`, `PATCH_FORMAT_PROMPT`, or `UDIFF_FORMAT_PROMPT`
             depending on `output_format`.
         context (Optional[str]): Custom context.
         attach_metadata (bool): Whether to attach (dumped) metadata to the context.
@@ -988,9 +1077,6 @@ def refine_source(
         attach_map (Optional[bool]): Whether to attach (dumped) source map to the context.
 
             If None, becomes True if `split` is True.
-        attach_prev_chunk (Union[bool, int]): Whether to attach the previous chunk to the context.
-
-            If an integer, it specifies the number of previous chunks to attach.
         attach_knowledge (bool): Whether to attach relevant knowledge to the context.
         search_kwargs (KwargsLike): Keyword arguments for searching for knowledge.
 
@@ -1010,6 +1096,12 @@ def refine_source(
 
             By default, uses "python" as `text_splitter`, 2000 as `chunk_size`, and 0 as `chunk_overlap`.
             See `vectorbtpro.utils.knowledge.chatting.split_text`.
+        keep_history (Union[bool, int, slice]): Whether to keep the history of the conversation.
+
+            If True, keeps the history of the conversation.
+            If an integer, it specifies the number of last messages to keep in the history.
+            If a slice, it specifies the range of messages to keep in the history
+            (e.g., `slice(1, None, 2)` keeps every completion).
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar.
 
@@ -1020,9 +1112,9 @@ def refine_source(
         mult_pbar_kwargs (KwargsLike): Keyword arguments for configuring the progress bar for multiple sources.
 
             See `vectorbtpro.utils.pbar.ProgressBar`.
-        modify (bool): Whether to update the source file with the refined source.
+        modify (bool): Whether to update the source file with the refactored source.
         write_chunks (bool): Whether to write each chunk instead of the entire source.
-        copy_to_clipboard (bool): Whether to copy the refined source to the clipboard.
+        copy_to_clipboard (bool): Whether to copy the refactored source to the clipboard.
 
             Does not apply when processing multiple sources.
         show_diff (bool): Whether to generate and display an HTML diff file using `difflib`.
@@ -1035,9 +1127,9 @@ def refine_source(
         **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.completed`.
 
     Returns:
-        Union[RefineSourceOutput, RefineSourceOutputs]: Result of the refinement process.
+        Union[RefactorSourceOutput, RefactorSourceOutputs]: Result of the refactoring process.
 
-            * Returns the refined source if neither `modify` nor `copy_to_clipboard` is True.
+            * Returns the refactored source if neither `modify` nor `copy_to_clipboard` is True.
             * Returns the path to the updated source file if `modify` is True.
             * Returns the path to the HTML diff file if `show_diff` is True.
             * For multiple sources, returns a zipped list of sources and their corresponding outputs.
@@ -1116,7 +1208,7 @@ def refine_source(
         with ProgressBar(total=len(source_names), show_progress=mult_show_progress, **mult_pbar_kwargs) as pbar:
             for i, source in enumerate(sources):
                 pbar.set_description(dict(source=source_names[i]))
-                output = refine_source(
+                output = refactor_source(
                     source=source,
                     source_name=source_names[i],
                     as_package=False,
@@ -1132,7 +1224,6 @@ def refine_source(
                     attach_metadata=attach_metadata,
                     attach_imports=attach_imports,
                     attach_map=attach_map,
-                    attach_prev_chunk=attach_prev_chunk,
                     attach_knowledge=attach_knowledge,
                     search_kwargs=search_kwargs,
                     to_context_kwargs=to_context_kwargs,
@@ -1140,6 +1231,7 @@ def refine_source(
                     dump_kwargs=dump_kwargs,
                     split=split,
                     split_text_kwargs=split_text_kwargs,
+                    keep_history=keep_history,
                     show_progress=show_progress,
                     pbar_kwargs=pbar_kwargs,
                     modify=modify,
@@ -1197,14 +1289,14 @@ def refine_source(
     source_name = f"{source_name}#L{source_start_line}-L{source_end_line}"
 
     if system_prompt is None:
-        system_prompt = REFINE_SOURCE_PROMPT
+        system_prompt = REFACTOR_SOURCE_PROMPT
     if format_prompt is None:
         if output_format.lower() == "full":
             format_prompt = FULL_FORMAT_PROMPT
         elif output_format.lower() == "patch":
             format_prompt = PATCH_FORMAT_PROMPT
-        elif output_format.lower() == "unidiff":
-            format_prompt = DIFF_FORMAT_PROMPT
+        elif output_format.lower() == "udiff":
+            format_prompt = UDIFF_FORMAT_PROMPT
         else:
             raise ValueError(f"Invalid output format: '{output_format}'")
     if system_prompt:
@@ -1306,7 +1398,7 @@ def refine_source(
                     num_input = add_line_numbers(input, start_line=chunk_start_line)
                 else:
                     num_input = input
-                if not attach_prev_chunk:
+                if not keep_history:
                     chat_history = []
                 output = completed(
                     num_input,
@@ -1315,16 +1407,20 @@ def refine_source(
                     context=context,
                     **kwargs,
                 ).strip("\n")
-                if attach_prev_chunk:
-                    chat_history = chat_history[-2 * attach_prev_chunk :]
+                if keep_history and not isinstance(keep_history, bool):
+                    if isinstance(keep_history, int):
+                        keep_history = slice(-keep_history, None)
+                    if isinstance(keep_history, slice):
+                        chat_history = chat_history[keep_history]
             else:
                 output = ""
             if output:
                 if output_format.lower() == "patch":
-                    output = apply_patches(input, output, start_line=chunk_start_line, fuzzy_kwargs=fuzzy_kwargs)
-                elif output_format.lower() == "unidiff":
                     print(output)
-                    output = unidiff_to_patches(output)
+                    output = apply_patches(input, output, start_line=chunk_start_line, fuzzy_kwargs=fuzzy_kwargs)
+                elif output_format.lower() == "udiff":
+                    print(output)
+                    output = udiff_to_patches(output, start_line=start_line)
                     print(output)
                     output = apply_patches(input, output, start_line=chunk_start_line, fuzzy_kwargs=fuzzy_kwargs)
                 elif output_format.lower() != "full":
@@ -1403,45 +1499,45 @@ def refine_source(
     return new_source
 
 
-REFINE_DOCSTRINGS_PROMPT = """You are a docstring-refinement assistant.
+REFACTOR_DOCSTRINGS_PROMPT = """You are a docstring-refactoring assistant.
 
-1. Your goal is to refine **only** the docstrings of the given chunk of Python code.
+1. Your goal is to refactor **only** the docstrings of the given chunk of Python code.
 2. **Edit docstrings** for clarity, correctness, and consistent format and wording.
 3. **Retain all non-docstring parts of the code** exactly as they are.
 4. **If the given chunk contains only text, consider it a docstring**."""
-"""System prompt for `refine_docstrings`."""
+"""System prompt for `refactor_docstrings`."""
 
 
-def refine_docstrings(source: tp.Any, **kwargs) -> tp.RefineSourceOutput:
-    """Call `refine_source` with the system prompt from `REFINE_DOCSTRINGS_PROMPT` to refine docstrings.
+def refactor_docstrings(source: tp.Any, **kwargs) -> tp.RefactorSourceOutput:
+    """Call `refactor_source` with the system prompt from `REFACTOR_DOCSTRINGS_PROMPT` to refactor docstrings.
 
     Args:
         source (Any): Source(s) or object(s) from which to extract the Python code.
-        **kwargs: Keyword arguments for `refine_source`.
+        **kwargs: Keyword arguments for `refactor_source`.
 
     Returns:
-        RefineSourceOutput: Result of the refinement process.
+        RefactorSourceOutput: Result of the refactoring process.
     """
-    return refine_source(source, system_prompt=REFINE_DOCSTRINGS_PROMPT, **kwargs)
+    return refactor_source(source, system_prompt=REFACTOR_DOCSTRINGS_PROMPT, **kwargs)
 
 
-REFINE_DOCS_PROMPT = """You are a Markdown-documentation refinement assistant.
+REFACTOR_DOCS_PROMPT = """You are a Markdown-documentation refactoring assistant.
 
-1. Your goal is to refine **only** the prose of the given chunk of Markdown-documentation.
+1. Your goal is to refactor **only** the prose of the given chunk of Markdown-documentation.
 2. Edit prose for **clarity, correctness, and consistent format and wording**.
 3. **Do not** introduce new ideas, remove existing ideas, or alter facts. **Only rephrase.**
 4. **Retain all non-prose parts of the chunk exactly as they are.**
 5. **Preserve Markdown structure, list markers, indentation, and blank lines.**"""
-"""Default system prompt for `refine_docs`."""
+"""Default system prompt for `refactor_docs`."""
 
 
-def refine_docs(
+def refactor_docs(
     source: tp.Any,
     glob_pattern: str = "*.md",
     split_text_kwargs: tp.KwargsLike = None,
     **kwargs,
-) -> tp.RefineSourceOutput:
-    """Call `refine_source` with the system prompt from `REFINE_DOCS_PROMPT` to refine Markdown documentation.
+) -> tp.RefactorSourceOutput:
+    """Call `refactor_source` with the system prompt from `REFACTOR_DOCS_PROMPT` to refactor Markdown documentation.
 
     Args:
         source (Any): Source(s) or object(s) from which to extract the Markdown documentation.
@@ -1450,10 +1546,10 @@ def refine_docs(
 
             By default, uses "markdown" as `text_splitter`.
             See `vectorbtpro.utils.knowledge.chatting.split_text`.
-        **kwargs: Keyword arguments for `refine_source`.
+        **kwargs: Keyword arguments for `refactor_source`.
 
     Returns:
-        RefineSourceOutput: Result of the refinement process.
+        RefactorSourceOutput: Result of the refactoring process.
     """
     split_text_kwargs = merge_dicts(
         dict(
@@ -1461,10 +1557,10 @@ def refine_docs(
         ),
         split_text_kwargs,
     )
-    return refine_source(
+    return refactor_source(
         source,
         glob_pattern=glob_pattern,
-        system_prompt=REFINE_DOCS_PROMPT,
+        system_prompt=REFACTOR_DOCS_PROMPT,
         split_text_kwargs=split_text_kwargs,
         **kwargs,
     )

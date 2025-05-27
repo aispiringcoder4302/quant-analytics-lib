@@ -541,8 +541,8 @@ PipeTasks = Iterable[PipeTask]
 CompressionLike = Union[None, bool, str]
 
 # Source
-RefineSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
-RefineSourceOutputs = List[Tuple[Any, RefineSourceOutput]]
+RefactorSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
+RefactorSourceOutputs = List[Tuple[Any, RefactorSourceOutput]]
 
 # Simulation
 SignalFunc = Callable[[SignalContext, VarArg()], Tuple[bool, bool, bool, bool]]
