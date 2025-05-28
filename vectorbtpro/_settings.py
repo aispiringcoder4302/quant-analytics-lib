@@ -2016,6 +2016,12 @@ ${config_doc}
 _settings["pbar"] = pbar
 
 path = frozen_cfg(
+    platformdirs=flex_cfg(
+        dir_type="user_data_dir",
+        appname="vectorbtpro",
+        appauthor="vbtuser",
+        per_vbt_version=False,
+    ),
     mkdir=flex_cfg(
         mkdir=True,
         mode=0o777,
@@ -2059,7 +2065,7 @@ _settings["search"] = search
 knowledge = frozen_cfg(
     options_=dict(override_keys={"chat"}),
     cache=True,
-    cache_dir="./knowledge",
+    cache_dir=RepEval("vbt.get_platform_dir('user_cache_dir') / 'knowledge'"),
     cache_mkdir_kwargs=flex_cfg(),
     clear_cache=False,
     asset_cache_dir=RepEval("Path(cache_dir) / 'asset_cache'"),
@@ -2584,7 +2590,7 @@ $chunk_text""",
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
-            cache_dir="./knowledge/vbt/",
+            cache_dir=RepEval("vbt.get_platform_dir('user_cache_dir') / 'knowledge' / 'vbt'"),
             release_dir=RepEval("(Path(cache_dir) / release_name) if release_name else cache_dir"),
             assets_dir=RepEval("Path(release_dir) / 'assets'"),
             markdown_dir=RepEval("Path(release_dir) / 'markdown'"),

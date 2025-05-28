@@ -26,6 +26,7 @@ import humanize
 from vectorbtpro import _typing as tp
 
 __all__ = [
+    "get_platform_dir",
     "list_any_files",
     "list_files",
     "list_dirs",
@@ -39,6 +40,43 @@ __all__ = [
     "remove_dir",
     "print_dir_tree",
 ]
+
+
+def get_platform_dir(dir_type: tp.Optional[str] = None, per_vbt_version: tp.Optional[bool] = None, **kwargs) -> str:
+    """Return a platform-specific directory.
+    
+    Args:
+        dir_type (Optional[str]): Type of directory to retrieve (e.g., 'user_data_dir').
+        per_vbt_version (Optional[bool]): Whether to create a VBT-version-specific directory.
+        **kwargs: Keyword arguments for `platformdirs.PlatformDirs`.
+    
+    Returns:
+        str: Path to the platform-specific directory.
+
+    !!! info
+        For default settings, see `platformdirs` in `vectorbtpro._settings.path`.
+    """
+    from vectorbtpro._version import __version__
+    from vectorbtpro._settings import settings
+    from vectorbtpro.utils.module_ import assert_can_import
+    from vectorbtpro.utils.config import merge_dicts
+
+    assert_can_import("platformdirs")
+    from platformdirs import PlatformDirs
+
+    platformdirs_cfg = settings["path"]["platformdirs"]
+    kwargs = merge_dicts(platformdirs_cfg, kwargs)
+    def_dir_type = kwargs.pop("dir_type", "user_data_dir")
+    if dir_type is None:
+        dir_type = def_dir_type
+    def_per_vbt_version = kwargs.pop("per_vbt_version", False)
+    if per_vbt_version is None:
+        per_vbt_version = def_per_vbt_version
+    if per_vbt_version:
+        kwargs["version"] = __version__
+    
+    dirs = PlatformDirs(**kwargs)
+    return Path(getattr(dirs, dir_type))
 
 
 def list_any_files(path: tp.Optional[tp.PathLike] = None, recursive: bool = False) -> tp.List[Path]:

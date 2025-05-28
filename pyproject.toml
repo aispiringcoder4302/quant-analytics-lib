@@ -138,7 +138,8 @@ msg = [
 ]
 io-base = [
     "dill",
-    "blosc2"
+    "blosc2",
+    "platformdirs"
 ]
 io = [
     "vectorbtpro[io-base]",

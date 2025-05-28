@@ -82,6 +82,7 @@ opt_dep_config = HybridConfig(
         bm25s=dict(),
         PyStemmer=dict(),
         pyperclip=dict(),
+        platformdirs=dict(),
     )
 )
 """_"""
