@@ -543,6 +543,7 @@ CompressionLike = Union[None, bool, str]
 # Source
 RefactorSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
 RefactorSourceOutputs = List[Tuple[Any, RefactorSourceOutput]]
+MaybeRefactorSourceOutput = Union[RefactorSourceOutput, RefactorSourceOutputs]
 
 # Simulation
 SignalFunc = Callable[[SignalContext, VarArg()], Tuple[bool, bool, bool, bool]]

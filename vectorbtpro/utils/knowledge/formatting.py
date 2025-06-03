@@ -47,9 +47,9 @@ class ToMarkdown(Configured):
     Args:
         remove_code_title (Optional[bool]): Whether to remove the `title` attribute from a code block
             and display it above the block.
-        even_indentation (Optional[bool]): Whether a newline should be inserted before list items.
-        newline_before_list (Optional[bool]): Whether leading spaces should be adjusted to
+        even_indentation (Optional[bool]): Whether leading spaces should be adjusted to
             even numbers (e.g., converting 3 spaces to 4).
+        newline_before_list (Optional[bool]): Whether a newline should be inserted before list items.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info

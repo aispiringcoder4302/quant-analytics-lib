@@ -964,7 +964,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
                 See `vectorbtpro.utils.execution.execute`.
             wrap (Optional[bool]): If True, return the result wrapped as an asset.
-            single_item (Optional[bool]): Determines if data items are treated as single items.
+            single_item (Optional[bool]): Determines if a single item should not be wrapped in a list.
             return_iterator (bool): If True, return an iterator instead of executing tasks.
             **kwargs: Keyword arguments for the asset pipeline or function.
 
@@ -1083,6 +1083,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         skip_missing: tp.Optional[bool] = None,
         source: tp.Optional[tp.CustomTemplateLike] = None,
         template_context: tp.KwargsLike = None,
+        single_item: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
         """Return specific data items or subsets of them.
@@ -1098,6 +1099,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             source (Optional[CustomTemplateLike]): Template, function, or string for preprocessing;
                 in the template, "i" denotes the index, "d" the full data item, and "x" the extracted part.
             template_context (KwargsLike): Additional context for template substitution.
+            single_item (Optional[bool]): Determines if a single item should not be wrapped in a list.
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
@@ -1137,7 +1139,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             ```
         """
         if path is None and source is None:
-            if self.single_item:
+            if single_item is None:
+                single_item = self.single_item
+            if single_item:
                 if len(self.data) == 1:
                     return self.data[0]
                 if len(self.data) == 0:
@@ -1150,6 +1154,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing=skip_missing,
             source=source,
             template_context=template_context,
+            single_item=single_item,
             **kwargs,
         )
 

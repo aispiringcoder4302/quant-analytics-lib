@@ -18,7 +18,6 @@ import tempfile
 import webbrowser
 from collections import defaultdict
 from difflib import HtmlDiff, SequenceMatcher
-from textwrap import dedent
 from pathlib import Path
 from types import ModuleType, FunctionType
 
@@ -38,6 +37,7 @@ __all__ = [
     "cut_and_save_func",
     "refactor_source",
     "refactor_docstrings",
+    "refactor_markdown",
     "refactor_docs",
 ]
 
@@ -1027,7 +1027,7 @@ def refactor_source(
     open_browser: bool = True,
     return_path: bool = False,
     **kwargs,
-) -> tp.Union[tp.RefactorSourceOutput, tp.RefactorSourceOutputs]:
+) -> tp.MaybeRefactorSourceOutput:
     """Refactor the source by splitting it into manageable chunks and applying completion methods.
 
     Args:
@@ -1508,7 +1508,7 @@ REFACTOR_DOCSTRINGS_PROMPT = """You are a docstring-refactoring assistant.
 """System prompt for `refactor_docstrings`."""
 
 
-def refactor_docstrings(source: tp.Any, **kwargs) -> tp.RefactorSourceOutput:
+def refactor_docstrings(source: tp.Any, **kwargs) -> tp.MaybeRefactorSourceOutput:
     """Call `refactor_source` with the system prompt from `REFACTOR_DOCSTRINGS_PROMPT` to refactor docstrings.
 
     Args:
@@ -1521,26 +1521,21 @@ def refactor_docstrings(source: tp.Any, **kwargs) -> tp.RefactorSourceOutput:
     return refactor_source(source, system_prompt=REFACTOR_DOCSTRINGS_PROMPT, **kwargs)
 
 
-REFACTOR_DOCS_PROMPT = """You are a Markdown-documentation refactoring assistant.
-
-1. Your goal is to refactor **only** the prose of the given chunk of Markdown-documentation.
-2. Edit prose for **clarity, correctness, and consistent format and wording**.
-3. **Do not** introduce new ideas, remove existing ideas, or alter facts. **Only rephrase.**
-4. **Retain all non-prose parts of the chunk exactly as they are.**
-5. **Preserve Markdown structure, list markers, indentation, and blank lines.**"""
-"""Default system prompt for `refactor_docs`."""
+REFACTOR_MARKDOWN_PROMPT = """You are a Markdown refactoring assistant."""
+"""Default system prompt for `refactor_markdown`."""
 
 
-def refactor_docs(
+def refactor_markdown(
     source: tp.Any,
     glob_pattern: str = "*.md",
+    system_prompt: tp.Optional[str] = None,
     split_text_kwargs: tp.KwargsLike = None,
     **kwargs,
-) -> tp.RefactorSourceOutput:
-    """Call `refactor_source` with the system prompt from `REFACTOR_DOCS_PROMPT` to refactor Markdown documentation.
+) -> tp.MaybeRefactorSourceOutput:
+    """Call `refactor_source` with the system prompt from `REFACTOR_MARKDOWN_PROMPT` to refactor Markdown.
 
     Args:
-        source (Any): Source(s) or object(s) from which to extract the Markdown documentation.
+        source (Any): Source(s) or object(s) from which to extract the Markdown.
         glob_pattern (str): Glob pattern for matching files in a directory.
         split_text_kwargs (KwargsLike): Keyword arguments for splitting the source.
 
@@ -1551,6 +1546,8 @@ def refactor_docs(
     Returns:
         RefactorSourceOutput: Result of the refactoring process.
     """
+    if system_prompt is None:
+        system_prompt = REFACTOR_MARKDOWN_PROMPT
     split_text_kwargs = merge_dicts(
         dict(
             text_splitter="markdown",
@@ -1560,7 +1557,34 @@ def refactor_docs(
     return refactor_source(
         source,
         glob_pattern=glob_pattern,
-        system_prompt=REFACTOR_DOCS_PROMPT,
+        system_prompt=system_prompt,
         split_text_kwargs=split_text_kwargs,
+        **kwargs,
+    )
+
+
+REFACTOR_DOCS_PROMPT = """You are a Markdown-documentation refactoring assistant.
+
+1. Your goal is to refactor **only** the prose of the given chunk of Markdown-documentation.
+2. Edit prose for **clarity, correctness, and consistent format and wording**.
+3. **Do not** introduce new ideas, remove existing ideas, or alter facts. **Only rephrase.**
+4. **Retain all non-prose parts of the chunk exactly as they are.**
+5. **Preserve Markdown structure, list markers, indentation, and blank lines.**"""
+"""Default system prompt for `refactor_docs`."""
+
+
+def refactor_docs(source: tp.Any, **kwargs) -> tp.MaybeRefactorSourceOutput:
+    """Call `refactor_markdown` with the system prompt from `REFACTOR_DOCS_PROMPT` to refactor Markdown documentation.
+
+    Args:
+        source (Any): Source(s) or object(s) from which to extract the Markdown documentation.
+        **kwargs: Keyword arguments for `refactor_markdown`.
+
+    Returns:
+        RefactorSourceOutput: Result of the refactoring process.
+    """
+    return refactor_source(
+        source,
+        system_prompt=REFACTOR_DOCS_PROMPT,
         **kwargs,
     )

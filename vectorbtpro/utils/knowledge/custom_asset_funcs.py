@@ -27,7 +27,7 @@ class ToMarkdownAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "to_markdown"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -151,6 +151,9 @@ class ToMarkdownAssetFunc(AssetFunc):
         dump_engine = dump_metadata_kwargs.get("dump_engine", "nestedtext")
         dump_language = get_dump_language(dump_engine)
         text = f"```{dump_language}\n{text}\n```"
+        to_markdown_kwargs["remove_code_title"] = False
+        to_markdown_kwargs["even_indentation"] = False
+        to_markdown_kwargs["newline_before_list"] = False
         return to_markdown(text, **to_markdown_kwargs)
 
     @classmethod
@@ -435,7 +438,7 @@ class AggMessageAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_message"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -551,7 +554,7 @@ class AggBlockAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_block"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(

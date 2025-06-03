@@ -40,7 +40,7 @@ class AssetFunc(Base):
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Identifier for the asset function's short name used in expressions."""
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = None
+    _wrap: tp.ClassVar[tp.Optional[bool]] = None
     """Indicates whether the result should be wrapped with `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`."""
 
     @classmethod
@@ -98,7 +98,7 @@ class GetAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "get"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = False
+    _wrap: tp.ClassVar[tp.Optional[bool]] = False
 
     @classmethod
     def prepare(
@@ -221,7 +221,7 @@ class SetAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "set"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -332,7 +332,7 @@ class RemoveAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "remove"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -411,7 +411,7 @@ class MoveAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "move"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -587,7 +587,7 @@ class ReorderAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "reorder"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -734,7 +734,7 @@ class QueryAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "query"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = False
+    _wrap: tp.ClassVar[tp.Optional[bool]] = False
 
     @classmethod
     def prepare(
@@ -828,7 +828,7 @@ class FindAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "find"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -1669,7 +1669,7 @@ class FlattenAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "flatten"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -1756,7 +1756,7 @@ class UnflattenAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "unflatten"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -1841,7 +1841,7 @@ class DumpAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "dump"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def resolve_dump_kwargs(
@@ -1963,7 +1963,7 @@ class ToDocsAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "to_docs"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -2054,7 +2054,7 @@ class SplitTextAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "split_text"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -2128,7 +2128,7 @@ class ReduceAssetFunc(AssetFunc):
     """Abstract class defining an asset function for reducing data with
     `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.reduce`."""
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = False
+    _wrap: tp.ClassVar[tp.Optional[bool]] = False
 
     _initializer: tp.ClassVar[tp.Optional[tp.Any]] = None
 
@@ -2234,7 +2234,7 @@ class MergeDictsAssetFunc(ReduceAssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "merge_dicts"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     _initializer: tp.ClassVar[tp.Optional[tp.Any]] = {}
 
@@ -2251,7 +2251,7 @@ class MergeListsAssetFunc(ReduceAssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "merge_lists"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     _initializer: tp.ClassVar[tp.Optional[tp.Any]] = []
 

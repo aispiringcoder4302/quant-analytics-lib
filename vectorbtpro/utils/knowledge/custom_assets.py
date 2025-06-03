@@ -447,6 +447,10 @@ class VBTAsset(KnowledgeAsset):
                                 return d
                 links_block = "\n".join([d["link"] for d in found])
                 raise MultipleItemsFoundError(f"Multiple items matching '{link}':\n\n{links_block}")
+        elif found is None:
+            if allow_empty:
+                return found
+            raise NoItemFoundError(f"No item matching '{link}'")
         return found
 
     @classmethod
@@ -2618,6 +2622,26 @@ class PagesAsset(VBTAsset):
 
         new_data = [link_map[link] for link in link_map if link not in aggregated_links]
         return self.replace(data=new_data)
+    
+    def select_api(self: PagesAssetT) -> PagesAssetT:
+        """Return API documentation pages and headings.
+
+        Filters the pages asset to include only those that are part of the API documentation.
+
+        Returns:
+            PagesAsset: New pages asset containing only API documentation pages and headings.
+        """
+        return self.filter(lambda x: "link" in x and "/api/" in x["link"])
+    
+    def select_docs(self: PagesAssetT) -> PagesAssetT:
+        """Return general documentation pages and headings.
+
+        Filters the pages asset to include only those that are part of the general documentation.
+
+        Returns:
+            PagesAsset: New pages asset containing only general documentation pages and headings.
+        """
+        return self.filter(lambda x: "link" in x and "/api/" not in x["link"])
 
     def select_parent(self: PagesAssetT, link: str, incl_link: bool = False, **kwargs) -> PagesAssetT:
         """Select the parent page of a given link.
@@ -2904,6 +2928,32 @@ class PagesAsset(VBTAsset):
         if "length_limit" not in dir_tree_kwargs:
             dir_tree_kwargs["length_limit"] = None
         print(dir_tree_from_paths(paths, **dir_tree_kwargs))
+
+    def generate_llmstxt_api(self) -> str:
+        """Generate API documentation in llms.txt format.
+
+        Returns:
+            str: API documentation formatted as llms.txt.
+        """
+        return self.select_api().filter("not not content").aggregate().to_markdown().join()
+    
+    def generate_llmstxt_docs(self) -> str:
+        """Generate general documentation in llms.txt format.
+
+        Returns:
+            str: General documentation formatted as llms.txt.
+        """
+        return self.select_docs().filter("not not content").aggregate().to_markdown().join()
+    
+    def generate_llmstxt_full(self) -> str:
+        """Generate full documentation in llms.txt format.
+
+        Returns:
+            str: Full documentation formatted as llms.txt.
+        """
+        api_md = self.select_docs().filter("not not content").aggregate().to_markdown()
+        docs_md = self.select_api().filter("not not content").aggregate().to_markdown()
+        return (api_md + docs_md).join()
 
 
 MessagesAssetT = tp.TypeVar("MessagesAssetT", bound="MessagesAsset")
@@ -3197,22 +3247,22 @@ class MessagesAsset(VBTAsset):
                 or None if no level is consistently available.
         """
         try:
-            if self.get("attachments"):
+            if self.get("attachments", single_item=False):
                 return "message"
         except KeyError:
             pass
         try:
-            if len(set(self.get("block"))) == 1:
+            if len(set(self.get("block", single_item=False))) == 1:
                 return "block"
         except KeyError:
             pass
         try:
-            if len(set(self.get("thread"))) == 1:
+            if len(set(self.get("thread", single_item=False))) == 1:
                 return "thread"
         except KeyError:
             pass
         try:
-            if len(set(self.get("channel"))) == 1:
+            if len(set(self.get("channel", single_item=False))) == 1:
                 return "channel"
         except KeyError:
             pass
@@ -3229,22 +3279,22 @@ class MessagesAsset(VBTAsset):
                 if a uniform attribute is found; otherwise, None.
         """
         try:
-            if len(set(self.get("channel"))) == 1:
+            if len(set(self.get("channel", single_item=False))) == 1:
                 return "channel"
         except KeyError:
             pass
         try:
-            if len(set(self.get("thread"))) == 1:
+            if len(set(self.get("thread", single_item=False))) == 1:
                 return "thread"
         except KeyError:
             pass
         try:
-            if len(set(self.get("block"))) == 1:
+            if len(set(self.get("block", single_item=False))) == 1:
                 return "block"
         except KeyError:
             pass
         try:
-            if self.get("attachments"):
+            if self.get("attachments", single_item=False):
                 return "message"
         except KeyError:
             pass
@@ -3368,22 +3418,31 @@ class MessagesAsset(VBTAsset):
                 new_data.append(d2)
         return self.replace(data=new_data, single_item=False)
 
-    def select_channel(self: MessagesAssetT, link: str, incl_link: bool = True, **kwargs) -> MessagesAssetT:
+    def select_channel(self: MessagesAssetT, name_or_link: str, incl_link: bool = True, **kwargs) -> MessagesAssetT:
         """Return messages belonging to the same channel as the specified link.
 
-        Finds a message using `VBTAsset.find_link` to determine the channel, then selects
-        all messages with the same channel identifier from the asset. The originating message
+        If `name_or_link` is a link, finds a message using `VBTAsset.find_link` to determine the channel,
+        then selects all messages with the same channel identifier from the asset. The originating message
         is included based on the `incl_link` flag.
 
         Args:
-            link (str): Link used to determine the target channel.
+            name_or_link (str): Channel name or link used to identify the channel.
             incl_link (bool): Indicates whether to include the message corresponding to `link`.
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
             MessagesAsset: New messages asset containing messages from the same channel.
         """
-        d = self.find_link(link, wrap=False, **kwargs)
+        try:
+            d = self.find_link(name_or_link, wrap=False, **kwargs)
+        except NoItemFoundError:
+            if name_or_link in set(self.get("channel", single_item=False)):
+                new_data = []
+                for d2 in self.data:
+                    if d2["channel"] == name_or_link:
+                        new_data.append(d2)
+                return self.replace(data=new_data, single_item=False)
+            raise NoItemFoundError(f"No channel or link matching '{name_or_link}'")
         new_data = []
         for d2 in self.data:
             if d2["channel"] == d["channel"] and (incl_link or d2["link"] != d["link"]):
@@ -3486,7 +3545,7 @@ def find_api(
         as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
     if obj_or_query is not None and not as_query:
         return pages_asset.find_obj_api(obj_or_query, attr=attr, module=module, resolve=resolve, **kwargs)
-    pages_asset = pages_asset.filter(lambda x: "link" in x and "/api/" in x["link"])
+    pages_asset = pages_asset.select_api()
     if obj_or_query is None:
         return pages_asset
     return pages_asset.rank(obj_or_query, **kwargs)
@@ -3544,7 +3603,7 @@ def find_docs(
         as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
     if obj_or_query is not None and not as_query:
         return pages_asset.find_obj_docs(obj_or_query, attr=attr, module=module, resolve=resolve, **kwargs)
-    pages_asset = pages_asset.filter(lambda x: "link" in x and "/api/" not in x["link"])
+    pages_asset = pages_asset.select_docs()
     if obj_or_query is None:
         return pages_asset
     return pages_asset.rank(obj_or_query, **kwargs)
