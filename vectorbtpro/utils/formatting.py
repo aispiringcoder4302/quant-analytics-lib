@@ -812,3 +812,23 @@ def get_dump_language(dump_engine: str) -> str:
     if dump_engine.lower() == "json":
         return "json"
     return ""
+
+
+def get_dump_frontmatter(dump_engine: str) -> str:
+    """Return the frontmatter corresponding to the provided dump engine.
+
+    Args:
+        dump_engine (str): Name of the dump engine.
+
+            See `vectorbtpro.utils.formatting.dump`.
+
+    Returns:
+        str: Corresponding frontmatter string, or an empty string if unknown.
+    """
+    if dump_engine.lower() == "yaml":
+        return "---"
+    if dump_engine.lower() == "pyyaml":
+        return "---"
+    if dump_engine.lower() in ("ruamel", "ruamel.yaml"):
+        return "---"
+    return ""

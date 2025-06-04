@@ -261,7 +261,7 @@ def get_package_meta(pkg_name: str) -> dict:
 def assert_can_import(pkg_name: str) -> None:
     """Assert that the specified package can be imported.
 
-    The package must be listed in `opt_dep_config`. An ImportError is raised if the package
+    The package must be listed in `opt_dep_config`. An `ImportError` is raised if the package
     is not installed or the installed version is incompatible.
 
     Args:

@@ -549,6 +549,7 @@ class VBTAsset(KnowledgeAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         **kwargs,
     ) -> tp.MaybeVBTAsset:
         """Convert asset data to Markdown format using a dedicated conversion function.
@@ -566,6 +567,9 @@ class VBTAsset(KnowledgeAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             **kwargs: Keyword arguments for `VBTAsset.apply`.
 
         Returns:
@@ -579,6 +583,7 @@ class VBTAsset(KnowledgeAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             **kwargs,
         )
 
@@ -748,6 +753,7 @@ class VBTAsset(KnowledgeAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         format_html_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -767,6 +773,9 @@ class VBTAsset(KnowledgeAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -786,6 +795,7 @@ class VBTAsset(KnowledgeAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             to_markdown_kwargs=to_markdown_kwargs,
             format_html_kwargs=format_html_kwargs,
             **kwargs,
@@ -1026,7 +1036,6 @@ class VBTAsset(KnowledgeAsset):
         body_extras: tp.Optional[tp.MaybeList[str]] = None,
         invert_colors: tp.Optional[bool] = None,
         title: str = "",
-        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> Path:
         """Display asset(s) as an HTML page.
@@ -2929,31 +2938,81 @@ class PagesAsset(VBTAsset):
             dir_tree_kwargs["length_limit"] = None
         print(dir_tree_from_paths(paths, **dir_tree_kwargs))
 
-    def generate_llmstxt_api(self) -> str:
+    def generate_llmstxt_api(
+        self,
+        aggregate: bool = True,
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> str:
         """Generate API documentation in llms.txt format.
+
+        Args:
+            aggregate (bool): Whether to aggregate headings into pages.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
+            **kwargs: Keyword arguments for `PagesAsset.to_markdown`.
 
         Returns:
             str: API documentation formatted as llms.txt.
         """
-        return self.select_api().filter("not not content").aggregate().to_markdown().join()
-    
-    def generate_llmstxt_docs(self) -> str:
+        api_asset = self.select_api().filter("not not content")
+        if aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            api_asset = api_asset.aggregate(**aggregate_kwargs)
+        return api_asset.to_markdown(**kwargs).join()
+
+    def generate_llmstxt_docs(
+        self,
+        aggregate: bool = True,
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> str:
         """Generate general documentation in llms.txt format.
+
+        Args:
+            aggregate (bool): Whether to aggregate headings into pages.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
+            **kwargs: Keyword arguments for `PagesAsset.to_markdown`.
 
         Returns:
             str: General documentation formatted as llms.txt.
         """
-        return self.select_docs().filter("not not content").aggregate().to_markdown().join()
-    
-    def generate_llmstxt_full(self) -> str:
+        docs_asset = self.select_docs().filter("not not content")
+        if aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            docs_asset = docs_asset.aggregate(**aggregate_kwargs)
+        return docs_asset.to_markdown(**kwargs).join()
+
+    def generate_llmstxt_full(
+        self,
+        aggregate: bool = True,
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> str:
         """Generate full documentation in llms.txt format.
+
+        Args:
+            aggregate (bool): Whether to aggregate headings into pages.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
+            **kwargs: Keyword arguments for `PagesAsset.to_markdown`.
 
         Returns:
             str: Full documentation formatted as llms.txt.
         """
-        api_md = self.select_docs().filter("not not content").aggregate().to_markdown()
-        docs_md = self.select_api().filter("not not content").aggregate().to_markdown()
-        return (api_md + docs_md).join()
+        api_asset = self.select_api().filter("not not content")
+        if aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            api_asset = api_asset.aggregate(**aggregate_kwargs)
+        api_asset = api_asset.to_markdown(**kwargs)
+        docs_asset = self.select_docs().filter("not not content")
+        if aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            docs_asset = docs_asset.aggregate(**aggregate_kwargs)
+        docs_asset = docs_asset.to_markdown(**kwargs)
+        return (api_asset + docs_asset).join()
 
 
 MessagesAssetT = tp.TypeVar("MessagesAssetT", bound="MessagesAsset")
@@ -3007,6 +3066,7 @@ class MessagesAsset(VBTAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
@@ -3026,6 +3086,9 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -3041,6 +3104,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             to_markdown_kwargs=to_markdown_kwargs,
             **kwargs,
         )
@@ -3055,6 +3119,7 @@ class MessagesAsset(VBTAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
@@ -3080,6 +3145,9 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -3102,6 +3170,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             to_markdown_kwargs=to_markdown_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
             **kwargs,
@@ -3117,6 +3186,7 @@ class MessagesAsset(VBTAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
@@ -3142,6 +3212,9 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -3164,6 +3237,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             to_markdown_kwargs=to_markdown_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
             **kwargs,
@@ -3179,6 +3253,7 @@ class MessagesAsset(VBTAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
@@ -3204,6 +3279,9 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -3226,6 +3304,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             to_markdown_kwargs=to_markdown_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
             **kwargs,
@@ -4197,6 +4276,8 @@ def search(
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
         aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
+
+            By default, sets `minimize_metadata=True`.
         find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
         display (Union[bool, int]): If True, displays the top results as static HTML pages with `VBTAsset.display`.
 
@@ -4334,6 +4415,8 @@ def chat(
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
         aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
+
+            By default, sets `minimize_metadata=True`.
         find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
         rank (Optional[bool]): Flag indicating whether to apply ranking.
         top_k (TopKLike): Number of top items to consider for ranking.

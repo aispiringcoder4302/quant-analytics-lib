@@ -1551,7 +1551,7 @@ def assert_dict_sequence_valid(obj: tp.DictLikeSequence, lvl_keys: tp.Sequence[t
 
 
 def assert_sequence(obj: tp.Any) -> None:
-    """Raise a ValueError if the object is not a sequence.
+    """Raise a `ValueError` if the object is not a sequence.
 
     Args:
         obj (Any): Object to test for sequence behavior.
@@ -1564,7 +1564,7 @@ def assert_sequence(obj: tp.Any) -> None:
 
 
 def assert_iterable(obj: tp.Any) -> None:
-    """Raise a ValueError if the object is not an iterable.
+    """Raise a `ValueError` if the object is not an iterable.
 
     Args:
         obj (Any): Object to test for iterability.

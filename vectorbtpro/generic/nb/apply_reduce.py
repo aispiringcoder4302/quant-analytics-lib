@@ -2148,7 +2148,7 @@ def argmin_reduce_nb(arr: tp.Array1d) -> int:
         int: Index of the minimum value.
 
     !!! note
-        Raises a ValueError if all elements in the array are NaN.
+        Raises a `ValueError` if all elements in the array are NaN.
     """
     arr = np.copy(arr)
     mask = np.isnan(arr)
@@ -2169,7 +2169,7 @@ def argmax_reduce_nb(arr: tp.Array1d) -> int:
         int: Index of the maximum value.
 
     !!! note
-        Raises a ValueError if all elements in the array are NaN.
+        Raises a `ValueError` if all elements in the array are NaN.
     """
     arr = np.copy(arr)
     mask = np.isnan(arr)

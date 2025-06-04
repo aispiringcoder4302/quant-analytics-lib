@@ -2161,6 +2161,7 @@ knowledge = frozen_cfg(
         newline_before_list=True,
         resolve_extensions=True,
         make_links=True,
+        frontmatter_to_code=True,
         markdown_kwargs=flex_cfg(
             extensions=[
                 "fenced_code",
@@ -2638,6 +2639,7 @@ $chunk_text""",
             clean_metadata=True,
             clean_metadata_kwargs=flex_cfg(),
             dump_metadata_kwargs=flex_cfg(),
+            metadata_fence="frontmatter",
             incl_base_attr=True,
             incl_shortcuts=True,
             incl_shortcut_access=True,

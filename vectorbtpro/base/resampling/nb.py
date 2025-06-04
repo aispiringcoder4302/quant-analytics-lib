@@ -70,7 +70,7 @@ def map_to_target_index_nb(
 
     The mapping is determined by the provided `target_freq` and `before` flag. When
     `target_freq` is specified, the function restricts the mapping to a given frequency interval.
-    If no valid mapping is found and `raise_missing` is True, a ValueError is raised; otherwise,
+    If no valid mapping is found and `raise_missing` is True, a `ValueError` is raised; otherwise,
     the source element is mapped to -1.
 
     Args:

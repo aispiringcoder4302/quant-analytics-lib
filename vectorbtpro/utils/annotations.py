@@ -279,7 +279,7 @@ class Union(Annotatable, DefineMixin):
         This method flattens any nested unions and combines their annotations.
 
         If the union contains both `VarArgs` and `VarKwargs`, or if conflicting annotation
-        types are encountered during resolution, a ValueError is raised.
+        types are encountered during resolution, a `ValueError` is raised.
 
         Returns:
             Annotation: Resolved annotation.

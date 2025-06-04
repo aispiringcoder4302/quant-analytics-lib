@@ -180,7 +180,7 @@ class DefineMixin(Hashable):
     def assert_field_not_missing(self, field_or_name: tp.Union[str, attr.Attribute]) -> None:
         """Assert that the specified field is not missing.
 
-        If the field is missing, raises a ValueError indicating whether it is required or optional.
+        If the field is missing, raises a `ValueError` indicating whether it is required or optional.
 
         Args:
             field_or_name (Union[str, Attribute]): Name or object of the attribute field.

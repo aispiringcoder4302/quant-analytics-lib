@@ -22,8 +22,8 @@ def match_tags(tags: tp.MaybeIterable[str], in_tags: tp.MaybeIterable[str]) -> b
 
     For valid identifier tags, match them directly within `in_tags`. For tags that are not valid
     identifiers, evaluate the tag as a boolean expression where each variable indicates its
-    presence in `in_tags`. A ValueError is raised if any tag in `in_tags` is not a valid identifier,
-    and a TypeError is raised if a tag expression does not produce a boolean.
+    presence in `in_tags`. A `ValueError` is raised if any tag in `in_tags` is not a valid identifier,
+    and a `TypeError` is raised if a tag expression does not produce a boolean.
 
     Args:
         tags (MaybeIterable[str]): Tag or collection of tags to match.

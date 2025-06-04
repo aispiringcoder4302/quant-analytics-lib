@@ -13,6 +13,7 @@
 See `vectorbtpro.utils.knowledge` for the toy dataset.
 """
 
+import io
 import re
 import inspect
 import time
@@ -171,6 +172,7 @@ class ToHTML(Configured):
             favoring `pymdownx` extensions when available.
         make_links (Optional[bool]): Whether to convert raw URLs within HTML `p` and
             `span` tags into hyperlinks.
+        frontmatter_to_code (Optional[bool]): Whether to convert frontmatter (YAML) blocks to code blocks.
         **markdown_kwargs: Keyword arguments for Markdown conversion.
 
     !!! info
@@ -185,22 +187,26 @@ class ToHTML(Configured):
         self,
         resolve_extensions: tp.Optional[bool] = None,
         make_links: tp.Optional[bool] = None,
+        frontmatter_to_code: tp.Optional[bool] = None,
         **markdown_kwargs,
     ) -> None:
         Configured.__init__(
             self,
             resolve_extensions=resolve_extensions,
             make_links=make_links,
+            frontmatter_to_code=frontmatter_to_code,
             **markdown_kwargs,
         )
 
         resolve_extensions = self.resolve_setting(resolve_extensions, "resolve_extensions")
         make_links = self.resolve_setting(make_links, "make_links")
         markdown_kwargs = self.resolve_setting(markdown_kwargs, "markdown_kwargs", merge=True)
+        frontmatter_to_code = self.resolve_setting(frontmatter_to_code, "frontmatter_to_code")
 
         self._resolve_extensions = resolve_extensions
         self._make_links = make_links
         self._markdown_kwargs = markdown_kwargs
+        self._frontmatter_to_code = frontmatter_to_code
 
     @property
     def resolve_extensions(self) -> bool:
@@ -228,6 +234,15 @@ class ToHTML(Configured):
             Kwargs: Dictionary of keyword arguments for Markdown conversion.
         """
         return self._markdown_kwargs
+
+    @property
+    def frontmatter_to_code(self) -> bool:
+        """Whether to convert frontmatter (YAML) blocks to code blocks.
+
+        Returns:
+            bool: True if frontmatter (YAML) blocks should be converted to code blocks, False otherwise.
+        """
+        return self._frontmatter_to_code
 
     def to_html(self, markdown: str) -> str:
         """Return the HTML conversion of the given Markdown text.
@@ -263,7 +278,49 @@ class ToHTML(Configured):
                     )
                 ]
             extensions = filtered_extensions
+        if self.frontmatter_to_code:
+
+            def _looks_like_yaml(lines):
+                if not lines or lines[0].strip() == "":
+                    return False
+                return True
+
+            def _frontmatter_to_code(markdown):
+                out = io.StringIO()
+                lines = markdown.splitlines(keepends=True)
+                i = 0
+                n = len(lines)
+
+                while i < n:
+                    line = lines[i]
+                    if line.strip() == "---":
+                        start = i
+                        i += 1
+                        block = []
+                        while i < n and lines[i].strip() != "---":
+                            block.append(lines[i])
+                            i += 1
+                        if i < n and lines[i].strip() == "---":
+                            if _looks_like_yaml(block):
+                                out.write(lines[start].replace("---", "```yaml", 1))
+                                out.write("".join(block))
+                                out.write(lines[i].replace("---", "```", 1))
+                            else:
+                                out.write("".join(lines[start : i + 1]))
+                            i += 1
+                        else:
+                            out.write("".join(lines[start:]))
+                            break
+                    else:
+                        out.write(line)
+                        i += 1
+
+                return out.getvalue()
+
+            markdown = _frontmatter_to_code(markdown)
+
         html = md.markdown(markdown, extensions=extensions, **markdown_kwargs)
+
         if self.make_links:
             tag_pattern = re.compile(r"<(p|span)(\s[^>]*)?>(.*?)</\1>", re.DOTALL | re.IGNORECASE)
             url_pattern = re.compile(r'(https?://[^\s<>"\'`]+?)(?=[.,;:!?)\]]*(?:\s|$))', re.IGNORECASE)

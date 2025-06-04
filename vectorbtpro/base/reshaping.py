@@ -2258,7 +2258,7 @@ def get_multiindex_series(obj: tp.SeriesFrame) -> tp.Series:
         Series: Resulting Series with a MultiIndex.
 
     !!! note
-        If a DataFrame with more than one row and more than one column is provided, a ValueError is raised.
+        If a DataFrame with more than one row and more than one column is provided, a `ValueError` is raised.
     """
     checks.assert_instance_of(obj, (pd.Series, pd.DataFrame))
     if checks.is_frame(obj):
