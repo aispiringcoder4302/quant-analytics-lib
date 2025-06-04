@@ -5643,7 +5643,7 @@ class DocumentRanker(Configured):
                     texts.append(content)
                 tokenized_documents = bm25_tokenizer.tokenize(
                     texts,
-                    return_as="ids",
+                    return_as="string",
                     **bm25_tokenize_kwargs,
                 )
                 bm25_retriever.index(tokenized_documents, show_progress=False)
@@ -5653,7 +5653,7 @@ class DocumentRanker(Configured):
                 del bm25_tokenize_kwargs["show_progress"]
             tokenized_queries = bm25_tokenizer.tokenize(
                 [query],
-                return_as="ids",
+                return_as="string",
                 update_vocab=False,
                 show_progress=False,
                 **bm25_tokenize_kwargs,
