@@ -4419,10 +4419,10 @@ def chat(
             By default, sets `minimize_metadata=True`.
         find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
         rank (Optional[bool]): Flag indicating whether to apply ranking.
-        top_k (TopKLike): Number of top items to consider for ranking.
-        min_top_k (TopKLike): Minimum number of top items for ranking.
-        max_top_k (TopKLike): Maximum number of top items for ranking.
-        cutoff (Optional[float]): Score cutoff for ranking.
+        top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
+        min_top_k (TopKLike): Minimum limit for determining top documents.
+        max_top_k (TopKLike): Maximum limit for determining top documents.
+        cutoff (Optional[float]): Score threshold to filter documents.
         return_chunks (Optional[bool]): Whether to return document chunks.
         rank_kwargs (KwargsLike): Keyword arguments for `VBTAsset.rank`.
         wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
@@ -4515,8 +4515,8 @@ def quick_chat(
 
     Args:
         *args: Positional arguments for `chat`.
-        min_top_k (TopKLike): Minimum number of top items for ranking.
-        max_top_k (TopKLike): Maximum number of top items for ranking.
+        min_top_k (TopKLike): Minimum limit for determining top documents.
+        max_top_k (TopKLike): Maximum limit for determining top documents.
         rank_kwargs (KwargsLike): Keyword arguments for `VBTAsset.rank`.
         **kwargs: Keyword arguments for `chat`.
 

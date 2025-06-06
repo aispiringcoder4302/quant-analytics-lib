@@ -4841,15 +4841,20 @@ class DocumentRanker(Configured):
             emb_store = obj_store
         emb_store_kwargs = merge_dicts(obj_store_kwargs, emb_store_kwargs)
 
-        embeddings = resolve_embeddings(embeddings)
-        if isinstance(embeddings, type):
-            embeddings_kwargs = dict(embeddings_kwargs)
-            embeddings_kwargs["template_context"] = merge_dicts(
-                template_context, embeddings_kwargs.get("template_context", None)
-            )
-            embeddings = embeddings(**embeddings_kwargs)
-        elif embeddings_kwargs:
-            embeddings = embeddings.replace(**embeddings_kwargs)
+        search_method = search_method.lower()
+        checks.assert_in(search_method, ("embeddings", "bm25", "hybrid"), arg_name="search_method")
+        if search_method in ("embeddings", "hybrid"):
+            embeddings = resolve_embeddings(embeddings)
+            if isinstance(embeddings, type):
+                embeddings_kwargs = dict(embeddings_kwargs)
+                embeddings_kwargs["template_context"] = merge_dicts(
+                    template_context, embeddings_kwargs.get("template_context", None)
+                )
+                embeddings = embeddings(**embeddings_kwargs)
+            elif embeddings_kwargs:
+                embeddings = embeddings.replace(**embeddings_kwargs)
+        else:
+            embeddings = None
 
         if isinstance(self._settings_path, list):
             if not isinstance(self._settings_path[-1], str):
@@ -4902,8 +4907,6 @@ class DocumentRanker(Configured):
         if cache_emb_store and not isinstance(emb_store, CachedStore):
             emb_store = CachedStore(emb_store)
 
-        search_method = search_method.lower()
-        checks.assert_in(search_method, ("embeddings", "bm25", "hybrid"), arg_name="search_method")
         if search_method in ("bm25", "hybrid"):
             if bm25_tokenizer_kwargs is None:
                 bm25_tokenizer_kwargs = {}
@@ -4952,11 +4955,11 @@ class DocumentRanker(Configured):
         self._template_context = template_context
 
     @property
-    def embeddings(self) -> Embeddings:
+    def embeddings(self) -> tp.Optional[Embeddings]:
         """Instance of `Embeddings`.
 
         Returns:
-            Embeddings: Embeddings engine or class used for processing document embeddings.
+            Embeddings: Embeddings engine or class used for processing document embeddings; None if not set.
         """
         return self._embeddings
 
@@ -5290,6 +5293,8 @@ class DocumentRanker(Configured):
 
             if obj_contents:
                 total = 0
+                if self.embeddings is None:
+                    raise ValueError("Embeddings engine is not set")
                 for batch in self.embeddings.iter_embedding_batches(list(obj_contents.values())):
                     batch_keys = list(obj_contents.keys())[total : total + len(batch)]
                     obj_embeddings = dict(zip(batch_keys, batch))
@@ -5469,6 +5474,8 @@ class DocumentRanker(Configured):
                         if child_obj.embedding:
                             obj_embeddings[child_id] = child_obj.embedding
             if obj_embeddings:
+                if self.embeddings is None:
+                    raise ValueError("Embeddings engine is not set")
                 query_embedding = self.embeddings.get_embedding(query)
                 scores = self.compute_score(query_embedding, list(obj_embeddings.values()))
                 obj_scores = dict(zip(obj_embeddings.keys(), scores))
@@ -5952,7 +5959,7 @@ class DocumentRanker(Configured):
             documents (Optional[Iterable[StoreDocument]]): Collection of documents to rank.
 
                 If None, documents from the document store are used.
-            top_k (TopKLike): Number of top documents to return.
+            top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.
@@ -6095,7 +6102,7 @@ def rank_documents(
         documents (Optional[Iterable[StoreDocument]]): Collection of documents to rank.
 
             If None, documents from the document store are used.
-        top_k (TopKLike): Number of top documents to return.
+        top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
         min_top_k (TopKLike): Minimum limit for determining top documents.
         max_top_k (TopKLike): Maximum limit for determining top documents.
         cutoff (Optional[float]): Score threshold to filter documents.
@@ -6191,7 +6198,7 @@ class Rankable(HasSettings):
 
         Args:
             query (str): Query string to evaluate document relevance.
-            top_k (TopKLike): Number of top documents to return.
+            top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.
@@ -6387,7 +6394,7 @@ class RankContextable(Rankable, Contextable):
             chat_history (Optional[ChatHistory]): Chat history, a list of dictionaries with defined roles.
             incl_past_queries (Optional[bool]): Whether to include past queries in the ranking process.
             rank (Optional[bool]): Flag indicating whether to apply ranking.
-            top_k (TopKLike): Number of top documents to return.
+            top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.
