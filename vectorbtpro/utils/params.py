@@ -1019,7 +1019,6 @@ def combine_params(
             if pre_random_subset:
                 indices = rng.permutation(indices)
             keep_indices = []
-            any_discarded = False
             for i in indices:
                 param_comb_keys = {}
                 level_indices = pick_from_param_grid(level_lens, i=i)
@@ -1058,21 +1057,18 @@ def combine_params(
                     if pre_random_subset:
                         if len(keep_indices) == random_subset:
                             break
-                else:
-                    any_discarded = True
-            if any_discarded:
-                if len(keep_indices) > 0:
-                    if pre_random_subset and random_sort:
-                        keep_indices = np.sort(keep_indices)
-                    param_product = {k: [v[i] for i in keep_indices] for k, v in param_product.items()}
-                    n_combs = len(keep_indices)
-                    if build_index and len(shown_levels) > 0:
-                        param_index = param_index[keep_indices]
-                else:
-                    param_product = {k: [] for k, v in param_product.items()}
-                    n_combs = 0
-                    if build_index and len(shown_levels) > 0:
-                        param_index = param_index[0:0]
+            if len(keep_indices) > 0:
+                if pre_random_subset and random_sort:
+                    keep_indices = np.sort(keep_indices)
+                param_product = {k: [v[i] for i in keep_indices] for k, v in param_product.items()}
+                n_combs = len(keep_indices)
+                if build_index and len(shown_levels) > 0:
+                    param_index = param_index[keep_indices]
+            else:
+                param_product = {k: [] for k, v in param_product.items()}
+                n_combs = 0
+                if build_index and len(shown_levels) > 0:
+                    param_index = param_index[0:0]
         else:
             pre_random_subset = False
 
