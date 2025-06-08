@@ -27,10 +27,10 @@ def search(
     return_chunks: bool = True,
 ) -> str:
     """Search for VectorBT PRO (also called vectorbtpro or simply VBT) assets relevant
-    to the provided query and return the results as a context string.
+    to the provided (natural language) query and return the results as a context string.
 
     Args:
-        query (str): The search query.
+        query (str): Search query.
 
             Do not reinstate the name "VectorBT PRO" in the query, as it is already implied.
         n (int): Number of top documents to return per page.
@@ -48,13 +48,13 @@ def search(
             * "messages": Discord messages and discussions. Best for support queries.
             * "examples": Code examples across all assets. Best for practical implementation queries.
             * "all": All of the above. Best for comprehensive queries.
+
+            Defaults to "all".
         search_method (Optional[str]): Strategy for document search. Supported strategies:
 
-            * "embeddings": Uses embeddings for semantic search. Use for general queries.
-                Requires downloading embeddings when first used.
-            * "bm25": Uses BM25 for lexical search. Use for specific queries.
-                Very fast and does not require downloading embeddings.
-            * "hybrid": Combines both embeddings and BM25. Use for balanced search.
+            * "bm25": Uses BM25 for lexical search. Best for specific keywords.
+            * "embeddings": Uses embeddings for semantic search. Best for general queries.
+            * "hybrid": Combines both embeddings and BM25. Best for balanced search.
 
             Defaults to "bm25".
         return_chunks (bool): Whether to return the chunks of the results; otherwise, returns the full results.
@@ -62,7 +62,7 @@ def search(
             Defaults to True.
 
     Returns:
-        str: A context string containing the search results.
+        str: Context string containing the search results.
     """
     results = vbt.search(
         query,
@@ -77,6 +77,69 @@ def search(
         raise ValueError("Page number must be greater than or equal to 1")
     results = results[(page - 1) * n : page * n]
     return results.to_context()
+
+
+@mcp.tool()
+def get_source(refname: str, module: Optional[str] = None) -> str:
+    """Get the source code of any object.
+
+    This can be used to inspect the implementation of VectorBT PRO objects, such as modules,
+    classes, functions, and instances. It uses AST parsing to retrieve the source code
+    of any object, including named tuples, class variables, dataclasses, and other objects that
+    may not have a traditional source code representation.
+
+    Args:
+        refname (str): Reference to the object.
+
+            A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
+            or a short unambiguous name (e.g., "Data", "vbt.Portfolio").
+        module (Optional[str]): Module name to resolve the reference.
+
+            By default, the module is inferred from the reference name.
+
+    Returns:
+        str: Source code of the object.
+    """
+    from vectorbtpro.utils.source import get_source
+    from vectorbtpro.utils.module_ import resolve_refname
+
+    refname = resolve_refname(refname, module=module)
+    if not refname:
+        raise ValueError("Reference name cannot be resolved to an object")
+    return get_source(refname)
+
+
+@mcp.tool()
+def get_attrs(refname: str, module: Optional[str] = None, own_only: bool = False) -> List[dict]:
+    """Get attributes of any object, such as module, class, function, or instance.
+
+    Can be used to discover the API of VectorBT PRO. For example, you can use it to
+    find out what attributes are available in a module or class.
+
+    Args:
+        refname (str): Reference to the object.
+
+            A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
+            or a short unambiguous name (e.g., "Data", "vbt.Portfolio").
+        module (Optional[str]): Module name to resolve the reference.
+
+            By default, the module is inferred from the reference name.
+        own_only (bool): If True, only include attributes defined on the object's class.
+
+            When False, include all attributes, including those inherited from parent classes.
+
+    Returns:
+        List[dict]: List of dictionaries containing the attributes and their metadata.
+    """
+    from vectorbtpro.utils.attr_ import get_attrs
+    from vectorbtpro.utils.module_ import resolve_refname, get_refname_obj
+
+    refname = resolve_refname(refname, module=module)
+    if not refname:
+        raise ValueError("Reference name cannot be resolved to an object")
+    obj = get_refname_obj(refname)
+    df = get_attrs(obj, own_only=own_only)
+    return df.to_dict(orient="records")
 
 
 if __name__ == "__main__":

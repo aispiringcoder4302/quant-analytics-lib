@@ -715,7 +715,7 @@ class DTC(DefineMixin):
             dt (datetime): Datetime object from which to extract components.
 
         Returns:
-            DTC: A `DTC` instance with the extracted components.
+            DTC: `DTC` instance with the extracted components.
         """
         if isinstance(dt, np.datetime64):
             dt = pd.Timestamp(dt)
@@ -743,7 +743,7 @@ class DTC(DefineMixin):
             d (date): Date object from which to extract components.
 
         Returns:
-            DTC: A `DTC` instance with the extracted components.
+            DTC: `DTC` instance with the extracted components.
         """
         return cls(year=d.year, month=d.month, day=d.day, weekday=d.weekday())
 
@@ -755,7 +755,7 @@ class DTC(DefineMixin):
             t (time): Time object from which to extract components.
 
         Returns:
-            DTC: A `DTC` instance with the extracted components.
+            DTC: `DTC` instance with the extracted components.
         """
         return cls(hour=t.hour, minute=t.minute, second=t.second, nanosecond=t.microsecond * 1000)
 
@@ -768,7 +768,7 @@ class DTC(DefineMixin):
             **parse_kwargs: Keyword arguments for `dateutil.parser._parse`.
 
         Returns:
-            DTC: A `DTC` instance with the parsed components.
+            DTC: `DTC` instance with the parsed components.
         """
         from dateutil.parser import parser
 
@@ -796,7 +796,7 @@ class DTC(DefineMixin):
             dtc (DTCNT): Named tuple with datetime components, where missing values are indicated by -1.
 
         Returns:
-            DTC: A `DTC` instance with the extracted components.
+            DTC: `DTC` instance with the extracted components.
         """
         return cls(
             year=dtc.year if dtc.year != -1 else None,
@@ -818,7 +818,7 @@ class DTC(DefineMixin):
             **parse_kwargs: Keyword arguments for `DTC.parse_time_str`.
 
         Returns:
-            DTC: A `DTC` instance with the parsed components.
+            DTC: `DTC` instance with the parsed components.
         """
         if checks.is_namedtuple(dtc):
             return cls.from_namedtuple(dtc)
@@ -935,7 +935,7 @@ class DTC(DefineMixin):
         Components that are None default to zero.
 
         Returns:
-            time: A `datetime.time` instance derived from the DTC object.
+            time: `datetime.time` instance derived from the DTC object.
         """
         return time(
             hour=self.hour if self.hour is not None else 0,
@@ -948,7 +948,7 @@ class DTC(DefineMixin):
         """Return a named tuple `DTCNT` containing the datetime components, using -1 for any missing value.
 
         Returns:
-            namedtuple: The `DTCNT` named tuple with datetime components.
+            namedtuple: `DTCNT` named tuple with datetime components.
         """
         return DTCNT(
             year=self.year if self.year is not None else -1,

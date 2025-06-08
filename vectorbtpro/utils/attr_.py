@@ -695,8 +695,8 @@ class AttrResolverMixin(Base):
         return deep_getattr(self, *args, **kwargs)
 
 
-def parse_attrs(obj: tp.Any = None, own_only: bool = False, sort_by: tp.Optional[str] = None) -> tp.Frame:
-    """Parse attributes of a class, object, or module and return a DataFrame of types and paths.
+def get_attrs(obj: tp.Any = None, own_only: bool = False, sort_by: tp.Optional[str] = None) -> tp.Frame:
+    """Get attributes of a class, object, or module as a DataFrame with metadata.
 
     Args:
         obj (Any): Object, class, or module whose attributes are to be parsed.

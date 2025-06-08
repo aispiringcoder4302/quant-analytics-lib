@@ -2275,7 +2275,7 @@ class SegmentSplitter(TokenSplitter):
         """Nested list of separators grouped by layers.
 
         Returns:
-            List[List[Optional[str]]]: The (nested) list of separators used for splitting text.
+            List[List[Optional[str]]]: (Nested) list of separators used for splitting text.
         """
         return self._separators
 

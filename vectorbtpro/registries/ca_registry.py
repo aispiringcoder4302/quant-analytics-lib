@@ -3007,7 +3007,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
         """Associated `CAInstanceSetup` for the bound instance.
 
         Returns:
-            Optional[CAInstanceSetup]: The `CAInstanceSetup` corresponding to the current instance
+            Optional[CAInstanceSetup]: `CAInstanceSetup` corresponding to the current instance
                 if it exists and has not been garbage collected; otherwise, returns None.
         """
         if self.instance_obj is None or self.contains_garbage:
@@ -3019,7 +3019,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
         """Associated `CAUnboundSetup` for the unbound cacheable.
 
         Returns:
-            Optional[CAUnboundSetup]: The `CAUnboundSetup` corresponding to the cacheable attribute,
+            Optional[CAUnboundSetup]: `CAUnboundSetup` corresponding to the cacheable attribute,
                 or None if it is not registered.
         """
         return self.registry.get_unbound_setup(self.cacheable)

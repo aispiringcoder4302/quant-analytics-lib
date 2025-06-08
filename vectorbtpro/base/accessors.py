@@ -1982,7 +1982,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `Data.from_data`.
 
         Returns:
-            Data: A `vectorbtpro.data.base.Data` instance representing the converted data.
+            Data: `vectorbtpro.data.base.Data` instance representing the converted data.
         """
         if data_cls is None:
             from vectorbtpro.data.base import Data

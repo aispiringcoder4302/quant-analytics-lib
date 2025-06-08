@@ -263,7 +263,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Telegram updater instance used to poll messages and handle updates.
 
             Returns:
-                Updater: The `Updater` instance responsible for polling messages.
+                Updater: `Updater` instance responsible for polling messages.
             """
             return self._updater
 
@@ -272,7 +272,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Telegram dispatcher instance for registering handlers.
 
             Returns:
-                Dispatcher: The `telegram.ext.Dispatcher` instance managing update handlers.
+                Dispatcher: `telegram.ext.Dispatcher` instance managing update handlers.
             """
             return self._dispatcher
 

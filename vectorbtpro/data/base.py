@@ -1837,7 +1837,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         determined by the object's keys via `get_key_wrapper`.
 
         Returns:
-            ArrayWrapper: The `vectorbtpro.base.wrapping.ArrayWrapper` instance with keys as columns.
+            ArrayWrapper: `vectorbtpro.base.wrapping.ArrayWrapper` instance with keys as columns.
         """
         return self.get_key_wrapper()
 
@@ -1851,8 +1851,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.get_key_wrapper` when applicable.
 
         Returns:
-            ArrayWrapper: The `vectorbtpro.base.wrapping.ArrayWrapper` instance updated to
-                have features as columns.
+            ArrayWrapper: `vectorbtpro.base.wrapping.ArrayWrapper` instance updated to have features as columns.
         """
         if self.feature_oriented:
             return self.get_key_wrapper(keys=features, **kwargs)
@@ -1875,8 +1874,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.get_key_wrapper` when applicable.
 
         Returns:
-            ArrayWrapper: The `vectorbtpro.base.wrapping.ArrayWrapper` instance updated to
-                have symbols as columns.
+            ArrayWrapper: `vectorbtpro.base.wrapping.ArrayWrapper` instance updated to have symbols as columns.
         """
         if self.symbol_oriented:
             return self.get_key_wrapper(keys=symbols, **kwargs)
@@ -4157,7 +4155,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 `feature_dict`/`symbol_dict` for each.
 
         Returns:
-            PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
+            PullOutput: `Data` instance or a list of execution outputs if `return_raw` is True.
 
         !!! info
             For default settings, see `vectorbtpro._settings.data`.
@@ -4340,7 +4338,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.pull`.
 
         Returns:
-            PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
+            PullOutput: `Data` instance or a list of execution outputs if `return_raw` is True.
         """
         return cls.pull(*args, **kwargs)
 
@@ -4355,7 +4353,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             **kwargs: Keyword arguments for `Data.pull`.
 
         Returns:
-            PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
+            PullOutput: `Data` instance or a list of execution outputs if `return_raw` is True.
         """
         return cls.pull(*args, **kwargs)
 
@@ -4520,7 +4518,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 via `key_dict` or `feature_dict`/`symbol_dict` for each.
 
         Returns:
-            PullOutput: A `Data` instance or a list of execution outputs if `return_raw` is True.
+            PullOutput: `Data` instance or a list of execution outputs if `return_raw` is True.
 
         !!! note
             Returns a new `Data` instance instead of modifying the current data in place.

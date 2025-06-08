@@ -2615,7 +2615,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
-            Ranges: A `vectorbtpro.generic.ranges.Ranges` instance representing the computed ranges.
+            Ranges: `vectorbtpro.generic.ranges.Ranges` instance representing the computed ranges.
 
         See:
             * `vectorbtpro.signals.nb.between_ranges_nb` if `target` is not provided.
@@ -2727,7 +2727,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
-            Ranges: A `vectorbtpro.generic.ranges.Ranges` instance representing the partitioned ranges.
+            Ranges: `vectorbtpro.generic.ranges.Ranges` instance representing the partitioned ranges.
 
         See:
             `vectorbtpro.signals.nb.partition_ranges_nb`
@@ -2769,7 +2769,7 @@ class SignalsAccessor(GenericAccessor):
             **kwargs: Keyword arguments for `vectorbtpro.generic.ranges.Ranges.from_records`.
 
         Returns:
-            Ranges: A `vectorbtpro.generic.ranges.Ranges` instance representing the computed ranges.
+            Ranges: `vectorbtpro.generic.ranges.Ranges` instance representing the computed ranges.
 
         See:
             `vectorbtpro.signals.nb.between_partition_ranges_nb`

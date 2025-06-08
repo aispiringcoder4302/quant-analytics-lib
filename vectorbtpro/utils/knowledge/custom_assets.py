@@ -4043,13 +4043,13 @@ def find_assets(
                 asset_names = [asset_names]
             asset_keys = []
             for asset_name in asset_names:
-                if asset_name is not Ellipsis:
+                if asset_name is Ellipsis or asset_name == "...":
+                    asset_keys.append(Ellipsis)
+                else:
                     asset_key = all_asset_names.index(asset_name.lower())
                     if asset_key == -1:
                         raise ValueError(f"Invalid asset name: '{asset_name}'")
                     asset_keys.append(asset_key)
-                else:
-                    asset_keys.append(Ellipsis)
             new_asset_names = reorder_list(all_asset_names, asset_keys, skip_missing=True)
             if "examples" not in asset_names and "examples" in new_asset_names:
                 new_asset_names.remove("examples")

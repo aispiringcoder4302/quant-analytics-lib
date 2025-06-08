@@ -332,7 +332,7 @@ def bbands_percent_b_1d_nb(close: tp.Array1d, upper: tp.Array1d, lower: tp.Array
         lower (Array1d): 1D array representing the lower band.
 
     Returns:
-        Array1d: The %B values computed as `(close - lower) / (upper - lower)`.
+        Array1d: %B values computed as `(close - lower) / (upper - lower)`.
     """
     return (close - lower) / (upper - lower)
 
@@ -1469,7 +1469,7 @@ def adx_1d_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Tuple[Array1d, Array1d, Array1d, Array1d]: The +DI, -DI, DX, and ADX values.
+        Tuple[Array1d, Array1d, Array1d, Array1d]: +DI, -DI, DX, and ADX values.
     """
     _, atr = atr_1d_nb(
         high,
@@ -1546,7 +1546,7 @@ def adx_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Tuple[Array2d, Array2d, Array2d, Array2d]: The +DI, -DI, DX, and ADX values for each column.
+        Tuple[Array2d, Array2d, Array2d, Array2d]: +DI, -DI, DX, and ADX values for each column.
 
     !!! tip
         This function is parallelizable.

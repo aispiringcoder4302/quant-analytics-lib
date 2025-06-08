@@ -13,6 +13,8 @@
 import ast
 import importlib
 import inspect
+import os
+import textwrap
 import re
 import tempfile
 import webbrowser
@@ -40,6 +42,122 @@ __all__ = [
     "refactor_markdown",
     "refactor_docs",
 ]
+
+
+def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = False) -> tp.Union[str, dict]:
+    """Return the exact source that defines *qualname* by parsing the module AST.
+
+    Handles modules, classes, (async) functions, methods, top-level assignments
+    and annotated class variables (together with their inline docstrings).
+
+    Args:
+        qualname: Fully-qualified dotted name (e.g. "pkg.mod.Class.attr").
+        clean_indent: If True, the leading indent of the snippet is removed and
+            the block is dedented to column 0.
+        return_meta: If True, a dictionary with the code and its file/line metadata
+            is returned instead of plain code.
+
+    Returns:
+        * When `return_meta=False`, returns the source text as `str`.
+        * When `return_meta=True`, returns a dictionary with the code, file path,
+            start line, and end line (both 1-based).
+
+    Raises:
+        ImportError: No component of *qualname* can be imported.
+        FileNotFoundError: The discovered module has no readable *.py* file.
+        ValueError: The object cannot be located in the module AST.
+    """
+
+    def _find(scope, chain):
+        if not chain:
+            return scope
+        name = chain[0]
+        for child in getattr(scope, "body", []):
+            if isinstance(child, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and child.name == name:
+                return child if len(chain) == 1 else _find(child, chain[1:])
+        for child in getattr(scope, "body", []):
+            if isinstance(child, (ast.Assign, ast.AnnAssign)):
+                targets = child.targets if isinstance(child, ast.Assign) else [child.target]
+                if any(isinstance(t, ast.Name) and t.id == name for t in targets):
+                    return child if len(chain) == 1 else None
+        return None
+
+    def _strip(lines, spaces):
+        if spaces == 0:
+            return lines
+        pad = " " * spaces
+        return [l[len(pad) :] if l.startswith(pad) else l for l in lines]
+
+    parts = qualname.split(".")
+    module = None
+    for i in range(len(parts), 0, -1):
+        try:
+            module = importlib.import_module(".".join(parts[:i]))
+            chain = parts[i:]
+            break
+        except ModuleNotFoundError:
+            continue
+    if module is None:
+        raise ImportError(f"Could not import any part of '{qualname}'")
+
+    filepath = inspect.getsourcefile(module) or inspect.getfile(module)
+    if not filepath or not os.path.exists(filepath):
+        raise FileNotFoundError(f"No pure-Python source for '{module.__name__}'")
+
+    with open(filepath, encoding="utf-8") as fh:
+        source = fh.read()
+
+    if not chain:
+        code = source if not clean_indent else textwrap.dedent(source)
+        if return_meta:
+            return {"code": code, "file": filepath, "start_line": 1, "end_line": len(source.splitlines())}
+        return code
+
+    tree = ast.parse(source, filename=filepath)
+    target = _find(tree, chain)
+    if target is None:
+        raise ValueError(f"Could not locate '{'.'.join(chain)}' in '{module.__name__}'")
+
+    if isinstance(target, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and target.decorator_list:
+        start = min(d.lineno for d in target.decorator_list) - 1
+    else:
+        start = target.lineno - 1
+
+    end = getattr(target, "end_lineno", len(source.splitlines()))
+    if isinstance(target, (ast.Assign, ast.AnnAssign)):
+
+        def _body(root, needle):
+            if hasattr(root, "body"):
+                for itm in root.body:
+                    if itm is needle:
+                        return root.body
+                    sub = _body(itm, needle)
+                    if sub is not None:
+                        return sub
+            return None
+
+        body = _body(tree, target)
+        if body is not None:
+            idx = body.index(target)
+            if idx + 1 < len(body):
+                nxt = body[idx + 1]
+                if (
+                    isinstance(nxt, ast.Expr)
+                    and isinstance(getattr(nxt, "value", None), ast.Constant)
+                    and isinstance(nxt.value.value, str)
+                ):
+                    end = max(end, getattr(nxt, "end_lineno", nxt.lineno))
+
+    lines = source.splitlines(True)[start:end]
+    if clean_indent:
+        lines = _strip(lines, getattr(target, "col_offset", 0) or 0)
+        snippet = textwrap.dedent("".join(lines))
+    else:
+        snippet = "".join(lines)
+
+    if return_meta:
+        return {"code": snippet, "file": filepath, "start_line": start + 1, "end_line": end}
+    return snippet
 
 
 def collect_blocks(lines: tp.Iterable[str]) -> tp.Dict[str, tp.List[str]]:
