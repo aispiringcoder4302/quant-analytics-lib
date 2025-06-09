@@ -13,6 +13,7 @@
 import enum
 import inspect
 import re
+from pathlib import Path
 from collections.abc import Iterable
 from functools import cached_property as cachedproperty
 
@@ -20,18 +21,19 @@ import attr
 import pandas as pd
 from attr.exceptions import NotAnAttrsClassError
 
-import vectorbtpro as vbt
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
 from vectorbtpro.utils.hashing import Hashable
+from vectorbtpro.utils.path_ import dir_tree_from_paths
 
 __all__ = [
     "MISSING",
     "DefineMixin",
     "define",
     "deep_getattr",
+    "print_attr_tree",
 ]
 
 
@@ -695,82 +697,128 @@ class AttrResolverMixin(Base):
         return deep_getattr(self, *args, **kwargs)
 
 
-def get_attrs(obj: tp.Any = None, own_only: bool = False, sort_by: tp.Optional[str] = None) -> tp.Frame:
+def get_attrs(obj: tp.Any, own_only: bool = False, sort_by: tp.Optional[str] = None) -> tp.Frame:
     """Get attributes of a class, object, or module as a DataFrame with metadata.
 
     Args:
         obj (Any): Object, class, or module whose attributes are to be parsed.
-
-            Defaults to `vbt` if None.
-        own_only (bool): If True, only include attributes defined on the object's class.
+        own_only (bool): If True, include only attributes that are defined directly on
+            object's class/module; inherited members are omitted.
         sort_by (Optional[str]): Column name used to sort the resulting DataFrame.
 
     Returns:
         Frame: DataFrame indexed by attribute names with columns for type and path information.
     """
-    if obj is None:
-        obj = vbt
-    if inspect.isclass(obj) or inspect.ismodule(obj):
-        cls = obj
-    else:
-        cls = type(obj)
-    attr_info = {"type": {}, "path": {}}
-    mro_dirs = []
-    if not inspect.ismodule(cls):
-        for super_cls in inspect.getmro(cls)[1:]:
-            mro_dirs.append(set(dir(super_cls)))
-    for k in dir(cls):
-        if not k.startswith("_"):
-            v = inspect.getattr_static(cls, k)
-            if inspect.ismodule(v):
-                if hasattr(v, "__path__"):
-                    attr_info["type"][k] = "package"
-                elif v.__spec__.origin in (None, "namespace"):
-                    attr_info["type"][k] = "namespace"
-                else:
-                    attr_info["type"][k] = "module"
-            else:
-                attr_info["type"][k] = type(v).__name__
+    cls = obj if inspect.isclass(obj) or inspect.ismodule(obj) else type(obj)
+    is_module_cls = inspect.ismodule(cls)
+    cls_path = cls.__name__ if is_module_cls else f"{cls.__module__}.{cls.__name__}"
+    mro = inspect.getmro(cls)[1:] if not is_module_cls else ()
+    mro_dict_keys = [set(base.__dict__) for base in mro]
+    attrs = set(dir(cls))
+    if not (inspect.isclass(obj) or inspect.ismodule(obj)):
+        attrs.update(getattr(obj, "__dict__", {}).keys())
 
-            if inspect.ismodule(cls):
-                k_module = inspect.getmodule(v)
-                if k_module is not None:
-                    attr_info["path"][k] = inspect.getmodule(v).__name__
-                else:
-                    attr_info["path"][k] = "?"
+    rows = []
+    for name in attrs:
+        if name.startswith("_"):
+            continue
+        if name in getattr(obj, "__dict__", {}) and name not in cls.__dict__:
+            value = getattr(obj, name)
+            defining_path = cls_path
+        else:
+            value = inspect.getattr_static(cls, name)
+            if is_module_cls:
+                mod = inspect.getmodule(value)
+                defining_path = mod.__name__ if mod else "?"
             else:
-                found_super_cls = False
-                for i, super_cls in enumerate(inspect.getmro(cls)[1:]):
-                    if k in mro_dirs[i]:
-                        v2 = inspect.getattr_static(super_cls, k, None)
-                        if v2 is not None and v == v2:
-                            attr_info["path"][k] = super_cls.__module__ + "." + super_cls.__name__
-                            found_super_cls = True
-                if not found_super_cls:
-                    attr_info["path"][k] = cls.__module__ + "." + cls.__name__
+                defining_path = cls_path
+                for base, keys in zip(mro, mro_dict_keys):
+                    if name in keys:
+                        defining_path = f"{base.__module__}.{base.__name__}"
+                        break
+        if own_only and not defining_path.startswith(cls_path):
+            continue
+        if inspect.ismodule(value):
+            if hasattr(value, "__path__"):
+                typ = "package"
+            elif getattr(value, "__spec__", None) and value.__spec__.origin in (None, "namespace"):
+                typ = "namespace"
+            else:
+                typ = "module"
+        else:
+            typ = type(value).__name__
+        qualname = getattr(value, "__qualname__", "?")
+        rows.append(dict(attr=name, type=typ, path=defining_path, qualname=qualname))
 
-    if own_only:
-        for k, v in list(attr_info["path"].items()):
-            if inspect.ismodule(cls):
-                if not v.startswith(cls.__name__):
-                    del attr_info["type"][k]
-                    del attr_info["path"][k]
-            else:
-                if not v.startswith(cls.__module__ + "." + cls.__name__):
-                    del attr_info["type"][k]
-                    del attr_info["path"][k]
+    df = pd.DataFrame(rows, dtype=object).set_index("attr", drop=True)
+    if sort_by is not None and len(df) > 0:
+        sort_by = [sort_by] if isinstance(sort_by, str) else list(sort_by)
+        if "attr" not in sort_by:
+            sort_by.append("attr")
+        df = df.sort_values(sort_by, kind="stable")
+    return df
 
-    attr_info = pd.DataFrame(attr_info, dtype=object)
-    if len(attr_info) > 0:
-        attr_info.index.name = "attr"
-        attr_info = attr_info.reset_index()
-        if sort_by is not None:
-            if isinstance(sort_by, str):
-                if sort_by != "attr":
-                    sort_by = [sort_by, "attr"]
-            else:
-                if "attr" not in sort_by:
-                    sort_by = [*sort_by, "attr"]
-            attr_info = attr_info.sort_values(sort_by)
-        attr_info = attr_info.set_index("attr", drop=True)
-    return attr_info
+
+def attr_tree(obj: tp.Any = None, own_only: bool = False, **kwargs) -> str:
+    """Get a visual tree of an object's attributes.
+
+    The function combines `get_attrs` (to collect metadata on the attributes of `obj`) with
+    `vectorbtpro.utils.path_.dir_tree_from_paths` (to render a textual tree) so you can quickly
+    inspect where an attribute is defined, its type, and whether is is an alias of another attribute.
+
+    Each leaf in the tree is formatted as:
+
+    ```
+    <attr_name> [<attr_type>] (@ <qualname>)
+    ```
+
+    where the "@ <qualname>" suffix is shown only when the attribute's `__qualname__` either
+
+    * differs from the attribute's own name (indicating an alias or re-export), or
+    * is shared by multiple attributes (true duplicates).
+
+    Args:
+        obj (Any): Object, class, or module whose attributes are to be visualized.
+        own_only (bool): If True, include only attributes that are defined directly on
+            object's class/module; inherited members are omitted.
+        **kwargs: Keyword arguments passed to `vectorbtpro.utils.path_.dir_tree_from_paths`.
+
+    Returns:
+        str: Printable, newline-separated string representing the attribute hierarchy.
+    """
+    df = get_attrs(obj=obj, own_only=own_only)
+    qname_counts = df["qualname"].value_counts()
+    paths, display_names = [], []
+
+    for a, r in df.iterrows():
+        full_path = f"{r['path']}.{a}"
+        paths.append(Path(full_path.replace(".", "/")))
+        disp = f"{a} [{r['type']}]"
+        qn = r["qualname"]
+        if qn != "?":
+            qn_last = qn.rsplit(".", 1)[-1]
+            if (qn_last != a) or (qname_counts[qn] > 1 and qn_last != a):
+                disp += f" @ {qn}"
+        display_names.append(disp)
+
+    return dir_tree_from_paths(
+        paths,
+        path_names=display_names,
+        **kwargs,
+    )
+
+
+def print_attr_tree(*args, **kwargs) -> None:
+    """Print a visual tree structure for an object's attributes.
+
+    This function generates a tree representation for an object's attributes using `attr_tree`
+    and prints it to the standard output.
+
+    Args:
+        *args: Positional arguments for `attr_tree`.
+        **kwargs: Keyword arguments for `attr_tree`.
+
+    Returns:
+        None
+    """
+    print(attr_tree(*args, **kwargs))
