@@ -958,7 +958,7 @@ class FindAssetFunc(AssetFunc):
         * For strings, it utilizes `vectorbtpro.utils.search_.find` with `return_type="bool"`.
         * For other types, it performs equality comparisons.
 
-        A `target` may be a callable that returns a boolean or an instance of
+        A `target` may be a callable that takes a key and a value, and returns a boolean or an instance of
         `vectorbtpro.utils.search_.Not` to indicate negation.
 
         Args:
@@ -984,7 +984,7 @@ class FindAssetFunc(AssetFunc):
             else:
                 negation = False
             if checks.is_function(target):
-                if target(d):
+                if target(k, d):
                     if (negation and find_all) or (not negation and not find_all):
                         return not negation
                     continue
@@ -1377,8 +1377,8 @@ class FindReplaceAssetFunc(FindAssetFunc):
         This method is used by `FindReplaceAssetFunc.call` to determine the replacement for
         a matched value. For string inputs, it applies `vectorbtpro.utils.search_.replace` for
         text substitution. For other types, it returns the replacement directly if the specified
-        target condition is met. Both `target` and `replacement` may be callables, where `target`
-        returns a boolean indicating a match and `replacement` computes the new value.
+        target condition is met. Both `target` and `replacement` may be callables that take a key and a value,
+        where `target` returns a boolean indicating a match and `replacement` computes the new value.
 
         Args:
             k (Optional[Hashable]): Key associated with the current element.
@@ -1407,9 +1407,9 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 raise TypeError("Target cannot be negated here")
             replacement = replacements[i]
             if checks.is_function(replacement):
-                replacement = replacement(d)
+                replacement = replacement(k, d)
             if checks.is_function(target):
-                if target(d):
+                if target(k, d):
                     return replacement
             elif d is target:
                 return replacement
@@ -1596,7 +1596,12 @@ class FindRemoveAssetFunc(FindAssetFunc):
         }
 
     @classmethod
-    def is_empty_func(cls, d: tp.Any) -> bool:
+    def is_empty_func(
+        cls, 
+        k: tp.Optional[tp.Hashable], 
+        d: tp.Any, 
+        skip_keys: tp.Optional[tp.Container[tp.Hashable]] = None,
+    ) -> bool:
         """Return whether the given object is empty.
 
         Args:
@@ -1605,6 +1610,8 @@ class FindRemoveAssetFunc(FindAssetFunc):
         Returns:
             bool: True if the data item is empty, False otherwise.
         """
+        if skip_keys and k in skip_keys:
+            return False
         if d is None:
             return True
         if checks.is_collection(d) and len(d) == 0:

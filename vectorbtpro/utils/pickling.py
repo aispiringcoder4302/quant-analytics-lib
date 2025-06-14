@@ -237,7 +237,7 @@ def decompress(
             with zipfile.ZipFile(zip_buffer, "r", **decompress_kwargs) as zip_file:
                 namelist = zip_file.namelist()
                 if len(namelist) == 0:
-                    raise ValueError("The ZIP archive is empty")
+                    raise ValueError("ZIP archive is empty")
                 if file_name is not None:
                     if file_name not in namelist:
                         raise FileNotFoundError(f"'{file_name}' not found in the ZIP archive")
@@ -557,7 +557,7 @@ class RecInfo(DefineMixin):
     """Unique reconstruction identifier."""
 
     cls: tp.Type = define.field()
-    """The class associated with reconstruction."""
+    """Class associated with reconstruction."""
 
     modify_state: tp.Optional[tp.Callable[[RecState], RecState]] = define.field(default=None)
     """Optional callback that modifies the reconstruction state."""

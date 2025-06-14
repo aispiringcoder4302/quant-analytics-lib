@@ -350,7 +350,7 @@ to_2d_pr_array = functools.partial(to_2d_array, expand_axis=1)
 """Partial version of `to_2d_array` with `expand_axis` set to 1."""
 
 to_2d_pc_array = functools.partial(to_2d_array, expand_axis=0)
-"""A partial version of `to_2d_array` with `expand_axis` set to 0."""
+"""Partial version of `to_2d_array` with `expand_axis` set to 0."""
 
 
 @register_jitted(cache=True)
@@ -967,7 +967,7 @@ class BCO(DefineMixin):
     """
 
     value: tp.Any = define.field()
-    """The value to be broadcast."""
+    """Value to be broadcast."""
 
     axis: tp.Optional[int] = define.field(default=None)
     """Axis used for broadcasting.
@@ -994,7 +994,7 @@ class BCO(DefineMixin):
     """
 
     post_func: tp.Optional[tp.Callable] = define.field(default=None)
-    """A function to post-process the output array.
+    """Function to post-process the output array.
     """
 
     require_kwargs: tp.KwargsLike = define.field(default=None)
@@ -1021,7 +1021,7 @@ class Default(DefineMixin):
     """Class representing a wrapped default value."""
 
     value: tp.Any = define.field()
-    """The default value."""
+    """Default value."""
 
 
 @define
@@ -1029,7 +1029,7 @@ class Ref(DefineMixin):
     """Class representing a reference to another value."""
 
     key: tp.Hashable = define.field()
-    """A hashable key that references another value."""
+    """Hashable key that references another value."""
 
 
 def resolve_ref(dct: dict, k: tp.Hashable, inside_bco: bool = False, keep_wrap_default: bool = False) -> tp.Any:

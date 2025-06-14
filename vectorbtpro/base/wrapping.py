@@ -1599,7 +1599,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def index(self) -> tp.Index:
-        """The index associated with the wrapped array.
+        """Index associated with the wrapped array.
 
         Returns:
             Index: Index of the wrapped array.
@@ -1642,7 +1642,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def columns(self) -> tp.Index:
-        """The columns associated with the wrapped array.
+        """Columns associated with the wrapped array.
 
         Returns:
             Index: Columns of the wrapped array.
@@ -1664,7 +1664,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def name(self) -> tp.Any:
-        """The name of the `ArrayWrapper` when applicable.
+        """Name of the `ArrayWrapper` when applicable.
 
         Returns:
             Any: Name derived from the columns if the instance is one-dimensional; otherwise, None.
@@ -1690,7 +1690,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def ndim(self) -> int:
-        """The number of dimensions of the wrapped array.
+        """Number of dimensions of the wrapped array.
 
         Returns:
             int: Number of dimensions.
@@ -1712,7 +1712,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def shape(self) -> tp.Shape:
-        """The shape of the `ArrayWrapper`.
+        """Shape of the `ArrayWrapper`.
 
         Returns:
             Shape: Tuple representing the dimensions of the instance.
@@ -1736,7 +1736,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def shape_2d(self) -> tp.Shape:
-        """The shape of the `ArrayWrapper` as a two-dimensional structure.
+        """Shape of the `ArrayWrapper` as a two-dimensional structure.
 
         Returns:
             Shape: Tuple representing the 2D dimensions.
@@ -1801,7 +1801,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def periods(self) -> int:
-        """The number of periods defined by `vectorbtpro.base.accessors.BaseIDXAccessor.periods`.
+        """Number of periods defined by `vectorbtpro.base.accessors.BaseIDXAccessor.periods`.
 
         Returns:
             int: Number of periods in the index.
@@ -1876,7 +1876,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def grouper(self) -> Grouper:
-        """The `vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns.
+        """`vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns.
 
         Returns:
             Grouper: Grouper instance.
@@ -1885,7 +1885,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def grouped_ndim(self) -> int:
-        """The number of dimensions after applying column grouping.
+        """Number of dimensions after applying column grouping.
 
         If not explicitly set, it is derived from the grouper's state.
 

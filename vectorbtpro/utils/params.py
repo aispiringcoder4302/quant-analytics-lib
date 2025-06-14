@@ -351,7 +351,7 @@ class Param(Evaluable, Annotatable, DefineMixin):
     """
 
     map_template: tp.Optional[CustomTemplate] = define.optional_field(default=None)
-    """A mapping template applied to `Param.value` prior to constructing parameter combinations."""
+    """Mapping template applied to `Param.value` prior to constructing parameter combinations."""
 
     random_subset: tp.Union[None, int, float] = define.optional_field(default=None)
     """Specifies a random subset of parameter values to select."""

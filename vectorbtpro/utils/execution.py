@@ -80,7 +80,7 @@ class Task(DefineMixin):
     """
 
     func: tp.Callable = define.field()
-    """A callable representing the function to execute."""
+    """Callable representing the function to execute."""
 
     args: tp.Args = define.field(factory=tuple)
     """Positional arguments for the function."""

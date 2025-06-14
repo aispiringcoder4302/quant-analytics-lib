@@ -659,7 +659,7 @@ class CAQuery(DefineMixin):
 
     @property
     def instance_obj(self) -> tp.Optional[tp.Union[Cacheable, object]]:
-        """The instance if available; if the weak reference is dead, returns a garbage sentinel.
+        """Instance if available; if the weak reference is dead, returns a garbage sentinel.
 
         Returns:
             Optional[Union[Cacheable, object]]: Instance or a garbage sentinel.
@@ -825,7 +825,7 @@ class CARule(DefineMixin):
     """Class representing a rule enforced on setups that match a specified query."""
 
     query: CAQuery = define.field()
-    """The `CAQuery` used for matching."""
+    """`CAQuery` used for matching."""
 
     enforce_func: tp.Optional[tp.Callable] = define.field()
     """Callable function to execute on the setup when it matches the rule."""
@@ -834,7 +834,7 @@ class CARule(DefineMixin):
     """Specifies the expected kind(s) of setup. For example, 'class', 'instance', 'unbound', or 'runnable'."""
 
     exclude: tp.Optional[tp.MaybeIterable["CABaseSetup"]] = define.field(default=None)
-    """A setup or an iterable of setups to be excluded from matching."""
+    """Setup or an iterable of setups to be excluded from matching."""
 
     filter_func: tp.Optional[tp.Callable] = define.field(default=None)
     """Callable function used to apply additional filtering on a setup."""

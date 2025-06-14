@@ -2055,7 +2055,7 @@ class TextSplitter(Configured):
             elif checks.is_function(chunk_template):
                 chunk_template = RepFunc(chunk_template)
             elif not isinstance(chunk_template, CustomTemplate):
-                raise TypeError(f"Chunk template must be a string, function, or template")
+                raise TypeError("Chunk template must be a string, function, or template")
             template_context = flat_merge_dicts(
                 dict(
                     chunk_idx=chunk_idx,
@@ -3326,7 +3326,7 @@ class StoreData(StoreObject, DefineMixin):
     """
 
     data: tp.Any = define.field()
-    """The stored data."""
+    """Stored data."""
 
     @classmethod
     def id_from_data(cls, data: tp.Any) -> str:
@@ -3556,7 +3556,7 @@ class TextDocument(StoreDocument, DefineMixin):
             elif checks.is_function(metadata_template):
                 metadata_template = RepFunc(metadata_template)
             elif not isinstance(metadata_template, CustomTemplate):
-                raise TypeError(f"Metadata template must be a string, function, or template")
+                raise TypeError("Metadata template must be a string, function, or template")
             template_context = flat_merge_dicts(
                 dict(metadata_content=metadata_content),
                 self.template_context,
@@ -3568,7 +3568,7 @@ class TextDocument(StoreDocument, DefineMixin):
         elif checks.is_function(content_template):
             content_template = RepFunc(content_template)
         elif not isinstance(content_template, CustomTemplate):
-            raise TypeError(f"Content template must be a string, function, or template")
+            raise TypeError("Content template must be a string, function, or template")
         template_context = flat_merge_dicts(
             dict(metadata_content=metadata_content, text=text),
             self.template_context,
@@ -3608,7 +3608,7 @@ class StoreEmbedding(StoreObject, DefineMixin):
     """List of identifiers for the child objects."""
 
     embedding: tp.Optional[tp.List[int]] = define.field(default=None, repr=lambda x: f"List[{len(x)}]" if x else None)
-    """The embedding vector."""
+    """Embedding vector."""
 
 
 class MetaObjectStore(type(Configured), type(MutableMapping)):

@@ -265,7 +265,7 @@ class Union(Annotatable, DefineMixin):
     """
 
     annotations: tp.Tuple[tp.Annotation, ...] = define.field()
-    """The tuple of annotations that comprise the union."""
+    """Tuple of annotations that comprise the union."""
 
     resolved: bool = define.field(default=False)
     """Indicates if the union is resolved."""

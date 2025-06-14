@@ -1047,7 +1047,7 @@ A violation is triggered when the adjusted price goes beyond this value.
 NoPriceArea = PriceArea(open=np.nan, high=np.nan, low=np.nan, close=np.nan)
 """_"""
 
-__pdoc__["NoPriceArea"] = "A PriceArea instance with NaN values, representing the absence of a valid price area."
+__pdoc__["NoPriceArea"] = "`PriceArea` instance with NaN values, representing the absence of a valid price area."
 
 
 class AccountState(tp.NamedTuple):
@@ -1058,7 +1058,7 @@ class AccountState(tp.NamedTuple):
     free_cash: float
 
 
-__pdoc__["AccountState"] = "A named tuple representing the state of the account."
+__pdoc__["AccountState"] = "Named tuple representing the state of the account."
 __pdoc__[
     "AccountState.cash"
 ] = """Cash.
@@ -1101,7 +1101,7 @@ class ExecState(tp.NamedTuple):
     value: float
 
 
-__pdoc__["ExecState"] = "A named tuple representing the state before or after order execution."
+__pdoc__["ExecState"] = "Named tuple representing the state before or after order execution."
 __pdoc__["ExecState.cash"] = "See `AccountState.cash`."
 __pdoc__["ExecState.position"] = "See `AccountState.position`."
 __pdoc__["ExecState.debt"] = "See `AccountState.debt`."
@@ -1122,7 +1122,7 @@ class SimulationOutput(tp.NamedTuple):
     sim_end: tp.Optional[tp.Array1d]
 
 
-__pdoc__["SimulationOutput"] = "A named tuple representing the output of a simulation."
+__pdoc__["SimulationOutput"] = "Named tuple representing the output of a simulation."
 __pdoc__[
     "SimulationOutput.order_records"
 ] = """Flattened order records.
@@ -1225,7 +1225,7 @@ class SimulationContext(tp.NamedTuple):
 
 __pdoc__[
     "SimulationContext"
-] = """A named tuple representing the simulation context.
+] = """Named tuple representing the simulation context.
 
 Contains general simulation information for use in other contexts, and 
 is passed to `pre_sim_func_nb` and `post_sim_func_nb`.
@@ -1740,7 +1740,7 @@ class GroupContext(tp.NamedTuple):
 
 __pdoc__[
     "GroupContext"
-] = """A named tuple representing a group context.
+] = """Named tuple representing a group context.
 
 A group is a set of adjacent columns that are related (e.g., by shared capital). 
 In each row, columns in the same group form a single segment.
@@ -1845,7 +1845,7 @@ class RowContext(tp.NamedTuple):
 
 __pdoc__[
     "RowContext"
-] = """A named tuple representing the context of a row.
+] = """Named tuple representing the context of a row.
 
 A row corresponds to a bar during which segments are executed.
 
@@ -1920,7 +1920,7 @@ class SegmentContext(tp.NamedTuple):
 
 __pdoc__[
     "SegmentContext"
-] = """A named tuple representing the context of a segment.
+] = """Named tuple representing the context of a segment.
 
 A segment is an intersection of groups and rows that defines the processing order of elements.
 
@@ -2021,7 +2021,7 @@ class OrderContext(tp.NamedTuple):
 
 __pdoc__[
     "OrderContext"
-] = """A named tuple representing the context of an order.
+] = """Named tuple representing the context of an order.
 
 Includes all fields from `SegmentContext` along with additional fields that describe the current order state.
 
@@ -2135,7 +2135,7 @@ class PostOrderContext(tp.NamedTuple):
 
 __pdoc__[
     "PostOrderContext"
-] = """A named tuple representing the post-order context.
+] = """Named tuple representing the post-order context.
 
 Contains all fields from `OrderContext` along with additional fields representing the order result and 
 the state prior to execution.
@@ -2245,7 +2245,7 @@ class FlexOrderContext(tp.NamedTuple):
 
 __pdoc__[
     "FlexOrderContext"
-] = """A named tuple representing the flexible order context.
+] = """Named tuple representing the flexible order context.
 
 It includes all fields from `SegmentContext` along with the current call index.
 
@@ -2285,7 +2285,7 @@ class Order(tp.NamedTuple):
 
 __pdoc__[
     "Order"
-] = """A named tuple representing an order.
+] = """Named tuple representing an order.
 
 !!! note
     Due to issues with Numba default handling in named tuples, 
@@ -2335,7 +2335,7 @@ Negative values (e.g. -0.05) indicate earning 5% per trade instead of paying a f
 """
 __pdoc__[
     "Order.fixed_fees"
-] = """A fixed fee amount charged for this order.
+] = """Fixed fee amount charged for this order.
 
 As with `Order.fees`, it can be negative.
 """
@@ -2421,7 +2421,7 @@ NoOrder = Order(
 )
 """_"""
 
-__pdoc__["NoOrder"] = "A sentinel order indicating that no order should be processed."
+__pdoc__["NoOrder"] = "Sentinel order indicating that no order should be processed."
 
 
 class OrderResult(tp.NamedTuple):
@@ -2433,8 +2433,8 @@ class OrderResult(tp.NamedTuple):
     status_info: int
 
 
-__pdoc__["OrderResult"] = """A named tuple representing the result of an order execution."""
-__pdoc__["OrderResult.size"] = "The filled size of the order."
+__pdoc__["OrderResult"] = """Named tuple representing the result of an order execution."""
+__pdoc__["OrderResult.size"] = "Filled size of the order."
 __pdoc__["OrderResult.price"] = "Filled price per unit, adjusted for slippage."
 __pdoc__["OrderResult.fees"] = "Total fees paid for the order."
 __pdoc__["OrderResult.side"] = "See `OrderSide`."
@@ -2496,7 +2496,7 @@ class SignalSegmentContext(tp.NamedTuple):
 
 __pdoc__[
     "SignalSegmentContext"
-] = """A named tuple representing the context for a simulation segment in a from-signals simulation.
+] = """Named tuple representing the context for a simulation segment in a from-signals simulation.
 
 This context includes OHLC data and additional internal simulation details computed at the start 
 of the simulation. For accessing other information, such as order size, consider using templates.
@@ -2620,7 +2620,7 @@ class SignalContext(tp.NamedTuple):
 
 __pdoc__[
     "SignalContext"
-] = """A named tuple representing the context of an element in a from-signals simulation.
+] = """Named tuple representing the context of an element in a from-signals simulation.
 
 Contains all fields from `SignalSegmentContext` with an additional field `col` representing the column.
 
@@ -2697,7 +2697,7 @@ class PostSignalContext(tp.NamedTuple):
 
 __pdoc__[
     "PostSignalContext"
-] = """A named tuple representing the context after an order has been processed in a from-signals simulation.
+] = """Named tuple representing the context after an order has been processed in a from-signals simulation.
 
 Contains all fields from `SignalContext` along with previous balance fields and the order result.
 
@@ -2728,7 +2728,7 @@ class FOInOutputs(tp.NamedTuple):
     returns: tp.Array2d
 
 
-__pdoc__["FOInOutputs"] = "A named tuple representing the in-place outputs for simulation based on orders."
+__pdoc__["FOInOutputs"] = "Named tuple representing the in-place outputs for simulation based on orders."
 __pdoc__[
     "FOInOutputs.cash"
 ] = """See `AccountState.cash`.

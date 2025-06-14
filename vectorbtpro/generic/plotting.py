@@ -118,7 +118,7 @@ class TraceUpdater(Base):
 
     @property
     def traces(self) -> tp.Tuple[BaseTraceType, ...]:
-        """A tuple of Plotly trace objects that will be updated.
+        """Tuple of Plotly trace objects that will be updated.
 
         Returns:
             Tuple[BaseTraceType, ...]: Tuple of Plotly trace objects.
@@ -257,7 +257,7 @@ class Gauge(TraceType, TraceUpdater):
 
     @property
     def value_range(self) -> tp.Tuple[float, float]:
-        """The value range of the gauge as a tuple of minimum and maximum values.
+        """Value range of the gauge as a tuple of minimum and maximum values.
 
         Returns:
             Tuple[float, float]: Value range of the gauge.
@@ -266,7 +266,7 @@ class Gauge(TraceType, TraceUpdater):
 
     @property
     def cmap_name(self) -> str:
-        """The name of the matplotlib-compatible colormap used for the gauge.
+        """Name of the matplotlib-compatible colormap used for the gauge.
 
         Returns:
             str: Name of the colormap.

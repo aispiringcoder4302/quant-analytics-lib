@@ -1779,7 +1779,7 @@ class IndicatorBase(Analyzable):
 
 
 class IndicatorFactory(Configured):
-    """A factory for creating new indicators.
+    """Factory for creating new indicators.
 
     Initialize `IndicatorFactory` to create a skeleton. Then, use a class method such as
     `IndicatorFactory.with_custom_func` to bind a calculation function to the skeleton.

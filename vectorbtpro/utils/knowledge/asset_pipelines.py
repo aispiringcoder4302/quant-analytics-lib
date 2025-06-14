@@ -14,6 +14,7 @@ See `vectorbtpro.utils.knowledge` for the toy dataset.
 """
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.eval_ import evaluate
@@ -24,6 +25,7 @@ from vectorbtpro.utils.parsing import get_func_arg_names
 
 __all__ = [
     "AssetPipeline",
+    "EarlyReturn",
     "BasicAssetPipeline",
     "ComplexAssetPipeline",
 ]
@@ -145,6 +147,14 @@ class AssetPipeline(Base):
         return self.run(d)
 
 
+@define
+class EarlyReturn(DefineMixin):
+    """Class representing an early return value for `BasicAssetPipeline`."""
+
+    value: tp.Any = define.field()
+    """Early return value."""
+
+
 class BasicAssetPipeline(AssetPipeline):
     """Class representing a basic asset pipeline.
 
@@ -160,9 +170,9 @@ class BasicAssetPipeline(AssetPipeline):
     Examples:
         ```pycon
         >>> asset_pipeline = vbt.BasicAssetPipeline()
-        >>> asset_pipeline.append("flatten")
-        >>> asset_pipeline.append("query", len)
-        >>> asset_pipeline.append("get")
+        >>> asset_pipeline.add_task("flatten")
+        >>> asset_pipeline.add_task("query", len)
+        >>> asset_pipeline.add_task("get")
 
         >>> asset_pipeline(dataset[0])
         5
@@ -188,8 +198,8 @@ class BasicAssetPipeline(AssetPipeline):
         """
         return self._tasks
 
-    def append(self, func: tp.AssetFuncLike, *args, **kwargs) -> None:
-        """Append a task to the pipeline using the provided asset function and arguments.
+    def add_task(self, func: tp.AssetFuncLike, *args, **kwargs) -> None:
+        """Add a task to the pipeline using the provided asset function and arguments.
 
         Args:
             func (AssetFuncLike): Asset function identifier, which may be a tuple,
@@ -218,6 +228,8 @@ class BasicAssetPipeline(AssetPipeline):
             result = d
             for func, args, kwargs in tasks:
                 result = func(result, *args, **kwargs)
+                if isinstance(result, EarlyReturn):
+                    return result.value
             return result
 
         return _composed

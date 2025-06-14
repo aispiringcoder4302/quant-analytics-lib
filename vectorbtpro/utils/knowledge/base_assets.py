@@ -18,6 +18,7 @@ import json
 import re
 from collections.abc import MutableSequence
 from pathlib import Path
+from functools import partial
 
 import pandas as pd
 
@@ -719,7 +720,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
-        new_data = [d for d in self.data if not FindRemoveAssetFunc.is_empty_func(d)]
+        new_data = [d for d in self.data if not FindRemoveAssetFunc.is_empty_func(None, d)]
         if inplace:
             self.modify_data(new_data)
             return None
@@ -2035,7 +2036,11 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs,
         )
 
-    def find_remove_empty(self, **kwargs) -> tp.MaybeKnowledgeAsset:
+    def find_remove_empty(
+        self, 
+        skip_keys: tp.Optional[tp.Container[tp.Hashable]] = None, 
+        **kwargs,
+    ) -> tp.MaybeKnowledgeAsset:
         """Remove empty objects from the asset data.
 
         This method uses a predefined emptiness check via
@@ -2049,7 +2054,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
-        return self.find_remove(FindRemoveAssetFunc.is_empty_func, **kwargs)
+        return self.find_remove(partial(FindRemoveAssetFunc.is_empty_func, skip_keys=skip_keys), **kwargs)
 
     def flatten(
         self,
@@ -2736,8 +2741,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             changed_only=False,
         ).describe(wrap=False, **kwargs)
         describe_dict = flat_merge_dicts(orig_describe_dict, flat_describe_dict)
+
         paths = []
-        path_names = []
+        display_names = []
         for k, v in describe_dict.items():
             if k is None:
                 k = "."
@@ -2747,14 +2753,14 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             path_name = path.name
             path_name += " [" + str(v["count"]) + "/" + str(len(self.data))
             path_name += ", " + ", ".join(v["types"]) + "]"
-            path_names.append(path_name)
             paths.append(path)
+            display_names.append(path_name)
         if "root_name" not in dir_tree_kwargs:
             dir_tree_kwargs["root_name"] = "/"
         if "sort" not in dir_tree_kwargs:
             dir_tree_kwargs["sort"] = False
-        if "path_names" not in dir_tree_kwargs:
-            dir_tree_kwargs["path_names"] = path_names
+        if "display_names" not in dir_tree_kwargs:
+            dir_tree_kwargs["display_names"] = display_names
         if "length_limit" not in dir_tree_kwargs:
             dir_tree_kwargs["length_limit"] = None
         print(dir_tree_from_paths(paths, **dir_tree_kwargs))

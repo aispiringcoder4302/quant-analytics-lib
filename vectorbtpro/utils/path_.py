@@ -44,12 +44,12 @@ __all__ = [
 
 def get_platform_dir(dir_type: tp.Optional[str] = None, per_vbt_version: tp.Optional[bool] = None, **kwargs) -> str:
     """Return a platform-specific directory.
-    
+
     Args:
         dir_type (Optional[str]): Type of directory to retrieve (e.g., 'user_data_dir').
         per_vbt_version (Optional[bool]): Whether to create a VBT-version-specific directory.
         **kwargs: Keyword arguments for `platformdirs.PlatformDirs`.
-    
+
     Returns:
         str: Path to the platform-specific directory.
 
@@ -74,7 +74,7 @@ def get_platform_dir(dir_type: tp.Optional[str] = None, per_vbt_version: tp.Opti
         per_vbt_version = def_per_vbt_version
     if per_vbt_version:
         kwargs["version"] = __version__
-    
+
     dirs = PlatformDirs(**kwargs)
     return Path(getattr(dirs, dir_type))
 
@@ -335,7 +335,7 @@ def get_common_prefix(paths: tp.Iterable[tp.PathLike]) -> str:
         str: Common prefix as a URL or file path string, or an empty string if no common prefix exists.
     """
     if not paths:
-        raise ValueError("The path list is empty")
+        raise ValueError("Path list is empty")
     paths = [str(path) for path in paths]
     first = paths[0]
     parsed_first = urlparse(first)
@@ -378,8 +378,11 @@ def get_common_prefix(paths: tp.Iterable[tp.PathLike]) -> str:
 def dir_tree_from_paths(
     paths: tp.Iterable[tp.PathLike],
     root: tp.Optional[tp.PathLike] = None,
-    path_names: tp.Optional[tp.Iterable[str]] = None,
     root_name: tp.Optional[str] = None,
+    show_root: bool = True,
+    root_as_item: bool = False,
+    display_names: tp.Optional[tp.Iterable[str]] = None,
+    name_formatter: tp.Optional[tp.Callable[[str, bool], str]] = None,
     level: int = -1,
     limit_to_dirs: bool = False,
     length_limit: tp.Optional[int] = 1000,
@@ -397,15 +400,22 @@ def dir_tree_from_paths(
     Args:
         paths (Iterable[PathLike]): Iterable of file system paths.
         root (Optional[PathLike]): Root path to which the tree structure should be relative.
-        path_names (Optional[Iterable[str]]): List of display names corresponding to each path.
         root_name (Optional[str]): Custom name for the root of the tree.
+        show_root (bool): If True, show the root name in output.
+        root_as_item (bool): If True, treat root as a list item with prefix; if False, show root without prefix.
+        display_names (Optional[Iterable[str]]): List of display names corresponding to each path.
+
+            By default, the name of each path is used.
+        name_formatter (Optional[Callable[[str, bool], str]]): Mapping or function to format display names.
+
+            Takes (display_name, is_directory) and returns formatted string.
         level (int): Maximum depth level to display.
 
             A negative value indicates no limit.
         limit_to_dirs (bool): If True, the tree only includes directories.
         length_limit (Optional[int]): Limits the total number of lines in the generated tree.
         sort (bool): If True, sorts tree entries alphabetically.
-        space (str): Indentation string used for spacing.
+        space (str): Indentation string used for level spacing.
         branch (str): String representing a branch segment.
         tee (str): String for an intermediate node in the tree.
         last (str): String for the last node in a branch.
@@ -419,9 +429,9 @@ def dir_tree_from_paths(
             parsed_url = urlparse(str(p))
             p = Path(parsed_url.path)
         resolved_paths.append(p.resolve())
-    if path_names is None:
-        path_names = [p.name for p in resolved_paths]
-    path_display_map = {path: name for path, name in zip(resolved_paths, path_names)}
+    if display_names is None:
+        display_names = [p.name for p in resolved_paths]
+    path_display_map = {path: name for path, name in zip(resolved_paths, display_names)}
     if root is None:
         try:
             common_path_str = get_common_prefix(resolved_paths)
@@ -474,10 +484,15 @@ def dir_tree_from_paths(
         if limit_to_dirs:
             entries = [e for e in entries if isinstance(e[1], dict)]
         pointers = [tee] * (len(entries) - 1) + [last] if entries else []
+
         for pointer, (name, subtree) in zip(pointers, entries):
             child_path = current_path / name
             display_name = path_display_map.get(child_path, name)
+            is_directory = isinstance(subtree, dict)
+            if name_formatter:
+                display_name = name_formatter(display_name, is_directory)
             yield prefix + pointer + display_name
+
             if isinstance(subtree, dict):
                 dir_count += 1
                 extension = branch if pointer == tee else space
@@ -490,17 +505,28 @@ def dir_tree_from_paths(
             elif not limit_to_dirs:
                 files += 1
 
-    tree_str = root_name if root_name is not None else root.name
-    iterator = _inner(tree, current_lvl=level, current_path=root)
+    result_lines = []
+    if show_root:
+        root_display_name = root_name if root_name is not None else root.name
+        if name_formatter:
+            root_display_name = name_formatter(root_display_name, True)
+        if root_as_item:
+            result_lines.append(tee + root_display_name)
+            root_prefix = space
+        else:
+            result_lines.append(root_display_name)
+            root_prefix = ""
+    else:
+        root_prefix = ""
+    iterator = _inner(tree, prefix=root_prefix, current_lvl=level, current_path=root)
     if length_limit is not None:
         iterator = islice(iterator, length_limit)
     for line in iterator:
-        tree_str += "\n" + line
+        result_lines.append(line)
     if next(iterator, None):
-        tree_str += "\n" + f"... length_limit {length_limit} reached, counts:"
-    tree_str += "\n" + f"\n{dir_count} directories" + (f", {files} files" if files else "")
-
-    return tree_str
+        result_lines.append(f"... length_limit {length_limit} reached, counts:")
+    result_lines.append(f"\n{dir_count} directories" + (f", {files} files" if files else ""))
+    return "\n".join(result_lines)
 
 
 def dir_tree(dir_path: Path, **kwargs) -> str:

@@ -766,6 +766,9 @@ def attr_tree(obj: tp.Any = None, own_only: bool = False, **kwargs) -> str:
     `vectorbtpro.utils.path_.dir_tree_from_paths` (to render a textual tree) so you can quickly
     inspect where an attribute is defined, its type, and whether is is an alias of another attribute.
 
+    Each attribute is represented as a leaf in the tree, whereas the tree structure
+    represents the hierarchy of modules and classes from which the attributes are inherited.
+
     Each leaf in the tree is formatted as:
 
     ```
@@ -803,7 +806,7 @@ def attr_tree(obj: tp.Any = None, own_only: bool = False, **kwargs) -> str:
 
     return dir_tree_from_paths(
         paths,
-        path_names=display_names,
+        display_names=display_names,
         **kwargs,
     )
 

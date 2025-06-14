@@ -123,7 +123,7 @@ class LocBase(Base):
 
     @property
     def indexing_func(self) -> tp.Callable:
-        """The function used to perform indexing operations on associated Pandas objects.
+        """Function used to perform indexing operations on associated Pandas objects.
 
         Returns:
             Callable: Function used for indexing.
@@ -132,7 +132,7 @@ class LocBase(Base):
 
     @property
     def indexing_setter_func(self) -> tp.Optional[tp.Callable]:
-        """The function used to set values via indexing on associated Pandas objects.
+        """Function used to set values via indexing on associated Pandas objects.
 
         Returns:
             Optional[Callable]: Function used for setting indexed values.
@@ -949,7 +949,7 @@ class UniIdxrOp(UniIdxr, DefineMixin):
     along with keyword arguments `index` and `freq`, and returns new indices."""
 
     idxrs: tp.Tuple[object, ...] = define.field()
-    """A tuple of one or more indexers."""
+    """Tuple of one or more indexers."""
 
     def __init__(self, op_func: tp.Callable, *idxrs) -> None:
         if len(idxrs) == 1 and checks.is_iterable(idxrs[0]):

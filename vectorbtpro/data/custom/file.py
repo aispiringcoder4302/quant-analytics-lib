@@ -247,9 +247,9 @@ class FileData(LocalData):
                     keys = list(paths.keys())
                 elif len(keys) != len(paths):
                     if keys_are_features:
-                        raise ValueError("The number of features must be equal to the number of matched paths")
+                        raise ValueError("Number of features must be equal to the number of matched paths")
                     else:
-                        raise ValueError("The number of symbols must be equal to the number of matched paths")
+                        raise ValueError("Number of symbols must be equal to the number of matched paths")
             elif checks.is_iterable(paths) or checks.is_sequence(paths):
                 # Multiple paths
                 matched_paths = [
@@ -273,9 +273,9 @@ class FileData(LocalData):
                         paths[s] = p
                 elif len(keys) != len(matched_paths):
                     if keys_are_features:
-                        raise ValueError("The number of features must be equal to the number of matched paths")
+                        raise ValueError("Number of features must be equal to the number of matched paths")
                     else:
-                        raise ValueError("The number of symbols must be equal to the number of matched paths")
+                        raise ValueError("Number of symbols must be equal to the number of matched paths")
                 else:
                     paths = key_dict({s: matched_paths[i] for i, s in enumerate(keys)})
                 if len(matched_paths) == 1 and single_path:

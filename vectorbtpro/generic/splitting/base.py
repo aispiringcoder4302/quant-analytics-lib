@@ -336,7 +336,7 @@ class Takeable(Evaluable, Annotatable, DefineMixin):
     """Class representing an object from which a range can be taken."""
 
     obj: tp.Any = define.required_field()
-    """The object from which the range is taken."""
+    """Object from which the range is taken."""
 
     remap_to_obj: bool = define.optional_field()
     """Boolean indicating whether to remap `Splitter.index` to the index of `Takeable.obj`.
@@ -345,13 +345,13 @@ class Takeable(Evaluable, Annotatable, DefineMixin):
     """
 
     index: tp.Optional[tp.IndexLike] = define.optional_field()
-    """The index associated with the object.
+    """Index associated with the object.
 
     If not provided, `Splitter.get_obj_index` is used to retrieve it.
     """
 
     freq: tp.Optional[tp.FrequencyLike] = define.optional_field()
-    """The frequency associated with `Takeable.index`."""
+    """Frequency associated with `Takeable.index`."""
 
     point_wise: bool = define.optional_field()
     """Boolean indicating whether to select one range point at a time and return a tuple."""
@@ -422,7 +422,7 @@ class Splitter(Analyzable):
 
     @property
     def splits_arr(self) -> tp.SplitsArray:
-        """A two-dimensional array representing splits.
+        """Two-dimensional array representing splits.
 
         The first axis represents splits and the second axis represents sets.
         Each element is a range defined as a slice, a sequence of indices, a mask,
@@ -2503,7 +2503,7 @@ class Splitter(Analyzable):
 
     @property
     def split_labels(self) -> tp.Index:
-        """The labels for splits.
+        """Labels for splits.
 
         Returns:
             Index: Labels for splits.
@@ -2512,7 +2512,7 @@ class Splitter(Analyzable):
 
     @property
     def set_labels(self) -> tp.Index:
-        """The labels for sets.
+        """Labels for sets.
 
         Returns:
             Index: Labels for sets.
@@ -2521,7 +2521,7 @@ class Splitter(Analyzable):
 
     @property
     def n_splits(self) -> int:
-        """The number of splits.
+        """Number of splits.
 
         Returns:
             int: Number of splits.
@@ -2530,7 +2530,7 @@ class Splitter(Analyzable):
 
     @property
     def n_sets(self) -> int:
-        """The number of sets.
+        """Number of sets.
 
         Returns:
             int: Number of sets.

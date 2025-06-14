@@ -663,7 +663,7 @@ DTCNT = namedtuple(
 
 __pdoc__[
     "DTCNT"
-] = """A named tuple representing date-time components for `DTC`.
+] = """Named tuple representing date-time components for `DTC`.
 
 Fields:
     year (int): Year component.

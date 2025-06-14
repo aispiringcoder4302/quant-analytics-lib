@@ -1208,7 +1208,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @property
     def missing_index(self) -> tp.Optional[str]:
-        """The `missing` argument provided to `Data.align_index`.
+        """`missing` argument provided to `Data.align_index`.
 
         Returns:
             Optional[str]: Missing index argument.
@@ -1217,7 +1217,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @property
     def missing_columns(self) -> tp.Optional[str]:
-        """The `missing` argument provided to `Data.align_columns`.
+        """`missing` argument provided to `Data.align_columns`.
 
         Returns:
             Optional[str]: Missing columns argument.

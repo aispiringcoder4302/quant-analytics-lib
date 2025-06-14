@@ -1144,7 +1144,7 @@ class Chunked(Chunkable, DefineMixin):
     """
 
     value: tp.Any = define.required_field()
-    """The value to be chunked."""
+    """Value to be chunked."""
 
     take_spec: tp.TakeSpec = define.optional_field()
     """Specification for taking chunks."""
