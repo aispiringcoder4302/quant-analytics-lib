@@ -35,6 +35,11 @@ def search(
         For specific information about a specific object (such as `vbt.Portfolio`),
         use tools that take a reference name. They operate on the actual objects.
 
+        Also, running this tool on any combination of assets for the first time may take a while,
+        as it prepares and caches the documents. If the tool times out repeatedly,
+        it's recommended to call `vbt.search()` directly in your code to build the index
+        and then use the MCP tool to search the index.
+
     Args:
         query (str): Search query.
 
@@ -181,7 +186,8 @@ def find(
 
             If True, the context will contain all the children of the object, such as methods,
             properties, and attributes, in a single context string. Note that this might result in
-            a large context string. If False, the context will contain only the object description.
+            a large context string, especially for modules and classes. If False, the context
+            will contain only the object description.
 
             Applies only to API documentation. Defaults to False.
         aggregate_messages (bool): Whether to aggregate messages belonging to the same thread (question-reply chain).

@@ -93,6 +93,13 @@ class class_property(Base):
 
     def __set__(self, instance: object, value: tp.Any) -> None:
         raise AttributeError("can't set attribute")
+    
+    def __reduce__(self) -> tp.Union[str, tp.Tuple]:
+        state = {"__doc__": self.__doc__}
+        return (type(self), (self.func,), state)
+
+    def __setstate__(self, state: dict) -> None:
+        self.__doc__ = state["__doc__"]
 
 
 class hybrid_property(Base):
@@ -125,6 +132,13 @@ class hybrid_property(Base):
 
     def __set__(self, instance: object, value: tp.Any) -> None:
         raise AttributeError("can't set attribute")
+    
+    def __reduce__(self) -> tp.Union[str, tp.Tuple]:
+        state = {"__doc__": self.__doc__}
+        return (type(self), (self.func,), state)
+
+    def __setstate__(self, state: dict) -> None:
+        self.__doc__ = state["__doc__"]
 
 
 class hybrid_method(classmethod, Base):
@@ -210,6 +224,14 @@ class custom_property(property, Base):
 
     def __call__(self, *args, **kwargs) -> tp.Any:
         pass
+
+    def __reduce__(self) -> tp.Union[str, tp.Tuple]:
+        state = {"_name": self._name, "__doc__": self.__doc__}
+        return (type(self), (self.func,), state)
+
+    def __setstate__(self, state: dict) -> None:
+        self._name = state["_name"]
+        self.__doc__ = state["__doc__"]
 
 
 class cacheable_property(custom_property):
