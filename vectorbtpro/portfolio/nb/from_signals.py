@@ -1568,7 +1568,7 @@ def from_signals_nb(
     limit_tif: tp.FlexArray2dLike = -1,
     limit_expiry: tp.FlexArray2dLike = -1,
     limit_reverse: tp.FlexArray2dLike = False,
-    limit_order_price: tp.FlexArray2dLike = LimitOrderPrice.Limit,
+    limit_order_price: tp.FlexArray2dLike = LimitOrderPrice.AutoLimit,
     upon_adj_limit_conflict: tp.FlexArray2dLike = PendingConflictMode.KeepIgnore,
     upon_opp_limit_conflict: tp.FlexArray2dLike = PendingConflictMode.CancelExecute,
     use_stops: bool = True,
@@ -2424,12 +2424,6 @@ def from_signals_nb(
                     _high = flex_select_nb(high_, i, col)
                     _low = flex_select_nb(low_, i, col)
                     _close = flex_select_nb(close_, i, col)
-                    _high, _low = resolve_hl_nb(
-                        open=_open,
-                        high=_high,
-                        low=_low,
-                        close=_close,
-                    )
 
                     # Process the limit signal
                     if any_limit_signal:
@@ -2450,7 +2444,7 @@ def from_signals_nb(
                         _reverse = last_limit_info["reverse"][col]
                         _order_price = last_limit_info["order_price"][col]
 
-                        limit_expired_on_open, limit_expired = check_limit_expired_nb(
+                        limit_expired, limit_expired_on_open = check_limit_expired_nb(
                             creation_idx=_creation_i,
                             i=i,
                             tif=_tif,
@@ -2459,7 +2453,13 @@ def from_signals_nb(
                             index=index,
                             freq=freq,
                         )
-                        limit_price, limit_hit_on_open, limit_hit = check_limit_hit_nb(
+                        if _order_price == LimitOrderPrice.HardLimit:
+                            hard_limit = True
+                        elif _order_price == LimitOrderPrice.AutoLimit and not _reverse:
+                            hard_limit = True
+                        else:
+                            hard_limit = False
+                        limit_price, limit_hit_on_open, limit_hit_on_close = check_limit_hit_nb(
                             open=_open,
                             high=_high,
                             low=_low,
@@ -2470,10 +2470,9 @@ def from_signals_nb(
                             limit_delta=_delta,
                             delta_format=_delta_format,
                             limit_reverse=_reverse,
-                            can_use_ohlc=True,
-                            check_open=True,
-                            hard_limit=_order_price == LimitOrderPrice.HardLimit,
+                            hard_limit=hard_limit,
                         )
+                        limit_hit = np.isfinite(limit_price)
 
                         # Resolve the price
                         limit_price = resolve_limit_order_price_nb(
@@ -2506,7 +2505,7 @@ def from_signals_nb(
                                 # Executable limit signal
                                 exec_limit_set = True
                                 exec_limit_set_on_open = limit_hit_on_open
-                                exec_limit_set_on_close = _order_price == LimitOrderPrice.Close
+                                exec_limit_set_on_close = limit_hit_on_close or _order_price == LimitOrderPrice.Close
                                 exec_limit_signal_i = _signal_i
                                 exec_limit_creation_i = _creation_i
                                 exec_limit_init_i = _init_i
@@ -2525,10 +2524,10 @@ def from_signals_nb(
                     # Process the stop signal
                     if any_stop_signal:
                         # Check SL
-                        sl_stop_price, sl_stop_hit_on_open, sl_stop_hit = np.nan, False, False
+                        sl_stop_price, sl_stop_hit_on_open, sl_stop_hit_on_close = np.nan, False, False
                         if sl_stop_signal:
                             # Check against high and low
-                            sl_stop_price, sl_stop_hit_on_open, sl_stop_hit = check_stop_hit_nb(
+                            sl_stop_price, sl_stop_hit_on_open, sl_stop_hit_on_close = check_stop_hit_nb(
                                 open=_open,
                                 high=_high,
                                 low=_low,
@@ -2540,9 +2539,10 @@ def from_signals_nb(
                                 hit_below=True,
                                 hard_stop=last_sl_info["exit_price"][col] == StopExitPrice.HardStop,
                             )
+                        sl_stop_hit = np.isfinite(sl_stop_price)
 
                         # Check TSL and TTP
-                        tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit = np.nan, False, False
+                        tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit_on_close = np.nan, False, False
                         if tsl_stop_signal:
                             # Update peak price using open
                             if last_position[col] > 0:
@@ -2573,7 +2573,7 @@ def from_signals_nb(
                                     delta_format=last_tsl_info["delta_format"][col],
                                 )
                             if th_hit:
-                                tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit = check_stop_hit_nb(
+                                tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit_on_close = check_stop_hit_nb(
                                     open=_open,
                                     high=_high,
                                     low=_low,
@@ -2586,23 +2586,29 @@ def from_signals_nb(
                                     hard_stop=last_tsl_info["exit_price"][col] == StopExitPrice.HardStop,
                                 )
                             # Update peak price using full bar
+                            res_high, res_low = resolve_hl_nb(
+                                open=_open,
+                                high=_high,
+                                low=_low,
+                                close=_close,
+                            )
                             if last_position[col] > 0:
-                                if _high > last_tsl_info["peak_price"][col]:
+                                if res_high > last_tsl_info["peak_price"][col]:
                                     if last_tsl_info["delta_format"][col] == DeltaFormat.Target:
                                         last_tsl_info["stop"][col] = (
-                                            last_tsl_info["stop"][col] + _high - last_tsl_info["peak_price"][col]
+                                            last_tsl_info["stop"][col] + res_high - last_tsl_info["peak_price"][col]
                                         )
                                     last_tsl_info["peak_idx"][col] = i
-                                    last_tsl_info["peak_price"][col] = _high
+                                    last_tsl_info["peak_price"][col] = res_high
                             else:
-                                if _low < last_tsl_info["peak_price"][col]:
+                                if res_low < last_tsl_info["peak_price"][col]:
                                     if last_tsl_info["delta_format"][col] == DeltaFormat.Target:
                                         last_tsl_info["stop"][col] = (
-                                            last_tsl_info["stop"][col] + _low - last_tsl_info["peak_price"][col]
+                                            last_tsl_info["stop"][col] + res_low - last_tsl_info["peak_price"][col]
                                         )
                                     last_tsl_info["peak_idx"][col] = i
-                                    last_tsl_info["peak_price"][col] = _low
-                            if not tsl_stop_hit:
+                                    last_tsl_info["peak_price"][col] = res_low
+                            if not np.isfinite(tsl_stop_price):
                                 # Check threshold against full bar
                                 if not th_hit:
                                     if np.isnan(last_tsl_info["th"][col]):
@@ -2616,8 +2622,8 @@ def from_signals_nb(
                                             delta_format=last_tsl_info["delta_format"][col],
                                         )
                                 if th_hit:
-                                    # Check threshold against close
-                                    tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit = check_stop_hit_nb(
+                                    # Check stop against close
+                                    tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit_on_close = check_stop_hit_nb(
                                         open=_open,
                                         high=_high,
                                         low=_low,
@@ -2630,11 +2636,12 @@ def from_signals_nb(
                                         can_use_ohlc=False,
                                         hard_stop=last_tsl_info["exit_price"][col] == StopExitPrice.HardStop,
                                     )
+                        tsl_stop_hit = np.isfinite(tsl_stop_price)
 
                         # Check TP
-                        tp_stop_price, tp_stop_hit_on_open, tp_stop_hit = np.nan, False, False
+                        tp_stop_price, tp_stop_hit_on_open, tp_stop_hit_on_close = np.nan, False, False
                         if tp_stop_signal:
-                            tp_stop_price, tp_stop_hit_on_open, tp_stop_hit = check_stop_hit_nb(
+                            tp_stop_price, tp_stop_hit_on_open, tp_stop_hit_on_close = check_stop_hit_nb(
                                 open=_open,
                                 high=_high,
                                 low=_low,
@@ -2646,11 +2653,12 @@ def from_signals_nb(
                                 hit_below=False,
                                 hard_stop=last_tp_info["exit_price"][col] == StopExitPrice.HardStop,
                             )
+                        tp_stop_hit = np.isfinite(tp_stop_price)
 
                         # Check TD
-                        td_stop_price, td_stop_hit_on_open, td_stop_hit = np.nan, False, False
+                        td_stop_price, td_stop_hit, td_stop_hit_on_open = np.nan, False, False
                         if td_stop_signal:
-                            td_stop_hit_on_open, td_stop_hit = check_td_stop_hit_nb(
+                            td_stop_hit, td_stop_hit_on_open = check_td_stop_hit_nb(
                                 init_idx=last_td_info["init_idx"][col],
                                 i=i,
                                 stop=last_td_info["stop"][col],
@@ -2664,11 +2672,12 @@ def from_signals_nb(
                                 td_stop_price = _open
                             else:
                                 td_stop_price = _close
+                        td_stop_hit_on_close = td_stop_hit and not td_stop_hit_on_open
 
                         # Check DT
-                        dt_stop_price, dt_stop_hit_on_open, dt_stop_hit = np.nan, False, False
+                        dt_stop_price, dt_stop_hit, dt_stop_hit_on_open = np.nan, False, False
                         if dt_stop_signal:
-                            dt_stop_hit_on_open, dt_stop_hit = check_dt_stop_hit_nb(
+                            dt_stop_hit, dt_stop_hit_on_open = check_dt_stop_hit_nb(
                                 i=i,
                                 stop=last_dt_info["stop"][col],
                                 time_delta_format=last_dt_info["time_delta_format"][col],
@@ -2681,6 +2690,7 @@ def from_signals_nb(
                                 dt_stop_price = _open
                             else:
                                 dt_stop_price = _close
+                        dt_stop_hit_on_close = dt_stop_hit and not dt_stop_hit_on_open
 
                         # Resolve the stop signal
                         sl_hit = False
@@ -2710,7 +2720,10 @@ def from_signals_nb(
                             dt_hit = True
 
                         if sl_hit:
-                            stop_price, stop_hit_on_open, stop_hit = sl_stop_price, sl_stop_hit_on_open, sl_stop_hit
+                            stop_price = sl_stop_price
+                            stop_hit = sl_stop_hit
+                            stop_hit_on_open = sl_stop_hit_on_open
+                            stop_hit_on_close = sl_stop_hit_on_close
                             _stop_type = StopType.SL
                             _init_i = last_sl_info["init_idx"][col]
                             _stop_exit_price = last_sl_info["exit_price"][col]
@@ -2738,11 +2751,10 @@ def from_signals_nb(
                                         )
                                         _stop_exit_size_type = SizeType.Amount
                         elif tsl_hit:
-                            stop_price, stop_hit_on_open, stop_hit = (
-                                tsl_stop_price,
-                                tsl_stop_hit_on_open,
-                                tsl_stop_hit,
-                            )
+                            stop_price = tsl_stop_price
+                            stop_hit = tsl_stop_hit
+                            stop_hit_on_open = tsl_stop_hit_on_open
+                            stop_hit_on_close = tsl_stop_hit_on_close
                             if np.isnan(last_tsl_info["th"][col]):
                                 _stop_type = StopType.TSL
                             else:
@@ -2773,7 +2785,10 @@ def from_signals_nb(
                                         )
                                         _stop_exit_size_type = SizeType.Amount
                         elif tp_hit:
-                            stop_price, stop_hit_on_open, stop_hit = tp_stop_price, tp_stop_hit_on_open, tp_stop_hit
+                            stop_price = tp_stop_price
+                            stop_hit = tp_stop_hit
+                            stop_hit_on_open = tp_stop_hit_on_open
+                            stop_hit_on_close = tp_stop_hit_on_close
                             _stop_type = StopType.TP
                             _init_i = last_tp_info["init_idx"][col]
                             _stop_exit_price = last_tp_info["exit_price"][col]
@@ -2801,7 +2816,10 @@ def from_signals_nb(
                                         )
                                         _stop_exit_size_type = SizeType.Amount
                         elif td_hit:
-                            stop_price, stop_hit_on_open, stop_hit = td_stop_price, td_stop_hit_on_open, td_stop_hit
+                            stop_price = td_stop_price
+                            stop_hit = td_stop_hit
+                            stop_hit_on_open = td_stop_hit_on_open
+                            stop_hit_on_close = td_stop_hit_on_close
                             _stop_type = StopType.TD
                             _init_i = last_td_info["init_idx"][col]
                             _stop_exit_price = last_td_info["exit_price"][col]
@@ -2829,7 +2847,10 @@ def from_signals_nb(
                                         )
                                         _stop_exit_size_type = SizeType.Amount
                         elif dt_hit:
-                            stop_price, stop_hit_on_open, stop_hit = dt_stop_price, dt_stop_hit_on_open, dt_stop_hit
+                            stop_price = dt_stop_price
+                            stop_hit = dt_stop_hit
+                            stop_hit_on_open = dt_stop_hit_on_open
+                            stop_hit_on_close = dt_stop_hit_on_close
                             _stop_type = StopType.DT
                             _init_i = last_dt_info["init_idx"][col]
                             _stop_exit_price = last_dt_info["exit_price"][col]
@@ -2857,7 +2878,10 @@ def from_signals_nb(
                                         )
                                         _stop_exit_size_type = SizeType.Amount
                         else:
-                            stop_price, stop_hit_on_open, stop_hit = np.nan, False, False
+                            stop_price = np.nan
+                            stop_hit = False
+                            stop_hit_on_open = False
+                            stop_hit_on_close = False
 
                         if stop_hit:
                             # Stop price was hit
@@ -2911,11 +2935,11 @@ def from_signals_nb(
                                 can_execute = True
                                 if _stop_order_type == OrderType.Limit:
                                     # Use close to check whether the limit price was hit
-                                    if _stop_exit_price == StopExitPrice.Close:
+                                    if stop_hit_on_close or _stop_exit_price == StopExitPrice.Close:
                                         # Cannot place a limit order at the close price and execute right away
                                         can_execute = False
                                     if can_execute:
-                                        limit_price, _, can_execute = check_limit_hit_nb(
+                                        limit_price, limit_hit_on_open, limit_hit_on_close = check_limit_hit_nb(
                                             open=_open,
                                             high=_high,
                                             low=_low,
@@ -2925,18 +2949,19 @@ def from_signals_nb(
                                             direction=_direction,
                                             limit_delta=_limit_delta,
                                             delta_format=_delta_format,
-                                            limit_reverse=False,
                                             can_use_ohlc=stop_hit_on_open,
                                             check_open=False,
-                                            hard_limit=False,
                                         )
+                                        can_execute = np.isfinite(limit_price)
                                         if can_execute:
                                             _price = limit_price
+                                            stop_hit_on_open = limit_hit_on_open
+                                            stop_hit_on_close = limit_hit_on_close
 
                                 # Save info
                                 exec_stop_set = True
                                 exec_stop_set_on_open = stop_hit_on_open
-                                exec_stop_set_on_close = _stop_exit_price == StopExitPrice.Close
+                                exec_stop_set_on_close = stop_hit_on_close or _stop_exit_price == StopExitPrice.Close
                                 exec_stop_init_i = _init_i
                                 if np.isinf(_price) and _price > 0:
                                     exec_stop_val_price = _close
@@ -3048,19 +3073,18 @@ def from_signals_nb(
                             if _order_type == OrderType.Limit:
                                 # Use close to check whether the limit price was hit
                                 can_use_ohlc = False
-                                if np.isinf(_price):
-                                    if _price > 0:
-                                        # Cannot place a limit order at the close price and execute right away
-                                        _price = _close
-                                        can_execute = False
-                                    else:
-                                        can_use_ohlc = True
-                                        _price = _open
+                                if user_on_close:
+                                    # Cannot place a limit order at the close price and execute right away
+                                    _price = _close
+                                    can_execute = False
+                                elif user_on_open:
+                                    _price = _open
+                                    can_use_ohlc = True
                                 if can_execute:
                                     _limit_delta = flex_select_nb(limit_delta_, _i, col)
                                     _delta_format = flex_select_nb(delta_format_, _i, col)
                                     _limit_reverse = flex_select_nb(limit_reverse_, _i, col)
-                                    limit_price, _, can_execute = check_limit_hit_nb(
+                                    limit_price, limit_hit_on_open, limit_hit_on_close = check_limit_hit_nb(
                                         open=_open,
                                         high=_high,
                                         low=_low,
@@ -3073,10 +3097,12 @@ def from_signals_nb(
                                         limit_reverse=_limit_reverse,
                                         can_use_ohlc=can_use_ohlc,
                                         check_open=False,
-                                        hard_limit=False,
                                     )
+                                    can_execute = np.isfinite(limit_price)
                                     if can_execute:
                                         _price = limit_price
+                                        user_on_open = limit_hit_on_open
+                                        user_on_close = limit_hit_on_close
 
                             # Save info
                             exec_user_set = True
@@ -4428,7 +4454,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     limit_tif: tp.FlexArray2dLike = -1,
     limit_expiry: tp.FlexArray2dLike = -1,
     limit_reverse: tp.FlexArray2dLike = False,
-    limit_order_price: tp.FlexArray2dLike = LimitOrderPrice.Limit,
+    limit_order_price: tp.FlexArray2dLike = LimitOrderPrice.AutoLimit,
     upon_adj_limit_conflict: tp.FlexArray2dLike = PendingConflictMode.KeepIgnore,
     upon_opp_limit_conflict: tp.FlexArray2dLike = PendingConflictMode.CancelExecute,
     use_stops: bool = True,
@@ -5373,12 +5399,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     _high = flex_select_nb(high_, i, col)
                     _low = flex_select_nb(low_, i, col)
                     _close = flex_select_nb(close_, i, col)
-                    _high, _low = resolve_hl_nb(
-                        open=_open,
-                        high=_high,
-                        low=_low,
-                        close=_close,
-                    )
 
                     # Process the limit signal
                     if any_limit_signal:
@@ -5399,7 +5419,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                         _reverse = last_limit_info["reverse"][col]
                         _order_price = last_limit_info["order_price"][col]
 
-                        limit_expired_on_open, limit_expired = check_limit_expired_nb(
+                        limit_expired, limit_expired_on_open = check_limit_expired_nb(
                             creation_idx=_creation_i,
                             i=i,
                             tif=_tif,
@@ -5408,7 +5428,13 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             index=index,
                             freq=freq,
                         )
-                        limit_price, limit_hit_on_open, limit_hit = check_limit_hit_nb(
+                        if _order_price == LimitOrderPrice.HardLimit:
+                            hard_limit = True
+                        elif _order_price == LimitOrderPrice.AutoLimit and not _reverse:
+                            hard_limit = True
+                        else:
+                            hard_limit = False
+                        limit_price, limit_hit_on_open, limit_hit_on_close = check_limit_hit_nb(
                             open=_open,
                             high=_high,
                             low=_low,
@@ -5419,10 +5445,9 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             limit_delta=_delta,
                             delta_format=_delta_format,
                             limit_reverse=_reverse,
-                            can_use_ohlc=True,
-                            check_open=True,
-                            hard_limit=_order_price == LimitOrderPrice.HardLimit,
+                            hard_limit=hard_limit,
                         )
+                        limit_hit = np.isfinite(limit_price)
 
                         # Resolve the price
                         limit_price = resolve_limit_order_price_nb(
@@ -5455,7 +5480,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 # Executable limit signal
                                 exec_limit_set = True
                                 exec_limit_set_on_open = limit_hit_on_open
-                                exec_limit_set_on_close = _order_price == LimitOrderPrice.Close
+                                exec_limit_set_on_close = limit_hit_on_close or _order_price == LimitOrderPrice.Close
                                 exec_limit_signal_i = _signal_i
                                 exec_limit_creation_i = _creation_i
                                 exec_limit_init_i = _init_i
@@ -5474,10 +5499,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     # Process the stop signal
                     if any_stop_signal:
                         # Check SL
-                        sl_stop_price, sl_stop_hit_on_open, sl_stop_hit = np.nan, False, False
+                        sl_stop_price, sl_stop_hit_on_open, sl_stop_hit_on_close = np.nan, False, False
                         if sl_stop_signal:
                             # Check against high and low
-                            sl_stop_price, sl_stop_hit_on_open, sl_stop_hit = check_stop_hit_nb(
+                            sl_stop_price, sl_stop_hit_on_open, sl_stop_hit_on_close = check_stop_hit_nb(
                                 open=_open,
                                 high=_high,
                                 low=_low,
@@ -5489,9 +5514,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 hit_below=True,
                                 hard_stop=last_sl_info["exit_price"][col] == StopExitPrice.HardStop,
                             )
+                        sl_stop_hit = np.isfinite(sl_stop_price)
 
                         # Check TSL and TTP
-                        tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit = np.nan, False, False
+                        tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit_on_close = np.nan, False, False
                         if tsl_stop_signal:
                             # Update peak price using open
                             if last_position[col] > 0:
@@ -5522,7 +5548,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     delta_format=last_tsl_info["delta_format"][col],
                                 )
                             if th_hit:
-                                tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit = check_stop_hit_nb(
+                                tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit_on_close = check_stop_hit_nb(
                                     open=_open,
                                     high=_high,
                                     low=_low,
@@ -5535,23 +5561,29 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                     hard_stop=last_tsl_info["exit_price"][col] == StopExitPrice.HardStop,
                                 )
                             # Update peak price using full bar
+                            res_high, res_low = resolve_hl_nb(
+                                open=_open,
+                                high=_high,
+                                low=_low,
+                                close=_close,
+                            )
                             if last_position[col] > 0:
-                                if _high > last_tsl_info["peak_price"][col]:
+                                if res_high > last_tsl_info["peak_price"][col]:
                                     if last_tsl_info["delta_format"][col] == DeltaFormat.Target:
                                         last_tsl_info["stop"][col] = (
-                                            last_tsl_info["stop"][col] + _high - last_tsl_info["peak_price"][col]
+                                            last_tsl_info["stop"][col] + res_high - last_tsl_info["peak_price"][col]
                                         )
                                     last_tsl_info["peak_idx"][col] = i
-                                    last_tsl_info["peak_price"][col] = _high
+                                    last_tsl_info["peak_price"][col] = res_high
                             else:
-                                if _low < last_tsl_info["peak_price"][col]:
+                                if res_low < last_tsl_info["peak_price"][col]:
                                     if last_tsl_info["delta_format"][col] == DeltaFormat.Target:
                                         last_tsl_info["stop"][col] = (
-                                            last_tsl_info["stop"][col] + _low - last_tsl_info["peak_price"][col]
+                                            last_tsl_info["stop"][col] + res_low - last_tsl_info["peak_price"][col]
                                         )
                                     last_tsl_info["peak_idx"][col] = i
-                                    last_tsl_info["peak_price"][col] = _low
-                            if not tsl_stop_hit:
+                                    last_tsl_info["peak_price"][col] = res_low
+                            if not np.isfinite(tsl_stop_price):
                                 # Check threshold against full bar
                                 if not th_hit:
                                     if np.isnan(last_tsl_info["th"][col]):
@@ -5565,8 +5597,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                             delta_format=last_tsl_info["delta_format"][col],
                                         )
                                 if th_hit:
-                                    # Check threshold against close
-                                    tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit = check_stop_hit_nb(
+                                    # Check stop against close
+                                    tsl_stop_price, tsl_stop_hit_on_open, tsl_stop_hit_on_close = check_stop_hit_nb(
                                         open=_open,
                                         high=_high,
                                         low=_low,
@@ -5579,11 +5611,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         can_use_ohlc=False,
                                         hard_stop=last_tsl_info["exit_price"][col] == StopExitPrice.HardStop,
                                     )
+                        tsl_stop_hit = np.isfinite(tsl_stop_price)
 
                         # Check TP
-                        tp_stop_price, tp_stop_hit_on_open, tp_stop_hit = np.nan, False, False
+                        tp_stop_price, tp_stop_hit_on_open, tp_stop_hit_on_close = np.nan, False, False
                         if tp_stop_signal:
-                            tp_stop_price, tp_stop_hit_on_open, tp_stop_hit = check_stop_hit_nb(
+                            tp_stop_price, tp_stop_hit_on_open, tp_stop_hit_on_close = check_stop_hit_nb(
                                 open=_open,
                                 high=_high,
                                 low=_low,
@@ -5595,11 +5628,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 hit_below=False,
                                 hard_stop=last_tp_info["exit_price"][col] == StopExitPrice.HardStop,
                             )
+                        tp_stop_hit = np.isfinite(tp_stop_price)
 
                         # Check TD
-                        td_stop_price, td_stop_hit_on_open, td_stop_hit = np.nan, False, False
+                        td_stop_price, td_stop_hit, td_stop_hit_on_open = np.nan, False, False
                         if td_stop_signal:
-                            td_stop_hit_on_open, td_stop_hit = check_td_stop_hit_nb(
+                            td_stop_hit, td_stop_hit_on_open = check_td_stop_hit_nb(
                                 init_idx=last_td_info["init_idx"][col],
                                 i=i,
                                 stop=last_td_info["stop"][col],
@@ -5613,11 +5647,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 td_stop_price = _open
                             else:
                                 td_stop_price = _close
+                        td_stop_hit_on_close = td_stop_hit and not td_stop_hit_on_open
 
                         # Check DT
-                        dt_stop_price, dt_stop_hit_on_open, dt_stop_hit = np.nan, False, False
+                        dt_stop_price, dt_stop_hit, dt_stop_hit_on_open = np.nan, False, False
                         if dt_stop_signal:
-                            dt_stop_hit_on_open, dt_stop_hit = check_dt_stop_hit_nb(
+                            dt_stop_hit, dt_stop_hit_on_open = check_dt_stop_hit_nb(
                                 i=i,
                                 stop=last_dt_info["stop"][col],
                                 time_delta_format=last_dt_info["time_delta_format"][col],
@@ -5630,6 +5665,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 dt_stop_price = _open
                             else:
                                 dt_stop_price = _close
+                        dt_stop_hit_on_close = dt_stop_hit and not dt_stop_hit_on_open
 
                         # Resolve the stop signal
                         sl_hit = False
@@ -5659,7 +5695,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             dt_hit = True
 
                         if sl_hit:
-                            stop_price, stop_hit_on_open, stop_hit = sl_stop_price, sl_stop_hit_on_open, sl_stop_hit
+                            stop_price = sl_stop_price
+                            stop_hit = sl_stop_hit
+                            stop_hit_on_open = sl_stop_hit_on_open
+                            stop_hit_on_close = sl_stop_hit_on_close
                             _stop_type = StopType.SL
                             _init_i = last_sl_info["init_idx"][col]
                             _stop_exit_price = last_sl_info["exit_price"][col]
@@ -5687,11 +5726,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         )
                                         _stop_exit_size_type = SizeType.Amount
                         elif tsl_hit:
-                            stop_price, stop_hit_on_open, stop_hit = (
-                                tsl_stop_price,
-                                tsl_stop_hit_on_open,
-                                tsl_stop_hit,
-                            )
+                            stop_price = tsl_stop_price
+                            stop_hit = tsl_stop_hit
+                            stop_hit_on_open = tsl_stop_hit_on_open
+                            stop_hit_on_close = tsl_stop_hit_on_close
                             if np.isnan(last_tsl_info["th"][col]):
                                 _stop_type = StopType.TSL
                             else:
@@ -5722,7 +5760,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         )
                                         _stop_exit_size_type = SizeType.Amount
                         elif tp_hit:
-                            stop_price, stop_hit_on_open, stop_hit = tp_stop_price, tp_stop_hit_on_open, tp_stop_hit
+                            stop_price = tp_stop_price
+                            stop_hit = tp_stop_hit
+                            stop_hit_on_open = tp_stop_hit_on_open
+                            stop_hit_on_close = tp_stop_hit_on_close
                             _stop_type = StopType.TP
                             _init_i = last_tp_info["init_idx"][col]
                             _stop_exit_price = last_tp_info["exit_price"][col]
@@ -5750,7 +5791,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         )
                                         _stop_exit_size_type = SizeType.Amount
                         elif td_hit:
-                            stop_price, stop_hit_on_open, stop_hit = td_stop_price, td_stop_hit_on_open, td_stop_hit
+                            stop_price = td_stop_price
+                            stop_hit = td_stop_hit
+                            stop_hit_on_open = td_stop_hit_on_open
+                            stop_hit_on_close = td_stop_hit_on_close
                             _stop_type = StopType.TD
                             _init_i = last_td_info["init_idx"][col]
                             _stop_exit_price = last_td_info["exit_price"][col]
@@ -5778,7 +5822,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         )
                                         _stop_exit_size_type = SizeType.Amount
                         elif dt_hit:
-                            stop_price, stop_hit_on_open, stop_hit = dt_stop_price, dt_stop_hit_on_open, dt_stop_hit
+                            stop_price = dt_stop_price
+                            stop_hit = dt_stop_hit
+                            stop_hit_on_open = dt_stop_hit_on_open
+                            stop_hit_on_close = dt_stop_hit_on_close
                             _stop_type = StopType.DT
                             _init_i = last_dt_info["init_idx"][col]
                             _stop_exit_price = last_dt_info["exit_price"][col]
@@ -5806,7 +5853,10 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         )
                                         _stop_exit_size_type = SizeType.Amount
                         else:
-                            stop_price, stop_hit_on_open, stop_hit = np.nan, False, False
+                            stop_price = np.nan
+                            stop_hit = False
+                            stop_hit_on_open = False
+                            stop_hit_on_close = False
 
                         if stop_hit:
                             # Stop price was hit
@@ -5860,11 +5910,11 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 can_execute = True
                                 if _stop_order_type == OrderType.Limit:
                                     # Use close to check whether the limit price was hit
-                                    if _stop_exit_price == StopExitPrice.Close:
+                                    if stop_hit_on_close or _stop_exit_price == StopExitPrice.Close:
                                         # Cannot place a limit order at the close price and execute right away
                                         can_execute = False
                                     if can_execute:
-                                        limit_price, _, can_execute = check_limit_hit_nb(
+                                        limit_price, limit_hit_on_open, limit_hit_on_close = check_limit_hit_nb(
                                             open=_open,
                                             high=_high,
                                             low=_low,
@@ -5874,18 +5924,19 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                             direction=_direction,
                                             limit_delta=_limit_delta,
                                             delta_format=_delta_format,
-                                            limit_reverse=False,
                                             can_use_ohlc=stop_hit_on_open,
                                             check_open=False,
-                                            hard_limit=False,
                                         )
+                                        can_execute = np.isfinite(limit_price)
                                         if can_execute:
                                             _price = limit_price
+                                            stop_hit_on_open = limit_hit_on_open
+                                            stop_hit_on_close = limit_hit_on_close
 
                                 # Save info
                                 exec_stop_set = True
                                 exec_stop_set_on_open = stop_hit_on_open
-                                exec_stop_set_on_close = _stop_exit_price == StopExitPrice.Close
+                                exec_stop_set_on_close = stop_hit_on_close or _stop_exit_price == StopExitPrice.Close
                                 exec_stop_init_i = _init_i
                                 if np.isinf(_price) and _price > 0:
                                     exec_stop_val_price = _close
@@ -5997,19 +6048,18 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             if _order_type == OrderType.Limit:
                                 # Use close to check whether the limit price was hit
                                 can_use_ohlc = False
-                                if np.isinf(_price):
-                                    if _price > 0:
-                                        # Cannot place a limit order at the close price and execute right away
-                                        _price = _close
-                                        can_execute = False
-                                    else:
-                                        can_use_ohlc = True
-                                        _price = _open
+                                if user_on_close:
+                                    # Cannot place a limit order at the close price and execute right away
+                                    _price = _close
+                                    can_execute = False
+                                elif user_on_open:
+                                    _price = _open
+                                    can_use_ohlc = True
                                 if can_execute:
                                     _limit_delta = flex_select_nb(limit_delta_, _i, col)
                                     _delta_format = flex_select_nb(delta_format_, _i, col)
                                     _limit_reverse = flex_select_nb(limit_reverse_, _i, col)
-                                    limit_price, _, can_execute = check_limit_hit_nb(
+                                    limit_price, limit_hit_on_open, limit_hit_on_close = check_limit_hit_nb(
                                         open=_open,
                                         high=_high,
                                         low=_low,
@@ -6022,10 +6072,12 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                         limit_reverse=_limit_reverse,
                                         can_use_ohlc=can_use_ohlc,
                                         check_open=False,
-                                        hard_limit=False,
                                     )
+                                    can_execute = np.isfinite(limit_price)
                                     if can_execute:
                                         _price = limit_price
+                                        user_on_open = limit_hit_on_open
+                                        user_on_close = limit_hit_on_close
 
                             # Save info
                             exec_user_set = True

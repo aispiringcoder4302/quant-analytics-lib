@@ -81,9 +81,9 @@ def self_decorator(self, func: tp.Callable) -> tp.Callable:
 try:
     from telegram import __version_info__
 except ImportError:
-    __version_info__ = (0, 0, 0, 0, 0)
+    __version_info__ = (0, 0)
 
-if __version_info__ < (20, 0, 0, "alpha", 1):
+if __version_info__ < (20, 0):
     from telegram import Update
     from telegram.error import Unauthorized, ChatMigrated
     from telegram.ext import (
@@ -157,10 +157,10 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             try:
                 from telegram import __version_info__
             except ImportError:
-                __version_info__ = (0, 0, 0, 0, 0)
+                __version_info__ = (0, 0)
 
-            if __version_info__ >= (20, 0, 0, "alpha", 1):
-                raise RuntimeError(f"This example is not compatible with your current PTB version {TG_VER}")
+            if __version_info__ >= (20, 0):
+                raise RuntimeError(f"This implementation is not compatible with telegram version {TG_VER}")
 
             # Enable logging
             logging.basicConfig(
@@ -667,10 +667,10 @@ else:
             try:
                 from telegram import __version_info__
             except ImportError:
-                __version_info__ = (0, 0, 0, 0, 0)
+                __version_info__ = (0, 0)
 
-            if __version_info__ < (20, 0, 0, "alpha", 1):
-                raise RuntimeError(f"This example is not compatible with your current PTB version {TG_VER}")
+            if __version_info__ < (20, 0):
+                raise RuntimeError(f"This implementation is not compatible with telegram version {TG_VER}")
 
             # Enable logging
             logging.basicConfig(

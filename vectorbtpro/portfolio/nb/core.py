@@ -2165,8 +2165,8 @@ def prepare_records_nb(
     Returns:
         Tuple[RecordArray2d, RecordArray2d]: Tuple containing:
 
-            `order_records`: Array for order records (dtype `vectorbtpro.portfolio.enums.order_dt`).
-            `log_records`: Array for log records (dtype `vectorbtpro.portfolio.enums.log_dt`).
+            * `order_records`: Array for order records (dtype `vectorbtpro.portfolio.enums.order_dt`).
+            * `log_records`: Array for log records (dtype `vectorbtpro.portfolio.enums.log_dt`).
     """
     if max_order_records is None:
         order_records = np.empty((target_shape[0], target_shape[1]), dtype=order_dt)
@@ -2650,36 +2650,45 @@ def check_price_hit_nb(
         hit_below (bool): If True, check whether the target price is hit from above.
         can_use_ohlc (bool): Whether OHLC data is safe to use for the evaluation.
         check_open (bool): Determines whether the open price should be considered.
-        hard_price (bool): If True, enforces the target price when hit by the open price.
+        hard_price (bool): If True, enforces the target price when hit by the open price,
+            or close price when `can_use_ohlc` is False.
 
     Returns:
         Tuple[float, bool, bool]: Tuple containing:
 
-            * The effective stop price,
-            * A flag indicating if the open price was used,
-            * A flag indicating if the price was hit during the bar.
+            * The effective price; NaN if the price was not hit.
+            * True if the price was hit before or on open, otherwise False.
+            * True if the price was hit on close, otherwise False.
     """
-    high, low = resolve_hl_nb(
-        open=open,
-        high=high,
-        low=low,
-        close=close,
-    )
-    if hit_below:
-        if can_use_ohlc and check_open and is_close_or_less_nb(open, price):
-            if hard_price:
-                return price, True, True
-            return open, True, True
-        if is_close_or_less_nb(close, price) or (can_use_ohlc and is_close_or_less_nb(low, price)):
-            return price, False, True
-        return price, False, False
-    if can_use_ohlc and check_open and is_close_or_greater_nb(open, price):
-        if hard_price:
-            return price, True, True
-        return open, True, True
-    if is_close_or_greater_nb(close, price) or (can_use_ohlc and is_close_or_greater_nb(high, price)):
-        return price, False, True
-    return price, False, False
+    if np.isnan(price):
+        return np.nan, False, False
+    if not can_use_ohlc or (np.isnan(open) and np.isnan(high) and np.isnan(low)):
+        if np.isnan(close):
+            return np.nan, False, False
+        if hit_below:
+            if is_close_or_less_nb(close, price):
+                return price if hard_price and np.isfinite(price) else close, False, True
+        else:
+            if is_close_or_greater_nb(close, price):
+                return price if hard_price and np.isfinite(price) else close, False, True
+    else:
+        high, low = resolve_hl_nb(
+            open=open,
+            high=high,
+            low=low,
+            close=close,
+        )
+        if hit_below:
+            if check_open and is_close_or_less_nb(open, price):
+                return price if hard_price and np.isfinite(price) else open, True, False
+            if is_close_or_less_nb(low, price):
+                return price if np.isfinite(price) else low, False, False
+        else:
+            if check_open and is_close_or_greater_nb(open, price):
+                return price if hard_price and np.isfinite(price) else open, True, False
+            if is_close_or_greater_nb(high, price):
+                return price if np.isfinite(price) else high, False, False
+    return np.nan, False, False
 
 
 @register_jitted(cache=True)
@@ -2820,12 +2829,14 @@ def check_limit_expired_nb(
         freq (Optional[int]): Frequency in nanosecond format.
 
     Returns:
-        Tuple[bool, bool]: Tuple where the first element indicates if the limit expires on open,
-            and the second element indicates if it expires during the current bar.
+        Tuple[bool, bool]: Tuple containing:
+
+            * True if the limit order is expired, otherwise False.
+            * True if the limit order is expired on open, otherwise False.
     """
     if tif == -1 and expiry == -1:
-        return False, False
-    if time_delta_format == TimeDeltaFormat.Rows:
+        is_expired, is_expired_on_open = False, False
+    elif time_delta_format == TimeDeltaFormat.Rows:
         is_expired_on_open = False
         is_expired = False
         if tif != -1:
@@ -2840,7 +2851,6 @@ def check_limit_expired_nb(
                 is_expired = True
             elif i < expiry < i + 1:
                 is_expired = True
-        return is_expired_on_open, is_expired
     elif time_delta_format == TimeDeltaFormat.Index:
         if index is None:
             raise ValueError("Must provide index for TimeDeltaFormat.Index")
@@ -2860,9 +2870,9 @@ def check_limit_expired_nb(
                 is_expired = True
             elif index[i] < expiry < index[i] + freq:
                 is_expired = True
-        return is_expired_on_open, is_expired
     else:
         raise ValueError("Invalid TimeDeltaFormat option")
+    return is_expired, is_expired_on_open
 
 
 @register_jitted(cache=True)
@@ -2938,9 +2948,10 @@ def check_limit_hit_nb(
     limit_reverse: bool = False,
     can_use_ohlc: bool = True,
     check_open: bool = True,
-    hard_limit: bool = False,
+    hard_limit: bool = True,
 ) -> tp.Tuple[float, bool, bool]:
-    """Resolve the limit price using `resolve_limit_price_nb` and determine if the limit was hit.
+    """Resolve the limit price using `resolve_limit_price_nb` and determine if the limit was hit
+    using `check_price_hit_nb`.
 
     Args:
         open (float): Open price.
@@ -2959,14 +2970,15 @@ def check_limit_hit_nb(
         limit_reverse (bool): Flag to reverse the limit condition.
         can_use_ohlc (bool): Whether OHLC data is safe to use for the evaluation.
         check_open (bool): Determines whether the open price should be considered.
-        hard_limit (bool): Enforces a hard limit without fallback to the open price if True.
+        hard_limit (bool): Enforces a hard limit without fallback to the open price if True,
+            or close price when `can_use_ohlc` is False.
 
     Returns:
         Tuple[float, bool, bool]: Tuple containing:
 
-            * The computed limit price (which may be adjusted to the open price if conditions are met).
-            * True if the limit was hit before open; otherwise, False.
-            * True if the limit was hit during the current bar; otherwise, False.
+            * The effective limit price; NaN if the limit price was not hit.
+            * True if the limit price was hit before or on open, otherwise False.
+            * True if the limit price was hit on close, otherwise False.
     """
     if size == 0:
         raise ValueError("Limit order size cannot be zero")
@@ -2978,43 +2990,17 @@ def check_limit_hit_nb(
         delta_format=delta_format,
         hit_below=hit_below,
     )
-    hit_on_open = False
-
-    if can_use_ohlc:
-        high, low = resolve_hl_nb(
-            open=open,
-            high=high,
-            low=low,
-            close=close,
-        )
-        if hit_below:
-            if check_open and is_close_or_less_nb(open, limit_price):
-                hit_on_open = True
-                hit = True
-                if not hard_limit:
-                    limit_price = open
-            else:
-                hit = is_close_or_less_nb(low, limit_price)
-                if hit and np.isinf(limit_price):
-                    limit_price = low
-        else:
-            if check_open and is_close_or_greater_nb(open, limit_price):
-                hit_on_open = True
-                hit = True
-                if not hard_limit:
-                    limit_price = open
-            else:
-                hit = is_close_or_greater_nb(high, limit_price)
-                if hit and np.isinf(limit_price):
-                    limit_price = high
-    else:
-        if hit_below:
-            hit = is_close_or_less_nb(close, limit_price)
-        else:
-            hit = is_close_or_greater_nb(close, limit_price)
-        if hit and np.isinf(limit_price):
-            limit_price = close
-    return limit_price, hit_on_open, hit
+    return check_price_hit_nb(
+        open=open,
+        high=high,
+        low=low,
+        close=close,
+        price=limit_price,
+        hit_below=hit_below,
+        can_use_ohlc=can_use_ohlc,
+        check_open=check_open,
+        hard_price=hard_limit,
+    )
 
 
 @register_jitted(cache=True)
@@ -3038,7 +3024,11 @@ def resolve_limit_order_price_nb(
     Raises:
         ValueError: If `limit_order_price` is less than 0.
     """
-    if limit_order_price == LimitOrderPrice.Limit or limit_order_price == LimitOrderPrice.HardLimit:
+    if (
+        limit_order_price == LimitOrderPrice.Limit
+        or limit_order_price == LimitOrderPrice.HardLimit
+        or limit_order_price == LimitOrderPrice.AutoLimit
+    ):
         return float(limit_price)
     elif limit_order_price == LimitOrderPrice.Close:
         return float(close)
@@ -3106,7 +3096,7 @@ def check_stop_hit_nb(
     check_open: bool = True,
     hard_stop: bool = False,
 ) -> tp.Tuple[float, bool, bool]:
-    """Resolve the stop price using `resolve_stop_price_nb` and check if it was hit.
+    """Resolve the stop price using `resolve_stop_price_nb` and check if it was hit using `check_price_hit_nb`.
 
     Args:
         open (float): Open price.
@@ -3127,9 +3117,9 @@ def check_stop_hit_nb(
     Returns:
         Tuple[float, bool, bool]: Tuple containing:
 
-            * The resolved stop price.
-            * True if the stop was hit on open.
-            * True if the stop was hit during the bar.
+            * The effective stop price; NaN if the stop price was not hit.
+            * True if the stop price was hit before or on open, otherwise False.
+            * True if the stop price was hit on close, otherwise False.
     """
     hit_below = (is_position_long and hit_below) or (not is_position_long and not hit_below)
     stop_price = resolve_stop_price_nb(
@@ -3175,12 +3165,12 @@ def check_td_stop_hit_nb(
     Returns:
         Tuple[bool, bool]: Tuple containing:
 
-            * True if the stop was hit on open.
-            * True if the stop was hit during the current bar.
+            * True if the stop was hit, otherwise False.
+            * True if the stop was hit on open, otherwise False.
     """
     if stop == -1:
-        return False, False
-    if time_delta_format == TimeDeltaFormat.Rows:
+        is_hit, is_hit_on_open = False, False
+    elif time_delta_format == TimeDeltaFormat.Rows:
         is_hit_on_open = False
         is_hit = False
         if stop != -1:
@@ -3189,7 +3179,6 @@ def check_td_stop_hit_nb(
                 is_hit = True
             elif i < init_idx + stop < i + 1:
                 is_hit = True
-        return is_hit_on_open, is_hit
     elif time_delta_format == TimeDeltaFormat.Index:
         if index is None:
             raise ValueError("Must provide index for TimeDeltaFormat.Index")
@@ -3203,9 +3192,9 @@ def check_td_stop_hit_nb(
                 is_hit = True
             elif index[i] < index[init_idx] + stop < index[i] + freq:
                 is_hit = True
-        return is_hit_on_open, is_hit
     else:
         raise ValueError("Invalid TimeDeltaFormat option")
+    return is_hit, is_hit_on_open
 
 
 @register_jitted(cache=True)
@@ -3230,12 +3219,12 @@ def check_dt_stop_hit_nb(
     Returns:
         Tuple[bool, bool]: Tuple containing:
 
-            * True if the stop was hit on open.
-            * True if the stop was hit during the current bar.
+            * True if the stop was hit, otherwise False.
+            * True if the stop was hit on open, otherwise False.
     """
     if stop == -1:
-        return False, False
-    if time_delta_format == TimeDeltaFormat.Rows:
+        is_hit, is_hit_on_open = False, False
+    elif time_delta_format == TimeDeltaFormat.Rows:
         is_hit_on_open = False
         is_hit = False
         if stop != -1:
@@ -3244,7 +3233,6 @@ def check_dt_stop_hit_nb(
                 is_hit = True
             elif i < stop < i + 1:
                 is_hit = True
-        return is_hit_on_open, is_hit
     elif time_delta_format == TimeDeltaFormat.Index:
         if index is None:
             raise ValueError("Must provide index for TimeDeltaFormat.Index")
@@ -3258,9 +3246,9 @@ def check_dt_stop_hit_nb(
                 is_hit = True
             elif index[i] < stop < index[i] + freq:
                 is_hit = True
-        return is_hit_on_open, is_hit
     else:
         raise ValueError("Invalid TimeDeltaFormat option")
+    return is_hit, is_hit_on_open
 
 
 @register_jitted(cache=True)

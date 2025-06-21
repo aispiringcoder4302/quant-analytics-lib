@@ -534,8 +534,13 @@ Fields:
     Stop: Uses the stop price. 
     
         If the target price is first reached by the open price, the open price is used.
+        The same applies to the close price if OHLC is not available.
+
+        This option is more conservative.
     HardStop: Uses a hard stop price, applying the stop value regardless of whether the target price 
-        is first hit by the open price.
+        is first hit by the open or close price.
+
+        This option is more optimistic.
     Close: Uses the close price.
 
 !!! note
@@ -862,7 +867,8 @@ Fields:
 class LimitOrderPriceT(tp.NamedTuple):
     Limit: int = -1
     HardLimit: int = -2
-    Close: int = -3
+    AutoLimit: int = -3
+    Close: int = -4
 
 
 LimitOrderPrice = LimitOrderPriceT()
@@ -882,7 +888,13 @@ Fields:
     Limit: Limit price. 
     
         If the target price is first reached at the opening, the open price is used.
-    HardLimit: Hard limit price, where the stop price is applied regardless of the open price trigger.
+        The same applies to the close price if OHLC is not available.
+
+        This option is more optimistic.
+    HardLimit: Hard limit price, where the stop price is applied regardless of the open or close price trigger.
+
+        This option is more conservative.
+    AutoLimit: Behaves like `Limit` if reversal is enabled, otherwise behaves like `HardLimit`.
     Close: Close price.
 
 !!! note
