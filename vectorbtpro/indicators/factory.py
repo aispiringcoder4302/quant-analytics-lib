@@ -727,14 +727,14 @@ class IndicatorBase(Analyzable):
             Union[tp.IFCacheOutput, tp.IFRawOutput, tp.IFPipelineOutput]:
                 Tuple containing the following elements:
 
-                * An array wrapper.
-                * A list of input arrays (`np.ndarray`).
-                * An input mapper (`np.ndarray`).
-                * A list of output arrays for in-place outputs (`np.ndarray`).
-                * A list of additional output arrays beyond `num_ret_outputs` (`np.ndarray`).
-                * A list of parameter arrays (`np.ndarray`).
-                * A list of parameter mapper arrays (`np.ndarray`).
-                * A list of extra output objects.
+                * Array wrapper.
+                * List of input arrays (`np.ndarray`).
+                * Input mapper (`np.ndarray`).
+                * List of output arrays for in-place outputs (`np.ndarray`).
+                * List of additional output arrays beyond `num_ret_outputs` (`np.ndarray`).
+                * List of parameter arrays (`np.ndarray`).
+                * List of parameter mapper arrays (`np.ndarray`).
+                * List of extra output objects.
         """
         pass_per_column = per_column is not None
         if per_column is None:
@@ -2971,7 +2971,7 @@ class IndicatorFactory(Configured):
                     parameter combination. When `per_column` is True, each value corresponds to a column; if
                     `takes_1d` is True, each value is repeated by the number of columns.
                 * Variable arguments if `var_args` is set to True.
-                * The `per_column` argument if `pass_per_column` is True and not present in `kwargs_as_args`
+                * `per_column` argument if `pass_per_column` is True and not present in `kwargs_as_args`
                     and if `jitted_loop` is True.
                 * Positional arguments listed in `kwargs_as_args`.
                 * Other keyword arguments if `jitted_loop` is False, also including `takes_1d` and `per_column`
@@ -3015,7 +3015,7 @@ class IndicatorFactory(Configured):
             * All inputs are automatically converted to NumPy arrays.
             * Each positional argument must be of a Numba-compatible type.
             * Keyword arguments cannot be passed.
-            * The output arrays must have identical shapes, data types, and data orders.
+            * Output arrays must have identical shapes, data types, and data orders.
 
         !!! note
             Reserved arguments such as `per_column` are passed as positional arguments when
@@ -3195,9 +3195,9 @@ class IndicatorFactory(Configured):
                 Union[None, IFCacheOutput, Array2d, List[Array2d]]:
                     Result of applying `{0}`, which may be:
 
-                    * The cache output if `return_cache` is True.
-                    * A 2D array.
-                    * A list of 2D arrays.
+                    * Cache output if `return_cache` is True.
+                    * 2D array.
+                    * List of 2D arrays.
                     * None.
             """
             if jitted_loop and not checks.is_numba_func(apply_func):

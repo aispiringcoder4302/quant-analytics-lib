@@ -69,8 +69,8 @@ def get_group_map_nb(groups: tp.Array1d, n_groups: int) -> tp.GroupMap:
     Returns:
         Tuple[Array1d, Array1d]: Tuple containing:
 
-            * An array of indices segmented by group.
-            * An array of group lengths.
+            * Array of indices segmented by group.
+            * Array of group lengths.
     """
     group_lens_out = np.full(n_groups, 0, dtype=int_)
     for g in range(groups.shape[0]):
@@ -99,8 +99,8 @@ def group_lens_select_nb(group_lens: tp.GroupLens, new_groups: tp.Array1d) -> tp
     Returns:
         Tuple[Array1d, Array1d]: Tuple containing:
 
-            * An array of indices for the selected groups.
-            * An array mapping each index to its new group position.
+            * Array of indices for the selected groups.
+            * Array mapping each index to its new group position.
     """
     group_end_idxs = np.cumsum(group_lens)
     group_start_idxs = group_end_idxs - group_lens
@@ -132,8 +132,8 @@ def group_map_select_nb(group_map: tp.GroupMap, new_groups: tp.Array1d) -> tp.Tu
     Returns:
         Tuple[Array1d, Array1d]: Tuple containing:
 
-            * An array of indices from the group map corresponding to the selected groups.
-            * An array mapping each index to its new group position.
+            * Array of indices from the group map corresponding to the selected groups.
+            * Array mapping each index to its new group position.
     """
     group_idxs, group_lens = group_map
     group_start_idxs = np.cumsum(group_lens) - group_lens

@@ -1467,7 +1467,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
         Caching is considered disabled under any of the following conditions:
 
-        * The setup's `use_cache` flag is False.
+        * Setup's `use_cache` flag is False.
         * Global caching is disabled (via settings["caching"]["disable"]) and the setup is not whitelisted.
         * Both global caching and whitelisting are disabled.
 

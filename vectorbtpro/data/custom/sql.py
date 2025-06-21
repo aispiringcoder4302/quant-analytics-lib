@@ -211,9 +211,9 @@ class SQLData(DBData):
         Args:
             engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
 
-                * An instance of `sqlalchemy.engine.base.Engine`.
-                * A URL (string) to create an engine using `sqlalchemy.engine.create.create_engine`.
-                * A sub-config name under `custom.sql.engines` in `vectorbtpro._settings.data`
+                * Instance of `sqlalchemy.engine.base.Engine`.
+                * URL (string) to create an engine using `sqlalchemy.engine.create.create_engine`.
+                * Sub-config name under `custom.sql.engines` in `vectorbtpro._settings.data`
                     to retrieve the engine.
             engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             return_meta (bool): If True, return a metadata dictionary containing the engine,

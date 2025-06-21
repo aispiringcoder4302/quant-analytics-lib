@@ -216,8 +216,8 @@ def split_range_by_gap_nb(range_: tp.Array1d) -> tp.Tuple[tp.Array1d, tp.Array1d
     Returns:
         Tuple[Array1d, Array1d]: Tuple containing two arrays:
 
-            * The first array contains the starting indices of each contiguous segment.
-            * The second array contains the ending indices (exclusive) of each contiguous segment.
+            * First array contains the starting indices of each contiguous segment.
+            * Second array contains the ending indices (exclusive) of each contiguous segment.
     """
     if len(range_) == 0:
         raise ValueError("Range is empty")

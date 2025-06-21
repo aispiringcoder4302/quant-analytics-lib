@@ -240,8 +240,8 @@ def apply_and_concat_each(
     Returns:
         Union[None, Array2d, List[Array2d]]:
             * None if no outputs are produced.
-            * A 2D array if a single output is produced.
-            * A list of 2D arrays if multiple outputs are produced.
+            * 2D array if a single output is produced.
+            * List of 2D arrays if multiple outputs are produced.
     """
     from vectorbtpro.base.merging import column_stack_arrays
 
@@ -297,8 +297,8 @@ def apply_and_concat(
     Returns:
         Union[None, Array2d, List[Array2d]]:
             * None if no outputs are produced.
-            * A 2D array if a single output is produced.
-            * A list of 2D arrays if multiple outputs are produced.
+            * 2D array if a single output is produced.
+            * List of 2D arrays if multiple outputs are produced.
 
     See:
         * `custom_apply_and_concat_none_nb` if `jitted_loop` is True and `n_outputs` is 0

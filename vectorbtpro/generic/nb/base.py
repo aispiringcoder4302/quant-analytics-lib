@@ -2005,9 +2005,9 @@ def to_renko_1d_nb(
     Returns:
         Tuple[Array1d, Array1d, Array1d]: Tuple containing:
 
-          * The array of calculated Renko brick values.
-          * The indices corresponding to each brick.
-          * A boolean array indicating whether each brick represents an uptrend.
+          * Array of calculated Renko brick values.
+          * Indices corresponding to each brick.
+          * Boolean array indicating whether each brick represents an uptrend.
     """
     brick_size_ = to_1d_array_nb(np.asarray(brick_size))
     relative_ = to_1d_array_nb(np.asarray(relative))
@@ -2096,8 +2096,8 @@ def to_renko_ohlc_1d_nb(
     Returns:
         Tuple[Array2d, Array1d]: Tuple containing:
 
-          * A 2-dimensional array where each row represents an OHLC bar.
-          * An array of indices corresponding to each OHLC bar.
+          * 2-dimensional array where each row represents an OHLC bar.
+          * Array of indices corresponding to each OHLC bar.
     """
     brick_size_ = to_1d_array_nb(np.asarray(brick_size))
     relative_ = to_1d_array_nb(np.asarray(relative))

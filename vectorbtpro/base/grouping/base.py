@@ -233,8 +233,8 @@ class Grouper(Configured):
         Returns:
             Tuple[ndarray, Index]: Tuple containing:
 
-                * An array of integer group codes for the original index.
-                * The grouped Pandas Index.
+                * Array of integer group codes for the original index.
+                * Grouped Pandas Index.
         """
         if group_by is None or group_by is False:
             return np.arange(len(index)), index
@@ -699,8 +699,8 @@ class Grouper(Configured):
         Yields:
             Iterator[Tuple[Union[Hashable, Index], GroupIdxs]]: Tuple containing:
 
-                * The identifier for the group.
-                * The indices corresponding to the group.
+                * Identifier for the group.
+                * Indices corresponding to the group.
         """
         index = self.get_index(**kwargs)
         for group, group_idxs in enumerate(self.iter_group_idxs(**kwargs)):

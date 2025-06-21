@@ -98,9 +98,9 @@ class _BBANDS(BBANDS):
 
     Bollinger Bands is a technical analysis tool that plots three lines:
 
-    * The upper band (calculated a specified number of standard deviations above the middle band).
-    * The middle band (a simple moving average of the security's price).
-    * The lower band (calculated a specified number of standard deviations below the middle band).
+    * Upper band (calculated a specified number of standard deviations above the middle band).
+    * Middle band (a simple moving average of the security's price).
+    * Lower band (calculated a specified number of standard deviations below the middle band).
 
     These bands help identify market volatility and potential overbought or oversold conditions.
 

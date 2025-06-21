@@ -1137,8 +1137,8 @@ def pick_levels(
     Returns:
         Tuple[List[int], List[int]]: Tuple containing:
 
-            * A list of required level indices.
-            * A list of optional level indices.
+            * List of required level indices.
+            * List of optional level indices.
     """
     if required_levels is None:
         required_levels = []

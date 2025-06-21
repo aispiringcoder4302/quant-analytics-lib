@@ -41,9 +41,9 @@ class Chainable(Base):
 
                 It can be:
 
-                * A callable function.
-                * A string representing an attribute path to resolve via `vectorbtpro.utils.attr_.deep_getattr`.
-                * A tuple where the first element is a callable or attribute path and the second element indicates
+                * Callable function.
+                * String representing an attribute path to resolve via `vectorbtpro.utils.attr_.deep_getattr`.
+                * Tuple where the first element is a callable or attribute path and the second element indicates
                     the positional or keyword argument where to pass the chainable instance.
             *args: Positional arguments for `func`.
             **kwargs: Keyword arguments for `func`.
@@ -88,10 +88,10 @@ class Chainable(Base):
 
                 Each task can be:
 
-                * An instance of `vectorbtpro.utils.execution.Task`.
-                * A tuple convertible to a `vectorbtpro.utils.execution.Task` via
+                * Instance of `vectorbtpro.utils.execution.Task`.
+                * Tuple convertible to a `vectorbtpro.utils.execution.Task` via
                     `vectorbtpro.utils.execution.Task.from_tuple`.
-                * A callable function to be wrapped as a `vectorbtpro.utils.execution.Task`.
+                * Callable function to be wrapped as a `vectorbtpro.utils.execution.Task`.
 
         Returns:
             Any: Final result after applying all tasks sequentially.

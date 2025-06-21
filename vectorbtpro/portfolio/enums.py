@@ -1675,7 +1675,7 @@ is pre-populated with `entry_price` set to `SimulationContext.init_price` and `e
 Notes:
 
 * `entry_price` and `exit_price` represent the average entry and exit prices, respectively.
-* The average exit price excludes open statistics (unlike `vectorbtpro.portfolio.trades.Positions`).
+* Average exit price excludes open statistics (unlike `vectorbtpro.portfolio.trades.Positions`).
 * Fields `pnl` and `return` are computed as if the position were closed and are recalculated at:
     * Before and after `pre_segment_func_nb` using `last_val_price`.
     * After `order_func_nb`.

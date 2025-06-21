@@ -4765,10 +4765,10 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         !!! note
             The returned object retains the same type and dimensionality as the input.
 
-            * The number and names of columns remain unchanged.
+            * Number and names of columns remain unchanged.
             * To remove columns, use indexing or `Data.select`.
             * To add columns, use column stacking or `Data.merge`.
-            * The index may change freely.
+            * Index may change freely.
         """
         if key_wrapper_kwargs is None:
             key_wrapper_kwargs = {}
@@ -5213,9 +5213,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             func_name (str): Name of the function to match during argument selection.
             kwargs (Kwargs): Dictionary where each value can be:
 
-                * A `run_func_dict` mapping function names or indices to specific argument values.
-                * A `run_arg_dict` that updates arguments if its key matches the provided function name or index.
-                * A direct value if no special type is applicable.
+                * `run_func_dict` mapping function names or indices to specific argument values.
+                * `run_arg_dict` that updates arguments if its key matches the provided function name or index.
+                * Direct value if no special type is applicable.
 
         Returns:
             dict: Dictionary containing the keyword arguments selected based
@@ -5273,11 +5273,11 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         The `func` parameter can be one of the following:
 
-        * A location to compute all indicators. See `vectorbtpro.indicators.factory.IndicatorFactory.list_locations`.
-        * An indicator name. See `vectorbtpro.indicators.factory.IndicatorFactory.get_indicator`.
-        * A simulation method from `vectorbtpro.portfolio.base.Portfolio`.
+        * Location to compute all indicators. See `vectorbtpro.indicators.factory.IndicatorFactory.list_locations`.
+        * Indicator name. See `vectorbtpro.indicators.factory.IndicatorFactory.get_indicator`.
+        * Simulation method from `vectorbtpro.portfolio.base.Portfolio`.
         * Any callable.
-        * An iterable of the above, with results aggregated as columns in a DataFrame.
+        * Iterable of the above, with results aggregated as columns in a DataFrame.
 
         Use `magnet_kwargs` to pass keyword arguments that are provided only if they are present in the
         function signature. Use `rename_args` to map argument names; for example, data can be passed under a

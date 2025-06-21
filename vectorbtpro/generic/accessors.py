@@ -2277,7 +2277,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
                 * `vectorbtpro.base.resampling.base.Resampler` instance
                 * Pandas `Resampler` instance
-                * An instruction for any of the above
+                * Instruction for any of the above
             reduce_func_nb (Union[str, AnyResampleReduceFunc]): Callback function for resampling.
 
                 For specification, see the underlying Numba function.

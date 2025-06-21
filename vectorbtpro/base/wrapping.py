@@ -774,9 +774,9 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Returns:
             Tuple[Kwargs, Kwargs]: Tuple containing two dictionaries:
 
-                * The first dictionary comprises keyword arguments applicable to `ArrayWrapper` or
+                * First dictionary comprises keyword arguments applicable to `ArrayWrapper` or
                     `vectorbtpro.base.grouping.base.Grouper`.
-                * The second dictionary contains the remaining keyword arguments.
+                * Second dictionary contains the remaining keyword arguments.
         """
         wrapper_arg_names = get_func_arg_names(ArrayWrapper.__init__)
         grouper_arg_names = get_func_arg_names(Grouper.__init__)

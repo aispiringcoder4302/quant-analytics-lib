@@ -169,10 +169,10 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
                 Each element can be one of the following:
 
-                * A metric name (see keys in `StatsBuilderMixin.metrics`).
-                * A tuple with a metric name and a settings dictionary as defined in `StatsBuilderMixin.metrics`.
-                * A tuple with a metric name and a `vectorbtpro.utils.template.CustomTemplate` instance.
-                * A tuple with a metric name and a list of settings dictionaries to be expanded into multiple metrics.
+                * Metric name (see keys in `StatsBuilderMixin.metrics`).
+                * Tuple with a metric name and a settings dictionary as defined in `StatsBuilderMixin.metrics`.
+                * Tuple with a metric name and a `vectorbtpro.utils.template.CustomTemplate` instance.
+                * Tuple with a metric name and a list of settings dictionaries to be expanded into multiple metrics.
 
                 The settings dictionary can include:
 
@@ -261,7 +261,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 If overridden by a metric:
 
                 * It takes effect only if the global `agg_func` is not None.
-                * A warning is raised if it is None but the calculation returns multiple values.
+                * Warning is raised if it is None but the calculation returns multiple values.
             dropna (Optional[bool]): If True, omit metrics that are entirely NaN.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
             template_context (KwargsLike): Additional context for template substitution.

@@ -817,9 +817,9 @@ class SignalFactory(IndicatorFactory):
                 Union[None, IFCacheOutput, Array2d, List[Array2d]]:
                     Result of applying `{0}`, which may be:
 
-                    * The cache output if `return_cache` is True.
-                    * A 2D array.
-                    * A list of 2D arrays.
+                    * Cache output if `return_cache` is True.
+                    * 2D array.
+                    * List of 2D arrays.
                     * None.
             """
             # Get arguments

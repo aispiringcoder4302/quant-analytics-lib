@@ -1427,8 +1427,8 @@ def assert_array_equal(obj1: tp.ArrayLike, obj2: tp.ArrayLike) -> None:
 
     The function first compares metadata using `assert_meta_equal`, then checks actual data equality using:
 
-    * A Pandas equality check if both objects are Pandas.
-    * A NumPy array equality check otherwise.
+    * Pandas equality check if both objects are Pandas.
+    * NumPy array equality check otherwise.
 
     Args:
         obj1 (ArrayLike): First array-like object.

@@ -2072,9 +2072,9 @@ class Executor(Configured):
 
         This method determines the execution engine from various types including:
 
-        * A string representing the engine name.
-        * A subclass or an instance of `ExecutionEngine`.
-        * A callable that processes tasks.
+        * String representing the engine name.
+        * Subclass or an instance of `ExecutionEngine`.
+        * Callable that processes tasks.
 
         It applies additional configuration such as `show_progress` and `pbar_kwargs` if supported
         by the engine. If the engine is a subclass of `ExecutionEngine`, it is instantiated with

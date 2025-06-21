@@ -579,7 +579,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 * `vectorbtpro.base.grouping.base.Grouper` instance
                 * Pandas `GroupBy` instance
                 * Pandas `Resampler` instance
-                * An instruction for any of the above
+                * Instruction for any of the above
             groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and
                 `pandas.Series.resample` methods.
             **kwargs: Keyword arguments for initializing `vectorbtpro.base.grouping.base.Grouper`.
@@ -629,7 +629,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
                 * `vectorbtpro.base.resampling.base.Resampler` instance
                 * Pandas `Resampler` instance
-                * An instruction for any of the above
+                * Instruction for any of the above
                 * Datetime-like object or iterable used to create a new index
             freq (Optional[FrequencyLike]): Frequency of the target index (e.g., "daily", "15 min", "index_mean").
 

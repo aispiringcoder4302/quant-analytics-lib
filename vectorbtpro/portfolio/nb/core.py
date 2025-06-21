@@ -2656,7 +2656,7 @@ def check_price_hit_nb(
     Returns:
         Tuple[float, bool, bool]: Tuple containing:
 
-            * The effective price; NaN if the price was not hit.
+            * Effective price; NaN if the price was not hit.
             * True if the price was hit before or on open, otherwise False.
             * True if the price was hit on close, otherwise False.
     """
@@ -2976,7 +2976,7 @@ def check_limit_hit_nb(
     Returns:
         Tuple[float, bool, bool]: Tuple containing:
 
-            * The effective limit price; NaN if the limit price was not hit.
+            * Effective limit price; NaN if the limit price was not hit.
             * True if the limit price was hit before or on open, otherwise False.
             * True if the limit price was hit on close, otherwise False.
     """
@@ -3117,7 +3117,7 @@ def check_stop_hit_nb(
     Returns:
         Tuple[float, bool, bool]: Tuple containing:
 
-            * The effective stop price; NaN if the stop price was not hit.
+            * Effective stop price; NaN if the stop price was not hit.
             * True if the stop price was hit before or on open, otherwise False.
             * True if the stop price was hit on close, otherwise False.
     """

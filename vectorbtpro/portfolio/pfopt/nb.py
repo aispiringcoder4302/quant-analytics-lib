@@ -275,8 +275,8 @@ def prepare_alloc_points_nb(
     Returns:
         Tuple[RecordArray, Array2d]: Tuple containing:
 
-            * A record array of prepared allocation points (dtype `vectorbtpro.portfolio.enums.alloc_point_dt`).
-            * A 2D array of updated allocation values.
+            * Record array of prepared allocation points (dtype `vectorbtpro.portfolio.enums.alloc_point_dt`).
+            * 2D array of updated allocation values.
     """
     alloc_points = np.empty_like(index_points, dtype=alloc_point_dt)
     new_allocations = np.empty_like(allocations)
@@ -324,8 +324,8 @@ def prepare_alloc_ranges_nb(
     Returns:
         Tuple[RecordArray, Array2d]: Tuple containing:
 
-            * A record array of allocation ranges (dtype `vectorbtpro.portfolio.enums.alloc_point_dt`).
-            * A 2D array of processed allocation values.
+            * Record array of allocation ranges (dtype `vectorbtpro.portfolio.enums.alloc_point_dt`).
+            * 2D array of processed allocation values.
     """
     alloc_ranges = np.empty_like(alloc_idx, dtype=alloc_range_dt)
     new_allocations = np.empty_like(allocations)

@@ -1731,10 +1731,10 @@ def unravel_nb(
     Returns:
         Tuple[Array2d, Array1d, Array1d, Array1d]: Tuple containing:
 
-            * The new mask with each True value unwrapped into a separate column.
-            * The index position of each True value within its new column.
-            * The row indices of each True value in the original mask.
-            * The original column indices corresponding to each True value.
+            * New mask with each True value unwrapped into a separate column.
+            * Index position of each True value within its new column.
+            * Row indices of each True value in the original mask.
+            * Original column indices corresponding to each True value.
     """
     true_idxs = np.flatnonzero(mask.transpose())
 
@@ -1800,12 +1800,12 @@ def unravel_between_nb(
     Returns:
         Tuple[Array2d, Array1d, Array1d, Array1d, Array1d, Array1d]: Tuple containing:
 
-            * The new mask with each pair of successive True values unwrapped into a separate column.
-            * The index position of the source True value within its new column.
-            * The index position of the target True value within its new column.
-            * The row indices of the source True values in the original mask.
-            * The row indices of the target True values in the original mask.
-            * The original column indices corresponding to each True value.
+            * New mask with each pair of successive True values unwrapped into a separate column.
+            * Index position of the source True value within its new column.
+            * Index position of the target True value within its new column.
+            * Row indices of the source True values in the original mask.
+            * Row indices of the target True values in the original mask.
+            * Original column indices corresponding to each True value.
     """
     true_idxs = np.flatnonzero(mask.transpose())
 

@@ -3033,11 +3033,11 @@ class Splitter(Analyzable):
 
                 Each element can be one of:
 
-                * A fixed or relative range (an instance of `RelRange`).
-                * A number representing a length to create a relative range.
-                * An integer or float indicating a length specifier, where the complementary
+                * Fixed or relative range (an instance of `RelRange`).
+                * Number representing a length to create a relative range.
+                * Integer or float indicating a length specifier, where the complementary
                     part stretches depending on `backwards`.
-                * A string. If set to 'by_gap' (case-insensitive), `range_` is split by gap using
+                * String. If set to 'by_gap' (case-insensitive), `range_` is split by gap using
                     `vectorbtpro.generic.splitting.nb.split_range_by_gap_nb`.
             backwards (bool): Whether to split the range in reverse order.
 

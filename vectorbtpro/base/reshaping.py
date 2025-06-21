@@ -1109,9 +1109,9 @@ def broadcast(
 
     Keyword arguments for object-specific parameters can be provided as follows:
 
-    * A constant applied to all objects.
-    * A sequence with a value for each object.
-    * A mapping with values for each object and a special key `_def` for the default.
+    * Constant applied to all objects.
+    * Sequence with a value for each object.
+    * Mapping with values for each object and a special key `_def` for the default.
 
     Additionally, any object can be wrapped with `BCO` to override the corresponding
     global arguments if its attributes are not None.

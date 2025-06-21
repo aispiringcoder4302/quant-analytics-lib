@@ -188,8 +188,8 @@ def map_index_to_source_ranges_nb(
     Returns:
         Tuple[Array1d, Array1d]: Tuple containing:
 
-            * The inclusive start indices in `source_index`.
-            * The exclusive end indices in `source_index`.
+            * Inclusive start indices in `source_index`.
+            * Exclusive end indices in `source_index`.
 
     !!! note
         Both index arrays must be increasing. Repeating values are allowed.

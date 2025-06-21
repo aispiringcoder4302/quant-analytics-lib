@@ -1982,8 +1982,8 @@ def get_dt_index_gaps(
 
     The function determines gaps in a datetime index and returns two indexes:
 
-    * The start indexes (inclusive) where gaps begin.
-    * The end indexes (exclusive) where gaps end.
+    * Start indexes (inclusive) where gaps begin.
+    * End indexes (exclusive) where gaps end.
 
     Keyword arguments are passed to `prepare_dt_index`.
 

@@ -2879,7 +2879,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Options include:
 
                 * None: Generates a default call sequence.
-                * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
+                * Value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
 
                 If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are
@@ -3636,7 +3636,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Options include:
 
                 * None: Generates a default call sequence.
-                * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
+                * Value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
 
                 If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are
@@ -4727,7 +4727,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Options include:
 
                 * None: Generates a default call sequence.
-                * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
+                * Value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
 
                 !!! note
@@ -5452,7 +5452,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Options include:
 
                 * None: Generates a default call sequence.
-                * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
+                * Value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
 
                 If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are

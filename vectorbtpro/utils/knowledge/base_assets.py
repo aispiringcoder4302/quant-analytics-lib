@@ -950,11 +950,11 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         The `func` parameter accepts various types:
 
-        * A callable or a tuple containing a callable and its arguments.
-        * An instance of `vectorbtpro.utils.execution.Task`.
-        * A subclass of `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix/full name.
-        * A list of any of the above, which will use `BasicAssetPipeline`.
-        * A valid expression, which will use `ComplexAssetPipeline`.
+        * Callable or a tuple containing a callable and its arguments.
+        * Instance of `vectorbtpro.utils.execution.Task`.
+        * Subclass of `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix/full name.
+        * List of any of the above, which will use `BasicAssetPipeline`.
+        * Valid expression, which will use `ComplexAssetPipeline`.
 
         Execution is handled by `vectorbtpro.utils.execution.execute`.
 
@@ -1418,9 +1418,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             new_order (Union[str, PathKeyTokens]): New order specification, which can be:
 
-                * A sequence with tokens and an ellipsis (`...`) to preserve segments (e.g. ["a", ..., "z"]).
-                * A string "asc", "ascending", "desc", or "descending" indicating the sort order.
-                * A function or template that generates an order using variables: `i` for the item index,
+                * Sequence with tokens and an ellipsis (`...`) to preserve segments (e.g. ["a", ..., "z"]).
+                * String "asc", "ascending", "desc", or "descending" indicating the sort order.
+                * Function or template that generates an order using variables: `i` for the item index,
                     `d` for the data item, `x` for the value at the specified path, and field names for
                     individual fields.
             path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to reorder (e.g. "x.y[0].z").
