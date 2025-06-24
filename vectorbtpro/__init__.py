@@ -28,11 +28,13 @@ if typing.TYPE_CHECKING:
     from vectorbtpro.returns import *
     from vectorbtpro.signals import *
     from vectorbtpro.utils import *
+    from vectorbtpro._dtypes import *
     from vectorbtpro._opt_deps import *
     from vectorbtpro._settings import *
     from vectorbtpro._typing import *
     from vectorbtpro._version import *
     from vectorbtpro.accessors import *
+    from vectorbtpro.mcp_server import *
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._settings import settings

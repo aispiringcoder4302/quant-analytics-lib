@@ -210,7 +210,7 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
     Returns:
         str: Space-separated string of normalized frequency parts.
     """
-    from pkg_resources import parse_version
+    from packaging.version import parse as parse_version
 
     if parse_version(pd.__version__) < parse_version("2.2.0"):
         old_pandas = True
