@@ -4046,43 +4046,6 @@ def find_assets(
 
         If `obj_or_query` is a query, will rank the combined asset. Otherwise, will rank each individual asset.
     """
-    if pages_asset is None:
-        pages_asset = PagesAsset
-    if isinstance(pages_asset, type):
-        checks.assert_subclass_of(pages_asset, PagesAsset, arg_name="pages_asset")
-        if pull_kwargs is None:
-            pull_kwargs = {}
-        pages_asset = pages_asset.pull(**pull_kwargs)
-    else:
-        checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
-    if aggregate_pages:
-        if aggregate_pages_kwargs is None:
-            aggregate_pages_kwargs = {}
-        pages_asset = pages_asset.aggregate(**aggregate_pages_kwargs)
-    if messages_asset is None:
-        messages_asset = MessagesAsset
-    if isinstance(messages_asset, type):
-        checks.assert_subclass_of(messages_asset, MessagesAsset, arg_name="messages_asset")
-        if pull_kwargs is None:
-            pull_kwargs = {}
-        messages_asset = messages_asset.pull(**pull_kwargs)
-    else:
-        checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
-    if aggregate_messages:
-        if aggregate_messages_kwargs is None:
-            aggregate_messages_kwargs = {}
-        else:
-            aggregate_messages_kwargs = dict(aggregate_messages_kwargs)
-        if isinstance(aggregate_messages, str) and "by" not in aggregate_messages_kwargs:
-            aggregate_messages_kwargs["by"] = aggregate_messages
-        if "minimize_metadata" not in aggregate_messages_kwargs:
-            aggregate_messages_kwargs["minimize_metadata"] = True
-        messages_asset = messages_asset.aggregate(**aggregate_messages_kwargs)
-    if latest_messages_first:
-        messages_asset = messages_asset.latest_first()
-    elif shuffle_messages:
-        messages_asset = messages_asset.shuffle()
-
     if as_query is None:
         as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
     if combine and as_query and obj_or_query is not None:
@@ -4137,6 +4100,49 @@ def find_assets(
         if "examples" not in asset_names and "examples" in new_asset_names:
             new_asset_names.remove("examples")
         asset_names = new_asset_names
+
+    if "api" in asset_names or "docs" in asset_names or "examples" in asset_names:
+        if pages_asset is None:
+            pages_asset = PagesAsset
+        if isinstance(pages_asset, type):
+            checks.assert_subclass_of(pages_asset, PagesAsset, arg_name="pages_asset")
+            if pull_kwargs is None:
+                pull_kwargs = {}
+            pages_asset = pages_asset.pull(**pull_kwargs)
+        else:
+            checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
+        if aggregate_pages:
+            if aggregate_pages_kwargs is None:
+                aggregate_pages_kwargs = {}
+            pages_asset = pages_asset.aggregate(**aggregate_pages_kwargs)
+    else:
+        pages_asset = None
+    if "messages" in asset_names or "examples" in asset_names:
+        if messages_asset is None:
+            messages_asset = MessagesAsset
+        if isinstance(messages_asset, type):
+            checks.assert_subclass_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+            if pull_kwargs is None:
+                pull_kwargs = {}
+            messages_asset = messages_asset.pull(**pull_kwargs)
+        else:
+            checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
+        if aggregate_messages:
+            if aggregate_messages_kwargs is None:
+                aggregate_messages_kwargs = {}
+            else:
+                aggregate_messages_kwargs = dict(aggregate_messages_kwargs)
+            if isinstance(aggregate_messages, str) and "by" not in aggregate_messages_kwargs:
+                aggregate_messages_kwargs["by"] = aggregate_messages
+            if "minimize_metadata" not in aggregate_messages_kwargs:
+                aggregate_messages_kwargs["minimize_metadata"] = True
+            messages_asset = messages_asset.aggregate(**aggregate_messages_kwargs)
+        if latest_messages_first:
+            messages_asset = messages_asset.latest_first()
+        elif shuffle_messages:
+            messages_asset = messages_asset.shuffle()
+    else:
+        messages_asset = None
 
     asset_dict = {}
     for asset_name in asset_names:

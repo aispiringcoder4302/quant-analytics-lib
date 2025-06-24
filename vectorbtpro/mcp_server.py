@@ -1,16 +1,27 @@
-import ast
-from typing import Optional, Union, List, Any
-import vectorbtpro as vbt
+# ==================================== VBTPROXYZ ====================================
+# Copyright (c) 2021-2025 Oleg Polakow. All rights reserved.
+#
+# This file is part of the proprietary VectorBT® PRO package and is licensed under
+# the VectorBT® PRO License available at https://vectorbt.pro/terms/software-license/
+#
+# Unauthorized publishing, distribution, sublicensing, or sale of this software
+# or its parts is strictly prohibited.
+# ===================================================================================
 
-from mcp.server.fastmcp import FastMCP
+"""Module providing MCP server tools.
+
+This module is meant to be executed as a script to run the MCP server."""
+
+from vectorbtpro import _typing as tp
+from vectorbtpro.utils.module_ import assert_can_import
 
 __all__ = []
 
-mcp = FastMCP("VectorBT PRO")
 
-
-def auto_cast(value: Any) -> Any:
+def auto_cast(value: tp.Any) -> tp.Any:
     """Automatically cast a string to an appropriate Python literal type."""
+    import ast
+
     if value is not None and isinstance(value, str):
         try:
             value = ast.literal_eval(value)
@@ -19,11 +30,10 @@ def auto_cast(value: Any) -> Any:
     return value
 
 
-@mcp.tool()
 def search(
     query: str,
-    asset_names: Optional[Union[str, List[str]]] = "all",
-    search_method: Optional[str] = "bm25",
+    asset_names: tp.Union[str, tp.List[str]] = "all",
+    search_method: tp.Optional[str] = "bm25",
     return_chunks: bool = True,
     return_metadata: str = "none",
     n: int = 5,
@@ -46,7 +56,7 @@ def search(
         query (str): Search query.
 
             Do not reinstate the name "VectorBT PRO" in the query, as it is already implied.
-        asset_names (Optional[Union[str, List[str]]]): One or more asset names to search. Supported names:
+        asset_names (Union[str, List[str]]): One or more asset names to search. Supported names:
 
             * "api": API reference. Best for specific API queries.
             * "docs": Regular documentation, including getting started, features, tutorials, guides,
@@ -89,6 +99,8 @@ def search(
     Returns:
         str: Context string containing the search results.
     """
+    from vectorbtpro.utils.knowledge.custom_assets import search
+
     query = auto_cast(query)
     asset_names = auto_cast(asset_names)
     search_method = auto_cast(search_method)
@@ -97,7 +109,7 @@ def search(
     n = auto_cast(n)
     page = auto_cast(page)
 
-    results = vbt.search(
+    results = search(
         query,
         search_method=search_method,
         return_chunks=return_chunks,
@@ -119,12 +131,11 @@ def search(
     return results.to_context()
 
 
-@mcp.tool()
 def find(
-    refname: Union[str, List[str]],
-    module: Optional[str] = None,
+    refname: tp.Union[str, tp.List[str]],
+    module: tp.Optional[str] = None,
     resolve: bool = True,
-    asset_names: Optional[Union[str, List[str]]] = "all",
+    asset_names: tp.Union[str, tp.List[str]] = "all",
     aggregate_api: bool = False,
     aggregate_messages: bool = False,
     return_metadata: str = "none",
@@ -168,7 +179,7 @@ def find(
             Set to False to find any string, not just VBT objects, such as "SQLAlchemy".
             In this case, `refname` becomes a simple string to match against.
             Defaults to True.
-        asset_names (Optional[Union[str, List[str]]]): One or more asset names to search. Supported names:
+        asset_names (Union[str, List[str]]): One or more asset names to search. Supported names:
 
             * "api": API reference.
             * "docs": Regular documentation, including getting started, features, tutorials, guides,
@@ -216,6 +227,8 @@ def find(
     Returns:
         str: Context string containing the search results.
     """
+    from vectorbtpro.utils.knowledge.custom_assets import find_assets
+
     refname = auto_cast(refname)
     module = auto_cast(module)
     resolve = auto_cast(resolve)
@@ -226,7 +239,7 @@ def find(
     n = auto_cast(n)
     page = auto_cast(page)
 
-    results = vbt.find_assets(
+    results = find_assets(
         refname,
         module=module,
         resolve=resolve,
@@ -261,8 +274,7 @@ def find(
     return results.to_context()
 
 
-@mcp.tool()
-def get_source(refname: Union[str, List[str]], module: Optional[str] = None) -> str:
+def get_source(refname: tp.Union[str, tp.List[str]], module: tp.Optional[str] = None) -> str:
     """Get the source code of any object.
 
     This can be used to inspect the implementation of VectorBT PRO (vectorbtpro, VBT) objects,
@@ -301,8 +313,7 @@ def get_source(refname: Union[str, List[str]], module: Optional[str] = None) -> 
     return "\n\n".join(sources)
 
 
-@mcp.tool()
-def attr_tree(refname: str, module: Optional[str] = None, own_only: bool = False) -> str:
+def attr_tree(refname: str, module: tp.Optional[str] = None, own_only: bool = False) -> str:
     """Get a visual tree of an object's attributes in YAML format.
 
     Can be used to discover the API of VectorBT PRO (vectorbtpro, VBT). For example, use it to
@@ -370,4 +381,12 @@ def attr_tree(refname: str, module: Optional[str] = None, own_only: bool = False
 
 
 if __name__ == "__main__":
+    assert_can_import("mcp")
+    from mcp.server.fastmcp import FastMCP
+
+    mcp = FastMCP("VectorBT PRO")
+    mcp.tool()(search)
+    mcp.tool()(find)
+    mcp.tool()(get_source)
+    mcp.tool()(attr_tree)
     mcp.run()

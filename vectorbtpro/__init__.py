@@ -34,7 +34,6 @@ if typing.TYPE_CHECKING:
     from vectorbtpro._typing import *
     from vectorbtpro._version import *
     from vectorbtpro.accessors import *
-    from vectorbtpro.mcp_server import *
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._settings import settings
@@ -55,7 +54,9 @@ if settings["importing"]["clear_pycache"]:
 
     clear_pycache()
 
+
 if settings["importing"]["auto_import"]:
+
     from vectorbtpro.utils.module_ import check_installed
 
     def _auto_import(package):
@@ -67,6 +68,8 @@ if settings["importing"]["auto_import"]:
             package.__exclude_from__all__ = []
         if not hasattr(package, "__import_if_installed__"):
             package.__import_if_installed__ = {}
+        if not hasattr(package, "__blacklist__"):
+            package.__blacklist__ = []
         blacklist = []
         for k, v in package.__import_if_installed__.items():
             if not check_installed(v) or not settings["importing"][v]:
@@ -74,7 +77,7 @@ if settings["importing"]["auto_import"]:
 
         for importer, mod_name, is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
             relative_name = mod_name.split(".")[-1]
-            if relative_name in blacklist:
+            if relative_name in blacklist or relative_name in package.__blacklist__:
                 continue
             if is_pkg:
                 module = _auto_import(mod_name)
