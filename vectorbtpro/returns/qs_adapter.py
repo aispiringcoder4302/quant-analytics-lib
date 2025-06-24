@@ -111,6 +111,7 @@ from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, Configured
 from vectorbtpro.utils.parsing import get_func_arg_names, has_variable_kwargs
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "QSAdapter",
@@ -135,7 +136,16 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
     !!! info
         For default settings, see `vectorbtpro._settings.qs_adapter`.
     """
-    import quantstats as qs
+    try:
+        import quantstats as qs
+    except AttributeError as e:
+        if "'ZMQInteractiveShell' object has no attribute 'magic'" in str(e):
+            warn(
+                "'ZMQInteractiveShell' object has no attribute 'magic'. "
+                "Please downgrade ipython to 7.34.0 or earlier, or uninstall QuantStats."
+            )
+            return cls
+        raise e
 
     checks.assert_subclass_of(cls, "QSAdapter")
 

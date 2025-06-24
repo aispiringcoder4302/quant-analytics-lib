@@ -4,6 +4,8 @@ import vectorbtpro as vbt
 
 from mcp.server.fastmcp import FastMCP
 
+__all__ = []
+
 mcp = FastMCP("VectorBT PRO")
 
 
