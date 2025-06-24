@@ -30,8 +30,8 @@ def attach_returns_acc_methods(config: Config) -> tp.ClassWrapper:
 
             Each settings dictionary must include:
 
-            * `source_name`: The name of the source method. Defaults to the target method name.
-            * `docstring`: The docstring for the generated method.
+            * `source_name`: Name of the source method. Defaults to the target method name.
+            * `docstring`: Docstring for the generated method.
 
     Returns:
         ClassWrapper: Decorator that attaches returns accessor methods to the class.
@@ -107,13 +107,13 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
 
             Each settings dictionary may include:
 
-            * `method_name`: The name of the source method. Defaults to the target name prefixed with "get_".
-            * `use_in_outputs`: A boolean indicating whether the property can return an in-place output.
+            * `method_name`: Name of the source method. Defaults to the target name prefixed with "get_".
+            * `use_in_outputs`: Boolean indicating whether the property can return an in-place output.
             * `method_kwargs`: Keyword arguments for the source method.
-            * `decorator`: The decorator to apply. Defaults to `vectorbtpro.utils.decorators.cached_property`
+            * `decorator`: Decorator to apply. Defaults to `vectorbtpro.utils.decorators.cached_property`
                 for object types 'records' and 'red_array', otherwise
                 `vectorbtpro.utils.decorators.cacheable_property`.
-            * `docstring`: The docstring for the generated property.
+            * `docstring`: Docstring for the generated property.
             * Keyword arguments for wrapping, indexing, resampling, stacking, etc.
 
     Returns:

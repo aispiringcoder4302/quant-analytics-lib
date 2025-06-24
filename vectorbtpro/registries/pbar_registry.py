@@ -47,7 +47,7 @@ class PBarRegistry(Base):
         """Dictionary of registered progress bar instances.
 
         Returns:
-            Dict[Hashable, ProgressBar]: A dictionary mapping unique bar ids to their
+            Dict[Hashable, ProgressBar]: Dictionary mapping unique bar ids to their
                 corresponding progress bar instances.
         """
         return self._instances
@@ -95,7 +95,7 @@ class PBarRegistry(Base):
         """Return the last active progress bar instance.
 
         Returns:
-            Optional[ProgressBar]: The most recently active progress bar instance,
+            Optional[ProgressBar]: Most recently active progress bar instance,
                 or None if no active instance exists.
         """
         max_open_time = None
@@ -111,7 +111,7 @@ class PBarRegistry(Base):
         """Return the first pending progress bar instance opened after the last active instance.
 
         Returns:
-            Optional[ProgressBar]: The first pending progress bar instance if found, otherwise None.
+            Optional[ProgressBar]: First pending progress bar instance if found, otherwise None.
         """
         last_active_instance = self.get_last_active_instance()
         if last_active_instance is None:
@@ -136,7 +136,7 @@ class PBarRegistry(Base):
             instance (ProgressBar): Progress bar instance to search a pending instance for.
 
         Returns:
-            Optional[ProgressBar]: The matching pending progress bar instance if found, otherwise None.
+            Optional[ProgressBar]: Matching pending progress bar instance if found, otherwise None.
         """
         if instance.bar_id is not None:
             for inst in self.instances.values():
@@ -163,7 +163,7 @@ class PBarRegistry(Base):
             instance (ProgressBar): Progress bar instance whose parent instances are to be retrieved.
 
         Returns:
-            List[ProgressBar]: A list of active parent progress bar instances.
+            List[ProgressBar]: List of active parent progress bar instances.
         """
         parent_instances = []
         for inst in self.instances.values():
@@ -179,7 +179,7 @@ class PBarRegistry(Base):
             instance (ProgressBar): Progress bar instance for which to find the parent instance.
 
         Returns:
-            Optional[ProgressBar]: The active parent progress bar instance with the latest open time,
+            Optional[ProgressBar]: Active parent progress bar instance with the latest open time,
             or None if none exist.
         """
         max_open_time = None
@@ -197,7 +197,7 @@ class PBarRegistry(Base):
             instance (ProgressBar): Progress bar instance whose child instances are to be retrieved.
 
         Returns:
-            List[ProgressBar]: A list of child progress bar instances.
+            List[ProgressBar]: List of child progress bar instances.
         """
         child_instances = []
         for inst in self.instances.values():

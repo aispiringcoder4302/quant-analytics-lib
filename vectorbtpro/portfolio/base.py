@@ -860,7 +860,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments for `Portfolio.row_stack_objs`.
 
         Returns:
-            Optional[NamedTuple]: A new named tuple with each field stacked row-wise, or
+            Optional[NamedTuple]: New named tuple with each field stacked row-wise, or
                 None if all `in_outputs` are None.
         """
         if len(objs) == 1:
@@ -1310,7 +1310,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments for `Portfolio.column_stack_objs`.
 
         Returns:
-            Optional[NamedTuple]: A new `in_outputs` named tuple with fields stacked along columns, or
+            Optional[NamedTuple]: New `in_outputs` named tuple with fields stacked along columns, or
                 None if all `in_outputs` are None.
         """
         if len(objs) == 1:
@@ -1671,7 +1671,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 * `obj_type`: Detected object type if applicable.
                 * `grouping`: Detected grouping option if applicable.
-                * `field`: The cleaned field name.
+                * `field`: Cleaned field name.
         """
         options = dict()
         new_parts = []
@@ -1951,7 +1951,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments for `Portfolio.wrap_obj`.
 
         Returns:
-            Union[None, bool, AnyArray]: The wrapped in-place output object.
+            Union[None, bool, AnyArray]: Wrapped in-place output object.
         """
         if self.in_outputs is None:
             raise ValueError("No in-place outputs attached")
@@ -2202,7 +2202,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments for `Portfolio.index_obj`.
 
         Returns:
-            Optional[NamedTuple]: A new named tuple with the indexed in-place output fields,
+            Optional[NamedTuple]: New named tuple with the indexed in-place output fields,
                 or None if `Portfolio.in_outputs` is None.
         """
         if self.in_outputs is None:
@@ -2519,7 +2519,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             **kwargs: Keyword arguments for `Portfolio.resample_obj`.
 
         Returns:
-            Optional[NamedTuple]: A resampled in-place outputs object created from the existing outputs,
+            Optional[NamedTuple]: Resampled in-place outputs object created from the existing outputs,
                 or None if `Portfolio.in_outputs` is not set.
         """
         if self.in_outputs is None:
@@ -2879,7 +2879,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Options include:
 
                 * None: Generates a default call sequence.
-                * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
+                * Value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
 
                 If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are
@@ -3636,7 +3636,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Options include:
 
                 * None: Generates a default call sequence.
-                * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
+                * Value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
 
                 If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are
@@ -4727,7 +4727,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Options include:
 
                 * None: Generates a default call sequence.
-                * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
+                * Value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
 
                 !!! note
@@ -5452,7 +5452,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 Options include:
 
                 * None: Generates a default call sequence.
-                * A value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
+                * Value from `vectorbtpro.portfolio.enums.CallSeqType`: Creates a full array of the specified type.
                 * Custom array: Specifies a user-defined call sequence.
 
                 If set to `CallSeqType.Auto`, orders are rearranged dynamically so that sell orders are
@@ -5620,7 +5620,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Named tuple with in-place output objects.
 
         Returns:
-            Optional[NamedTuple]: A named tuple containing additional in-place output objects, or None if not set.
+            Optional[NamedTuple]: Named tuple containing additional in-place output objects, or None if not set.
         """
         return self._in_outputs
 
@@ -5648,7 +5648,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Year frequency derived from the portfolio's index.
 
         Returns:
-            Optional[PandasFrequency]: The inferred yearly frequency based on the portfolio's index,
+            Optional[PandasFrequency]: Inferred yearly frequency based on the portfolio's index,
                 or None if it cannot be determined.
         """
         return ReturnsAccessor.get_year_freq(
@@ -5771,7 +5771,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Sequence of call identifiers per row and group.
 
         Returns:
-            Optional[SeriesFrame]: A Pandas Series or DataFrame representing the sequence of call
+            Optional[SeriesFrame]: Pandas Series or DataFrame representing the sequence of call
                 identifiers, or None if no call sequence exists.
         """
         if self.use_in_outputs and self.in_outputs is not None and hasattr(self.in_outputs, "call_seq"):
@@ -5800,7 +5800,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """`Portfolio.open` returned in a format that supports flexible indexing.
 
         Returns:
-            Optional[ArrayLike]: The open price data in a flexible format, or None if not provided.
+            Optional[ArrayLike]: Open price data in a flexible format, or None if not provided.
         """
         if self.use_in_outputs and self.in_outputs is not None and hasattr(self.in_outputs, "open"):
             open = self.in_outputs.open
@@ -5813,7 +5813,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """`Portfolio.high` returned in a format that supports flexible indexing.
 
         Returns:
-            Optional[ArrayLike]: The high price data in a flexible format, or None if not specified.
+            Optional[ArrayLike]: High price data in a flexible format, or None if not specified.
         """
         if self.use_in_outputs and self.in_outputs is not None and hasattr(self.in_outputs, "high"):
             high = self.in_outputs.high
@@ -5826,7 +5826,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """`Portfolio.low` returned in a format that supports flexible indexing.
 
         Returns:
-            Optional[ArrayLike]: The low price data in a flexible format, or None if not available.
+            Optional[ArrayLike]: Low price data in a flexible format, or None if not available.
         """
         if self.use_in_outputs and self.in_outputs is not None and hasattr(self.in_outputs, "low"):
             low = self.in_outputs.low
@@ -5852,7 +5852,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Open price of each bar.
 
         Returns:
-            Optional[SeriesFrame]: A SeriesFrame containing the open prices for each bar,
+            Optional[SeriesFrame]: SeriesFrame containing the open prices for each bar,
                 or None if open price data is not provided.
         """
         if self.open_flex is None:
@@ -5864,7 +5864,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """High price of each bar.
 
         Returns:
-            Optional[SeriesFrame]: A SeriesFrame containing the high prices for each bar,
+            Optional[SeriesFrame]: SeriesFrame containing the high prices for each bar,
                 or None if high price data is missing.
         """
         if self.high_flex is None:
@@ -5876,7 +5876,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         """Low price of each bar.
 
         Returns:
-            Optional[SeriesFrame]: A SeriesFrame of the low prices for each bar,
+            Optional[SeriesFrame]: SeriesFrame of the low prices for each bar,
                 or None if low price data is not provided.
         """
         if self.low_flex is None:
@@ -5985,7 +5985,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Union[None, bool, SeriesFrame]: The forward and backward filled benchmark close price data,
+            Union[None, bool, SeriesFrame]: Forward and backward filled benchmark close price data,
                 or the original boolean/None value.
 
         See:
@@ -6030,7 +6030,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap_reduced`.
 
         Returns:
-            Union[None, ArrayLike, Series]: The wrapped asset weights, or None if weights are not provided.
+            Union[None, ArrayLike, Series]: Wrapped asset weights, or None if weights are not provided.
         """
         if not isinstance(cls_or_self, type):
             if weights is None:
@@ -7117,7 +7117,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             keep_flex (bool): Whether to preserve the flexible array structure.
 
         Returns:
-            Union[ArrayLike, MaybeSeries]: The computed initial position per column, potentially wrapped.
+            Union[ArrayLike, MaybeSeries]: Computed initial position per column, potentially wrapped.
         """
         if not isinstance(cls_or_self, type):
             if init_position_raw is None:
@@ -8512,7 +8512,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             keep_flex (bool): Whether to preserve the flexible array structure.
 
         Returns:
-            Union[ArrayLike, MaybeSeries]: The initial price, possibly wrapped.
+            Union[ArrayLike, MaybeSeries]: Initial price, possibly wrapped.
         """
         if not isinstance(cls_or_self, type):
             if init_price_raw is None:
@@ -10368,7 +10368,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
 
         Returns:
-            Optional[SeriesFrame]: A wrapped series of benchmark values per column or group, or
+            Optional[SeriesFrame]: Wrapped series of benchmark values per column or group, or
                 None if benchmarking is disabled.
         """
         if not isinstance(cls_or_self, type):

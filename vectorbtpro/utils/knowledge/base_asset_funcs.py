@@ -40,7 +40,7 @@ class AssetFunc(Base):
     _short_name: tp.ClassVar[tp.Optional[str]] = None
     """Identifier for the asset function's short name used in expressions."""
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = None
+    _wrap: tp.ClassVar[tp.Optional[bool]] = None
     """Indicates whether the result should be wrapped with `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`."""
 
     @classmethod
@@ -52,7 +52,7 @@ class AssetFunc(Base):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         return args, kwargs
 
@@ -98,7 +98,7 @@ class GetAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "get"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = False
+    _wrap: tp.ClassVar[tp.Optional[bool]] = False
 
     @classmethod
     def prepare(
@@ -127,7 +127,7 @@ class GetAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -221,7 +221,7 @@ class SetAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "set"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -252,7 +252,7 @@ class SetAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -332,7 +332,7 @@ class RemoveAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "remove"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -359,7 +359,7 @@ class RemoveAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -411,7 +411,7 @@ class MoveAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "move"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -442,7 +442,7 @@ class MoveAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -540,7 +540,7 @@ class RenameAssetFunc(MoveAssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -587,7 +587,7 @@ class ReorderAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "reorder"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -606,9 +606,9 @@ class ReorderAssetFunc(AssetFunc):
         Args:
             new_order (Union[str, PathKeyTokens]): New order specification, which can be:
 
-                * A sequence with tokens and an ellipsis (`...`) to preserve segments (e.g. ["a", ..., "z"]).
-                * A string "asc", "ascending", "desc", or "descending" indicating the sort order.
-                * A function or template that generates an order using variables: `i` for the item index,
+                * Sequence with tokens and an ellipsis (`...`) to preserve segments (e.g. ["a", ..., "z"]).
+                * String "asc", "ascending", "desc", or "descending" indicating the sort order.
+                * Function or template that generates an order using variables: `i` for the item index,
                     `d` for the data item, `x` for the value at the specified path, and field names for
                     individual fields.
             path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to reorder (e.g. "x.y[0].z").
@@ -622,7 +622,7 @@ class ReorderAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -734,7 +734,7 @@ class QueryAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "query"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = False
+    _wrap: tp.ClassVar[tp.Optional[bool]] = False
 
     @classmethod
     def prepare(
@@ -758,7 +758,7 @@ class QueryAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -828,7 +828,7 @@ class FindAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "find"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -875,7 +875,7 @@ class FindAssetFunc(AssetFunc):
                 and `vectorbtpro.utils.search_.find`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -958,7 +958,7 @@ class FindAssetFunc(AssetFunc):
         * For strings, it utilizes `vectorbtpro.utils.search_.find` with `return_type="bool"`.
         * For other types, it performs equality comparisons.
 
-        A `target` may be a callable that returns a boolean or an instance of
+        A `target` may be a callable that takes a key and a value, and returns a boolean or an instance of
         `vectorbtpro.utils.search_.Not` to indicate negation.
 
         Args:
@@ -984,7 +984,7 @@ class FindAssetFunc(AssetFunc):
             else:
                 negation = False
             if checks.is_function(target):
-                if target(d):
+                if target(k, d):
                     if (negation and find_all) or (not negation and not find_all):
                         return not negation
                     continue
@@ -1304,7 +1304,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 and `vectorbtpro.utils.search_.replace`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1377,8 +1377,8 @@ class FindReplaceAssetFunc(FindAssetFunc):
         This method is used by `FindReplaceAssetFunc.call` to determine the replacement for
         a matched value. For string inputs, it applies `vectorbtpro.utils.search_.replace` for
         text substitution. For other types, it returns the replacement directly if the specified
-        target condition is met. Both `target` and `replacement` may be callables, where `target`
-        returns a boolean indicating a match and `replacement` computes the new value.
+        target condition is met. Both `target` and `replacement` may be callables that take a key and a value,
+        where `target` returns a boolean indicating a match and `replacement` computes the new value.
 
         Args:
             k (Optional[Hashable]): Key associated with the current element.
@@ -1407,9 +1407,9 @@ class FindReplaceAssetFunc(FindAssetFunc):
                 raise TypeError("Target cannot be negated here")
             replacement = replacements[i]
             if checks.is_function(replacement):
-                replacement = replacement(d)
+                replacement = replacement(k, d)
             if checks.is_function(target):
-                if target(d):
+                if target(k, d):
                     return replacement
             elif d is target:
                 return replacement
@@ -1547,7 +1547,7 @@ class FindRemoveAssetFunc(FindAssetFunc):
                 and `vectorbtpro.utils.search_.find`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1596,7 +1596,12 @@ class FindRemoveAssetFunc(FindAssetFunc):
         }
 
     @classmethod
-    def is_empty_func(cls, d: tp.Any) -> bool:
+    def is_empty_func(
+        cls, 
+        k: tp.Optional[tp.Hashable], 
+        d: tp.Any, 
+        skip_keys: tp.Optional[tp.Container[tp.Hashable]] = None,
+    ) -> bool:
         """Return whether the given object is empty.
 
         Args:
@@ -1605,6 +1610,8 @@ class FindRemoveAssetFunc(FindAssetFunc):
         Returns:
             bool: True if the data item is empty, False otherwise.
         """
+        if skip_keys and k in skip_keys:
+            return False
         if d is None:
             return True
         if checks.is_collection(d) and len(d) == 0:
@@ -1669,7 +1676,7 @@ class FlattenAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "flatten"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -1694,7 +1701,7 @@ class FlattenAssetFunc(AssetFunc):
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.flatten_obj`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1756,7 +1763,7 @@ class UnflattenAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "unflatten"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -1781,7 +1788,7 @@ class UnflattenAssetFunc(AssetFunc):
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.unflatten_obj`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1841,7 +1848,7 @@ class DumpAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "dump"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def resolve_dump_kwargs(
@@ -1896,7 +1903,7 @@ class DumpAssetFunc(AssetFunc):
             **kwargs: Keyword arguments for `vectorbtpro.utils.formatting.dump`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -1963,7 +1970,7 @@ class ToDocsAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "to_docs"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -1986,7 +1993,7 @@ class ToDocsAssetFunc(AssetFunc):
             **document_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.StoreData.from_data`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -2054,7 +2061,7 @@ class SplitTextAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "split_text"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -2077,7 +2084,7 @@ class SplitTextAssetFunc(AssetFunc):
             **split_text_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.split_text`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -2128,7 +2135,7 @@ class ReduceAssetFunc(AssetFunc):
     """Abstract class defining an asset function for reducing data with
     `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.reduce`."""
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = False
+    _wrap: tp.ClassVar[tp.Optional[bool]] = False
 
     _initializer: tp.ClassVar[tp.Optional[tp.Any]] = None
 
@@ -2183,7 +2190,7 @@ class CollectAssetFunc(ReduceAssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
             from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
@@ -2234,7 +2241,7 @@ class MergeDictsAssetFunc(ReduceAssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "merge_dicts"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     _initializer: tp.ClassVar[tp.Optional[tp.Any]] = {}
 
@@ -2251,7 +2258,7 @@ class MergeListsAssetFunc(ReduceAssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "merge_lists"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     _initializer: tp.ClassVar[tp.Optional[tp.Any]] = []
 

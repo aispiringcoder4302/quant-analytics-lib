@@ -124,7 +124,7 @@ class CustomData(Data):
             use_regex (bool): Flag indicating whether the pattern is a regular expression.
 
         Returns:
-            Optional[re.Match]: A match object if the key matches the pattern; otherwise, None.
+            Optional[re.Match]: Match object if the key matches the pattern; otherwise, None.
         """
         if use_regex:
             return re.match(pattern, key)

@@ -299,7 +299,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.align_indexes`.
 
         Returns:
-            Tuple[IndexSlice, ...]: A tuple of aligned index slices.
+            Tuple[IndexSlice, ...]: Tuple of aligned index slices.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
@@ -316,7 +316,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.cross_index_with`.
 
         Returns:
-            Tuple[IndexSlice, IndexSlice]: The resulting pair of index slices.
+            Tuple[IndexSlice, IndexSlice]: Resulting pair of index slices.
         """
         return indexes.cross_index_with(self.obj, *args, **kwargs)
 
@@ -333,7 +333,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.cross_indexes`.
 
         Returns:
-            Tuple[IndexSlice, ...]: The resulting crossed indexes.
+            Tuple[IndexSlice, ...]: Resulting crossed indexes.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseIDXAccessor) else x, others))
         if isinstance(cls_or_self, type):
@@ -377,7 +377,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
-            Union[None, float, PandasFrequency]: The inferred frequency, or None if conversion fails.
+            Union[None, float, PandasFrequency]: Inferred frequency, or None if conversion fails.
 
         !!! info
             For default settings, see `vectorbtpro._settings.wrapping`.
@@ -398,7 +398,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             freq = wrapping_cfg["freq"]
         try:
             return dt.infer_index_freq(index, freq=freq, **kwargs)
-        except Exception as e:
+        except Exception:
             return None
 
     @property
@@ -408,7 +408,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Uses `BaseIDXAccessor.get_freq` with specific restrictions.
 
         Returns:
-            Optional[PandasFrequency]: The frequency of the index, or None if not set.
+            Optional[PandasFrequency]: Frequency of the index, or None if not set.
         """
         return self.get_freq(allow_offset=True, allow_numeric=False)
 
@@ -419,7 +419,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         Timestamps are converted to nanoseconds via Timedelta.
 
         Returns:
-            Optional[int]: The frequency in nanoseconds, or None if not set.
+            Optional[int]: Frequency in nanoseconds, or None if not set.
         """
         freq = self.get_freq(allow_offset=False, allow_numeric=True)
         if freq is not None:
@@ -431,7 +431,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """Frequency of the index of any type using `BaseIDXAccessor.get_freq`.
 
         Returns:
-            Union[None, float, PandasFrequency]: The frequency of the index, or None if not set.
+            Union[None, float, PandasFrequency]: Frequency of the index, or None if not set.
         """
         return self.get_freq()
 
@@ -538,7 +538,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            Union[pd.Index, MaybeArray]: The array converted to time durations.
+            Union[pd.Index, MaybeArray]: Array converted to time durations.
 
         !!! info
             For default settings, see `vectorbtpro._settings.wrapping`.
@@ -579,7 +579,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
                 * `vectorbtpro.base.grouping.base.Grouper` instance
                 * Pandas `GroupBy` instance
                 * Pandas `Resampler` instance
-                * An instruction for any of the above
+                * Instruction for any of the above
             groupby_kwargs (KwargsLike): Keyword arguments for `pandas.Series.groupby` and
                 `pandas.Series.resample` methods.
             **kwargs: Keyword arguments for initializing `vectorbtpro.base.grouping.base.Grouper`.
@@ -597,17 +597,17 @@ class BaseIDXAccessor(Configured, IndexApplier):
             return Grouper.from_pd_group_by(by, **kwargs)
         try:
             return Grouper(index=self.obj, group_by=by, **kwargs)
-        except Exception as e:
+        except Exception:
             pass
         if isinstance(self.obj, pd.DatetimeIndex):
             try:
                 return Grouper(index=self.obj, group_by=self.to_period(dt.to_freq(by)), **kwargs)
-            except Exception as e:
+            except Exception:
                 pass
             try:
                 pd_group_by = pd.Series(index=self.obj, dtype=object).resample(dt.to_freq(by), **groupby_kwargs)
                 return Grouper.from_pd_group_by(pd_group_by, **kwargs)
-            except Exception as e:
+            except Exception:
                 pass
         pd_group_by = pd.Series(index=self.obj, dtype=object).groupby(by, axis=0, **groupby_kwargs)
         return Grouper.from_pd_group_by(pd_group_by, **kwargs)
@@ -629,7 +629,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
 
                 * `vectorbtpro.base.resampling.base.Resampler` instance
                 * Pandas `Resampler` instance
-                * An instruction for any of the above
+                * Instruction for any of the above
                 * Datetime-like object or iterable used to create a new index
             freq (Optional[FrequencyLike]): Frequency of the target index (e.g., "daily", "15 min", "index_mean").
 
@@ -639,13 +639,13 @@ class BaseIDXAccessor(Configured, IndexApplier):
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
 
         Returns:
-            Union[Resampler, PandasResampler]: The constructed index resampler.
+            Union[Resampler, PandasResampler]: Constructed index resampler.
         """
         if checks.is_frequency_like(rule):
             try:
                 rule = dt.to_freq(rule)
                 is_td = True
-            except Exception as e:
+            except Exception:
                 is_td = False
             if is_td:
                 resample_kwargs = merge_dicts(
@@ -698,7 +698,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexing.get_index_ranges`.
 
         Returns:
-            Tuple[Array1d, Array1d]: A tuple of arrays representing the index ranges.
+            Tuple[Array1d, Array1d]: Tuple of arrays representing the index ranges.
         """
         return get_index_ranges(self.obj, self.any_freq, *args, **kwargs)
 
@@ -785,7 +785,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             return_chunk_meta (bool): Flag indicating whether to yield chunk metadata alongside each chunk.
 
         Yields:
-            Union[Index, Tuple[ChunkMeta, Index]]: The index chunk or a tuple with
+            Union[Index, Tuple[ChunkMeta, Index]]: Index chunk or a tuple with
                 the chunk metadata and index chunk.
 
         !!! note
@@ -1165,7 +1165,7 @@ class BaseAccessor(Wrapping):
         """Pandas Series accessor class.
 
         Returns:
-            Type[BaseSRAccessor]: The class of the Series accessor.
+            Type[BaseSRAccessor]: Class of the Series accessor.
         """
         return BaseSRAccessor
 
@@ -1174,7 +1174,7 @@ class BaseAccessor(Wrapping):
         """Pandas DataFrame accessor class.
 
         Returns:
-            Type[BaseDFAccessor]: The class of the DataFrame accessor.
+            Type[BaseDFAccessor]: Class of the DataFrame accessor.
         """
         return BaseDFAccessor
 
@@ -1254,7 +1254,7 @@ class BaseAccessor(Wrapping):
         * 2 corresponds to a DataFrame.
 
         Returns:
-            Optional[int]: The number of dimensions in the underlying object.
+            Optional[int]: Number of dimensions in the underlying object.
         """
         if isinstance(cls_or_self, type):
             return None
@@ -1356,7 +1356,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.wrapping.Wrapping.apply_to_index`.
 
         Returns:
-            Union[BaseAccessor, SeriesFrame]: An accessor instance with the applied indexing,
+            Union[BaseAccessor, SeriesFrame]: Accessor instance with the applied indexing,
                 or the underlying Pandas object if `wrap` is False.
 
         !!! note
@@ -1735,7 +1735,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `vectorbtpro.base.indexes.align_indexes`.
 
         Returns:
-            Tuple[SeriesFrame, ...]: The aligned objects.
+            Tuple[SeriesFrame, ...]: Aligned objects.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
         if isinstance(cls_or_self, type):
@@ -1838,7 +1838,7 @@ class BaseAccessor(Wrapping):
             *others (Union[SeriesFrame, BaseAccessor]): (Additional) objects to cross align.
 
         Returns:
-            Tuple[SeriesFrame, ...]: The cross aligned objects.
+            Tuple[SeriesFrame, ...]: Cross aligned objects.
         """
         others = tuple(map(lambda x: x.obj if isinstance(x, BaseAccessor) else x, others))
         if isinstance(cls_or_self, type):
@@ -1982,7 +1982,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `Data.from_data`.
 
         Returns:
-            Data: A `vectorbtpro.data.base.Data` instance representing the converted data.
+            Data: `vectorbtpro.data.base.Data` instance representing the converted data.
         """
         if data_cls is None:
             from vectorbtpro.data.base import Data
@@ -2174,7 +2174,7 @@ class BaseAccessor(Wrapping):
             **kwargs: Keyword arguments for `apply_func`.
 
         Returns:
-            MaybeTuple[Frame]: The wrapped result as a single DataFrame or a tuple of frames,
+            MaybeTuple[Frame]: Wrapped result as a single DataFrame or a tuple of frames,
                 or None if no result is produced.
 
         !!! note

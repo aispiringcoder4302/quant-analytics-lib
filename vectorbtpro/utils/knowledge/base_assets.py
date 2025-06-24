@@ -18,6 +18,7 @@ import json
 import re
 from collections.abc import MutableSequence
 from pathlib import Path
+from functools import partial
 
 import pandas as pd
 
@@ -155,7 +156,7 @@ class AssetCacheManager(Configured):
         """Maximum number of assets to retain, evicting older ones.
 
         Returns:
-            Optional[int]: The maximum number of assets to retain in the cache.
+            Optional[int]: Maximum number of assets to retain in the cache.
         """
         return self._max_cache_count
 
@@ -206,7 +207,7 @@ class AssetCacheManager(Configured):
             cache_key (str): Unique identifier for the cached asset.
 
         Returns:
-            Optional[MaybeKnowledgeAsset]: The loaded knowledge asset if found, otherwise None.
+            Optional[MaybeKnowledgeAsset]: Loaded knowledge asset if found, otherwise None.
         """
         if cache_key in asset_cache:
             return asset_cache[cache_key]
@@ -240,7 +241,7 @@ class AssetCacheManager(Configured):
             cache_key (str): Unique identifier for the cached asset.
 
         Returns:
-            Optional[Path]: The file path where the asset was saved if persistence is enabled, otherwise None.
+            Optional[Path]: File path where the asset was saved if persistence is enabled, otherwise None.
         """
         asset_cache[cache_key] = asset
         if self.persist_cache:
@@ -507,7 +508,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """List of data items in the asset.
 
         Returns:
-            List[Any]: The data items contained in the asset.
+            List[Any]: Data items contained in the asset.
         """
         return self._data
 
@@ -546,7 +547,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 positions, a slice selects a range, and an integer selects a single item.
 
         Returns:
-            Union[Any, KnowledgeAsset]: The selected data element if an integer is provided,
+            Union[Any, KnowledgeAsset]: Selected data element if an integer is provided,
                 or a new asset containing the extracted items otherwise.
         """
         if checks.is_complex_iterable(index):
@@ -579,7 +580,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             inplace (bool): If True, modify the asset in place.
 
         Returns:
-            Optional[KnowledgeAsset]: A new asset with updated data, or None if modified in place.
+            Optional[KnowledgeAsset]: New asset with updated data, or None if modified in place.
         """
         new_data = list(self.data)
         if checks.is_complex_iterable(index):
@@ -639,7 +640,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             inplace (bool): If True, delete the items in place.
 
         Returns:
-            Optional[KnowledgeAsset]: A new asset with the selected items removed,
+            Optional[KnowledgeAsset]: New asset with the selected items removed,
                 or None if modified in place.
         """
         new_data = list(self.data)
@@ -677,7 +678,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             inplace (bool): If True, modify the asset in place.
 
         Returns:
-            Optional[KnowledgeAsset]: A new asset with the appended item, or None if modified in place.
+            Optional[KnowledgeAsset]: New asset with the appended item, or None if modified in place.
         """
         new_data = list(self.data)
         new_data.append(d)
@@ -698,7 +699,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             inplace (bool): If True, modify the asset in place.
 
         Returns:
-            Optional[KnowledgeAsset]: A new asset with extended data, or None if modified in place.
+            Optional[KnowledgeAsset]: New asset with extended data, or None if modified in place.
         """
         new_data = list(self.data)
         new_data.extend(data)
@@ -714,12 +715,12 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             inplace (bool): If True, remove empty items in place.
 
         Returns:
-            Optional[KnowledgeAsset]: A new asset with empty items removed,
+            Optional[KnowledgeAsset]: New asset with empty items removed,
                 or None if modified in place.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
-        new_data = [d for d in self.data if not FindRemoveAssetFunc.is_empty_func(d)]
+        new_data = [d for d in self.data if not FindRemoveAssetFunc.is_empty_func(None, d)]
         if inplace:
             self.modify_data(new_data)
             return None
@@ -741,7 +742,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.get`.
 
         Returns:
-            Optional[KnowledgeAsset]: A new asset with duplicates removed,
+            Optional[KnowledgeAsset]: New asset with duplicates removed,
                 or None if modified in place.
 
         Examples:
@@ -794,7 +795,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.get`.
 
         Returns:
-            Optional[KnowledgeAsset]: A new asset with sorted data,
+            Optional[KnowledgeAsset]: New asset with sorted data,
                 or None if sorted in place.
 
         Examples:
@@ -949,11 +950,11 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         The `func` parameter accepts various types:
 
-        * A callable or a tuple containing a callable and its arguments.
-        * An instance of `vectorbtpro.utils.execution.Task`.
-        * A subclass of `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix/full name.
-        * A list of any of the above, which will use `BasicAssetPipeline`.
-        * A valid expression, which will use `ComplexAssetPipeline`.
+        * Callable or a tuple containing a callable and its arguments.
+        * Instance of `vectorbtpro.utils.execution.Task`.
+        * Subclass of `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix/full name.
+        * List of any of the above, which will use `BasicAssetPipeline`.
+        * Valid expression, which will use `ComplexAssetPipeline`.
 
         Execution is handled by `vectorbtpro.utils.execution.execute`.
 
@@ -964,7 +965,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
                 See `vectorbtpro.utils.execution.execute`.
             wrap (Optional[bool]): If True, return the result wrapped as an asset.
-            single_item (Optional[bool]): Determines if data items are treated as single items.
+            single_item (Optional[bool]): Determines if a single item should not be wrapped in a list.
             return_iterator (bool): If True, return an iterator instead of executing tasks.
             **kwargs: Keyword arguments for the asset pipeline or function.
 
@@ -1083,6 +1084,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         skip_missing: tp.Optional[bool] = None,
         source: tp.Optional[tp.CustomTemplateLike] = None,
         template_context: tp.KwargsLike = None,
+        single_item: tp.Optional[bool] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
         """Return specific data items or subsets of them.
@@ -1098,6 +1100,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             source (Optional[CustomTemplateLike]): Template, function, or string for preprocessing;
                 in the template, "i" denotes the index, "d" the full data item, and "x" the extracted part.
             template_context (KwargsLike): Additional context for template substitution.
+            single_item (Optional[bool]): Determines if a single item should not be wrapped in a list.
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
         Returns:
@@ -1137,7 +1140,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             ```
         """
         if path is None and source is None:
-            if self.single_item:
+            if single_item is None:
+                single_item = self.single_item
+            if single_item:
                 if len(self.data) == 1:
                     return self.data[0]
                 if len(self.data) == 0:
@@ -1150,6 +1155,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             skip_missing=skip_missing,
             source=source,
             template_context=template_context,
+            single_item=single_item,
             **kwargs,
         )
 
@@ -1412,9 +1418,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             new_order (Union[str, PathKeyTokens]): New order specification, which can be:
 
-                * A sequence with tokens and an ellipsis (`...`) to preserve segments (e.g. ["a", ..., "z"]).
-                * A string "asc", "ascending", "desc", or "descending" indicating the sort order.
-                * A function or template that generates an order using variables: `i` for the item index,
+                * Sequence with tokens and an ellipsis (`...`) to preserve segments (e.g. ["a", ..., "z"]).
+                * String "asc", "ascending", "desc", or "descending" indicating the sort order.
+                * Function or template that generates an order using variables: `i` for the item index,
                     `d` for the data item, `x` for the value at the specified path, and field names for
                     individual fields.
             path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to reorder (e.g. "x.y[0].z").
@@ -2030,7 +2036,11 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs,
         )
 
-    def find_remove_empty(self, **kwargs) -> tp.MaybeKnowledgeAsset:
+    def find_remove_empty(
+        self, 
+        skip_keys: tp.Optional[tp.Container[tp.Hashable]] = None, 
+        **kwargs,
+    ) -> tp.MaybeKnowledgeAsset:
         """Remove empty objects from the asset data.
 
         This method uses a predefined emptiness check via
@@ -2044,7 +2054,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
-        return self.find_remove(FindRemoveAssetFunc.is_empty_func, **kwargs)
+        return self.find_remove(partial(FindRemoveAssetFunc.is_empty_func, skip_keys=skip_keys), **kwargs)
 
     def flatten(
         self,
@@ -2319,7 +2329,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 group all identical items.
 
         Returns:
-            Tuple[List[Any], List[List[int]]]: A tuple containing a list of keys and a corresponding
+            Tuple[List[Any], List[List[int]]]: Tuple containing a list of keys and a corresponding
                 list of index groups.
         """
         keys = []
@@ -2646,7 +2656,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `KnowledgeAsset.collect`.
 
         Returns:
-            Union[KnowledgeAssetT, dict]: A data asset or dictionary containing descriptive statistics.
+            Union[KnowledgeAssetT, dict]: Data asset or dictionary containing descriptive statistics.
         """
         ignore_empty = self.resolve_setting(ignore_empty, "ignore_empty")
         describe_kwargs = self.resolve_setting(describe_kwargs, "describe_kwargs", merge=True)
@@ -2731,8 +2741,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             changed_only=False,
         ).describe(wrap=False, **kwargs)
         describe_dict = flat_merge_dicts(orig_describe_dict, flat_describe_dict)
+
         paths = []
-        path_names = []
+        display_names = []
         for k, v in describe_dict.items():
             if k is None:
                 k = "."
@@ -2742,14 +2753,14 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             path_name = path.name
             path_name += " [" + str(v["count"]) + "/" + str(len(self.data))
             path_name += ", " + ", ".join(v["types"]) + "]"
-            path_names.append(path_name)
             paths.append(path)
+            display_names.append(path_name)
         if "root_name" not in dir_tree_kwargs:
             dir_tree_kwargs["root_name"] = "/"
         if "sort" not in dir_tree_kwargs:
             dir_tree_kwargs["sort"] = False
-        if "path_names" not in dir_tree_kwargs:
-            dir_tree_kwargs["path_names"] = path_names
+        if "display_names" not in dir_tree_kwargs:
+            dir_tree_kwargs["display_names"] = display_names
         if "length_limit" not in dir_tree_kwargs:
             dir_tree_kwargs["length_limit"] = None
         print(dir_tree_from_paths(paths, **dir_tree_kwargs))
@@ -2815,7 +2826,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.embed_documents`.
 
         Returns:
-            Optional[MaybeKnowledgeAsset]: A new asset with embedded documents, or None if embedding fails.
+            Optional[MaybeKnowledgeAsset]: New asset with embedded documents, or None if embedding fails.
         """
         from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, embed_documents
 

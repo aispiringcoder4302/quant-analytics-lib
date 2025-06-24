@@ -536,7 +536,7 @@ def get_obj_id(instance: object) -> tp.Tuple[type, int]:
         instance (object): Instance whose identity is being retrieved.
 
     Returns:
-        Tuple[type, int]: A tuple containing the instance's type and its id.
+        Tuple[type, int]: Tuple containing the instance's type and its id.
     """
     return type(instance), id(instance)
 
@@ -550,7 +550,7 @@ def instance_converter(
         instance (Optional[Union[Cacheable, ReferenceType]]): Instance to convert.
 
     Returns:
-        Optional[Union[Cacheable, ReferenceType]]: A weak reference to the instance
+        Optional[Union[Cacheable, ReferenceType]]: Weak reference to the instance
             if it is not already a weak reference; otherwise, the unchanged instance.
     """
     if instance is not None and instance is not _GARBAGE and not isinstance(instance, ReferenceType):
@@ -659,10 +659,10 @@ class CAQuery(DefineMixin):
 
     @property
     def instance_obj(self) -> tp.Optional[tp.Union[Cacheable, object]]:
-        """The instance if available; if the weak reference is dead, returns a garbage sentinel.
+        """Instance if available; if the weak reference is dead, returns a garbage sentinel.
 
         Returns:
-            Optional[Union[Cacheable, object]]: The instance or a garbage sentinel.
+            Optional[Union[Cacheable, object]]: Instance or a garbage sentinel.
         """
         if self.instance is _GARBAGE:
             return _GARBAGE
@@ -825,7 +825,7 @@ class CARule(DefineMixin):
     """Class representing a rule enforced on setups that match a specified query."""
 
     query: CAQuery = define.field()
-    """The `CAQuery` used for matching."""
+    """`CAQuery` used for matching."""
 
     enforce_func: tp.Optional[tp.Callable] = define.field()
     """Callable function to execute on the setup when it matches the rule."""
@@ -834,7 +834,7 @@ class CARule(DefineMixin):
     """Specifies the expected kind(s) of setup. For example, 'class', 'instance', 'unbound', or 'runnable'."""
 
     exclude: tp.Optional[tp.MaybeIterable["CABaseSetup"]] = define.field(default=None)
-    """A setup or an iterable of setups to be excluded from matching."""
+    """Setup or an iterable of setups to be excluded from matching."""
 
     filter_func: tp.Optional[tp.Callable] = define.field(default=None)
     """Callable function used to apply additional filtering on a setup."""
@@ -979,7 +979,7 @@ class CacheableRegistry(Base):
             hash_ (int): Hash of the setup.
 
         Returns:
-            Optional[CABaseSetup]: The setup instance if found; otherwise, None.
+            Optional[CABaseSetup]: Setup instance if found; otherwise, None.
         """
         if hash_ in self.class_setups:
             return self.class_setups[hash_]
@@ -1082,7 +1082,7 @@ class CacheableRegistry(Base):
             instance (Optional[Cacheable]): Instance associated with the cacheable.
 
         Returns:
-            Optional[CARunSetup]: The run setup if available and valid; otherwise, None.
+            Optional[CARunSetup]: Run setup if available and valid; otherwise, None.
         """
         run_setup = self.run_setups.get(CARunSetup.get_hash(cacheable, instance=instance), None)
         if run_setup is not None and run_setup.instance_obj is _GARBAGE:
@@ -1097,7 +1097,7 @@ class CacheableRegistry(Base):
             cacheable (cacheable): Cacheable object.
 
         Returns:
-            Optional[CAUnboundSetup]: The unbound setup if available; otherwise, None.
+            Optional[CAUnboundSetup]: Unbound setup if available; otherwise, None.
         """
         return self.unbound_setups.get(CAUnboundSetup.get_hash(cacheable), None)
 
@@ -1108,7 +1108,7 @@ class CacheableRegistry(Base):
             instance (Cacheable): Cacheable instance.
 
         Returns:
-            Optional[CAInstanceSetup]: The instance setup if available and valid; otherwise, None.
+            Optional[CAInstanceSetup]: Instance setup if available and valid; otherwise, None.
         """
         instance_setup = self.instance_setups.get(CAInstanceSetup.get_hash(instance), None)
         if instance_setup is not None and instance_setup.instance_obj is _GARBAGE:
@@ -1123,7 +1123,7 @@ class CacheableRegistry(Base):
             cls (Type[Cacheable]): Cacheable class.
 
         Returns:
-            Optional[CAClassSetup]: The class setup if available; otherwise, None.
+            Optional[CAClassSetup]: Class setup if available; otherwise, None.
         """
         return self.class_setups.get(CAClassSetup.get_hash(cls), None)
 
@@ -1165,7 +1165,7 @@ class CacheableRegistry(Base):
                 indicating whether the setup should be included.
 
         Returns:
-            Set[CABaseSetup]: A set of setups matching the given criteria.
+            Set[CABaseSetup]: Set of setups matching the given criteria.
 
         !!! note
             `exclude_children` is applied only when `collapse` is True.
@@ -1325,7 +1325,7 @@ class CAMetrics(Base):
         """Cumulative elapsed time during function execution.
 
         Returns:
-            Optional[timedelta]: The sum of execution durations for all cached function runs,
+            Optional[timedelta]: Sum of execution durations for all cached function runs,
                 or None if the metric is not available.
 
         !!! abstract
@@ -1338,7 +1338,7 @@ class CAMetrics(Base):
         """Cumulative time saved by caching.
 
         Returns:
-            Optional[timedelta]: The total time saved by fetching results from the cache
+            Optional[timedelta]: Total time saved by fetching results from the cache
                 instead of executing the function, or None if not determined.
 
         !!! abstract
@@ -1351,7 +1351,7 @@ class CAMetrics(Base):
         """Timestamp of the first function execution.
 
         Returns:
-            Optional[datetime]: The datetime when the function was first executed,
+            Optional[datetime]: Datetime when the function was first executed,
                 or None if it has never been run.
 
         !!! abstract
@@ -1364,7 +1364,7 @@ class CAMetrics(Base):
         """Timestamp of the most recent function execution.
 
         Returns:
-            Optional[datetime]: The datetime of the most recent function run,
+            Optional[datetime]: Datetime of the most recent function run,
                 or None if the function has not been executed.
 
         !!! abstract
@@ -1377,7 +1377,7 @@ class CAMetrics(Base):
         """Timestamp of the first cache hit.
 
         Returns:
-            Optional[datetime]: The datetime when the cache was hit for the first time,
+            Optional[datetime]: Datetime when the cache was hit for the first time,
                 or None if there have been no cache hits.
 
         !!! abstract
@@ -1390,7 +1390,7 @@ class CAMetrics(Base):
         """Timestamp of the most recent cache hit.
 
         Returns:
-            Optional[datetime]: The datetime when the cache was hit most recently,
+            Optional[datetime]: Datetime when the cache was hit most recently,
                 or None if no cache hit has occurred.
 
         !!! abstract
@@ -1467,7 +1467,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
 
         Caching is considered disabled under any of the following conditions:
 
-        * The setup's `use_cache` flag is False.
+        * Setup's `use_cache` flag is False.
         * Global caching is disabled (via settings["caching"]["disable"]) and the setup is not whitelisted.
         * Both global caching and whitelisting are disabled.
 
@@ -1623,7 +1623,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """Last update time for the `use_cache` flag.
 
         Returns:
-            Optional[datetime]: The timestamp of the most recent update to the `use_cache` flag,
+            Optional[datetime]: Timestamp of the most recent update to the `use_cache` flag,
                 or None if not set.
         """
         return object.__getattribute__(self, "_use_cache_lut")
@@ -1633,7 +1633,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """Last update time for the `whitelist` flag.
 
         Returns:
-            Optional[datetime]: The timestamp of the most recent update to the `whitelist` flag,
+            Optional[datetime]: Timestamp of the most recent update to the `whitelist` flag,
                 or None if not set.
         """
         return object.__getattribute__(self, "_whitelist_lut")
@@ -1643,7 +1643,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """Most recent update time between `use_cache` and `whitelist` flags.
 
         Returns:
-            Optional[datetime]: The later timestamp between `use_cache_lut` and `whitelist_lut`,
+            Optional[datetime]: Later timestamp between `use_cache_lut` and `whitelist_lut`,
                 or None if both are None.
         """
         if self.use_cache_lut is None:
@@ -1706,7 +1706,7 @@ class CABaseSetup(CAMetrics, DefineMixin):
         """Determine the position of this setup among similar setups ordered by creation time.
 
         Returns:
-            Optional[int]: The ordinal position (starting at 0) of this setup among similar ones,
+            Optional[int]: Ordinal position (starting at 0) of this setup among similar ones,
                 or None if the position cannot be determined.
         """
         i = 0
@@ -1839,7 +1839,7 @@ class CASetupDelegatorMixin(CAMetrics):
         """Set of child setup instances.
 
         Returns:
-            Set[CABaseSetup]: A set of child setups associated with this setup.
+            Set[CABaseSetup]: Set of child setups associated with this setup.
 
         !!! abstract
             This property should be overridden in a subclass.
@@ -1854,7 +1854,7 @@ class CASetupDelegatorMixin(CAMetrics):
             short_str (bool): When True and `readable` is False, use the short string representation.
 
         Returns:
-            List[dict]: A list representing the setup hierarchy.
+            List[dict]: List representing the setup hierarchy.
         """
         results = []
         for setup in self.child_setups:
@@ -2080,7 +2080,7 @@ class CASetupDelegatorMixin(CAMetrics):
             exclude (Sequence[str]): List of column names to exclude from the DataFrame.
 
         Returns:
-            Optional[pd.DataFrame]: A DataFrame containing the stats of child setups,
+            Optional[pd.DataFrame]: DataFrame containing the stats of child setups,
                 or None if no setups are available.
         """
         if len(self.child_setups) == 0:
@@ -2199,7 +2199,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
             cls (Type[Cacheable]): Cacheable class whose superclasses are retrieved.
 
         Returns:
-            List[Type[Cacheable]]: An ordered list of cacheable superclasses, excluding the class itself.
+            List[Type[Cacheable]]: Ordered list of cacheable superclasses, excluding the class itself.
         """
         superclasses = []
         for super_cls in inspect.getmro(cls):
@@ -2217,7 +2217,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
             cls (Type[Cacheable]): Cacheable class to analyze.
 
         Returns:
-            List[CAClassSetup]: A list of setups corresponding to each cacheable superclass.
+            List[CAClassSetup]: List of setups corresponding to each cacheable superclass.
         """
         setups = []
         for super_cls in CAClassSetup.get_cacheable_superclasses(cls):
@@ -2233,7 +2233,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
             cls (Type[Cacheable]): Cacheable class to examine.
 
         Returns:
-            List[Type[Cacheable]]: An ordered list of all cacheable subclasses, excluding the class itself.
+            List[Type[Cacheable]]: Ordered list of all cacheable subclasses, excluding the class itself.
         """
         subclasses = []
         for sub_cls in cls.__subclasses__():
@@ -2252,7 +2252,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
             cls (Type[Cacheable]): Cacheable class to examine.
 
         Returns:
-            List[CAClassSetup]: A list of setups corresponding to each cacheable subclass.
+            List[CAClassSetup]: List of setups corresponding to each cacheable subclass.
         """
         setups = []
         for super_cls in CAClassSetup.get_cacheable_subclasses(cls):
@@ -2268,7 +2268,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
             cls (Type[Cacheable]): Cacheable class.
 
         Returns:
-            Set[cacheableT]: A set containing unbound cacheable members.
+            Set[cacheableT]: Set containing unbound cacheable members.
         """
         members = inspect.getmembers(cls, is_bindable_cacheable)
         return {attr for attr_name, attr in members}
@@ -2282,7 +2282,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
             cls (Type[Cacheable]): Cacheable class to inspect for unbound cacheable members.
 
         Returns:
-            Set[CAUnboundSetup]: A set of setups corresponding to each unbound cacheable member.
+            Set[CAUnboundSetup]: Set of setups corresponding to each unbound cacheable member.
         """
         setups = set()
         for cacheable in CAClassSetup.get_unbound_cacheables(cls):
@@ -2305,7 +2305,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
             **kwargs: Keyword arguments for `CAClassSetup`.
 
         Returns:
-            Optional[CAClassSetup]: The retrieved or newly registered setup,
+            Optional[CAClassSetup]: Retrieved or newly registered setup,
                 or None if caching machinery is disabled or the setup is inactive.
 
         !!! info
@@ -2355,7 +2355,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         """List of setups for each cacheable superclass.
 
         Returns:
-            List[CAClassSetup]: A list of class setups corresponding to each cacheable
+            List[CAClassSetup]: List of class setups corresponding to each cacheable
                 superclass of `CAClassSetup.cls`.
         """
         return self.get_superclass_setups(self.registry, self.cls)
@@ -2365,7 +2365,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         """List of setups for each cacheable subclass.
 
         Returns:
-            List[CAClassSetup]: A list of class setups corresponding to each cacheable
+            List[CAClassSetup]: List of class setups corresponding to each cacheable
                 subclass of `CAClassSetup.cls`.
         """
         return self.get_subclass_setups(self.registry, self.cls)
@@ -2375,7 +2375,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         """Set of setups for each unbound cacheable member.
 
         Returns:
-            Set[CAUnboundSetup]: A set of unbound setup instances for cacheable members
+            Set[CAUnboundSetup]: Set of unbound setup instances for cacheable members
                 defined in `CAClassSetup.cls`.
         """
         return self.get_unbound_setups(self.registry, self.cls)
@@ -2385,7 +2385,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         """Set of setups for instances associated with this class setup.
 
         Returns:
-            Set[CAInstanceSetup]: A set of instance setup instances whose `class_setup` attribute
+            Set[CAInstanceSetup]: Set of instance setup instances whose `class_setup` attribute
                 is equal to `CAClassSetup`.
         """
         matches = set()
@@ -2399,7 +2399,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         """Most recent update time for `use_cache` in this class or its superclasses.
 
         Returns:
-            Optional[datetime]: The latest timestamp among `CAClassSetup.use_cache_lut` and
+            Optional[datetime]: Latest timestamp among `CAClassSetup.use_cache_lut` and
                 those of its superclass setups, or None if no timestamp is available.
         """
         max_use_cache_lut = self.use_cache_lut
@@ -2414,7 +2414,7 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         """Most recent update time for `whitelist` in this class or its superclasses.
 
         Returns:
-            Optional[datetime]: The latest timestamp among `CAClassSetup.whitelist_lut` and
+            Optional[datetime]: Latest timestamp among `CAClassSetup.whitelist_lut` and
                 those of its superclass setups, or None if no timestamp is available.
         """
         max_whitelist_lut = self.whitelist_lut
@@ -2481,7 +2481,7 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
             **kwargs: Keyword arguments for `CAInstanceSetup`.
 
         Returns:
-            Optional[CAInstanceSetup]: The active setup for the instance if found, otherwise None.
+            Optional[CAInstanceSetup]: Active setup for the instance if found, otherwise None.
 
         !!! info
             For default settings, see `vectorbtpro._settings.caching`.
@@ -2533,7 +2533,7 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
         garbage collected, it returns a designated garbage placeholder.
 
         Returns:
-            Union[Cacheable, object]: The live instance of the cacheable object or a garbage marker.
+            Union[Cacheable, object]: Live instance of the cacheable object or a garbage marker.
         """
         if self.instance() is None:
             return _GARBAGE
@@ -2555,7 +2555,7 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
         If the instance is no longer available, None is returned.
 
         Returns:
-            Optional[CAClassSetup]: The class setup for the instance's type, or None if the instance is garbage.
+            Optional[CAClassSetup]: Class setup for the instance's type, or None if the instance is garbage.
         """
         if self.contains_garbage:
             return None
@@ -2566,7 +2566,7 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
         """Gets the set of unbound cacheable setups declared in the instance's class.
 
         Returns:
-            Set[CAUnboundSetup]: A set of unbound setups associated with the class of the instance.
+            Set[CAUnboundSetup]: Set of unbound setups associated with the class of the instance.
 
                 Returns an empty set if the instance contains garbage.
         """
@@ -2579,7 +2579,7 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
         """Retrieves all runnable cacheable setups bound to the instance.
 
         Returns:
-            Set[CARunSetup]: A set of run setups associated with the instance.
+            Set[CARunSetup]: Set of run setups associated with the instance.
 
                 If the instance has been garbage collected, an empty set is returned.
         """
@@ -2659,7 +2659,7 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
             **kwargs: Keyword arguments for `CAUnboundSetup`.
 
         Returns:
-            Optional[CAUnboundSetup]: The active unbound setup if found, otherwise None.
+            Optional[CAUnboundSetup]: Active unbound setup if found, otherwise None.
 
         !!! info
             For default settings, see `vectorbtpro._settings.caching`.
@@ -2697,7 +2697,7 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
         """Set of run setups for cacheables that have been bound to this unbound setup.
 
         Returns:
-            Set[CARunSetup]: A set of run setups associated with the unbound cacheable.
+            Set[CARunSetup]: Set of run setups associated with the unbound cacheable.
         """
         matches = set()
         for run_setup in self.registry.run_setups.values():
@@ -2792,7 +2792,7 @@ class CARunResult(DefineMixin):
         """Timestamp of the first cache hit, if any.
 
         Returns:
-            Optional[datetime]: The UTC datetime of the first cache hit, or None if no hit has occurred.
+            Optional[datetime]: UTC datetime of the first cache hit, or None if no hit has occurred.
         """
         return object.__getattribute__(self, "_first_hit_time")
 
@@ -2801,7 +2801,7 @@ class CARunResult(DefineMixin):
         """Timestamp of the most recent cache hit, if any.
 
         Returns:
-            Optional[datetime]: The UTC datetime of the most recent cache hit, or None if no hit has occurred.
+            Optional[datetime]: UTC datetime of the most recent cache hit, or None if no hit has occurred.
         """
         return object.__getattribute__(self, "_last_hit_time")
 
@@ -2890,7 +2890,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
             **kwargs: Keyword arguments for `CARunSetup`.
 
         Returns:
-            Optional[CARunSetupT]: The existing or newly registered run setup,
+            Optional[CARunSetupT]: Existing or newly registered run setup,
                 or None if caching machinery is disabled.
 
         !!! info
@@ -2987,7 +2987,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
         If the referenced instance has been garbage collected, returns a garbage marker.
 
         Returns:
-            Union[Cacheable, object]: The actual bound instance if it exists, or the garbage marker `_GARBAGE`.
+            Union[Cacheable, object]: Actual bound instance if it exists, or the garbage marker `_GARBAGE`.
         """
         if self.instance is not None and self.instance() is None:
             return _GARBAGE
@@ -3007,7 +3007,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
         """Associated `CAInstanceSetup` for the bound instance.
 
         Returns:
-            Optional[CAInstanceSetup]: The `CAInstanceSetup` corresponding to the current instance
+            Optional[CAInstanceSetup]: `CAInstanceSetup` corresponding to the current instance
                 if it exists and has not been garbage collected; otherwise, returns None.
         """
         if self.instance_obj is None or self.contains_garbage:
@@ -3019,7 +3019,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
         """Associated `CAUnboundSetup` for the unbound cacheable.
 
         Returns:
-            Optional[CAUnboundSetup]: The `CAUnboundSetup` corresponding to the cacheable attribute,
+            Optional[CAUnboundSetup]: `CAUnboundSetup` corresponding to the cacheable attribute,
                 or None if it is not registered.
         """
         return self.registry.get_unbound_setup(self.cacheable)
@@ -3115,7 +3115,7 @@ class CARunSetup(CABaseSetup, DefineMixin):
             **kwargs: Keyword arguments to be included in the hash computation.
 
         Returns:
-            Optional[int]: The computed hash of the provided arguments.
+            Optional[int]: Computed hash of the provided arguments.
 
         !!! info
             For default settings, see `vectorbtpro._settings.caching`.
@@ -3299,7 +3299,7 @@ def get_cache_stats(*args, **kwargs) -> tp.Optional[tp.Frame]:
         **kwargs: Keyword arguments distributed between `CAQueryDelegator` and `CAQueryDelegator.get_stats`.
 
     Returns:
-        Optional[Frame]: A DataFrame containing caching statistics or None if not available.
+        Optional[Frame]: DataFrame containing caching statistics or None if not available.
     """
     delegator_kwargs = {}
     stats_kwargs = {}
@@ -3463,7 +3463,7 @@ class CachingDisabled(Base):
         """Query-like object used for parsing as utilized by `CAQuery.parse`.
 
         Returns:
-            Optional[Any]: The original query-like object provided for parsing, or None if not set.
+            Optional[Any]: Original query-like object provided for parsing, or None if not set.
         """
         return self._query_like
 
@@ -3481,7 +3481,7 @@ class CachingDisabled(Base):
         """Kind or kinds used for filtering setups, as described in `CARule.kind`.
 
         Returns:
-            Optional[Iterable[str]]: A string or iterable of strings indicating the kinds of setups,
+            Optional[Iterable[str]]: String or iterable of strings indicating the kinds of setups,
                 or None if unspecified.
         """
         return self._kind
@@ -3491,7 +3491,7 @@ class CachingDisabled(Base):
         """Setups to be excluded from caching, as defined in `CARule.exclude`.
 
         Returns:
-            Optional[Iterable[CABaseSetup]]: A single setup or an iterable of setups to exclude,
+            Optional[Iterable[CABaseSetup]]: Single setup or an iterable of setups to exclude,
                 or None if not specified.
         """
         return self._exclude
@@ -3501,7 +3501,7 @@ class CachingDisabled(Base):
         """Filter function used for setups selection, as described in `CARule.filter_func`.
 
         Returns:
-            Optional[Callable]: A function that filters setups, or None if no filter is applied.
+            Optional[Callable]: Function that filters setups, or None if no filter is applied.
         """
         return self._filter_func
 
@@ -3555,7 +3555,7 @@ class CachingDisabled(Base):
         """`CARule` instance applied if one is set.
 
         Returns:
-            Optional[CARule]: The current caching rule applied, or None if no rule is active.
+            Optional[CARule]: Current caching rule applied, or None if no rule is active.
         """
         return self._rule
 
@@ -3573,7 +3573,7 @@ class CachingDisabled(Base):
         """Initial caching settings for each setup, mapped by setup hash.
 
         Returns:
-            Dict[int, dict]: A dictionary where each key is a setup hash and each value is another
+            Dict[int, dict]: Dictionary where each key is a setup hash and each value is another
                 dictionary containing the initial settings (such as `active`, `whitelist`,
                 and `use_cache` flags) for that setup.
         """
@@ -3739,7 +3739,7 @@ class CachingEnabled(Base):
         See `CAQuery.parse`.
 
         Returns:
-            Optional[Any]: The query specification used for caching rules.
+            Optional[Any]: Query specification used for caching rules.
         """
         return self._query_like
 
@@ -3761,7 +3761,7 @@ class CachingEnabled(Base):
         See `CARule.kind`.
 
         Returns:
-            Optional[Iterable[str]]: The type or types that indicate which caching rule to apply.
+            Optional[Iterable[str]]: Type or types that indicate which caching rule to apply.
         """
         return self._kind
 
@@ -3772,7 +3772,7 @@ class CachingEnabled(Base):
         See `CARule.exclude`.
 
         Returns:
-            Optional[Iterable[CABaseSetup]]: The caching setups that should be excluded from the rule.
+            Optional[Iterable[CABaseSetup]]: Caching setups that should be excluded from the rule.
         """
         return self._exclude
 
@@ -3783,7 +3783,7 @@ class CachingEnabled(Base):
         See `CARule.filter_func`.
 
         Returns:
-            Optional[Callable]: The filter function used to select applicable caching setups.
+            Optional[Callable]: Filter function used to select applicable caching setups.
         """
         return self._filter_func
 
@@ -3838,7 +3838,7 @@ class CachingEnabled(Base):
         """Caching rule applied by this context manager.
 
         Returns:
-            Optional[CARule]: The caching rule currently applied, or None if no rule is active.
+            Optional[CARule]: Caching rule currently applied, or None if no rule is active.
         """
         return self._rule
 
@@ -3857,7 +3857,7 @@ class CachingEnabled(Base):
         (active state, whitelist, and caching usage).
 
         Returns:
-            Dict[int, dict]: A dictionary where keys are setup hashes and values are
+            Dict[int, dict]: Dictionary where keys are setup hashes and values are
                 dictionaries of initial settings.
         """
         return self._init_setup_settings

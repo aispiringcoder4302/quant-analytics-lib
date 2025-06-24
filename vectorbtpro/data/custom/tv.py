@@ -328,7 +328,7 @@ class TVClient(Configured):
             text (str): Raw message text.
 
         Returns:
-            Tuple[str, str]: A tuple containing the message type and the parameter string.
+            Tuple[str, str]: Tuple containing the message type and the parameter string.
         """
         found = re.search('"m":"(.+?)",', text).group(1)
         found2 = re.search('"p":(.+?"}"])}', text).group(1)
@@ -479,7 +479,7 @@ class TVClient(Configured):
             return_raw (bool): If True, returns the raw data string instead of a processed DataFrame.
 
         Returns:
-            Union[str, DataFrame]: The raw data string if `return_raw` is True;
+            Union[str, DataFrame]: Raw data string if `return_raw` is True;
                 otherwise, a DataFrame containing the historical trading data.
         """
         symbol = self.format_symbol(symbol=symbol, exchange=exchange, fut_contract=fut_contract)
@@ -547,7 +547,7 @@ class TVClient(Configured):
             try:
                 result = self.ws.recv()
                 raw_data += result + "\n"
-            except Exception as e:
+            except Exception:
                 break
             if "series_completed" in result:
                 break
@@ -584,7 +584,7 @@ class TVClient(Configured):
                 See `vectorbtpro.utils.pbar.ProgressBar`.
 
         Returns:
-            List[dict]: A list of dictionaries representing the fetched symbols.
+            List[dict]: List of dictionaries representing the fetched symbols.
         """
         if text is None:
             text = ""
@@ -658,7 +658,7 @@ class TVClient(Configured):
             **kwargs: Keyword arguments for the POST request payload.
 
         Returns:
-            List[dict]: A list of dictionaries representing the scanned symbols.
+            List[dict]: List of dictionaries representing the scanned symbols.
         """
         if market is None:
             market = "global"

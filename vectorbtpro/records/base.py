@@ -873,7 +873,7 @@ class Records(Analyzable, metaclass=MetaRecords):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
-            Tuple[Array1d, RecordArray]: A tuple containing the selected indices and the new record array.
+            Tuple[Array1d, RecordArray]: Tuple containing the selected indices and the new record array.
 
         See:
             * `vectorbtpro.records.nb.record_col_lens_select_nb` if `Records.col_mapper` is sorted.
@@ -1004,7 +1004,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             dict: Dictionary containing:
 
                 * `wrapper_meta`: Metadata from the resampling operation on the wrapper.
-                * `new_records_arr`: The new resampled record array.
+                * `new_records_arr`: New resampled record array.
         """
         if wrapper_meta is None:
             wrapper_meta = self.wrapper.resample_meta(*args, **kwargs)
@@ -1094,7 +1094,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         A list of field names extracted from the record array.
 
         Returns:
-            List[str]: A list of field names.
+            List[str]: List of field names.
         """
         return list(self.values.dtype.fields.keys())
 
@@ -1201,7 +1201,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             field (str): Field identifier.
 
         Returns:
-            Optional[MappingLike]: The mapping for the field as defined in the field configuration,
+            Optional[MappingLike]: Mapping for the field as defined in the field configuration,
                 or None if not set.
         """
         return self.get_field_setting(field, "mapping", None)
@@ -1331,7 +1331,7 @@ class Records(Analyzable, metaclass=MetaRecords):
         Array of index values extracted from the record array, or None if not available.
 
         Returns:
-            Optional[Array1d]: The array of index values if available; otherwise, None.
+            Optional[Array1d]: Array of index values if available; otherwise, None.
         """
         idx_field_name = self.get_field_name("idx")
         if idx_field_name is None:
@@ -1838,7 +1838,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             mask (Optional[Array1d]): Boolean mask to apply to the `customdata` arrays.
 
         Returns:
-            Tuple[Array2d, str]: A tuple where the first element is the `customdata` array and
+            Tuple[Array2d, str]: Tuple where the first element is the `customdata` array and
                 the second element is the `hoverinfo` string.
         """
         customdata_info = []

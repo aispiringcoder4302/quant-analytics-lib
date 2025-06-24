@@ -43,7 +43,7 @@ def resolve_sim_start_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Optional[Array1d]: An array of simulation start positions or None.
+        Optional[Array1d]: Array of simulation start positions or None.
     """
     if sim_start is None:
         if allow_none:
@@ -90,7 +90,7 @@ def resolve_sim_end_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Optional[Array1d]: An array of simulation end positions or None.
+        Optional[Array1d]: Array of simulation end positions or None.
     """
     if sim_end is None:
         if allow_none:
@@ -141,7 +141,7 @@ def resolve_sim_range_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Tuple[Optional[Array1d], Optional[Array1d]]: A tuple containing the simulation start and end positions.
+        Tuple[Optional[Array1d], Optional[Array1d]]: Tuple containing the simulation start and end positions.
     """
     new_sim_start = resolve_sim_start_nb(
         sim_shape=sim_shape,
@@ -178,7 +178,7 @@ def resolve_grouped_sim_start_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Optional[Array1d]: An array of simulation start positions for each group or None.
+        Optional[Array1d]: Array of simulation start positions for each group or None.
     """
     if sim_start is None:
         if allow_none:
@@ -242,7 +242,7 @@ def resolve_grouped_sim_end_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Optional[Array1d]: An array of simulation end positions for each group or None.
+        Optional[Array1d]: Array of simulation end positions for each group or None.
     """
     if sim_end is None:
         if allow_none:
@@ -310,7 +310,7 @@ def resolve_grouped_sim_range_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Tuple[Optional[Array1d], Optional[Array1d]]: A tuple containing the resolved
+        Tuple[Optional[Array1d], Optional[Array1d]]: Tuple containing the resolved
             simulation start and end positions.
     """
     new_sim_start = resolve_grouped_sim_start_nb(
@@ -350,7 +350,7 @@ def resolve_ungrouped_sim_start_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Optional[Array1d]: The resolved simulation start array or None.
+        Optional[Array1d]: Resolved simulation start array or None.
     """
     if sim_start is None:
         if allow_none:
@@ -411,7 +411,7 @@ def resolve_ungrouped_sim_end_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Optional[Array1d]: The resolved simulation end array or None.
+        Optional[Array1d]: Resolved simulation end array or None.
     """
     if sim_end is None:
         if allow_none:
@@ -476,7 +476,7 @@ def resolve_ungrouped_sim_range_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Tuple[Optional[Array1d], Optional[Array1d]]: A tuple containing the resolved
+        Tuple[Optional[Array1d], Optional[Array1d]]: Tuple containing the resolved
             simulation start and end positions.
     """
     new_sim_start = resolve_ungrouped_sim_start_nb(
@@ -592,7 +592,7 @@ def prepare_sim_range_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Tuple[Array1d, Array1d]: A tuple containing the prepared simulation start and end positions.
+        Tuple[Array1d, Array1d]: Tuple containing the prepared simulation start and end positions.
     """
     new_sim_start = prepare_sim_start_nb(
         sim_shape=sim_shape,
@@ -737,7 +737,7 @@ def prepare_grouped_sim_range_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Tuple[Array1d, Array1d]: A tuple containing the prepared simulation start and end positions.
+        Tuple[Array1d, Array1d]: Tuple containing the prepared simulation start and end positions.
     """
     new_sim_start = prepare_grouped_sim_start_nb(
         target_shape=target_shape,
@@ -878,7 +878,7 @@ def prepare_ungrouped_sim_range_nb(
         check_bounds (bool): Flag to validate that simulation positions are within bounds.
 
     Returns:
-        Tuple[Array1d, Array1d]: A tuple containing the prepared simulation start and
+        Tuple[Array1d, Array1d]: Tuple containing the prepared simulation start and
             end positions for ungrouped data.
     """
     new_sim_start = prepare_ungrouped_sim_start_nb(

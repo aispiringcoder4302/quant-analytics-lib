@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, tzinfo, date, time
 from enum import EnumMeta
 from pathlib import Path
 import sys
+import ast
 
 if sys.version_info < (3, 9):
     import typing
@@ -513,11 +514,17 @@ ChatHistory = MutableSequence[ChatMessage]
 ChatOutput = Union[Optional[Path], Tuple[Optional[Path], Any]]
 MaybeChatOutput = Union[ChatOutput, Tuple[ChatOutput, Completions]]
 TextSplitterLike = Union[None, str, MaybeType[TextSplitter]]
-TSRange = Tuple[int, int]
-TSRangeChunks = Iterator[TSRange]
+TSSpan = Tuple[int, int]
+TSSpanChunks = Iterator[TSSpan]
 TSSegment = Tuple[int, int, bool]
-TSSegmentChunks = Iterator[TSRange]
+TSSegmentChunks = Iterator[TSSpan]
 TSTextChunks = Iterator[str]
+TSSourceChunk = Tuple[str, int]
+TSSourceChunks = Iterator[TSSourceChunk]
+ShouldSplitCodeFunc = Callable[[ast.AST, int, int, int], bool]
+ShouldSplitCode = Union[bool, int, ShouldSplitCodeFunc]
+ShouldSplitMarkdownFunc = Callable[[str, int, int, int], bool]
+ShouldSplitMarkdown = Union[bool, int, ShouldSplitMarkdownFunc]
 ObjectStoreLike = Union[None, str, MaybeType[ObjectStore]]
 SplitDocuments = List[List[StoreDocument]]
 EmbeddedDocuments = List[EmbeddedDocument]
@@ -533,11 +540,10 @@ PipeTasks = Iterable[PipeTask]
 # Pickling
 CompressionLike = Union[None, bool, str]
 
-# Formatting
-SourceChunk = Union[str, Tuple[str, int, int], Tuple[str, int], Tuple[str, int, int, int]]
-SourceChunks = List[SourceChunk]
-RefineSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
-RefineSourceOutputs = List[Tuple[Any, RefineSourceOutput]]
+# Source
+RefactorSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
+RefactorSourceOutputs = List[Tuple[Any, RefactorSourceOutput]]
+MaybeRefactorSourceOutput = Union[RefactorSourceOutput, RefactorSourceOutputs]
 
 # Simulation
 SignalFunc = Callable[[SignalContext, VarArg()], Tuple[bool, bool, bool, bool]]

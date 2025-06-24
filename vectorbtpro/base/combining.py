@@ -148,7 +148,7 @@ def to_2d_multiple_nb(a: tp.Iterable[tp.Array]) -> tp.List[tp.Array2d]:
         a (Iterable[Array]): Iterable of arrays.
 
     Returns:
-        List[Array2d]: A list of arrays, each expanded along axis 1.
+        List[Array2d]: List of arrays, each expanded along axis 1.
     """
     lst = list()
     for _a in a:
@@ -172,7 +172,7 @@ def custom_apply_and_concat_multiple_nb(
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        List[Array2d]: A list of 2D arrays, each resulting from horizontally
+        List[Array2d]: List of 2D arrays, each resulting from horizontally
             concatenating the corresponding outputs across all calls.
     """
     outputs = list()
@@ -207,7 +207,7 @@ def apply_and_concat_multiple_nb(
         *args: Positional arguments for `apply_func_nb`.
 
     Returns:
-        List[Array2d]: A list of 2D arrays, each representing the concatenated outputs for
+        List[Array2d]: List of 2D arrays, each representing the concatenated outputs for
             one of the multiple return arrays.
 
     See:
@@ -240,8 +240,8 @@ def apply_and_concat_each(
     Returns:
         Union[None, Array2d, List[Array2d]]:
             * None if no outputs are produced.
-            * A 2D array if a single output is produced.
-            * A list of 2D arrays if multiple outputs are produced.
+            * 2D array if a single output is produced.
+            * List of 2D arrays if multiple outputs are produced.
     """
     from vectorbtpro.base.merging import column_stack_arrays
 
@@ -297,8 +297,8 @@ def apply_and_concat(
     Returns:
         Union[None, Array2d, List[Array2d]]:
             * None if no outputs are produced.
-            * A 2D array if a single output is produced.
-            * A list of 2D arrays if multiple outputs are produced.
+            * 2D array if a single output is produced.
+            * List of 2D arrays if multiple outputs are produced.
 
     See:
         * `custom_apply_and_concat_none_nb` if `jitted_loop` is True and `n_outputs` is 0

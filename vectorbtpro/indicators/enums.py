@@ -120,7 +120,7 @@ class SuperTrendAIS(tp.NamedTuple):
 
 __pdoc__[
     "SuperTrendAIS"
-] = """A named tuple representing the input state for the Super Trend indicator calculation in 
+] = """Named tuple representing the input state for the Super Trend indicator calculation in 
 `vectorbtpro.indicators.nb.supertrend_acc_nb`."""
 
 
@@ -138,5 +138,5 @@ class SuperTrendAOS(tp.NamedTuple):
 
 __pdoc__[
     "SuperTrendAOS"
-] = """A named tuple representing the output state for the Super Trend indicator calculation in 
+] = """Named tuple representing the output state for the Super Trend indicator calculation in 
 `vectorbtpro.indicators.nb.supertrend_acc_nb`."""

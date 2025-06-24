@@ -2078,7 +2078,7 @@ class PortfolioOptimizer(Analyzable):
             pre_group_func (Optional[Callable]): Function to preprocess and modify the group configuration.
 
         Returns:
-            Tuple[RecordArray, Array2d]: A tuple containing allocation records and a 2D array of allocation values.
+            Tuple[RecordArray, Array2d]: Tuple containing allocation records and a 2D array of allocation values.
 
         See:
             * `vectorbtpro.portfolio.pfopt.nb.allocate_meta_nb` if `jitted_loop=True`
@@ -2707,7 +2707,7 @@ class PortfolioOptimizer(Analyzable):
                     new_allocations = np.asarray(allocations)
                     if new_allocations.dtype != object:
                         allocations = new_allocations
-                except Exception as e:
+                except Exception:
                     pass
 
         if isinstance(allocations, np.ndarray):
@@ -2993,7 +2993,7 @@ class PortfolioOptimizer(Analyzable):
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
-            Tuple[RecordArray, Array2d]: A tuple containing the allocation records and
+            Tuple[RecordArray, Array2d]: Tuple containing the allocation records and
                 the corresponding 2D array of allocation values.
 
         See:
@@ -3852,7 +3852,7 @@ class PortfolioOptimizer(Analyzable):
         """Allocation records as ranges (`AllocRanges`) or points (`AllocPoints`).
 
         Returns:
-            Union[AllocRanges, AllocPoints]: The allocation records.
+            Union[AllocRanges, AllocPoints]: Allocation records.
         """
         return self._alloc_records
 

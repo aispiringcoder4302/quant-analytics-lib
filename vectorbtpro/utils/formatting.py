@@ -658,15 +658,15 @@ def pdir(*args, **kwargs) -> None:
     """Print parsed attributes of an object.
 
     Args:
-        *args: Positional arguments for `vectorbtpro.utils.attr_.parse_attrs`.
-        **kwargs: Keyword arguments for `vectorbtpro.utils.attr_.parse_attrs`.
+        *args: Positional arguments for `vectorbtpro.utils.attr_.get_attrs`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.attr_.get_attrs`.
 
     Returns:
         None
     """
-    from vectorbtpro.utils.attr_ import parse_attrs
+    from vectorbtpro.utils.attr_ import get_attrs
 
-    ptable(parse_attrs(*args, **kwargs))
+    ptable(get_attrs(*args, **kwargs))
 
 
 def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
@@ -811,4 +811,24 @@ def get_dump_language(dump_engine: str) -> str:
         return "toml"
     if dump_engine.lower() == "json":
         return "json"
+    return ""
+
+
+def get_dump_frontmatter(dump_engine: str) -> str:
+    """Return the frontmatter corresponding to the provided dump engine.
+
+    Args:
+        dump_engine (str): Name of the dump engine.
+
+            See `vectorbtpro.utils.formatting.dump`.
+
+    Returns:
+        str: Corresponding frontmatter string, or an empty string if unknown.
+    """
+    if dump_engine.lower() == "yaml":
+        return "---"
+    if dump_engine.lower() == "pyyaml":
+        return "---"
+    if dump_engine.lower() in ("ruamel", "ruamel.yaml"):
+        return "---"
     return ""

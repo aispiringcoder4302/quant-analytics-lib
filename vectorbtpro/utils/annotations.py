@@ -265,7 +265,7 @@ class Union(Annotatable, DefineMixin):
     """
 
     annotations: tp.Tuple[tp.Annotation, ...] = define.field()
-    """The tuple of annotations that comprise the union."""
+    """Tuple of annotations that comprise the union."""
 
     resolved: bool = define.field(default=False)
     """Indicates if the union is resolved."""
@@ -279,7 +279,7 @@ class Union(Annotatable, DefineMixin):
         This method flattens any nested unions and combines their annotations.
 
         If the union contains both `VarArgs` and `VarKwargs`, or if conflicting annotation
-        types are encountered during resolution, a ValueError is raised.
+        types are encountered during resolution, a `ValueError` is raised.
 
         Returns:
             Annotation: Resolved annotation.

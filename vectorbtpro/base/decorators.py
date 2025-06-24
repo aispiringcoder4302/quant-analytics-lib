@@ -56,7 +56,7 @@ def attach_arg_properties(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
             argument properties will be attached.
 
     Returns:
-        Type[T]: The decorated class with the new argument properties attached.
+        Type[T]: Decorated class with the new argument properties attached.
     """
     checks.assert_subclass_of(cls, "BasePreparer")
 

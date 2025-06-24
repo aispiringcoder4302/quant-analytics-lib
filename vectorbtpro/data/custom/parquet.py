@@ -117,7 +117,7 @@ class ParquetData(FileData):
             path (PathLike): Directory path containing partition directories.
 
         Returns:
-            List[str]: A list of partition column names extracted from the directory structure.
+            List[str]: List of partition column names extracted from the directory structure.
 
         !!! note
             Assumes the Hive partitioning scheme.

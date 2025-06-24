@@ -130,7 +130,7 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
             corresponding QuantStats function.
 
     Returns:
-        Type[T]: The decorated class with QuantStats methods attached.
+        Type[T]: Decorated class with QuantStats methods attached.
 
     !!! info
         For default settings, see `vectorbtpro._settings.qs_adapter`.
@@ -295,7 +295,7 @@ class QSAdapter(Configured):
         QuantStats functions.
 
         Returns:
-            Dict[str, str]: A dictionary mapping common argument names to their corresponding defaults.
+            Dict[str, str]: Dictionary mapping common argument names to their corresponding defaults.
         """
         return dict(rf="risk_free", rolling_period="window")
 

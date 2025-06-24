@@ -154,7 +154,7 @@ class ProgressBar(Base):
         """Identifier of the progress bar.
 
         Returns:
-            Optional[Hashable]: The unique identifier for the progress bar if available; otherwise, None.
+            Optional[Hashable]: Unique identifier for the progress bar if available; otherwise, None.
         """
         return self._bar_id
 
@@ -163,7 +163,7 @@ class ProgressBar(Base):
         """Type of the progress bar.
 
         Returns:
-            Type[tqdm]: The class/type used for creating the progress bar instance.
+            Type[tqdm]: Class/type used for creating the progress bar instance.
         """
         return self._bar_type
 
@@ -199,7 +199,7 @@ class ProgressBar(Base):
         """Iterable used to track progress.
 
         Returns:
-            Optional[Iterable]: The iterable associated with the progress bar, or None if not provided.
+            Optional[Iterable]: Iterable associated with the progress bar, or None if not provided.
         """
         return self._iterable
 
@@ -235,7 +235,7 @@ class ProgressBar(Base):
         """Progress bar registry managing progress bar instances.
 
         Returns:
-            Optional[PBarRegistry]: The registry instance responsible for progress bar management,
+            Optional[PBarRegistry]: Registry instance responsible for progress bar management,
                 or None if registry operations are disabled.
         """
         return self._registry
@@ -254,7 +254,7 @@ class ProgressBar(Base):
         """Current progress bar instance.
 
         Returns:
-            Optional[tqdm]: The active progress bar instance, or None if not set.
+            Optional[tqdm]: Active progress bar instance, or None if not set.
         """
         return self._bar
 
@@ -263,7 +263,7 @@ class ProgressBar(Base):
         """Timestamp indicating when the progress bar was opened.
 
         Returns:
-            Optional[int]: The Unix timestamp when the progress bar was opened, or None if not yet opened.
+            Optional[int]: Unix timestamp when the progress bar was opened, or None if not yet opened.
         """
         return self._open_time
 
@@ -272,7 +272,7 @@ class ProgressBar(Base):
         """Timestamp indicating when the progress bar was last updated.
 
         Returns:
-            Optional[int]: The Unix timestamp of the last update, or None if never updated.
+            Optional[int]: Unix timestamp of the last update, or None if never updated.
         """
         return self._update_time
 
@@ -281,7 +281,7 @@ class ProgressBar(Base):
         """Timestamp indicating when the progress bar was last refreshed.
 
         Returns:
-            Optional[int]: The Unix timestamp when the progress bar was refreshed, or None if never refreshed.
+            Optional[int]: Unix timestamp when the progress bar was refreshed, or None if never refreshed.
         """
         return self._refresh_time
 
@@ -290,7 +290,7 @@ class ProgressBar(Base):
         """Timestamp indicating when the progress bar was closed.
 
         Returns:
-            Optional[int]: The Unix timestamp when the progress bar was closed, or None if still active.
+            Optional[int]: Unix timestamp when the progress bar was closed, or None if still active.
         """
         return self._close_time
 

@@ -269,7 +269,7 @@ def generate_enex_nb(
                 within the same bar, and entry can be processed before exit.
 
     Returns:
-        Tuple[Array2d, Array2d]: A tuple containing the entry signals array and the exit signals array.
+        Tuple[Array2d, Array2d]: Tuple containing the entry signals array and the exit signals array.
 
     !!! tip
         This function is parallelizable.
@@ -440,7 +440,7 @@ def generate_rand_enex_nb(
                 within the same bar, and entry can be processed before exit.
 
     Returns:
-        Tuple[Array2d, Array2d]: A tuple containing a boolean array for entries and a boolean array for exits.
+        Tuple[Array2d, Array2d]: Tuple containing a boolean array for entries and a boolean array for exits.
 
     !!! tip
         This function is parallelizable.
@@ -535,7 +535,7 @@ def rand_enex_apply_nb(
                 within the same bar, and entry can be processed before exit.
 
     Returns:
-        Tuple[Array2d, Array2d]: A tuple containing boolean arrays for entries and exits.
+        Tuple[Array2d, Array2d]: Tuple containing boolean arrays for entries and exits.
     """
     return generate_rand_enex_nb(target_shape, n, entry_wait=entry_wait, exit_wait=exit_wait)
 
@@ -1148,7 +1148,7 @@ def clean_enex_1d_nb(
         reverse_order (bool): Determines whether to reverse the order of signals.
 
     Returns:
-        Tuple[Array1d, Array1d]: A tuple containing the cleaned entry and exit arrays.
+        Tuple[Array1d, Array1d]: Tuple containing the cleaned entry and exit arrays.
     """
     entries_out = np.full(entries.shape, False, dtype=np.bool_)
     exits_out = np.full(exits.shape, False, dtype=np.bool_)
@@ -1216,7 +1216,7 @@ def clean_enex_nb(
         reverse_order (bool): Determines whether to reverse the order of signals.
 
     Returns:
-        Tuple[Array2d, Array2d]: A tuple containing the cleaned entries and exits arrays.
+        Tuple[Array2d, Array2d]: Tuple containing the cleaned entries and exits arrays.
 
     !!! tip
         This function is parallelizable.
@@ -1258,7 +1258,7 @@ def relation_idxs_1d_nb(
             See `vectorbtpro.signals.enums.SignalRelation`.
 
     Returns:
-        Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
+        Tuple[Array1d, Array1d, Array1d, Array1d]: Tuple containing:
 
             * `source_range`: Order positions for source signals.
             * `target_range`: Order positions for target signals.
@@ -1729,12 +1729,12 @@ def unravel_nb(
         incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
 
     Returns:
-        Tuple[Array2d, Array1d, Array1d, Array1d]: A tuple containing:
+        Tuple[Array2d, Array1d, Array1d, Array1d]: Tuple containing:
 
-            * The new mask with each True value unwrapped into a separate column.
-            * The index position of each True value within its new column.
-            * The row indices of each True value in the original mask.
-            * The original column indices corresponding to each True value.
+            * New mask with each True value unwrapped into a separate column.
+            * Index position of each True value within its new column.
+            * Row indices of each True value in the original mask.
+            * Original column indices corresponding to each True value.
     """
     true_idxs = np.flatnonzero(mask.transpose())
 
@@ -1798,14 +1798,14 @@ def unravel_between_nb(
         incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
 
     Returns:
-        Tuple[Array2d, Array1d, Array1d, Array1d, Array1d, Array1d]: A tuple containing:
+        Tuple[Array2d, Array1d, Array1d, Array1d, Array1d, Array1d]: Tuple containing:
 
-            * The new mask with each pair of successive True values unwrapped into a separate column.
-            * The index position of the source True value within its new column.
-            * The index position of the target True value within its new column.
-            * The row indices of the source True values in the original mask.
-            * The row indices of the target True values in the original mask.
-            * The original column indices corresponding to each True value.
+            * New mask with each pair of successive True values unwrapped into a separate column.
+            * Index position of the source True value within its new column.
+            * Index position of the target True value within its new column.
+            * Row indices of the source True values in the original mask.
+            * Row indices of the target True values in the original mask.
+            * Original column indices corresponding to each True value.
     """
     true_idxs = np.flatnonzero(mask.transpose())
 
@@ -1896,7 +1896,7 @@ def unravel_between_two_nb(
         incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
 
     Returns:
-        Tuple[Array2d, Array2d, Array1d, Array1d, Array1d, Array1d, Array1d]: A tuple containing:
+        Tuple[Array2d, Array2d, Array1d, Array1d, Array1d, Array1d, Array1d]: Tuple containing:
 
             * New source mask.
             * New target mask.

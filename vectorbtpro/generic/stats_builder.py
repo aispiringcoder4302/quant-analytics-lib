@@ -169,15 +169,15 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
                 Each element can be one of the following:
 
-                * A metric name (see keys in `StatsBuilderMixin.metrics`).
-                * A tuple with a metric name and a settings dictionary as defined in `StatsBuilderMixin.metrics`.
-                * A tuple with a metric name and a `vectorbtpro.utils.template.CustomTemplate` instance.
-                * A tuple with a metric name and a list of settings dictionaries to be expanded into multiple metrics.
+                * Metric name (see keys in `StatsBuilderMixin.metrics`).
+                * Tuple with a metric name and a settings dictionary as defined in `StatsBuilderMixin.metrics`.
+                * Tuple with a metric name and a `vectorbtpro.utils.template.CustomTemplate` instance.
+                * Tuple with a metric name and a list of settings dictionaries to be expanded into multiple metrics.
 
                 The settings dictionary can include:
 
                 * `title`: Metric title. Defaults to the metric name.
-                * `tags`: A single tag or multiple tags to associate with the metric.
+                * `tags`: Single tag or multiple tags to associate with the metric.
                     The metric is retained if any tag matches those in `tags`.
                 * `check_{filter}` and `inv_check_{filter}`: Flags to evaluate the metric against
                     a filter defined in `filters`. True indicates inclusion.
@@ -261,7 +261,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 If overridden by a metric:
 
                 * It takes effect only if the global `agg_func` is not None.
-                * A warning is raised if it is None but the calculation returns multiple values.
+                * Warning is raised if it is None but the calculation returns multiple values.
             dropna (Optional[bool]): If True, omit metrics that are entirely NaN.
             silence_warnings (Optional[bool]): Flag to suppress warning messages.
             template_context (KwargsLike): Additional context for template substitution.
@@ -291,7 +291,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 Extend or override all global and metric settings on a per-metric basis.
 
         Returns:
-            Optional[SeriesFrame]: The computed metrics as a Pandas Series
+            Optional[SeriesFrame]: Computed metrics as a Pandas Series
                 (for single-dimensional output) or DataFrame (for multi-dimensional output).
 
         !!! info

@@ -27,7 +27,7 @@ class ToMarkdownAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "to_markdown"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -38,6 +38,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence:  tp.Optional[str] = None,
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **to_markdown_kwargs,
     ) -> tp.ArgsKwargs:
@@ -54,13 +55,16 @@ class ToMarkdownAssetFunc(AssetFunc):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
                 Defaults to `vectorbtpro.utils.knowledge.custom_assets.VBTAsset`.
             **to_markdown_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -74,6 +78,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         clean_metadata = asset_cls.resolve_setting(clean_metadata, "clean_metadata")
         clean_metadata_kwargs = asset_cls.resolve_setting(clean_metadata_kwargs, "clean_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
+        metadata_fence = asset_cls.resolve_setting(metadata_fence, "metadata_fence")
         to_markdown_kwargs = asset_cls.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
 
         clean_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clean_metadata_kwargs)
@@ -87,6 +92,7 @@ class ToMarkdownAssetFunc(AssetFunc):
                 clean_metadata=clean_metadata,
                 clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
+                metadata_fence=metadata_fence,
             ),
             **to_markdown_kwargs,
         }
@@ -102,6 +108,7 @@ class ToMarkdownAssetFunc(AssetFunc):
         clean_metadata: bool = True,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: str = "frontmatter",
         **to_markdown_kwargs,
     ) -> str:
         """Return Markdown formatted metadata by converting data to markdown using
@@ -120,12 +127,15 @@ class ToMarkdownAssetFunc(AssetFunc):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (str): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             **to_markdown_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_markdown`.
 
         Returns:
             str: Markdown formatted metadata string.
         """
-        from vectorbtpro.utils.formatting import get_dump_language
+        from vectorbtpro.utils.formatting import get_dump_language, get_dump_frontmatter
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
         if allow_empty is None:
@@ -148,9 +158,20 @@ class ToMarkdownAssetFunc(AssetFunc):
                 metadata = None
             metadata = {root_metadata_key: metadata}
         text = DumpAssetFunc.call(metadata, **dump_metadata_kwargs).strip()
-        dump_engine = dump_metadata_kwargs.get("dump_engine", "nestedtext")
-        dump_language = get_dump_language(dump_engine)
-        text = f"```{dump_language}\n{text}\n```"
+        if metadata_fence.lower() == "frontmatter":
+            dump_engine = dump_metadata_kwargs.get("dump_engine", "yaml")
+            metadata_fence = get_dump_frontmatter(dump_engine)
+            if not metadata_fence:
+                metadata_fence = "code"
+        if metadata_fence.lower() == "code":
+            dump_engine = dump_metadata_kwargs.get("dump_engine", "yaml")
+            dump_language = get_dump_language(dump_engine)
+            text = f"```{dump_language}\n{text}\n```"
+        else:
+            text = f"{metadata_fence}\n{text}\n{metadata_fence}"
+        to_markdown_kwargs["remove_code_title"] = False
+        to_markdown_kwargs["even_indentation"] = False
+        to_markdown_kwargs["newline_before_list"] = False
         return to_markdown(text, **to_markdown_kwargs)
 
     @classmethod
@@ -179,10 +200,13 @@ class ToMarkdownAssetFunc(AssetFunc):
         clean_metadata: bool = True,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: str = "frontmatter",
         **to_markdown_kwargs,
     ) -> tp.Any:
+        from vectorbtpro.utils.knowledge.base_asset_funcs import DumpAssetFunc
+
         if not isinstance(d, (str, dict)):
-            raise TypeError("Data item must be a string or dict")
+            d = DumpAssetFunc.call(d)
         if isinstance(d, str):
             d = dict(content=d)
         markdown_metadata = cls.get_markdown_metadata(
@@ -193,6 +217,7 @@ class ToMarkdownAssetFunc(AssetFunc):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             **to_markdown_kwargs,
         )
         markdown_content = cls.get_markdown_content(d, **to_markdown_kwargs)
@@ -218,6 +243,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence:  tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         format_html_kwargs: tp.KwargsLike = None,
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
@@ -236,6 +262,9 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -248,7 +277,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             **to_html_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -262,6 +291,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         clean_metadata = asset_cls.resolve_setting(clean_metadata, "clean_metadata")
         clean_metadata_kwargs = asset_cls.resolve_setting(clean_metadata_kwargs, "clean_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
+        metadata_fence = asset_cls.resolve_setting(metadata_fence, "metadata_fence")
         to_markdown_kwargs = asset_cls.resolve_setting(to_markdown_kwargs, "to_markdown_kwargs", merge=True)
         format_html_kwargs = asset_cls.resolve_setting(format_html_kwargs, "format_html_kwargs", merge=True)
         to_html_kwargs = asset_cls.resolve_setting(to_html_kwargs, "to_html_kwargs", merge=True)
@@ -277,6 +307,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
                 clean_metadata=clean_metadata,
                 clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
+                metadata_fence=metadata_fence,
                 to_markdown_kwargs=to_markdown_kwargs,
                 format_html_kwargs=format_html_kwargs,
             ),
@@ -294,6 +325,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         clean_metadata: bool = True,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: str = "frontmatter",
         to_markdown_kwargs: tp.KwargsLike = None,
         **to_html_kwargs,
     ) -> str:
@@ -314,6 +346,9 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (str): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -333,6 +368,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             **to_markdown_kwargs,
         )
         if not metadata:
@@ -370,19 +406,22 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
         clean_metadata: bool = True,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: str = "frontmatter",
         to_markdown_kwargs: tp.KwargsLike = None,
         format_html_kwargs: tp.KwargsLike = None,
         **to_html_kwargs,
     ) -> tp.Any:
+        from vectorbtpro.utils.knowledge.base_asset_funcs import DumpAssetFunc
+
         if not isinstance(d, (str, dict, list)):
-            raise TypeError("Data item must be a string, dict, or list of such")
+            d = DumpAssetFunc.call(d)
         if isinstance(d, str):
             d = dict(content=d)
         if isinstance(d, list):
             html_metadata = []
             for _d in d:
                 if not isinstance(_d, (str, dict)):
-                    raise TypeError("Data item must be a string, dict, or list of such")
+                    _d = DumpAssetFunc.call(_d)
                 if isinstance(_d, str):
                     _d = dict(content=_d)
                 html_metadata.append(
@@ -394,6 +433,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
                         clean_metadata=clean_metadata,
                         clean_metadata_kwargs=clean_metadata_kwargs,
                         dump_metadata_kwargs=dump_metadata_kwargs,
+                        metadata_fence=metadata_fence,
                         to_markdown_kwargs=to_markdown_kwargs,
                         **to_html_kwargs,
                     )
@@ -412,6 +452,7 @@ class ToHTMLAssetFunc(ToMarkdownAssetFunc):
                 clean_metadata=clean_metadata,
                 clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
+                metadata_fence=metadata_fence,
                 to_markdown_kwargs=to_markdown_kwargs,
                 **to_html_kwargs,
             )
@@ -435,7 +476,7 @@ class AggMessageAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_message"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -445,6 +486,7 @@ class AggMessageAssetFunc(AssetFunc):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence:  tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
         **kwargs,
@@ -461,6 +503,9 @@ class AggMessageAssetFunc(AssetFunc):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -470,7 +515,7 @@ class AggMessageAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -483,6 +528,7 @@ class AggMessageAssetFunc(AssetFunc):
         clean_metadata = asset_cls.resolve_setting(clean_metadata, "clean_metadata")
         clean_metadata_kwargs = asset_cls.resolve_setting(clean_metadata_kwargs, "clean_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
+        metadata_fence = asset_cls.resolve_setting(metadata_fence, "metadata_fence")
 
         clean_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clean_metadata_kwargs)
         _, clean_metadata_kwargs = FindRemoveAssetFunc.prepare(**clean_metadata_kwargs)
@@ -494,6 +540,7 @@ class AggMessageAssetFunc(AssetFunc):
                 clean_metadata=clean_metadata,
                 clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
+                metadata_fence=metadata_fence,
                 to_markdown_kwargs=to_markdown_kwargs,
             ),
             **kwargs,
@@ -508,6 +555,7 @@ class AggMessageAssetFunc(AssetFunc):
         clean_metadata: bool = True,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: str = "frontmatter",
         to_markdown_kwargs: tp.KwargsLike = None,
     ) -> tp.Any:
         if not isinstance(d, dict):
@@ -537,6 +585,7 @@ class AggMessageAssetFunc(AssetFunc):
                 clean_metadata=clean_metadata,
                 clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
+                metadata_fence=metadata_fence,
                 **to_markdown_kwargs,
             )
             new_d["content"] += metadata
@@ -551,7 +600,7 @@ class AggBlockAssetFunc(AssetFunc):
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "agg_block"
 
-    _wrap: tp.ClassVar[tp.Optional[str]] = True
+    _wrap: tp.ClassVar[tp.Optional[bool]] = True
 
     @classmethod
     def prepare(
@@ -563,6 +612,7 @@ class AggBlockAssetFunc(AssetFunc):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence:  tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
         asset_cls: tp.Optional[tp.Type[tp.KnowledgeAsset]] = None,
@@ -583,6 +633,9 @@ class AggBlockAssetFunc(AssetFunc):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -593,7 +646,7 @@ class AggBlockAssetFunc(AssetFunc):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            ArgsKwargs: A tuple containing the positional arguments and keyword arguments.
+            ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc, DumpAssetFunc
 
@@ -608,6 +661,7 @@ class AggBlockAssetFunc(AssetFunc):
         clean_metadata = asset_cls.resolve_setting(clean_metadata, "clean_metadata")
         clean_metadata_kwargs = asset_cls.resolve_setting(clean_metadata_kwargs, "clean_metadata_kwargs", merge=True)
         dump_metadata_kwargs = asset_cls.resolve_setting(dump_metadata_kwargs, "dump_metadata_kwargs", merge=True)
+        metadata_fence = asset_cls.resolve_setting(metadata_fence, "metadata_fence")
 
         clean_metadata_kwargs = flat_merge_dicts(dict(target=FindRemoveAssetFunc.is_empty_func), clean_metadata_kwargs)
         _, clean_metadata_kwargs = FindRemoveAssetFunc.prepare(**clean_metadata_kwargs)
@@ -621,6 +675,7 @@ class AggBlockAssetFunc(AssetFunc):
                 clean_metadata=clean_metadata,
                 clean_metadata_kwargs=clean_metadata_kwargs,
                 dump_metadata_kwargs=dump_metadata_kwargs,
+                metadata_fence=metadata_fence,
                 to_markdown_kwargs=to_markdown_kwargs,
                 link_map=link_map,
             ),
@@ -638,6 +693,7 @@ class AggBlockAssetFunc(AssetFunc):
         clean_metadata: bool = True,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: str = "frontmatter",
         to_markdown_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
@@ -733,6 +789,7 @@ class AggBlockAssetFunc(AssetFunc):
                     clean_metadata=clean_metadata,
                     clean_metadata_kwargs=clean_metadata_kwargs,
                     dump_metadata_kwargs=dump_metadata_kwargs,
+                    metadata_fence=metadata_fence,
                     **to_markdown_kwargs,
                 )
                 new_d["content"].append(metadata)
@@ -759,6 +816,7 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
         clean_metadata: bool = True,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: str = "frontmatter",
         to_markdown_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
@@ -827,6 +885,7 @@ class AggThreadAssetFunc(AggBlockAssetFunc):
                     clean_metadata=clean_metadata,
                     clean_metadata_kwargs=clean_metadata_kwargs,
                     dump_metadata_kwargs=dump_metadata_kwargs,
+                    metadata_fence=metadata_fence,
                     **to_markdown_kwargs,
                 )
                 new_d["content"].append(metadata)
@@ -876,6 +935,7 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
         clean_metadata: bool = True,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: str = "frontmatter",
         to_markdown_kwargs: tp.KwargsLike = None,
         link_map: tp.Optional[tp.Dict[str, dict]] = None,
     ) -> tp.Any:
@@ -942,6 +1002,7 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
                     clean_metadata=clean_metadata,
                     clean_metadata_kwargs=clean_metadata_kwargs,
                     dump_metadata_kwargs=dump_metadata_kwargs,
+                    metadata_fence=metadata_fence,
                     **to_markdown_kwargs,
                 )
                 new_d["content"].append(metadata)

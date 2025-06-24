@@ -139,7 +139,7 @@ class AlpacaData(RemoteData):
             client_config (KwargsLike): Configuration parameters for creating a new client.
 
         Returns:
-            List[str]: A list of symbol strings.
+            List[str]: List of symbol strings.
 
         !!! note
             If encountering an authorization error, verify that the `paper` flag in `client_config` is set
@@ -295,19 +295,19 @@ class AlpacaData(RemoteData):
 
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             limit (Optional[int]): Upper limit of number of data points to return.
-            adjustment (Optional[str]): The type of corporate action data normalization.
+            adjustment (Optional[str]): Type of corporate action data normalization.
 
                 Options: "raw", "split", "dividend", or "all".
-            feed (Optional[str]): The stock data feed to retrieve from.
+            feed (Optional[str]): Stock data feed to retrieve from.
 
                 Options: "iex", "sip", "delayed_sip", or "otc".
 
                 OTC and SIP are available with premium data subscriptions.
-            sort (Optional[str]): The chronological order of response based on the timestamp.
+            sort (Optional[str]): Chronological order of response based on the timestamp.
 
                 Options: "asc" or "desc".
-            asof (Optional[DatetimeLike]): The asof date of the queried stock symbol (e.g., "2024-01-01").
-            currency (Optional[str]): The currency of all prices in ISO 4217 format (e.g., "USD", "EUR").
+            asof (Optional[DatetimeLike]): Asof date of the queried stock symbol (e.g., "2024-01-01").
+            currency (Optional[str]): Currency of all prices in ISO 4217 format (e.g., "USD", "EUR").
 
         Returns:
             SymbolData: Fetched data and a metadata dictionary.

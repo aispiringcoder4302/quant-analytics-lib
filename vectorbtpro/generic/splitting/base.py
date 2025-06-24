@@ -336,7 +336,7 @@ class Takeable(Evaluable, Annotatable, DefineMixin):
     """Class representing an object from which a range can be taken."""
 
     obj: tp.Any = define.required_field()
-    """The object from which the range is taken."""
+    """Object from which the range is taken."""
 
     remap_to_obj: bool = define.optional_field()
     """Boolean indicating whether to remap `Splitter.index` to the index of `Takeable.obj`.
@@ -345,13 +345,13 @@ class Takeable(Evaluable, Annotatable, DefineMixin):
     """
 
     index: tp.Optional[tp.IndexLike] = define.optional_field()
-    """The index associated with the object.
+    """Index associated with the object.
 
     If not provided, `Splitter.get_obj_index` is used to retrieve it.
     """
 
     freq: tp.Optional[tp.FrequencyLike] = define.optional_field()
-    """The frequency associated with `Takeable.index`."""
+    """Frequency associated with `Takeable.index`."""
 
     point_wise: bool = define.optional_field()
     """Boolean indicating whether to select one range point at a time and return a tuple."""
@@ -422,7 +422,7 @@ class Splitter(Analyzable):
 
     @property
     def splits_arr(self) -> tp.SplitsArray:
-        """A two-dimensional array representing splits.
+        """Two-dimensional array representing splits.
 
         The first axis represents splits and the second axis represents sets.
         Each element is a range defined as a slice, a sequence of indices, a mask,
@@ -1910,11 +1910,11 @@ class Splitter(Analyzable):
 
         Template substitutions have access to the following:
 
-        * `split_idx`: The current split index, starting at 0.
-        * `splits`: A nested list of splits generated so far.
-        * `bounds`: A nested list of bounds generated so far.
-        * `prev_start`: The left bound of the previous split.
-        * `prev_end`: The right bound of the previous split.
+        * `split_idx`: Current split index, starting at 0.
+        * `splits`: Nested list of splits generated so far.
+        * `bounds`: Nested list of bounds generated so far.
+        * `prev_start`: Left bound of the previous split.
+        * `prev_end`: Right bound of the previous split.
         * All arguments for `Splitter.from_split_func`.
 
         Args:
@@ -2085,7 +2085,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments used to determine the factory method.
 
         Returns:
-            Optional[str]: The name of the factory method if a unique match is found; otherwise, None.
+            Optional[str]: Name of the factory method if a unique match is found; otherwise, None.
         """
         if len(kwargs) == 0:
             return None
@@ -2503,7 +2503,7 @@ class Splitter(Analyzable):
 
     @property
     def split_labels(self) -> tp.Index:
-        """The labels for splits.
+        """Labels for splits.
 
         Returns:
             Index: Labels for splits.
@@ -2512,7 +2512,7 @@ class Splitter(Analyzable):
 
     @property
     def set_labels(self) -> tp.Index:
-        """The labels for sets.
+        """Labels for sets.
 
         Returns:
             Index: Labels for sets.
@@ -2521,7 +2521,7 @@ class Splitter(Analyzable):
 
     @property
     def n_splits(self) -> int:
-        """The number of splits.
+        """Number of splits.
 
         Returns:
             int: Number of splits.
@@ -2530,7 +2530,7 @@ class Splitter(Analyzable):
 
     @property
     def n_sets(self) -> int:
-        """The number of sets.
+        """Number of sets.
 
         Returns:
             int: Number of sets.
@@ -2546,7 +2546,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
 
         Returns:
-            Optional[Grouper]: A grouper for splits if applicable, otherwise None.
+            Optional[Grouper]: Grouper for splits if applicable, otherwise None.
         """
         if split_group_by is None:
             return None
@@ -2563,7 +2563,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
 
         Returns:
-            Optional[Grouper]: A grouper for sets if applicable, otherwise None.
+            Optional[Grouper]: Grouper for sets if applicable, otherwise None.
         """
         if set_group_by is None:
             return None
@@ -2797,7 +2797,7 @@ class Splitter(Analyzable):
             return_meta (bool): Return a metadata dictionary (which includes the converted range) if True.
 
         Returns:
-            Union[RelRangeLike, ReadyRangeLike, dict]: The range converted to the specified format,
+            Union[RelRangeLike, ReadyRangeLike, dict]: Range converted to the specified format,
                 or a metadata dictionary if `return_meta` is True.
         """
         if index is None:
@@ -3033,11 +3033,11 @@ class Splitter(Analyzable):
 
                 Each element can be one of:
 
-                * A fixed or relative range (an instance of `RelRange`).
-                * A number representing a length to create a relative range.
-                * An integer or float indicating a length specifier, where the complementary
+                * Fixed or relative range (an instance of `RelRange`).
+                * Number representing a length to create a relative range.
+                * Integer or float indicating a length specifier, where the complementary
                     part stretches depending on `backwards`.
-                * A string. If set to 'by_gap' (case-insensitive), `range_` is split by gap using
+                * String. If set to 'by_gap' (case-insensitive), `range_` is split by gap using
                     `vectorbtpro.generic.splitting.nb.split_range_by_gap_nb`.
             backwards (bool): Whether to split the range in reverse order.
 
@@ -3330,7 +3330,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.base.accessors.BaseIDXAccessor.get_grouper`.
 
         Returns:
-            Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
+            Tuple[Array1d, Array1d, Array1d, Array1d]: Tuple containing:
 
                 * Split group indices.
                 * Set group indices.
@@ -4277,13 +4277,13 @@ class Splitter(Analyzable):
         * `split/set_labels`: Labels for split or set groups.
         * `split/set_idx`: Index of the selected split or set.
         * `split/set_label`: Label of the selected split or set.
-        * `range_`: The range used for indexing (see `Splitter.get_ready_range`).
+        * `range_`: Range used for indexing (see `Splitter.get_ready_range`).
         * `range_meta`: Metadata regarding the range.
         * `obj_range_meta`: Metadata for the ranges taken from each takeable argument.
             Positional arguments are denoted by position, keyword arguments are denoted by keys.
         * `args`: Positional arguments with selected ranges.
         * `kwargs`: Keyword arguments with selected ranges.
-        * `bounds`: A tuple of range boundaries.
+        * `bounds`: Tuple of range boundaries.
         * `template_context`: Template context provided for substitutions.
 
         Iteration over ranges is controlled by the `iteration` parameter:
@@ -4812,7 +4812,7 @@ class Splitter(Analyzable):
             def _wrap_output(_results):
                 try:
                     return pd.Series(_results, index=keys)
-                except Exception as e:
+                except Exception:
                     return pd.Series(_results, index=keys, dtype=object)
 
             if merge_func is not None:
@@ -4955,7 +4955,7 @@ class Splitter(Analyzable):
                 def _wrap_output(_results):
                     try:
                         return pd.Series(_results, index=major_keys)
-                    except Exception as e:
+                    except Exception:
                         return pd.Series(_results, index=major_keys, dtype=object)
 
                 if isinstance(merged_results[0], tuple):
@@ -4984,7 +4984,7 @@ class Splitter(Analyzable):
                             return NoResult
                     try:
                         return pd.Series(_results, index=major_keys_wbounds)
-                    except Exception as e:
+                    except Exception:
                         return pd.Series(_results, index=major_keys_wbounds, dtype=object)
                 if one_major:
                     if attach_bounds is not None:
@@ -5000,7 +5000,7 @@ class Splitter(Analyzable):
                             return NoResult
                     try:
                         return pd.Series(_results, index=minor_keys_wbounds)
-                    except Exception as e:
+                    except Exception:
                         return pd.Series(_results, index=minor_keys_wbounds, dtype=object)
 
                 new_results = []
@@ -5019,7 +5019,7 @@ class Splitter(Analyzable):
                     if len(r) > 0:
                         try:
                             new_r = pd.Series(r, index=minor_keys_wbounds)
-                        except Exception as e:
+                        except Exception:
                             new_r = pd.Series(r, index=minor_keys_wbounds, dtype=object)
                         new_results.append(new_r)
                         keep_major_indices.append(i)
@@ -5033,7 +5033,7 @@ class Splitter(Analyzable):
                     _major_keys = major_keys
                 try:
                     return pd.Series(new_results, index=_major_keys)
-                except Exception as e:
+                except Exception:
                     return pd.Series(new_results, index=_major_keys, dtype=object)
 
             if one_major or one_minor:
@@ -5415,7 +5415,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
-            Tuple[Any, Any]: A tuple with the mapped left and right bounds.
+            Tuple[Any, Any]: Tuple with the mapped left and right bounds.
         """
         if index is None:
             if isinstance(cls_or_self, type):
@@ -5461,7 +5461,7 @@ class Splitter(Analyzable):
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
 
         Returns:
-            Tuple[Any, Any]: A tuple with the calculated left and right bounds.
+            Tuple[Any, Any]: Tuple with the calculated left and right bounds.
 
         !!! note
             Even when mapped to the index, the right bound remains exclusive.
@@ -5541,7 +5541,7 @@ class Splitter(Analyzable):
 
         try:
             bounds = np.empty((n_splits, n_sets, 2), dtype=dtype)
-        except TypeError as e:
+        except TypeError:
             bounds = np.empty((n_splits, n_sets, 2), dtype=object)
         for i in range(n_splits):
             for j in range(n_sets):
@@ -5746,7 +5746,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_range_mask`.
 
         Returns:
-            Iterator[Array2d]: An iterator over two-dimensional boolean arrays.
+            Iterator[Array2d]: Iterator over two-dimensional boolean arrays.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         n_splits = self.get_n_splits(split_group_by=split_group_by)
@@ -5771,7 +5771,7 @@ class Splitter(Analyzable):
         `Splitter.get_iter_split_mask_arrs` with default arguments.
 
         Returns:
-            Iterator[Array2d]: An iterator over two-dimensional boolean arrays.
+            Iterator[Array2d]: Iterator over two-dimensional boolean arrays.
         """
         return self.get_iter_split_mask_arrs()
 
@@ -5797,7 +5797,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_range_mask`.
 
         Returns:
-            Iterator[Array2d]: An iterator over two-dimensional boolean arrays.
+            Iterator[Array2d]: Iterator over two-dimensional boolean arrays.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         n_splits = self.get_n_splits(split_group_by=split_group_by)
@@ -5822,7 +5822,7 @@ class Splitter(Analyzable):
         `Splitter.get_iter_set_mask_arrs` with default arguments.
 
         Returns:
-            Iterator[Array2d]: An iterator over two-dimensional boolean arrays.
+            Iterator[Array2d]: Iterator over two-dimensional boolean arrays.
         """
         return self.get_iter_set_mask_arrs()
 
@@ -5847,7 +5847,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_iter_split_mask_arrs`.
 
         Returns:
-            Iterator[Frame]: An iterator over boolean DataFrames.
+            Iterator[Frame]: Iterator over boolean DataFrames.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         set_group_by = self.get_set_grouper(set_group_by=set_group_by)
@@ -5865,7 +5865,7 @@ class Splitter(Analyzable):
         `Splitter.get_iter_split_masks` with default arguments.
 
         Returns:
-            Iterator[Frame]: An iterator over boolean DataFrames.
+            Iterator[Frame]: Iterator over boolean DataFrames.
         """
         return self.get_iter_split_masks()
 
@@ -5890,7 +5890,7 @@ class Splitter(Analyzable):
             **kwargs: Keyword arguments for `Splitter.get_iter_set_mask_arrs`.
 
         Returns:
-            Iterator[Frame]: An iterator over boolean DataFrames.
+            Iterator[Frame]: Iterator over boolean DataFrames.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
@@ -5908,7 +5908,7 @@ class Splitter(Analyzable):
         `Splitter.get_iter_set_masks` with default arguments.
 
         Returns:
-            Iterator[Frame]: An iterator over boolean DataFrames.
+            Iterator[Frame]: Iterator over boolean DataFrames.
         """
         return self.get_iter_set_masks()
 

@@ -239,7 +239,7 @@ class ScheduleManager(Base):
 
     @property
     def scheduler(self) -> AsyncScheduler:
-        """The scheduler instance used for scheduling jobs.
+        """Scheduler instance used for scheduling jobs.
 
         Returns:
             AsyncScheduler: Scheduler instance.
@@ -248,10 +248,10 @@ class ScheduleManager(Base):
 
     @property
     def async_task(self) -> tp.Optional[asyncio.Task]:
-        """The current asynchronous task, if any.
+        """Current asynchronous task, if any.
 
         Returns:
-            Optional[asyncio.Task]: The current asynchronous task.
+            Optional[asyncio.Task]: Current asynchronous task.
         """
         return self._async_task
 

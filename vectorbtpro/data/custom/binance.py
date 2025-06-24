@@ -160,7 +160,7 @@ class BinanceData(RemoteData):
             client_config (KwargsLike): Configuration parameters for creating a new client.
 
         Returns:
-            List[str]: A list of Binance symbols.
+            List[str]: List of Binance symbols.
         """
         if client_config is None:
             client_config = {}
@@ -329,7 +329,7 @@ class BinanceData(RemoteData):
                         break
                     if delay is not None:
                         time.sleep(delay)  # be kind to api
-        except Exception as e:
+        except Exception:
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(

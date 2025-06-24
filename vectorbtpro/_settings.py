@@ -1771,7 +1771,7 @@ portfolio = frozen_cfg(
         limit_delta=np.nan,
         limit_tif=-1,
         limit_expiry=-1,
-        limit_order_price="limit",
+        limit_order_price="autolimit",
         upon_adj_limit_conflict="keepignore",
         upon_opp_limit_conflict="cancelexecute",
         use_stops=None,
@@ -2016,6 +2016,12 @@ ${config_doc}
 _settings["pbar"] = pbar
 
 path = frozen_cfg(
+    platformdirs=flex_cfg(
+        dir_type="user_data_dir",
+        appname="vectorbtpro",
+        appauthor="vbtuser",
+        per_vbt_version=False,
+    ),
     mkdir=flex_cfg(
         mkdir=True,
         mode=0o777,
@@ -2059,7 +2065,7 @@ _settings["search"] = search
 knowledge = frozen_cfg(
     options_=dict(override_keys={"chat"}),
     cache=True,
-    cache_dir="./knowledge",
+    cache_dir=RepEval("vbt.get_platform_dir('user_cache_dir') / 'knowledge'"),
     cache_mkdir_kwargs=flex_cfg(),
     clear_cache=False,
     asset_cache_dir=RepEval("Path(cache_dir) / 'asset_cache'"),
@@ -2155,6 +2161,7 @@ knowledge = frozen_cfg(
         newline_before_list=True,
         resolve_extensions=True,
         make_links=True,
+        frontmatter_to_code=True,
         markdown_kwargs=flex_cfg(
             extensions=[
                 "fenced_code",
@@ -2409,10 +2416,10 @@ window.onload = function() {
             cutoff=None,
             return_chunks=False,
         ),
-        max_tokens=120_000,
+        max_tokens=100_000,
         system_prompt=r"You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
         system_as_user=True,
-        context_prompt=r"""Context information is below.
+        context_template=r"""Context information is below.
 ---------------------
 $context
 ---------------------""",
@@ -2430,7 +2437,7 @@ $context
         ),
         embeddings="auto",
         embeddings_config=flex_cfg(
-            batch_size=512,
+            batch_size=256,
         ),
         embeddings_configs=flex_cfg(
             openai=flex_cfg(
@@ -2491,6 +2498,18 @@ $chunk_text""",
                 separators=[[r"\n\s*\n", r"(?<=[^\s.?!])[.?!]+(?:\s+|$)"], r"\s+", None],
                 min_chunk_size=0.8,
                 fixed_overlap=False,
+            ),
+            source=flex_cfg(
+                uniform_chunks=True,
+            ),
+            python=flex_cfg(
+                stmt_whitelist=["ClassDef"],
+                stmt_blacklist=[],
+                max_stmt_level=1,
+            ),
+            markdown=flex_cfg(
+                split_by="paragraph",
+                max_section_level=None,
             ),
             llama_index=flex_cfg(
                 node_parser="sentence",
@@ -2572,7 +2591,7 @@ $chunk_text""",
     ),
     assets=flex_cfg(
         vbt=flex_cfg(
-            cache_dir="./knowledge/vbt/",
+            cache_dir=RepEval("vbt.get_platform_dir('user_cache_dir') / 'knowledge' / 'vbt'"),
             release_dir=RepEval("(Path(cache_dir) / release_name) if release_name else cache_dir"),
             assets_dir=RepEval("Path(release_dir) / 'assets'"),
             markdown_dir=RepEval("Path(release_dir) / 'markdown'"),
@@ -2620,6 +2639,7 @@ $chunk_text""",
             clean_metadata=True,
             clean_metadata_kwargs=flex_cfg(),
             dump_metadata_kwargs=flex_cfg(),
+            metadata_fence="frontmatter",
             incl_base_attr=True,
             incl_shortcuts=True,
             incl_shortcut_access=True,
@@ -2711,7 +2731,7 @@ $chunk_text""",
     <div id="pagination-top" class="pagination"></div>
     <iframe id="page-iframe" scrolling="no" onload="adjustIframeHeight(this)"></iframe>
     <div id="pagination-bottom" class="pagination"></div>
-    <script>const pages=$pages;let currentPage=1,totalPages=pages.length;function base64DecodeUtf8(e){return decodeURIComponent(atob(e).split("").map(e=>"%"+("00"+e.charCodeAt(0).toString(16)).slice(-2)).join(""))}function showPage(e){e<1&&(e=1),e>totalPages&&(e=totalPages),currentPage=e,document.getElementById("page-iframe").srcdoc=base64DecodeUtf8(pages[e-1]),renderPagination(),adjustIframeHeight(document.getElementById("page-iframe"))}function prevPage(){showPage(currentPage-1)}function nextPage(){showPage(currentPage+1)}function renderPagination(){let e="<ul>";if(e+=1===currentPage?'<li><span class="nav-btn disabled">&lt; Previous</span></li>':'<li><a href="#" class="nav-btn" onclick="prevPage()">&lt; Previous</a></li>',totalPages<=7)for(let a=1;a<=totalPages;a++)e+=`<li><a href="#" data-page="${a}" class="page-link" onclick="showPage(${a})">${a}</a></li>`;else if(currentPage<=4){for(let t=1;t<=5;t++)e+=linkTpl(t);e+=" <li><span>…</span></li> "+linkTpl(totalPages)}else if(currentPage>=totalPages-3){e+=linkTpl(1)+" <li><span>…</span></li> ";for(let n=totalPages-4;n<=totalPages;n++)e+=linkTpl(n)}else e+=linkTpl(1)+" <li><span>…</span></li> "+linkTpl(currentPage-1)+linkTpl(currentPage)+linkTpl(currentPage+1)+" <li><span>…</span></li> "+linkTpl(totalPages);e+=currentPage===totalPages?'<li><span class="nav-btn disabled">Next &gt;</span></li>':'<li><a href="#" class="nav-btn" onclick="nextPage()">Next &gt;</a></li>',e+="</ul>",document.getElementById("pagination-top").innerHTML=e,document.getElementById("pagination-bottom").innerHTML=e,updateActiveLink()}function linkTpl(e){return`<li><a href="#" data-page="${e}" class="page-link" onclick="showPage(${e})">${e}</a></li>`}function updateActiveLink(){document.querySelectorAll(".page-link").forEach(e=>{e.classList.toggle("active",e.getAttribute("data-page")==currentPage)})}function adjustIframeHeight(e){try{let a=e.contentDocument||e.contentWindow.document;a.querySelectorAll('img[loading="lazy"]').forEach(a=>a.addEventListener("load",()=>setTimeout(()=>adjustIframeHeight(e),100))),e.style.height=a.body.scrollHeight+"px",[...a.getElementsByTagName("a")].forEach(e=>e.target="_blank")}catch(t){}}window.addEventListener("DOMContentLoaded",()=>{totalPages>0&&showPage(1)});</script>
+    <script>const pages=$pages;let currentPage=1,totalPages=pages.length;function base64DecodeUtf8(e){return decodeURIComponent(atob(e).split("").map(e=>"%"+("00"+e.charCodeAt(0).toString(16)).slice(-2)).join(""))}function showPage(e){e<1&&(e=1),e>totalPages&&(e=totalPages),currentPage=e,document.getElementById("page-iframe").srcdoc=base64DecodeUtf8(pages[e-1]),renderPagination(),adjustIframeHeight(document.getElementById("page-iframe"))}function prevPage(){showPage(currentPage-1)}function nextPage(){showPage(currentPage+1)}function renderPagination(){let e="<ul>";if(e+=1===currentPage?'<li><span class="nav-btn disabled">&lt; Previous</span></li>':'<li><a href="#" class="nav-btn" onclick="prevPage()">&lt; Previous</a></li>',totalPages<=7)for(let a=1;a<=totalPages;a++)e+=`<li><a href="#" data-page="${a}" class="page-link" onclick="showPage(${a})">${a}</a></li>`;else if(currentPage<=4){for(let t=1;t<=5;t++)e+=linkTpl(t);e+=" <li><span>...</span></li> "+linkTpl(totalPages)}else if(currentPage>=totalPages-3){e+=linkTpl(1)+" <li><span>...</span></li> ";for(let n=totalPages-4;n<=totalPages;n++)e+=linkTpl(n)}else e+=linkTpl(1)+" <li><span>...</span></li> "+linkTpl(currentPage-1)+linkTpl(currentPage)+linkTpl(currentPage+1)+" <li><span>...</span></li> "+linkTpl(totalPages);e+=currentPage===totalPages?'<li><span class="nav-btn disabled">Next &gt;</span></li>':'<li><a href="#" class="nav-btn" onclick="nextPage()">Next &gt;</a></li>',e+="</ul>",document.getElementById("pagination-top").innerHTML=e,document.getElementById("pagination-bottom").innerHTML=e,updateActiveLink()}function linkTpl(e){return`<li><a href="#" data-page="${e}" class="page-link" onclick="showPage(${e})">${e}</a></li>`}function updateActiveLink(){document.querySelectorAll(".page-link").forEach(e=>{e.classList.toggle("active",e.getAttribute("data-page")==currentPage)})}function adjustIframeHeight(e){try{let a=e.contentDocument||e.contentWindow.document;a.querySelectorAll('img[loading="lazy"]').forEach(a=>a.addEventListener("load",()=>setTimeout(()=>adjustIframeHeight(e),100))),e.style.height=a.body.scrollHeight+"px",[...a.getElementsByTagName("a")].forEach(e=>e.target="_blank")}catch(t){}}window.addEventListener("DOMContentLoaded",()=>{totalPages>0&&showPage(1)});</script>
     $body_extras
 </body>
 </html>""",
@@ -2721,7 +2741,7 @@ $chunk_text""",
             ),
             chat=flex_cfg(
                 chat_dir=RepEval("Path(release_dir) / 'chat'"),
-                system_prompt=r"""You are a helpful assistant with access to VectorBT PRO (also called VBT or vectorbtpro) documentation and relevant Discord history. Use only this provided context to generate clear, accurate answers. Do not reference the open‑source vectorbt, as VectorBT PRO is a proprietary successor with significant differences.\n\nWhen coding in Python, use:\n```python\nimport vectorbtpro as vbt\n```\n\nIf metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.\n\nFor each query, follow this structure:\n1. Optionally restate the question in your own words.\n2. Answer using only the available context.\n3. Include any relevant links.""",
+                system_prompt=r"""You are a helpful assistant with access to VectorBT PRO (also called VBT or vectorbtpro) documentation and relevant Discord history. Use only this provided context to generate clear, accurate answers. Do not reference the open-source vectorbt, as VectorBT PRO is a proprietary successor with significant differences.\n\nWhen coding in Python, use:\n```python\nimport vectorbtpro as vbt\n```\n\nIf metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.\n\nFor each query, follow this structure:\n1. Optionally restate the question in your own words.\n2. Answer using only the available context.\n3. Include any relevant links.""",
                 doc_ranker_config=flex_cfg(
                     doc_store="lmdb",
                     doc_store_configs=flex_cfg(

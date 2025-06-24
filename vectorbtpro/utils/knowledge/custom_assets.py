@@ -22,11 +22,13 @@ import base64
 from collections import defaultdict, deque
 from pathlib import Path
 from types import ModuleType
+from functools import partial
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
 from vectorbtpro.utils.decorators import hybrid_method
+from vectorbtpro.utils.knowledge.asset_pipelines import EarlyReturn, BasicAssetPipeline
 from vectorbtpro.utils.knowledge.base_assets import AssetCacheManager, KnowledgeAsset
 from vectorbtpro.utils.knowledge.formatting import FormatHTML
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
@@ -129,7 +131,7 @@ class VBTAsset(KnowledgeAsset):
         """Release name of the asset.
 
         Returns:
-            Optional[str]: The release name of the asset, or None if not set.
+            Optional[str]: Release name of the asset, or None if not set.
         """
         return self._release_name
 
@@ -447,6 +449,10 @@ class VBTAsset(KnowledgeAsset):
                                 return d
                 links_block = "\n".join([d["link"] for d in found])
                 raise MultipleItemsFoundError(f"Multiple items matching '{link}':\n\n{links_block}")
+        elif found is None:
+            if allow_empty:
+                return found
+            raise NoItemFoundError(f"No item matching '{link}'")
         return found
 
     @classmethod
@@ -465,6 +471,36 @@ class VBTAsset(KnowledgeAsset):
         for k, v in rules.items():
             link = replace(k, v, link, mode="regex")
         return link
+
+    def minimize_metadata(self, keys: tp.Optional[tp.List[str]] = None) -> tp.MaybeVBTAsset:
+        """Return a minimized asset with metadata reduced to essential information.
+
+        Args:
+            keys (Optional[List[str]]): List of metadata keys to retain.
+
+        Returns:
+            MaybeVBTAsset: New VBT asset with minimized metadata.
+        """
+        from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
+
+        keys = self.resolve_setting(keys, "minimize_keys")
+
+        pipeline = BasicAssetPipeline()
+        pipeline.add_task(lambda d: EarlyReturn(d) if not isinstance(d, dict) else d)
+        pipeline.add_task("find_remove", partial(FindRemoveAssetFunc.is_empty_func, skip_keys=["content"]))
+        pipeline.add_task("remove", keys, skip_missing=True)
+        return self.apply(pipeline, wrap=True)
+
+    def remove_metadata(self) -> VBTAssetT:
+        """Remove metadata from the asset.
+
+        Returns:
+            VBTAsset: New VBT asset with metadata removed.
+        """
+        pipeline = BasicAssetPipeline()
+        pipeline.add_task(lambda d: EarlyReturn(d) if not isinstance(d, dict) else d)
+        pipeline.add_task("query", "content")
+        return self.apply(pipeline, wrap=True)
 
     def minimize_links(self, rules: tp.Optional[tp.Dict[str, str]] = None) -> tp.MaybeVBTAsset:
         """Return asset with minimized links by applying regex replacement rules.
@@ -496,11 +532,9 @@ class VBTAsset(KnowledgeAsset):
         keys = self.resolve_setting(keys, "minimize_keys")
         links = self.resolve_setting(links, "minimize_links")
 
-        new_instance = self.find_remove_empty()
+        new_instance = self.minimize_metadata(keys=keys)
         if links:
             return new_instance.minimize_links()
-        if keys:
-            new_instance = new_instance.remove(keys, skip_missing=True)
         return new_instance
 
     def select_previous(self: VBTAssetT, link: str, **kwargs) -> VBTAssetT:
@@ -545,6 +579,7 @@ class VBTAsset(KnowledgeAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         **kwargs,
     ) -> tp.MaybeVBTAsset:
         """Convert asset data to Markdown format using a dedicated conversion function.
@@ -562,6 +597,9 @@ class VBTAsset(KnowledgeAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             **kwargs: Keyword arguments for `VBTAsset.apply`.
 
         Returns:
@@ -575,6 +613,7 @@ class VBTAsset(KnowledgeAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             **kwargs,
         )
 
@@ -595,7 +634,7 @@ class VBTAsset(KnowledgeAsset):
             use_hash (bool): If True, use a hash of the URL as filename to avoid long paths.
 
         Returns:
-            List[Path]: A list of filesystem paths generated from the URLs.
+            List[Path]: List of filesystem paths generated from the URLs.
         """
         from urllib.parse import urlparse
         import hashlib
@@ -693,8 +732,7 @@ class VBTAsset(KnowledgeAsset):
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         if cache:
-            if self.release_name:
-                template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
+            template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
             if isinstance(markdown_dir, CustomTemplate):
                 cache_dir = self.get_setting("cache_dir")
                 if isinstance(cache_dir, CustomTemplate):
@@ -745,6 +783,7 @@ class VBTAsset(KnowledgeAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         format_html_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -764,6 +803,9 @@ class VBTAsset(KnowledgeAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -783,6 +825,7 @@ class VBTAsset(KnowledgeAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             to_markdown_kwargs=to_markdown_kwargs,
             format_html_kwargs=format_html_kwargs,
             **kwargs,
@@ -797,7 +840,7 @@ class VBTAsset(KnowledgeAsset):
                 contain a "link" key and may include a "parent" key.
 
         Returns:
-            List[str]: A list of links for items that have no parent or whose parent is not present
+            List[str]: List of links for items that have no parent or whose parent is not present
                 in the input data.
         """
         link_map = {d["link"]: dict(d) for d in data}
@@ -812,7 +855,7 @@ class VBTAsset(KnowledgeAsset):
         """Top-level parent links.
 
         Returns:
-            List[str]: The top-level parent links derived from the asset data.
+            List[str]: Top-level parent links derived from the asset data.
         """
         return self.get_top_parent_links(self.data)
 
@@ -889,7 +932,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
 
         Returns:
-            Union[Path, Tuple[Path, dict]]: The directory where HTML files are stored, and optionally
+            Union[Path, Tuple[Path, dict]]: Directory where HTML files are stored, and optionally
                 a mapping of links to file paths.
 
         !!! note
@@ -906,8 +949,7 @@ class VBTAsset(KnowledgeAsset):
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
 
         if cache:
-            if self.release_name:
-                template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
+            template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
             if isinstance(html_dir, CustomTemplate):
                 cache_dir = self.get_setting("cache_dir")
                 if isinstance(cache_dir, CustomTemplate):
@@ -1024,7 +1066,6 @@ class VBTAsset(KnowledgeAsset):
         body_extras: tp.Optional[tp.MaybeList[str]] = None,
         invert_colors: tp.Optional[bool] = None,
         title: str = "",
-        template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> Path:
         """Display asset(s) as an HTML page.
@@ -1147,7 +1188,7 @@ class VBTAsset(KnowledgeAsset):
             name (str): Class name in CamelCase.
 
         Returns:
-            List[str]: A list of substrings representing the parts of the class name.
+            List[str]: List of substrings representing the parts of the class name.
         """
         return re.findall(r"[A-Z]+(?=[A-Z][a-z]|$)|[A-Z][a-z]+", name)
 
@@ -1162,7 +1203,7 @@ class VBTAsset(KnowledgeAsset):
             name (str): Class name.
 
         Returns:
-            List[str]: A list of `snake_case` and abbreviated class name variants.
+            List[str]: List of `snake_case` and abbreviated class name variants.
         """
         from itertools import product
 
@@ -1222,7 +1263,7 @@ class VBTAsset(KnowledgeAsset):
             allow_suffix (Optional[bool]): Allow a suffix in target formatting.
 
         Returns:
-            List[str]: A sorted list of generated reference name targets.
+            List[str]: Sorted list of generated reference name targets.
         """
         from vectorbtpro.utils.module_ import annotate_refname_parts
         import vectorbtpro as vbt
@@ -1360,7 +1401,7 @@ class VBTAsset(KnowledgeAsset):
             allow_suffix (Optional[bool]): Allow a suffix in target formatting.
 
         Returns:
-            List[str]: A list of generated mention targets.
+            List[str]: List of generated mention targets.
         """
         from vectorbtpro.utils.module_ import prepare_refname
 
@@ -1619,7 +1660,7 @@ class VBTAsset(KnowledgeAsset):
             **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.embed`.
 
         Returns:
-            Optional[Rankable]: An updated instance with embedded documents, if available.
+            Optional[Rankable]: Updated instance with embedded documents, if available.
         """
         template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
         spec_settings_path = self.resolve_spec_settings_path()
@@ -1884,7 +1925,7 @@ class PagesAsset(VBTAsset):
             content (str): Content string to parse.
 
         Returns:
-            List[str]: A list of extracted link URLs.
+            List[str]: List of extracted link URLs.
         """
         link_pattern = r'(?<!\!)\[[^\]]+\]\((\S+?)(?:\s+(?:"[^"]*"|\'[^\']*\'))?\)'
         return re.findall(link_pattern, content)
@@ -1900,7 +1941,7 @@ class PagesAsset(VBTAsset):
             link (str): URL to parse.
 
         Returns:
-            Optional[str]: The extracted reference name or None.
+            Optional[str]: Extracted reference name or None.
         """
         if "/api/" not in link:
             return None
@@ -1939,6 +1980,7 @@ class PagesAsset(VBTAsset):
         attr: tp.Optional[str] = None,
         module: tp.Union[None, str, ModuleType] = None,
         resolve: bool = True,
+        only_obj: bool = False,
         use_parent: tp.Optional[bool] = None,
         use_base_parents: tp.Optional[bool] = None,
         use_ref_parents: tp.Optional[bool] = None,
@@ -1967,6 +2009,7 @@ class PagesAsset(VBTAsset):
             attr (Optional[str]): Attribute name to target on the object.
             module (Union[None, str, ModuleType]): Module context used in reference resolution.
             resolve (bool): Whether to resolve the object's reference name.
+            only_obj (bool): If True, disable all extensions and return only the object itself.
             use_parent (Optional[bool]): Include the object's parent page.
             use_base_parents (Optional[bool]): Include base classes/attributes of the parent.
             use_ref_parents (Optional[bool]): Include reference parent pages.
@@ -1978,7 +2021,7 @@ class PagesAsset(VBTAsset):
             incl_ancestors (Union[None, bool, int]): Include ancestor pages or specify maximum level.
 
                 For instance, `vectorbtpro.portfolio.base.Portfolio` has `vectorbtpro.portfolio.base` as its ancestor.
-                It can also be an integer indicating the maximum inheritance level. Provide `incl_base_ancestors`
+                It can also be an integer indicating the maximum level. Provide `incl_base_ancestors`
                 to override `incl_ancestors` for base classes/attributes.
             incl_base_ancestors (Union[None, bool, int]): Override `incl_ancestors` for base classes/attributes.
             incl_refs (Union[None, bool, int]): Extend the asset with references from the object's content.
@@ -2006,7 +2049,7 @@ class PagesAsset(VBTAsset):
             return_refname_graph (bool): Return a tuple of the asset and reference name graph if True.
 
         Returns:
-            Union[PagesAsset, Tuple[PagesAsset, dict]]: The asset with relevant API pages and headings,
+            Union[PagesAsset, Tuple[PagesAsset, dict]]: Asset with relevant API pages and headings,
                 optionally accompanied by a reference name graph.
         """
         from vectorbtpro.utils.module_ import prepare_refname, annotate_refname_parts
@@ -2022,6 +2065,15 @@ class PagesAsset(VBTAsset):
         aggregate_ancestors = self.resolve_setting(aggregate_ancestors, "aggregate_ancestors")
         aggregate_refs = self.resolve_setting(aggregate_refs, "aggregate_refs")
         topo_sort = self.resolve_setting(topo_sort, "topo_sort")
+
+        if only_obj:
+            incl_bases = False
+            incl_ancestors = False
+            incl_base_ancestors = False
+            incl_refs = False
+            incl_descendants = False
+            incl_ancestor_descendants = False
+            incl_ref_descendants = False
 
         base_refnames = []
         base_refnames_set = set()
@@ -2468,7 +2520,7 @@ class PagesAsset(VBTAsset):
                                 raise TypeError(f"Up-aggregation threshold ({up_aggregate_th}) must be between 0 and 1")
                             _up_aggregate_th = int(up_aggregate_th)
                         else:
-                            raise TypeError(f"Up-aggregation threshold must be a number")
+                            raise TypeError("Up-aggregation threshold must be a number")
                         if 0 < len(_children) >= _up_aggregate_th:
                             _new_links.add(parent)
                         else:
@@ -2620,6 +2672,26 @@ class PagesAsset(VBTAsset):
 
         new_data = [link_map[link] for link in link_map if link not in aggregated_links]
         return self.replace(data=new_data)
+
+    def select_api(self: PagesAssetT) -> PagesAssetT:
+        """Return API documentation pages and headings.
+
+        Filters the pages asset to include only those that are part of the API documentation.
+
+        Returns:
+            PagesAsset: New pages asset containing only API documentation pages and headings.
+        """
+        return self.filter(lambda x: "link" in x and "/api/" in x["link"])
+
+    def select_docs(self: PagesAssetT) -> PagesAssetT:
+        """Return general documentation pages and headings.
+
+        Filters the pages asset to include only those that are part of the general documentation.
+
+        Returns:
+            PagesAsset: New pages asset containing only general documentation pages and headings.
+        """
+        return self.filter(lambda x: "link" in x and "/api/" not in x["link"])
 
     def select_parent(self: PagesAssetT, link: str, incl_link: bool = False, **kwargs) -> PagesAssetT:
         """Select the parent page of a given link.
@@ -2883,7 +2955,7 @@ class PagesAsset(VBTAsset):
                 links.append(link_base + "/".join(link_fragments))
         paths = self.links_to_paths(links, allow_fragments=not structure_fragments)
 
-        path_names = []
+        display_names = []
         for i, d in enumerate(link_map.values()):
             path_name = paths[i].name
             brackets = []
@@ -2893,7 +2965,7 @@ class PagesAsset(VBTAsset):
                 brackets.append(d["obj_type"])
             if brackets:
                 path_name += f" [{', '.join(brackets)}]"
-            path_names.append(path_name)
+            display_names.append(path_name)
         if "root_name" not in dir_tree_kwargs:
             root_name = get_common_prefix(link_map.keys())
             if not root_name:
@@ -2901,11 +2973,87 @@ class PagesAsset(VBTAsset):
             dir_tree_kwargs["root_name"] = root_name
         if "sort" not in dir_tree_kwargs:
             dir_tree_kwargs["sort"] = False
-        if "path_names" not in dir_tree_kwargs:
-            dir_tree_kwargs["path_names"] = path_names
+        if "display_names" not in dir_tree_kwargs:
+            dir_tree_kwargs["display_names"] = display_names
         if "length_limit" not in dir_tree_kwargs:
             dir_tree_kwargs["length_limit"] = None
         print(dir_tree_from_paths(paths, **dir_tree_kwargs))
+
+    def generate_llmstxt_api(
+        self,
+        aggregate: bool = True,
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> str:
+        """Generate API documentation in llms.txt format.
+
+        Args:
+            aggregate (bool): Whether to aggregate headings into pages.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
+            **kwargs: Keyword arguments for `PagesAsset.to_markdown`.
+
+        Returns:
+            str: API documentation formatted as llms.txt.
+        """
+        api_asset = self.select_api().filter("not not content")
+        if aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            api_asset = api_asset.aggregate(**aggregate_kwargs)
+        return api_asset.to_markdown(**kwargs).join()
+
+    def generate_llmstxt_docs(
+        self,
+        aggregate: bool = True,
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> str:
+        """Generate general documentation in llms.txt format.
+
+        Args:
+            aggregate (bool): Whether to aggregate headings into pages.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
+            **kwargs: Keyword arguments for `PagesAsset.to_markdown`.
+
+        Returns:
+            str: General documentation formatted as llms.txt.
+        """
+        docs_asset = self.select_docs().filter("not not content")
+        if aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            docs_asset = docs_asset.aggregate(**aggregate_kwargs)
+        return docs_asset.to_markdown(**kwargs).join()
+
+    def generate_llmstxt_full(
+        self,
+        aggregate: bool = True,
+        aggregate_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> str:
+        """Generate full documentation in llms.txt format.
+
+        Args:
+            aggregate (bool): Whether to aggregate headings into pages.
+            aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
+            **kwargs: Keyword arguments for `PagesAsset.to_markdown`.
+
+        Returns:
+            str: Full documentation formatted as llms.txt.
+        """
+        api_asset = self.select_api().filter("not not content")
+        if aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            api_asset = api_asset.aggregate(**aggregate_kwargs)
+        api_asset = api_asset.to_markdown(**kwargs)
+        docs_asset = self.select_docs().filter("not not content")
+        if aggregate:
+            if aggregate_kwargs is None:
+                aggregate_kwargs = {}
+            docs_asset = docs_asset.aggregate(**aggregate_kwargs)
+        docs_asset = docs_asset.to_markdown(**kwargs)
+        return (api_asset + docs_asset).join()
 
 
 MessagesAssetT = tp.TypeVar("MessagesAssetT", bound="MessagesAsset")
@@ -2959,6 +3107,7 @@ class MessagesAsset(VBTAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
@@ -2978,6 +3127,9 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -2993,6 +3145,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             to_markdown_kwargs=to_markdown_kwargs,
             **kwargs,
         )
@@ -3007,6 +3160,7 @@ class MessagesAsset(VBTAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
@@ -3032,6 +3186,9 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -3054,6 +3211,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             to_markdown_kwargs=to_markdown_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
             **kwargs,
@@ -3069,6 +3227,7 @@ class MessagesAsset(VBTAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
@@ -3094,6 +3253,9 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -3116,6 +3278,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             to_markdown_kwargs=to_markdown_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
             **kwargs,
@@ -3131,6 +3294,7 @@ class MessagesAsset(VBTAsset):
         clean_metadata: tp.Optional[bool] = None,
         clean_metadata_kwargs: tp.KwargsLike = None,
         dump_metadata_kwargs: tp.KwargsLike = None,
+        metadata_fence: tp.Optional[str] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeMessagesAsset:
@@ -3156,6 +3320,9 @@ class MessagesAsset(VBTAsset):
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
                 See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+            metadata_fence (Optional[str]): Metadata fence to use for formatting.
+
+                Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
                 See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
@@ -3178,6 +3345,7 @@ class MessagesAsset(VBTAsset):
             clean_metadata=clean_metadata,
             clean_metadata_kwargs=clean_metadata_kwargs,
             dump_metadata_kwargs=dump_metadata_kwargs,
+            metadata_fence=metadata_fence,
             to_markdown_kwargs=to_markdown_kwargs,
             link_map={d["link"]: dict(d) for d in self.data},
             **kwargs,
@@ -3195,26 +3363,26 @@ class MessagesAsset(VBTAsset):
         * If all messages share the same `channel`, returns "channel".
 
         Returns:
-            Optional[str]: The lowest level by which messages are aggregated,
+            Optional[str]: Lowest level by which messages are aggregated,
                 or None if no level is consistently available.
         """
         try:
-            if self.get("attachments"):
+            if self.get("attachments", single_item=False):
                 return "message"
         except KeyError:
             pass
         try:
-            if len(set(self.get("block"))) == 1:
+            if len(set(self.get("block", single_item=False))) == 1:
                 return "block"
         except KeyError:
             pass
         try:
-            if len(set(self.get("thread"))) == 1:
+            if len(set(self.get("thread", single_item=False))) == 1:
                 return "thread"
         except KeyError:
             pass
         try:
-            if len(set(self.get("channel"))) == 1:
+            if len(set(self.get("channel", single_item=False))) == 1:
                 return "channel"
         except KeyError:
             pass
@@ -3227,26 +3395,26 @@ class MessagesAsset(VBTAsset):
         or if messages contain attachments. Returns the corresponding level name if found.
 
         Returns:
-            Optional[str]: The aggregation level ("channel", "thread", "block", or "message")
+            Optional[str]: Aggregation level ("channel", "thread", "block", or "message")
                 if a uniform attribute is found; otherwise, None.
         """
         try:
-            if len(set(self.get("channel"))) == 1:
+            if len(set(self.get("channel", single_item=False))) == 1:
                 return "channel"
         except KeyError:
             pass
         try:
-            if len(set(self.get("thread"))) == 1:
+            if len(set(self.get("thread", single_item=False))) == 1:
                 return "thread"
         except KeyError:
             pass
         try:
-            if len(set(self.get("block"))) == 1:
+            if len(set(self.get("block", single_item=False))) == 1:
                 return "block"
         except KeyError:
             pass
         try:
-            if self.get("attachments"):
+            if self.get("attachments", single_item=False):
                 return "message"
         except KeyError:
             pass
@@ -3370,22 +3538,31 @@ class MessagesAsset(VBTAsset):
                 new_data.append(d2)
         return self.replace(data=new_data, single_item=False)
 
-    def select_channel(self: MessagesAssetT, link: str, incl_link: bool = True, **kwargs) -> MessagesAssetT:
+    def select_channel(self: MessagesAssetT, name_or_link: str, incl_link: bool = True, **kwargs) -> MessagesAssetT:
         """Return messages belonging to the same channel as the specified link.
 
-        Finds a message using `VBTAsset.find_link` to determine the channel, then selects
-        all messages with the same channel identifier from the asset. The originating message
+        If `name_or_link` is a link, finds a message using `VBTAsset.find_link` to determine the channel,
+        then selects all messages with the same channel identifier from the asset. The originating message
         is included based on the `incl_link` flag.
 
         Args:
-            link (str): Link used to determine the target channel.
+            name_or_link (str): Channel name or link used to identify the channel.
             incl_link (bool): Indicates whether to include the message corresponding to `link`.
             **kwargs: Keyword arguments for `VBTAsset.find_link`.
 
         Returns:
             MessagesAsset: New messages asset containing messages from the same channel.
         """
-        d = self.find_link(link, wrap=False, **kwargs)
+        try:
+            d = self.find_link(name_or_link, wrap=False, **kwargs)
+        except NoItemFoundError:
+            if name_or_link in set(self.get("channel", single_item=False)):
+                new_data = []
+                for d2 in self.data:
+                    if d2["channel"] == name_or_link:
+                        new_data.append(d2)
+                return self.replace(data=new_data, single_item=False)
+            raise NoItemFoundError(f"No channel or link matching '{name_or_link}'")
         new_data = []
         for d2 in self.data:
             if d2["channel"] == d["channel"] and (incl_link or d2["link"] != d["link"]):
@@ -3445,7 +3622,7 @@ def find_api(
     resolve: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
-    aggregate: bool = False,
+    aggregate: tp.Optional[bool] = None,
     aggregate_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.MaybePagesAsset:
@@ -3463,7 +3640,9 @@ def find_api(
         resolve (bool): Whether to resolve the object's reference name.
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
-        aggregate (bool): Whether to aggregate headings into pages.
+        aggregate (Optional[bool]): Whether to aggregate headings into pages.
+
+            If None, defaults to False.
         aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         **kwargs: Keyword arguments for `PagesAsset.find_obj_api` or `PagesAsset.rank`.
 
@@ -3479,16 +3658,26 @@ def find_api(
         pages_asset = pages_asset.pull(**pull_kwargs)
     else:
         checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
-    if aggregate:
-        if aggregate_kwargs is None:
-            aggregate_kwargs = {}
-        pages_asset = pages_asset.aggregate(**aggregate_kwargs)
 
     if as_query is None:
         as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
     if obj_or_query is not None and not as_query:
-        return pages_asset.find_obj_api(obj_or_query, attr=attr, module=module, resolve=resolve, **kwargs)
-    pages_asset = pages_asset.filter(lambda x: "link" in x and "/api/" in x["link"])
+        return pages_asset.find_obj_api(
+            obj_or_query,
+            attr=attr,
+            module=module,
+            resolve=resolve,
+            aggregate=aggregate,
+            aggregate_kwargs=aggregate_kwargs,
+            **kwargs,
+        )
+    if aggregate is None:
+        aggregate = False
+    if aggregate:
+        if aggregate_kwargs is None:
+            aggregate_kwargs = {}
+        pages_asset = pages_asset.aggregate(**aggregate_kwargs)
+    pages_asset = pages_asset.select_api()
     if obj_or_query is None:
         return pages_asset
     return pages_asset.rank(obj_or_query, **kwargs)
@@ -3503,7 +3692,7 @@ def find_docs(
     resolve: bool = True,
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
-    aggregate: bool = False,
+    aggregate: tp.Optional[bool] = None,
     aggregate_kwargs: tp.KwargsLike = None,
     **kwargs,
 ) -> tp.MaybePagesAsset:
@@ -3521,7 +3710,9 @@ def find_docs(
         resolve (bool): Whether to resolve the object's reference name.
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull`.
-        aggregate (bool): Whether to aggregate headings into pages.
+        aggregate (Optional[bool]): Whether to aggregate headings into pages.
+
+            If None, defaults to False.
         aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
         **kwargs: Keyword arguments for `PagesAsset.find_obj_docs` or `PagesAsset.rank`.
 
@@ -3537,16 +3728,26 @@ def find_docs(
         pages_asset = pages_asset.pull(**pull_kwargs)
     else:
         checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
-    if aggregate:
-        if aggregate_kwargs is None:
-            aggregate_kwargs = {}
-        pages_asset = pages_asset.aggregate(**aggregate_kwargs)
 
     if as_query is None:
         as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
     if obj_or_query is not None and not as_query:
-        return pages_asset.find_obj_docs(obj_or_query, attr=attr, module=module, resolve=resolve, **kwargs)
-    pages_asset = pages_asset.filter(lambda x: "link" in x and "/api/" not in x["link"])
+        return pages_asset.find_obj_docs(
+            obj_or_query,
+            attr=attr,
+            module=module,
+            resolve=resolve,
+            aggregate=aggregate,
+            aggregate_kwargs=aggregate_kwargs,
+            **kwargs,
+        )
+    if aggregate is None:
+        aggregate = False
+    if aggregate:
+        if aggregate_kwargs is None:
+            aggregate_kwargs = {}
+        pages_asset = pages_asset.aggregate(**aggregate_kwargs)
+    pages_asset = pages_asset.select_docs()
     if obj_or_query is None:
         return pages_asset
     return pages_asset.rank(obj_or_query, **kwargs)
@@ -3755,7 +3956,7 @@ def find_assets(
     attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
-    asset_names: tp.Optional[tp.MaybeIterable[str]] = None,
+    asset_names: tp.MaybeIterable[str] = "all",
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
@@ -3807,6 +4008,8 @@ def find_assets(
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
         aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
+
+            Key `minimize_metadata` is set to True by default.
         latest_messages_first (bool): Whether to order messages with the most recent first.
         shuffle_messages (bool): Whether to shuffle the order of messages.
         api_kwargs (KwargsLike): Keyword arguments for `find_api`.
@@ -3831,7 +4034,7 @@ def find_assets(
             instead passed to `VBTAsset.rank`).
 
     Returns:
-        Dict[VBTAsset]: A dictionary mapping asset names to their corresponding assets;
+        Dict[VBTAsset]: Dictionary mapping asset names to their corresponding assets;
             entries with no content are omitted.
 
     !!! note
@@ -3868,8 +4071,12 @@ def find_assets(
     if aggregate_messages:
         if aggregate_messages_kwargs is None:
             aggregate_messages_kwargs = {}
+        else:
+            aggregate_messages_kwargs = dict(aggregate_messages_kwargs)
         if isinstance(aggregate_messages, str) and "by" not in aggregate_messages_kwargs:
             aggregate_messages_kwargs["by"] = aggregate_messages
+        if "minimize_metadata" not in aggregate_messages_kwargs:
+            aggregate_messages_kwargs["minimize_metadata"] = True
         messages_asset = messages_asset.aggregate(**aggregate_messages_kwargs)
     if latest_messages_first:
         messages_asset = messages_asset.latest_first()
@@ -3896,30 +4103,42 @@ def find_assets(
         docs_kwargs = merge_dicts(kwargs, docs_kwargs)
         messages_kwargs = merge_dicts(kwargs, messages_kwargs)
         examples_kwargs = merge_dicts(kwargs, examples_kwargs)
+    if "aggregate" not in api_kwargs:
+        api_kwargs["aggregate"] = False
+    if "aggregate" not in docs_kwargs:
+        docs_kwargs["aggregate"] = False
+    if "aggregate" not in messages_kwargs:
+        messages_kwargs["aggregate"] = False
+    if "latest_first" not in messages_kwargs:
+        messages_kwargs["latest_first"] = False
+    if "aggregate_pages" not in examples_kwargs:
+        examples_kwargs["aggregate_pages"] = False
+    if "aggregate_messages" not in examples_kwargs:
+        examples_kwargs["aggregate_messages"] = False
+    if "latest_messages_first" not in examples_kwargs:
+        examples_kwargs["latest_messages_first"] = False
+
+    if isinstance(asset_names, str) and asset_names.lower() == "all":
+        asset_names = ["api", "docs", "messages"]
+    else:
+        all_asset_names = ["api", "docs", "messages", "examples"]
+        if isinstance(asset_names, (str, type(Ellipsis))):
+            asset_names = [asset_names]
+        asset_keys = []
+        for asset_name in asset_names:
+            if asset_name is Ellipsis or asset_name == "...":
+                asset_keys.append(Ellipsis)
+            else:
+                asset_key = all_asset_names.index(asset_name.lower())
+                if asset_key == -1:
+                    raise ValueError(f"Invalid asset name: '{asset_name}'")
+                asset_keys.append(asset_key)
+        new_asset_names = reorder_list(all_asset_names, asset_keys, skip_missing=True)
+        if "examples" not in asset_names and "examples" in new_asset_names:
+            new_asset_names.remove("examples")
+        asset_names = new_asset_names
 
     asset_dict = {}
-    all_asset_names = ["api", "docs", "messages", "examples"]
-    if asset_names is not None:
-        if isinstance(asset_names, str) and asset_names.lower() == "all":
-            asset_names = all_asset_names
-        else:
-            if isinstance(asset_names, (str, type(Ellipsis))):
-                asset_names = [asset_names]
-            asset_keys = []
-            for asset_name in asset_names:
-                if asset_name is not Ellipsis:
-                    asset_key = all_asset_names.index(asset_name.lower())
-                    if asset_key == -1:
-                        raise ValueError(f"Invalid asset name: '{asset_name}'")
-                    asset_keys.append(asset_key)
-                else:
-                    asset_keys.append(Ellipsis)
-            new_asset_names = reorder_list(all_asset_names, asset_keys, skip_missing=True)
-            if "examples" not in asset_names and "examples" in new_asset_names:
-                new_asset_names.remove("examples")
-            asset_names = new_asset_names
-    else:
-        asset_names = ["api", "docs", "messages"]
     for asset_name in asset_names:
         if asset_name == "api":
             asset = find_api(
@@ -3929,7 +4148,6 @@ def find_assets(
                 module=module,
                 resolve=resolve,
                 pages_asset=pages_asset,
-                aggregate=False,
                 **api_kwargs,
             )
             if len(asset) > 0:
@@ -3942,7 +4160,6 @@ def find_assets(
                 module=module,
                 resolve=resolve,
                 pages_asset=pages_asset,
-                aggregate=False,
                 **docs_kwargs,
             )
             if len(asset) > 0:
@@ -3955,8 +4172,6 @@ def find_assets(
                 module=module,
                 resolve=resolve,
                 messages_asset=messages_asset,
-                aggregate=False,
-                latest_first=False,
                 **messages_kwargs,
             )
             if len(asset) > 0:
@@ -3972,9 +4187,6 @@ def find_assets(
                 resolve=resolve,
                 pages_asset=pages_asset,
                 messages_asset=messages_asset,
-                aggregate_messages=False,
-                aggregate_pages=False,
-                latest_messages_first=False,
                 **examples_kwargs,
             )
             if len(asset) > 0:
@@ -4027,7 +4239,7 @@ def chat_about(
     message: str,
     chat_history: tp.ChatHistory = None,
     *,
-    asset_names: tp.Optional[tp.MaybeIterable[str]] = "examples",
+    asset_names: tp.MaybeIterable[str] = "examples",
     latest_messages_first: bool = True,
     shuffle_messages: tp.Optional[bool] = None,
     shuffle: tp.Optional[bool] = None,
@@ -4109,7 +4321,6 @@ def search(
     asset_cache_manager: tp.Optional[tp.MaybeType[AssetCacheManager]] = None,
     asset_cache_manager_kwargs: tp.KwargsLike = None,
     aggregate_messages: tp.Union[bool, str] = "threads",
-    aggregate_messages_kwargs: tp.KwargsLike = None,
     find_assets_kwargs: tp.KwargsLike = None,
     display: tp.Union[bool, int] = 20,
     display_kwargs: tp.KwargsLike = None,
@@ -4139,7 +4350,6 @@ def search(
         asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
-        aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
         find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
         display (Union[bool, int]): If True, displays the top results as static HTML pages with `VBTAsset.display`.
 
@@ -4149,7 +4359,7 @@ def search(
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.rank`.
 
     Returns:
-        Union[MaybeVBTAsset, Path]: The ranked asset or the path to the temporary file with displayed results.
+        Union[MaybeVBTAsset, Path]: Ranked asset or the path to the temporary file with displayed results.
     """
     find_arg_names = set(get_func_arg_names(find_assets))
     if find_assets_kwargs is None:
@@ -4164,13 +4374,6 @@ def search(
         else:
             rank_kwargs[k] = v
     find_assets_kwargs["aggregate_messages"] = aggregate_messages
-    if aggregate_messages_kwargs is None:
-        aggregate_messages_kwargs = {}
-    else:
-        aggregate_messages_kwargs = dict(aggregate_messages_kwargs)
-    if "minimize_metadata" not in aggregate_messages_kwargs:
-        aggregate_messages_kwargs["minimize_metadata"] = True
-    find_assets_kwargs["aggregate_messages_kwargs"] = aggregate_messages_kwargs
     if cache_documents:
         if asset_cache_manager is None:
             asset_cache_manager = AssetCacheManager
@@ -4227,7 +4430,7 @@ def quick_search(*args, **kwargs) -> tp.Union[tp.MaybeVBTAsset, tp.Path]:
         **kwargs: Keyword arguments for `search`.
 
     Returns:
-        Union[MaybeVBTAsset, Path]: The ranked asset or the path to the temporary file with displayed results.
+        Union[MaybeVBTAsset, Path]: Ranked asset or the path to the temporary file with displayed results.
     """
     return search(*args, search_method="bm25", **kwargs)
 
@@ -4241,7 +4444,6 @@ def chat(
     asset_cache_manager: tp.Optional[tp.MaybeType[AssetCacheManager]] = None,
     asset_cache_manager_kwargs: tp.KwargsLike = None,
     aggregate_messages: tp.Union[bool, str] = "threads",
-    aggregate_messages_kwargs: tp.KwargsLike = None,
     find_assets_kwargs: tp.KwargsLike = None,
     rank: tp.Optional[bool] = True,
     top_k: tp.TopKLike = "elbow",
@@ -4276,13 +4478,12 @@ def chat(
         asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
-        aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
         find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
         rank (Optional[bool]): Flag indicating whether to apply ranking.
-        top_k (TopKLike): Number of top items to consider for ranking.
-        min_top_k (TopKLike): Minimum number of top items for ranking.
-        max_top_k (TopKLike): Maximum number of top items for ranking.
-        cutoff (Optional[float]): Score cutoff for ranking.
+        top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
+        min_top_k (TopKLike): Minimum limit for determining top documents.
+        max_top_k (TopKLike): Maximum limit for determining top documents.
+        cutoff (Optional[float]): Score threshold to filter documents.
         return_chunks (Optional[bool]): Whether to return document chunks.
         rank_kwargs (KwargsLike): Keyword arguments for `VBTAsset.rank`.
         wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
@@ -4305,13 +4506,6 @@ def chat(
         else:
             chat_kwargs[k] = v
     find_assets_kwargs["aggregate_messages"] = aggregate_messages
-    if aggregate_messages_kwargs is None:
-        aggregate_messages_kwargs = {}
-    else:
-        aggregate_messages_kwargs = dict(aggregate_messages_kwargs)
-    if "minimize_metadata" not in aggregate_messages_kwargs:
-        aggregate_messages_kwargs["minimize_metadata"] = True
-    find_assets_kwargs["aggregate_messages_kwargs"] = aggregate_messages_kwargs
     if cache_documents:
         if asset_cache_manager is None:
             asset_cache_manager = AssetCacheManager
@@ -4375,8 +4569,8 @@ def quick_chat(
 
     Args:
         *args: Positional arguments for `chat`.
-        min_top_k (TopKLike): Minimum number of top items for ranking.
-        max_top_k (TopKLike): Maximum number of top items for ranking.
+        min_top_k (TopKLike): Minimum limit for determining top documents.
+        max_top_k (TopKLike): Maximum limit for determining top documents.
         rank_kwargs (KwargsLike): Keyword arguments for `VBTAsset.rank`.
         **kwargs: Keyword arguments for `chat`.
 

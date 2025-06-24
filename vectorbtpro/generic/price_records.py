@@ -359,7 +359,7 @@ class PriceRecords(Records):
         """Open price.
 
         Returns:
-            Optional[SeriesFrame]: The wrapped open price data, or None if not available.
+            Optional[SeriesFrame]: Wrapped open price data, or None if not available.
         """
         if self._open is None:
             return None
@@ -370,7 +370,7 @@ class PriceRecords(Records):
         """High price.
 
         Returns:
-            Optional[SeriesFrame]: The wrapped high price data, or None if not available.
+            Optional[SeriesFrame]: Wrapped high price data, or None if not available.
         """
         if self._high is None:
             return None
@@ -381,7 +381,7 @@ class PriceRecords(Records):
         """Low price.
 
         Returns:
-            Optional[SeriesFrame]: The wrapped low price data, or None if not available.
+            Optional[SeriesFrame]: Wrapped low price data, or None if not available.
         """
         if self._low is None:
             return None
@@ -392,7 +392,7 @@ class PriceRecords(Records):
         """Close price series.
 
         Returns:
-            Optional[SeriesFrame]: The wrapped close price data, or None if not available.
+            Optional[SeriesFrame]: Wrapped close price data, or None if not available.
         """
         if self._close is None:
             return None

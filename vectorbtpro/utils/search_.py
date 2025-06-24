@@ -1128,7 +1128,7 @@ def find_exact(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     if ignore_case:
         string_cmp = string.casefold()
@@ -1171,7 +1171,7 @@ def find_start(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     if ignore_case:
         string_cmp = string.casefold()
@@ -1214,7 +1214,7 @@ def find_end(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     if ignore_case:
         string_cmp = string.casefold()
@@ -1257,7 +1257,7 @@ def find_substring(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     if ignore_case:
         string_cmp = string.casefold()
@@ -1312,7 +1312,7 @@ def find_regex(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
 
     !!! note
         If `group` is None and the pattern contains exactly one group, that group is automatically selected.
@@ -1352,7 +1352,7 @@ def find_fuzzy(
     target: str,
     string: str,
     ignore_case: bool = False,
-    threshold: tp.Optional[float] = 70,
+    threshold: tp.Optional[float] = 0.8,
     max_insertions: tp.Optional[int] = None,
     max_substitutions: tp.Optional[int] = None,
     max_deletions: tp.Optional[int] = None,
@@ -1365,7 +1365,7 @@ def find_fuzzy(
         target (str): Target substring to search for.
         string (str): String in which to search.
         ignore_case (bool): Whether to ignore case when matching.
-        threshold (Optional[float]): Similarity threshold percentage for fuzzy matching.
+        threshold (Optional[float]): Similarity threshold percentage between 0 and 1.
         max_insertions (Optional[int]): Maximum number of allowed insertions.
         max_substitutions (Optional[int]): Maximum number of allowed substitutions.
         max_deletions (Optional[int]): Maximum number of allowed deletions.
@@ -1380,7 +1380,7 @@ def find_fuzzy(
             * "match": Returns a list containing the matched string.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
@@ -1394,7 +1394,7 @@ def find_fuzzy(
         string_cmp = string
         target_cmp = target
     if threshold is not None and max_l_dist is None:
-        max_l_dist = max(1, len(target) - int(len(target) * (threshold / 100)))
+        max_l_dist = max(1, len(target) - int(len(target) * threshold))
     matches = find_near_matches(
         target_cmp,
         string_cmp,
@@ -1419,7 +1419,7 @@ def find_rapidfuzz(
     string: str,
     ignore_case: bool = False,
     processor: tp.Optional[tp.Callable] = None,
-    threshold: float = 70,
+    threshold: float = 0.8,
     return_type: str = "bool",
 ) -> tp.Union[bool, tp.List[tp.Union[int, str]], tp.List[tp.Tuple[int, int]]]:
     """Find a target substring in a string using RapidFuzz.
@@ -1429,13 +1429,13 @@ def find_rapidfuzz(
         string (str): String in which to search.
         ignore_case (bool): Whether to ignore case when matching.
         processor (Optional[Callable]): Function to preprocess strings before matching.
-        threshold (float): Similarity threshold percentage.
+        threshold (float): Similarity threshold percentage between 0 and 1.
         return_type (str): Return result format.
 
             Currently, only "bool" is supported.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
@@ -1450,7 +1450,7 @@ def find_rapidfuzz(
             string_cmp = string
             target_cmp = target
         score = fuzz.partial_ratio(string_cmp, target_cmp, processor=processor)
-        return score >= threshold
+        return score / 100 >= threshold
     raise NotImplementedError("RapidFuzz not supported")
 
 
@@ -1490,7 +1490,7 @@ def find(
         **kwargs: Keyword arguments for the specific search function.
 
     Returns:
-        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: The match result in the specified format.
+        Union[bool, List[Union[int, str]], List[Tuple[int, int]]]: Match result in the specified format.
     """
     if mode.lower() == "exact":
         return find_exact(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
@@ -1644,7 +1644,7 @@ def replace_fuzzy(
     replacement: str,
     string: str,
     ignore_case: bool = False,
-    threshold: tp.Optional[float] = 70,
+    threshold: tp.Optional[float] = 0.8,
     max_insertions: tp.Optional[int] = None,
     max_substitutions: tp.Optional[int] = None,
     max_deletions: tp.Optional[int] = None,
@@ -1657,7 +1657,7 @@ def replace_fuzzy(
         replacement (str): Replacement string.
         string (str): Original string.
         ignore_case (bool): Whether to ignore case when matching.
-        threshold (Optional[float]): Similarity threshold percentage for fuzzy matching.
+        threshold (Optional[float]): Similarity threshold percentage between 0 and 1.
         max_insertions (Optional[int]): Maximum number of allowed insertions.
         max_substitutions (Optional[int]): Maximum number of allowed substitutions.
         max_deletions (Optional[int]): Maximum number of allowed deletions.
@@ -1679,7 +1679,7 @@ def replace_fuzzy(
         string = string
         target = target
     if threshold is not None and max_l_dist is None:
-        max_l_dist = max(1, len(target) - int(len(target) * (threshold / 100)))
+        max_l_dist = max(1, len(target) - int(len(target) * threshold))
     matches = find_near_matches(
         target,
         string,

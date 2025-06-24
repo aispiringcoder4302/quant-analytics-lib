@@ -409,7 +409,7 @@ def concat_indexes(
                 verify_integrity=verify_integrity,
                 axis=axis,
             )
-        except Exception as e:
+        except Exception:
             return concat_indexes(
                 *indexes,
                 index_concat_method=index_concat_method[1],
@@ -1135,10 +1135,10 @@ def pick_levels(
             optional levels by name or position.
 
     Returns:
-        Tuple[List[int], List[int]]: A tuple containing:
+        Tuple[List[int], List[int]]: Tuple containing:
 
-            * A list of required level indices.
-            * A list of optional level indices.
+            * List of required level indices.
+            * List of optional level indices.
     """
     if required_levels is None:
         required_levels = []

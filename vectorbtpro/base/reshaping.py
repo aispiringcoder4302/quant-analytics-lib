@@ -350,7 +350,7 @@ to_2d_pr_array = functools.partial(to_2d_array, expand_axis=1)
 """Partial version of `to_2d_array` with `expand_axis` set to 1."""
 
 to_2d_pc_array = functools.partial(to_2d_array, expand_axis=0)
-"""A partial version of `to_2d_array` with `expand_axis` set to 0."""
+"""Partial version of `to_2d_array` with `expand_axis` set to 0."""
 
 
 @register_jitted(cache=True)
@@ -529,7 +529,7 @@ def broadcast_shapes(
             different axes for each shape-like object.
 
     Returns:
-        Tuple[Shape, ...]: A tuple of broadcasted shapes.
+        Tuple[Shape, ...]: Tuple of broadcasted shapes.
 
     !!! info
         For default settings, see `vectorbtpro._settings.broadcasting`.
@@ -647,7 +647,7 @@ def broadcast_arrays(
             different axes for each array-like object.
 
     Returns:
-        Tuple[Array, ...]: A tuple containing the broadcasted arrays.
+        Tuple[Array, ...]: Tuple containing the broadcasted arrays.
     """
     if target_shape is None:
         shapes = []
@@ -880,7 +880,7 @@ def align_pd_arrays(
         reindex_kwargs (KwargsLikeSequence): Keyword arguments for `pd.DataFrame.reindex`.
 
     Returns:
-        MaybeTuple[ArrayLike]: The aligned array if a single input is provided,
+        MaybeTuple[ArrayLike]: Aligned array if a single input is provided,
             otherwise a tuple of aligned arrays.
     """
     objs = list(objs)
@@ -967,7 +967,7 @@ class BCO(DefineMixin):
     """
 
     value: tp.Any = define.field()
-    """The value to be broadcast."""
+    """Value to be broadcast."""
 
     axis: tp.Optional[int] = define.field(default=None)
     """Axis used for broadcasting.
@@ -994,7 +994,7 @@ class BCO(DefineMixin):
     """
 
     post_func: tp.Optional[tp.Callable] = define.field(default=None)
-    """A function to post-process the output array.
+    """Function to post-process the output array.
     """
 
     require_kwargs: tp.KwargsLike = define.field(default=None)
@@ -1021,7 +1021,7 @@ class Default(DefineMixin):
     """Class representing a wrapped default value."""
 
     value: tp.Any = define.field()
-    """The default value."""
+    """Default value."""
 
 
 @define
@@ -1029,7 +1029,7 @@ class Ref(DefineMixin):
     """Class representing a reference to another value."""
 
     key: tp.Hashable = define.field()
-    """A hashable key that references another value."""
+    """Hashable key that references another value."""
 
 
 def resolve_ref(dct: dict, k: tp.Hashable, inside_bco: bool = False, keep_wrap_default: bool = False) -> tp.Any:
@@ -1109,9 +1109,9 @@ def broadcast(
 
     Keyword arguments for object-specific parameters can be provided as follows:
 
-    * A constant applied to all objects.
-    * A sequence with a value for each object.
-    * A mapping with values for each object and a special key `_def` for the default.
+    * Constant applied to all objects.
+    * Sequence with a value for each object.
+    * Mapping with values for each object and a special key `_def` for the default.
 
     Additionally, any object can be wrapped with `BCO` to override the corresponding
     global arguments if its attributes are not None.
@@ -2258,7 +2258,7 @@ def get_multiindex_series(obj: tp.SeriesFrame) -> tp.Series:
         Series: Resulting Series with a MultiIndex.
 
     !!! note
-        If a DataFrame with more than one row and more than one column is provided, a ValueError is raised.
+        If a DataFrame with more than one row and more than one column is provided, a `ValueError` is raised.
     """
     checks.assert_instance_of(obj, (pd.Series, pd.DataFrame))
     if checks.is_frame(obj):
@@ -2287,7 +2287,7 @@ def unstack_to_array(
         return_indexes (bool): If True, also return the list of new index values corresponding to each level.
 
     Returns:
-        Union[Array, Tuple[Array, List[Index]]]: A multi-dimensional array of unstacked data, or a tuple containing
+        Union[Array, Tuple[Array, List[Index]]]: Multi-dimensional array of unstacked data, or a tuple containing
             the array and the list of new index values if `return_indexes` is True.
 
     Examples:

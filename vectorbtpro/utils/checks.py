@@ -647,7 +647,7 @@ def is_equal(
     """
     try:
         return equality_func(obj1, obj2)
-    except:
+    except Exception:
         pass
     return False
 
@@ -768,7 +768,7 @@ def is_deep_equal(
             try:
                 if obj1 == obj2:
                     return True
-            except:
+            except Exception:
                 pass
             try:
                 import dill
@@ -776,12 +776,12 @@ def is_deep_equal(
                 _kwargs = _select_kwargs(dill.dumps, kwargs)
                 if dill.dumps(obj1, **_kwargs) == dill.dumps(obj2, **_kwargs):
                     return True
-            except:
+            except Exception:
                 pass
             if debug:
                 warn(f"\n############### {_key} ###############\nObjects do not match")
             return False
-    except Exception as e:
+    except Exception:
         if debug:
             if _key is None:
                 warn(traceback.format_exc())
@@ -1427,8 +1427,8 @@ def assert_array_equal(obj1: tp.ArrayLike, obj2: tp.ArrayLike) -> None:
 
     The function first compares metadata using `assert_meta_equal`, then checks actual data equality using:
 
-    * A Pandas equality check if both objects are Pandas.
-    * A NumPy array equality check otherwise.
+    * Pandas equality check if both objects are Pandas.
+    * NumPy array equality check otherwise.
 
     Args:
         obj1 (ArrayLike): First array-like object.
@@ -1551,7 +1551,7 @@ def assert_dict_sequence_valid(obj: tp.DictLikeSequence, lvl_keys: tp.Sequence[t
 
 
 def assert_sequence(obj: tp.Any) -> None:
-    """Raise a ValueError if the object is not a sequence.
+    """Raise a `ValueError` if the object is not a sequence.
 
     Args:
         obj (Any): Object to test for sequence behavior.
@@ -1564,7 +1564,7 @@ def assert_sequence(obj: tp.Any) -> None:
 
 
 def assert_iterable(obj: tp.Any) -> None:
-    """Raise a ValueError if the object is not an iterable.
+    """Raise a `ValueError` if the object is not an iterable.
 
     Args:
         obj (Any): Object to test for iterability.

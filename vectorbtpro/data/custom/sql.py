@@ -211,9 +211,9 @@ class SQLData(DBData):
         Args:
             engine (Union[None, str, Engine]): Engine instance, URL, or key for engine settings.
 
-                * An instance of `sqlalchemy.engine.base.Engine`.
-                * A URL (string) to create an engine using `sqlalchemy.engine.create.create_engine`.
-                * A sub-config name under `custom.sql.engines` in `vectorbtpro._settings.data`
+                * Instance of `sqlalchemy.engine.base.Engine`.
+                * URL (string) to create an engine using `sqlalchemy.engine.create.create_engine`.
+                * Sub-config name under `custom.sql.engines` in `vectorbtpro._settings.data`
                     to retrieve the engine.
             engine_name (Optional[str]): Name of the engine for retrieving custom settings.
             return_meta (bool): If True, return a metadata dictionary containing the engine,
@@ -221,7 +221,7 @@ class SQLData(DBData):
             **engine_config: Keyword arguments for engine creation when `engine` is a URL.
 
         Returns:
-            Union[Engine, dict]: The resolved engine, or a metadata dictionary if `return_meta` is True.
+            Union[Engine, dict]: Resolved engine, or a metadata dictionary if `return_meta` is True.
 
         !!! note
             Engine URLs can be provided as engine names, but not vice versa.
@@ -296,7 +296,7 @@ class SQLData(DBData):
             **kwargs: Keyword arguments for `inspector.get_schema_names`.
 
         Returns:
-            List[str]: The list of available schema names, excluding `information_schema`.
+            List[str]: List of available schema names, excluding `information_schema`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -375,7 +375,7 @@ class SQLData(DBData):
             **kwargs: Keyword arguments for SQLAlchemy's inspector methods.
 
         Returns:
-            List[str]: A list of table and view names.
+            List[str]: List of table and view names.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -425,11 +425,11 @@ class SQLData(DBData):
             if incl_views:
                 try:
                     all_tables += inspector.get_view_names(schema, **kwargs)
-                except NotImplementedError as e:
+                except NotImplementedError:
                     pass
                 try:
                     all_tables += inspector.get_materialized_view_names(schema, **kwargs)
-                except NotImplementedError as e:
+                except NotImplementedError:
                     pass
             for table in all_tables:
                 if table_pattern is not None:

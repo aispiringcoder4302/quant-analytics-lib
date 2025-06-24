@@ -34,7 +34,7 @@ def map_value_to_cmap(
         vmax (Optional[float]): Maximum data value for colormap normalization.
 
     Returns:
-        MaybeSequence[str]: A color string in `rgb(r,g,b)` format for each input value.
+        MaybeSequence[str]: Color string in `rgb(r,g,b)` format for each input value.
     """
     from vectorbtpro.utils.module_ import assert_can_import
 
@@ -79,7 +79,7 @@ def parse_rgba_tuple(color: str) -> tp.Tuple[float, float, float, float]:
         color (str): RGBA color string in the format "rgba(r,g,b,a)".
 
     Returns:
-        Tuple[float, float, float, float]: A tuple containing the red, green, and blue components
+        Tuple[float, float, float, float]: Tuple containing the red, green, and blue components
             normalized to [0, 1] and the alpha value.
     """
     rgba = color.replace("rgba", "").replace("(", "").replace(")", "").split(",")
@@ -93,7 +93,7 @@ def parse_rgb_tuple(color: str) -> tp.Tuple[float, float, float]:
         color (str): RGB color string in the format "rgb(r,g,b)".
 
     Returns:
-        Tuple[float, float, float]: A tuple containing the red, green, and blue components
+        Tuple[float, float, float]: Tuple containing the red, green, and blue components
             normalized to [0, 1].
     """
     rgb = color.replace("rgb", "").replace("(", "").replace(")", "").split(",")
@@ -121,7 +121,7 @@ def adjust_opacity(color: tp.Any, opacity: float) -> str:
         color = parse_rgb_tuple(color)
     try:
         c = mc.cnames[color]
-    except:
+    except Exception:
         c = color
     rgb = mc.to_rgb(c)
     return "rgba(%d,%d,%d,%.4f)" % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255), opacity)
@@ -151,7 +151,7 @@ def adjust_lightness(color: tp.Any, amount: float = 0.7) -> str:
         color = parse_rgb_tuple(color)
     try:
         c = mc.cnames[color]
-    except:
+    except Exception:
         c = color
     c = colorsys.rgb_to_hls(*mc.to_rgb(c))
     rgb = colorsys.hls_to_rgb(c[0], max(0, min(1, amount * c[1])), c[2])

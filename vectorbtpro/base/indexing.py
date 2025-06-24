@@ -123,7 +123,7 @@ class LocBase(Base):
 
     @property
     def indexing_func(self) -> tp.Callable:
-        """The function used to perform indexing operations on associated Pandas objects.
+        """Function used to perform indexing operations on associated Pandas objects.
 
         Returns:
             Callable: Function used for indexing.
@@ -132,10 +132,10 @@ class LocBase(Base):
 
     @property
     def indexing_setter_func(self) -> tp.Optional[tp.Callable]:
-        """The function used to set values via indexing on associated Pandas objects.
+        """Function used to set values via indexing on associated Pandas objects.
 
         Returns:
-            Optional[Callable]: The function used for setting indexed values.
+            Optional[Callable]: Function used for setting indexed values.
         """
         return self._indexing_setter_func
 
@@ -523,7 +523,7 @@ def indexing_on_mapper(
         pd_indexing_func (PandasIndexingFunc): Function to perform Pandas-style indexing.
 
     Returns:
-        Optional[Series]: A new Series with values indexed according to the mapping, or None.
+        Optional[Series]: New Series with values indexed according to the mapping, or None.
     """
     from vectorbtpro.base.reshaping import broadcast_to
 
@@ -560,7 +560,7 @@ def build_param_indexer(
         module_name (Optional[str]): Module name to bind the generated class.
 
     Returns:
-        Type[IndexingBase]: A subclass of `IndexingBase`.
+        Type[IndexingBase]: Subclass of `IndexingBase`.
 
     Examples:
         ```pycon
@@ -949,7 +949,7 @@ class UniIdxrOp(UniIdxr, DefineMixin):
     along with keyword arguments `index` and `freq`, and returns new indices."""
 
     idxrs: tp.Tuple[object, ...] = define.field()
-    """A tuple of one or more indexers."""
+    """Tuple of one or more indexers."""
 
     def __init__(self, op_func: tp.Callable, *idxrs) -> None:
         if len(idxrs) == 1 and checks.is_iterable(idxrs[0]):
@@ -1739,7 +1739,7 @@ def get_index_ranges(
         jitted (JittedOption): See `RangeIdxr.jitted`.
 
     Returns:
-        Tuple[Array1d, Array1d]: A tuple containing arrays of start and end indices for the generated ranges.
+        Tuple[Array1d, Array1d]: Tuple containing arrays of start and end indices for the generated ranges.
 
     Examples:
         Provide nothing to generate one largest index range:
@@ -1949,13 +1949,13 @@ def get_index_ranges(
             if not isinstance(start, pd.Index):
                 try:
                     start = pd.Index(start)
-                except Exception as e:
+                except Exception:
                     start = pd.Index([start])
         if end is not None:
             if not isinstance(end, pd.Index):
                 try:
                     end = pd.Index(end)
-                except Exception as e:
+                except Exception:
                     end = pd.Index([end])
         naive_index = index
     if every is not None and not checks.is_int(every):
@@ -2383,11 +2383,11 @@ class AutoIdxr(UniIdxr, DefineMixin):
                                     raise Exception  # "2020" shouldn't be a frequency
                                 _ = dt.to_freq(value)
                                 kind = "frequency"
-                            except Exception as e:
+                            except Exception:
                                 try:
                                     _ = dt.to_timestamp(value)
                                     kind = "datetime"
-                                except Exception as e:
+                                except Exception:
                                     raise ValueError(f"'{value}' is neither a frequency nor a datetime")
                         elif checks.is_frequency(value):
                             kind = "frequency"
@@ -2638,7 +2638,7 @@ def get_idxs(
         **kwargs: Keyword arguments for `Idxr`.
 
     Returns:
-        Tuple[MaybeIndexArray, MaybeIndexArray]: A tuple containing row and column indices.
+        Tuple[MaybeIndexArray, MaybeIndexArray]: Tuple containing row and column indices.
     """
     if not isinstance(idxr, Idxr):
         idxr = Idxr(idxr, **kwargs)
@@ -2837,8 +2837,8 @@ class IdxSetter(DefineMixin):
         Returns:
             Kwargs: Dictionary containing:
 
-                * `default`: The default value specified in `IdxSetter.idx_items`, if any.
-                * `set_funcs`: A list of partially-applied functions for setting values in the array.
+                * `default`: Default value specified in `IdxSetter.idx_items`, if any.
+                * `set_funcs`: List of partially-applied functions for setting values in the array.
                 * `rows_changed`: Boolean indicating whether row indices will be modified.
                 * `cols_changed`: Boolean indicating whether column indices will be modified.
         """

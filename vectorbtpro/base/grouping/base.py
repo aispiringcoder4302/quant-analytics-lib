@@ -231,10 +231,10 @@ class Grouper(Configured):
             def_lvl_name (Hashable): Default level name for groups.
 
         Returns:
-            Tuple[ndarray, Index]: A tuple containing:
+            Tuple[ndarray, Index]: Tuple containing:
 
-                * An array of integer group codes for the original index.
-                * The grouped Pandas Index.
+                * Array of integer group codes for the original index.
+                * Grouped Pandas Index.
         """
         if group_by is None or group_by is False:
             return np.arange(len(index)), index
@@ -500,7 +500,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.resolve_group_by`.
 
         Returns:
-            Tuple[Array1d, Index]: A tuple containing the groups array and the grouped index.
+            Tuple[Array1d, Index]: Tuple containing the groups array and the grouped index.
         """
         group_by = self.resolve_group_by(group_by=group_by, **kwargs)
         return self.group_by_to_groups_and_index(self.index, group_by, def_lvl_name=self.def_lvl_name)
@@ -679,7 +679,7 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.get_group_map`.
 
         Returns:
-            Iterator[GroupIdxs]: An iterator over the indices for each group.
+            Iterator[GroupIdxs]: Iterator over the indices for each group.
         """
         group_map = self.get_group_map(**kwargs)
         return self.iter_group_map(group_map)
@@ -697,10 +697,10 @@ class Grouper(Configured):
             **kwargs: Keyword arguments for `Grouper.get_index` and `Grouper.iter_group_idxs`.
 
         Yields:
-            Iterator[Tuple[Union[Hashable, Index], GroupIdxs]]: A tuple containing:
+            Iterator[Tuple[Union[Hashable, Index], GroupIdxs]]: Tuple containing:
 
-                * The identifier for the group.
-                * The indices corresponding to the group.
+                * Identifier for the group.
+                * Indices corresponding to the group.
         """
         index = self.get_index(**kwargs)
         for group, group_idxs in enumerate(self.iter_group_idxs(**kwargs)):
@@ -723,7 +723,7 @@ class Grouper(Configured):
                 See `vectorbtpro.utils.jitting.resolve_jitted_option`.
 
         Returns:
-            Tuple[Array1d, Array1d]: A tuple containing:
+            Tuple[Array1d, Array1d]: Tuple containing:
 
                 * New group indices after selection.
                 * New group array corresponding to the selected indices.

@@ -239,7 +239,7 @@ def bbands_1d_nb(
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        Tuple[Array1d, Array1d, Array1d]: The upper band, middle band, and lower band.
+        Tuple[Array1d, Array1d, Array1d]: Upper band, middle band, and lower band.
     """
     ma = ma_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust)
     msd = msd_1d_nb(close, window=window, wtype=wtype, minp=minp, adjust=adjust, ddof=ddof)
@@ -294,7 +294,7 @@ def bbands_nb(
         ddof (int): Delta degrees of freedom.
 
     Returns:
-        Tuple[Array2d, Array2d, Array2d]: The upper, middle, and lower Bollinger Bands for each column.
+        Tuple[Array2d, Array2d, Array2d]: Upper, middle, and lower Bollinger Bands for each column.
 
     !!! tip
         This function is parallelizable.
@@ -332,7 +332,7 @@ def bbands_percent_b_1d_nb(close: tp.Array1d, upper: tp.Array1d, lower: tp.Array
         lower (Array1d): 1D array representing the lower band.
 
     Returns:
-        Array1d: The %B values computed as `(close - lower) / (upper - lower)`.
+        Array1d: %B values computed as `(close - lower) / (upper - lower)`.
     """
     return (close - lower) / (upper - lower)
 
@@ -835,7 +835,7 @@ def stoch_1d_nb(
             Defaults to `adjust` if not provided.
 
     Returns:
-        Tuple[Array1d, Array1d, Array1d]: A tuple containing fast %K, slow %K, and slow %D values.
+        Tuple[Array1d, Array1d, Array1d]: Tuple containing fast %K, slow %K, and slow %D values.
     """
     if slow_k_wtype is not None:
         slow_k_wtype_ = slow_k_wtype
@@ -963,7 +963,7 @@ def stoch_nb(
             Defaults to `adjust` if not provided.
 
     Returns:
-        Tuple[Array2d, Array2d, Array2d]: A tuple containing fast %K, slow %K, and slow %D values for each column.
+        Tuple[Array2d, Array2d, Array2d]: Tuple containing fast %K, slow %K, and slow %D values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1060,7 +1060,7 @@ def macd_1d_nb(
             Uses `adjust` if not provided.
 
     Returns:
-        Tuple[Array1d, Array1d]: A tuple where the first element is the MACD and the second is the signal line.
+        Tuple[Array1d, Array1d]: Tuple where the first element is the MACD and the second is the signal line.
     """
     if macd_wtype is not None:
         macd_wtype_ = macd_wtype
@@ -1176,7 +1176,7 @@ def macd_nb(
             Uses `adjust` if not provided.
 
     Returns:
-        Tuple[Array2d, Array2d]: A tuple where the first element contains MACD values and
+        Tuple[Array2d, Array2d]: Tuple where the first element contains MACD values and
             the second contains the signal line.
 
     !!! tip
@@ -1366,7 +1366,7 @@ def atr_1d_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Tuple[Array1d, Array1d]: The True Range and Average True Range.
+        Tuple[Array1d, Array1d]: True Range and Average True Range.
     """
     tr = tr_1d_nb(high, low, close)
     atr = ma_1d_nb(tr, window, wtype=wtype, minp=minp, adjust=adjust)
@@ -1416,7 +1416,7 @@ def atr_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Tuple[Array2d, Array2d]: The True Range and Average True Range for each column.
+        Tuple[Array2d, Array2d]: True Range and Average True Range for each column.
 
     !!! tip
         This function is parallelizable.
@@ -1469,7 +1469,7 @@ def adx_1d_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Tuple[Array1d, Array1d, Array1d, Array1d]: The +DI, -DI, DX, and ADX values.
+        Tuple[Array1d, Array1d, Array1d, Array1d]: +DI, -DI, DX, and ADX values.
     """
     _, atr = atr_1d_nb(
         high,
@@ -1546,7 +1546,7 @@ def adx_nb(
         adjust (bool): Flag indicating whether to adjust weights.
 
     Returns:
-        Tuple[Array2d, Array2d, Array2d, Array2d]: The +DI, -DI, DX, and ADX values for each column.
+        Tuple[Array2d, Array2d, Array2d, Array2d]: +DI, -DI, DX, and ADX values for each column.
 
     !!! tip
         This function is parallelizable.
@@ -2040,7 +2040,7 @@ def pivot_info_1d_nb(
             Provided as a scalar or per row.
 
     Returns:
-        Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing:
+        Tuple[Array1d, Array1d, Array1d, Array1d]: Tuple containing:
 
             * Confirmed pivot types.
             * Indices of confirmed pivots.
@@ -2164,7 +2164,7 @@ def pivot_info_nb(
             Provided as a scalar, or per row, column, or element.
 
     Returns:
-        Tuple[Array2d, Array2d, Array2d, Array2d]: A tuple containing:
+        Tuple[Array2d, Array2d, Array2d, Array2d]: Tuple containing:
 
             * Confirmed pivot types.
             * Indices of confirmed pivots.
@@ -2379,7 +2379,7 @@ def iter_basic_bands_nb(high: float, low: float, atr: float, multiplier: float) 
         multiplier (float): Multiplier applied to the ATR.
 
     Returns:
-        Tuple[float, float]: The computed upper and lower band values.
+        Tuple[float, float]: Computed upper and lower band values.
     """
     med_price = iter_med_price_nb(high, low)
     matr = multiplier * atr
@@ -2408,7 +2408,7 @@ def final_basic_bands_nb(
         prev_direction (int): Previous direction.
 
     Returns:
-        Tuple[float, float, float, int, float, float]: A tuple containing the adjusted
+        Tuple[float, float, float, int, float, float]: Tuple containing the adjusted
             upper band, lower band, trend, direction, long band, and short band values.
     """
     if close > prev_upper:
@@ -2514,7 +2514,7 @@ def supertrend_1d_nb(
         multiplier (float): Multiplier applied to the ATR.
 
     Returns:
-        Tuple[Array1d, Array1d, Array1d, Array1d]: A tuple containing
+        Tuple[Array1d, Array1d, Array1d, Array1d]: Tuple containing
             the trend, direction, long, and short arrays.
     """
     trend = np.empty(close.shape, dtype=float_)
@@ -2599,7 +2599,7 @@ def supertrend_nb(
             Provided as a scalar or per column.
 
     Returns:
-        Tuple[Array2d, Array2d, Array2d, Array2d]: A tuple containing
+        Tuple[Array2d, Array2d, Array2d, Array2d]: Tuple containing
             the trend, direction, long, and short arrays.
 
     !!! tip
@@ -2675,7 +2675,7 @@ def signal_detection_1d_nb(
             If None, uses `influence`.
 
     Returns:
-        Tuple[Array1d, Array1d, Array1d]: A tuple containing
+        Tuple[Array1d, Array1d, Array1d]: Tuple containing
             the signal array, upper band, and lower band.
     """
     factor_ = to_1d_array_nb(np.asarray(factor))
@@ -2804,7 +2804,7 @@ def signal_detection_nb(
             If None, uses `influence`.
 
     Returns:
-        Tuple[Array2d, Array2d, Array2d]: A tuple containing
+        Tuple[Array2d, Array2d, Array2d]: Tuple containing
             the signal array, upper band, and lower band arrays.
 
     !!! tip

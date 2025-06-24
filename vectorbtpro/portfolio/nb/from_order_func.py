@@ -291,7 +291,7 @@ def try_order_nb(c: OrderContext, order: Order) -> tp.Tuple[OrderResult, ExecSta
             See `vectorbtpro.portfolio.enums.Order`.
 
     Returns:
-        Tuple[OrderResult, ExecState]: A tuple containing the order execution result and
+        Tuple[OrderResult, ExecState]: Tuple containing the order execution result and
             the updated execution state.
     """
     exec_state = ExecState(
@@ -3025,7 +3025,7 @@ def no_flex_order_func_nb(c: FlexOrderContext, *args) -> tp.Tuple[int, Order]:
         *args: Additional positional arguments.
 
     Returns:
-        Tuple[int, Order]: A tuple containing the break column indicator (-1) and
+        Tuple[int, Order]: Tuple containing the break column indicator (-1) and
             `vectorbtpro.portfolio.enums.NoOrder`.
     """
     return -1, NoOrder
@@ -3049,7 +3049,7 @@ def no_flex_order_func_nb(c: FlexOrderContext, *args) -> tp.Tuple[int, Order]:
 #         *args: Additional positional arguments.
 #
 #     Returns:
-#         Tuple[int, Order]: A tuple with the break column indicator (-1) and
+#         Tuple[int, Order]: Tuple with the break column indicator (-1) and
 #               `vectorbtpro.portfolio.enums.NoOrder`.
 #     """
 #     return -1, NoOrder
@@ -5467,7 +5467,7 @@ def def_order_func_nb(  # % line.replace("def_order_func_nb", "order_func_nb")
         log (FlexArray2d): Array containing logging configurations.
 
     Returns:
-        Tuple[int, Order]: A tuple where the first element is an indicator (typically a column index)
+        Tuple[int, Order]: Tuple where the first element is an indicator (typically a column index)
             and the second element is the created order.
     """
     return order_nb(
@@ -5596,7 +5596,7 @@ def def_flex_order_func_nb(  # % line.replace("def_flex_order_func_nb", "flex_or
         log (FlexArray2d): Array containing logging configurations.
 
     Returns:
-        Tuple[int, Order]: A tuple where the first element is the column index used to generate the order
+        Tuple[int, Order]: Tuple where the first element is the column index used to generate the order
             (or -1 if no valid index exists) and the second element is the created order (or a no-op order).
     """
     if c.call_idx < c.group_len:

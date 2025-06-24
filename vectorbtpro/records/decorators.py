@@ -81,7 +81,7 @@ def attach_fields(*args, on_conflict: str = "raise") -> tp.FlexClassWrapper:
 
     * It is overridden if `on_conflict` is "override".
     * It is ignored if `on_conflict` is "ignore".
-    * An error is raised if `on_conflict` is "raise".
+    * Error is raised if `on_conflict` is "raise".
 
     Args:
         *args: Positional arguments representing either the decorated class

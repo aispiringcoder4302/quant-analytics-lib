@@ -111,7 +111,7 @@ def get_variable_args_name(func: tp.Callable) -> tp.Optional[str]:
         func (Callable): Function whose signature is inspected.
 
     Returns:
-        Optional[str]: The variable positional argument name if present, otherwise None.
+        Optional[str]: Variable positional argument name if present, otherwise None.
     """
     signature = inspect.signature(func)
     for p in signature.parameters.values():
@@ -139,7 +139,7 @@ def get_variable_kwargs_name(func: tp.Callable) -> tp.Optional[str]:
         func (Callable): Function whose signature is inspected.
 
     Returns:
-        Optional[str]: The variable keyword argument name if present, otherwise None.
+        Optional[str]: Variable keyword argument name if present, otherwise None.
     """
     signature = inspect.signature(func)
     for p in signature.parameters.values():
@@ -613,7 +613,7 @@ def get_expr_var_names(expression: str) -> tp.List[str]:
         expression (str): Python expression as a string.
 
     Returns:
-        List[str]: A list of variable names found in the expression.
+        List[str]: List of variable names found in the expression.
     """
     return [node.id for node in ast.walk(ast.parse(expression)) if type(node) is ast.Name]
 
@@ -637,7 +637,7 @@ def get_context_vars(
             If not provided, uses the calling frame's global variables.
 
     Returns:
-        List[Any]: A list of variable values corresponding to `var_names`.
+        List[Any]: List of variable values corresponding to `var_names`.
     """
     call_frame = sys._getframe(frames_back + 1)
     clear_local_dict = False

@@ -81,9 +81,9 @@ def self_decorator(self, func: tp.Callable) -> tp.Callable:
 try:
     from telegram import __version_info__
 except ImportError:
-    __version_info__ = (0, 0, 0, 0, 0)
+    __version_info__ = (0, 0)
 
-if __version_info__ < (20, 0, 0, "alpha", 1):
+if __version_info__ < (20, 0):
     from telegram import Update
     from telegram.error import Unauthorized, ChatMigrated
     from telegram.ext import (
@@ -157,10 +157,10 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             try:
                 from telegram import __version_info__
             except ImportError:
-                __version_info__ = (0, 0, 0, 0, 0)
+                __version_info__ = (0, 0)
 
-            if __version_info__ >= (20, 0, 0, "alpha", 1):
-                raise RuntimeError(f"This example is not compatible with your current PTB version {TG_VER}")
+            if __version_info__ >= (20, 0):
+                raise RuntimeError(f"This implementation is not compatible with telegram version {TG_VER}")
 
             # Enable logging
             logging.basicConfig(
@@ -263,7 +263,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Telegram updater instance used to poll messages and handle updates.
 
             Returns:
-                Updater: The `Updater` instance responsible for polling messages.
+                Updater: `Updater` instance responsible for polling messages.
             """
             return self._updater
 
@@ -272,7 +272,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             """Telegram dispatcher instance for registering handlers.
 
             Returns:
-                Dispatcher: The `telegram.ext.Dispatcher` instance managing update handlers.
+                Dispatcher: `telegram.ext.Dispatcher` instance managing update handlers.
             """
             return self._dispatcher
 
@@ -293,7 +293,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             The order of handlers is significant.
 
             Returns:
-                Iterable[Handler]: An iterable collection of additional command `telegram.extHandler` instances.
+                Iterable[Handler]: Iterable collection of additional command `telegram.extHandler` instances.
             """
             return ()
 
@@ -304,7 +304,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
             A chat ID is added when the `/start` command is received.
 
             Returns:
-                List[int]: A list of chat IDs for all chats currently tracked by the bot.
+                List[int]: List of chat IDs for all chats currently tracked by the bot.
             """
             return self.dispatcher.bot_data["chat_ids"]
 
@@ -379,7 +379,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
                     self.chat_ids.remove(chat_id)
                 self.chat_ids.append(new_id)
                 self.send(kind, new_id, *args, log_msg=log_msg, **kwargs)
-            except Unauthorized as e:
+            except Unauthorized:
                 logger.info(f"{chat_id} - Unauthorized to send the %s", kind)
 
         def send_to_all(self, kind: str, *args, **kwargs) -> None:
@@ -667,10 +667,10 @@ else:
             try:
                 from telegram import __version_info__
             except ImportError:
-                __version_info__ = (0, 0, 0, 0, 0)
+                __version_info__ = (0, 0)
 
-            if __version_info__ < (20, 0, 0, "alpha", 1):
-                raise RuntimeError(f"This example is not compatible with your current PTB version {TG_VER}")
+            if __version_info__ < (20, 0):
+                raise RuntimeError(f"This implementation is not compatible with telegram version {TG_VER}")
 
             # Enable logging
             logging.basicConfig(
@@ -784,7 +784,7 @@ else:
             The order of the handlers determines the registration sequence.
 
             Returns:
-                Iterable[BaseHandler]: An iterable of custom handlers.
+                Iterable[BaseHandler]: Iterable of custom handlers.
             """
             return ()
 
@@ -831,7 +831,7 @@ else:
             Chat IDs are added upon receiving the `/start` command.
 
             Returns:
-                Set[int]: A set of chat IDs.
+                Set[int]: Set of chat IDs.
             """
             return self.application.bot_data.setdefault("chat_ids", set())
 
@@ -882,7 +882,7 @@ else:
                     self.chat_ids.remove(chat_id)
                 self.chat_ids.add(new_id)
                 await self.send(kind, new_id, *args, log_msg=log_msg, **kwargs)
-            except Forbidden as e:
+            except Forbidden:
                 logger.info(f"{chat_id} - Forbidden to send the %s", kind)
 
         async def send_to_all(self, kind: str, *args, **kwargs) -> None:
@@ -1110,7 +1110,7 @@ else:
             """Current event loop.
 
             Returns:
-                Optional[asyncio.BaseEventLoop]: The event loop instance, if available.
+                Optional[asyncio.BaseEventLoop]: Event loop instance, if available.
             """
             return self._loop
 

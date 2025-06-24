@@ -104,7 +104,7 @@ class HDFData(FileData):
                 Defaults to None. When provided, it is combined with portions of the path during recursion.
 
         Returns:
-            Tuple[Path, Optional[str]]: A tuple containing the HDF file path and the associated key.
+            Tuple[Path, Optional[str]]: Tuple containing the HDF file path and the associated key.
         """
         path = Path(path)
         if _full_path is None:

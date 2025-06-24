@@ -93,6 +93,13 @@ class class_property(Base):
 
     def __set__(self, instance: object, value: tp.Any) -> None:
         raise AttributeError("can't set attribute")
+    
+    def __reduce__(self) -> tp.Union[str, tp.Tuple]:
+        state = {"__doc__": self.__doc__}
+        return (type(self), (self.func,), state)
+
+    def __setstate__(self, state: dict) -> None:
+        self.__doc__ = state["__doc__"]
 
 
 class hybrid_property(Base):
@@ -125,6 +132,13 @@ class hybrid_property(Base):
 
     def __set__(self, instance: object, value: tp.Any) -> None:
         raise AttributeError("can't set attribute")
+    
+    def __reduce__(self) -> tp.Union[str, tp.Tuple]:
+        state = {"__doc__": self.__doc__}
+        return (type(self), (self.func,), state)
+
+    def __setstate__(self, state: dict) -> None:
+        self.__doc__ = state["__doc__"]
 
 
 class hybrid_method(classmethod, Base):
@@ -211,6 +225,14 @@ class custom_property(property, Base):
     def __call__(self, *args, **kwargs) -> tp.Any:
         pass
 
+    def __reduce__(self) -> tp.Union[str, tp.Tuple]:
+        state = {"_name": self._name, "__doc__": self.__doc__}
+        return (type(self), (self.func,), state)
+
+    def __setstate__(self, state: dict) -> None:
+        self._name = state["_name"]
+        self.__doc__ = state["__doc__"]
+
 
 class cacheable_property(custom_property):
     """Class for defining a cacheable property extending `custom_property` to support caching of computed values.
@@ -268,7 +290,7 @@ class cacheable_property(custom_property):
             instance (Optional[object]): Instance to retrieve the setup for.
 
         Returns:
-            Optional[CARunSetup]: The caching setup instance, or None if not applicable.
+            Optional[CARunSetup]: Caching setup instance, or None if not applicable.
         """
         from vectorbtpro.registries.ca_registry import CAUnboundSetup, CARunSetup
 
@@ -328,7 +350,7 @@ def custom_function(
         **options: Configuration options for the function.
 
     Returns:
-        Union[Callable, custom_functionT]: The decorated function with attached metadata.
+        Union[Callable, custom_functionT]: Decorated function with attached metadata.
     """
 
     def decorator(func: tp.Callable) -> custom_functionT:
@@ -382,7 +404,7 @@ def cacheable(
         **options: Configuration options for the function.
 
     Returns:
-        Union[Callable, cacheable_function]: The decorated function with caching enabled.
+        Union[Callable, cacheable_function]: Decorated function with caching enabled.
 
     !!! note
         To decorate an instance method, use `cacheable_method`.
@@ -410,7 +432,7 @@ def cacheable(
             See `vectorbtpro.registries.ca_registry` for details on the caching procedure.
 
             Returns:
-                Optional[CARunSetup]: The caching run setup instance, or None if not applicable.
+                Optional[CARunSetup]: Caching run setup instance, or None if not applicable.
             """
             return CARunSetup.get(
                 wrapper,
@@ -448,7 +470,7 @@ def cached(*args, **options) -> tp.Union[tp.Callable, cacheable_functionT]:
         **options: Configuration options for the function.
 
     Returns:
-        Union[Callable, cacheable_function]: The decorated function with caching enabled.
+        Union[Callable, cacheable_function]: Decorated function with caching enabled.
 
     !!! note
         To decorate an instance method, use `cached_method`.
@@ -479,7 +501,7 @@ def custom_method(
         **options: Configuration options for the method.
 
     Returns:
-        Union[Callable, custom_method]: The decorated method with attached metadata.
+        Union[Callable, custom_method]: Decorated method with attached metadata.
     """
 
     def decorator(func: tp.Callable) -> custom_methodT:
@@ -532,7 +554,7 @@ def cacheable_method(
         **options: Configuration options for the method.
 
     Returns:
-        Union[Callable, cacheable_method]: The decorated method with caching enabled.
+        Union[Callable, cacheable_method]: Decorated method with caching enabled.
 
     !!! info
         For default settings, see `vectorbtpro._settings.caching`.
@@ -562,7 +584,7 @@ def cacheable_method(
                 instance (Optional[object]): Instance to retrieve the setup for.
 
             Returns:
-                Optional[CARunSetup]: The caching run setup instance, or None if not applicable.
+                Optional[CARunSetup]: Caching run setup instance, or None if not applicable.
             """
             unbound_setup = CAUnboundSetup.get(wrapper, use_cache=use_cache, whitelist=whitelist)
             if instance is None:
@@ -598,7 +620,7 @@ def cached_method(*args, **options) -> tp.Union[tp.Callable, cacheable_methodT]:
         **options: Configuration options for the method.
 
     Returns:
-        Union[Callable, cacheable_method]: The decorated method with caching enabled.
+        Union[Callable, cacheable_method]: Decorated method with caching enabled.
     """
     return cacheable_method(*args, use_cache=True, _decorator_name="cached_method", **options)
 

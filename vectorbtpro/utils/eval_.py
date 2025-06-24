@@ -55,7 +55,7 @@ def get_symbols(table: symtable.SymbolTable) -> tp.List[symtable.Symbol]:
         table (symtable.SymbolTable): Symbol table to traverse.
 
     Returns:
-        List[symtable.Symbol]: A list of symbols found in the table and its child tables.
+        List[symtable.Symbol]: List of symbols found in the table and its child tables.
     """
     symbols = []
     children = {child.get_name(): child for child in table.get_children()}
@@ -76,7 +76,7 @@ def get_free_vars(expr: str) -> tp.List[str]:
             Must contain valid Python code and can be single-line or multi-line.
 
     Returns:
-        List[str]: A list of free variable names found in the code.
+        List[str]: List of free variable names found in the code.
     """
     expr = inspect.cleandoc(expr)
     global_table = symtable.symtable(expr, "<string>", "exec")

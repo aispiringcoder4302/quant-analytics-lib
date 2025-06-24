@@ -37,7 +37,7 @@ def requests_retry_session(
             a new session is created.
 
     Returns:
-        requests.Session: A session with mounted adapters that implement the retry strategy.
+        requests.Session: Session with mounted adapters that implement the retry strategy.
     """
     session = session or requests.Session()
     retry = Retry(

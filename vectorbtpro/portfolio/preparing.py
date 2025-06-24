@@ -105,7 +105,7 @@ class PFPrepResult(Configured):
         """Target function from the configuration.
 
         Returns:
-            Optional[Callable]: The target function.
+            Optional[Callable]: Target function.
         """
         return self.config["target_func"]
 
@@ -212,7 +212,7 @@ class BasePFPreparer(BasePreparer):
         """Initial cash mode value used in portfolio simulation.
 
         Returns:
-            Optional[int]: The initial cash mode if valid, otherwise None.
+            Optional[int]: Initial cash mode if valid, otherwise None.
         """
         init_cash = self["init_cash"]
         if checks.is_int(init_cash) and init_cash in enums.InitCashMode:
@@ -256,7 +256,7 @@ class BasePFPreparer(BasePreparer):
             all_ohlc (bool): Flag indicating whether to require all OHLC attributes.
 
         Returns:
-            Optional[OHLCDataMixin]: An instance with OHLC data if parsing succeeds, otherwise None.
+            Optional[OHLCDataMixin]: Instance with OHLC data if parsing succeeds, otherwise None.
         """
         if data is None:
             return None
@@ -277,7 +277,7 @@ class BasePFPreparer(BasePreparer):
         """OHLC data used for portfolio simulation.
 
         Returns:
-            Optional[OHLCDataMixin]: An instance with OHLC data if available, otherwise None.
+            Optional[OHLCDataMixin]: Instance with OHLC data if available, otherwise None.
         """
         return self.parse_data(self["data"])
 
@@ -348,7 +348,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `bm_close` before broadcasting.
 
         Returns:
-            Optional[ArrayLike]: The benchmark close prices before broadcasting if available, otherwise None.
+            Optional[ArrayLike]: Benchmark close prices before broadcasting if available, otherwise None.
         """
         bm_close = self["bm_close"]
         if bm_close is not None and not isinstance(bm_close, bool):
@@ -398,7 +398,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `freq` before casting to nanosecond format.
 
         Returns:
-            Optional[FrequencyLike]: The frequency before broadcasting.
+            Optional[FrequencyLike]: Frequency before broadcasting.
         """
         freq = self["freq"]
         if freq is None and self.data is not None:
@@ -410,7 +410,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `call_seq` before broadcasting.
 
         Returns:
-            Optional[ArrayLike]: The call sequence before broadcasting.
+            Optional[ArrayLike]: Call sequence before broadcasting.
         """
         if self.auto_call_seq:
             return None
@@ -421,7 +421,7 @@ class BasePFPreparer(BasePreparer):
         """Argument `in_outputs` before broadcasting.
 
         Returns:
-            Union[None, NamedTuple, CustomTemplate]: The in-place outputs before broadcasting.
+            Union[None, NamedTuple, CustomTemplate]: In-place outputs before broadcasting.
         """
         in_outputs = self["in_outputs"]
         if (
@@ -605,7 +605,7 @@ class BasePFPreparer(BasePreparer):
         automatic simulation start settings.
 
         Returns:
-            Optional[ArrayLike]: An array of simulation start indices, or None.
+            Optional[ArrayLike]: Array of simulation start indices, or None.
         """
         sim_start = self["sim_start"]
         if sim_start is None:
@@ -642,7 +642,7 @@ class BasePFPreparer(BasePreparer):
         automatic simulation end settings.
 
         Returns:
-            Optional[ArrayLike]: An array of simulation end indices, or None.
+            Optional[ArrayLike]: Array of simulation end indices, or None.
         """
         sim_end = self["sim_end"]
         if sim_end is None:
@@ -678,7 +678,7 @@ class BasePFPreparer(BasePreparer):
         Determines the order of method calls for portfolio updates.
 
         Returns:
-            Optional[ArrayLike]: The computed call sequence, or None.
+            Optional[ArrayLike]: Computed call sequence, or None.
         """
         call_seq = self.pre__call_seq
         if call_seq is None and self.attach_call_seq:
@@ -722,7 +722,7 @@ class BasePFPreparer(BasePreparer):
         Substitutes templates in the input outputs using the template context.
 
         Returns:
-            Optional[NamedTuple]: The outputs after template substitution.
+            Optional[NamedTuple]: Outputs after template substitution.
         """
         return substitute_templates(self.pre__in_outputs, self.template_context, eval_id="in_outputs")
 
@@ -967,7 +967,7 @@ class FOPreparer(BasePFPreparer):
         """Argument `max_order_records` before broadcasting.
 
         Returns:
-            Optional[int]: The maximum order records before broadcasting.
+            Optional[int]: Maximum order records before broadcasting.
         """
         return self["max_order_records"]
 
@@ -976,7 +976,7 @@ class FOPreparer(BasePFPreparer):
         """Argument `max_log_records` before broadcasting.
 
         Returns:
-            Optional[int]: The maximum log records before broadcasting.
+            Optional[int]: Maximum log records before broadcasting.
         """
         return self["max_log_records"]
 
@@ -1009,7 +1009,7 @@ class FOPreparer(BasePFPreparer):
         """Processed `price` and `from_ago` arguments after broadcasting.
 
         Returns:
-            Tuple[ArrayLike, ArrayLike]: A tuple where the first element is the processed `price` array and
+            Tuple[ArrayLike, ArrayLike]: Tuple where the first element is the processed `price` array and
                 the second element is the corresponding `from_ago` array.
         """
         price = self.post__price
@@ -1078,7 +1078,7 @@ class FOPreparer(BasePFPreparer):
         """Maximum number of order records.
 
         Returns:
-            Optional[int]: The maximum order records calculated based on the data shape and
+            Optional[int]: Maximum order records calculated based on the data shape and
                 target configuration.
         """
         max_order_records = self.pre__max_order_records
@@ -1098,7 +1098,7 @@ class FOPreparer(BasePFPreparer):
         """Maximum number of log records.
 
         Returns:
-            Optional[int]: The maximum log records determined based on the provided log data and
+            Optional[int]: Maximum log records determined based on the provided log data and
                 target configuration.
         """
         max_log_records = self.pre__max_log_records
@@ -1591,7 +1591,7 @@ class FSPreparer(BasePFPreparer):
         the provided callable is returned. If dynamic mode is inactive, returns None.
 
         Returns:
-            Optional[Callable]: The adjustment function callable or None.
+            Optional[Callable]: Adjustment function callable or None.
         """
         if self.dynamic_mode:
             if self["adjust_func_nb"] is None:
@@ -1612,7 +1612,7 @@ class FSPreparer(BasePFPreparer):
         If a value is provided, it is returned. Outside dynamic mode, returns None.
 
         Returns:
-            Optional[Callable]: The signal function callable or None.
+            Optional[Callable]: Signal function callable or None.
         """
         if self.dynamic_mode:
             if self["signal_func_nb"] is None:
@@ -1636,7 +1636,7 @@ class FSPreparer(BasePFPreparer):
         If dynamic mode is inactive, returns None.
 
         Returns:
-            Optional[Callable]: The post signal function callable or None.
+            Optional[Callable]: Post signal function callable or None.
         """
         if self.dynamic_mode:
             if self["post_signal_func_nb"] is None:
@@ -1655,7 +1655,7 @@ class FSPreparer(BasePFPreparer):
         If a value is provided, it is returned. Outside dynamic mode, returns None.
 
         Returns:
-            Optional[Callable]: The post segment function callable or None.
+            Optional[Callable]: Post segment function callable or None.
         """
         if self.dynamic_mode:
             if self["post_segment_func_nb"] is None:
@@ -1797,7 +1797,7 @@ class FSPreparer(BasePFPreparer):
         """Pre-resolution value for the `max_log_records` argument.
 
         Returns:
-            Optional[int]: The pre-broadcast `max_log_records` value.
+            Optional[int]: Pre-broadcast `max_log_records` value.
         """
         return self["max_log_records"]
 
@@ -1908,7 +1908,7 @@ class FSPreparer(BasePFPreparer):
         """Post-broadcast value for the signal arrays.
 
         Returns:
-            Tuple[ArrayLike, ArrayLike, ArrayLike, ArrayLike]: A tuple containing:
+            Tuple[ArrayLike, ArrayLike, ArrayLike, ArrayLike]: Tuple containing:
 
                 * `long_entries`: Broadcasted long entry signals.
                 * `long_exits`: Broadcasted long exit signals.
@@ -2029,10 +2029,10 @@ class FSPreparer(BasePFPreparer):
         """Post-broadcast value for the `price` and `from_ago` arguments.
 
         Returns:
-            Tuple[ArrayLike, ArrayLike]: A tuple containing:
+            Tuple[ArrayLike, ArrayLike]: Tuple containing:
 
-                * `price`: The broadcasted price array.
-                * `from_ago`: The broadcasted from-ago array.
+                * `price`: Broadcasted price array.
+                * `from_ago`: Broadcasted from-ago array.
         """
         price = self.post__price
         from_ago = self.post__from_ago
@@ -2072,7 +2072,7 @@ class FSPreparer(BasePFPreparer):
         """Post-broadcast value for the `max_log_records` argument.
 
         Returns:
-            Optional[int]: The calculated number of maximum log records.
+            Optional[int]: Calculated number of maximum log records.
         """
         max_log_records = self.pre__max_log_records
         if max_log_records is None:

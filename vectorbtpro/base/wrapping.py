@@ -407,7 +407,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             return_chunk_meta (bool): Flag indicating whether to yield chunk metadata alongside each chunk.
 
         Yields:
-            Union[HasWrapper, Tuple[ChunkMeta, HasWrapper]]: A chunk of the instance,
+            Union[HasWrapper, Tuple[ChunkMeta, HasWrapper]]: Chunk of the instance,
                 or a tuple containing the chunk metadata and the chunk if `return_chunk_meta` is True.
         """
         if axis is None:
@@ -623,7 +623,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         range_only_select (Optional[bool]): If True, allow row selection only by slicing.
         group_select (Optional[bool]): If True, enable group-based selection when grouping is active.
         grouped_ndim (Optional[int]): Number of dimensions after grouping columns.
-        grouper (Optional[Grouper]): A `vectorbtpro.base.grouping.base.Grouper` instance for grouping columns.
+        grouper (Optional[Grouper]): `vectorbtpro.base.grouping.base.Grouper` instance for grouping columns.
         **kwargs: Keyword arguments for `vectorbtpro.base.grouping.base.Grouper`
             and `vectorbtpro.utils.config.Configured`.
 
@@ -772,11 +772,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `ArrayWrapper` or `vectorbtpro.base.grouping.base.Grouper`.
 
         Returns:
-            Tuple[Kwargs, Kwargs]: A tuple containing two dictionaries:
+            Tuple[Kwargs, Kwargs]: Tuple containing two dictionaries:
 
-                * The first dictionary comprises keyword arguments applicable to `ArrayWrapper` or
+                * First dictionary comprises keyword arguments applicable to `ArrayWrapper` or
                     `vectorbtpro.base.grouping.base.Grouper`.
-                * The second dictionary contains the remaining keyword arguments.
+                * Second dictionary contains the remaining keyword arguments.
         """
         wrapper_arg_names = get_func_arg_names(ArrayWrapper.__init__)
         grouper_arg_names = get_func_arg_names(Grouper.__init__)
@@ -822,7 +822,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                                 same_k = False
                         else:
                             same_k = False
-                    except KeyError as e:
+                    except KeyError:
                         same_k = False
                     if not same_k:
                         raise ValueError(f"Objects to be merged must have compatible '{k}'. Pass to override.")
@@ -1218,12 +1218,12 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Returns:
             dict: Dictionary containing:
 
-                * `new_wrapper`: The updated `ArrayWrapper` after applying indexing.
-                * `row_idxs`: The selected row indices, possibly returned as a slice if identified as a range.
+                * `new_wrapper`: Updated `ArrayWrapper` after applying indexing.
+                * `row_idxs`: Selected row indices, possibly returned as a slice if identified as a range.
                 * `rows_changed`: Boolean indicating whether the row axis was changed in any way.
-                * `col_idxs`: The selected column indices, possibly returned as a slice if identified as a range.
+                * `col_idxs`: Selected column indices, possibly returned as a slice if identified as a range.
                 * `columns_changed`: Boolean indicating whether the column axis was changed in any way.
-                * `group_idxs`: The selected group indices, or the same as column indices if grouping is disabled.
+                * `group_idxs`: Selected group indices, or the same as column indices if grouping is disabled.
                 * `groups_changed`: Boolean indicating whether the group axis was changed in any way.
 
         !!! note
@@ -1549,7 +1549,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_resampler`.
 
         Returns:
-            Union[Resampler, PandasResampler]: The resampler object.
+            Union[Resampler, PandasResampler]: Resampler object.
         """
         return self.index_acc.get_resampler(*args, **kwargs)
 
@@ -1564,8 +1564,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         Returns:
             dict: Dictionary containing:
 
-                * `resampler`: The resampler object.
-                * `new_wrapper`: The new `ArrayWrapper` instance after resampling.
+                * `resampler`: Resampler object.
+                * `new_wrapper`: New `ArrayWrapper` instance after resampling.
         """
         resampler = self.get_resampler(*args, **kwargs)
         if isinstance(resampler, Resampler):
@@ -1599,7 +1599,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def index(self) -> tp.Index:
-        """The index associated with the wrapped array.
+        """Index associated with the wrapped array.
 
         Returns:
             Index: Index of the wrapped array.
@@ -1642,7 +1642,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def columns(self) -> tp.Index:
-        """The columns associated with the wrapped array.
+        """Columns associated with the wrapped array.
 
         Returns:
             Index: Columns of the wrapped array.
@@ -1664,7 +1664,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def name(self) -> tp.Any:
-        """The name of the `ArrayWrapper` when applicable.
+        """Name of the `ArrayWrapper` when applicable.
 
         Returns:
             Any: Name derived from the columns if the instance is one-dimensional; otherwise, None.
@@ -1690,7 +1690,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def ndim(self) -> int:
-        """The number of dimensions of the wrapped array.
+        """Number of dimensions of the wrapped array.
 
         Returns:
             int: Number of dimensions.
@@ -1712,7 +1712,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def shape(self) -> tp.Shape:
-        """The shape of the `ArrayWrapper`.
+        """Shape of the `ArrayWrapper`.
 
         Returns:
             Shape: Tuple representing the dimensions of the instance.
@@ -1736,7 +1736,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def shape_2d(self) -> tp.Shape:
-        """The shape of the `ArrayWrapper` as a two-dimensional structure.
+        """Shape of the `ArrayWrapper` as a two-dimensional structure.
 
         Returns:
             Shape: Tuple representing the 2D dimensions.
@@ -1766,7 +1766,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `get_freq`.
 
         Returns:
-            Union[None, float, PandasFrequency]: The frequency information.
+            Union[None, float, PandasFrequency]: Frequency information.
         """
         return self.index_acc.get_freq(*args, **kwargs)
 
@@ -1776,7 +1776,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         `vectorbtpro.base.accessors.BaseIDXAccessor.freq`.
 
         Returns:
-            Optional[PandasFrequency]: The frequency of the index.
+            Optional[PandasFrequency]: Frequency of the index.
         """
         return self.index_acc.freq
 
@@ -1786,7 +1786,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         `vectorbtpro.base.accessors.BaseIDXAccessor.ns_freq`.
 
         Returns:
-            Optional[int]: The nanosecond frequency of the index.
+            Optional[int]: Nanosecond frequency of the index.
         """
         return self.index_acc.ns_freq
 
@@ -1795,13 +1795,13 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         """Frequency value determined by `vectorbtpro.base.accessors.BaseIDXAccessor.any_freq`.
 
         Returns:
-            Union[None, float, PandasFrequency]: The frequency of the index.
+            Union[None, float, PandasFrequency]: Frequency of the index.
         """
         return self.index_acc.any_freq
 
     @property
     def periods(self) -> int:
-        """The number of periods defined by `vectorbtpro.base.accessors.BaseIDXAccessor.periods`.
+        """Number of periods defined by `vectorbtpro.base.accessors.BaseIDXAccessor.periods`.
 
         Returns:
             int: Number of periods in the index.
@@ -1826,7 +1826,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.arr_to_timedelta`.
 
         Returns:
-            Union[pd.Index, MaybeArray]: An array representing time deltas.
+            Union[pd.Index, MaybeArray]: Array representing time deltas.
         """
         return self.index_acc.arr_to_timedelta(*args, **kwargs)
 
@@ -1876,7 +1876,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def grouper(self) -> Grouper:
-        """The `vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns.
+        """`vectorbtpro.base.grouping.base.Grouper` instance used for grouping columns.
 
         Returns:
             Grouper: Grouper instance.
@@ -1885,7 +1885,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     @property
     def grouped_ndim(self) -> int:
-        """The number of dimensions after applying column grouping.
+        """Number of dimensions after applying column grouping.
 
         If not explicitly set, it is derived from the grouper's state.
 
@@ -2468,7 +2468,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             **kwargs: Keyword arguments for `vectorbtpro.base.accessors.BaseIDXAccessor.get_ranges`.
 
         Returns:
-            Tuple[Array1d, Array1d]: A tuple containing two arrays that represent the index ranges.
+            Tuple[Array1d, Array1d]: Tuple containing two arrays that represent the index ranges.
         """
         return self.index_acc.get_ranges(*args, **kwargs)
 

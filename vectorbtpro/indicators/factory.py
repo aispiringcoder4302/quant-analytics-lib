@@ -128,7 +128,7 @@ def prepare_params(
         context (KwargsLike): Additional context for template substitution.
 
     Returns:
-        Tuple[Params, bool]: A tuple where the first element is the list of processed parameters
+        Tuple[Params, bool]: Tuple where the first element is the list of processed parameters
             and the second element indicates whether a single parameter combination was provided.
     """
     if context is None:
@@ -238,8 +238,8 @@ def build_columns(
             * `rep_param_indexes`: List of repeated parameter indexes corresponding to `input_columns`.
             * `vis_param_indexes`: List of visible parameter indexes not hidden.
             * `vis_rep_param_indexes`: List of visible repeated parameter indexes.
-            * `param_index`: The combined parameter index, or None if `per_column` is True.
-            * `final_index`: The final stacked index combining visible parameter indexes and `input_columns`.
+            * `param_index`: Combined parameter index, or None if `per_column` is True.
+            * `final_index`: Final stacked index combining visible parameter indexes and `input_columns`.
     """
     if level_names is not None:
         checks.assert_len_equal(params, level_names)
@@ -727,14 +727,14 @@ class IndicatorBase(Analyzable):
             Union[tp.IFCacheOutput, tp.IFRawOutput, tp.IFPipelineOutput]:
                 Tuple containing the following elements:
 
-                * An array wrapper.
-                * A list of input arrays (`np.ndarray`).
-                * An input mapper (`np.ndarray`).
-                * A list of output arrays for in-place outputs (`np.ndarray`).
-                * A list of additional output arrays beyond `num_ret_outputs` (`np.ndarray`).
-                * A list of parameter arrays (`np.ndarray`).
-                * A list of parameter mapper arrays (`np.ndarray`).
-                * A list of extra output objects.
+                * Array wrapper.
+                * List of input arrays (`np.ndarray`).
+                * Input mapper (`np.ndarray`).
+                * List of output arrays for in-place outputs (`np.ndarray`).
+                * List of additional output arrays beyond `num_ret_outputs` (`np.ndarray`).
+                * List of parameter arrays (`np.ndarray`).
+                * List of parameter mapper arrays (`np.ndarray`).
+                * List of extra output objects.
         """
         pass_per_column = per_column is not None
         if per_column is None:
@@ -925,7 +925,7 @@ class IndicatorBase(Analyzable):
                 if len(unique_param_tuples) < len(param_tuples):
                     param_list_unique = list(map(list, zip(*unique_param_tuples)))
                     use_run_unique = True
-            except:
+            except Exception:
                 pass
         if checks.is_numba_func(custom_func):
             param_list_ready = [to_typed_list(params) for params in param_list_unique]
@@ -1479,7 +1479,7 @@ class IndicatorBase(Analyzable):
         """Names of the input arrays.
 
         Returns:
-            Tuple[str, ...]: A tuple of input names.
+            Tuple[str, ...]: Tuple of input names.
         """
         return cls_or_self._input_names
 
@@ -1488,7 +1488,7 @@ class IndicatorBase(Analyzable):
         """Names of the parameters.
 
         Returns:
-            Tuple[str, ...]: A tuple of parameter names.
+            Tuple[str, ...]: Tuple of parameter names.
         """
         return cls_or_self._param_names
 
@@ -1497,7 +1497,7 @@ class IndicatorBase(Analyzable):
         """Names of the in-place output arrays.
 
         Returns:
-            Tuple[str, ...]: A tuple of in-place output names.
+            Tuple[str, ...]: Tuple of in-place output names.
         """
         return cls_or_self._in_output_names
 
@@ -1506,7 +1506,7 @@ class IndicatorBase(Analyzable):
         """Names of the regular output arrays.
 
         Returns:
-            Tuple[str, ...]: A tuple of output names.
+            Tuple[str, ...]: Tuple of output names.
         """
         return cls_or_self._output_names
 
@@ -1515,7 +1515,7 @@ class IndicatorBase(Analyzable):
         """Names of the lazy output arrays.
 
         Returns:
-            Tuple[str, ...]: A tuple of lazy output names.
+            Tuple[str, ...]: Tuple of lazy output names.
         """
         return cls_or_self._lazy_output_names
 
@@ -1533,7 +1533,7 @@ class IndicatorBase(Analyzable):
         """Parameter defaults extracted from the signature of `IndicatorBase.run`.
 
         Returns:
-            Dict[str, Any]: A dictionary of parameter defaults.
+            Dict[str, Any]: Dictionary of parameter defaults.
         """
         func_kwargs = get_func_kwargs(cls_or_self.run)
         out = {}
@@ -1550,7 +1550,7 @@ class IndicatorBase(Analyzable):
         """List of level names corresponding to each parameter.
 
         Returns:
-            Tuple[str, ...]: A tuple of level names corresponding to each parameter.
+            Tuple[str, ...]: Tuple of level names corresponding to each parameter.
         """
         return self._level_names
 
@@ -1560,7 +1560,7 @@ class IndicatorBase(Analyzable):
         If there is only one output, return it directly; otherwise, return a tuple of outputs.
 
         Returns:
-            MaybeTuple[SeriesFrame]: The output or outputs of the indicator.
+            MaybeTuple[SeriesFrame]: Output or outputs of the indicator.
         """
         out = tuple([getattr(self, name) for name in self.output_names])
         if len(out) == 1:
@@ -1574,7 +1574,7 @@ class IndicatorBase(Analyzable):
             include_all (bool): Flag to determine whether to include all outputs (regular, in-place, and lazy).
 
         Returns:
-            Dict[str, SeriesFrame]: A mapping of output names to their corresponding data.
+            Dict[str, SeriesFrame]: Mapping of output names to their corresponding data.
         """
         if include_all:
             output_names = self.output_names + self.in_output_names + self.lazy_output_names
@@ -1603,7 +1603,7 @@ class IndicatorBase(Analyzable):
                 If None, the main output is returned.
 
         Returns:
-            Optional[SeriesFrame]: The requested time series or the main output if no key is provided.
+            Optional[SeriesFrame]: Requested time series or the main output if no key is provided.
         """
         if key is None:
             return self.main_output
@@ -1779,7 +1779,7 @@ class IndicatorBase(Analyzable):
 
 
 class IndicatorFactory(Configured):
-    """A factory for creating new indicators.
+    """Factory for creating new indicators.
 
     Initialize `IndicatorFactory` to create a skeleton. Then, use a class method such as
     `IndicatorFactory.with_custom_func` to bind a calculation function to the skeleton.
@@ -2160,7 +2160,7 @@ class IndicatorFactory(Configured):
 
                         Args:
                             other (MaybeTupleList[Union[IndicatorBase, ArrayLike, BaseAccessor]]): 
-                                The indicator, array, or accessor to compare.
+                                Indicator, array, or accessor to compare.
                             level_name (Optional[str]): Output level name.
                             
                                 If not provided, a name is auto-generated.
@@ -2207,7 +2207,7 @@ class IndicatorFactory(Configured):
                     
                         Args:
                             other (MaybeTupleList[Union[IndicatorBase, ArrayLike, BaseAccessor]]): 
-                                The indicator, array, or accessor to compare.
+                                Indicator, array, or accessor to compare.
                             level_name (Optional[str]): Output level name.
                             
                                 If not provided, a name is auto-generated.
@@ -2351,7 +2351,7 @@ class IndicatorFactory(Configured):
         """List of input names.
 
         Returns:
-            List[str]: The list of input names.
+            List[str]: List of input names.
         """
         return self._input_names
 
@@ -2360,7 +2360,7 @@ class IndicatorFactory(Configured):
         """List of parameter names.
 
         Returns:
-            List[str]: The list of parameter names.
+            List[str]: List of parameter names.
         """
         return self._param_names
 
@@ -2369,7 +2369,7 @@ class IndicatorFactory(Configured):
         """List of in-place output names.
 
         Returns:
-            List[str]: The list of in-place output names.
+            List[str]: List of in-place output names.
         """
         return self._in_output_names
 
@@ -2378,7 +2378,7 @@ class IndicatorFactory(Configured):
         """List of output names.
 
         Returns:
-            List[str]: The list of output names.
+            List[str]: List of output names.
         """
         return self._output_names
 
@@ -2450,7 +2450,7 @@ class IndicatorFactory(Configured):
         """Built indicator class.
 
         Returns:
-            Type[IndicatorBase]: The built indicator class.
+            Type[IndicatorBase]: Built indicator class.
         """
         return self._Indicator
 
@@ -2902,7 +2902,7 @@ class IndicatorFactory(Configured):
                     *args: Positional arguments corresponding to inputs, parameters, and in-place outputs.
                     **kwargs: Keyword arguments for pipeline configuration and combination settings, including:
                     
-                        * `r`: The number of indicators to run.
+                        * `r`: Number of indicators to run.
                         * `param_product`: Flag controlling parameter combination behavior.
                         * `comb_func`: Function to combine parameter tuples (e.g., `itertools.combinations`).
                         * `run_unique`: If True, computes raw outputs before constructing indicators.
@@ -2913,7 +2913,7 @@ class IndicatorFactory(Configured):
                         Other keyword arguments are passed to `{0}.run`.
 
                 Returns:
-                    Tuple[Indicator, ...]: A tuple of indicator instances generated.
+                    Tuple[Indicator, ...]: Tuple of indicator instances generated.
 
                 !!! note
                     Use this method only when multiple indicator instances are required.
@@ -2971,7 +2971,7 @@ class IndicatorFactory(Configured):
                     parameter combination. When `per_column` is True, each value corresponds to a column; if
                     `takes_1d` is True, each value is repeated by the number of columns.
                 * Variable arguments if `var_args` is set to True.
-                * The `per_column` argument if `pass_per_column` is True and not present in `kwargs_as_args`
+                * `per_column` argument if `pass_per_column` is True and not present in `kwargs_as_args`
                     and if `jitted_loop` is True.
                 * Positional arguments listed in `kwargs_as_args`.
                 * Other keyword arguments if `jitted_loop` is False, also including `takes_1d` and `per_column`
@@ -3015,7 +3015,7 @@ class IndicatorFactory(Configured):
             * All inputs are automatically converted to NumPy arrays.
             * Each positional argument must be of a Numba-compatible type.
             * Keyword arguments cannot be passed.
-            * The output arrays must have identical shapes, data types, and data orders.
+            * Output arrays must have identical shapes, data types, and data orders.
 
         !!! note
             Reserved arguments such as `per_column` are passed as positional arguments when
@@ -3195,9 +3195,9 @@ class IndicatorFactory(Configured):
                 Union[None, IFCacheOutput, Array2d, List[Array2d]]:
                     Result of applying `{0}`, which may be:
 
-                    * The cache output if `return_cache` is True.
-                    * A 2D array.
-                    * A list of 2D arrays.
+                    * Cache output if `return_cache` is True.
+                    * 2D array.
+                    * List of 2D arrays.
                     * None.
             """
             if jitted_loop and not checks.is_numba_func(apply_func):
@@ -3528,7 +3528,7 @@ class IndicatorFactory(Configured):
         """List of custom indicator locations in the order they were registered.
 
         Returns:
-            List[str]: A list of custom indicator locations.
+            List[str]: List of custom indicator locations.
         """
         return list(cls.custom_indicators.keys())
 
@@ -3537,7 +3537,7 @@ class IndicatorFactory(Configured):
         """List of built-in indicator locations in the order defined by the author.
 
         Returns:
-            List[str]: A list of built-in indicator locations.
+            List[str]: List of built-in indicator locations.
         """
         return [
             "vbt",
@@ -3556,7 +3556,7 @@ class IndicatorFactory(Configured):
         """List of all supported indicator locations, with custom locations listed before built-in locations.
 
         Returns:
-            List[str]: A list of all indicator locations.
+            List[str]: List of all indicator locations.
         """
         return [*cls.list_custom_locations(), *cls.list_builtin_locations()]
 
@@ -3568,7 +3568,7 @@ class IndicatorFactory(Configured):
             location (str): Location name to match (case-insensitive).
 
         Returns:
-            Optional[str]: The matching location if found; otherwise, None.
+            Optional[str]: Matching location if found; otherwise, None.
         """
         for k in cls.list_locations():
             if k.lower() == location.lower():
@@ -3584,7 +3584,7 @@ class IndicatorFactory(Configured):
                 by a colon or underscore.
 
         Returns:
-            Tuple[Optional[str], Optional[str]]: A tuple where the first element is the location
+            Tuple[Optional[str], Optional[str]]: Tuple where the first element is the location
                 (if detected) and the second element is the indicator name.
 
                 If the name itself matches a known location, returns (location, None).
@@ -3774,7 +3774,7 @@ class IndicatorFactory(Configured):
             prepend_location (Optional[bool]): When True, indicator names are prefixed with their location.
 
         Returns:
-            List[str]: The list of custom indicator names.
+            List[str]: List of custom indicator names.
         """
         if location is not None:
             matched_location = cls.match_location(location)
@@ -3804,7 +3804,7 @@ class IndicatorFactory(Configured):
         """Return a sorted list of all vectorbtpro indicators.
 
         Returns:
-            List[str]: A sorted list of all vectorbtpro indicator names.
+            List[str]: Sorted list of all vectorbtpro indicator names.
         """
         import vectorbtpro as vbt
 
@@ -3843,7 +3843,7 @@ class IndicatorFactory(Configured):
             prepend_location (Optional[bool]): When True, indicator names are prefixed with their location.
 
         Returns:
-            List[str]: A list of matching indicator names.
+            List[str]: List of matching indicator names.
         """
         if pattern is not None:
             if not case_sensitive:
@@ -3939,7 +3939,7 @@ class IndicatorFactory(Configured):
             location (Optional[str]): Location to filter the search for the indicator.
 
         Returns:
-            Type[IndicatorBase]: The indicator class matching the provided name.
+            Type[IndicatorBase]: Indicator class matching the provided name.
         """
         if location is None:
             location, name = cls.split_indicator_name(name)
@@ -4120,7 +4120,7 @@ class IndicatorFactory(Configured):
                 **kwargs_: Additional keyword arguments.
     
             Returns:
-                MaybeTuple[Array2d]: The output computed by the TA-Lib function.
+                MaybeTuple[Array2d]: Output computed by the TA-Lib function.
             """
         )
         kwargs = merge_dicts({k: Default(v) for k, v in info["parameters"].items()}, dict(timeframe=None), kwargs)
@@ -4217,12 +4217,12 @@ class IndicatorFactory(Configured):
         Returns:
             Kwargs: Dictionary containing the following keys:
 
-                * `class_name`: The uppercase name of the indicator function.
-                * `class_docstring`: The original docstring of the indicator function.
-                * `input_names`: A list of detected input parameter names.
-                * `param_names`: A list of parameter names that have default values.
-                * `output_names`: A list of output column names extracted from the function's result.
-                * `defaults`: A mapping of parameter names to their default values.
+                * `class_name`: Uppercase name of the indicator function.
+                * `class_docstring`: Original docstring of the indicator function.
+                * `input_names`: List of detected input parameter names.
+                * `param_names`: List of parameter names that have default values.
+                * `output_names`: List of output column names extracted from the function's result.
+                * `defaults`: Mapping of parameter names to their default values.
         """
         if test_input_names is None:
             test_input_names = {"open_", "open", "high", "low", "close", "adj_close", "volume", "dividends", "split"}
@@ -4276,7 +4276,7 @@ class IndicatorFactory(Configured):
                 try:
                     float(name_part)
                     continue
-                except:
+                except Exception:
                     name_parts.append(name_part.replace("-", "_").lower())
             output_col = "_".join(name_parts)
             new_output_cols.append(output_col)
@@ -4310,7 +4310,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for `IndicatorFactory.parse_pandas_ta_config`.
 
         Returns:
-            List[str]: A sorted list of indicator names in uppercase that were successfully parsed.
+            List[str]: Sorted list of indicator names in uppercase that were successfully parsed.
 
         !!! note
             Returns only the indicators that have been successfully parsed.
@@ -4351,7 +4351,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
-            Type[IndicatorBase]: A new indicator class wrapping the specified Pandas TA function.
+            Type[IndicatorBase]: New indicator class wrapping the specified Pandas TA function.
 
         Examples:
             ```pycon
@@ -4496,8 +4496,8 @@ class IndicatorFactory(Configured):
         Returns:
             dict: Dictionary containing:
 
-                * `class_name`: The name of the indicator class.
-                * `class_docstring`: The docstring of the indicator class.
+                * `class_name`: Name of the indicator class.
+                * `class_docstring`: Docstring of the indicator class.
                 * `input_names`: List of input parameter names.
                 * `param_names`: List of parameter names.
                 * `output_names`: List of output attribute names.
@@ -4548,7 +4548,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
-            Type[IndicatorBase]: The built indicator class.
+            Type[IndicatorBase]: Built indicator class.
 
         Examples:
             ```pycon
@@ -4628,8 +4628,8 @@ class IndicatorFactory(Configured):
         Returns:
             dict: Configuration dictionary containing:
 
-                * `class_name`: The uppercase name of the function.
-                * `class_docstring`: The original function docstring.
+                * `class_name`: Uppercase name of the function.
+                * `class_docstring`: Original function docstring.
                 * `input_names`: List of input names derived from the function arguments.
                 * `param_names`: List of parameter names for the function.
                 * `output_names`: List of output names inferred from the function's return.
@@ -4737,7 +4737,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for `IndicatorFactory.parse_technical_config`.
 
         Returns:
-            list[str]: A sorted list of technical indicator names in uppercase.
+            list[str]: Sorted list of technical indicator names in uppercase.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -4913,7 +4913,7 @@ class IndicatorFactory(Configured):
                 smooth (Optional[int]): Smoothing parameter.
 
             Returns:
-                Tuple[Array1d, Array1d, Array1d, Array1d, Array1d, Array1d]: A tuple containing arrays for:
+                Tuple[Array1d, Array1d, Array1d, Array1d, Array1d, Array1d]: Tuple containing arrays for:
 
                     * buy scores,
                     * sell scores,
@@ -5051,7 +5051,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for `IndicatorFactory.from_custom_techcon`.
 
         Returns:
-            Type[IndicatorBase]: The created indicator class.
+            Type[IndicatorBase]: Created indicator class.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -5088,7 +5088,7 @@ class IndicatorFactory(Configured):
         """List all consensus indicators available in technical.
 
         Returns:
-            List[str]: A sorted list of consensus indicator names.
+            List[str]: Sorted list of consensus indicator names.
         """
         return sorted({"MACON", "OSCCON", "SUMCON"})
 
@@ -5101,7 +5101,7 @@ class IndicatorFactory(Configured):
             raise_error (bool): Flag indicating whether to raise an error if the indicator is not found.
 
         Returns:
-            Optional[Callable]: The indicator class if found; otherwise, None.
+            Optional[Callable]: Indicator class if found; otherwise, None.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -5131,8 +5131,8 @@ class IndicatorFactory(Configured):
         Returns:
             dict: Dictionary containing the parsed configuration with the following keys:
 
-                * `class_name`: The uppercase name of the function.
-                * `class_docstring`: The original docstring of the function.
+                * `class_name`: Uppercase name of the function.
+                * `class_docstring`: Original docstring of the function.
                 * `input_names`: List of input column names.
                 * `param_names`: List of parameter names.
                 * `output_names`: List of output names extracted from the function source.
@@ -5248,7 +5248,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for `IndicatorFactory.with_apply_func`.
 
         Returns:
-            Type[IndicatorBase]: An indicator class built around the specified smartmoneyconcepts function.
+            Type[IndicatorBase]: Indicator class built around the specified smartmoneyconcepts function.
         """
         func = cls.find_smc_indicator(func_name)
         func_arg_names = get_func_arg_names(func)
@@ -5838,7 +5838,7 @@ class IndicatorFactory(Configured):
                 try:
                     if callable(var) and "context" in get_func_arg_names(var):
                         var = functools.partial(var, context=merged_context)
-                except:
+                except Exception:
                     pass
                 if var_name in res_func_mapping:
                     var = var()
@@ -5865,7 +5865,7 @@ class IndicatorFactory(Configured):
             **kwargs: Keyword arguments for `IndicatorFactory.from_expr`.
 
         Returns:
-            Type[IndicatorBase]: The constructed indicator class.
+            Type[IndicatorBase]: Constructed indicator class.
 
         !!! note
             Some expressions that utilize cross-sectional operations require columns to be
@@ -5908,7 +5908,7 @@ class IndicatorFactory(Configured):
         """List all WorldQuant's 101 alpha indicators.
 
         Returns:
-            List[str]: A list of all WorldQuant alpha expression indices as strings.
+            List[str]: List of all WorldQuant alpha expression indices as strings.
         """
         return [str(i) for i in range(1, 102)]
 

@@ -13,6 +13,7 @@
 See `vectorbtpro.utils.knowledge` for the toy dataset.
 """
 
+import ast
 import hashlib
 import inspect
 import re
@@ -90,6 +91,9 @@ __all__ = [
     "TextSplitter",
     "TokenSplitter",
     "SegmentSplitter",
+    "SourceSplitter",
+    "PythonSplitter",
+    "MarkdownSplitter",
     "LlamaIndexSplitter",
     "split_text",
     "StoreObject",
@@ -369,7 +373,7 @@ def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokeni
         found_tokenizer = None
         for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Tokenizer"):
-                _short_name: tp.ClassVar[tp.Optional[str]] = getattr(cls, "_short_name", None)
+                _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == tokenizer.lower():
                     found_tokenizer = cls
                     break
@@ -486,7 +490,7 @@ class Embeddings(Configured):
         Use None to disable batching.
 
         Returns:
-            Optional[int]: The batch size.
+            Optional[int]: Batch size.
         """
         return self._batch_size
 
@@ -522,7 +526,7 @@ class Embeddings(Configured):
         """Model identifier.
 
         Returns:
-            Optional[str]: The model identifier; None by default.
+            Optional[str]: Model identifier; None by default.
         """
         return None
 
@@ -533,7 +537,7 @@ class Embeddings(Configured):
             query (str): Query text.
 
         Returns:
-            List[float]: The embedding vector.
+            List[float]: Embedding vector.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -547,7 +551,7 @@ class Embeddings(Configured):
             batch (List[str]): List of query texts.
 
         Returns:
-            List[List[float]]: A list containing an embedding vector for each query.
+            List[List[float]]: List containing an embedding vector for each query.
         """
         return [self.get_embedding(query) for query in batch]
 
@@ -558,7 +562,7 @@ class Embeddings(Configured):
             queries (List[str]): List of query texts.
 
         Returns:
-            Iterator[List[List[float]]]: An iterator yielding batches of embedding vectors.
+            Iterator[List[List[float]]]: Iterator yielding batches of embedding vectors.
         """
         from vectorbtpro.utils.pbar import ProgressBar
 
@@ -579,7 +583,7 @@ class Embeddings(Configured):
             queries (List[str]): List of query texts.
 
         Returns:
-            List[List[float]]: A list containing an embedding vector for each query.
+            List[List[float]]: List containing an embedding vector for each query.
         """
         return [embedding for batch in self.iter_embedding_batches(queries) for embedding in batch]
 
@@ -960,7 +964,7 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
         **kwargs: Keyword arguments to initialize or update `embeddings`.
 
     Returns:
-        MaybeList[List[float]]: The embedding vector(s) corresponding to the input query or queries.
+        MaybeList[List[float]]: Embedding vector(s) corresponding to the input query or queries.
     """
     embeddings = resolve_embeddings(embeddings=embeddings)
     if isinstance(embeddings, type):
@@ -987,7 +991,9 @@ class Completions(Configured):
 
             In streaming mode, chunks are appended and displayed incrementally; otherwise,
             the entire message is displayed.
-        max_tokens (Optional[int]): Maximum token limit configured for messages.
+        max_tokens (Union[None, bool, int]): Maximum token limit configured for messages.
+
+            If False, the limit is disabled.
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
 
             Resolved using `resolve_tokenizer`.
@@ -998,11 +1004,9 @@ class Completions(Configured):
         system_as_user (Optional[bool]): Boolean indicating whether to use the user role for the system message.
 
             This is mainly used for experimental models where a dedicated system role is not available.
-        context_prompt (Optional[str]): Context prompt template requiring a 'context' variable.
+        context_template (Optional[str]): Context template requiring a 'context' variable.
 
             The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
-
-            This prompt is used to provide context for the conversation.
         formatter (ContentFormatterLike): Identifier, subclass, or instance of
             `vectorbtpro.utils.knowledge.formatting.ContentFormatter`.
 
@@ -1033,12 +1037,12 @@ class Completions(Configured):
         context: str = "",
         chat_history: tp.Optional[tp.ChatHistory] = None,
         stream: tp.Optional[bool] = None,
-        max_tokens: tp.Optional[int] = None,
+        max_tokens: tp.Union[None, bool, int] = None,
         tokenizer: tp.TokenizerLike = None,
         tokenizer_kwargs: tp.KwargsLike = None,
         system_prompt: tp.Optional[str] = None,
         system_as_user: tp.Optional[bool] = None,
-        context_prompt: tp.Optional[str] = None,
+        context_template: tp.Optional[str] = None,
         formatter: tp.ContentFormatterLike = None,
         formatter_kwargs: tp.KwargsLike = None,
         minimal_format: tp.Optional[bool] = None,
@@ -1057,7 +1061,7 @@ class Completions(Configured):
             tokenizer_kwargs=tokenizer_kwargs,
             system_prompt=system_prompt,
             system_as_user=system_as_user,
-            context_prompt=context_prompt,
+            context_template=context_template,
             formatter=formatter,
             formatter_kwargs=formatter_kwargs,
             minimal_format=minimal_format,
@@ -1076,7 +1080,7 @@ class Completions(Configured):
         tokenizer_kwargs = self.resolve_setting(tokenizer_kwargs, "tokenizer_kwargs", default=None, merge=True)
         system_prompt = self.resolve_setting(system_prompt, "system_prompt")
         system_as_user = self.resolve_setting(system_as_user, "system_as_user")
-        context_prompt = self.resolve_setting(context_prompt, "context_prompt")
+        context_template = self.resolve_setting(context_template, "context_template")
         formatter = self.resolve_setting(formatter, "formatter", default=None)
         formatter_kwargs = self.resolve_setting(formatter_kwargs, "formatter_kwargs", default=None, merge=True)
         minimal_format = self.resolve_setting(minimal_format, "minimal_format", default=None)
@@ -1096,7 +1100,7 @@ class Completions(Configured):
         self._tokenizer_kwargs = tokenizer_kwargs
         self._system_prompt = system_prompt
         self._system_as_user = system_as_user
-        self._context_prompt = context_prompt
+        self._context_template = context_template
         self._formatter = formatter
         self._formatter_kwargs = formatter_kwargs
         self._minimal_format = minimal_format
@@ -1141,16 +1145,16 @@ class Completions(Configured):
         """Boolean indicating if `Completions.max_tokens` was explicitly provided by the user.
 
         Returns:
-            Optional[int]: The maximum token limit set by the user; None if not set.
+            Optional[int]: Maximum token limit set by the user; None if not set.
         """
         return self._max_tokens_set
 
     @property
-    def max_tokens(self) -> tp.Optional[int]:
+    def max_tokens(self) -> tp.Union[bool, int]:
         """Maximum token limit configured for messages.
 
         Returns:
-            Optional[int]: The maximum token limit; None if not set.
+            Union[bool, int]: Maximum token limit; False if disabled.
         """
         return self._max_tokens
 
@@ -1161,7 +1165,7 @@ class Completions(Configured):
         Resolved using `resolve_tokenizer`.
 
         Returns:
-            MaybeType[Tokenizer]: The resolved tokenizer instance or subclass.
+            MaybeType[Tokenizer]: Resolved tokenizer instance or subclass.
         """
         return self._tokenizer
 
@@ -1197,7 +1201,7 @@ class Completions(Configured):
         return self._system_as_user
 
     @property
-    def context_prompt(self) -> str:
+    def context_template(self) -> str:
         """Context prompt template requiring a 'context' variable.
 
         The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
@@ -1207,7 +1211,7 @@ class Completions(Configured):
         Returns:
             str: Context prompt template.
         """
-        return self._context_prompt
+        return self._context_template
 
     @property
     def formatter(self) -> tp.MaybeType[ContentFormatter]:
@@ -1218,7 +1222,7 @@ class Completions(Configured):
         This formatter is used to format the content of the response.
 
         Returns:
-            MaybeType[ContentFormatter]: The resolved content formatter instance or subclass.
+            MaybeType[ContentFormatter]: Resolved content formatter instance or subclass.
         """
         return self._formatter
 
@@ -1272,7 +1276,7 @@ class Completions(Configured):
         """Model name.
 
         Returns:
-            Optional[str]: The model name if specified; otherwise, None.
+            Optional[str]: Model name if specified; otherwise, None.
         """
         return None
 
@@ -1298,7 +1302,7 @@ class Completions(Configured):
             response (Any): Chat response object.
 
         Returns:
-            Optional[str]: The content extracted from the chat response.
+            Optional[str]: Content extracted from the chat response.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -1327,7 +1331,7 @@ class Completions(Configured):
             response (Any): Streaming response object.
 
         Returns:
-            Optional[str]: The content extracted from the streaming response chunk.
+            Optional[str]: Content extracted from the streaming response chunk.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -1351,7 +1355,7 @@ class Completions(Configured):
         tokenizer_kwargs = self.tokenizer_kwargs
         system_prompt = self.system_prompt
         system_as_user = self.system_as_user
-        context_prompt = self.context_prompt
+        context_template = self.context_template
         template_context = self.template_context
         silence_warnings = self.silence_warnings
 
@@ -1367,20 +1371,22 @@ class Completions(Configured):
             tokenizer = tokenizer.replace(**tokenizer_kwargs)
 
         if context:
-            if isinstance(context_prompt, str):
-                context_prompt = SafeSub(context_prompt)
-            elif checks.is_function(context_prompt):
-                context_prompt = RepFunc(context_prompt)
-            elif not isinstance(context_prompt, CustomTemplate):
-                raise TypeError(f"Context prompt must be a string, function, or template")
-            if max_tokens is not None:
-                empty_context_prompt = context_prompt.substitute(
+            if isinstance(context_template, str):
+                context_template = SafeSub(context_template)
+            elif checks.is_function(context_template):
+                context_template = RepFunc(context_template)
+            elif not isinstance(context_template, CustomTemplate):
+                raise TypeError("Context prompt must be a string, function, or template")
+            if max_tokens not in (None, False):
+                if max_tokens is True:
+                    raise ValueError("max_tokens cannot be True")
+                empty_context_template = context_template.substitute(
                     flat_merge_dicts(dict(context=""), template_context),
-                    eval_id="context_prompt",
+                    eval_id="context_template",
                 )
                 empty_messages = [
                     dict(role="user" if system_as_user else "system", content=system_prompt),
-                    dict(role="user", content=empty_context_prompt),
+                    dict(role="user", content=empty_context_template),
                     *chat_history,
                     dict(role="user", content=message),
                 ]
@@ -1395,10 +1401,10 @@ class Completions(Configured):
                             f"Truncating to {max_context_tokens} tokens."
                         )
             template_context = flat_merge_dicts(dict(context=context), template_context)
-            context_prompt = context_prompt.substitute(template_context, eval_id="context_prompt")
+            context_template = context_template.substitute(template_context, eval_id="context_template")
             return [
                 dict(role="user" if system_as_user else "system", content=system_prompt),
-                dict(role="user", content=context_prompt),
+                dict(role="user", content=context_template),
                 *chat_history,
                 dict(role="user", content=message),
             ]
@@ -2016,14 +2022,14 @@ class TextSplitter(Configured):
         """
         return self._template_context
 
-    def split(self, text: str) -> tp.TSRangeChunks:
+    def split(self, text: str) -> tp.TSSpanChunks:
         """Yield the start and end character indices for each text chunk in the given text.
 
         Args:
             text (str): Input text to split.
 
         Yields:
-            Tuple[int, int]: A tuple representing the start and end indices of a text chunk.
+            Tuple[int, int]: Tuple representing the start and end indices of a text chunk.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -2049,7 +2055,7 @@ class TextSplitter(Configured):
             elif checks.is_function(chunk_template):
                 chunk_template = RepFunc(chunk_template)
             elif not isinstance(chunk_template, CustomTemplate):
-                raise TypeError(f"Chunk template must be a string, function, or template")
+                raise TypeError("Chunk template must be a string, function, or template")
             template_context = flat_merge_dicts(
                 dict(
                     chunk_idx=chunk_idx,
@@ -2067,7 +2073,7 @@ class TokenSplitter(TextSplitter):
     """Splitter class for tokens.
 
     Args:
-        chunk_size (Optional[int]): Maximum number of tokens per chunk.
+        chunk_size (Optional[int]): Maximum number of tokens per chunk; None if disabled.
         chunk_overlap (Union[None, int, float]): Number or fraction of tokens
             overlapping between consecutive chunks.
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
@@ -2115,25 +2121,26 @@ class TokenSplitter(TextSplitter):
             tokenizer = tokenizer(**tokenizer_kwargs)
         elif tokenizer_kwargs:
             tokenizer = tokenizer.replace(**tokenizer_kwargs)
-        if checks.is_float(chunk_overlap):
-            if 0 <= abs(chunk_overlap) <= 1:
-                chunk_overlap = chunk_overlap * chunk_size
-            elif not chunk_overlap.is_integer():
-                raise ValueError("Floating number for chunk_overlap must be between 0 and 1")
-            chunk_overlap = int(chunk_overlap)
-        if chunk_overlap >= chunk_size:
-            raise ValueError("Chunk overlap must be less than the chunk size")
+        if chunk_size is not None:
+            if checks.is_float(chunk_overlap):
+                if 0 <= abs(chunk_overlap) <= 1:
+                    chunk_overlap = chunk_overlap * chunk_size
+                elif not chunk_overlap.is_integer():
+                    raise ValueError("Floating number for chunk_overlap must be between 0 and 1")
+                chunk_overlap = int(chunk_overlap)
+            if chunk_overlap >= chunk_size:
+                raise ValueError("Chunk overlap must be less than the chunk size")
 
         self._chunk_size = chunk_size
         self._chunk_overlap = chunk_overlap
         self._tokenizer = tokenizer
 
     @property
-    def chunk_size(self) -> int:
+    def chunk_size(self) -> tp.Optional[int]:
         """Maximum number of tokens per chunk.
 
         Returns:
-            int: Maximum number of tokens allowed in each chunk.
+            int: Maximum number of tokens allowed in each chunk; None if disabled.
         """
         return self._chunk_size
 
@@ -2157,7 +2164,7 @@ class TokenSplitter(TextSplitter):
         """
         return self._tokenizer
 
-    def split_into_tokens(self, text: str) -> tp.TSRangeChunks:
+    def split_into_tokens(self, text: str) -> tp.TSSpanChunks:
         """Yield start and end indices for each token in the given text.
 
         The method encodes the text into tokens and decodes each token to determine its character span.
@@ -2166,7 +2173,7 @@ class TokenSplitter(TextSplitter):
             text (str): Text to tokenize.
 
         Yields:
-            Tuple[int, int]: The start and end indices of each token.
+            Tuple[int, int]: Start and end indices of each token.
         """
         tokens = self.tokenizer.encode(text)
         last_end = 0
@@ -2177,7 +2184,10 @@ class TokenSplitter(TextSplitter):
             yield start, end
             last_end = end
 
-    def split(self, text: str) -> tp.TSRangeChunks:
+    def split(self, text: str) -> tp.TSSpanChunks:
+        if self.chunk_size is None:
+            yield from self.split_into_tokens(text)
+
         tokens = list(self.split_into_tokens(text))
         total_tokens = len(tokens)
         if not tokens:
@@ -2196,7 +2206,7 @@ class TokenSplitter(TextSplitter):
 
 
 class SegmentSplitter(TokenSplitter):
-    """SegmentSplitter class for splitting text into segments based on specified separators.
+    """Splitter class for segments based on specified separators.
 
     This class iteratively splits text by applying nested layers of separators.
     If a segment exceeds the allowed size and no valid previous chunk exists or the token
@@ -2248,12 +2258,13 @@ class SegmentSplitter(TokenSplitter):
                 separators[layer] = [separators[layer]]
             else:
                 separators[layer] = list(separators[layer])
-        if checks.is_float(min_chunk_size):
-            if 0 <= abs(min_chunk_size) <= 1:
-                min_chunk_size = min_chunk_size * self.chunk_size
-            elif not min_chunk_size.is_integer():
-                raise ValueError("Floating number for min_chunk_size must be between 0 and 1")
-            min_chunk_size = int(min_chunk_size)
+        if self.chunk_size is not None:
+            if checks.is_float(min_chunk_size):
+                if 0 <= abs(min_chunk_size) <= 1:
+                    min_chunk_size = min_chunk_size * self.chunk_size
+                elif not min_chunk_size.is_integer():
+                    raise ValueError("Floating number for min_chunk_size must be between 0 and 1")
+                min_chunk_size = int(min_chunk_size)
 
         self._separators = separators
         self._min_chunk_size = min_chunk_size
@@ -2264,7 +2275,7 @@ class SegmentSplitter(TokenSplitter):
         """Nested list of separators grouped by layers.
 
         Returns:
-            List[List[Optional[str]]]: The (nested) list of separators used for splitting text.
+            List[List[Optional[str]]]: (Nested) list of separators used for splitting text.
         """
         return self._separators
 
@@ -2299,7 +2310,7 @@ class SegmentSplitter(TokenSplitter):
             separator (Optional[str]): Separator to insert between data items.
 
         Yields:
-            Tuple[int, int, bool]: A tuple containing the segment's start index, end index, and
+            Tuple[int, int, bool]: Tuple containing the segment's start index, end index, and
                 a flag indicating if the segment is a separator.
         """
         if not separator:
@@ -2326,9 +2337,12 @@ class SegmentSplitter(TokenSplitter):
                 _text = text[last_end:]
                 yield last_end, len(text), False
 
-    def split(self, text: str) -> tp.TSRangeChunks:
+    def split(self, text: str) -> tp.TSSpanChunks:
         if not text:
             yield 0, 0
+            return None
+        if self.chunk_size is None:
+            yield 0, len(text)
             return None
         total_tokens = self.tokenizer.count_tokens(text)
         if total_tokens <= self.chunk_size:
@@ -2507,6 +2521,604 @@ class SegmentSplitter(TokenSplitter):
                     break
 
 
+class SourceSplitter(TokenSplitter):
+    """Splitter class for source code.
+
+    This class is used to split source code into chunks by parsing the structure of the code.
+    It divides nodes of the code into levels and performs splitting based on the specified chunk size and overlap.
+
+    Args:
+        uniform_chunks (Optional[bool]): Whether each chunk should start and end at the same base level.
+
+            If nested chunks (with level > base) are present, includes them only if they fit as a whole.
+        **kwargs: Keyword arguments for `TokenSplitter`.
+
+    !!! info
+        For default settings, see `chat.text_splitter_configs.source` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.text_splitter_configs.source"
+
+    def __init__(
+        self,
+        uniform_chunks: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
+        TokenSplitter.__init__(
+            self,
+            uniform_chunks=uniform_chunks,
+            **kwargs,
+        )
+
+        uniform_chunks = self.resolve_setting(uniform_chunks, "uniform_chunks")
+
+        self._uniform_chunks = uniform_chunks
+
+    @property
+    def uniform_chunks(self) -> bool:
+        """Whether each chunk should start and end at the same base level.
+
+        If nested chunks (with level > base) are present, includes them only if they fit as a whole.
+
+        Returns:
+            bool: True if uniform chunks are enabled, False otherwise.
+        """
+        return self._uniform_chunks
+
+    def split_source(self, source: str) -> tp.TSSourceChunks:
+        """Split the source code into chunks.
+
+        Args:
+            source (str): Source code to be split.
+
+        Yields:
+            Tuple[str, int]: Tuple containing the source code chunk and its base level.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
+        raise NotImplementedError
+
+    def split_text(self, text: str, debug: bool = False) -> tp.TSTextChunks:
+        source_nodes = list(self.split_source(text))
+
+        if self.chunk_size is None:
+            for code, _ in source_nodes:
+                yield code
+            return
+
+        count_tokens = self.tokenizer.count_tokens
+        max_chunk_tokens = self.chunk_size
+        max_overlap_tokens = self.chunk_overlap
+
+        total_nodes = len(source_nodes)
+        current_node_index = 0
+        last_overlap_start_idx = last_overlap_end_idx = None
+
+        def _last_index_non_uniform(start_idx):
+            used_tokens = 0
+            idx = start_idx
+            while idx < total_nodes:
+                node_text = source_nodes[idx][0]
+                node_tokens = count_tokens(node_text)
+                if node_tokens > max_chunk_tokens:
+                    return idx if idx == start_idx else idx - 1
+                if used_tokens + node_tokens > max_chunk_tokens:
+                    return idx - 1
+                used_tokens += node_tokens
+                idx += 1
+            return idx - 1
+
+        def _last_index_uniform(start_idx):
+            base_level = source_nodes[start_idx][1]
+            used_tokens = 0
+            last_base_idx = start_idx - 1
+            idx = start_idx
+            while idx < total_nodes and source_nodes[idx][1] >= base_level:
+                node_text, node_level = source_nodes[idx]
+                node_tokens = count_tokens(node_text)
+                if node_tokens > max_chunk_tokens:
+                    return last_base_idx if last_base_idx >= start_idx else idx
+                if used_tokens + node_tokens > max_chunk_tokens:
+                    return last_base_idx
+                used_tokens += node_tokens
+                if node_level == base_level:
+                    last_base_idx = idx
+                idx += 1
+                if idx == total_nodes or source_nodes[idx][1] < base_level:
+                    return last_base_idx
+            return idx - 1
+
+        while current_node_index < total_nodes:
+            chunk_end_idx = (
+                _last_index_uniform(current_node_index)
+                if self.uniform_chunks
+                else _last_index_non_uniform(current_node_index)
+            )
+
+            if (
+                last_overlap_start_idx is not None
+                and current_node_index == last_overlap_start_idx
+                and chunk_end_idx == last_overlap_end_idx
+            ):
+                current_node_index = chunk_end_idx + 1
+                last_overlap_start_idx = last_overlap_end_idx = None
+                continue
+
+            node_slice = source_nodes[current_node_index : chunk_end_idx + 1]
+            chunk_text = "".join(code for code, _ in node_slice)
+
+            if debug:
+                print("=" * 20, count_tokens(chunk_text), "=" * 20)
+                for code, level in node_slice:
+                    print("-" * 10, level, count_tokens(code), "-" * 10)
+                    print(code, end="")
+
+            yield chunk_text
+
+            if max_overlap_tokens > 0:
+                overlap_tokens = 0
+                overlap_start_idx = chunk_end_idx
+                while overlap_start_idx >= current_node_index:
+                    node_tokens = count_tokens(source_nodes[overlap_start_idx][0])
+                    if overlap_tokens + node_tokens > max_overlap_tokens:
+                        break
+                    overlap_tokens += node_tokens
+                    overlap_start_idx -= 1
+                overlap_start_idx += 1
+
+                if chunk_end_idx - overlap_start_idx >= 1:
+                    last_overlap_start_idx = overlap_start_idx
+                    last_overlap_end_idx = chunk_end_idx
+                    current_node_index = overlap_start_idx
+                else:
+                    last_overlap_start_idx = last_overlap_end_idx = None
+                    current_node_index = chunk_end_idx + 1
+            else:
+                current_node_index = chunk_end_idx + 1
+
+
+class PythonSplitter(SourceSplitter):
+    """Splitter class for Python source code.
+
+    This class is used to split Python source code using the `ast` module. All module-level statements
+    become the zero level, which can be split into nested levels. The class supports splitting
+    statements based on a whitelist and blacklist of statement types. It also allows for limiting
+    the maximum statement level.
+
+    Args:
+        stmt_whitelist (Optional[Iterable[str]]): Statement types to include in the split.
+
+            Effective only if `max_stmt_level` is met.
+        stmt_blacklist (Optional[Iterable[str]]): Statement types to exclude from the split.
+        max_stmt_level (Optional[int]): Maximum level of statements to include in the split.
+
+            If None, all levels are included.
+        **kwargs: Keyword arguments for `SourceSplitter`.
+
+    !!! info
+        For default settings, see `chat.text_splitter_configs.python` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "python"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.text_splitter_configs.python"
+
+    def __init__(
+        self,
+        stmt_whitelist: tp.Optional[tp.Iterable[str]] = None,
+        stmt_blacklist: tp.Optional[tp.Iterable[str]] = None,
+        max_stmt_level: tp.Optional[int] = None,
+        **kwargs,
+    ) -> None:
+        SourceSplitter.__init__(
+            self,
+            stmt_whitelist=stmt_whitelist,
+            stmt_blacklist=stmt_blacklist,
+            max_stmt_level=max_stmt_level,
+            **kwargs,
+        )
+
+        stmt_whitelist = self.resolve_setting(stmt_whitelist, "stmt_whitelist")
+        stmt_blacklist = self.resolve_setting(stmt_blacklist, "stmt_blacklist")
+        max_stmt_level = self.resolve_setting(max_stmt_level, "max_stmt_level")
+
+        self._stmt_whitelist = tuple(stmt_whitelist or ())
+        self._stmt_blacklist = tuple(stmt_blacklist or ())
+        self._max_stmt_level = max_stmt_level
+
+    @property
+    def stmt_whitelist(self) -> tp.Tuple[str, ...]:
+        """Statement types to include in the split.
+
+        Effective only if `max_stmt_level` is met.
+
+        Returns:
+            Tuple[str, ...]: Tuple of statement types.
+        """
+        return self._stmt_whitelist
+
+    @property
+    def stmt_blacklist(self) -> tp.Tuple[str, ...]:
+        """Statement types to exclude from the split.
+
+        Returns:
+            Tuple[str, ...]: Tuple of statement types.
+        """
+        return self._stmt_blacklist
+
+    @property
+    def max_stmt_level(self) -> tp.Optional[int]:
+        """Maximum level of statements to include in the split.
+
+        Returns:
+            Optional[int]: Maximum statement level; None if all levels are included.
+        """
+        return self._max_stmt_level
+
+    def should_split_stmt(self, stmt: ast.stmt, level: int) -> bool:
+        """Check if the statement should be split based on its type and level.
+
+        Args:
+            stmt (ast.stmt): Statement to check.
+            level (int): Level of the statement.
+
+        Returns:
+            bool: True if the statement should be split, False otherwise.
+        """
+        if self.max_stmt_level is not None and level >= self.max_stmt_level:
+            return False
+        if self.stmt_blacklist and checks.is_instance_of(stmt, self.stmt_blacklist):
+            return False
+        if self.stmt_whitelist and not checks.is_instance_of(stmt, self.stmt_whitelist):
+            return False
+        return True
+
+    def split_source(self, source: str) -> tp.TSSourceChunks:
+        lines = source.splitlines(keepends=True)
+        tree = ast.parse(source, type_comments=True)
+
+        def _stmt_span(node):
+            start = min((d.lineno for d in getattr(node, "decorator_list", ())), default=node.lineno)
+            end = getattr(node, "end_lineno", node.lineno)
+            return start, end
+
+        def _header_end(first_line):
+            for idx in range(first_line - 1, len(lines)):
+                code = lines[idx].split("#", 1)[0].rstrip()
+                if code and code.endswith(":"):
+                    return idx + 1
+            return first_line
+
+        def _split_block(body, start_line, end_line, level):
+            body = list(body)
+            if not body:
+                yield (start_line, end_line, level)
+                return
+
+            cursor = start_line
+            i = 0
+            n = len(body)
+
+            while i < n:
+                stmt = body[i]
+                stmt_start, stmt_end = _stmt_span(stmt)
+                if stmt_start > cursor:
+                    yield (cursor, stmt_start - 1, level)
+                if (
+                    isinstance(stmt, (ast.Assign, ast.AnnAssign))
+                    and i + 1 < n
+                    and isinstance(body[i + 1], ast.Expr)
+                    and isinstance(body[i + 1].value, ast.Constant)
+                    and isinstance(body[i + 1].value.value, str)
+                ):
+                    _, next_end = _stmt_span(body[i + 1])
+                    stmt_end = next_end
+                    i += 1
+                if self.should_split_stmt(stmt, level) and isinstance(
+                    stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+                ):
+                    yield from _split_node(stmt, level + 1)
+                else:
+                    yield (stmt_start, stmt_end, level)
+                cursor = stmt_end + 1
+                i += 1
+            if cursor <= end_line:
+                yield (cursor, end_line, level)
+
+        def _split_node(node, level):
+            start, end = _stmt_span(node)
+            if (
+                node.body
+                and isinstance(node.body[0], ast.Expr)
+                and isinstance(node.body[0].value, ast.Constant)
+                and isinstance(node.body[0].value.value, str)
+            ):
+                hdr_end = getattr(node.body[0], "end_lineno")
+                body_stmts = node.body[1:]
+            else:
+                hdr_end = _header_end(start)
+                body_stmts = node.body
+
+            yield (start, hdr_end, level)
+            yield from _split_block(body_stmts, hdr_end + 1, end, level)
+
+        for s, e, lvl in _split_block(tree.body, 1, len(lines), 0):
+            yield ("".join(lines[s - 1 : e]), lvl)
+
+
+class MarkdownSplitter(SourceSplitter):
+    """Splitter class for Markdown source code.
+
+    This class is responsible for splitting Markdown source code into chunks
+    based on headers and paragraphs. It uses a custom algorithm to identify headers
+    and split the content accordingly.
+
+    Args:
+        split_by (Optional[str]): Method to split the source code.
+
+            Options are "header" or "paragraph".
+        max_section_level (Optional[int]): Maximum level of sections to include in the split.
+
+            If None, all levels are included.
+        **kwargs: Keyword arguments for `SourceSplitter`.
+
+    !!! info
+        For default settings, see `chat.text_splitter_configs.markdown` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "markdown"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.text_splitter_configs.markdown"
+
+    def __init__(
+        self,
+        split_by: tp.Optional[str] = None,
+        max_section_level: tp.Optional[int] = None,
+        **kwargs,
+    ) -> None:
+        SourceSplitter.__init__(
+            self,
+            split_by=split_by,
+            max_section_level=max_section_level,
+            **kwargs,
+        )
+
+        split_by = self.resolve_setting(split_by, "split_by")
+        max_section_level = self.resolve_setting(max_section_level, "max_section_level")
+
+        self._split_by = split_by
+        self._max_section_level = max_section_level
+
+    @property
+    def split_by(self) -> str:
+        """Method to split the source code.
+
+        Options are "header" or "paragraph".
+
+        Returns:
+            str: Method used to split the source code.
+        """
+        return self._split_by
+
+    @property
+    def max_section_level(self) -> tp.Optional[int]:
+        """Maximum level of sections to include in the split.
+
+        Returns:
+            Optional[int]: Maximum section level; None if all levels are included.
+        """
+        return self._max_section_level
+
+    def should_split_section(self, section: str, level: int) -> bool:
+        """Determine whether to split the given section.
+
+        Args:
+            section: Section to evaluate.
+            level: Current level of the section.
+
+        Returns:
+            bool: True if the section should be split; False otherwise.
+        """
+        if self.max_section_level is not None and level >= self.max_section_level:
+            return False
+        return True
+
+    def split_source(self, source: str) -> tp.TSSourceChunks:
+        lines = source.splitlines(True)
+
+        chunks, buf = [], []
+        level = 0
+        header_pending = para_started = False
+        in_code = in_html = False
+        fence = html_tag = ""
+        code_closed = html_closed = False
+        i, n = 0, len(lines)
+
+        def _is_header(txt):
+            return txt.lstrip().startswith("#")
+
+        while i < n:
+            line = lines[i]
+            stripped = line.rstrip("\n")
+            lstripped = stripped.lstrip()
+
+            if in_code:
+                buf.append(line)
+                if re.match(r"\s*" + re.escape(fence), lstripped):
+                    in_code = False
+                    chunks.append(("".join(buf), level))
+                    buf.clear()
+                    code_closed = True
+                i += 1
+                continue
+
+            if in_html:
+                buf.append(line)
+                if re.search(r"</" + html_tag + r"\s*>", lstripped, re.I):
+                    in_html = False
+                    chunks.append(("".join(buf), level))
+                    buf.clear()
+                    html_closed = True
+                i += 1
+                continue
+
+            if re.match(r"\s*<div\b", lstripped, re.I):
+                if header_pending and not para_started:
+                    chunks.append(("".join(buf), level))
+                    buf.clear()
+                    header_pending = False
+                buf.append(line)
+                html_tag = "div"
+                if re.search(r"</div\s*>", lstripped, re.I):
+                    chunks.append(("".join(buf), level))
+                    buf.clear()
+                    html_closed = True
+                else:
+                    in_html = True
+                i += 1
+                continue
+
+            if lstripped.startswith("```") or lstripped.startswith("~~~"):
+                if header_pending and not para_started:
+                    chunks.append(("".join(buf), level))
+                    buf.clear()
+                    header_pending = False
+                buf.append(line)
+                fence, in_code = lstripped[:3], True
+                i += 1
+                continue
+
+            if _is_header(lstripped):
+                if buf:
+                    chunks.append(("".join(buf), level))
+                    buf.clear()
+                level = len(lstripped.split(" ")[0])
+                buf.append(line)
+                header_pending = True
+                para_started = False
+                i += 1
+                continue
+
+            if not lstripped:
+                blanks = []
+                while i < n and not lines[i].strip():
+                    blanks.append(lines[i])
+                    i += 1
+                if code_closed or html_closed:
+                    t, lvl = chunks[-1]
+                    chunks[-1] = (t + "".join(blanks), lvl)
+                    code_closed = html_closed = False
+                    continue
+                if i == n:
+                    buf.extend(blanks)
+                    break
+                next_line = lines[i]
+                prev_idx = i - 1
+                while prev_idx >= 0 and not lines[prev_idx].strip():
+                    prev_idx -= 1
+                prev_line = lines[prev_idx] if prev_idx >= 0 else ""
+                if (
+                    len(prev_line) - len(prev_line.lstrip(" ")) >= 4
+                    and len(next_line) - len(next_line.lstrip(" ")) >= 4
+                ):
+                    buf.extend(blanks)
+                    continue
+                buf.extend(blanks)
+                if not (header_pending and not para_started):
+                    chunks.append(("".join(buf), level))
+                    buf.clear()
+                    header_pending = para_started = False
+                continue
+
+            if header_pending and not para_started:
+                para_started = True
+            buf.append(line)
+            code_closed = html_closed = False
+            i += 1
+
+        if buf:
+            chunks.append(("".join(buf), level))
+
+        split_by = self.split_by.lower()
+        if split_by == "paragraph":
+            final_chunks = []
+            header_flag = [_is_header(c[0]) for c in chunks]
+            i, m = 0, len(chunks)
+
+            while i < m:
+                text, lvl = chunks[i]
+                if not header_flag[i]:
+                    final_chunks.append((text, lvl))
+                    i += 1
+                    continue
+                j = i + 1
+                while j < m and not (header_flag[j] and chunks[j][1] <= lvl):
+                    j += 1
+                section_text = "".join(c[0] for c in chunks[i:j])
+                if self.should_split_section(section_text, lvl):
+                    final_chunks.append((text, lvl))
+                    i += 1
+                    continue
+                final_chunks.append((text, lvl))
+                k = i + 1
+                while k < j:
+                    ctext, clvl = chunks[k]
+                    if header_flag[k] and clvl > lvl:
+                        l = k + 1
+                        while l < j and not (header_flag[l] and chunks[l][1] <= lvl):
+                            l += 1
+                        final_chunks.append(("".join(c[0] for c in chunks[k:l]), lvl))
+                        k = l
+                    else:
+                        final_chunks.append((ctext, lvl))
+                        k += 1
+                i = j
+
+            for chunk in final_chunks:
+                yield chunk
+            return
+
+        if split_by == "header":
+            sections, i, m = [], 0, len(chunks)
+            while i < m:
+                text, lvl = chunks[i]
+                if not _is_header(text):
+                    tail = text
+                    i += 1
+                    while i < m and not _is_header(chunks[i][0]):
+                        tail += chunks[i][0]
+                        i += 1
+                    sections.append((tail, 0))
+                    continue
+                sec, header_lvl = text, lvl
+                i += 1
+                while i < m and not _is_header(chunks[i][0]):
+                    sec += chunks[i][0]
+                    i += 1
+                sections.append((sec, header_lvl))
+
+            final_chunks, i, s = [], 0, len(sections)
+            while i < s:
+                txt, lvl = sections[i]
+                if self.should_split_section(txt, lvl):
+                    final_chunks.append((txt, lvl))
+                    i += 1
+                    continue
+                merged = txt
+                i += 1
+                while i < s and not (_is_header(sections[i][0]) and sections[i][1] <= lvl):
+                    merged += sections[i][0]
+                    i += 1
+                final_chunks.append((merged, lvl))
+
+            for chunk in final_chunks:
+                yield chunk
+            return
+
+        raise ValueError(f"Invalid split_by: '{self.split_by}'")
+
+
 class LlamaIndexSplitter(TextSplitter):
     """Splitter class based on a node parser from LlamaIndex that divides text into chunks using nodes.
 
@@ -2614,15 +3226,6 @@ class LlamaIndexSplitter(TextSplitter):
         """
         return self._node_parser
 
-    def split(self, text: str) -> tp.TSRangeChunks:
-        for text_chunk in self.split_text(text):
-            start = text.find(text_chunk)
-            if start == -1:
-                end = -1
-            else:
-                end = start + len(text_chunk)
-            yield start, end
-
     def split_text(self, text: str) -> tp.TSTextChunks:
         from llama_index.core.schema import Document
 
@@ -2684,7 +3287,7 @@ def split_text(text: str, text_splitter: tp.TextSplitterLike = None, **kwargs) -
         **kwargs: Keyword arguments to initialize or update `text_splitter`.
 
     Returns:
-        List[str]: A list of text chunks.
+        List[str]: List of text chunks.
     """
     text_splitter = resolve_text_splitter(text_splitter=text_splitter)
     if isinstance(text_splitter, type):
@@ -2723,7 +3326,7 @@ class StoreData(StoreObject, DefineMixin):
     """
 
     data: tp.Any = define.field()
-    """The stored data."""
+    """Stored data."""
 
     @classmethod
     def id_from_data(cls, data: tp.Any) -> str:
@@ -2780,7 +3383,7 @@ class StoreDocument(StoreData, DefineMixin):
         """Return the document content.
 
         Returns:
-            Optional[str]: The content if available, otherwise None.
+            Optional[str]: Content if available, otherwise None.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -2791,7 +3394,7 @@ class StoreDocument(StoreData, DefineMixin):
         """Return a list of document instances resulting from splitting the current document.
 
         Returns:
-            List[StoreDocument]: A list of document chunks.
+            List[StoreDocument]: List of document chunks.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -2858,7 +3461,7 @@ class TextDocument(StoreDocument, DefineMixin):
         """Return the text content of the document.
 
         Returns:
-            Optional[str]: The document's text, or None if not available.
+            Optional[str]: Document's text, or None if not available.
         """
         from vectorbtpro.utils.search_ import get_pathlike_key
 
@@ -2887,7 +3490,7 @@ class TextDocument(StoreDocument, DefineMixin):
             for_embed (bool): Flag indicating if metadata for embeddings should be retrieved.
 
         Returns:
-            Optional[Any]: The metadata if available, otherwise None.
+            Optional[Any]: Metadata if available, otherwise None.
         """
         from vectorbtpro.utils.search_ import remove_pathlike_key
 
@@ -2917,7 +3520,7 @@ class TextDocument(StoreDocument, DefineMixin):
         for p in excl_metadata:
             try:
                 data = remove_pathlike_key(data, p, make_copy=True, prev_keys=prev_keys)
-            except (KeyError, IndexError, AttributeError) as e:
+            except (KeyError, IndexError, AttributeError):
                 continue
         return data
 
@@ -2928,7 +3531,7 @@ class TextDocument(StoreDocument, DefineMixin):
             for_embed (bool): Flag indicating if metadata for embeddings should be retrieved.
 
         Returns:
-            Optional[str]: The formatted metadata content, or None if metadata is missing.
+            Optional[str]: Formatted metadata content, or None if metadata is missing.
         """
         from vectorbtpro.utils.formatting import dump
 
@@ -2953,7 +3556,7 @@ class TextDocument(StoreDocument, DefineMixin):
             elif checks.is_function(metadata_template):
                 metadata_template = RepFunc(metadata_template)
             elif not isinstance(metadata_template, CustomTemplate):
-                raise TypeError(f"Metadata template must be a string, function, or template")
+                raise TypeError("Metadata template must be a string, function, or template")
             template_context = flat_merge_dicts(
                 dict(metadata_content=metadata_content),
                 self.template_context,
@@ -2965,7 +3568,7 @@ class TextDocument(StoreDocument, DefineMixin):
         elif checks.is_function(content_template):
             content_template = RepFunc(content_template)
         elif not isinstance(content_template, CustomTemplate):
-            raise TypeError(f"Content template must be a string, function, or template")
+            raise TypeError("Content template must be a string, function, or template")
         template_context = flat_merge_dicts(
             dict(metadata_content=metadata_content, text=text),
             self.template_context,
@@ -3005,7 +3608,7 @@ class StoreEmbedding(StoreObject, DefineMixin):
     """List of identifiers for the child objects."""
 
     embedding: tp.Optional[tp.List[int]] = define.field(default=None, repr=lambda x: f"List[{len(x)}]" if x else None)
-    """The embedding vector."""
+    """Embedding vector."""
 
 
 class MetaObjectStore(type(Configured), type(MutableMapping)):
@@ -3112,12 +3715,14 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         """Mirror store identifier.
 
         Returns:
-            Optional[str]: The mirror store ID if applicable; otherwise, None.
+            Optional[str]: Mirror store ID if applicable; otherwise, None.
         """
         return None
 
     def open(self) -> None:
-        """Open the store. If already open, close it first; purge if `purge_on_open` is True.
+        """Open the store.
+
+        If already open, close it first; purge if `purge_on_open` is True.
 
         Returns:
             None
@@ -3163,18 +3768,68 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
         self.close()
 
     def __getitem__(self, id_: str) -> StoreObjectT:
+        """Retrieve an object from the store using its identifier.
+
+        Args:
+            id_ (str): Identifier of the object to retrieve.
+
+        Returns:
+            StoreObject: Object associated with the given identifier.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
+        """Store an object in the store using its identifier.
+
+        Args:
+            id_ (str): Identifier for the object to store.
+            obj (StoreObject): Object to store.
+
+        Returns:
+            None
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def __delitem__(self, id_: str) -> None:
+        """Delete an object from the store using its identifier.
+
+        Args:
+            id_ (str): Identifier of the object to delete.
+
+        Returns:
+            None
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def __iter__(self) -> tp.Iterator[str]:
+        """Return an iterator over the identifiers of the objects in the store.
+
+        Returns:
+            Iterator[str]: Iterator over the identifiers of the objects in the store.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def __len__(self) -> int:
+        """Return the number of objects in the store.
+
+        Returns:
+            int: Number of objects in the store.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+        """
         raise NotImplementedError
 
     def __enter__(self) -> tp.Self:
@@ -3216,7 +3871,7 @@ class DictStore(ObjectStore):
         """Underlying dictionary storing the objects.
 
         Returns:
-            Dict[str, StoreObject]: The dictionary holding the objects.
+            Dict[str, StoreObject]: Dictionary holding the objects.
         """
         return self._store
 
@@ -3379,7 +4034,7 @@ class FileStore(DictStore):
         """Directory path used for file storage.
 
         Returns:
-            Optional[Path]: The directory path, or None if not set.
+            Optional[Path]: Directory path, or None if not set.
         """
         return self._dir_path
 
@@ -3437,7 +4092,7 @@ class FileStore(DictStore):
         """Dictionary of newly added or modified objects.
 
         Returns:
-            Dict[str, StoreObject]: A mapping of object keys to their associated updated objects.
+            Dict[str, StoreObject]: Mapping of object keys to their associated updated objects.
         """
         return self._store_changes
 
@@ -3446,7 +4101,7 @@ class FileStore(DictStore):
         """Keys representing objects not yet added to the main store.
 
         Returns:
-            Set[str]: A set of new object keys.
+            Set[str]: Set of new object keys.
         """
         return self._new_keys
 
@@ -3692,7 +4347,7 @@ class LMDBStore(ObjectStore):
         """Directory path used for the LMDB store.
 
         Returns:
-            Optional[Path]: The directory path for the LMDB store, or None if not set.
+            Optional[Path]: Directory path for the LMDB store, or None if not set.
         """
         return self._dir_path
 
@@ -3762,7 +4417,7 @@ class LMDBStore(ObjectStore):
         """LMDB database instance.
 
         Returns:
-            Optional[Lmdb]: The LMDB database instance if the store is open; otherwise, None.
+            Optional[Lmdb]: LMDB database instance if the store is open; otherwise, None.
         """
         return self._db
 
@@ -4186,15 +4841,20 @@ class DocumentRanker(Configured):
             emb_store = obj_store
         emb_store_kwargs = merge_dicts(obj_store_kwargs, emb_store_kwargs)
 
-        embeddings = resolve_embeddings(embeddings)
-        if isinstance(embeddings, type):
-            embeddings_kwargs = dict(embeddings_kwargs)
-            embeddings_kwargs["template_context"] = merge_dicts(
-                template_context, embeddings_kwargs.get("template_context", None)
-            )
-            embeddings = embeddings(**embeddings_kwargs)
-        elif embeddings_kwargs:
-            embeddings = embeddings.replace(**embeddings_kwargs)
+        search_method = search_method.lower()
+        checks.assert_in(search_method, ("embeddings", "bm25", "hybrid"), arg_name="search_method")
+        if search_method in ("embeddings", "hybrid"):
+            embeddings = resolve_embeddings(embeddings)
+            if isinstance(embeddings, type):
+                embeddings_kwargs = dict(embeddings_kwargs)
+                embeddings_kwargs["template_context"] = merge_dicts(
+                    template_context, embeddings_kwargs.get("template_context", None)
+                )
+                embeddings = embeddings(**embeddings_kwargs)
+            elif embeddings_kwargs:
+                embeddings = embeddings.replace(**embeddings_kwargs)
+        else:
+            embeddings = None
 
         if isinstance(self._settings_path, list):
             if not isinstance(self._settings_path[-1], str):
@@ -4247,8 +4907,6 @@ class DocumentRanker(Configured):
         if cache_emb_store and not isinstance(emb_store, CachedStore):
             emb_store = CachedStore(emb_store)
 
-        search_method = search_method.lower()
-        checks.assert_in(search_method, ("embeddings", "bm25", "hybrid"), arg_name="search_method")
         if search_method in ("bm25", "hybrid"):
             if bm25_tokenizer_kwargs is None:
                 bm25_tokenizer_kwargs = {}
@@ -4297,11 +4955,11 @@ class DocumentRanker(Configured):
         self._template_context = template_context
 
     @property
-    def embeddings(self) -> Embeddings:
+    def embeddings(self) -> tp.Optional[Embeddings]:
         """Instance of `Embeddings`.
 
         Returns:
-            Embeddings: Embeddings engine or class used for processing document embeddings.
+            Embeddings: Embeddings engine or class used for processing document embeddings; None if not set.
         """
         return self._embeddings
 
@@ -4343,7 +5001,7 @@ class DocumentRanker(Configured):
         """BM25 tokenizer instance from `bm25s.tokenization.Tokenizer`.
 
         Returns:
-            Optional[BM25Tokenizer]: The BM25 tokenizer instance used for processing text; None if not set.
+            Optional[BM25Tokenizer]: BM25 tokenizer instance used for processing text; None if not set.
         """
         return self._bm25_tokenizer
 
@@ -4361,7 +5019,7 @@ class DocumentRanker(Configured):
         """BM25 retriever instance from `bm25s.BM25`.
 
         Returns:
-            Optional[BM25]: The BM25 retriever instance used for document retrieval; None if not set.
+            Optional[BM25]: BM25 retriever instance used for document retrieval; None if not set.
         """
         return self._bm25_retriever
 
@@ -4393,7 +5051,7 @@ class DocumentRanker(Configured):
         See `DocumentRanker.compute_score`.
 
         Returns:
-            Union[str, Callable]: The score function used for computing document scores.
+            Union[str, Callable]: Score function used for computing document scores.
         """
         return self._score_func
 
@@ -4457,7 +5115,7 @@ class DocumentRanker(Configured):
             **kwargs: Keyword arguments for initializing `bm25_tokenizer` and tokenization.
 
         Returns:
-            Tuple[BM25TokenizerT, Kwargs]: The resolved BM25 tokenizer and the tokenization keyword arguments.
+            Tuple[BM25TokenizerT, Kwargs]: Resolved BM25 tokenizer and the tokenization keyword arguments.
         """
         from vectorbtpro.utils.module_ import assert_can_import, check_installed
 
@@ -4506,7 +5164,7 @@ class DocumentRanker(Configured):
             **kwargs: Keyword arguments for initializing `bm25_retriever` and retrieval.
 
         Returns:
-            Tuple[BM25T, Kwargs]: The resolved BM25 retriever and the retrieval keyword arguments.
+            Tuple[BM25T, Kwargs]: Resolved BM25 retriever and the retrieval keyword arguments.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -4570,7 +5228,20 @@ class DocumentRanker(Configured):
             documents_to_split = []
             document_splits = {}
             for document in documents:
-                if refresh_documents or refresh_embeddings or document.id_ not in self.emb_store:
+                refresh_document = (
+                    refresh_documents
+                    or refresh_embeddings
+                    or document.id_ not in self.doc_store
+                    or document.id_ not in self.emb_store
+                )
+                if not refresh_document:
+                    obj = self.emb_store[document.id_]
+                    if obj.child_ids:
+                        for child_id in obj.child_ids:
+                            if child_id not in self.doc_store or child_id not in self.emb_store:
+                                refresh_document = True
+                                break
+                if refresh_document:
                     documents_to_split.append(document)
             if documents_to_split:
                 from vectorbtpro.utils.pbar import ProgressBar
@@ -4602,21 +5273,28 @@ class DocumentRanker(Configured):
                             else:
                                 child_obj = self.emb_store[document_chunk.id_]
                             obj.child_ids.append(child_obj.id_)
-                            if not child_obj.embedding:
-                                content = document_chunk.get_content(for_embed=True)
-                                if content:
-                                    obj_contents[child_obj.id_] = content
                     if refresh_documents or refresh_embeddings or document.id_ not in self.emb_store:
                         self.emb_store[obj.id_] = obj
                 else:
                     obj = self.emb_store[document.id_]
-                if not obj.child_ids and not obj.embedding:
-                    content = document.get_content(for_embed=True)
-                    if content:
-                        obj_contents[obj.id_] = content
+                if not obj.embedding:
+                    if obj.child_ids:
+                        for child_id in obj.child_ids:
+                            child_obj = self.emb_store[child_id]
+                            if not child_obj.embedding:
+                                child_document = self.doc_store[child_id]
+                                content = child_document.get_content(for_embed=True)
+                                if content:
+                                    obj_contents[child_id] = content
+                    else:
+                        content = document.get_content(for_embed=True)
+                        if content:
+                            obj_contents[obj.id_] = content
 
             if obj_contents:
                 total = 0
+                if self.embeddings is None:
+                    raise ValueError("Embeddings engine is not set")
                 for batch in self.embeddings.iter_embedding_batches(list(obj_contents.values())):
                     batch_keys = list(obj_contents.keys())[total : total + len(batch)]
                     obj_embeddings = dict(zip(batch_keys, batch))
@@ -4681,7 +5359,7 @@ class DocumentRanker(Configured):
             emb2 (Union[MaybeIterable[List[float]], ndarray]): Second embedding or collection of embeddings.
 
         Returns:
-            Union[float, ndarray]: The computed score or score matrix between the embeddings.
+            Union[float, ndarray]: Computed score or score matrix between the embeddings.
         """
         emb1 = np.asarray(emb1)
         emb2 = np.asarray(emb2)
@@ -4796,6 +5474,8 @@ class DocumentRanker(Configured):
                         if child_obj.embedding:
                             obj_embeddings[child_id] = child_obj.embedding
             if obj_embeddings:
+                if self.embeddings is None:
+                    raise ValueError("Embeddings engine is not set")
                 query_embedding = self.embeddings.get_embedding(query)
                 scores = self.compute_score(query_embedding, list(obj_embeddings.values()))
                 obj_scores = dict(zip(obj_embeddings.keys(), scores))
@@ -4893,7 +5573,19 @@ class DocumentRanker(Configured):
                 documents_to_split = []
                 document_splits = {}
                 for document in documents:
-                    if refresh_documents or document.id_ not in self.doc_store:
+                    refresh_document = (
+                        refresh_documents
+                        or document.id_ not in self.doc_store
+                        or document.id_ not in self.emb_store
+                    )
+                    if not refresh_document:
+                        obj = self.emb_store[document.id_]
+                        if obj.child_ids:
+                            for child_id in obj.child_ids:
+                                if child_id not in self.doc_store or child_id not in self.emb_store:
+                                    refresh_document = True
+                                    break
+                    if refresh_document:
                         documents_to_split.append(document)
                 if documents_to_split:
                     from vectorbtpro.utils.pbar import ProgressBar
@@ -4924,7 +5616,7 @@ class DocumentRanker(Configured):
                                 else:
                                     child_obj = self.emb_store[document_chunk.id_]
                                 obj.child_ids.append(child_obj.id_)
-                        if document.id_ not in self.emb_store:
+                        if refresh_documents or document.id_ not in self.emb_store:
                             self.emb_store[obj.id_] = obj
 
                 document_chunks = []
@@ -4958,7 +5650,7 @@ class DocumentRanker(Configured):
                     texts.append(content)
                 tokenized_documents = bm25_tokenizer.tokenize(
                     texts,
-                    return_as="ids",
+                    return_as="string",
                     **bm25_tokenize_kwargs,
                 )
                 bm25_retriever.index(tokenized_documents, show_progress=False)
@@ -4968,7 +5660,7 @@ class DocumentRanker(Configured):
                 del bm25_tokenize_kwargs["show_progress"]
             tokenized_queries = bm25_tokenizer.tokenize(
                 [query],
-                return_as="ids",
+                return_as="string",
                 update_vocab=False,
                 show_progress=False,
                 **bm25_tokenize_kwargs,
@@ -5031,7 +5723,7 @@ class DocumentRanker(Configured):
                 a float percentage, a string ('elbow' or 'kmeans'), or a callable.
 
         Returns:
-            Optional[int]: The resolved `top_k` value, or None if `top_k` is not provided.
+            Optional[int]: Resolved `top_k` value, or None if `top_k` is not provided.
         """
         if top_k is None:
             return None
@@ -5068,7 +5760,7 @@ class DocumentRanker(Configured):
             cutoff (Optional[float]): Score threshold to filter documents.
 
         Returns:
-            Optional[int]: The count of scores greater than or equal to the cutoff, or None if cutoff is None.
+            Optional[int]: Count of scores greater than or equal to the cutoff, or None if cutoff is None.
         """
         if cutoff is None:
             return None
@@ -5267,7 +5959,7 @@ class DocumentRanker(Configured):
             documents (Optional[Iterable[StoreDocument]]): Collection of documents to rank.
 
                 If None, documents from the document store are used.
-            top_k (TopKLike): Number of top documents to return.
+            top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.
@@ -5363,11 +6055,11 @@ def embed_documents(
         refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
         return_embeddings (bool): Flag indicating whether to return embeddings.
         return_documents (bool): If True, include original document objects in the output.
-        doc_ranker (Optional[MaybeType[DocumentRanker]]): A `DocumentRanker` class or instance.
+        doc_ranker (Optional[MaybeType[DocumentRanker]]): `DocumentRanker` class or instance.
         **kwargs: Keyword arguments to initialize or update `doc_ranker`.
 
     Returns:
-        Optional[EmbeddedDocuments]: The embedded documents output.
+        Optional[EmbeddedDocuments]: Embedded documents output.
     """
     if doc_ranker is None:
         doc_ranker = DocumentRanker
@@ -5410,7 +6102,7 @@ def rank_documents(
         documents (Optional[Iterable[StoreDocument]]): Collection of documents to rank.
 
             If None, documents from the document store are used.
-        top_k (TopKLike): Number of top documents to return.
+        top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
         min_top_k (TopKLike): Minimum limit for determining top documents.
         max_top_k (TopKLike): Maximum limit for determining top documents.
         cutoff (Optional[float]): Score threshold to filter documents.
@@ -5419,7 +6111,7 @@ def rank_documents(
         refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
         return_chunks (bool): Whether to return document chunks.
         return_scores (bool): Whether to return scored documents with their scores.
-        doc_ranker (Optional[MaybeType[DocumentRanker]]): A `DocumentRanker` class or instance.
+        doc_ranker (Optional[MaybeType[DocumentRanker]]): `DocumentRanker` class or instance.
         **kwargs: Keyword arguments to initialize or update `doc_ranker`.
 
     Returns:
@@ -5481,7 +6173,7 @@ class Rankable(HasSettings):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Optional[Rankable]: An updated instance with embedded documents, if available.
+            Optional[Rankable]: Updated instance with embedded documents, if available.
 
         !!! abstract
             This method should be overridden in a subclass.
@@ -5506,7 +6198,7 @@ class Rankable(HasSettings):
 
         Args:
             query (str): Query string to evaluate document relevance.
-            top_k (TopKLike): Number of top documents to return.
+            top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.
@@ -5702,7 +6394,7 @@ class RankContextable(Rankable, Contextable):
             chat_history (Optional[ChatHistory]): Chat history, a list of dictionaries with defined roles.
             incl_past_queries (Optional[bool]): Whether to include past queries in the ranking process.
             rank (Optional[bool]): Flag indicating whether to apply ranking.
-            top_k (TopKLike): Number of top documents to return.
+            top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
             min_top_k (TopKLike): Minimum limit for determining top documents.
             max_top_k (TopKLike): Maximum limit for determining top documents.
             cutoff (Optional[float]): Score threshold to filter documents.

@@ -121,7 +121,7 @@ class DuckDBData(DBData):
             **connection_config: Keyword arguments for connection configuration.
 
         Returns:
-            Union[DuckDBPyConnection, dict]: A DuckDB connection or a metadata dictionary
+            Union[DuckDBPyConnection, dict]: DuckDB connection or a metadata dictionary
                 containing the connection and a flag indicating if it should be closed.
         """
         from vectorbtpro.utils.module_ import assert_can_import
@@ -186,7 +186,7 @@ class DuckDBData(DBData):
             connection_config (KwargsLike): Configuration parameters for creating a database connection.
 
         Returns:
-            List[str]: A list of catalog names.
+            List[str]: List of catalog names.
         """
         if connection_config is None:
             connection_config = {}
@@ -242,7 +242,7 @@ class DuckDBData(DBData):
             connection_config (KwargsLike): Configuration parameters for creating a database connection.
 
         Returns:
-            List[str]: A list of schema names.
+            List[str]: List of schema names.
         """
         if connection_config is None:
             connection_config = {}

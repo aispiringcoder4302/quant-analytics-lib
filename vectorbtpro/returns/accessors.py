@@ -243,7 +243,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             **kwargs: Keyword arguments for `ReturnsAccessor`.
 
         Returns:
-            Union[ReturnsAccessor, SeriesFrame]: A new accessor instance or wrapped return values.
+            Union[ReturnsAccessor, SeriesFrame]: New accessor instance or wrapped return values.
 
         See:
             `vectorbtpro.returns.nb.returns_nb`
@@ -424,7 +424,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Benchmark returns wrapped using the assigned array wrapper.
 
         Returns:
-            Optional[SeriesFrame]: The benchmark returns if available; otherwise, None.
+            Optional[SeriesFrame]: Benchmark returns if available; otherwise, None.
 
         !!! info
             For default settings, see `vectorbtpro._settings.returns`.
@@ -456,7 +456,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             sim_end (Optional[ArrayLike]): End index of the simulation range.
 
         Returns:
-            Optional[ReturnsAccessorT]: A returns accessor instance for benchmark returns,
+            Optional[ReturnsAccessorT]: Returns accessor instance for benchmark returns,
                 or None if benchmark returns are unavailable.
         """
         if bm_returns is None:
@@ -477,7 +477,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Benchmark returns accessor using default arguments.
 
         Returns:
-            Optional[ReturnsAccessor]: A returns accessor instance for benchmark returns,
+            Optional[ReturnsAccessor]: Returns accessor instance for benchmark returns,
                 or None if benchmark returns are unavailable.
         """
         return self.get_bm_returns_acc()
@@ -499,7 +499,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             index (DatetimeIndex): Datetime index used to determine the annualization factor.
 
         Returns:
-            Optional[float]: The computed annualization factor, or None if indeterminable.
+            Optional[float]: Computed annualization factor, or None if indeterminable.
         """
         checks.assert_instance_of(index, pd.DatetimeIndex, arg_name="index")
         if len(index) == 1:
@@ -522,7 +522,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             method_name (str): Method name to apply on yearly counts (e.g., "max").
 
         Returns:
-            Optional[float]: The parsed annualization factor, or None if not determinable.
+            Optional[float]: Parsed annualization factor, or None if not determinable.
         """
         checks.assert_instance_of(index, pd.DatetimeIndex, arg_name="index")
         if len(index) == 1:
@@ -603,7 +603,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
                 See `vectorbtpro.utils.datetime_.to_freq`.
 
         Returns:
-            Optional[PandasFrequency]: The resolved year frequency, or None if it cannot be determined.
+            Optional[PandasFrequency]: Resolved year frequency, or None if it cannot be determined.
 
         !!! info
             For default settings, see `vectorbtpro._settings.returns`.
@@ -658,7 +658,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Year frequency.
 
         Returns:
-            Optional[PandasFrequency]: The year frequency if available; otherwise, None.
+            Optional[PandasFrequency]: Year frequency if available; otherwise, None.
         """
         return self.get_year_freq()
 
@@ -679,7 +679,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             raise_error (bool): Flag indicating whether to raise an error if the frequencies are None.
 
         Returns:
-            Optional[float]: The computed annualization factor, or None if not determinable.
+            Optional[float]: Computed annualization factor, or None if not determinable.
 
         !!! info
             For default settings, see `vectorbtpro._settings.returns` and `vectorbtpro._settings.wrapping`.
@@ -806,7 +806,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Periods computed for the returns accessor.
 
         Returns:
-            Optional[ArrayLike]: The periods array, or None if not applicable.
+            Optional[ArrayLike]: Periods array, or None if not applicable.
         """
         return self.get_periods()
 

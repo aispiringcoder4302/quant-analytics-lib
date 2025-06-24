@@ -294,7 +294,7 @@ class FigureMixin(Base):
             **kwargs: Keyword arguments passed for display.
 
         Returns:
-            Tuple[Args, Kwargs]: A tuple containing the resolved positional and keyword arguments.
+            Tuple[Args, Kwargs]: Tuple containing the resolved positional and keyword arguments.
 
         !!! info
             For default settings, see `vectorbtpro._settings.plotting`.

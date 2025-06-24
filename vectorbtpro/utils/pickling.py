@@ -59,7 +59,7 @@ def get_serialization_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[st
             If omitted, returns a union of all serialization extensions.
 
     Returns:
-        Set[str]: A set of serialization file extensions.
+        Set[str]: Set of serialization file extensions.
 
     !!! info
         For default settings, see `vectorbtpro._settings.pickling`.
@@ -82,7 +82,7 @@ def get_compression_extensions(cls_name: tp.Optional[str] = None) -> tp.Set[str]
             If omitted, returns a union of all compression extensions.
 
     Returns:
-        Set[str]: A set of compression file extensions.
+        Set[str]: Set of compression file extensions.
 
     !!! info
         For default settings, see `vectorbtpro._settings.pickling`.
@@ -237,7 +237,7 @@ def decompress(
             with zipfile.ZipFile(zip_buffer, "r", **decompress_kwargs) as zip_file:
                 namelist = zip_file.namelist()
                 if len(namelist) == 0:
-                    raise ValueError("The ZIP archive is empty")
+                    raise ValueError("ZIP archive is empty")
                 if file_name is not None:
                     if file_name not in namelist:
                         raise FileNotFoundError(f"'{file_name}' not found in the ZIP archive")
@@ -371,7 +371,7 @@ def suggest_compression(file_name: str) -> tp.Optional[str]:
         file_name (str): Name of the file.
 
     Returns:
-        Optional[str]: The suggested compression algorithm if recognized; otherwise, None.
+        Optional[str]: Suggested compression algorithm if recognized; otherwise, None.
     """
     suffixes = [suffix.lower() for suffix in file_name.split(".")[1:]]
     if len(suffixes) > 0 and suffixes[-1] in get_compression_extensions():
@@ -557,7 +557,7 @@ class RecInfo(DefineMixin):
     """Unique reconstruction identifier."""
 
     cls: tp.Type = define.field()
-    """The class associated with reconstruction."""
+    """Class associated with reconstruction."""
 
     modify_state: tp.Optional[tp.Callable[[RecState], RecState]] = define.field(default=None)
     """Optional callback that modifies the reconstruction state."""
@@ -588,7 +588,7 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
         obj (Any): Class or instance to evaluate.
 
     Returns:
-        Optional[str]: The reconstruction identifier or class path, or None if not found.
+        Optional[str]: Reconstruction identifier or class path, or None if not found.
     """
     from vectorbtpro.utils.module_ import find_class
 
@@ -917,11 +917,11 @@ class Pickleable(Base):
                     try:
                         ast.literal_eval(repr(v2))
                         v2 = repr(v2)
-                    except Exception as e:
+                    except Exception:
                         try:
                             float(repr(v2))
                             v2 = repr(v2)
-                        except Exception as e:
+                        except Exception:
                             v2 = "!vbt.loads(" + repr(dumps(v2)) + ")"
                 parser.set(k, k2, v2)
         with StringIO() as f:
@@ -1052,7 +1052,7 @@ class Pickleable(Base):
 
         try:
             parser.read_string(str_)
-        except configparser.MissingSectionHeaderError as e:
+        except configparser.MissingSectionHeaderError:
             parser.read_string("[top]\n" + str_)
 
         def _preprocess_key(k):
@@ -1149,10 +1149,10 @@ class Pickleable(Base):
                             else:
                                 try:
                                     v2 = ast.literal_eval(v2)
-                                except Exception as e:
+                                except Exception:
                                     try:
                                         v2 = float(v2)
-                                    except Exception as e:
+                                    except Exception:
                                         pass
                 new_dct[k][k2] = v2
         dct = new_dct
@@ -1400,7 +1400,7 @@ class Pickleable(Base):
         try:
             cls.resolve_file_path(*args, **kwargs)
             return True
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             return False
 
     def save(
@@ -1505,7 +1505,7 @@ class Pickleable(Base):
             **kwargs: Keyword arguments for `humanize.naturalsize`.
 
         Returns:
-            Union[str, int]: The object's size as a human-readable string if `readable` is True,
+            Union[str, int]: Object's size as a human-readable string if `readable` is True,
                 otherwise as an integer in bytes.
         """
         if readable:
@@ -1517,7 +1517,7 @@ class Pickleable(Base):
         """Reconstruction state for recreating the object.
 
         Returns:
-            Optional[RecState]: The reconstruction state used for object reconstruction.
+            Optional[RecState]: Reconstruction state used for object reconstruction.
         """
         return None
 

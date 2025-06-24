@@ -931,7 +931,7 @@ def get_free_cash_diff_nb(
         fees (float): Fraction of the order value charged as fee.
 
     Returns:
-        Tuple[float, float]: A tuple containing the updated debt and the free cash difference.
+        Tuple[float, float]: Tuple containing the updated debt and the free cash difference.
     """
     size = add_nb(position_now, -position_before)
     final_cash = -size * price - fees
