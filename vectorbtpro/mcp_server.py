@@ -33,7 +33,7 @@ def auto_cast(value: tp.Any) -> tp.Any:
 def search(
     query: str,
     asset_names: tp.Union[str, tp.List[str]] = "all",
-    search_method: tp.Optional[str] = "bm25",
+    search_method: str = "hybrid",
     return_chunks: bool = True,
     return_metadata: str = "none",
     n: int = 5,
@@ -65,19 +65,19 @@ def search(
             * "examples": Code examples across all assets. Best for practical implementation queries.
             * "all": All of the above. Best for comprehensive queries.
 
-            Do not use "examples" with other assets, as examples are already included in those assets.
-            Use them separately to get only examples.
+            Do not use "examples" with other assets, such as ["examples", "docs"], as examples are already
+            included in those assets. Use them separately to get only examples, such as ["examples"].
 
             Order doesn't matter.
 
             Defaults to "all".
-        search_method (Optional[str]): Strategy for document search. Supported strategies:
+        search_method (str): Strategy for document search. Supported strategies:
 
             * "bm25": Uses BM25 for lexical search. Best for specific keywords.
             * "embeddings": Uses embeddings for semantic search. Best for general queries.
             * "hybrid": Combines both embeddings and BM25. Best for balanced search.
 
-            Defaults to "bm25".
+            Defaults to "hybrid".
         return_chunks (bool): Whether to return the chunks of the results; otherwise, returns the full results.
 
             Defaults to True.
@@ -108,6 +108,11 @@ def search(
     return_metadata = auto_cast(return_metadata)
     n = auto_cast(n)
     page = auto_cast(page)
+
+    if search_method == "embeddings":
+        search_method = "embeddings_fallback"
+    elif search_method == "hybrid":
+        search_method = "hybrid_fallback"
 
     results = search(
         query,

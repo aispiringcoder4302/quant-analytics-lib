@@ -4702,6 +4702,12 @@ class ScoredDocument(DefineMixin):
     """List of scored child documents."""
 
 
+class FallbackError(Exception):
+    """Exception raised when a fallback is triggered."""
+
+    pass
+
+
 class DocumentRanker(Configured):
     """Class for embedding, scoring, and ranking documents.
 
@@ -4725,9 +4731,13 @@ class DocumentRanker(Configured):
 
             Supported strategies:
 
-            * "embeddings"
-            * "bm25"
-            * "hybrid"
+            * "bm25": Use BM25 for document search.
+            * "embeddings": Use embeddings for document search.
+                Embeds documents that don't have embeddings, which can be time-consuming.
+            * "hybrid": Use a combination of embeddings and BM25 for document search.
+                Embeds documents that don't have embeddings, which can be time-consuming.
+            * "embeddings_fallback": Use "embeddings" if all documents have embeddings, otherwise use "bm25".
+            * "hybrid_fallback": Use "hybrid" if all documents have embeddings, otherwise use "bm25".
         bm25_tokenizer (Optional[BM25Tokenizer]): BM25 tokenizer instance or type for processing text.
 
             Resolved using `DocumentRanker.resolve_bm25_tokenizer`.
@@ -4842,17 +4852,26 @@ class DocumentRanker(Configured):
         emb_store_kwargs = merge_dicts(obj_store_kwargs, emb_store_kwargs)
 
         search_method = search_method.lower()
-        checks.assert_in(search_method, ("embeddings", "bm25", "hybrid"), arg_name="search_method")
-        if search_method in ("embeddings", "hybrid"):
-            embeddings = resolve_embeddings(embeddings)
-            if isinstance(embeddings, type):
-                embeddings_kwargs = dict(embeddings_kwargs)
-                embeddings_kwargs["template_context"] = merge_dicts(
-                    template_context, embeddings_kwargs.get("template_context", None)
-                )
-                embeddings = embeddings(**embeddings_kwargs)
-            elif embeddings_kwargs:
-                embeddings = embeddings.replace(**embeddings_kwargs)
+        checks.assert_in(
+            search_method,
+            ("bm25", "embeddings", "hybrid", "embeddings_fallback", "hybrid_fallback"),
+            arg_name="search_method",
+        )
+        if search_method in ("embeddings", "hybrid", "embeddings_fallback", "hybrid_fallback"):
+            try:
+                embeddings = resolve_embeddings(embeddings)
+                if isinstance(embeddings, type):
+                    embeddings_kwargs = dict(embeddings_kwargs)
+                    embeddings_kwargs["template_context"] = merge_dicts(
+                        template_context, embeddings_kwargs.get("template_context", None)
+                    )
+                    embeddings = embeddings(**embeddings_kwargs)
+                elif embeddings_kwargs:
+                    embeddings = embeddings.replace(**embeddings_kwargs)
+            except Exception as e:
+                if search_method in ("embeddings_fallback", "hybrid_fallback"):
+                    warn(f"Failed to resolve embeddings: \"{e}\"")
+                    embeddings = None
         else:
             embeddings = None
 
@@ -4907,7 +4926,7 @@ class DocumentRanker(Configured):
         if cache_emb_store and not isinstance(emb_store, CachedStore):
             emb_store = CachedStore(emb_store)
 
-        if search_method in ("bm25", "hybrid"):
+        if search_method in ("bm25", "hybrid", "embeddings_fallback", "hybrid_fallback"):
             if bm25_tokenizer_kwargs is None:
                 bm25_tokenizer_kwargs = {}
             if bm25_retriever_kwargs is None:
@@ -4987,9 +5006,13 @@ class DocumentRanker(Configured):
 
         Supported strategies:
 
-        * "embeddings"
-        * "bm25"
-        * "hybrid"
+        * "bm25": Use BM25 for document search.
+        * "embeddings": Use embeddings for document search.
+            Embeds documents that don't have embeddings, which can be time-consuming.
+        * "hybrid": Use a combination of embeddings and BM25 for document search.
+            Embeds documents that don't have embeddings, which can be time-consuming.
+        * "embeddings_fallback": Use "embeddings" if all documents have embeddings, otherwise use "bm25".
+        * "hybrid_fallback": Use "hybrid" if all documents have embeddings, otherwise use "bm25".
 
         Returns:
             str: Search method used for document retrieval.
@@ -5201,6 +5224,7 @@ class DocumentRanker(Configured):
         refresh_embeddings: tp.Optional[bool] = None,
         return_embeddings: bool = False,
         return_documents: bool = False,
+        with_fallback: bool = False,
     ) -> tp.Optional[tp.EmbeddedDocuments]:
         """Embed documents by optionally refreshing stored documents and embeddings.
 
@@ -5213,6 +5237,7 @@ class DocumentRanker(Configured):
             refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_embeddings (bool): Flag indicating whether to return embeddings.
             return_documents (bool): If True, include original document objects in the output.
+            with_fallback (bool): If True, raise `FallbackError` if new embeddings are needed.
 
         Returns:
             Optional[EmbeddedDocuments]: Embedded documents or embeddings based on the specified return flags.
@@ -5242,6 +5267,8 @@ class DocumentRanker(Configured):
                                 refresh_document = True
                                 break
                 if refresh_document:
+                    if with_fallback:
+                        raise FallbackError("Some documents need to be refreshed")
                     documents_to_split.append(document)
             if documents_to_split:
                 from vectorbtpro.utils.pbar import ProgressBar
@@ -5292,9 +5319,11 @@ class DocumentRanker(Configured):
                             obj_contents[obj.id_] = content
 
             if obj_contents:
-                total = 0
                 if self.embeddings is None:
+                    if with_fallback:
+                        raise FallbackError("Embeddings engine is not set")
                     raise ValueError("Embeddings engine is not set")
+                total = 0
                 for batch in self.embeddings.iter_embedding_batches(list(obj_contents.values())):
                     batch_keys = list(obj_contents.keys())[total : total + len(batch)]
                     obj_embeddings = dict(zip(batch_keys, batch))
@@ -5403,6 +5432,7 @@ class DocumentRanker(Configured):
         refresh_embeddings: tp.Optional[bool] = None,
         return_chunks: bool = False,
         return_documents: bool = False,
+        with_fallback: bool = False,
     ) -> tp.ScoredDocuments:
         """Score documents by relevance to a query.
 
@@ -5421,6 +5451,7 @@ class DocumentRanker(Configured):
             refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_chunks (bool): Whether to return document chunks.
             return_documents (bool): If True, include original document objects in the output.
+            with_fallback (bool): If True, raise `FallbackError` if new embeddings are needed.
 
         Returns:
             ScoredDocuments: Collection of documents with their computed relevance scores.
@@ -5441,6 +5472,7 @@ class DocumentRanker(Configured):
                 refresh=refresh,
                 refresh_documents=refresh_documents,
                 refresh_embeddings=refresh_embeddings,
+                with_fallback=with_fallback,
             )
             if return_chunks:
                 document_chunks = []
@@ -5475,6 +5507,8 @@ class DocumentRanker(Configured):
                             obj_embeddings[child_id] = child_obj.embedding
             if obj_embeddings:
                 if self.embeddings is None:
+                    if with_fallback:
+                        raise FallbackError("Embeddings engine is not set")
                     raise ValueError("Embeddings engine is not set")
                 query_embedding = self.embeddings.get_embedding(query)
                 scores = self.compute_score(query_embedding, list(obj_embeddings.values()))
@@ -5574,9 +5608,7 @@ class DocumentRanker(Configured):
                 document_splits = {}
                 for document in documents:
                     refresh_document = (
-                        refresh_documents
-                        or document.id_ not in self.doc_store
-                        or document.id_ not in self.emb_store
+                        refresh_documents or document.id_ not in self.doc_store or document.id_ not in self.emb_store
                     )
                     if not refresh_document:
                         obj = self.emb_store[document.id_]
@@ -5974,19 +6006,26 @@ class DocumentRanker(Configured):
         """
         if documents is not None:
             documents = list(documents)
-        if self.search_method in ("embeddings", "hybrid"):
-            emb_scored_documents = self.score_documents(
-                query,
-                documents=documents,
-                refresh=refresh,
-                refresh_documents=refresh_documents,
-                refresh_embeddings=refresh_embeddings,
-                return_chunks=return_chunks,
-                return_documents=True,
-            )
+        if self.search_method in ("embeddings", "hybrid", "embeddings_fallback", "hybrid_fallback"):
+            try:
+                emb_scored_documents = self.score_documents(
+                    query,
+                    documents=documents,
+                    refresh=refresh,
+                    refresh_documents=refresh_documents,
+                    refresh_embeddings=refresh_embeddings,
+                    return_chunks=return_chunks,
+                    return_documents=True,
+                    with_fallback=self.search_method in ("embeddings_fallback", "hybrid_fallback"),
+                )
+            except FallbackError as e:
+                warn(f"Fallback triggered: \"{e}\"")
+                emb_scored_documents = None
         else:
             emb_scored_documents = None
-        if self.search_method in ("bm25", "hybrid"):
+        if self.search_method in ("bm25", "hybrid") or (
+            emb_scored_documents is None and self.search_method in ("embeddings_fallback", "hybrid_fallback")
+        ):
             bm25_scored_documents = self.bm25_score_documents(
                 query,
                 documents=documents,
