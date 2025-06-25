@@ -62,12 +62,12 @@ data-base = [
     "duckdb",
     "pyarrow",
     "yfinance>=0.2.56",
+    "python-binance>=1.0.16"
 ]
 data = [
     "vectorbtpro[data-base]",
     "duckdb-engine",
     "fastparquet",
-    "python-binance>=1.0.16",
     "alpaca-py>=0.40.0",
     "ccxt>=1.89.14",
     "polygon-api-client>=1.0.0",
@@ -75,7 +75,7 @@ data = [
     "nasdaq-data-link",
     "alpha_vantage>=3.0.0",
     "databento",
-    "findatapy",
+    "findatapy"
 ]
 ind-base = [
     "TA-Lib"
@@ -102,11 +102,11 @@ opt = [
     "vectorbtpro[opt-base]"
 ]
 exec-base = [
-    "dask",
     "pathos"
 ]
 exec = [
     "vectorbtpro[exec-base]",
+    "dask",
     "mpire",
     "ray>=1.4.1"
 ]
@@ -114,7 +114,7 @@ plot-base = [
     "matplotlib>=3.2.0",
     "plotly>=5.0.0",
     "ipywidgets>=7.0.0",
-    "kaleido",
+    "kaleido"
 ]
 plot = [
     "vectorbtpro[plot-base]",
@@ -125,13 +125,10 @@ pfopt-base = [
     "Riskfolio-Lib>=3.3.0"
 ]
 pfopt = [
-    "vectorbtpro[pfopt-base]",
-]
-stats-base = [
-    "quantstats>=0.0.37"
+    "vectorbtpro[pfopt-base]"
 ]
 stats = [
-    "vectorbtpro[stats-base]"
+    "quantstats>=0.0.37"
 ]
 msg = [
     "python-telegram-bot"
@@ -156,6 +153,7 @@ knwl-base = [
     "lmdbm",
     "bm25s",
     "PyStemmer",
+    "mcp"
 ]
 knwl = [
     "vectorbtpro[knwl-base]",
@@ -171,10 +169,10 @@ knwl = [
     "llama_index"
 ]
 base = [
-    "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,stats-base,io-base,knwl-base]"
+    "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,io-base,knwl-base]"
 ]
 base-no-talib = [
-    "vectorbtpro[data-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,stats-base,io-base,knwl-base]"
+    "vectorbtpro[data-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,io-base,knwl-base]"
 ]
 all = [
     "vectorbtpro[data,ind,perf,opt,exec,plot,pfopt,stats,msg,io,knwl]"

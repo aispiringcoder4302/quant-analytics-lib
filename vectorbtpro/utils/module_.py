@@ -277,7 +277,7 @@ def assert_can_import(pkg_name: str) -> None:
     version = version_str = metadata["version"]
     link = metadata["link"]
     if not check_installed(pkg_name):
-        raise ImportError(f"Please install {dist_name}{version_str} - {link}")
+        raise ImportError(f"Please install {dist_name}{version_str}. See {link}.")
     if version != "":
         actual_version_parts = get_version(dist_name).split(".")
         actual_version_parts = map(lambda x: x if x.isnumeric() else f"'{x}'", actual_version_parts)
@@ -290,7 +290,7 @@ def assert_can_import(pkg_name: str) -> None:
             version_parts = map(lambda x: x if x.isnumeric() else f"'{x}'", version_parts)
             version = "(" + ",".join(version_parts) + ")"
         if not eval(f"{actual_version} {operator} {version}"):
-            raise ImportError(f"Please install {dist_name}{version_str} - {link}")
+            raise ImportError(f"Please install {dist_name}{version_str}. See {link}.")
 
 
 def assert_can_import_any(*pkg_names: str) -> None:
