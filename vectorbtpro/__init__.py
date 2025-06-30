@@ -131,6 +131,7 @@ def _import_more_stuff():
 
     import numpy as np
     import pandas as pd
+    import numba as nb
     from numba import njit, prange
     from vectorbtpro._dtypes import int_, float_
 

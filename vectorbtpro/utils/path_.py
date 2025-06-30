@@ -391,6 +391,9 @@ def dir_tree_from_paths(
     branch: str = "│   ",
     tee: str = "├── ",
     last: str = "└── ",
+    directories_name: str = "directories",
+    files_name: str = "files",
+    print_stats: bool = True,
 ) -> str:
     """Generate a visual tree structure from provided file system paths.
 
@@ -419,6 +422,9 @@ def dir_tree_from_paths(
         branch (str): String representing a branch segment.
         tee (str): String for an intermediate node in the tree.
         last (str): String for the last node in a branch.
+        directories_name (str): Name for the directory count in the output.
+        files_name (str): Name for the file count in the output.
+        print_stats (bool): If True, prints the count of directories and files at the end.
 
     Returns:
         str: String representing the visual tree structure.
@@ -523,9 +529,10 @@ def dir_tree_from_paths(
         iterator = islice(iterator, length_limit)
     for line in iterator:
         result_lines.append(line)
-    if next(iterator, None):
-        result_lines.append(f"... length_limit {length_limit} reached, counts:")
-    result_lines.append(f"\n{dir_count} directories" + (f", {files} files" if files else ""))
+    if print_stats:
+        if next(iterator, None):
+            result_lines.append(f"... length_limit {length_limit} reached, counts:")
+        result_lines.append(f"\n{dir_count} {directories_name}" + (f", {files} {files_name}" if files else ""))
     return "\n".join(result_lines)
 
 

@@ -31,7 +31,7 @@ dependencies = [
     "websocket-client",
     "graphlib_backport; python_version<'3.9'",
     "tomli>=1.1.0; python_version<'3.11'",
-    "astor; python_version<'3.9'"
+    "astor; python_version<'3.9'",
 ]
 classifiers = [
     "Intended Audience :: Developers",
@@ -152,8 +152,7 @@ knwl-base = [
     "tiktoken",
     "lmdbm",
     "bm25s",
-    "PyStemmer",
-    "mcp"
+    "PyStemmer"
 ]
 knwl = [
     "vectorbtpro[knwl-base]",
@@ -168,14 +167,21 @@ knwl = [
     "litellm",
     "llama_index"
 ]
+mcp-base = [
+    "mcp",
+    "jupyter_client"
+]
+mcp = [
+    "vectorbtpro[mcp-base]"
+]
 base = [
-    "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,io-base,knwl-base]"
+    "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,io-base,knwl-base,mcp-base]"
 ]
 base-no-talib = [
-    "vectorbtpro[data-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,io-base,knwl-base]"
+    "vectorbtpro[data-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,io-base,knwl-base,mcp-base]"
 ]
 all = [
-    "vectorbtpro[data,ind,perf,opt,exec,plot,pfopt,stats,msg,io,knwl]"
+    "vectorbtpro[data,ind,perf,opt,exec,plot,pfopt,stats,msg,io,knwl,mcp]"
 ]
 
 [tool.setuptools]

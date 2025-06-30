@@ -697,7 +697,7 @@ class AttrResolverMixin(Base):
         return deep_getattr(self, *args, **kwargs)
 
 
-def get_attrs(obj: tp.Any, own_only: bool = False, sort_by: tp.Optional[str] = None) -> tp.Frame:
+def get_attrs(obj: tp.Any, own_only: bool = False, sort_by: str = "attr") -> tp.Frame:
     """Get attributes of a class, object, or module as a DataFrame with metadata.
 
     Args:
@@ -750,8 +750,9 @@ def get_attrs(obj: tp.Any, own_only: bool = False, sort_by: tp.Optional[str] = N
         qualname = getattr(value, "__qualname__", "?")
         rows.append(dict(attr=name, type=typ, path=defining_path, qualname=qualname))
 
-    df = pd.DataFrame(rows, dtype=object).set_index("attr", drop=True)
-    if sort_by is not None and len(df) > 0:
+    df = pd.DataFrame(rows, dtype=object, columns=["attr", "type", "path", "qualname"])
+    df.set_index("attr", drop=True, inplace=True)
+    if sort_by is not None:
         sort_by = [sort_by] if isinstance(sort_by, str) else list(sort_by)
         if "attr" not in sort_by:
             sort_by.append("attr")

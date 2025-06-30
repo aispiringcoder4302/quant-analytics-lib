@@ -10,10 +10,16 @@
 
 """Module providing MCP server tools.
 
-This module is meant to be executed as a script to run the MCP server."""
+The module is meant to be executed as a script using the command:
+
+```bash
+python -m vectorbtpro.mcp_server
+```
+"""
+
+import argparse
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.module_ import assert_can_import
 
 __all__ = []
 
@@ -151,20 +157,8 @@ def find(
     return the results as a context string.
 
     This can be used to find assets mentioning specific VBT objects, such as modules, classes,
-    functions, and instances. For example, searching for "vbt.Portfolio" will generate a list
-    of the following targets that include some of the most common portfolio usage patterns:
-
-    ```
-    ['vbt.PF',
-     'vbt.Portfolio',
-     'from vectorbtpro.portfolio.base import Portfolio',
-     'vectorbtpro.portfolio.base.Portfolio',
-     ...
-     'Portfolio(',
-     'Portfolio.',
-     'pf =',
-     'pf.']
-    ```
+    functions, and instances. For example, searching for "Portfolio" will generate 
+    targets such as `vbt.Portfolio`, `Portfolio(...)`, `pf = ...`, etc.
 
     If any of the mentioned targets are found in an asset, it will be returned.
 
@@ -319,7 +313,7 @@ def get_source(refname: tp.Union[str, tp.List[str]], module: tp.Optional[str] = 
 
 
 def attr_tree(refname: str, module: tp.Optional[str] = None, own_only: bool = False) -> str:
-    """Get a visual tree of an object's attributes in YAML format.
+    """Get a tree of an object's attributes in YAML format.
 
     Can be used to discover the API of VectorBT PRO (vectorbtpro, VBT). For example, use it to
     find out what methods and properties are available on a specific class, or to explore the
@@ -328,12 +322,7 @@ def attr_tree(refname: str, module: tp.Optional[str] = None, own_only: bool = Fa
     Each attribute is represented as a leaf in the tree, whereas the tree structure
     represents the hierarchy of modules and classes from which the attributes are inherited.
 
-    Each leaf in the tree is formatted as:
-
-    ```
-    <attr_name> [<attr_type>] (@ <qualname>)
-    ```
-
+    Each leaf in the tree is formatted as `<attr_name> [<attr_type>] (@ <qualname>)`,
     where the "@ <qualname>" suffix is shown only when the attribute's `__qualname__` either
 
     * differs from the attribute's own name (indicating an alias or re-export), or
@@ -380,18 +369,97 @@ def attr_tree(refname: str, module: tp.Optional[str] = None, own_only: bool = Fa
             branch="  ",
             tee="- ",
             last="- ",
+            directories_name="branches",
+            files_name="leaves",
+            print_stats=False,
         )
         + "\n```"
     )
 
 
-if __name__ == "__main__":
+current_kernel = None
+
+
+def run_code(code: str, restart: bool = False, exec_timeout: tp.Optional[float] = None) -> str:
+    """Run a code snippet.
+
+    This spins up a Jupyter kernel if it is not already running, and automatically imports 
+    `from vectorbtpro import *`, which includes `vbt`, `pd` (Pandas), `np` (NumPy), `nb` (Numba),
+    and other commonly used modules from the documentation. Running this the second time will
+    reuse the existing kernel and all variables defined earlier.
+
+    Use this tool to develop and test code snippets in the VectorBT PRO (vectorbtpro, VBT) environment,
+    similar to a Jupyter notebook. You can backtest a strategy, debug a function, or explore data interactively.
+
+    !!! note
+        VBT is centered around easy-to-use APIs and high-performance computing, thus you should
+        put priority on discovering and using VBT APIs. Before running this tool, use other MCP tools to
+        search for relevant information, such as existing code examples, API references, and documentation.
+        This will help you understand how to use VBT effectively and avoid reinventing the wheel.
+        If a custom implementation is needed, consider extending existing VBT functionality or
+        using high-performance libraries such as Numba.
+
+    !!! warning
+        Ensure that the code is safe, as this tool can execute arbitrary code in the current environment.
+        Do not run code that has side effects, such as installing new dependencies, modifying global state,
+        or performing I/O operations, unless explicitly granted permission!
+
+        Be aware of long-running and resource-intensive code snippets, as they may block the kernel
+        and prevent further execution. Use minimal code snippets whenever possible.
+
+        Use this tool for development and testing purposes related to VBT only.
+
+    Args:
+        code (str): Code snippet to run.
+        restart (bool): Whether to restart the kernel before running the code.
+
+            Defaults to False.
+        exec_timeout (Optional[float]): Timeout for the code execution in seconds.
+
+            None means no timeout. Defaults to None.
+
+    Returns:
+        str: Output of the executed code.
+    """
+    from vectorbtpro.utils.eval_ import VBTKernel
+
+    code = auto_cast(code)
+    restart = auto_cast(restart)
+    exec_timeout = auto_cast(exec_timeout)
+
+    global current_kernel
+    if current_kernel is None:
+        current_kernel = VBTKernel()
+        current_kernel.start()
+    if restart:
+        current_kernel.restart()
+    return current_kernel.execute(code, exec_timeout=exec_timeout)
+
+
+def main() -> None:
+    """Run the MCP server for VectorBT PRO."""
+    from vectorbtpro.utils.module_ import assert_can_import
+
     assert_can_import("mcp")
     from mcp.server.fastmcp import FastMCP
+
+    parser = argparse.ArgumentParser(description="Run the MCP server for VectorBT PRO.")
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "streamable-http"],
+        default="stdio",
+        help="Transport type (default: stdio)",
+    )
+    args = parser.parse_args()
 
     mcp = FastMCP("VectorBT PRO")
     mcp.tool()(search)
     mcp.tool()(find)
     mcp.tool()(get_source)
     mcp.tool()(attr_tree)
-    mcp.run()
+    mcp.tool()(run_code)
+    mcp.run(transport=args.transport)
+
+
+if __name__ == "__main__":
+    main()

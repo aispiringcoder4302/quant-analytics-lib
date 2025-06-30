@@ -205,8 +205,7 @@ class AVData(RemoteData):
 
         Uses the `alpha_vantage` package if `use_parser` is False or if it is not specified and
         the package is installed. Otherwise, parses the API documentation directly to retrieve data.
-
-        See https://www.alphavantage.co/documentation/ for API endpoints and parameters.
+        When using the parser, refer to https://www.alphavantage.co/documentation/ for API endpoints and parameters.
 
         Args:
             symbol (Symbol): Symbol identifier.
@@ -237,6 +236,10 @@ class AVData(RemoteData):
                 If None, it is determined based on `timeframe`, `adjusted`, and `extended`.
                 Required for technical indicators, economic indicators, and fundamental data.
                 See the keys in sub-dictionaries returned by `AVData.parse_api_meta`.
+
+                If `use_parser` is False, it can be the method (or its name) of the `category` class.
+                For example, if `category` is `alpha_vantage.timeseries.TimeSeries`,
+                `function` can be "get_daily", "get_intraday", etc.
             timeframe (Optional[str]): Timeframe specification (e.g., "daily", "15 minutes").
 
                 For time series, forex, and crypto, the interval is inferred from the function name.
