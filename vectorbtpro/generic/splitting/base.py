@@ -3607,7 +3607,9 @@ class Splitter(Analyzable):
 
                 See `vectorbtpro.utils.datetime_.infer_index_freq`.
             return_obj_meta (bool): Whether to return metadata about the object.
-            return_obj_meta (bool): Whether to return metadata about the object.
+            **ready_range_kwargs: Keyword arguments for `Splitter.get_ready_range`.
+
+                Allows zero-length ranges by default.
 
         Returns:
             Any: Processed range ready for indexing, or a tuple with object metadata and the range if requested.
@@ -3637,6 +3639,8 @@ class Splitter(Analyzable):
             obj_index = index
             obj_freq = freq
             target_range = range_
+        if "allow_zero_len" not in ready_range_kwargs:
+            ready_range_kwargs["allow_zero_len"] = True
         ready_range_or_meta = cls_or_self.get_ready_range(
             target_range,
             template_context=template_context,
