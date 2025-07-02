@@ -4872,6 +4872,8 @@ class DocumentRanker(Configured):
                 if search_method in ("embeddings_fallback", "hybrid_fallback"):
                     warn(f"Failed to resolve embeddings: \"{e}\"")
                     embeddings = None
+                else:
+                    raise e
         else:
             embeddings = None
 

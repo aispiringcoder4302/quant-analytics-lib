@@ -140,7 +140,7 @@ class DuckDBData(DBData):
         should_close = False
         if connection is None:
             if len(connection_config) == 0:
-                connection = default_connection
+                connection = default_connection()
             else:
                 database = connection_config.pop("database", None)
                 if "config" in connection_config or len(connection_config) == 0:

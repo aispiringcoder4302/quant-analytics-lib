@@ -45,8 +45,8 @@ def search(
     n: int = 5,
     page: int = 1,
 ) -> str:
-    """Search for VectorBT PRO (vectorbtpro, VBT) assets relevant
-    to the provided (natural language) query and return the results as a context string.
+    """Search for VectorBT PRO (vectorbtpro, VBT) assets relevant to the provided
+    (natural language) query and return the results as a context string.
 
     !!! note
         This tool is designed to search for general information about VBT.
@@ -55,7 +55,7 @@ def search(
 
         Also, running this tool on any combination of assets for the first time may take a while,
         as it prepares and caches the documents. If the tool times out repeatedly,
-        it's recommended to call `vbt.search()` directly in your code to build the index
+        it's recommended to call `vbt.search("")` directly in your code to build the index
         and then use the MCP tool to search the index.
 
     Args:
@@ -70,9 +70,6 @@ def search(
             * "messages": Discord messages and discussions. Best for support queries.
             * "examples": Code examples across all assets. Best for practical implementation queries.
             * "all": All of the above. Best for comprehensive queries.
-
-            Do not use "examples" with other assets, such as ["examples", "docs"], as examples are already
-            included in those assets. Use them separately to get only examples, such as ["examples"].
 
             Order doesn't matter.
 
