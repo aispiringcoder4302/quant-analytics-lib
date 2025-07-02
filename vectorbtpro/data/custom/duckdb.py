@@ -127,7 +127,7 @@ class DuckDBData(DBData):
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("duckdb")
-        from duckdb import connect, default_connection
+        from duckdb import connect, default_connection, DuckDBPyConnection
 
         connection_meta = {}
         connection = cls.resolve_custom_setting(connection, "connection")
@@ -140,7 +140,10 @@ class DuckDBData(DBData):
         should_close = False
         if connection is None:
             if len(connection_config) == 0:
-                connection = default_connection()
+                if isinstance(default_connection, DuckDBPyConnection):
+                    connection = default_connection
+                else:
+                    connection = default_connection()
             else:
                 database = connection_config.pop("database", None)
                 if "config" in connection_config or len(connection_config) == 0:

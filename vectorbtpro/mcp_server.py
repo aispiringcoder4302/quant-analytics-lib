@@ -380,8 +380,8 @@ current_kernel = None
 def run_code(code: str, restart: bool = False, exec_timeout: tp.Optional[float] = None) -> str:
     """Run a code snippet.
 
-    This spins up a Jupyter kernel if it is not already running, and automatically imports 
-    `from vectorbtpro import *`, which includes `vbt`, `pd` (Pandas), `np` (NumPy), `nb` (Numba),
+    This spins up a Jupyter kernel if it is not already running, and automatically imports
+    `from vectorbtpro import *`, which includes `vbt`, `pd` (Pandas), `np` (NumPy), `njit` (from Numba),
     and other commonly used modules from the documentation. Running this the second time will
     reuse the existing kernel and all variables defined earlier.
 
