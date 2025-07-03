@@ -85,7 +85,7 @@ ind = [
     "ta",
     "pandas_ta",
     "technical",
-    "smartmoneyconcepts"
+    "smartmoneyconcepts>0.0.10"
 ]
 perf-base = [
     "numexpr"
