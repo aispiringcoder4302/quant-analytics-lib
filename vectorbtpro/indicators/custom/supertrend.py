@@ -166,6 +166,6 @@ class _SUPERTREND(SUPERTREND):
         return fig
 
 
-setattr(SUPERTREND, "__doc__", _SUPERTREND.__doc__)
-setattr(SUPERTREND, "plot", _SUPERTREND.plot)
+SUPERTREND.clone_docstring(_SUPERTREND)
+SUPERTREND.clone_method(_SUPERTREND.plot)
 SUPERTREND.fix_docstrings(__pdoc__)

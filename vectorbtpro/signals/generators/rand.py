@@ -96,5 +96,5 @@ class _RAND(RAND):
     pass
 
 
-setattr(RAND, "__doc__", _RAND.__doc__)
+RAND.clone_docstring(_RAND)
 RAND.fix_docstrings(__pdoc__)

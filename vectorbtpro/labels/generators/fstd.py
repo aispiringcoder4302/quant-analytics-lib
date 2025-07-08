@@ -125,6 +125,6 @@ class _FSTD(FSTD):
         return fig
 
 
-setattr(FSTD, "__doc__", _FSTD.__doc__)
-setattr(FSTD, "plot", _FSTD.plot)
+FSTD.clone_docstring(_FSTD)
+FSTD.clone_method(_FSTD.plot)
 FSTD.fix_docstrings(__pdoc__)

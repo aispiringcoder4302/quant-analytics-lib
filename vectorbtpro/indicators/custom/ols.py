@@ -275,7 +275,7 @@ class _OLS(OLS):
         return fig
 
 
-setattr(OLS, "__doc__", _OLS.__doc__)
-setattr(OLS, "plot", _OLS.plot)
-setattr(OLS, "plot_zscore", _OLS.plot_zscore)
+OLS.clone_docstring(_OLS)
+OLS.clone_method(_OLS.plot)
+OLS.clone_method(_OLS.plot_zscore)
 OLS.fix_docstrings(__pdoc__)

@@ -75,6 +75,6 @@ class _FIXLB(FIXLB):
         return self_col.close.rename("Close").vbt.overlay_with_heatmap(self_col.labels.rename("Labels"), **kwargs)
 
 
-setattr(FIXLB, "__doc__", _FIXLB.__doc__)
-setattr(FIXLB, "plot", _FIXLB.plot)
+FIXLB.clone_docstring(_FIXLB)
+FIXLB.clone_method(_FIXLB.plot)
 FIXLB.fix_docstrings(__pdoc__)

@@ -94,6 +94,6 @@ class _PIVOTLB(PIVOTLB):
         return median.rename("Median").vbt.overlay_with_heatmap(self_col.labels.rename("Labels"), **kwargs)
 
 
-setattr(PIVOTLB, "__doc__", _PIVOTLB.__doc__)
-setattr(PIVOTLB, "plot", _PIVOTLB.plot)
+PIVOTLB.clone_docstring(_PIVOTLB)
+PIVOTLB.clone_method(_PIVOTLB.plot)
 PIVOTLB.fix_docstrings(__pdoc__)

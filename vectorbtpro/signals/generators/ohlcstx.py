@@ -316,6 +316,6 @@ class _OHLCSTX(OHLCSTX):
     plot = _bind_ohlcstx_plot(OHLCSTX, "entries")
 
 
-setattr(OHLCSTX, "__doc__", _OHLCSTX.__doc__)
-setattr(OHLCSTX, "plot", _OHLCSTX.plot)
+OHLCSTX.clone_docstring(_OHLCSTX)
+OHLCSTX.clone_method(_OHLCSTX.plot)
 OHLCSTX.fix_docstrings(__pdoc__)

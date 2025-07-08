@@ -180,6 +180,6 @@ class _VWAP(VWAP):
         return fig
 
 
-setattr(VWAP, "__doc__", _VWAP.__doc__)
-setattr(VWAP, "plot", _VWAP.plot)
+VWAP.clone_docstring(_VWAP)
+VWAP.clone_method(_VWAP.plot)
 VWAP.fix_docstrings(__pdoc__)

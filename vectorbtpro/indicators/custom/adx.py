@@ -168,6 +168,6 @@ class _ADX(ADX):
         return fig
 
 
-setattr(ADX, "__doc__", _ADX.__doc__)
-setattr(ADX, "plot", _ADX.plot)
+ADX.clone_docstring(_ADX)
+ADX.clone_method(_ADX.plot)
 ADX.fix_docstrings(__pdoc__)

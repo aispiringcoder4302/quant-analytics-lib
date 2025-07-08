@@ -130,5 +130,5 @@ class _RPROBNX(RPROBNX):
     pass
 
 
-setattr(RPROBNX, "__doc__", _RPROBNX.__doc__)
+RPROBNX.clone_docstring(_RPROBNX)
 RPROBNX.fix_docstrings(__pdoc__)

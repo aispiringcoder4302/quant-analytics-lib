@@ -166,6 +166,6 @@ class _HURST(HURST):
         return fig
 
 
-setattr(HURST, "__doc__", _HURST.__doc__)
-setattr(HURST, "plot", _HURST.plot)
+HURST.clone_docstring(_HURST)
+HURST.clone_method(_HURST.plot)
 HURST.fix_docstrings(__pdoc__)

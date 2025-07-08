@@ -133,6 +133,6 @@ class _FMIN(FMIN):
         return fig
 
 
-setattr(FMIN, "__doc__", _FMIN.__doc__)
-setattr(FMIN, "plot", _FMIN.plot)
+FMIN.clone_docstring(_FMIN)
+FMIN.clone_method(_FMIN.plot)
 FMIN.fix_docstrings(__pdoc__)

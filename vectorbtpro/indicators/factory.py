@@ -1734,6 +1734,42 @@ class IndicatorBase(Analyzable):
     # ############# Documentation ############# #
 
     @classmethod
+    def clone_docstring(cls, another_cls: tp.Type) -> None:
+        """Clone the docstring from another class.
+        
+        Args:
+            another_cls (Type): Class from which to clone the docstring.
+
+        Returns:
+            None
+        """
+        cls.__doc__ = another_cls.__doc__
+
+    @classmethod
+    def clone_method(cls, method: tp.Callable) -> None:
+        """Clone a method to the class.
+        
+        Args:
+            method (Callable): Method to clone.
+
+        Returns:
+            None
+        """
+        from types import FunctionType
+        from functools import update_wrapper
+
+        new_method = FunctionType(
+            method.__code__,
+            method.__globals__,
+            method.__name__, 
+            method.__defaults__, 
+            method.__closure__
+        )
+        update_wrapper(new_method, method)
+        new_method.__qualname__ = f"{cls.__name__}.{method.__name__}"
+        setattr(cls, method.__name__, new_method)
+
+    @classmethod
     def fix_docstrings(cls, __pdoc__: dict) -> None:
         """Update missing docstrings for custom functions.
 

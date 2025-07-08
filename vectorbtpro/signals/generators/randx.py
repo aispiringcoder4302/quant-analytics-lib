@@ -66,5 +66,5 @@ class _RANDX(RANDX):
     pass
 
 
-setattr(RANDX, "__doc__", _RANDX.__doc__)
+RANDX.clone_docstring(_RANDX)
 RANDX.fix_docstrings(__pdoc__)

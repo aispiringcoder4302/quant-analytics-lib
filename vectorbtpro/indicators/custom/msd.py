@@ -125,6 +125,6 @@ class _MSD(MSD):
         return fig
 
 
-setattr(MSD, "__doc__", _MSD.__doc__)
-setattr(MSD, "plot", _MSD.plot)
+MSD.clone_docstring(_MSD)
+MSD.clone_method(_MSD.plot)
 MSD.fix_docstrings(__pdoc__)

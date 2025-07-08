@@ -217,6 +217,6 @@ class _MACD(MACD):
         return fig
 
 
-setattr(MACD, "__doc__", _MACD.__doc__)
-setattr(MACD, "plot", _MACD.plot)
+MACD.clone_docstring(_MACD)
+MACD.clone_method(_MACD.plot)
 MACD.fix_docstrings(__pdoc__)

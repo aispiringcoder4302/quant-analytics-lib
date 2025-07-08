@@ -87,5 +87,5 @@ class _RANDNX(RANDNX):
     pass
 
 
-setattr(RANDNX, "__doc__", _RANDNX.__doc__)
+RANDNX.clone_docstring(_RANDNX)
 RANDNX.fix_docstrings(__pdoc__)

@@ -144,6 +144,6 @@ class _MA(MA):
         return fig
 
 
-setattr(MA, "__doc__", _MA.__doc__)
-setattr(MA, "plot", _MA.plot)
+MA.clone_docstring(_MA)
+MA.clone_method(_MA.plot)
 MA.fix_docstrings(__pdoc__)
