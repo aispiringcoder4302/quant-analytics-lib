@@ -250,7 +250,9 @@ class PolygonData(RemoteData):
         if split is None:
             raise ValueError(f"Invalid timeframe: '{timeframe}'")
         multiplier, unit = split
-        if unit == "m":
+        if unit == "s":
+            unit = "second"
+        elif unit == "m":
             unit = "minute"
         elif unit == "h":
             unit = "hour"
