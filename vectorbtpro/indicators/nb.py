@@ -2391,8 +2391,9 @@ def iter_basic_bands_nb(high: float, low: float, atr: float, multiplier: float) 
 @register_jitted(cache=True)
 def final_basic_bands_nb(
     close: float,
-    upper: float,
-    lower: float,
+    upper_basic: float,
+    lower_basic: float,
+    prev_close: float,
     prev_upper: float,
     prev_lower: float,
     prev_direction: int,
@@ -2401,8 +2402,9 @@ def final_basic_bands_nb(
 
     Args:
         close (float): Current close price.
-        upper (float): Upper band value before adjustments.
-        lower (float): Lower band value before adjustments.
+        upper_basic (float): Current basic upper band value.
+        lower_basic (float): Current basic lower band value.
+        prev_close (float): Previous close price.
         prev_upper (float): Previous upper band value.
         prev_lower (float): Previous lower band value.
         prev_direction (int): Previous direction.
@@ -2411,17 +2413,20 @@ def final_basic_bands_nb(
         Tuple[float, float, float, int, float, float]: Tuple containing the adjusted
             upper band, lower band, trend, direction, long band, and short band values.
     """
-    if close > prev_upper:
+    if np.isnan(prev_upper) or (upper_basic < prev_upper) or (prev_close > prev_upper):
+        upper = upper_basic
+    else:
+        upper = prev_upper
+    if np.isnan(prev_lower) or (lower_basic > prev_lower) or (prev_close < prev_lower):
+        lower = lower_basic
+    else:
+        lower = prev_lower
+    if close > upper:
         direction = 1
-    elif close < prev_lower:
+    elif close < lower:
         direction = -1
     else:
         direction = prev_direction
-        if direction > 0 and lower < prev_lower:
-            lower = prev_lower
-        if direction < 0 and upper > prev_upper:
-            upper = prev_upper
-
     if direction > 0:
         trend = long = lower
         short = np.nan
@@ -2479,6 +2484,7 @@ def supertrend_acc_nb(in_state: SuperTrendAIS) -> SuperTrendAOS:
             close,
             upper,
             lower,
+            prev_close,
             prev_upper,
             prev_lower,
             prev_direction,
