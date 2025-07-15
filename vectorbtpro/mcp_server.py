@@ -80,7 +80,7 @@ def search(
             * "embeddings": Uses embeddings for semantic search. Best for general queries.
             * "hybrid": Combines both embeddings and BM25. Best for balanced search.
 
-            Defaults to "hybrid".
+            Defaults to "hybrid". If embeddings are not available, it falls back to "bm25".
         return_chunks (bool): Whether to return the chunks of the results; otherwise, returns the full results.
 
             Defaults to True.
@@ -254,7 +254,7 @@ def find(
         ),
         examples_kwargs=dict(
             return_type="match" if return_metadata.lower() == "none" else "item",
-            latest_messages_first=True,
+            latest_first=True,
         ),
         minimize=False,
     )

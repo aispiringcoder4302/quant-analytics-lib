@@ -94,6 +94,7 @@ if TYPE_CHECKING:
         VBTAsset,
         PagesAsset,
         MessagesAsset,
+        ExamplesAsset,
     )
     from vectorbtpro.utils.knowledge.formatting import ContentFormatter
     from vectorbtpro.base.indexing import hslice
@@ -147,6 +148,7 @@ else:
     VBTAsset = "VBTAsset"
     PagesAsset = "PagesAsset"
     MessagesAsset = "MessagesAsset"
+    ExamplesAsset = "ExamplesAsset"
     ContentFormatter = "ContentFormatter"
     hslice = "hslice"
     Grouper = "Grouper"
@@ -502,6 +504,7 @@ MaybeKnowledgeAsset = MaybeAsset[KnowledgeAsset]
 MaybeVBTAsset = MaybeAsset[VBTAsset]
 MaybePagesAsset = MaybeAsset[PagesAsset]
 MaybeMessagesAsset = MaybeAsset[MessagesAsset]
+MaybeExamplesAsset = MaybeAsset[ExamplesAsset]
 ContentFormatterLike = Union[None, str, MaybeType[ContentFormatter]]
 TokenizerLike = Union[None, str, MaybeType[Tokenizer]]
 Token = int
