@@ -1783,30 +1783,45 @@ class IndicatorBase(Analyzable):
             None
         """
         if hasattr(cls, "custom_func"):
+            if cls.custom_func is not None:
+                cls.custom_func.__module__ = cls.__module__
+                cls.custom_func.__qualname__ = f"{cls.__name__}.custom_func"
             if cls.__name__ + ".custom_func" not in __pdoc__:
                 if getattr(cls, "custom_func").__doc__ is not None:
                     __pdoc__[cls.__name__ + ".custom_func"] = getattr(cls, "custom_func").__doc__
                 else:
                     __pdoc__[cls.__name__ + ".custom_func"] = "Custom function."
         if hasattr(cls, "apply_func"):
+            if cls.apply_func is not None:
+                cls.apply_func.__module__ = cls.__module__
+                cls.apply_func.__qualname__ = f"{cls.__name__}.apply_func"
             if cls.__name__ + ".apply_func" not in __pdoc__:
                 if getattr(cls, "apply_func").__doc__ is not None:
                     __pdoc__[cls.__name__ + ".apply_func"] = getattr(cls, "apply_func").__doc__
                 else:
                     __pdoc__[cls.__name__ + ".apply_func"] = "Apply function."
         if hasattr(cls, "cache_func"):
+            if cls.cache_func is not None:
+                cls.cache_func.__module__ = cls.__module__
+                cls.cache_func.__qualname__ = f"{cls.__name__}.cache_func"
             if cls.__name__ + ".cache_func" not in __pdoc__:
                 if getattr(cls, "cache_func").__doc__ is not None:
                     __pdoc__[cls.__name__ + ".cache_func"] = getattr(cls, "cache_func").__doc__
                 else:
                     __pdoc__[cls.__name__ + ".cache_func"] = "Cache function."
         if hasattr(cls, "entry_place_func_nb"):
+            if cls.entry_place_func_nb is not None:
+                cls.entry_place_func_nb.__module__ = cls.__module__
+                cls.entry_place_func_nb.__qualname__ = f"{cls.__name__}.entry_place_func_nb"
             if cls.__name__ + ".entry_place_func_nb" not in __pdoc__:
                 if getattr(cls, "entry_place_func_nb").__doc__ is not None:
                     __pdoc__[cls.__name__ + ".entry_place_func_nb"] = getattr(cls, "entry_place_func_nb").__doc__
                 else:
                     __pdoc__[cls.__name__ + ".entry_place_func_nb"] = "Entry placement function."
         if hasattr(cls, "exit_place_func_nb"):
+            if cls.exit_place_func_nb is not None:
+                cls.exit_place_func_nb.__module__ = cls.__module__
+                cls.exit_place_func_nb.__qualname__ = f"{cls.__name__}.exit_place_func_nb"
             if cls.__name__ + ".exit_place_func_nb" not in __pdoc__:
                 if getattr(cls, "exit_place_func_nb").__doc__ is not None:
                     __pdoc__[cls.__name__ + ".exit_place_func_nb"] = getattr(cls, "exit_place_func_nb").__doc__
