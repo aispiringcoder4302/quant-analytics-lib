@@ -5325,10 +5325,14 @@ class DocumentRanker(Configured):
                                 content = child_document.get_content(for_embed=True)
                                 if content:
                                     obj_contents[child_id] = content
+                                    if with_fallback:
+                                        raise FallbackError("Some documents need to be embedded")
                     else:
                         content = document.get_content(for_embed=True)
                         if content:
                             obj_contents[obj.id_] = content
+                            if with_fallback:
+                                raise FallbackError("Some documents need to be embedded")
 
             if obj_contents:
                 if self.embeddings is None:
