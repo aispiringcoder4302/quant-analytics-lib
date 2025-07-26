@@ -3067,7 +3067,11 @@ class MessagesAsset(VBTAsset):
         replies (List[str]): URLs of messages that reference this message.
         channel (str): Name of the message channel, e.g. "support".
         timestamp (str): Timestamp of the message in ISO 8601 format, e.g. "2025-06-23".
-        author (str): Message author, e.g. "@polakowo".
+        author (str): Message author:
+
+            * "@user_n": participant n in this thread
+            * "@ext_user_n": (external) mentioned user n who hasn't posted in this thread
+            * "@maintainer": original software maintainer (@polakowo)
         content (str): Text content of the message.
         mentions (List[str]): Discord usernames mentioned in the message, e.g. ["@polakowo"].
         attachments (List[dict]): Attachments with fields "file_name" (e.g. "some_image.png") and

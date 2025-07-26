@@ -42,7 +42,8 @@ def search(
     search_method: str = "hybrid",
     return_chunks: bool = True,
     return_metadata: str = "none",
-    n: int = 5,
+    max_tokens: tp.Optional[int] = 5_000,
+    n: tp.Optional[int] = None,
     page: int = 1,
 ) -> str:
     """Search for VectorBT PRO (vectorbtpro, VBT) assets relevant to the provided
@@ -91,9 +92,13 @@ def search(
             * "full": Full metadata, including hierarchy and relationships.
 
             Defaults to "none".
-        n (int): Number of results to return per page.
+        max_tokens (Optional[int]): Maximum number of tokens to return in the results.
 
-            Defaults to 5.
+            Defaults to 5,000.
+        n (Optional[int]): Number of results to return per page.
+
+            If specified, it will return the first `n` results that fit within the `max_tokens` limit.
+            If None, returns all results that fit within the `max_tokens` limit. Defaults to None.
         page (int): Page number to return (1-indexed).
 
             Use to paginate results. For example, if `n=5` and `page=2`, it will return the
@@ -103,58 +108,80 @@ def search(
         str: Context string containing the search results.
     """
     from vectorbtpro.utils.knowledge.custom_assets import search
+    from vectorbtpro.utils.knowledge.chatting import tokenize, detokenize
+    from vectorbtpro.utils.pbar import ProgressHidden
 
-    query = auto_cast(query)
-    asset_names = auto_cast(asset_names)
-    search_method = auto_cast(search_method)
-    return_chunks = auto_cast(return_chunks)
-    return_metadata = auto_cast(return_metadata)
-    n = auto_cast(n)
-    page = auto_cast(page)
+    with ProgressHidden():
+        query = auto_cast(query)
+        asset_names = auto_cast(asset_names)
+        search_method = auto_cast(search_method)
+        return_chunks = auto_cast(return_chunks)
+        return_metadata = auto_cast(return_metadata)
+        max_tokens = auto_cast(max_tokens)
+        n = auto_cast(n)
+        page = auto_cast(page)
 
-    if search_method == "embeddings":
-        search_method = "embeddings_fallback"
-    elif search_method == "hybrid":
-        search_method = "hybrid_fallback"
+        if search_method == "embeddings":
+            search_method = "embeddings_fallback"
+        elif search_method == "hybrid":
+            search_method = "hybrid_fallback"
 
-    results = search(
-        query,
-        search_method=search_method,
-        return_chunks=return_chunks,
-        find_assets_kwargs=dict(
-            asset_names=asset_names,
-            minimize=False,
-        ),
-        display=False,
-    )
-    if page < 1:
-        raise ValueError("Page number must be greater than or equal to 1")
-    results = results[(page - 1) * n : page * n]
-    if return_metadata.lower() == "minimal":
-        results = results.minimize_metadata()
-    elif return_metadata.lower() == "none":
-        results = results.remove_metadata()
-    elif return_metadata.lower() != "full":
-        raise ValueError(f"Invalid return_metadata: '{return_metadata}'")
-    return results.to_context()
+        results = search(
+            query,
+            search_method=search_method,
+            return_chunks=return_chunks,
+            find_assets_kwargs=dict(
+                asset_names=asset_names,
+                minimize=False,
+            ),
+            display=False,
+        )
+        if n is not None:
+            if page < 1:
+                raise ValueError("Page number must be greater than or equal to 1")
+            results = results[(page - 1) * n : page * n]
+        elif page > 1:
+            raise ValueError("Page number must be 1 when n is not specified")
+        if return_metadata.lower() == "minimal":
+            results = results.minimize_metadata()
+        elif return_metadata.lower() == "none":
+            results = results.remove_metadata()
+        elif return_metadata.lower() != "full":
+            raise ValueError(f"Invalid return_metadata: '{return_metadata}'")
+
+        dumps = results.dump()
+        context = "==== Result 1 ====\n\n"
+        context += dumps[0]
+        for i, dump in enumerate(dumps[1:], start=2):
+            context += "\n\n==== Result " + str(i) + " ====\n\n"
+            context += dump
+        if not context:
+            context = "No results found"
+        if max_tokens is not None:
+            tokens = tokenize(context)
+            if len(tokens) > max_tokens:
+                info_tokens = tokenize("\n\n... Truncated to fit max_tokens limit.")
+                context = detokenize(tokens[: max_tokens - len(info_tokens)])
+                context += detokenize(info_tokens)
+        return context
 
 
 def find(
     refname: tp.Union[str, tp.List[str]],
-    module: tp.Optional[str] = None,
     resolve: bool = True,
     asset_names: tp.Union[str, tp.List[str]] = "all",
     aggregate_api: bool = False,
     aggregate_messages: bool = False,
     return_metadata: str = "none",
-    n: int = 5,
+    max_tokens: tp.Optional[int] = 5_000,
+    n: tp.Optional[int] = None,
     page: int = 1,
 ) -> str:
     """Find VectorBT PRO (vectorbtpro, VBT) assets relevant to a specific object and
     return the results as a context string.
 
     This can be used to find assets mentioning specific VBT objects, such as modules, classes,
-    functions, and instances. For example, searching for "Portfolio" will generate 
+    functions, and instances. For example, searching for "Portfolio" will generate
     targets such as `vbt.Portfolio`, `Portfolio(...)`, `pf = ...`, etc.
 
     If any of the mentioned targets are found in an asset, it will be returned.
@@ -167,9 +194,6 @@ def find(
 
             If multiple references are provided, returns a code example if any of the references
             are found in the code example.
-        module (Optional[str]): Module name to resolve the reference.
-
-            By default, the module is inferred from the reference name.
         resolve (bool): Whether to resolve the object's reference name.
 
             Set to False to find any string, not just VBT objects, such as "SQLAlchemy".
@@ -212,9 +236,13 @@ def find(
             * "full": Full metadata, including hierarchy and relationships.
 
             Defaults to "none".
-        n (int): Number of results to return per page.
+        max_tokens (Optional[int]): Maximum number of tokens to return in the results.
 
-            Defaults to 5.
+            Defaults to 5,000.
+        n (Optional[int]): Number of results to return per page.
+
+            If specified, it will return the first `n` results that fit within the `max_tokens` limit.
+            If None, returns all results that fit within the `max_tokens` limit. Defaults to None.
         page (int): Page number to return (1-indexed).
 
             Use to paginate results. For example, if `n=5` and `page=2`, it will return the
@@ -224,53 +252,118 @@ def find(
         str: Context string containing the search results.
     """
     from vectorbtpro.utils.knowledge.custom_assets import find_assets
+    from vectorbtpro.utils.knowledge.chatting import tokenize, detokenize
+    from vectorbtpro.utils.pbar import ProgressHidden
+
+    with ProgressHidden():
+        refname = auto_cast(refname)
+        resolve = auto_cast(resolve)
+        asset_names = auto_cast(asset_names)
+        aggregate_api = auto_cast(aggregate_api)
+        aggregate_messages = auto_cast(aggregate_messages)
+        return_metadata = auto_cast(return_metadata)
+        max_tokens = auto_cast(max_tokens)
+        n = auto_cast(n)
+        page = auto_cast(page)
+
+        results = find_assets(
+            refname,
+            resolve=resolve,
+            asset_names=asset_names,
+            api_kwargs=dict(
+                only_obj=True,
+                aggregate=aggregate_api,
+            ),
+            docs_kwargs=dict(
+                aggregate=False,
+                up_aggregate=False,
+            ),
+            messages_kwargs=dict(
+                aggregate="threads" if aggregate_messages else "messages",
+                latest_first=True,
+            ),
+            examples_kwargs=dict(
+                return_type="match" if return_metadata.lower() == "none" else "item",
+                latest_first=True,
+            ),
+            minimize=False,
+        )
+        if n is not None:
+            if page < 1:
+                raise ValueError("Page number must be greater than or equal to 1")
+            results = results[(page - 1) * n : page * n]
+        elif page > 1:
+            raise ValueError("Page number must be 1 when n is not specified")
+        if return_metadata.lower() == "minimal":
+            results = results.minimize_metadata()
+        elif return_metadata.lower() == "none":
+            results = results.remove_metadata()
+        elif return_metadata.lower() != "full":
+            raise ValueError(f"Invalid return_metadata: '{return_metadata}'")
+
+        dumps = results.dump()
+        context = "==== Result 1 ====\n\n"
+        context += dumps[0]
+        for i, dump in enumerate(dumps[1:], start=2):
+            context += "\n\n==== Result " + str(i) + " ====\n\n"
+            context += dump
+        if not context:
+            context = "No results found"
+        if max_tokens is not None:
+            tokens = tokenize(context)
+            if len(tokens) > max_tokens:
+                info_tokens = tokenize("\n\n... Truncated to fit max_tokens limit.")
+                context = detokenize(tokens[: max_tokens - len(info_tokens)])
+                context += detokenize(info_tokens)
+        return context
+
+
+def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) -> str:
+    """Get a list of attributes of an object (similar to `dir()`) with their types and reference names.
+
+    Can be used to discover the API of VectorBT PRO (vectorbtpro, VBT). For example, use it to
+    find out what methods and properties are available on a specific class, or to explore the
+    objects defined in a module.
+
+    Each line is formatted as `<name> [<type>] (@ <refname>)`, where the `@ <refname>` suffix
+    is shown only when the attribute is not defined directly on the object.
+
+    Args:
+        refname (str): Reference to the object.
+
+            A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
+            or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
+
+            Pass "vbt" to get all the attributes of the `vectorbtpro` module.
+        own_only (bool): If True, include only attributes that are defined directly on the object
+            (i.e., attributes defined elsewhere, such as inherited attributes, will be excluded).
+        incl_private (bool): If True, include private attributes (those starting with an underscore).
+
+    Returns:
+        str: String containing the list of attributes, each on a new line.
+    """
+    from vectorbtpro.utils.attr_ import get_attrs
+    from vectorbtpro.utils.module_ import resolve_refname, get_refname_obj
 
     refname = auto_cast(refname)
-    module = auto_cast(module)
-    resolve = auto_cast(resolve)
-    asset_names = auto_cast(asset_names)
-    aggregate_api = auto_cast(aggregate_api)
-    aggregate_messages = auto_cast(aggregate_messages)
-    return_metadata = auto_cast(return_metadata)
-    n = auto_cast(n)
-    page = auto_cast(page)
+    resolved_refname = resolve_refname(refname)
+    if not resolved_refname:
+        raise ValueError(f"Reference name '{refname}' cannot be resolved to an object")
+    obj = get_refname_obj(resolved_refname)
+    df = get_attrs(obj=obj, own_only=own_only, incl_private=incl_private)
 
-    results = find_assets(
-        refname,
-        module=module,
-        resolve=resolve,
-        asset_names=asset_names,
-        api_kwargs=dict(
-            only_obj=True,
-            aggregate=aggregate_api,
-        ),
-        docs_kwargs=dict(
-            aggregate=False,
-            up_aggregate=False,
-        ),
-        messages_kwargs=dict(
-            aggregate="threads" if aggregate_messages else "messages",
-            latest_first=True,
-        ),
-        examples_kwargs=dict(
-            return_type="match" if return_metadata.lower() == "none" else "item",
-            latest_first=True,
-        ),
-        minimize=False,
-    )
-    if page < 1:
-        raise ValueError("Page number must be greater than or equal to 1")
-    results = results[(page - 1) * n : page * n]
-    if return_metadata.lower() == "minimal":
-        results = results.minimize_metadata()
-    elif return_metadata.lower() == "none":
-        results = results.remove_metadata()
-    elif return_metadata.lower() != "full":
-        raise ValueError(f"Invalid return_metadata: '{return_metadata}'")
-    return results.to_context()
+    display_lines = []
+    for attr_name, attr_type, attr_refname in df.itertuples():
+        line = attr_name
+        if attr_type != "?":
+            line += f" [{attr_type}]"
+        if attr_refname != "?" and attr_refname != resolved_refname + "." + attr_name:
+            line += f" @ {attr_refname}"
+        display_lines.append(line)
+    return "\n".join(display_lines)
 
 
-def get_source(refname: tp.Union[str, tp.List[str]], module: tp.Optional[str] = None) -> str:
+def get_source(refname: tp.Union[str, tp.List[str]]) -> str:
     """Get the source code of any object.
 
     This can be used to inspect the implementation of VectorBT PRO (vectorbtpro, VBT) objects,
@@ -283,9 +376,6 @@ def get_source(refname: tp.Union[str, tp.List[str]], module: tp.Optional[str] = 
 
             A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
             or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
-        module (Optional[str]): Module name to resolve the reference.
-
-            By default, the module is inferred from the reference name.
 
     Returns:
         str: Source code of the object.
@@ -297,84 +387,20 @@ def get_source(refname: tp.Union[str, tp.List[str]], module: tp.Optional[str] = 
     from vectorbtpro.utils.module_ import resolve_refname
 
     refname = auto_cast(refname)
-    module = auto_cast(module)
     if isinstance(refname, str):
         refname = [refname]
+
     sources = []
     for name in refname:
-        resolved_name = resolve_refname(name, module=module)
+        resolved_name = resolve_refname(name)
         if not resolved_name:
             raise ValueError(f"Reference name '{name}' cannot be resolved to an object")
         sources.append(get_source(resolved_name))
     return "\n\n".join(sources)
 
 
-def attr_tree(refname: str, module: tp.Optional[str] = None, own_only: bool = False) -> str:
-    """Get a tree of an object's attributes in YAML format.
-
-    Can be used to discover the API of VectorBT PRO (vectorbtpro, VBT). For example, use it to
-    find out what methods and properties are available on a specific class, or to explore the
-    objects defined in a module.
-
-    Each attribute is represented as a leaf in the tree, whereas the tree structure
-    represents the hierarchy of modules and classes from which the attributes are inherited.
-
-    Each leaf in the tree is formatted as `<attr_name> [<attr_type>] (@ <qualname>)`,
-    where the "@ <qualname>" suffix is shown only when the attribute's `__qualname__` either
-
-    * differs from the attribute's own name (indicating an alias or re-export), or
-    * is shared by multiple attributes (true duplicates).
-
-    Args:
-        refname (str): Reference to the object.
-
-            A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
-            or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
-
-            Pass "vbt" to get all the attributes of the `vectorbtpro` module.
-        own_only (bool): If True, include only attributes that are defined directly on
-            object's class/module; inherited members are omitted.
-        module (Optional[str]): Module name to resolve the reference.
-
-            By default, the module is inferred from the reference name.
-
-    Returns:
-        str: Printable, newline-separated string representing the attribute hierarchy.
-    """
-    from vectorbtpro.utils.attr_ import attr_tree
-    from vectorbtpro.utils.module_ import resolve_refname, get_refname_obj
-
-    def _yaml_name_formatter(name, is_directory):
-        if is_directory:
-            return f"{name}:"
-        return name
-
-    refname = auto_cast(refname)
-    module = auto_cast(module)
-    resolved_refname = resolve_refname(refname, module=module)
-    if not resolved_refname:
-        raise ValueError(f"Reference name '{refname}' cannot be resolved to an object")
-    obj = get_refname_obj(resolved_refname)
-    return (
-        "```yaml\n"
-        + attr_tree(
-            obj,
-            own_only=own_only,
-            root_as_item=True,
-            name_formatter=_yaml_name_formatter,
-            space="  ",
-            branch="  ",
-            tee="- ",
-            last="- ",
-            directories_name="branches",
-            files_name="leaves",
-            print_stats=False,
-        )
-        + "\n```"
-    )
-
-
 current_kernel = None
+"""Currently running Jupyter kernel for executing code snippets."""
 
 
 def run_code(code: str, restart: bool = False, exec_timeout: tp.Optional[float] = None) -> str:
@@ -452,8 +478,8 @@ def main() -> None:
     mcp = FastMCP("VectorBT PRO")
     mcp.tool()(search)
     mcp.tool()(find)
+    mcp.tool()(get_attrs)
     mcp.tool()(get_source)
-    mcp.tool()(attr_tree)
     mcp.tool()(run_code)
     mcp.run(transport=args.transport)
 
