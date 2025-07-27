@@ -3071,9 +3071,9 @@ class MessagesAsset(VBTAsset):
 
             * "@user_n": participant n in this thread
             * "@ext_user_n": (external) mentioned user n who hasn't posted in this thread
-            * "@maintainer": original software maintainer (@polakowo)
+            * "@maintainer": project maintainer
         content (str): Text content of the message.
-        mentions (List[str]): Discord usernames mentioned in the message, e.g. ["@polakowo"].
+        mentions (List[str]): Discord usernames mentioned in the message, e.g. ["@maintainer"].
         attachments (List[dict]): Attachments with fields "file_name" (e.g. "some_image.png") and
             "content" (extracted file content).
         reactions (int): Total number of reactions received.
@@ -3607,7 +3607,7 @@ class ExamplesAsset(VBTAsset):
         title (str): Title of the code example, e.g. "Definition of `<function_name>`".
         description (str): Description of the code example, e.g. "Demonstrates ...".
         content (str): Actual code example wrapped in a fenced code block, e.g. "```python\n...\n```".
-        verified (bool): Whether the code example was posted by @polakowo or has at least one upvote.
+        verified (bool): Whether the code example was posted by project maintainer or has at least one upvote.
 
     !!! info
         For default settings, see `assets.examples` in `vectorbtpro._settings.knowledge`.
