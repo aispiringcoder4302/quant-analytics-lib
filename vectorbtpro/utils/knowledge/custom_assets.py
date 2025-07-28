@@ -3093,6 +3093,7 @@ class MessagesAsset(VBTAsset):
         Returns:
             MaybeMessagesAsset: New messages asset sorted with the latest messages first.
         """
+
         def _sort_key(x):
             path = urlparse(x["link"]).path.rstrip("/")
             parts = [p for p in path.split("/") if p]
@@ -3594,7 +3595,7 @@ class MessagesAsset(VBTAsset):
             MaybeMessagesAsset: New messages asset containing messages related to the specified object(s).
         """
         return self.find_obj_mentions(obj, attr=attr, module=module, resolve=resolve, **kwargs)
-    
+
 
 ExamplesAssetT = tp.TypeVar("ExamplesAssetT", bound="ExamplesAsset")
 
@@ -3627,7 +3628,7 @@ class ExamplesAsset(VBTAsset):
             MaybeExamplesAsset: New examples asset containing only verified code examples.
         """
         return self.filter(lambda x: x.get("verified", False), **kwargs)
-    
+
     def latest_first(self, **kwargs) -> tp.MaybeExamplesAsset:
         """Return code examples sorted in reverse chronological order.
 
@@ -3640,6 +3641,7 @@ class ExamplesAsset(VBTAsset):
         Returns:
             MaybeExamplesAsset: New code examples asset sorted with the latest code examples first.
         """
+
         def _extract_discord_message_id(url):
             path = urlparse(url).path.rstrip("/")
             parts = [p for p in path.split("/") if p]

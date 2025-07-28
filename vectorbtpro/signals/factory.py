@@ -564,8 +564,10 @@ class SignalFactory(IndicatorFactory):
         """
         Indicator = self.Indicator
 
-        setattr(Indicator, "entry_place_func_nb", entry_place_func_nb)
-        setattr(Indicator, "exit_place_func_nb", exit_place_func_nb)
+        if entry_place_func_nb is not None:
+            Indicator.clone_method(entry_place_func_nb, target_name="entry_place_func_nb")
+        if exit_place_func_nb is not None:
+            Indicator.clone_method(exit_place_func_nb, target_name="exit_place_func_nb")
 
         module_name = self.module_name
         mode = self.mode
@@ -764,7 +766,7 @@ class SignalFactory(IndicatorFactory):
             jit_kwargs = merge_dicts(dict(nogil=True), jit_kwargs)
             apply_func = njit(apply_func, **jit_kwargs)
 
-        setattr(Indicator, "apply_func", apply_func)
+        Indicator.clone_method(apply_func, target_name="apply_func")
 
         def custom_func(
             input_list: tp.List[tp.AnyArray],

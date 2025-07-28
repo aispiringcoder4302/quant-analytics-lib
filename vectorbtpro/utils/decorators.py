@@ -93,7 +93,7 @@ class class_property(Base):
 
     def __set__(self, instance: object, value: tp.Any) -> None:
         raise AttributeError("can't set attribute")
-    
+
     def __reduce__(self) -> tp.Union[str, tp.Tuple]:
         state = {"__doc__": self.__doc__}
         return (type(self), (self.func,), state)
@@ -132,7 +132,7 @@ class hybrid_property(Base):
 
     def __set__(self, instance: object, value: tp.Any) -> None:
         raise AttributeError("can't set attribute")
-    
+
     def __reduce__(self) -> tp.Union[str, tp.Tuple]:
         state = {"__doc__": self.__doc__}
         return (type(self), (self.func,), state)

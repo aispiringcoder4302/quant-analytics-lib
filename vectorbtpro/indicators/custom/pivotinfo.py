@@ -275,6 +275,7 @@ class _PIVOTINFO(PIVOTINFO):
 
         return fig
 
+
 PIVOTINFO.clone_docstring(_PIVOTINFO)
 PIVOTINFO.clone_method(_PIVOTINFO.plot)
 PIVOTINFO.clone_method(_PIVOTINFO.plot_zigzag)

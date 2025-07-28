@@ -802,7 +802,7 @@ def attr_tree(obj: tp.Any = None, own_only: bool = False, incl_private: bool = F
     paths, display_names = [], []
 
     for a, r in df.iterrows():
-        paths.append(Path(r['refname'].replace(".", "/")))
+        paths.append(Path(r["refname"].replace(".", "/")))
         disp = f"{a} [{r['type']}]"
         refname = r["refname"]
         if refname != "?":

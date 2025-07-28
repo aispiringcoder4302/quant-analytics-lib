@@ -3777,7 +3777,7 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
             QSAdapter: Instance of `vectorbtpro.returns.qs_adapter.QSAdapter`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
-        
+
         assert_can_import("quantstats")
         from vectorbtpro.returns.qs_adapter import QSAdapter
 

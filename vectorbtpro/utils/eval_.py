@@ -144,11 +144,17 @@ class JupyterKernel(Configured):
 
         ```pycon
         >>> with vbt.JupyterKernel() as kernel:
-        ...     output = kernel.execute("print('Hello, world!')\n42")
+        ...     output = kernel.execute("print('Hello, world!')")
         ...     print(output)
         Hello, world!
-        42
-        >>>     output = kernel.execute("1 / 0")
+
+        ...     output = kernel.execute("a = 2 + 2")
+        ...     print(output)
+
+        ...     output = kernel.execute("a")
+        ...     print(output)
+        4
+        ...     output = kernel.execute("1 / 0")
         ...     print(output)
         ZeroDivisionError: division by zero
         ```
@@ -162,7 +168,7 @@ class JupyterKernel(Configured):
 
         self._startup_timeout = startup_timeout
         self._manager_kwargs = manager_kwargs
-        
+
         self._manager = None
         self._client = None
 
