@@ -153,4 +153,3 @@ class _ATR(ATR):
 
 ATR.clone_docstring(_ATR)
 ATR.clone_method(_ATR.plot)
-ATR.fix_docstrings(__pdoc__)

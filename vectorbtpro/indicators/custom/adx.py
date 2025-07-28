@@ -170,4 +170,3 @@ class _ADX(ADX):
 
 ADX.clone_docstring(_ADX)
 ADX.clone_method(_ADX.plot)
-ADX.fix_docstrings(__pdoc__)

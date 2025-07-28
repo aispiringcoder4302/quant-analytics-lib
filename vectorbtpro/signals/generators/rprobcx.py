@@ -46,4 +46,3 @@ class _RPROBCX(RPROBCX):
 
 
 RPROBCX.clone_docstring(_RPROBCX)
-RPROBCX.fix_docstrings(__pdoc__)

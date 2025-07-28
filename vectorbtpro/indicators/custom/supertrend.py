@@ -168,4 +168,3 @@ class _SUPERTREND(SUPERTREND):
 
 SUPERTREND.clone_docstring(_SUPERTREND)
 SUPERTREND.clone_method(_SUPERTREND.plot)
-SUPERTREND.fix_docstrings(__pdoc__)

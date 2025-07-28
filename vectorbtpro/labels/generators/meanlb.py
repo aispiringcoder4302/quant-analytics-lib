@@ -91,4 +91,3 @@ class _MEANLB(MEANLB):
 
 MEANLB.clone_docstring(_MEANLB)
 MEANLB.clone_method(_MEANLB.plot)
-MEANLB.fix_docstrings(__pdoc__)

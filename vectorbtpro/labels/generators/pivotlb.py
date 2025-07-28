@@ -96,4 +96,3 @@ class _PIVOTLB(PIVOTLB):
 
 PIVOTLB.clone_docstring(_PIVOTLB)
 PIVOTLB.clone_method(_PIVOTLB.plot)
-PIVOTLB.fix_docstrings(__pdoc__)

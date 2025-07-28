@@ -97,4 +97,3 @@ class _RAND(RAND):
 
 
 RAND.clone_docstring(_RAND)
-RAND.fix_docstrings(__pdoc__)

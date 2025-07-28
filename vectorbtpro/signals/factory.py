@@ -30,6 +30,7 @@ from vectorbtpro.signals.enums import FactoryMode
 from vectorbtpro.signals.nb import generate_nb, generate_ex_nb, generate_enex_nb, first_place_nb
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts
+from vectorbtpro.utils.decorators import class_property
 from vectorbtpro.utils.enum_ import map_enum_fields
 from vectorbtpro.utils.params import to_typed_list
 
@@ -565,9 +566,25 @@ class SignalFactory(IndicatorFactory):
         Indicator = self.Indicator
 
         if entry_place_func_nb is not None:
-            Indicator.clone_method(entry_place_func_nb, target_name="entry_place_func_nb")
+
+            def entry_place_func_nb_prop(self, _entry_place_func_nb=entry_place_func_nb) -> tp.Callable:
+                return _entry_place_func_nb
+
+            entry_place_func_nb_prop.__doc__ = "Entry placement function."
+            entry_place_func_nb_prop.__name__ = "entry_place_func_nb"
+            entry_place_func_nb_prop.__module__ = Indicator.__module__
+            entry_place_func_nb_prop.__qualname__ = f"{Indicator.__name__}.{entry_place_func_nb_prop.__name__}"
+            setattr(Indicator, entry_place_func_nb_prop.__name__, class_property(entry_place_func_nb_prop))
         if exit_place_func_nb is not None:
-            Indicator.clone_method(exit_place_func_nb, target_name="exit_place_func_nb")
+
+            def exit_place_func_nb_prop(self, _exit_place_func_nb=exit_place_func_nb) -> tp.Callable:
+                return _exit_place_func_nb
+
+            exit_place_func_nb_prop.__doc__ = "Exit placement function."
+            exit_place_func_nb_prop.__name__ = "exit_place_func_nb"
+            exit_place_func_nb_prop.__module__ = Indicator.__module__
+            exit_place_func_nb_prop.__qualname__ = f"{Indicator.__name__}.{exit_place_func_nb_prop.__name__}"
+            setattr(Indicator, exit_place_func_nb_prop.__name__, class_property(exit_place_func_nb_prop))
 
         module_name = self.module_name
         mode = self.mode
@@ -766,7 +783,14 @@ class SignalFactory(IndicatorFactory):
             jit_kwargs = merge_dicts(dict(nogil=True), jit_kwargs)
             apply_func = njit(apply_func, **jit_kwargs)
 
-        Indicator.clone_method(apply_func, target_name="apply_func")
+        def apply_func_prop(self, _apply_func=apply_func) -> tp.Callable:
+            return _apply_func
+
+        apply_func_prop.__doc__ = "Apply function."
+        apply_func_prop.__name__ = "apply_func"
+        apply_func_prop.__module__ = Indicator.__module__
+        apply_func_prop.__qualname__ = f"{Indicator.__name__}.{apply_func_prop.__name__}"
+        setattr(Indicator, apply_func_prop.__name__, class_property(apply_func_prop))
 
         def custom_func(
             input_list: tp.List[tp.AnyArray],

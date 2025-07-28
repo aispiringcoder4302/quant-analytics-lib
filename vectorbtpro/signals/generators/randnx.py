@@ -88,4 +88,3 @@ class _RANDNX(RANDNX):
 
 
 RANDNX.clone_docstring(_RANDNX)
-RANDNX.fix_docstrings(__pdoc__)

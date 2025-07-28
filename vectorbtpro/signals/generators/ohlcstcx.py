@@ -49,4 +49,3 @@ class _OHLCSTCX(OHLCSTCX):
 
 OHLCSTCX.clone_docstring(_OHLCSTCX)
 OHLCSTCX.clone_method(_OHLCSTCX.plot)
-OHLCSTCX.fix_docstrings(__pdoc__)

@@ -117,4 +117,3 @@ class _OBV(OBV):
 
 OBV.clone_docstring(_OBV)
 OBV.clone_method(_OBV.plot)
-OBV.fix_docstrings(__pdoc__)

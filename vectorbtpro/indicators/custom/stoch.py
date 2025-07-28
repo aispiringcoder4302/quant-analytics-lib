@@ -225,4 +225,3 @@ class _STOCH(STOCH):
 
 STOCH.clone_docstring(_STOCH)
 STOCH.clone_method(_STOCH.plot)
-STOCH.fix_docstrings(__pdoc__)

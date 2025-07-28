@@ -225,4 +225,3 @@ class _BBANDS(BBANDS):
 
 BBANDS.clone_docstring(_BBANDS)
 BBANDS.clone_method(_BBANDS.plot)
-BBANDS.fix_docstrings(__pdoc__)
