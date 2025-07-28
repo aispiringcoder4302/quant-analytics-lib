@@ -103,4 +103,3 @@ class _BOLB(BOLB):
 
 BOLB.clone_docstring(_BOLB)
 BOLB.clone_method(_BOLB.plot)
-BOLB.fix_docstrings(__pdoc__)

@@ -68,4 +68,3 @@ class _RPROBX(RPROBX):
 
 
 RPROBX.clone_docstring(_RPROBX)
-RPROBX.fix_docstrings(__pdoc__)

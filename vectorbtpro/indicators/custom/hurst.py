@@ -168,4 +168,3 @@ class _HURST(HURST):
 
 HURST.clone_docstring(_HURST)
 HURST.clone_method(_HURST.plot)
-HURST.fix_docstrings(__pdoc__)

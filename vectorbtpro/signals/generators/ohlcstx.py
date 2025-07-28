@@ -318,4 +318,3 @@ class _OHLCSTX(OHLCSTX):
 
 OHLCSTX.clone_docstring(_OHLCSTX)
 OHLCSTX.clone_method(_OHLCSTX.plot)
-OHLCSTX.fix_docstrings(__pdoc__)

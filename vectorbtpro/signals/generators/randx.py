@@ -67,4 +67,3 @@ class _RANDX(RANDX):
 
 
 RANDX.clone_docstring(_RANDX)
-RANDX.fix_docstrings(__pdoc__)

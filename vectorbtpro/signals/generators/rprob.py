@@ -94,4 +94,3 @@ class _RPROB(RPROB):
 
 
 RPROB.clone_docstring(_RPROB)
-RPROB.fix_docstrings(__pdoc__)

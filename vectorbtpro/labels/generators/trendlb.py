@@ -98,4 +98,3 @@ class _TRENDLB(TRENDLB):
 
 TRENDLB.clone_docstring(_TRENDLB)
 TRENDLB.clone_method(_TRENDLB.plot)
-TRENDLB.fix_docstrings(__pdoc__)

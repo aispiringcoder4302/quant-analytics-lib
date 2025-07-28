@@ -279,4 +279,3 @@ class _PIVOTINFO(PIVOTINFO):
 PIVOTINFO.clone_docstring(_PIVOTINFO)
 PIVOTINFO.clone_method(_PIVOTINFO.plot)
 PIVOTINFO.clone_method(_PIVOTINFO.plot_zigzag)
-PIVOTINFO.fix_docstrings(__pdoc__)

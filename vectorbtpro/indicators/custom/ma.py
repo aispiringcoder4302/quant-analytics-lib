@@ -146,4 +146,3 @@ class _MA(MA):
 
 MA.clone_docstring(_MA)
 MA.clone_method(_MA.plot)
-MA.fix_docstrings(__pdoc__)

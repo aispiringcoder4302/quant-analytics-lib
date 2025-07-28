@@ -77,4 +77,3 @@ class _FIXLB(FIXLB):
 
 FIXLB.clone_docstring(_FIXLB)
 FIXLB.clone_method(_FIXLB.plot)
-FIXLB.fix_docstrings(__pdoc__)

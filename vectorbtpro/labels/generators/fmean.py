@@ -145,4 +145,3 @@ class _FMEAN(FMEAN):
 
 FMEAN.clone_docstring(_FMEAN)
 FMEAN.clone_method(_FMEAN.plot)
-FMEAN.fix_docstrings(__pdoc__)

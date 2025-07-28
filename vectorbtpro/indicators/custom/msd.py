@@ -127,4 +127,3 @@ class _MSD(MSD):
 
 MSD.clone_docstring(_MSD)
 MSD.clone_method(_MSD.plot)
-MSD.fix_docstrings(__pdoc__)

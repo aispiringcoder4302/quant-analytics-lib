@@ -162,4 +162,3 @@ class _RSI(RSI):
 
 RSI.clone_docstring(_RSI)
 RSI.clone_method(_RSI.plot)
-RSI.fix_docstrings(__pdoc__)

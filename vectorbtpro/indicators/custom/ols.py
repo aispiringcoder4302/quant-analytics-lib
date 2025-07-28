@@ -278,4 +278,3 @@ class _OLS(OLS):
 OLS.clone_docstring(_OLS)
 OLS.clone_method(_OLS.plot)
 OLS.clone_method(_OLS.plot_zscore)
-OLS.fix_docstrings(__pdoc__)

@@ -135,4 +135,3 @@ class _FMIN(FMIN):
 
 FMIN.clone_docstring(_FMIN)
 FMIN.clone_method(_FMIN.plot)
-FMIN.fix_docstrings(__pdoc__)

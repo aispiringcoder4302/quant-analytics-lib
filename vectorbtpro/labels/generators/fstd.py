@@ -127,4 +127,3 @@ class _FSTD(FSTD):
 
 FSTD.clone_docstring(_FSTD)
 FSTD.clone_method(_FSTD.plot)
-FSTD.fix_docstrings(__pdoc__)

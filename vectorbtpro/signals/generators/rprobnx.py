@@ -131,4 +131,3 @@ class _RPROBNX(RPROBNX):
 
 
 RPROBNX.clone_docstring(_RPROBNX)
-RPROBNX.fix_docstrings(__pdoc__)

@@ -46,4 +46,3 @@ class _STCX(STCX):
 
 
 STCX.clone_docstring(_STCX)
-STCX.fix_docstrings(__pdoc__)

@@ -259,4 +259,3 @@ class _SIGDET(SIGDET):
 SIGDET.clone_docstring(_SIGDET)
 SIGDET.clone_method(_SIGDET.plot)
 SIGDET.clone_method(_SIGDET.plot_bands)
-SIGDET.fix_docstrings(__pdoc__)

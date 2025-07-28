@@ -307,4 +307,3 @@ class _PATSIM(PATSIM):
 PATSIM.clone_docstring(_PATSIM)
 PATSIM.clone_method(_PATSIM.plot)
 PATSIM.clone_method(_PATSIM.overlay_with_heatmap)
-PATSIM.fix_docstrings(__pdoc__)

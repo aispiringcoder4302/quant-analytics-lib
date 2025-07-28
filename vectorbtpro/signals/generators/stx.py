@@ -100,4 +100,3 @@ class _STX(STX):
 
 
 STX.clone_docstring(_STX)
-STX.fix_docstrings(__pdoc__)

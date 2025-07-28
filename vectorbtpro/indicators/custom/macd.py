@@ -219,4 +219,3 @@ class _MACD(MACD):
 
 MACD.clone_docstring(_MACD)
 MACD.clone_method(_MACD.plot)
-MACD.fix_docstrings(__pdoc__)
