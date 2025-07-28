@@ -3165,6 +3165,8 @@ class IndicatorFactory(Configured):
             param_select_func_nb = njit(param_select_func_nb, **jit_kwargs)
 
             setattr(Indicator, "param_select_func_nb", param_select_func_nb)
+        else:
+            param_select_func_nb = None
 
         def custom_func(
             input_tuple: tp.Tuple[tp.AnyArray, ...],
@@ -3522,8 +3524,12 @@ class IndicatorFactory(Configured):
         custom_func.__qualname__ = f"{Indicator.__name__}.{custom_func.__name__}"
         custom_func.__doc__ = custom_func.__doc__.format(
             Indicator.__name__ + ".apply_func",
-            Indicator.__name__ + ".cache_func",
-            Indicator.__name__ + ".param_select_func_nb",
+            Indicator.__name__ + ".cache_func" if cache_func is not None else "cache_func",
+            (
+                Indicator.__name__ + ".param_select_func_nb"
+                if param_select_func_nb is not None
+                else "param_select_func_nb"
+            ),
         )
         return self.with_custom_func(
             custom_func,
