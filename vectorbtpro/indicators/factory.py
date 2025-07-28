@@ -3096,6 +3096,7 @@ class IndicatorFactory(Configured):
         setattr(Indicator, apply_func_prop.__name__, class_property(apply_func_prop))
 
         if cache_func is not None:
+
             def cache_func_prop(self, _cache_func=cache_func) -> tp.Callable:
                 return _cache_func
 
@@ -3516,6 +3517,9 @@ class IndicatorFactory(Configured):
                 execute_kwargs=execute_kwargs,
             )
 
+        custom_func.__name__ = "custom_func"
+        custom_func.__module__ = Indicator.__module__
+        custom_func.__qualname__ = f"{Indicator.__name__}.{custom_func.__name__}"
         custom_func.__doc__ = custom_func.__doc__.format(
             Indicator.__name__ + ".apply_func",
             Indicator.__name__ + ".cache_func",
@@ -4075,7 +4079,6 @@ class IndicatorFactory(Configured):
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("talib")
-        import talib
         from talib import abstract
         from vectorbtpro.indicators.talib_ import talib_func, talib_plot_func
 
@@ -5053,7 +5056,7 @@ class IndicatorFactory(Configured):
 
             return fig
 
-        Indicator.plot = plot
+        setattr(Indicator, "plot", plot)
         return Indicator
 
     @classmethod
