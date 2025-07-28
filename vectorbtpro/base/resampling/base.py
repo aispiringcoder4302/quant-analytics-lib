@@ -326,7 +326,9 @@ class Resampler(Configured):
         checks.assert_instance_of(index, pd.DatetimeIndex)
         if freq is not None:
             return index.shift(1, freq=freq) - pd.Timedelta(1, "ns")
-        max_ts = pd.DatetimeIndex([pd.Timestamp.max.tz_localize(index.tz)])
+        max_ts = pd.DatetimeIndex([pd.Timestamp.max])
+        if index.tz is not None:
+            max_ts = max_ts.tz_localize("utc").tz_convert(index.tz)
         return (index[1:] - pd.Timedelta(1, "ns")).append(max_ts)
 
     @cached_property

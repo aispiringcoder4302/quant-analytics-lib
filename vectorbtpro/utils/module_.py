@@ -19,6 +19,7 @@ import urllib.request
 import webbrowser
 from pathlib import Path
 from types import ModuleType
+from functools import cached_property
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._opt_deps import opt_dep_config
@@ -56,16 +57,22 @@ __pdoc__[
 """
 
 
-def get_module(obj: tp.Any) -> ModuleType:
+def get_module(obj: tp.Any) -> tp.Optional[ModuleType]:
     """Return the module in which the given object is defined.
 
     Args:
         obj (Any): Object whose module is to be obtained.
 
     Returns:
-        ModuleType: Module where the object is defined.
+        Optional[ModuleType]: Module where the object is defined; None if the module cannot be determined.
     """
-    return inspect.getmodule(inspect.unwrap(obj))
+    if isinstance(obj, ModuleType):
+        return obj
+    target = inspect.unwrap(obj) if callable(obj) else obj
+    modname = getattr(target, "__module__", None) or getattr(type(target), "__module__", None)
+    if not modname:
+        return None
+    return sys.modules.get(modname)
 
 
 def is_from_module(obj: tp.Any, module: ModuleType) -> bool:
@@ -277,7 +284,7 @@ def assert_can_import(pkg_name: str) -> None:
     version = version_str = metadata["version"]
     link = metadata["link"]
     if not check_installed(pkg_name):
-        raise ImportError(f"Please install {dist_name}{version_str} - {link}")
+        raise ImportError(f"Please install {dist_name}{version_str}. See {link}.")
     if version != "":
         actual_version_parts = get_version(dist_name).split(".")
         actual_version_parts = map(lambda x: x if x.isnumeric() else f"'{x}'", actual_version_parts)
@@ -290,7 +297,7 @@ def assert_can_import(pkg_name: str) -> None:
             version_parts = map(lambda x: x if x.isnumeric() else f"'{x}'", version_parts)
             version = "(" + ",".join(version_parts) + ")"
         if not eval(f"{actual_version} {operator} {version}"):
-            raise ImportError(f"Please install {dist_name}{version_str} - {link}")
+            raise ImportError(f"Please install {dist_name}{version_str}. See {link}.")
 
 
 def assert_can_import_any(*pkg_names: str) -> None:
@@ -431,26 +438,48 @@ def parse_refname(obj: tp.Any) -> str:
         return obj.__name__
     if inspect.isclass(obj):
         return obj.__module__ + "." + obj.__qualname__
+
+    if isinstance(obj, staticmethod):
+        return parse_refname(obj.__func__)
+    if isinstance(obj, classmethod):
+        return parse_refname(obj.__func__)
+
+    if (
+        inspect.isdatadescriptor(obj)
+        or inspect.ismethoddescriptor(obj)
+        or inspect.isgetsetdescriptor(obj)
+        or inspect.ismemberdescriptor(obj)
+    ):
+        cls = getattr(obj, "__objclass__", None)
+        name = getattr(obj, "__name__", None)
+        if cls and name:
+            return parse_refname(cls) + "." + name
+
     if inspect.ismethod(obj) or inspect.isfunction(obj):
         cls = get_method_class(obj)
         if cls is not None:
             return parse_refname(cls) + "." + obj.__name__
         if hasattr(obj, "func"):
             return parse_refname(obj.func)
+
     if isinstance(obj, (class_property, hybrid_property, custom_property)):
+        return parse_refname(obj.func)
+    if isinstance(obj, cached_property) and hasattr(obj, "func"):
         return parse_refname(obj.func)
     if isinstance(obj, property):
         return parse_refname(obj.fget)
+
     if hasattr(obj, "__name__"):
         module = get_module(obj)
-        if module is not None:
-            if obj.__name__ in module.__dict__:
-                return parse_refname(module) + "." + obj.__name__
+        if module is not None and obj.__name__ in module.__dict__:
+            return parse_refname(module) + "." + obj.__name__
+
     module = get_module(obj)
     if module is not None:
         for k, v in module.__dict__.items():
             if obj is v:
                 return parse_refname(module) + "." + k
+
     return parse_refname(type(obj))
 
 
@@ -502,7 +531,6 @@ def resolve_refname(refname: str, module: tp.Union[None, str, ModuleType] = None
             return module
         return module.__name__
 
-    _module = module
     refname_parts = refname.split(".")
     if module is None:
         if refname_parts[0] in package_shortcut_config:

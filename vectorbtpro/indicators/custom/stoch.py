@@ -223,6 +223,6 @@ class _STOCH(STOCH):
         return fig
 
 
-setattr(STOCH, "__doc__", _STOCH.__doc__)
-setattr(STOCH, "plot", _STOCH.plot)
+STOCH.clone_docstring(_STOCH)
+STOCH.clone_method(_STOCH.plot)
 STOCH.fix_docstrings(__pdoc__)

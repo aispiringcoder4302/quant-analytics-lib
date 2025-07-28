@@ -304,7 +304,7 @@ class _PATSIM(PATSIM):
         return fig
 
 
-setattr(PATSIM, "__doc__", _PATSIM.__doc__)
-setattr(PATSIM, "plot", _PATSIM.plot)
-setattr(PATSIM, "overlay_with_heatmap", _PATSIM.overlay_with_heatmap)
+PATSIM.clone_docstring(_PATSIM)
+PATSIM.clone_method(_PATSIM.plot)
+PATSIM.clone_method(_PATSIM.overlay_with_heatmap)
 PATSIM.fix_docstrings(__pdoc__)

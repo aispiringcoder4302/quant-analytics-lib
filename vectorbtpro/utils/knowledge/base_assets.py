@@ -19,6 +19,7 @@ import re
 from collections.abc import MutableSequence
 from pathlib import Path
 from functools import partial
+import textwrap
 
 import pandas as pd
 
@@ -1828,7 +1829,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 language = rf"(?:{'|'.join(language)})"
 
         opt_language = r"[\w+-]+"
-        opt_title = r"(?:\s+[^\n`]+)?"
+        opt_title = r"(?:[ \t]+[^\n`]+)?"
 
         if target is not None:
             if not isinstance(target, list):
@@ -1883,7 +1884,18 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                 new_target = r"(?<!`)`([^`]*)`(?!`)"
         if in_blocks:
             flags |= re.DOTALL | re.MULTILINE | re.VERBOSE
-        return self.find(new_target, mode="regex", return_type=return_type, flags=flags, **kwargs)
+        found = self.find(new_target, mode="regex", return_type=return_type, flags=flags, **kwargs)
+
+        def _clean_block(block):
+            return textwrap.dedent(block).lstrip("\n").rstrip()
+
+        if isinstance(found, KnowledgeAsset):
+            found = found.apply(_clean_block)
+        elif isinstance(found, list):
+            found = [_clean_block(x) for x in found]
+        elif isinstance(found, str):
+            found = _clean_block(found)
+        return found
 
     def find_replace(
         self,
@@ -2037,8 +2049,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         )
 
     def find_remove_empty(
-        self, 
-        skip_keys: tp.Optional[tp.Container[tp.Hashable]] = None, 
+        self,
+        skip_keys: tp.Optional[tp.Container[tp.Hashable]] = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
         """Remove empty objects from the asset data.

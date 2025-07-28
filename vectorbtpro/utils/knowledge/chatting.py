@@ -4702,6 +4702,12 @@ class ScoredDocument(DefineMixin):
     """List of scored child documents."""
 
 
+class FallbackError(Exception):
+    """Exception raised when a fallback is triggered."""
+
+    pass
+
+
 class DocumentRanker(Configured):
     """Class for embedding, scoring, and ranking documents.
 
@@ -4725,9 +4731,13 @@ class DocumentRanker(Configured):
 
             Supported strategies:
 
-            * "embeddings"
-            * "bm25"
-            * "hybrid"
+            * "bm25": Use BM25 for document search.
+            * "embeddings": Use embeddings for document search.
+                Embeds documents that don't have embeddings, which can be time-consuming.
+            * "hybrid": Use a combination of embeddings and BM25 for document search.
+                Embeds documents that don't have embeddings, which can be time-consuming.
+            * "embeddings_fallback": Use "embeddings" if all documents have embeddings, otherwise use "bm25".
+            * "hybrid_fallback": Use "hybrid" if all documents have embeddings, otherwise use "bm25".
         bm25_tokenizer (Optional[BM25Tokenizer]): BM25 tokenizer instance or type for processing text.
 
             Resolved using `DocumentRanker.resolve_bm25_tokenizer`.
@@ -4737,10 +4747,10 @@ class DocumentRanker(Configured):
             Resolved using `DocumentRanker.resolve_bm25_retriever`.
         bm25_retriever_kwargs (KwargsLike): Keyword arguments to initialize `bm25_retriever`.
         bm25_mirror_store_id (Optional[str]): Identifier for the BM25 mirror store.
-        bm25_score_weight (Optional[float]): BM25 score weight.
+        rrf_k (Optional[int]): K parameter for RRF (Reciprocal Rank Fusion).
+        rrf_bm25_weight (Optional[float]): BM25 weight for RRF (Reciprocal Rank Fusion).
 
-            The embedding score weight is computed as 1 minus this value and is applied to
-            scores normalized to [0, 1].
+            The embedding weight is computed as 1 minus this value.
         score_func (Union[None, str, Callable]): Function or identifier for scoring documents.
 
             See `DocumentRanker.compute_score`.
@@ -4777,7 +4787,8 @@ class DocumentRanker(Configured):
         bm25_retriever: tp.Optional[tp.MaybeType[BM25T]] = None,
         bm25_retriever_kwargs: tp.KwargsLike = None,
         bm25_mirror_store_id: tp.Optional[str] = None,
-        bm25_score_weight: tp.Optional[float] = None,
+        rrf_k: tp.Optional[int] = None,
+        rrf_bm25_weight: tp.Optional[float] = None,
         score_func: tp.Union[None, str, tp.Callable] = None,
         score_agg_func: tp.Union[None, str, tp.Callable] = None,
         normalize_scores: tp.Optional[bool] = None,
@@ -4803,7 +4814,8 @@ class DocumentRanker(Configured):
             bm25_retriever=bm25_retriever,
             bm25_retriever_kwargs=bm25_retriever_kwargs,
             bm25_mirror_store_id=bm25_mirror_store_id,
-            bm25_score_weight=bm25_score_weight,
+            rrf_k=rrf_k,
+            rrf_bm25_weight=rrf_bm25_weight,
             score_func=score_func,
             score_agg_func=score_agg_func,
             normalize_scores=normalize_scores,
@@ -4824,7 +4836,8 @@ class DocumentRanker(Configured):
         cache_emb_store = self.resolve_setting(cache_emb_store, "cache_emb_store")
         search_method = self.resolve_setting(search_method, "search_method")
         bm25_mirror_store_id = self.resolve_setting(bm25_mirror_store_id, "bm25_mirror_store_id")
-        bm25_score_weight = self.resolve_setting(bm25_score_weight, "bm25_score_weight")
+        rrf_k = self.resolve_setting(rrf_k, "rrf_k")
+        rrf_bm25_weight = self.resolve_setting(rrf_bm25_weight, "rrf_bm25_weight")
         score_func = self.resolve_setting(score_func, "score_func")
         score_agg_func = self.resolve_setting(score_agg_func, "score_agg_func")
         normalize_scores = self.resolve_setting(normalize_scores, "normalize_scores")
@@ -4842,17 +4855,28 @@ class DocumentRanker(Configured):
         emb_store_kwargs = merge_dicts(obj_store_kwargs, emb_store_kwargs)
 
         search_method = search_method.lower()
-        checks.assert_in(search_method, ("embeddings", "bm25", "hybrid"), arg_name="search_method")
-        if search_method in ("embeddings", "hybrid"):
-            embeddings = resolve_embeddings(embeddings)
-            if isinstance(embeddings, type):
-                embeddings_kwargs = dict(embeddings_kwargs)
-                embeddings_kwargs["template_context"] = merge_dicts(
-                    template_context, embeddings_kwargs.get("template_context", None)
-                )
-                embeddings = embeddings(**embeddings_kwargs)
-            elif embeddings_kwargs:
-                embeddings = embeddings.replace(**embeddings_kwargs)
+        checks.assert_in(
+            search_method,
+            ("bm25", "embeddings", "hybrid", "embeddings_fallback", "hybrid_fallback"),
+            arg_name="search_method",
+        )
+        if search_method in ("embeddings", "hybrid", "embeddings_fallback", "hybrid_fallback"):
+            try:
+                embeddings = resolve_embeddings(embeddings)
+                if isinstance(embeddings, type):
+                    embeddings_kwargs = dict(embeddings_kwargs)
+                    embeddings_kwargs["template_context"] = merge_dicts(
+                        template_context, embeddings_kwargs.get("template_context", None)
+                    )
+                    embeddings = embeddings(**embeddings_kwargs)
+                elif embeddings_kwargs:
+                    embeddings = embeddings.replace(**embeddings_kwargs)
+            except Exception as e:
+                if search_method in ("embeddings_fallback", "hybrid_fallback"):
+                    warn(f'Failed to resolve embeddings: "{e}"')
+                    embeddings = None
+                else:
+                    raise e
         else:
             embeddings = None
 
@@ -4907,7 +4931,7 @@ class DocumentRanker(Configured):
         if cache_emb_store and not isinstance(emb_store, CachedStore):
             emb_store = CachedStore(emb_store)
 
-        if search_method in ("bm25", "hybrid"):
+        if search_method in ("bm25", "hybrid", "embeddings_fallback", "hybrid_fallback"):
             if bm25_tokenizer_kwargs is None:
                 bm25_tokenizer_kwargs = {}
             if bm25_retriever_kwargs is None:
@@ -4932,8 +4956,6 @@ class DocumentRanker(Configured):
             bm25_tokenize_kwargs = {}
             bm25_retriever = None
             bm25_retrieve_kwargs = {}
-        if bm25_score_weight < 0 or bm25_score_weight > 1:
-            raise ValueError(f"BM25 score weight ({bm25_score_weight}) must be between 0 and 1")
 
         if isinstance(score_agg_func, str):
             score_agg_func = getattr(np, score_agg_func)
@@ -4946,7 +4968,8 @@ class DocumentRanker(Configured):
         self._bm25_tokenize_kwargs = bm25_tokenize_kwargs
         self._bm25_retriever = bm25_retriever
         self._bm25_retrieve_kwargs = bm25_retrieve_kwargs
-        self._bm25_score_weight = bm25_score_weight
+        self._rrf_k = rrf_k
+        self._rrf_bm25_weight = rrf_bm25_weight
         self._score_func = score_func
         self._score_agg_func = score_agg_func
         self._normalize_scores = normalize_scores
@@ -4987,9 +5010,13 @@ class DocumentRanker(Configured):
 
         Supported strategies:
 
-        * "embeddings"
-        * "bm25"
-        * "hybrid"
+        * "bm25": Use BM25 for document search.
+        * "embeddings": Use embeddings for document search.
+            Embeds documents that don't have embeddings, which can be time-consuming.
+        * "hybrid": Use a combination of embeddings and BM25 for document search.
+            Embeds documents that don't have embeddings, which can be time-consuming.
+        * "embeddings_fallback": Use "embeddings" if all documents have embeddings, otherwise use "bm25".
+        * "hybrid_fallback": Use "hybrid" if all documents have embeddings, otherwise use "bm25".
 
         Returns:
             str: Search method used for document retrieval.
@@ -5033,16 +5060,24 @@ class DocumentRanker(Configured):
         return self._bm25_retrieve_kwargs
 
     @property
-    def bm25_score_weight(self) -> float:
-        """BM25 score weight.
-
-        The embedding score weight is computed as 1 minus this value and is applied to
-        scores normalized to [0, 1].
+    def rrf_k(self) -> int:
+        """K parameter for RRF (Reciprocal Rank Fusion).
 
         Returns:
-            float: BM25 score weight used in the scoring process.
+            int: K parameter used in RRF.
         """
-        return self._bm25_score_weight
+        return self._rrf_k
+
+    @property
+    def rrf_bm25_weight(self) -> float:
+        """BM25 weight for RRF (Reciprocal Rank Fusion).
+
+        The embedding weight is computed as 1 minus this value.
+
+        Returns:
+            float: BM25 weight used in RRF.
+        """
+        return self._rrf_bm25_weight
 
     @property
     def score_func(self) -> tp.Union[str, tp.Callable]:
@@ -5201,6 +5236,7 @@ class DocumentRanker(Configured):
         refresh_embeddings: tp.Optional[bool] = None,
         return_embeddings: bool = False,
         return_documents: bool = False,
+        with_fallback: bool = False,
     ) -> tp.Optional[tp.EmbeddedDocuments]:
         """Embed documents by optionally refreshing stored documents and embeddings.
 
@@ -5213,6 +5249,7 @@ class DocumentRanker(Configured):
             refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_embeddings (bool): Flag indicating whether to return embeddings.
             return_documents (bool): If True, include original document objects in the output.
+            with_fallback (bool): If True, raise `FallbackError` if new embeddings are needed.
 
         Returns:
             Optional[EmbeddedDocuments]: Embedded documents or embeddings based on the specified return flags.
@@ -5242,6 +5279,8 @@ class DocumentRanker(Configured):
                                 refresh_document = True
                                 break
                 if refresh_document:
+                    if with_fallback:
+                        raise FallbackError("Some documents need to be refreshed")
                     documents_to_split.append(document)
             if documents_to_split:
                 from vectorbtpro.utils.pbar import ProgressBar
@@ -5286,15 +5325,21 @@ class DocumentRanker(Configured):
                                 content = child_document.get_content(for_embed=True)
                                 if content:
                                     obj_contents[child_id] = content
+                                    if with_fallback:
+                                        raise FallbackError("Some documents need to be embedded")
                     else:
                         content = document.get_content(for_embed=True)
                         if content:
                             obj_contents[obj.id_] = content
+                            if with_fallback:
+                                raise FallbackError("Some documents need to be embedded")
 
             if obj_contents:
-                total = 0
                 if self.embeddings is None:
+                    if with_fallback:
+                        raise FallbackError("Embeddings engine is not set")
                     raise ValueError("Embeddings engine is not set")
+                total = 0
                 for batch in self.embeddings.iter_embedding_batches(list(obj_contents.values())):
                     batch_keys = list(obj_contents.keys())[total : total + len(batch)]
                     obj_embeddings = dict(zip(batch_keys, batch))
@@ -5403,6 +5448,7 @@ class DocumentRanker(Configured):
         refresh_embeddings: tp.Optional[bool] = None,
         return_chunks: bool = False,
         return_documents: bool = False,
+        with_fallback: bool = False,
     ) -> tp.ScoredDocuments:
         """Score documents by relevance to a query.
 
@@ -5421,6 +5467,7 @@ class DocumentRanker(Configured):
             refresh_embeddings (Optional[bool]): Flag to refresh embeddings; defaults to `refresh`.
             return_chunks (bool): Whether to return document chunks.
             return_documents (bool): If True, include original document objects in the output.
+            with_fallback (bool): If True, raise `FallbackError` if new embeddings are needed.
 
         Returns:
             ScoredDocuments: Collection of documents with their computed relevance scores.
@@ -5441,6 +5488,7 @@ class DocumentRanker(Configured):
                 refresh=refresh,
                 refresh_documents=refresh_documents,
                 refresh_embeddings=refresh_embeddings,
+                with_fallback=with_fallback,
             )
             if return_chunks:
                 document_chunks = []
@@ -5475,6 +5523,8 @@ class DocumentRanker(Configured):
                             obj_embeddings[child_id] = child_obj.embedding
             if obj_embeddings:
                 if self.embeddings is None:
+                    if with_fallback:
+                        raise FallbackError("Embeddings engine is not set")
                     raise ValueError("Embeddings engine is not set")
                 query_embedding = self.embeddings.get_embedding(query)
                 scores = self.compute_score(query_embedding, list(obj_embeddings.values()))
@@ -5574,9 +5624,7 @@ class DocumentRanker(Configured):
                 document_splits = {}
                 for document in documents:
                     refresh_document = (
-                        refresh_documents
-                        or document.id_ not in self.doc_store
-                        or document.id_ not in self.emb_store
+                        refresh_documents or document.id_ not in self.doc_store or document.id_ not in self.emb_store
                     )
                     if not refresh_document:
                         obj = self.emb_store[document.id_]
@@ -5782,7 +5830,7 @@ class DocumentRanker(Configured):
         for document in scored_documents:
             scores.append(document.score)
             if document.child_documents:
-                scores.extend(cls.extract_doc_scores(scored_documents))
+                scores.extend(cls.extract_doc_scores(document.child_documents))
         return scores
 
     @classmethod
@@ -5855,34 +5903,66 @@ class DocumentRanker(Configured):
         Returns:
             List[Tuple[float, float]]: Pairs of scores from corresponding documents and their child documents.
         """
-        doc_pair_scores = []
-        n_documents = max(len(emb_scored_documents), len(bm25_scored_documents))
-        for i in range(n_documents):
-            emb_doc = emb_scored_documents[i]
-            bm25_doc = bm25_scored_documents[i]
-            doc_pair_scores.append((emb_doc.score, bm25_doc.score))
-            if emb_doc.child_documents and bm25_doc.child_documents:
-                child_doc_pair_scores = cls.extract_doc_pair_scores(emb_doc.child_documents, bm25_doc.child_documents)
-                doc_pair_scores.extend(child_doc_pair_scores)
-        return doc_pair_scores
 
-    def combine_doc_pair_scores(self, doc_pair_scores: tp.Iterable[tp.Tuple[float, float]]) -> np.ndarray:
-        """Combine paired embedding and BM25 scores into a single weighted score.
+        def _score(doc):
+            return doc.score if doc is not None else float("nan")
+
+        def _children(doc):
+            return doc.child_documents if doc is not None else []
+
+        emb_map = {}
+        bm25_map = {}
+        order = []
+        for d in emb_scored_documents:
+            doc_id = d.document.id_
+            emb_map[doc_id] = d
+            order.append(doc_id)
+        for d in bm25_scored_documents:
+            doc_id = d.document.id_
+            bm25_map[doc_id] = d
+            if doc_id not in emb_map:
+                order.append(doc_id)
+
+        pair_scores = []
+        for doc_id in order:
+            emb_doc = emb_map.get(doc_id, None)
+            bm25_doc = bm25_map.get(doc_id, None)
+            pair_scores.append((_score(emb_doc), _score(bm25_doc)))
+            if _children(emb_doc) or _children(bm25_doc):
+                child_pair_scores = cls.extract_doc_pair_scores(_children(emb_doc), _children(bm25_doc))
+                pair_scores.extend(child_pair_scores)
+        return pair_scores
+
+    def fuse_doc_pair_scores(self, doc_pair_scores: tp.Iterable[tp.Tuple[float, float]]) -> np.ndarray:
+        """Fuse paired (embedding, BM25) scores with Reciprocal-Rank Fusion (RRF).
 
         Args:
-            doc_pair_scores (Iterable[Tuple[float, float]]): Paired scores (embedding, BM25) to combine.
+            doc_pair_scores (Iterable[Tuple[float, float]]): Paired scores (embedding, BM25) to fuse.
 
         Returns:
-            ndarray: Array of combined scores.
+            ndarray: Array of fused scores.
         """
-        emb_scores, bm25_scores = zip(*doc_pair_scores)
-        norm_emb_scores = self.normalize_doc_scores(emb_scores)
-        norm_bm25_scores = self.normalize_doc_scores(bm25_scores)
-        return (1 - self.bm25_score_weight) * norm_emb_scores + self.bm25_score_weight * norm_bm25_scores
+        pair_scores = np.asarray(doc_pair_scores, dtype=float)
+        emb_scores = pair_scores[:, 0]
+        bm25_scores = pair_scores[:, 1]
+
+        emb_tmp = np.where(np.isnan(emb_scores), -np.inf, emb_scores)
+        bm25_tmp = np.where(np.isnan(bm25_scores), -np.inf, bm25_scores)
+        emb_order = np.argsort(-emb_tmp, kind="mergesort")
+        bm25_order = np.argsort(-bm25_tmp, kind="mergesort")
+
+        emb_rank = np.empty(len(pair_scores), dtype=np.int32)
+        bm25_rank = np.empty(len(pair_scores), dtype=np.int32)
+        emb_rank[emb_order] = np.arange(1, len(pair_scores) + 1)
+        bm25_rank[bm25_order] = np.arange(1, len(pair_scores) + 1)
+
+        new_emb_scores = (1 - self.rrf_bm25_weight) / (self.rrf_k + emb_rank)
+        new_bm25_scores = self.rrf_bm25_weight / (self.rrf_k + bm25_rank)
+        return new_emb_scores + new_bm25_scores
 
     @classmethod
     def replace_doc_pair_scores(
-        self,
+        cls,
         emb_scored_documents: tp.List[ScoredDocument],
         bm25_scored_documents: tp.List[ScoredDocument],
         new_scores: tp.List[float],
@@ -5897,40 +5977,55 @@ class DocumentRanker(Configured):
         Returns:
             List[ScoredDocument]: Updated documents with replaced paired scores.
         """
+
+        def _children(doc):
+            return doc.child_documents if doc is not None else []
+
+        emb_map = {}
+        bm25_map = {}
+        order = []
+        for d in emb_scored_documents:
+            doc_id = d.document.id_
+            emb_map[doc_id] = d
+            order.append(doc_id)
+        for d in bm25_scored_documents:
+            doc_id = d.document.id_
+            bm25_map[doc_id] = d
+            if doc_id not in emb_map:
+                order.append(doc_id)
+
         scored_documents = []
-        n_documents = max(len(emb_scored_documents), len(bm25_scored_documents))
-        for i in range(n_documents):
-            emb_doc = emb_scored_documents[i]
-            bm25_doc = bm25_scored_documents[i]
-            document = emb_doc.document
+        for doc_id in order:
+            emb_doc = emb_map.get(doc_id, None)
+            bm25_doc = bm25_map.get(doc_id, None)
+            if emb_doc is not None:
+                document = emb_doc.document
+            else:
+                document = bm25_doc.document
             score = new_scores.pop(0)
-            if emb_doc.child_documents and bm25_doc.child_documents:
-                child_documents = self.replace_doc_pair_scores(
-                    emb_doc.child_documents,
-                    bm25_doc.child_documents,
-                    new_scores,
-                )
+            if _children(emb_doc) or _children(bm25_doc):
+                child_documents = cls.replace_doc_pair_scores(_children(emb_doc), _children(bm25_doc), new_scores)
             else:
                 child_documents = []
             scored_documents.append(ScoredDocument(document, score=score, child_documents=child_documents))
         return scored_documents
 
-    def combine_scored_documents(
+    def fuse_scored_documents(
         self,
         emb_scored_documents: tp.List[ScoredDocument],
         bm25_scored_documents: tp.List[ScoredDocument],
     ) -> tp.List[ScoredDocument]:
-        """Combine embedding and BM25 scored documents by merging and updating their scores.
+        """Fuse embedding and BM25 scored documents by merging and updating their scores.
 
         Args:
             emb_scored_documents (List[ScoredDocument]): Documents scored using embeddings.
             bm25_scored_documents (List[ScoredDocument]): Documents scored using BM25.
 
         Returns:
-            List[ScoredDocument]: Combined scored documents with updated scores.
+            List[ScoredDocument]: Fused scored documents with updated scores.
         """
         doc_pair_scores = self.extract_doc_pair_scores(emb_scored_documents, bm25_scored_documents)
-        new_scores = self.combine_doc_pair_scores(doc_pair_scores).tolist()
+        new_scores = self.fuse_doc_pair_scores(doc_pair_scores).tolist()
         return self.replace_doc_pair_scores(emb_scored_documents, bm25_scored_documents, new_scores)
 
     def rank_documents(
@@ -5950,7 +6045,7 @@ class DocumentRanker(Configured):
         """Rank documents based on their relevance to a query.
 
         The method retrieves scored documents using embedding and BM25 strategies (or both in hybrid mode),
-        combines and normalizes their scores, and then sorts them to identify the most relevant documents.
+        fuses and normalizes their scores, and then sorts them to identify the most relevant documents.
         Top-k parameters and score cutoff are resolved using `DocumentRanker.resolve_top_k` and
         `DocumentRanker.top_k_from_cutoff`.
 
@@ -5974,19 +6069,26 @@ class DocumentRanker(Configured):
         """
         if documents is not None:
             documents = list(documents)
-        if self.search_method in ("embeddings", "hybrid"):
-            emb_scored_documents = self.score_documents(
-                query,
-                documents=documents,
-                refresh=refresh,
-                refresh_documents=refresh_documents,
-                refresh_embeddings=refresh_embeddings,
-                return_chunks=return_chunks,
-                return_documents=True,
-            )
+        if self.search_method in ("embeddings", "hybrid", "embeddings_fallback", "hybrid_fallback"):
+            try:
+                emb_scored_documents = self.score_documents(
+                    query,
+                    documents=documents,
+                    refresh=refresh,
+                    refresh_documents=refresh_documents,
+                    refresh_embeddings=refresh_embeddings,
+                    return_chunks=return_chunks,
+                    return_documents=True,
+                    with_fallback=self.search_method in ("embeddings_fallback", "hybrid_fallback"),
+                )
+            except FallbackError as e:
+                warn(f'Fallback triggered: "{e}"')
+                emb_scored_documents = None
         else:
             emb_scored_documents = None
-        if self.search_method in ("bm25", "hybrid"):
+        if self.search_method in ("bm25", "hybrid") or (
+            emb_scored_documents is None and self.search_method in ("embeddings_fallback", "hybrid_fallback")
+        ):
             bm25_scored_documents = self.bm25_score_documents(
                 query,
                 documents=documents,
@@ -5998,7 +6100,7 @@ class DocumentRanker(Configured):
         else:
             bm25_scored_documents = None
         if emb_scored_documents is not None and bm25_scored_documents is not None:
-            scored_documents = self.combine_scored_documents(emb_scored_documents, bm25_scored_documents)
+            scored_documents = self.fuse_scored_documents(emb_scored_documents, bm25_scored_documents)
         elif emb_scored_documents is not None:
             scored_documents = emb_scored_documents
         elif bm25_scored_documents is not None:

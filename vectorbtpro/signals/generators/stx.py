@@ -99,5 +99,5 @@ class _STX(STX):
     pass
 
 
-setattr(STX, "__doc__", _STX.__doc__)
+STX.clone_docstring(_STX)
 STX.fix_docstrings(__pdoc__)

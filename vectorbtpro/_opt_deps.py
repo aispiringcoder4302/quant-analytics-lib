@@ -84,6 +84,7 @@ opt_dep_config = HybridConfig(
         pyperclip=dict(),
         platformdirs=dict(),
         mcp=dict(),
+        jupyter_client=dict(),
     )
 )
 """_"""

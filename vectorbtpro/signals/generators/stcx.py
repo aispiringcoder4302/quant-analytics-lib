@@ -45,5 +45,5 @@ class _STCX(STCX):
     pass
 
 
-setattr(STCX, "__doc__", _STCX.__doc__)
+STCX.clone_docstring(_STCX)
 STCX.fix_docstrings(__pdoc__)

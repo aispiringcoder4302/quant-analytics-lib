@@ -1734,6 +1734,42 @@ class IndicatorBase(Analyzable):
     # ############# Documentation ############# #
 
     @classmethod
+    def clone_docstring(cls, another_cls: tp.Type) -> None:
+        """Clone the docstring from another class.
+        
+        Args:
+            another_cls (Type): Class from which to clone the docstring.
+
+        Returns:
+            None
+        """
+        cls.__doc__ = another_cls.__doc__
+
+    @classmethod
+    def clone_method(cls, method: tp.Callable) -> None:
+        """Clone a method to the class.
+        
+        Args:
+            method (Callable): Method to clone.
+
+        Returns:
+            None
+        """
+        from types import FunctionType
+        from functools import update_wrapper
+
+        new_method = FunctionType(
+            method.__code__,
+            method.__globals__,
+            method.__name__, 
+            method.__defaults__, 
+            method.__closure__
+        )
+        update_wrapper(new_method, method)
+        new_method.__qualname__ = f"{cls.__name__}.{method.__name__}"
+        setattr(cls, method.__name__, new_method)
+
+    @classmethod
     def fix_docstrings(cls, __pdoc__: dict) -> None:
         """Update missing docstrings for custom functions.
 
@@ -1747,30 +1783,45 @@ class IndicatorBase(Analyzable):
             None
         """
         if hasattr(cls, "custom_func"):
+            if cls.custom_func is not None:
+                cls.custom_func.__module__ = cls.__module__
+                cls.custom_func.__qualname__ = f"{cls.__name__}.custom_func"
             if cls.__name__ + ".custom_func" not in __pdoc__:
                 if getattr(cls, "custom_func").__doc__ is not None:
                     __pdoc__[cls.__name__ + ".custom_func"] = getattr(cls, "custom_func").__doc__
                 else:
                     __pdoc__[cls.__name__ + ".custom_func"] = "Custom function."
         if hasattr(cls, "apply_func"):
+            if cls.apply_func is not None:
+                cls.apply_func.__module__ = cls.__module__
+                cls.apply_func.__qualname__ = f"{cls.__name__}.apply_func"
             if cls.__name__ + ".apply_func" not in __pdoc__:
                 if getattr(cls, "apply_func").__doc__ is not None:
                     __pdoc__[cls.__name__ + ".apply_func"] = getattr(cls, "apply_func").__doc__
                 else:
                     __pdoc__[cls.__name__ + ".apply_func"] = "Apply function."
         if hasattr(cls, "cache_func"):
+            if cls.cache_func is not None:
+                cls.cache_func.__module__ = cls.__module__
+                cls.cache_func.__qualname__ = f"{cls.__name__}.cache_func"
             if cls.__name__ + ".cache_func" not in __pdoc__:
                 if getattr(cls, "cache_func").__doc__ is not None:
                     __pdoc__[cls.__name__ + ".cache_func"] = getattr(cls, "cache_func").__doc__
                 else:
                     __pdoc__[cls.__name__ + ".cache_func"] = "Cache function."
         if hasattr(cls, "entry_place_func_nb"):
+            if cls.entry_place_func_nb is not None:
+                cls.entry_place_func_nb.__module__ = cls.__module__
+                cls.entry_place_func_nb.__qualname__ = f"{cls.__name__}.entry_place_func_nb"
             if cls.__name__ + ".entry_place_func_nb" not in __pdoc__:
                 if getattr(cls, "entry_place_func_nb").__doc__ is not None:
                     __pdoc__[cls.__name__ + ".entry_place_func_nb"] = getattr(cls, "entry_place_func_nb").__doc__
                 else:
                     __pdoc__[cls.__name__ + ".entry_place_func_nb"] = "Entry placement function."
         if hasattr(cls, "exit_place_func_nb"):
+            if cls.exit_place_func_nb is not None:
+                cls.exit_place_func_nb.__module__ = cls.__module__
+                cls.exit_place_func_nb.__qualname__ = f"{cls.__name__}.exit_place_func_nb"
             if cls.__name__ + ".exit_place_func_nb" not in __pdoc__:
                 if getattr(cls, "exit_place_func_nb").__doc__ is not None:
                     __pdoc__[cls.__name__ + ".exit_place_func_nb"] = getattr(cls, "exit_place_func_nb").__doc__

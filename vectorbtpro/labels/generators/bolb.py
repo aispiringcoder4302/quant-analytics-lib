@@ -101,6 +101,6 @@ class _BOLB(BOLB):
         return median.rename("Median").vbt.overlay_with_heatmap(self_col.labels.rename("Labels"), **kwargs)
 
 
-setattr(BOLB, "__doc__", _BOLB.__doc__)
-setattr(BOLB, "plot", _BOLB.plot)
+BOLB.clone_docstring(_BOLB)
+BOLB.clone_method(_BOLB.plot)
 BOLB.fix_docstrings(__pdoc__)

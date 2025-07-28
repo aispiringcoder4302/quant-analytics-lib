@@ -160,6 +160,6 @@ class _RSI(RSI):
         return fig
 
 
-setattr(RSI, "__doc__", _RSI.__doc__)
-setattr(RSI, "plot", _RSI.plot)
+RSI.clone_docstring(_RSI)
+RSI.clone_method(_RSI.plot)
 RSI.fix_docstrings(__pdoc__)

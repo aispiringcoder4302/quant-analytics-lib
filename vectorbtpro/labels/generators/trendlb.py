@@ -96,6 +96,6 @@ class _TRENDLB(TRENDLB):
         return median.rename("Median").vbt.overlay_with_heatmap(self_col.labels.rename("Labels"), **kwargs)
 
 
-setattr(TRENDLB, "__doc__", _TRENDLB.__doc__)
-setattr(TRENDLB, "plot", _TRENDLB.plot)
+TRENDLB.clone_docstring(_TRENDLB)
+TRENDLB.clone_method(_TRENDLB.plot)
 TRENDLB.fix_docstrings(__pdoc__)

@@ -28,6 +28,7 @@ from vectorbtpro.utils import datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts, Configured
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.template import CustomTemplate
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "TVClient",
@@ -201,7 +202,7 @@ class TVClient(Configured):
         if auth_token is None:
             auth_token = self.auth(username, password)
         elif username is not None or password is not None:
-            raise ValueError("Must provide either username and password, or auth_token")
+            warn("Username, password, and auth_token were provided. Using auth_token only.")
 
         self._auth_token = auth_token
         self._ws = None

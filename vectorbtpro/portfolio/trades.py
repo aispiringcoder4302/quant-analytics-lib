@@ -1642,15 +1642,13 @@ class Trades(Ranges):
             ),
             first_trade_start=dict(
                 title="First Trade Start",
-                calc_func="entry_idx.nth",
-                n=0,
+                calc_func="entry_idx.min",
                 wrap_kwargs=dict(to_index=True),
                 tags=["trades", "index"],
             ),
             last_trade_end=dict(
                 title="Last Trade End",
-                calc_func="exit_idx.nth",
-                n=-1,
+                calc_func="exit_idx.max",
                 wrap_kwargs=dict(to_index=True),
                 tags=["trades", "index"],
             ),

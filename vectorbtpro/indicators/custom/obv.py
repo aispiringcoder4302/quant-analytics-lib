@@ -115,6 +115,6 @@ class _OBV(OBV):
         return fig
 
 
-setattr(OBV, "__doc__", _OBV.__doc__)
-setattr(OBV, "plot", _OBV.plot)
+OBV.clone_docstring(_OBV)
+OBV.clone_method(_OBV.plot)
 OBV.fix_docstrings(__pdoc__)

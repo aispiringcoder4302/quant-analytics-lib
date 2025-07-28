@@ -45,5 +45,5 @@ class _RPROBCX(RPROBCX):
     pass
 
 
-setattr(RPROBCX, "__doc__", _RPROBCX.__doc__)
+RPROBCX.clone_docstring(_RPROBCX)
 RPROBCX.fix_docstrings(__pdoc__)

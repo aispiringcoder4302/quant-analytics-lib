@@ -223,6 +223,6 @@ class _BBANDS(BBANDS):
         return fig
 
 
-setattr(BBANDS, "__doc__", _BBANDS.__doc__)
-setattr(BBANDS, "plot", _BBANDS.plot)
+BBANDS.clone_docstring(_BBANDS)
+BBANDS.clone_method(_BBANDS.plot)
 BBANDS.fix_docstrings(__pdoc__)

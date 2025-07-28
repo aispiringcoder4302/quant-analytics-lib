@@ -151,6 +151,6 @@ class _ATR(ATR):
         return fig
 
 
-setattr(ATR, "__doc__", _ATR.__doc__)
-setattr(ATR, "plot", _ATR.plot)
+ATR.clone_docstring(_ATR)
+ATR.clone_method(_ATR.plot)
 ATR.fix_docstrings(__pdoc__)

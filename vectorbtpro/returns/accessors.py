@@ -141,6 +141,11 @@ from vectorbtpro.utils.config import resolve_dict, merge_dicts, HybridConfig, Co
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
 from vectorbtpro.utils.warnings_ import warn
 
+if tp.TYPE_CHECKING:
+    from vectorbtpro.returns.qs_adapter import QSAdapter as QSAdapterT
+else:
+    QSAdapterT = "vectorbtpro.returns.qs_adapter.QSAdapter"
+
 __all__ = [
     "ReturnsAccessor",
     "ReturnsSRAccessor",
@@ -3765,12 +3770,15 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         )
 
     @property
-    def qs(self) -> "QSAdapter":
+    def qs(self) -> QSAdapterT:
         """Quantstats adapter for performance analysis.
 
         Returns:
             QSAdapter: Instance of `vectorbtpro.returns.qs_adapter.QSAdapter`.
         """
+        from vectorbtpro.utils.module_ import assert_can_import
+        
+        assert_can_import("quantstats")
         from vectorbtpro.returns.qs_adapter import QSAdapter
 
         return QSAdapter(self)

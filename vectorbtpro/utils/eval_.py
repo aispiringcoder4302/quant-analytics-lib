@@ -14,13 +14,24 @@ import ast
 import builtins
 import inspect
 import symtable
+import concurrent.futures as cf
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.base import Base
+from vectorbtpro.utils.config import Configured
+
+if tp.TYPE_CHECKING:
+    from jupyter_client.manager import KernelManager as KernelManagerT
+    from jupyter_client.client import KernelClient as KernelClientT
+else:
+    KernelManagerT = "jupyter_client.manager.KernelManager"
+    KernelClientT = "jupyter_client.client.KernelClient"
 
 __all__ = [
     "evaluate",
+    "JupyterKernel",
+    "VBTKernel",
 ]
 
 
@@ -120,3 +131,221 @@ class Evaluable(Base):
                 if eval_id != self.eval_id:
                     return False
         return True
+
+
+class JupyterKernel(Configured):
+    """Lightweight wrapper class around an IPython kernel process.
+
+    Args:
+        startup_timeout (int): Seconds to wait for the kernel to become ready.
+        **manager_kwargs: Keyword arguments for the kernel manager.
+
+    Example:
+
+        ```pycon
+        >>> with vbt.JupyterKernel() as kernel:
+        ...     output = kernel.execute("print('Hello, world!')\n42")
+        ...     print(output)
+        Hello, world!
+        42
+        >>>     output = kernel.execute("1 / 0")
+        ...     print(output)
+        ZeroDivisionError: division by zero
+        ```
+    """
+
+    def __init__(self, startup_timeout: int = 60, **manager_kwargs) -> None:
+        Configured.__init__(self, startup_timeout=startup_timeout, **manager_kwargs)
+
+        if manager_kwargs is None:
+            manager_kwargs = {}
+
+        self._startup_timeout = startup_timeout
+        self._manager_kwargs = manager_kwargs
+        
+        self._manager = None
+        self._client = None
+
+    @property
+    def startup_timeout(self) -> int:
+        """Seconds to wait for the kernel to become ready.
+
+        Returns:
+            int: Timeout in seconds.
+        """
+        return self._startup_timeout
+
+    @property
+    def manager_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for the kernel manager.
+
+        Returns:
+            KwargsLike: Dictionary of additional parameters.
+        """
+        return self._manager_kwargs
+
+    @property
+    def manager(self) -> tp.Optional[KernelManagerT]:
+        """Kernel manager instance.
+
+        Returns:
+            KernelManager: Kernel manager object.
+        """
+        return self._manager
+
+    @property
+    def client(self) -> tp.Optional[KernelClientT]:
+        """Kernel client instance.
+
+        Returns:
+            KernelClient: Kernel client object.
+        """
+        return self._client
+
+    def collect_output(self, parent_msg_id: str, msg_timeout: tp.Optional[float]) -> str:
+        """Aggregate all messages produced by a single kernel execution.
+
+        Args:
+            parent_msg_id (str): `msg_id` returned by `jupyter_client.KernelClient.execute`.
+
+                Only messages whose `parent_header.msg_id` matches this ID are collected.
+            msg_timeout (Optional[float]): Seconds to wait between `IOPub` messages.
+
+                None waits indefinitely.
+
+        Returns:
+            str: Newline-joined string containing stdout/stderr, `repr` representations, and tracebacks.
+
+                Rich MIME outputs are represented by placeholder stubs such as `<image/png: bytes>`
+                so that all content is surfaced as text.
+        """
+        import queue
+
+        outputs = []
+        while True:
+            try:
+                msg = self.client.get_iopub_msg(timeout=msg_timeout)
+            except queue.Empty:
+                break
+            if msg["parent_header"].get("msg_id") != parent_msg_id:
+                continue
+            mtype, content = msg["msg_type"], msg["content"]
+            if mtype == "status" and content["execution_state"] == "idle":
+                break
+            if mtype in ("execute_result", "display_data"):
+                for mime, value in content["data"].items():
+                    if mime.startswith("text/"):
+                        outputs.append(value if isinstance(value, str) else str(value))
+                    else:
+                        outputs.append(f"<{mime}: {type(value).__name__}>")
+            elif mtype == "stream":
+                outputs.append(content["text"])
+            elif mtype == "error":
+                outputs.extend(content["traceback"])
+        return "\n".join(outputs)
+
+    def execute(
+        self,
+        code: str,
+        silent: bool = False,
+        exec_timeout: tp.Optional[float] = None,
+        interrupt_grace: float = 5.0,
+        msg_timeout: tp.Optional[float] = None,
+    ) -> str:
+        """Run Python code inside the managed kernel.
+
+        Args:
+            code (str): Python source to execute.
+            silent (bool): If True, the kernel will not increment its execution counter.
+
+                This does not affect captured output.
+            exec_timeout (Optional[float]): Seconds to wait for the code execution to complete.
+
+                None means no timeout.
+            interrupt_grace (float): Seconds to wait for the kernel to gracefully interrupt the execution.
+            msg_timeout (Optional[float]): Seconds to wait between `IOPub` messages.
+
+                None waits indefinitely.
+
+        Returns:
+            str: Combined textual output from the cell, including prints, returned `repr` values,
+                and full tracebacks on error.
+        """
+        msg_id = self.client.execute(code, silent=silent)
+        if exec_timeout is None:
+            return self.collect_output(msg_id, msg_timeout)
+
+        with cf.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(self.collect_output, msg_id, msg_timeout)
+            try:
+                return future.result(timeout=exec_timeout)
+            except cf.TimeoutError:
+                self.manager.interrupt_kernel()
+                try:
+                    output = future.result(timeout=interrupt_grace)
+                    return output.rstrip("\n") + "\n\nTimeoutError: Kernel interrupted"
+                except cf.TimeoutError:
+                    self.restart()
+                    return "TimeoutError: Kernel restarted"
+
+    def start(self) -> None:
+        """Start the underlying kernel process and open ZMQ channels.
+
+        Returns:
+            None
+        """
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("jupyter_client")
+        from jupyter_client import KernelManager
+
+        self._manager = KernelManager(**self.manager_kwargs)
+
+        self.manager.start_kernel()
+        self._client = self.manager.client()
+        self.client.start_channels()
+        self.client.wait_for_ready(timeout=self.startup_timeout)
+
+    def restart(self, now: bool = True) -> None:
+        """Restart the underlying kernel, clearing all interpreter state.
+
+        Args:
+            now (bool): Whether to force an immediate restart.
+
+                If False, the request is politely sent and the method waits for
+                the kernel to finish any pending operations first.
+
+        Returns:
+            None
+        """
+        self.manager.restart_kernel(now=now)
+        self._client = self.manager.client()
+        self.client.start_channels()
+        self.client.wait_for_ready(timeout=self.startup_timeout)
+
+    def shutdown(self, now: bool = True) -> None:
+        """Terminate the kernel process and close all ZMQ channels.
+
+        Args:
+            now (bool): If True, the kernel is killed immediately; if False it's asked to shut down gracefully.
+
+        Returns:
+            None
+        """
+        self.client.stop_channels()
+        self.manager.shutdown_kernel(now=now)
+
+    def __enter__(self) -> tp.Self:
+        self.start()
+        return self
+
+    def __exit__(self, *args) -> None:
+        self.shutdown()
+
+
+class VBTKernel(JupyterKernel):
+    """Jupyter kernel that automatically star-imports `vectorbtpro` on startup."""
+
+    def start(self) -> None:
+        JupyterKernel.start(self)
+        self.execute("from vectorbtpro import *")

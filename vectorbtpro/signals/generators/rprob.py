@@ -93,5 +93,5 @@ class _RPROB(RPROB):
     pass
 
 
-setattr(RPROB, "__doc__", _RPROB.__doc__)
+RPROB.clone_docstring(_RPROB)
 RPROB.fix_docstrings(__pdoc__)

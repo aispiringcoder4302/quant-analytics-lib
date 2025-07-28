@@ -3918,6 +3918,7 @@ class TestCustom:
             index=pd.date_range("2020", periods=10, tz="utc"),
             columns=pd.Index(["A", "B"]),
         )
+        default_connection = default_connection()
         default_connection.register("_DF", df.tz_localize(None).reset_index())
         csv_path = tmp_path / "df.csv"
         default_connection.execute(f"COPY (SELECT * FROM _DF) TO '{str(csv_path)}'")

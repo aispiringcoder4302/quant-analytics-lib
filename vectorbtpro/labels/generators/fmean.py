@@ -143,6 +143,6 @@ class _FMEAN(FMEAN):
         return fig
 
 
-setattr(FMEAN, "__doc__", _FMEAN.__doc__)
-setattr(FMEAN, "plot", _FMEAN.plot)
+FMEAN.clone_docstring(_FMEAN)
+FMEAN.clone_method(_FMEAN.plot)
 FMEAN.fix_docstrings(__pdoc__)

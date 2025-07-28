@@ -89,6 +89,6 @@ class _MEANLB(MEANLB):
         return self_col.close.rename("Close").vbt.overlay_with_heatmap(self_col.labels.rename("Labels"), **kwargs)
 
 
-setattr(MEANLB, "__doc__", _MEANLB.__doc__)
-setattr(MEANLB, "plot", _MEANLB.plot)
+MEANLB.clone_docstring(_MEANLB)
+MEANLB.clone_method(_MEANLB.plot)
 MEANLB.fix_docstrings(__pdoc__)

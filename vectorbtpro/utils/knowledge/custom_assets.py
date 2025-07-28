@@ -19,10 +19,14 @@ import os
 import pkgutil
 import re
 import base64
+import hashlib
+import tempfile
+import webbrowser
 from collections import defaultdict, deque
 from pathlib import Path
 from types import ModuleType
 from functools import partial
+from urllib.parse import urlparse, urlunparse
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
@@ -44,6 +48,7 @@ __all__ = [
     "VBTAsset",
     "PagesAsset",
     "MessagesAsset",
+    "ExamplesAsset",
     "find_api",
     "find_docs",
     "find_messages",
@@ -414,8 +419,6 @@ class VBTAsset(KnowledgeAsset):
         """
 
         def _extend_link(link):
-            from urllib.parse import urlparse
-
             if not urlparse(link).fragment:
                 if link.endswith("/"):
                     return [link, link[:-1]]
@@ -636,9 +639,6 @@ class VBTAsset(KnowledgeAsset):
         Returns:
             List[Path]: List of filesystem paths generated from the URLs.
         """
-        from urllib.parse import urlparse
-        import hashlib
-
         url_paths = []
         for url in urls:
             parsed = urlparse(url, allow_fragments=allow_fragments)
@@ -720,7 +720,6 @@ class VBTAsset(KnowledgeAsset):
         Returns:
             Path: Path to the directory where Markdown files are stored.
         """
-        import tempfile
         from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
 
         cache = self.resolve_setting(cache, "cache")
@@ -875,7 +874,6 @@ class VBTAsset(KnowledgeAsset):
         assert_can_import("bs4")
 
         from bs4 import BeautifulSoup
-        from urllib.parse import urlparse, urlunparse
 
         soup = BeautifulSoup(html, "html.parser")
 
@@ -938,7 +936,6 @@ class VBTAsset(KnowledgeAsset):
         !!! note
             An index page is created if there are multiple top-level parent entries.
         """
-        import tempfile
         from vectorbtpro.utils.knowledge.custom_asset_funcs import ToHTMLAssetFunc
 
         cache = self.resolve_setting(cache, "cache")
@@ -1050,8 +1047,6 @@ class VBTAsset(KnowledgeAsset):
             entry_link = d["link"]
         html_dir, url_map = self.save_to_html(return_url_map=True, **kwargs)
         if open_browser:
-            import webbrowser
-
             webbrowser.open(url_map[entry_link])
         return html_dir
 
@@ -1096,8 +1091,6 @@ class VBTAsset(KnowledgeAsset):
         !!! note
             The file __won't__ be deleted automatically.
         """
-        import tempfile
-
         open_browser = self.resolve_setting(open_browser, "open_browser", sub_path="display")
 
         if link is not None:
@@ -1137,8 +1130,6 @@ class VBTAsset(KnowledgeAsset):
             f.write(html)
             file_path = Path(f.name)
         if open_browser:
-            import webbrowser
-
             webbrowser.open("file://" + str(file_path.resolve()))
         return file_path
 
@@ -3075,10 +3066,14 @@ class MessagesAsset(VBTAsset):
         reference (Optional[str]): URL of the referenced message.
         replies (List[str]): URLs of messages that reference this message.
         channel (str): Name of the message channel, e.g. "support".
-        timestamp (str): Timestamp of the message, e.g. "2024-01-01 00:00:00".
-        author (str): Message author, e.g. "@polakowo".
+        timestamp (str): Timestamp of the message in ISO 8601 format, e.g. "2025-06-23".
+        author (str): Message author:
+
+            * "@user_n": participant n in this thread
+            * "@ext_user_n": (external) mentioned user n who hasn't posted in this thread
+            * "@maintainer": project maintainer
         content (str): Text content of the message.
-        mentions (List[str]): Discord usernames mentioned in the message, e.g. ["@polakowo"].
+        mentions (List[str]): Discord usernames mentioned in the message, e.g. ["@maintainer"].
         attachments (List[dict]): Attachments with fields "file_name" (e.g. "some_image.png") and
             "content" (extracted file content).
         reactions (int): Total number of reactions received.
@@ -3090,7 +3085,7 @@ class MessagesAsset(VBTAsset):
     _settings_path: tp.SettingsPath = "knowledge.assets.messages"
 
     def latest_first(self, **kwargs) -> tp.MaybeMessagesAsset:
-        """Return messages sorted by descending timestamp.
+        """Return messages sorted in reverse chronological order.
 
         Args:
             **kwargs: Keyword arguments for `MessagesAsset.sort`.
@@ -3098,7 +3093,12 @@ class MessagesAsset(VBTAsset):
         Returns:
             MaybeMessagesAsset: New messages asset sorted with the latest messages first.
         """
-        return self.sort(keys=self.get("timestamp"), ascending=False, **kwargs)
+        def _sort_key(x):
+            path = urlparse(x["link"]).path.rstrip("/")
+            parts = [p for p in path.split("/") if p]
+            return int(parts[-1])
+
+        return self.sort(source=_sort_key, ascending=False, **kwargs)
 
     def aggregate_messages(
         self: MessagesAssetT,
@@ -3594,6 +3594,90 @@ class MessagesAsset(VBTAsset):
             MaybeMessagesAsset: New messages asset containing messages related to the specified object(s).
         """
         return self.find_obj_mentions(obj, attr=attr, module=module, resolve=resolve, **kwargs)
+    
+
+ExamplesAssetT = tp.TypeVar("ExamplesAssetT", bound="ExamplesAsset")
+
+
+class ExamplesAsset(VBTAsset):
+    """Class for managing code examples (i.e., extracted and annotated code snippets from other assets).
+
+    Fields:
+        link (str): URL of the page or message, e.g. "https://vectorbt.pro/features/data/".
+        title (str): Title of the code example, e.g. "Definition of `<function_name>`".
+        description (str): Description of the code example, e.g. "Demonstrates ...".
+        content (str): Actual code example wrapped in a fenced code block, e.g. "```python\n...\n```".
+        verified (bool): Whether the code example was posted by project maintainer or has at least one upvote.
+
+    !!! info
+        For default settings, see `assets.examples` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _settings_path: tp.SettingsPath = "knowledge.assets.examples"
+
+    def select_verified(self, **kwargs) -> tp.MaybeExamplesAsset:
+        """Return code examples that are verified.
+
+        Filters the code examples asset to include only those where the `verified` field is True.
+
+        Args:
+            **kwargs: Keyword arguments for `ExamplesAsset.filter`.
+
+        Returns:
+            MaybeExamplesAsset: New examples asset containing only verified code examples.
+        """
+        return self.filter(lambda x: x.get("verified", False), **kwargs)
+    
+    def latest_first(self, **kwargs) -> tp.MaybeExamplesAsset:
+        """Return code examples sorted in reverse chronological order.
+
+        Documentation links appear first, followed by code examples from Discord messages.
+        Sorts the code examples asset by the Discord message ID extracted from the `link` field.
+
+        Args:
+            **kwargs: Keyword arguments for `ExamplesAsset.sort`.
+
+        Returns:
+            MaybeExamplesAsset: New code examples asset sorted with the latest code examples first.
+        """
+        def _extract_discord_message_id(url):
+            path = urlparse(url).path.rstrip("/")
+            parts = [p for p in path.split("/") if p]
+            if len(parts) >= 2 and parts[-1].isdigit() and parts[-2].isdigit():
+                return int(parts[-1])
+            return None
+
+        def _sort_key(x):
+            msg_id = _extract_discord_message_id(x["link"])
+            return (0, 0) if msg_id is None else (1, -msg_id)
+
+        return self.sort(source=_sort_key, ascending=True, **kwargs)
+
+    def find_obj_examples(
+        self,
+        obj: tp.MaybeList,
+        *,
+        attr: tp.Optional[str] = None,
+        module: tp.Union[None, str, ModuleType] = None,
+        resolve: bool = True,
+        **kwargs,
+    ) -> tp.MaybeExamplesAsset:
+        """Return code examples relevant to the specified object(s).
+
+        Delegates the search to `ExamplesAsset.find_obj_mentions` to locate code examples associated
+        with the provided object(s). Any additional keyword arguments are forwarded to the method.
+
+        Args:
+            obj (MaybeList): Object or list of objects to search for.
+            attr (Optional[str]): Attribute name to target on the object.
+            module (Union[None, str, ModuleType]): Module context used in reference resolution.
+            resolve (bool): Whether to resolve the object's reference name.
+            **kwargs: Keyword arguments for `ExamplesAsset.find_obj_mentions`.
+
+        Returns:
+            MaybeExamplesAsset: New examples asset containing code examples related to the specified object(s).
+        """
+        return self.find_obj_mentions(obj, attr=attr, module=module, resolve=resolve, **kwargs)
 
 
 def is_obj_or_query_ref(obj_or_query: tp.MaybeList) -> bool:
@@ -3829,124 +3913,60 @@ def find_examples(
     attr: tp.Optional[str] = None,
     module: tp.Union[None, str, ModuleType] = None,
     resolve: bool = True,
-    as_code: bool = True,
-    return_type: tp.Optional[str] = "field",
-    pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
-    messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
+    examples_asset: tp.Optional[tp.MaybeType[ExamplesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
-    aggregate_pages: bool = False,
-    aggregate_pages_kwargs: tp.KwargsLike = None,
-    aggregate_messages: tp.Union[bool, str] = "messages",
-    aggregate_messages_kwargs: tp.KwargsLike = None,
-    latest_messages_first: bool = False,
-    shuffle_messages: bool = False,
-    find_kwargs: tp.KwargsLike = None,
+    latest_first: bool = False,
+    verified_only: bool = False,
+    shuffle: bool = False,
     **kwargs,
-) -> tp.MaybeVBTAsset:
-    """Find code examples relevant to an object or query.
+) -> tp.MaybeExamplesAsset:
+    """Find code examples associated with an object or query.
 
     Args:
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
 
-            If None, all examples are returned.
+            If None, all code examples are returned.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
         attr (Optional[str]): Attribute name to target on the object.
         module (Union[None, str, ModuleType]): Module context used in reference resolution.
         resolve (bool): Whether to resolve the object's reference name.
-        as_code (bool): Determines if examples are returned as code including textual content.
-        return_type (Optional[str]): Specifies the format of returned content; e.g., "field", "match", or "item".
-        pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
-        messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
-        pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull` or `MessagesAsset.pull`.
-        aggregate_pages (bool): Whether to aggregate the pages asset.
-        aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
-        aggregate_messages (Union[bool, str]): Option to aggregate messages;
-            if a string, it specifies the aggregation key.
-        aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
-        latest_messages_first (bool): Whether to order messages with the most recent first.
-        shuffle_messages (bool): Whether to shuffle the order of messages.
-        find_kwargs (KwargsLike): Keyword arguments specifically for the find method.
-        **kwargs: Keyword arguments for `VBTAsset.find`, `VBTAsset.find_code`, or `VBTAsset.rank`.
+        examples_asset (Optional[MaybeType[ExamplesAsset]]): Class or instance representing examples assets.
+        pull_kwargs (KwargsLike): Keyword arguments for `ExamplesAsset.pull`.
+        latest_first (bool): If True, sorts code examples in reverse chronological order.
+        verified_only (bool): If True, only returns verified code examples.
+        shuffle (bool): If True, shuffles the order of code examples.
+        **kwargs: Keyword arguments for `ExamplesAsset.find_obj_examples` or `ExamplesAsset.rank`.
 
     Returns:
-        MaybeVBTAsset: New VBT asset containing code examples processed according to the specified parameters.
+        MaybeExamplesAsset: New examples asset of code examples processed according to the specified parameters.
 
     !!! note
         If `obj_or_query` is provided and not treated as a query, examples are retrieved using
-        `VBTAsset.find_obj_mentions`. Otherwise, examples are obtained via `VBTAsset.find_code`
-        (when `as_code` is True) or `VBTAsset.find` (when `as_code` is False), followed by ranking with
-        `VBTAsset.rank` if necessary.
-
-        Keyword arguments are automatically allocated between the find and rank methods unless isolated
-        using `find_kwargs`. By default, code examples include textual content; use `return_type="match"`
-        to extract code without text or `return_type="item"` to also obtain links.
+        `ExamplesAsset.find_obj_examples`. Otherwise, examples are filtered by ranking via `ExamplesAsset.rank`.
     """
-    if pages_asset is None:
-        pages_asset = PagesAsset
-    if isinstance(pages_asset, type):
-        checks.assert_subclass_of(pages_asset, PagesAsset, arg_name="pages_asset")
+    if examples_asset is None:
+        examples_asset = ExamplesAsset
+    if isinstance(examples_asset, type):
+        checks.assert_subclass_of(examples_asset, ExamplesAsset, arg_name="examples_asset")
         if pull_kwargs is None:
             pull_kwargs = {}
-        pages_asset = pages_asset.pull(**pull_kwargs)
+        examples_asset = examples_asset.pull(**pull_kwargs)
     else:
-        checks.assert_instance_of(pages_asset, PagesAsset, arg_name="pages_asset")
-    if aggregate_pages:
-        if aggregate_pages_kwargs is None:
-            aggregate_pages_kwargs = {}
-        pages_asset = pages_asset.aggregate(**aggregate_pages_kwargs)
-    if messages_asset is None:
-        messages_asset = MessagesAsset
-    if isinstance(messages_asset, type):
-        checks.assert_subclass_of(messages_asset, MessagesAsset, arg_name="messages_asset")
-        if pull_kwargs is None:
-            pull_kwargs = {}
-        messages_asset = messages_asset.pull(**pull_kwargs)
-    else:
-        checks.assert_instance_of(messages_asset, MessagesAsset, arg_name="messages_asset")
-    if aggregate_messages:
-        if aggregate_messages_kwargs is None:
-            aggregate_messages_kwargs = {}
-        if isinstance(aggregate_messages, str) and "by" not in aggregate_messages_kwargs:
-            aggregate_messages_kwargs["by"] = aggregate_messages
-        messages_asset = messages_asset.aggregate(**aggregate_messages_kwargs)
-    if latest_messages_first:
-        messages_asset = messages_asset.latest_first()
-    elif shuffle_messages:
-        messages_asset = messages_asset.shuffle()
-    combined_asset = pages_asset + messages_asset
+        checks.assert_instance_of(examples_asset, ExamplesAsset, arg_name="examples_asset")
+    if verified_only:
+        examples_asset = examples_asset.select_verified()
+    if latest_first:
+        examples_asset = examples_asset.latest_first()
+    elif shuffle:
+        examples_asset = examples_asset.shuffle()
 
     if as_query is None:
         as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)
-    if find_kwargs is None:
-        find_kwargs = {}
-    else:
-        find_kwargs = dict(find_kwargs)
-    find_kwargs["return_type"] = return_type
     if obj_or_query is not None and not as_query:
-        return combined_asset.find_obj_mentions(
-            obj_or_query,
-            attr=attr,
-            module=module,
-            resolve=resolve,
-            as_code=as_code,
-            **find_kwargs,
-            **kwargs,
-        )
-    if as_code:
-        method = combined_asset.find_code
-    else:
-        method = combined_asset.find
+        return examples_asset.find_obj_examples(obj_or_query, attr=attr, module=module, resolve=resolve, **kwargs)
     if obj_or_query is None:
-        return method(**find_kwargs, **kwargs)
-    find_code_arg_names = set(get_func_arg_names(method))
-    rank_kwargs = {}
-    for k, v in kwargs.items():
-        if k in find_code_arg_names:
-            if k not in find_kwargs:
-                find_kwargs[k] = v
-        else:
-            rank_kwargs[k] = v
-    return method(**find_kwargs).rank(obj_or_query, **rank_kwargs)
+        return examples_asset
+    return examples_asset.rank(obj_or_query, **kwargs)
 
 
 def find_assets(
@@ -3959,13 +3979,14 @@ def find_assets(
     asset_names: tp.MaybeIterable[str] = "all",
     pages_asset: tp.Optional[tp.MaybeType[PagesAssetT]] = None,
     messages_asset: tp.Optional[tp.MaybeType[MessagesAssetT]] = None,
+    examples_asset: tp.Optional[tp.MaybeType[ExamplesAssetT]] = None,
     pull_kwargs: tp.KwargsLike = None,
     aggregate_pages: bool = False,
     aggregate_pages_kwargs: tp.KwargsLike = None,
     aggregate_messages: tp.Union[bool, str] = "messages",
     aggregate_messages_kwargs: tp.KwargsLike = None,
-    latest_messages_first: bool = False,
-    shuffle_messages: bool = False,
+    latest_first: bool = False,
+    shuffle: bool = False,
     api_kwargs: tp.KwargsLike = None,
     docs_kwargs: tp.KwargsLike = None,
     messages_kwargs: tp.KwargsLike = None,
@@ -3973,9 +3994,11 @@ def find_assets(
     minimize: tp.Optional[bool] = None,
     minimize_pages: tp.Optional[bool] = None,
     minimize_messages: tp.Optional[bool] = None,
+    minimize_examples: tp.Optional[bool] = None,
     minimize_kwargs: tp.KwargsLike = None,
     minimize_pages_kwargs: tp.KwargsLike = None,
     minimize_messages_kwargs: tp.KwargsLike = None,
+    minimize_examples_kwargs: tp.KwargsLike = None,
     combine: bool = True,
     combine_kwargs: tp.KwargsLike = None,
     **kwargs,
@@ -3998,10 +4021,11 @@ def find_assets(
             * `examples`: Retrieved via `find_examples` with `examples_kwargs`.
             * `all`: Includes all supported asset types.
 
-            For example, `["messages", ...]` puts "messages" at the beginning and all other assets
+            For example, `["examples", ...]` puts "examples" at the beginning and all other assets
             in their usual order at the end.
         pages_asset (Optional[MaybeType[PagesAsset]]): Class or instance representing pages assets.
         messages_asset (Optional[MaybeType[MessagesAsset]]): Class or instance representing messages assets.
+        examples_asset (Optional[MaybeType[ExamplesAsset]]): Class or instance representing examples assets.
         pull_kwargs (KwargsLike): Keyword arguments for `PagesAsset.pull` or `MessagesAsset.pull`.
         aggregate_pages (bool): Whether to aggregate the pages asset.
         aggregate_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
@@ -4010,8 +4034,8 @@ def find_assets(
         aggregate_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.aggregate`.
 
             Key `minimize_metadata` is set to True by default.
-        latest_messages_first (bool): Whether to order messages with the most recent first.
-        shuffle_messages (bool): Whether to shuffle the order of messages.
+        latest_first (bool): Whether to order messages and code examples with the most recent first.
+        shuffle (bool): Whether to shuffle the order of messages and code examples.
         api_kwargs (KwargsLike): Keyword arguments for `find_api`.
         docs_kwargs (KwargsLike): Keyword arguments for `find_docs`.
         messages_kwargs (KwargsLike): Keyword arguments for `find_messages`.
@@ -4022,11 +4046,13 @@ def find_assets(
             It defaults to True if `combine` is True, otherwise, it defaults to False.
         minimize_pages (Optional[bool]): Whether to remove non-chat-relevant fields from the pages asset.
         minimize_messages (Optional[bool]): Whether to remove non-chat-relevant fields from the messages asset.
+        minimize_examples (Optional[bool]): Whether to remove non-chat-relevant fields from the examples asset.
         minimize_kwargs (KwargsLike): Keyword arguments for `VBTAsset.minimize`.
 
             Arguments `minimize_pages_kwargs` and `minimize_messages_kwargs` are merged over `minimize_kwargs`.
         minimize_pages_kwargs (KwargsLike): Keyword arguments for `PagesAsset.minimize`.
         minimize_messages_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.minimize`.
+        minimize_examples_kwargs (KwargsLike): Keyword arguments for `ExamplesAsset.minimize`.
         combine (bool): Whether to combine all found assets into a single asset.
         combine_kwargs (KwargsLike): Keyword arguments for `VBTAsset.combine`.
         **kwargs: Keyword arguments for asset functions (except for `find_api`
@@ -4038,7 +4064,6 @@ def find_assets(
             entries with no content are omitted.
 
     !!! note
-        `find_examples` assets are typically excluded by default due to overlap with other asset types.
         Keyword arguments are passed to all functions (except for `find_api` when `obj_or_query` is an object
         since it doesn't share common arguments with other three functions), unless `combine` and `as_query`
         are both True; in this case they are passed to `VBTAsset.rank`. Use specialized arguments like
@@ -4074,17 +4099,13 @@ def find_assets(
         messages_kwargs["aggregate"] = False
     if "latest_first" not in messages_kwargs:
         messages_kwargs["latest_first"] = False
-    if "aggregate_pages" not in examples_kwargs:
-        examples_kwargs["aggregate_pages"] = False
-    if "aggregate_messages" not in examples_kwargs:
-        examples_kwargs["aggregate_messages"] = False
-    if "latest_messages_first" not in examples_kwargs:
-        examples_kwargs["latest_messages_first"] = False
+    if "latest_first" not in examples_kwargs:
+        examples_kwargs["latest_first"] = False
 
+    all_asset_names = ["api", "docs", "messages", "examples"]
     if isinstance(asset_names, str) and asset_names.lower() == "all":
-        asset_names = ["api", "docs", "messages"]
+        asset_names = all_asset_names
     else:
-        all_asset_names = ["api", "docs", "messages", "examples"]
         if isinstance(asset_names, (str, type(Ellipsis))):
             asset_names = [asset_names]
         asset_keys = []
@@ -4097,11 +4118,9 @@ def find_assets(
                     raise ValueError(f"Invalid asset name: '{asset_name}'")
                 asset_keys.append(asset_key)
         new_asset_names = reorder_list(all_asset_names, asset_keys, skip_missing=True)
-        if "examples" not in asset_names and "examples" in new_asset_names:
-            new_asset_names.remove("examples")
         asset_names = new_asset_names
 
-    if "api" in asset_names or "docs" in asset_names or "examples" in asset_names:
+    if "api" in asset_names or "docs" in asset_names:
         if pages_asset is None:
             pages_asset = PagesAsset
         if isinstance(pages_asset, type):
@@ -4117,7 +4136,7 @@ def find_assets(
             pages_asset = pages_asset.aggregate(**aggregate_pages_kwargs)
     else:
         pages_asset = None
-    if "messages" in asset_names or "examples" in asset_names:
+    if "messages" in asset_names:
         if messages_asset is None:
             messages_asset = MessagesAsset
         if isinstance(messages_asset, type):
@@ -4137,12 +4156,28 @@ def find_assets(
             if "minimize_metadata" not in aggregate_messages_kwargs:
                 aggregate_messages_kwargs["minimize_metadata"] = True
             messages_asset = messages_asset.aggregate(**aggregate_messages_kwargs)
-        if latest_messages_first:
+        if latest_first:
             messages_asset = messages_asset.latest_first()
-        elif shuffle_messages:
+        elif shuffle:
             messages_asset = messages_asset.shuffle()
     else:
         messages_asset = None
+    if "examples" in asset_names:
+        if examples_asset is None:
+            examples_asset = ExamplesAsset
+        if isinstance(examples_asset, type):
+            checks.assert_subclass_of(examples_asset, ExamplesAsset, arg_name="examples_asset")
+            if pull_kwargs is None:
+                pull_kwargs = {}
+            examples_asset = examples_asset.pull(**pull_kwargs)
+        else:
+            checks.assert_instance_of(examples_asset, ExamplesAsset, arg_name="examples_asset")
+        if latest_first:
+            examples_asset = examples_asset.latest_first()
+        elif shuffle:
+            examples_asset = examples_asset.shuffle()
+    else:
+        examples_asset = None
 
     asset_dict = {}
     for asset_name in asset_names:
@@ -4191,8 +4226,7 @@ def find_assets(
                 attr=attr,
                 module=module,
                 resolve=resolve,
-                pages_asset=pages_asset,
-                messages_asset=messages_asset,
+                examples_asset=examples_asset,
                 **examples_kwargs,
             )
             if len(asset) > 0:
@@ -4206,7 +4240,7 @@ def find_assets(
         for k, v in asset_dict.items():
             if (
                 isinstance(v, VBTAsset)
-                and not isinstance(v, (PagesAsset, MessagesAsset))
+                and not isinstance(v, (PagesAsset, MessagesAsset, ExamplesAsset))
                 and len(v) > 0
                 and not isinstance(v[0], str)
             ):
@@ -4225,6 +4259,13 @@ def find_assets(
         for k, v in asset_dict.items():
             if isinstance(v, MessagesAsset) and len(v) > 0 and not isinstance(v[0], str):
                 asset_dict[k] = v.minimize(**minimize_messages_kwargs)
+    if minimize_examples is None:
+        minimize_examples = minimize
+    if minimize_examples:
+        minimize_examples_kwargs = merge_dicts(minimize_kwargs, minimize_examples_kwargs)
+        for k, v in asset_dict.items():
+            if isinstance(v, ExamplesAsset) and len(v) > 0 and not isinstance(v[0], str):
+                asset_dict[k] = v.minimize(**minimize_examples_kwargs)
     if combine:
         if len(asset_dict) >= 2:
             if combine_kwargs is None:
@@ -4246,8 +4287,7 @@ def chat_about(
     chat_history: tp.ChatHistory = None,
     *,
     asset_names: tp.MaybeIterable[str] = "examples",
-    latest_messages_first: bool = True,
-    shuffle_messages: tp.Optional[bool] = None,
+    latest_first: bool = True,
     shuffle: tp.Optional[bool] = None,
     find_assets_kwargs: tp.KwargsLike = None,
     **kwargs,
@@ -4258,9 +4298,6 @@ def chat_about(
     to retrieve assets (defaulting to the asset name `examples`) and execute the chat. Keyword arguments are
     distributed automatically between the asset search and chat methods based on parameter names, unless
     some keys cannot be found in both signatures. In such a case, the key will be used for chatting.
-
-    If `shuffle` is True, shuffles the combined asset. By default, shuffles only messages (`shuffle=False`
-    and `shuffle_messages=True`). If `shuffle` is False, shuffles neither messages nor combined asset.
 
     Args:
         obj (MaybeList): Object or list of objects to chat about.
@@ -4276,24 +4313,18 @@ def chat_about(
             * `examples`: Retrieved via `find_examples` with `examples_kwargs`.
             * `all`: Includes all supported asset types.
 
-            For example, `["messages", ...]` puts "messages" at the beginning and all other assets
+            For example, `["examples", ...]` puts "examples" at the beginning and all other assets
             in their usual order at the end.
-        latest_messages_first (bool): Whether to order messages with the most recent first.
-        shuffle_messages (Optional[bool]): If True, shuffles the order of messages.
+        latest_first (bool): Whether to order messages and code examples with the most recent first.
         shuffle (Optional[bool]): If True, shuffles the combined asset.
+
+            If None, shuffles messages and code examples by default, but not the combined asset.
         find_assets_kwargs (KwargsLike): Keyword arguments for `find_assets`.
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.chat`.
 
     Returns:
         MaybeChatOutput: Output of the chat session, which may include the chat history and other information.
     """
-    if shuffle is not None:
-        if shuffle_messages is None:
-            shuffle_messages = False
-    else:
-        shuffle = False
-        if shuffle_messages is None:
-            shuffle_messages = True
     find_arg_names = set(get_func_arg_names(find_assets))
     if find_assets_kwargs is None:
         find_assets_kwargs = {}
@@ -4311,8 +4342,8 @@ def chat_about(
         as_query=False,
         asset_names=asset_names,
         combine=True,
-        latest_messages_first=latest_messages_first,
-        shuffle_messages=shuffle_messages,
+        latest_first=latest_first,
+        shuffle=shuffle is None,
         **find_assets_kwargs,
     )
     if shuffle:
@@ -4334,8 +4365,6 @@ def search(
     **kwargs,
 ) -> tp.Union[tp.MaybeVBTAsset, tp.Path]:
     """Search for assets relevant to the provided query and return a ranked asset or display output.
-
-    By default, uses API, documentation, and messages.
 
     Uses `find_assets` with `combine=True` and `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.rank`.
     Keyword arguments are distributed among these two methods automatically, unless some keys cannot be

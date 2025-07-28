@@ -275,8 +275,7 @@ class _PIVOTINFO(PIVOTINFO):
 
         return fig
 
-
-setattr(PIVOTINFO, "__doc__", _PIVOTINFO.__doc__)
-setattr(PIVOTINFO, "plot", _PIVOTINFO.plot)
-setattr(PIVOTINFO, "plot_zigzag", _PIVOTINFO.plot_zigzag)
+PIVOTINFO.clone_docstring(_PIVOTINFO)
+PIVOTINFO.clone_method(_PIVOTINFO.plot)
+PIVOTINFO.clone_method(_PIVOTINFO.plot_zigzag)
 PIVOTINFO.fix_docstrings(__pdoc__)

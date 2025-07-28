@@ -697,69 +697,85 @@ class AttrResolverMixin(Base):
         return deep_getattr(self, *args, **kwargs)
 
 
-def get_attrs(obj: tp.Any, own_only: bool = False, sort_by: tp.Optional[str] = None) -> tp.Frame:
+def get_attrs(
+    obj,
+    own_only: bool = False,
+    incl_private: bool = False,
+    sort_by: tp.Optional[tp.MaybeIterable[str]] = "attr",
+) -> tp.Frame:
     """Get attributes of a class, object, or module as a DataFrame with metadata.
 
     Args:
         obj (Any): Object, class, or module whose attributes are to be parsed.
-        own_only (bool): If True, include only attributes that are defined directly on
-            object's class/module; inherited members are omitted.
-        sort_by (Optional[str]): Column name used to sort the resulting DataFrame.
+        own_only (bool): If True, include only attributes that are defined directly on the object.
+        incl_private (bool): If True, include private attributes (those starting with an underscore).
+        sort_by (Optional[MaybeIterable[str]]): Column name (or sequence of names) used to sort the resulting DataFrame.
 
     Returns:
-        Frame: DataFrame indexed by attribute names with columns for type and path information.
+        Frame: DataFrame with columns describing each attribute (name, type, and reference name).
     """
+    from vectorbtpro.utils.module_ import get_refname, resolve_refname
+
     cls = obj if inspect.isclass(obj) or inspect.ismodule(obj) else type(obj)
-    is_module_cls = inspect.ismodule(cls)
-    cls_path = cls.__name__ if is_module_cls else f"{cls.__module__}.{cls.__name__}"
-    mro = inspect.getmro(cls)[1:] if not is_module_cls else ()
-    mro_dict_keys = [set(base.__dict__) for base in mro]
-    attrs = set(dir(cls))
-    if not (inspect.isclass(obj) or inspect.ismodule(obj)):
-        attrs.update(getattr(obj, "__dict__", {}).keys())
+    is_mod = inspect.ismodule(cls)
+    attrs = set(dir(obj if not is_mod else cls))
+    attrs.update(getattr(obj, "__dict__", {}).keys())
+    if not is_mod:
+        slots = getattr(obj, "__slots__", ())
+        if isinstance(slots, str):
+            attrs.add(slots)
+        else:
+            attrs.update(slots)
+    if not incl_private:
+        attrs = {a for a in attrs if not a.startswith("_")}
+    obj_refname = get_refname(obj)
 
     rows = []
     for name in attrs:
-        if name.startswith("_"):
-            continue
-        if name in getattr(obj, "__dict__", {}) and name not in cls.__dict__:
-            value = getattr(obj, name)
-            defining_path = cls_path
-        else:
-            value = inspect.getattr_static(cls, name)
-            if is_module_cls:
-                mod = inspect.getmodule(value)
-                defining_path = mod.__name__ if mod else "?"
-            else:
-                defining_path = cls_path
-                for base, keys in zip(mro, mro_dict_keys):
-                    if name in keys:
-                        defining_path = f"{base.__module__}.{base.__name__}"
-                        break
-        if own_only and not defining_path.startswith(cls_path):
-            continue
-        if inspect.ismodule(value):
-            if hasattr(value, "__path__"):
-                typ = "package"
-            elif getattr(value, "__spec__", None) and value.__spec__.origin in (None, "namespace"):
-                typ = "namespace"
-            else:
-                typ = "module"
-        else:
-            typ = type(value).__name__
-        qualname = getattr(value, "__qualname__", "?")
-        rows.append(dict(attr=name, type=typ, path=defining_path, qualname=qualname))
+        target = obj if not is_mod else cls
+        try:
+            value = inspect.getattr_static(target, name)
+            value_is_none = False
+        except AttributeError:
+            try:
+                value = inspect.getattr_static(cls, name)
+                value_is_none = False
+            except AttributeError:
+                try:
+                    value = getattr(obj, name)
+                    value_is_none = False
+                except Exception:
+                    value = None
+                    value_is_none = True
 
-    df = pd.DataFrame(rows, dtype=object).set_index("attr", drop=True)
-    if sort_by is not None and len(df) > 0:
-        sort_by = [sort_by] if isinstance(sort_by, str) else list(sort_by)
-        if "attr" not in sort_by:
-            sort_by.append("attr")
-        df = df.sort_values(sort_by, kind="stable")
+        refname = get_refname(value)
+        if refname is None:
+            refname = resolve_refname(obj_refname + "." + name)
+        if own_only and refname is not None and refname != obj_refname + "." + name:
+            continue
+
+        dct = {"attr": name}
+        if not value_is_none:
+            dct["type"] = type(value).__name__
+        else:
+            dct["type"] = "?"
+        if refname is not None:
+            dct["refname"] = refname
+        else:
+            dct["refname"] = "?"
+        rows.append(dct)
+
+    df = pd.DataFrame(rows)
+    df.set_index("attr", inplace=True, verify_integrity=True)
+    if sort_by is not None:
+        sort_cols = [sort_by] if isinstance(sort_by, str) else list(sort_by)
+        if "attr" not in sort_cols:
+            sort_cols.append("attr")
+        df = df.sort_values(by=sort_cols, kind="mergesort")
     return df
 
 
-def attr_tree(obj: tp.Any = None, own_only: bool = False, **kwargs) -> str:
+def attr_tree(obj: tp.Any = None, own_only: bool = False, incl_private: bool = False, **kwargs) -> str:
     """Get a visual tree of an object's attributes.
 
     The function combines `get_attrs` (to collect metadata on the attributes of `obj`) with
@@ -769,39 +785,30 @@ def attr_tree(obj: tp.Any = None, own_only: bool = False, **kwargs) -> str:
     Each attribute is represented as a leaf in the tree, whereas the tree structure
     represents the hierarchy of modules and classes from which the attributes are inherited.
 
-    Each leaf in the tree is formatted as:
-
-    ```
-    <attr_name> [<attr_type>] (@ <qualname>)
-    ```
-
-    where the "@ <qualname>" suffix is shown only when the attribute's `__qualname__` either
-
-    * differs from the attribute's own name (indicating an alias or re-export), or
-    * is shared by multiple attributes (true duplicates).
+    Each leaf in the tree is formatted as `<name> [<type>] (@ <refname>)`, where the `@ <refname>` suffix
+    is shown only when the attribute's reference name either differs from the attribute's own name
+    (indicating an alias or re-export).
 
     Args:
         obj (Any): Object, class, or module whose attributes are to be visualized.
-        own_only (bool): If True, include only attributes that are defined directly on
-            object's class/module; inherited members are omitted.
+        own_only (bool): If True, include only attributes that are defined directly on the object.
+        incl_private (bool): If True, include private attributes (those starting with an underscore).
         **kwargs: Keyword arguments passed to `vectorbtpro.utils.path_.dir_tree_from_paths`.
 
     Returns:
         str: Printable, newline-separated string representing the attribute hierarchy.
     """
-    df = get_attrs(obj=obj, own_only=own_only)
-    qname_counts = df["qualname"].value_counts()
+    df = get_attrs(obj=obj, own_only=own_only, incl_private=incl_private)
     paths, display_names = [], []
 
     for a, r in df.iterrows():
-        full_path = f"{r['path']}.{a}"
-        paths.append(Path(full_path.replace(".", "/")))
+        paths.append(Path(r['refname'].replace(".", "/")))
         disp = f"{a} [{r['type']}]"
-        qn = r["qualname"]
-        if qn != "?":
-            qn_last = qn.rsplit(".", 1)[-1]
-            if (qn_last != a) or (qname_counts[qn] > 1 and qn_last != a):
-                disp += f" @ {qn}"
+        refname = r["refname"]
+        if refname != "?":
+            refname_last = refname.rsplit(".", 1)[-1]
+            if refname_last != a:
+                disp += f" @ {refname}"
         display_names.append(disp)
 
     return dir_tree_from_paths(
