@@ -132,6 +132,7 @@ class _FMAX(FMAX):
 
         return fig
 
+
 FMAX.clone_docstring(_FMAX)
 FMAX.clone_method(_FMAX.plot)
 FMAX.fix_docstrings(__pdoc__)

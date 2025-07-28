@@ -1597,9 +1597,9 @@ class FindRemoveAssetFunc(FindAssetFunc):
 
     @classmethod
     def is_empty_func(
-        cls, 
-        k: tp.Optional[tp.Hashable], 
-        d: tp.Any, 
+        cls,
+        k: tp.Optional[tp.Hashable],
+        d: tp.Any,
         skip_keys: tp.Optional[tp.Container[tp.Hashable]] = None,
     ) -> bool:
         """Return whether the given object is empty.

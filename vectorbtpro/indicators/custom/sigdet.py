@@ -255,6 +255,7 @@ class _SIGDET(SIGDET):
 
         return fig
 
+
 SIGDET.clone_docstring(_SIGDET)
 SIGDET.clone_method(_SIGDET.plot)
 SIGDET.clone_method(_SIGDET.plot_bands)

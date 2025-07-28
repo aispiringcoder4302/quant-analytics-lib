@@ -1736,7 +1736,7 @@ class IndicatorBase(Analyzable):
     @classmethod
     def clone_docstring(cls, another_cls: tp.Type) -> None:
         """Clone the docstring from another class.
-        
+
         Args:
             another_cls (Type): Class from which to clone the docstring.
 
@@ -1746,11 +1746,12 @@ class IndicatorBase(Analyzable):
         cls.__doc__ = another_cls.__doc__
 
     @classmethod
-    def clone_method(cls, method: tp.Callable) -> None:
+    def clone_method(cls, method: tp.Callable, target_name: tp.Optional[str] = None) -> None:
         """Clone a method to the class.
-        
+
         Args:
             method (Callable): Method to clone.
+            target_name (Optional[str]): Target name for the cloned method.
 
         Returns:
             None
@@ -1758,16 +1759,17 @@ class IndicatorBase(Analyzable):
         from types import FunctionType
         from functools import update_wrapper
 
+        if target_name is None:
+            target_name = method.__name__
         new_method = FunctionType(
             method.__code__,
             method.__globals__,
-            method.__name__, 
-            method.__defaults__, 
-            method.__closure__
+            method.__name__,
+            method.__defaults__,
+            method.__closure__,
         )
         update_wrapper(new_method, method)
-        new_method.__qualname__ = f"{cls.__name__}.{method.__name__}"
-        setattr(cls, method.__name__, new_method)
+        setattr(cls, target_name, new_method)
 
     @classmethod
     def fix_docstrings(cls, __pdoc__: dict) -> None:
@@ -1784,6 +1786,7 @@ class IndicatorBase(Analyzable):
         """
         if hasattr(cls, "custom_func"):
             if cls.custom_func is not None:
+                cls.custom_func.__name__ = "custom_func"
                 cls.custom_func.__module__ = cls.__module__
                 cls.custom_func.__qualname__ = f"{cls.__name__}.custom_func"
             if cls.__name__ + ".custom_func" not in __pdoc__:
@@ -1793,6 +1796,7 @@ class IndicatorBase(Analyzable):
                     __pdoc__[cls.__name__ + ".custom_func"] = "Custom function."
         if hasattr(cls, "apply_func"):
             if cls.apply_func is not None:
+                cls.apply_func.__name__ = "apply_func"
                 cls.apply_func.__module__ = cls.__module__
                 cls.apply_func.__qualname__ = f"{cls.__name__}.apply_func"
             if cls.__name__ + ".apply_func" not in __pdoc__:
@@ -1802,6 +1806,7 @@ class IndicatorBase(Analyzable):
                     __pdoc__[cls.__name__ + ".apply_func"] = "Apply function."
         if hasattr(cls, "cache_func"):
             if cls.cache_func is not None:
+                cls.cache_func.__name__ = "cache_func"
                 cls.cache_func.__module__ = cls.__module__
                 cls.cache_func.__qualname__ = f"{cls.__name__}.cache_func"
             if cls.__name__ + ".cache_func" not in __pdoc__:
@@ -1811,6 +1816,7 @@ class IndicatorBase(Analyzable):
                     __pdoc__[cls.__name__ + ".cache_func"] = "Cache function."
         if hasattr(cls, "entry_place_func_nb"):
             if cls.entry_place_func_nb is not None:
+                cls.entry_place_func_nb.__name__ = "entry_place_func_nb"
                 cls.entry_place_func_nb.__module__ = cls.__module__
                 cls.entry_place_func_nb.__qualname__ = f"{cls.__name__}.entry_place_func_nb"
             if cls.__name__ + ".entry_place_func_nb" not in __pdoc__:
@@ -1820,6 +1826,7 @@ class IndicatorBase(Analyzable):
                     __pdoc__[cls.__name__ + ".entry_place_func_nb"] = "Entry placement function."
         if hasattr(cls, "exit_place_func_nb"):
             if cls.exit_place_func_nb is not None:
+                cls.exit_place_func_nb.__name__ = "exit_place_func_nb"
                 cls.exit_place_func_nb.__module__ = cls.__module__
                 cls.exit_place_func_nb.__qualname__ = f"{cls.__name__}.exit_place_func_nb"
             if cls.__name__ + ".exit_place_func_nb" not in __pdoc__:
@@ -2016,6 +2023,9 @@ class IndicatorFactory(Configured):
                 return getattr(self, f"_{_param_name}_list")
 
             param_list_prop.__doc__ = f"List of values for the `{param_name}` parameter."
+            param_list_prop.__name__ = f"{param_name}_list"
+            param_list_prop.__module__ = Indicator.__module__
+            param_list_prop.__qualname__ = f"{Indicator.__name__}.{param_list_prop.__name__}"
             setattr(Indicator, f"{param_name}_list", property(param_list_prop))
 
         for input_name in input_names:
@@ -2640,8 +2650,8 @@ class IndicatorFactory(Configured):
         output_names = self.output_names
 
         all_input_names = input_names + param_names + in_output_names
-
-        setattr(Indicator, "custom_func", custom_func)
+    
+        Indicator.clone_method(custom_func, target_name="custom_func")
 
         def _split_args(
             args: tp.Sequence,
@@ -3133,8 +3143,9 @@ class IndicatorFactory(Configured):
         """
         Indicator = self.Indicator
 
-        setattr(Indicator, "apply_func", apply_func)
-        setattr(Indicator, "cache_func", cache_func)
+        Indicator.clone_method(apply_func, target_name="apply_func")
+        if cache_func is not None:
+            Indicator.clone_method(cache_func, target_name="cache_func")
 
         module_name = self.module_name
         input_names = self.input_names

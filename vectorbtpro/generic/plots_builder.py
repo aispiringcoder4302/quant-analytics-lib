@@ -149,7 +149,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 Each element may be:
 
                 * Subplot name (as defined in `PlotsBuilderMixin.subplots`).
-                * Tuple containing a subplot name and a settings dictionary 
+                * Tuple containing a subplot name and a settings dictionary
                     (as defined in `PlotsBuilderMixin.subplots`).
                 * Tuple containing a subplot name and a `vectorbtpro.utils.template.CustomTemplate` instance.
                 * Tuple containing a subplot name and a list of settings dictionaries
