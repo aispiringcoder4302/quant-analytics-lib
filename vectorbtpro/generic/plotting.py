@@ -435,11 +435,11 @@ class Bar(TraceType, TraceUpdater):
         Returns:
             None
         """
-        data = clean_data(reshaping.to_2d_array(data))
+        d = clean_data(reshaping.to_2d_array(data)[:, i])
 
-        trace.y = data[:, i]
+        trace.y = d
         if trace.marker.colorscale is not None:
-            trace.marker.color = data[:, i]
+            trace.marker.color = d
 
     def update(self, data: tp.ArrayLike) -> None:
         """Update all bar traces with new data.
@@ -452,8 +452,6 @@ class Bar(TraceType, TraceUpdater):
         Returns:
             None
         """
-        data = clean_data(reshaping.to_2d_array(data))
-
         with self.fig.batch_update():
             for i, trace in enumerate(self.traces):
                 self.update_trace(trace, data, i)
@@ -610,23 +608,21 @@ class Scatter(TraceType, TraceUpdater):
         Returns:
             None
         """
-        data = clean_data(reshaping.to_2d_array(data))
+        d = clean_data(reshaping.to_2d_array(data)[:, i])
 
-        trace.y = data[:, i]
+        trace.y = d
 
     def update(self, data: tp.ArrayLike) -> None:
         """Update all scatter traces with new data.
 
         Args:
             data (ArrayLike): Data convertible to a NumPy array.
-
+`
                 Must have shape corresponding to (`x_labels`, `trace_names`).
 
         Returns:
             None
         """
-        data = clean_data(reshaping.to_2d_array(data))
-
         with self.fig.batch_update():
             for i, trace in enumerate(self.traces):
                 self.update_trace(trace, data, i)
@@ -823,9 +819,7 @@ class Histogram(TraceType, TraceUpdater):
         Returns:
             None
         """
-        data = clean_data(reshaping.to_2d_array(data))
-
-        d = data[:, i]
+        d = reshaping.to_2d_array(data)[:, i]
         if remove_nan:
             d = d[~np.isnan(d)]
         mask = np.full(d.shape, True)
@@ -833,7 +827,8 @@ class Histogram(TraceType, TraceUpdater):
             mask &= d >= np.quantile(d, from_quantile)
         if to_quantile is not None:
             mask &= d <= np.quantile(d, to_quantile)
-        d = d[mask]
+        d = clean_data(d[mask])
+
         if horizontal:
             trace.x = None
             trace.y = d
@@ -852,8 +847,6 @@ class Histogram(TraceType, TraceUpdater):
         Returns:
             None
         """
-        data = clean_data(reshaping.to_2d_array(data))
-
         with self.fig.batch_update():
             for i, trace in enumerate(self.traces):
                 self.update_trace(
@@ -1056,9 +1049,7 @@ class Box(TraceType, TraceUpdater):
         Returns:
             None
         """
-        data = clean_data(reshaping.to_2d_array(data))
-
-        d = data[:, i]
+        d = reshaping.to_2d_array(data)[:, i]
         if remove_nan:
             d = d[~np.isnan(d)]
         mask = np.full(d.shape, True)
@@ -1066,7 +1057,8 @@ class Box(TraceType, TraceUpdater):
             mask &= d >= np.quantile(d, from_quantile)
         if to_quantile is not None:
             mask &= d <= np.quantile(d, to_quantile)
-        d = d[mask]
+        d = clean_data(d[mask])
+
         if horizontal:
             trace.x = d
             trace.y = None
@@ -1085,8 +1077,6 @@ class Box(TraceType, TraceUpdater):
         Returns:
             None
         """
-        data = clean_data(reshaping.to_2d_array(data))
-
         with self.fig.batch_update():
             for i, trace in enumerate(self.traces):
                 self.update_trace(
@@ -1239,7 +1229,9 @@ class Heatmap(TraceType, TraceUpdater):
         Returns:
             None
         """
-        trace.z = clean_data(reshaping.to_2d_array(data))
+        d = clean_data(reshaping.to_2d_array(data))
+
+        trace.z = d
 
     def update(self, data: tp.ArrayLike) -> None:
         """Update all heatmap traces with new data.
@@ -1420,7 +1412,9 @@ class Volume(TraceType, TraceUpdater):
         Returns:
             None
         """
-        trace.value = clean_data(np.asarray(data).flatten())
+        d = clean_data(np.asarray(data).flatten())
+
+        trace.value = d
 
     def update(self, data: tp.ArrayLike) -> None:
         """Update all volume traces with new data.

@@ -4347,7 +4347,17 @@ class IndicatorFactory(Configured):
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("pandas_ta")
-        import pandas_ta
+        try:
+            import pandas_ta
+        except ImportError as e:
+            if "cannot import name 'NaN' from 'numpy'" in str(e):
+                warn(
+                    "Cannot import name 'NaN' from 'numpy'. "
+                    "Current version of Pandas TA is not compatible with the latest NumPy. "
+                    "Please install an older version of NumPy, e.g., 1.26.4."
+                )
+                return []
+            raise e
 
         indicators = set()
         for func_name in [_k for k, v in pandas_ta.Category.items() for _k in v]:
@@ -4400,7 +4410,15 @@ class IndicatorFactory(Configured):
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("pandas_ta")
-        import pandas_ta
+        try:
+            import pandas_ta
+        except ImportError as e:
+            if "cannot import name 'NaN' from 'numpy'" in str(e):
+                raise ImportError(
+                    "Current version of Pandas TA is not compatible with the latest NumPy. "
+                    "Please install an older version of NumPy, e.g., 1.26.4."
+                ) from e
+            raise e
 
         func_name = func_name.lower()
         func = getattr(pandas_ta, func_name)
