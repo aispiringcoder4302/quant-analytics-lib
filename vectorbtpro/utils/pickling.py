@@ -18,6 +18,8 @@ import ast
 import io
 import zipfile
 from pathlib import Path
+import base64
+from types import MethodType
 
 import humanize
 import numpy as np
@@ -728,6 +730,8 @@ class Pickleable(Base):
     def encode_config_node(self, key: str, value: tp.Any, **kwargs) -> tp.Any:
         """Encode a configuration node.
 
+        This method is used to encode the value or prepare it for encoding.
+
         Args:
             key (str): Key for the configuration node.
             value (Any): Value to encode.
@@ -735,20 +739,6 @@ class Pickleable(Base):
 
         Returns:
             Any: Encoded configuration node.
-        """
-        return value
-
-    @classmethod
-    def decode_config_node(cls, key: str, value: tp.Any, **kwargs) -> tp.Any:
-        """Decode a configuration node.
-
-        Args:
-            key (str): Key for the configuration node.
-            value (Any): Value to decode.
-            **kwargs: Keyword arguments for decoding.
-
-        Returns:
-            Any: Decoded configuration node.
         """
         return value
 
@@ -762,7 +752,7 @@ class Pickleable(Base):
         nested: bool = True,
         to_dict: bool = False,
         parser_kwargs: tp.KwargsLike = None,
-        **kwargs,
+        **encode_node_kwargs,
     ) -> str:
         """Encode the instance to a configuration string based on its reconstruction state.
 
@@ -789,7 +779,7 @@ class Pickleable(Base):
             nested (bool): Flag indicating whether to represent sub-dictionaries as individual sections.
             to_dict (bool): Flag to treat objects as dictionaries during encoding.
             parser_kwargs (KwargsLike): Keyword arguments for `configparser.RawConfigParser`.
-            **kwargs: Keyword arguments for `Pickleable.encode_config_node`.
+            **encode_node_kwargs: Keyword arguments for `Pickleable.encode_config_node`.
 
         Returns:
             str: Encoded configuration string.
@@ -828,7 +818,6 @@ class Pickleable(Base):
             k = k.replace("=", "__EQ__")
             return k
 
-        # Flatten nested dicts
         if top_name is None:
             top_name = "top"
         stack = [(None, top_name, self)]
@@ -891,13 +880,12 @@ class Pickleable(Base):
                     else:
                         dct[parent_k][k] = v
 
-        # Format config
         for k, v in dct.items():
             parser.add_section(k)
             if len(v) == 0:
                 v = {"_": "_"}
             for k2, v2 in v.items():
-                v2 = self.encode_config_node(k2, v2, **kwargs)
+                v2 = self.encode_config_node(k2, v2, **encode_node_kwargs)
                 if isinstance(v2, str):
                     if not (k2 == "_" and v2 == "_") and not v2.startswith("&"):
                         v2 = repr(v2)
@@ -928,6 +916,22 @@ class Pickleable(Base):
         return str_
 
     @classmethod
+    def decode_config_node(cls, key: str, value: tp.Any, **kwargs) -> tp.Any:
+        """Decode a configuration node.
+
+        This method is used to decode the value or prepare it for decoding.
+
+        Args:
+            key (str): Key for the configuration node.
+            value (Any): Value to decode.
+            **kwargs: Keyword arguments for decoding.
+
+        Returns:
+            Any: Decoded configuration node.
+        """
+        return value
+
+    @classmethod
     def decode_config(
         cls: tp.Type[PickleableT],
         str_: str,
@@ -939,7 +943,7 @@ class Pickleable(Base):
         code_context: tp.KwargsLike = None,
         parser_kwargs: tp.KwargsLike = None,
         check_type: bool = True,
-        **kwargs,
+        **decode_node_kwargs,
     ) -> PickleableT:
         """Decode an instance from a configuration string.
 
@@ -968,7 +972,7 @@ class Pickleable(Base):
             code_context (KwargsLike): Context dictionary used during execution of Python code.
             parser_kwargs (KwargsLike): Keyword arguments for `configparser.RawConfigParser`.
             check_type (bool): If True, validates that the decoded object is an instance of the class.
-            **kwargs: Keyword arguments for `Pickleable.decode_config_node`.
+            **decode_node_kwargs: Keyword arguments for `Pickleable.decode_config_node`.
 
         Returns:
             Pickleable: Decoded instance.
@@ -1106,7 +1110,6 @@ class Pickleable(Base):
                 raise ValueError(f"Referenced object '{ref}' not found")
             return ref_section, ref_key
 
-        # Parse config
         new_dct = dict()
         if code_context is None:
             code_context = {}
@@ -1124,7 +1127,7 @@ class Pickleable(Base):
             if len(v) == 1 and list(v.items())[0] == ("_", "_"):
                 continue
             for k2, v2 in v.items():
-                v2 = cls.decode_config_node(k2, v2, **kwargs)
+                v2 = cls.decode_config_node(k2, v2, **decode_node_kwargs)
                 if isinstance(v2, str):
                     v2 = v2.strip()
                     if use_refs and v2.startswith("&"):
@@ -1157,7 +1160,6 @@ class Pickleable(Base):
                 new_dct[k][k2] = v2
         dct = new_dct
 
-        # Build DAG
         graph = dict()
         keys = sorted(dct.keys())
         hierarchy = [keys[0]]
@@ -1179,7 +1181,6 @@ class Pickleable(Base):
             sorter = TopologicalSorter(graph)
             topo_order = list(sorter.static_order())
 
-            # Resolve nodes
             resolved_nodes = dict()
             for k in topo_order:
                 if isinstance(k, tuple):
@@ -1221,10 +1222,415 @@ class Pickleable(Base):
             obj = resolved_nodes[topo_order[-1]]
         else:
             obj = dct["top"]
-        if type(obj) is dict:
+        if isinstance(obj, dict) and not isinstance(obj, Pickleable):
             obj = reconstruct(cls, RecState(init_kwargs=obj))
         if check_type and not isinstance(obj, cls):
-            raise TypeError(f"Decoded object must be an instance of {cls}")
+            raise TypeError(f"Decoded object must be an instance of {cls}, got {type(obj)}")
+        return obj
+
+    def encode_yaml_node(self, dumper: tp.Any, obj: tp.Any, **kwargs) -> tp.Any:
+        """Encode a YAML node.
+
+        This method is used to encode the object into a YAML node or prepare it for encoding.
+        It isn't called for basic types (excluding tuples), which are handled by the YAML dumper directly.
+
+        Args:
+            dumper (str): YAML dumper.
+            obj (Any): Object to encode.
+            **kwargs: Keyword arguments for encoding.
+
+        Returns:
+            Any: Encoded YAML node.
+        """
+        return obj
+
+    def encode_yaml(
+        self,
+        unpack_objects: bool = True,
+        compress_unpacked: bool = True,
+        use_refs: bool = True,
+        use_class_ids: bool = True,
+        use_ruamel: tp.Optional[bool] = None,
+        yaml_kwargs: tp.KwargsLike = None,
+        **encode_node_kwargs,
+    ) -> str:
+        """Serialize the instance to a YAML string with rich, customizable representation.
+
+        This method supports two YAML backends (`ruamel.yaml` and PyYAML), optional
+        use of class IDs, controlled unpacking/compression of custom `Pickleable`
+        objects, and alias/reference management. Depending on the object types and
+        the flags provided, different YAML tags are emitted to capture enough
+        information for faithful deserialization.
+
+        Tag mapping:
+
+        * `!tuple`: Python `tuple` objects are emitted as YAML sequences tagged with `!tuple`
+            to preserve immutability semantics.
+        * `!type`: Python classes/types with a registered class ID (and when `use_class_ids`
+            is True) are represented as a scalar tagged `!type` containing the class ID string.
+            If no class ID exists or `use_class_ids` is False, the class is fall-back pickled.
+        * `!pickle`: Opaque pickled representation used for any object that does not fall into
+            a special category, classes/types without a usable class ID or when class IDs are disabled,
+            and `Pickleable` instances when `unpack_objects` is False.
+        * `!rec:<class_id>`: `Pickleable` instances with a registered class ID are unpacked
+            (when `unpack_objects` is True) into their reconstruction state. The tag encodes the
+            class ID, and the mapping contains state components (e.g., `init_args~`, `init_kwargs~`,
+            `attr_dct~`). If `compress_unpacked` is enabled and the state is trivial, it may emit
+            a simplified mapping (e.g., dropping default entries) with tilde-suffixed keys only when needed.
+        * Alias/reference control: If `use_refs` is False, YAML aliasing is
+            suppressed even for repeated structures.
+
+        Args:
+            unpack_objects (bool): If True, `Pickleable` objects are represented via their
+                reconstruction state (`!rec:...`) rather than being pickled as opaque blobs.
+            compress_unpacked (bool): If True, the unpacked reconstruction state is simplified
+                when it contains only default or empty components.
+            use_refs (bool): Whether to allow YAML aliases/references; if False, aliasing is
+                disabled during serialization.
+            use_class_ids (bool): Enable use of registered class IDs for `!type` and `!rec:...`
+                tags instead of raw pickles.
+            use_ruamel (Optional[bool]): Override auto-detection of the YAML engine.
+                
+                If None, presence of the `ruamel` package is checked and used if available.
+            yaml_kwargs (KwargsLike): Keyword arguments for the underlying `dump` method of
+                the chosen YAML engine.
+            **encode_node_kwargs: Keyword arguments for `Pickleable.encode_yaml_node`
+                when recursively representing sub-objects.
+
+        Returns:
+            str: YAML-formatted string representing the instance.
+
+        Raises:
+            ValueError: If a `Pickleable` object is unpacked but lacks a valid
+                reconstruction ID or necessary reconstruction state.
+            ImportError: If the requested YAML backend is unavailable or fails import.
+        """
+        if use_ruamel is None:
+            from vectorbtpro.utils.module_ import check_installed
+
+            use_ruamel = check_installed("ruamel")
+        elif use_ruamel is True:
+            from vectorbtpro.utils.module_ import warn_cannot_import
+
+            if warn_cannot_import("ruamel"):
+                use_ruamel = False
+        if use_ruamel:
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("ruamel")
+
+            from ruamel.yaml import YAML
+            from ruamel.yaml.nodes import Node
+
+            yaml_engine = YAML()
+            yaml_engine.default_flow_style = False
+            orig_ignore_aliases = yaml_engine.representer.ignore_aliases
+
+            def _ignore_aliases(self, data):
+                if use_refs:
+                    return orig_ignore_aliases(data)
+                return True
+
+            yaml_engine.representer.ignore_aliases = MethodType(_ignore_aliases, yaml_engine.representer)
+            yaml_representers = yaml_engine.representer.yaml_representers
+            orig_yaml_representers = dict(yaml_representers)
+            yaml_mult_representers = yaml_engine.representer.yaml_multi_representers
+            orig_yaml_mult_representers = dict(yaml_mult_representers)
+        else:
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("yaml")
+
+            import yaml as _pyyaml
+            from yaml.nodes import Node
+
+            class _Dumper(_pyyaml.SafeDumper):
+                default_flow_style = False
+
+                def ignore_aliases(self, data):
+                    if use_refs:
+                        return super().ignore_aliases(data)
+                    return True
+
+            dumper_cls = _Dumper
+            yaml_engine = _pyyaml
+
+        def _represent_tuple(dumper, obj):
+            obj = self.encode_yaml_node(dumper, obj, **encode_node_kwargs)
+            if isinstance(obj, Node):
+                return obj
+            return dumper.represent_sequence("!tuple", list(obj))
+
+        def _represent_object(dumper, obj):
+            obj = self.encode_yaml_node(dumper, obj, **encode_node_kwargs)
+            if isinstance(obj, Node):
+                return obj
+
+            if isinstance(obj, type):
+                class_id = get_id_from_class(obj)
+                if class_id is None or not use_class_ids:
+                    encoded = base64.b64encode(dumps(obj)).decode("ascii")
+                    return dumper.represent_scalar("!pickle", encoded)
+                return dumper.represent_scalar("!type", class_id)
+
+            if isinstance(obj, Pickleable):
+                if not unpack_objects:
+                    encoded = base64.b64encode(dumps(obj)).decode("ascii")
+                    return dumper.represent_scalar("!pickle", encoded)
+                class_id = get_id_from_class(obj)
+                if class_id is None:
+                    raise ValueError(f"Class {type(obj)} cannot be found. Set reconstruction id.")
+                rec_state = obj.rec_state
+                if rec_state is None:
+                    raise ValueError(f"Must define reconstruction state for {type(obj)}")
+                mapping = vars(rec_state)
+                if compress_unpacked and (not mapping.get("init_args", ()) and not mapping.get("attr_dct", {})):
+                    mapping = mapping.get("init_kwargs", {})
+                else:
+                    mapping = {k + "~": v for k, v in mapping.items()}
+                return dumper.represent_mapping(f"!rec:{class_id}", mapping)
+
+            encoded = base64.b64encode(dumps(obj)).decode("ascii")
+            return dumper.represent_scalar("!pickle", encoded)
+
+        if use_ruamel:
+            representer = yaml_engine.representer
+        else:
+            representer = dumper_cls
+        representer.add_representer(tuple, _represent_tuple)
+        representer.add_multi_representer(object, _represent_object)
+
+        if yaml_kwargs is None:
+            yaml_kwargs = {}
+        else:
+            yaml_kwargs = dict(yaml_kwargs)
+        if use_ruamel:
+            from io import StringIO
+
+            buf = StringIO()
+            yaml_engine.dump(self, buf, **yaml_kwargs)
+            yaml_engine.representer.yaml_representers.clear()
+            yaml_engine.representer.yaml_representers.update(orig_yaml_representers)
+            yaml_engine.representer.yaml_multi_representers.clear()
+            yaml_engine.representer.yaml_multi_representers.update(orig_yaml_mult_representers)
+            return buf.getvalue()
+        dumper_cls = yaml_kwargs.pop("Dumper", dumper_cls)
+        yaml_kwargs.setdefault("sort_keys", False)
+        yaml_kwargs.setdefault("allow_unicode", True)
+        return yaml_engine.dump(self, Dumper=dumper_cls, **yaml_kwargs)
+
+    @classmethod
+    def decode_yaml_node(cls, loader: tp.Any, tag: str, node: tp.Any, **kwargs) -> tp.Any:
+        """Decode a YAML node.
+
+        This method is used to decode the YAML node into an object or prepare it for decoding.
+        It isn't called for basic types (excluding tuples), which are handled by the YAML loader directly.
+
+        Args:
+            loader (str): YAML loader.
+            tag (str): YAML tag.
+            node (Any): YAML node to decode.
+            **kwargs: Keyword arguments for decoding.
+
+        Returns:
+            Any: Decoded object.
+        """
+        return node
+
+    @classmethod
+    def decode_yaml(
+        cls: tp.Type[PickleableT],
+        yaml_str: str,
+        run_code: bool = True,
+        pack_objects: bool = True,
+        use_class_ids: bool = True,
+        code_context: tp.KwargsLike = None,
+        use_ruamel: tp.Optional[bool] = None,
+        yaml_kwargs: tp.KwargsLike = None,
+        check_type: bool = True,
+        **decode_node_kwargs,
+    ) -> PickleableT:
+        """Deserialize a YAML string back into an instance of this class.
+
+        Supports safe reconstruction of complex objects including unpacked `Pickleable` instances,
+        class/type resolution via registered IDs, and optional execution of embedded expressions
+        or pickled payloads.
+
+        Tag mapping:
+
+        * `!tuple`: YAML sequences tagged with `!tuple` are converted to Python `tuple` objects.
+        * `!type`: Scalars tagged with `!type` are resolved to Python classes if `use_class_ids`
+            is True; otherwise an error is raised.
+        * `!pickle`: Scalars tagged with `!pickle` contain base64-encoded pickled data.
+            If `run_code` is True, this data is unpickled and the original object is returned.
+            If `run_code` is False, the raw scalar (e.g., base64 string) remains.
+        * `!expr`: Tagged expressions are evaluated via the internal evaluator when `run_code` is True,
+            using `code_context` to supply names. If `run_code` is False, the expression is not executed.
+        * `!rec:<class_id>`: Reconstruction state for a `Pickleable` object with the given class ID.
+            When `pack_objects` is True, the mapping is used to build a `RecState` and the object is
+            reconstructed. If `pack_objects` is False, the raw mapping is returned unassembled.
+
+        Fallback behavior:
+            Standard YAML scalars, sequences, and mappings are handled by the
+            underlying loader. After loading, if the top-level result is a plain
+            dictionary and not already an instance of `Pickleable`, it is treated
+            as keyword arguments for constructing an instance of this class.
+
+        Args:
+            yaml_str (str): YAML content to decode.
+            run_code (bool): Whether to execute code in `!expr` tags and to unpickle `!pickle` payloads.
+            
+                If False, those tags yield raw content.
+            pack_objects (bool): If True, reconstruction mappings (`!rec:...`) are converted back into objects;
+                otherwise raw mappings are returned.
+            use_class_ids (bool): Enable resolution of `!type` references to actual classes via registered IDs.
+            code_context (KwargsLike): Optional namespace for code evaluation; prepopulated with existing
+                imports when not provided.
+            use_ruamel (Optional[bool]): Override auto-detection of YAML backend.
+            yaml_kwargs (KwargsLike): Forwarded to the underlying `load` method of the chosen YAML engine.
+            check_type (bool): If True, ensures the final decoded object is an instance of this class
+                and raises if it is not.
+            **decode_node_kwargs: Passed to `Pickleable.decode_yaml_node` during node preprocessing.
+
+        Returns:
+            Pickleable: The reconstructed object, respecting type checking if requested.
+
+        Raises:
+            TypeError: If `check_type` is True and the decoded object is not an instance of this class.
+            ConstructorError: On failures during object construction, such as missing
+                class IDs when required, disabled class references, or invalid serialized content.
+            ImportError: If the requested YAML backend is unavailable or cannot be imported.
+        """
+        from vectorbtpro.utils.eval_ import evaluate
+
+        if use_ruamel is None:
+            from vectorbtpro.utils.module_ import check_installed
+
+            use_ruamel = check_installed("ruamel")
+        elif use_ruamel is True:
+            from vectorbtpro.utils.module_ import warn_cannot_import
+
+            if warn_cannot_import("ruamel"):
+                use_ruamel = False
+        if use_ruamel:
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("ruamel")
+
+            from ruamel.yaml import YAML
+            from ruamel.yaml.nodes import Node, ScalarNode, SequenceNode, MappingNode
+            from ruamel.yaml.constructor import ConstructorError
+
+            yaml_engine = YAML(typ="safe")
+            yaml_constructors = yaml_engine.constructor.yaml_constructors
+            orig_yaml_constructors = dict(yaml_constructors)
+            yaml_mult_constructors = yaml_engine.constructor.yaml_multi_constructors
+            orig_yaml_mult_constructors = dict(yaml_mult_constructors)
+        else:
+            from vectorbtpro.utils.module_ import assert_can_import
+
+            assert_can_import("yaml")
+
+            import yaml as _pyyaml
+            from yaml.nodes import Node, ScalarNode, SequenceNode, MappingNode
+            from yaml.constructor import ConstructorError
+
+            class _Loader(_pyyaml.SafeLoader):
+                pass
+
+            loader_cls = _Loader
+            yaml_engine = _pyyaml
+
+        if code_context is None:
+            code_context = {}
+        else:
+            code_context = dict(code_context)
+        try:
+            for k, v in vbt.imported_star.items():
+                if k not in code_context:
+                    code_context[k] = v
+        except AttributeError:
+            pass
+
+        def _construct_tuple(loader, node):
+            node = cls.decode_yaml_node(loader, "!tuple", node, **decode_node_kwargs)
+            if not isinstance(node, Node):
+                return node
+            return tuple(loader.construct_sequence(node))
+
+        def _construct_object(loader, tag, node):
+            node = cls.decode_yaml_node(loader, tag, node, **decode_node_kwargs)
+            if not isinstance(node, Node):
+                return node
+
+            if tag == "!type":
+                if not use_class_ids:
+                    raise ConstructorError(None, None, "Class references are disabled", node.start_mark)
+                class_id = loader.construct_scalar(node)
+                try:
+                    return get_class_from_id(class_id)
+                except ValueError as e:
+                    raise ConstructorError(None, None, str(e), node.start_mark) from e
+
+            if run_code:
+                if tag == "!pickle":
+                    return loads(base64.b64decode(loader.construct_scalar(node)))
+                if tag == "!expr":
+                    code = loader.construct_scalar(node)
+                    return evaluate(code, context=code_context)
+
+            if tag.startswith("!rec:"):
+                class_id = tag[len("!rec:") :]
+                mapping = loader.construct_mapping(node, deep=True)
+                if not pack_objects:
+                    return mapping
+                init_args = mapping.pop("init_args~", ())
+                init_kwargs = mapping.pop("init_kwargs~", {})
+                attr_dct = mapping.pop("attr_dct~", {})
+                init_kwargs.update(mapping)
+                rec_state = RecState(
+                    init_args=init_args,
+                    init_kwargs=init_kwargs,
+                    attr_dct=attr_dct,
+                )
+                return reconstruct(class_id, rec_state)
+
+            if isinstance(node, ScalarNode):
+                return loader.construct_scalar(node)
+            if isinstance(node, SequenceNode):
+                return loader.construct_sequence(node)
+            if isinstance(node, MappingNode):
+                return loader.construct_mapping(node, deep=True)
+            if hasattr(loader, "construct_object"):
+                return loader.construct_object(node)
+            return node
+
+        if use_ruamel:
+            yaml_engine.load("null")
+            constructor = yaml_engine.constructor
+        else:
+            constructor = loader_cls
+        constructor.add_constructor("!tuple", _construct_tuple)
+        constructor.add_multi_constructor("", _construct_object)
+
+        if yaml_kwargs is None:
+            yaml_kwargs = {}
+        else:
+            yaml_kwargs = dict(yaml_kwargs)
+        if use_ruamel:
+            obj = yaml_engine.load(yaml_str, **yaml_kwargs)
+            yaml_engine.constructor.yaml_constructors.clear()
+            yaml_engine.constructor.yaml_constructors.update(orig_yaml_constructors)
+            yaml_engine.constructor.yaml_multi_constructors.clear()
+            yaml_engine.constructor.yaml_multi_constructors.update(orig_yaml_mult_constructors)
+        else:
+            loader_cls = yaml_kwargs.pop("Loader", loader_cls)
+            obj = yaml_engine.load(yaml_str, Loader=loader_cls, **yaml_kwargs)
+
+        if isinstance(obj, dict) and not isinstance(obj, Pickleable):
+            obj = reconstruct(cls, RecState(init_kwargs=obj))
+        if check_type and not isinstance(obj, cls):
+            raise TypeError(f"Decoded object must be an instance of {cls}, got {type(obj)}")
         return obj
 
     @classmethod
@@ -1424,8 +1830,9 @@ class Pickleable(Base):
             mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
 
                 See `vectorbtpro.utils.path_.check_mkdir`.
-            **kwargs: Keyword arguments for `Pickleable.dumps` for pickle extensions
-                and `Pickleable.encode_config` for config extensions.
+            **kwargs: Keyword arguments for `Pickleable.dumps` for pickle extensions,
+                `Pickleable.encode_config` for config extensions, and `Pickleable.encode_yaml`
+                for YAML extensions.
 
         Returns:
             Path: File path where the instance was saved.
@@ -1446,6 +1853,11 @@ class Pickleable(Base):
                 f.write(bytes_)
         elif suffixes[0] in get_serialization_extensions("config"):
             str_ = self.encode_config(**kwargs)
+            check_mkdir(path.parent, **mkdir_kwargs)
+            with open(path, "w") as f:
+                f.write(str_)
+        elif suffixes[0] in get_serialization_extensions("yaml"):
+            str_ = self.encode_yaml(**kwargs)
             check_mkdir(path.parent, **mkdir_kwargs)
             with open(path, "w") as f:
                 f.write(str_)
@@ -1471,8 +1883,9 @@ class Pickleable(Base):
             compression (CompressionLike): Compression algorithm.
 
                 See `compress`.
-            **kwargs: Keyword arguments for `Pickleable.loads` for pickle extensions
-                and `Pickleable.decode_config` for config extensions.
+            **kwargs: Keyword arguments for `Pickleable.loads` for pickle extensions,
+                `Pickleable.decode_config` for config extensions, and `Pickleable.decode_yaml`
+                for YAML extensions.
 
         Returns:
             Pickleable: Deserialized instance.
@@ -1491,6 +1904,10 @@ class Pickleable(Base):
             with open(path, "r") as f:
                 str_ = f.read()
             return cls.decode_config(str_, **kwargs)
+        elif suffixes[0] in get_serialization_extensions("yaml"):
+            with open(path, "r") as f:
+                str_ = f.read()
+            return cls.decode_yaml(str_, **kwargs)
         else:
             raise ValueError(f"Invalid file extension: '{path.suffix}'")
 

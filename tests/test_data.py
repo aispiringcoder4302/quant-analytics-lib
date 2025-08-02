@@ -351,15 +351,16 @@ class TestData:
         with pytest.raises(Exception):
             MyData.column_stack((data1, data2.select(["F2"])))
 
-    def test_config(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml"])
+    def test_config(self, tmp_path, test_file_format):
         original_data = MyData.pull(["S1", "S2"], shape=(5, 3), columns=["F1", "F2", "F3"])
         for data in [original_data.to_symbol_oriented(), original_data.to_feature_oriented()]:
             assert MyData.loads(data.dumps()) == data
             data.save(tmp_path / "data")
             new_data = MyData.load(tmp_path / "data")
             assert new_data == data
-            data.save(tmp_path / "data", file_format="ini")
-            new_data = MyData.load(tmp_path / "data", file_format="ini")
+            data.save(tmp_path / "data", file_format=test_file_format)
+            new_data = MyData.load(tmp_path / "data", file_format=test_file_format)
             assert new_data == data
 
     @pytest.mark.parametrize("test_keys_are_features", [False, True])
