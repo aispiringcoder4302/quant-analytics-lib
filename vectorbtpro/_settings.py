@@ -123,12 +123,21 @@ file name (default is "vbt").
 !!! note
     Environment variables must be set before importing vectorbtpro.
 
-For example, to set the default theme to dark, create a "vbt.ini" file with the following content:
+For example, to set the default theme to dark, create a configuration file with the following content:
 
-```ini
-[plotting]
-default_theme = dark
-```
+=== "INI"
+
+    ```ini title="File vbt.cfg"
+    [plotting]
+    default_theme = dark
+    ```
+
+=== "YAML"
+
+    ```yaml title="File vbt.yml"
+    plotting:
+      default_theme: dark
+    ```
 """
 
 import json
@@ -226,6 +235,23 @@ class flex_cfg(Config):
 # ############# Settings sub-configs ############# #
 
 _settings = {}
+
+env = flex_cfg()
+"""_"""
+
+__pdoc__["env"] = Sub(
+    """Sub-configuration with environment variables.
+
+!!! note
+    All environment variables are set only at import.
+
+```python
+${config_doc}
+```
+"""
+)
+
+_settings["env"] = env
 
 importing = frozen_cfg(
     clear_pycache=False,
@@ -617,7 +643,7 @@ pickling = frozen_cfg(
     extensions=flex_cfg(
         serialization=flex_cfg(
             pickle={"pickle", "pkl", "p"},
-            config={"config", "cfg", "ini"},
+            config={"config", "conf", "cfg", "ini"},
             yaml={"yaml", "yml"},
         ),
         compression=flex_cfg(
@@ -2992,10 +3018,13 @@ if "VBT_SETTINGS_PATH" in os.environ:
 elif settings.file_exists(settings_name):
     settings.load_update(settings_name)
 
+for k, v in settings["env"].items():
+    os.environ[k] = str(v)
+
+if settings["numba"]["disable"]:
+    nb_config.DISABLE_JIT = True
+
 settings.reset_theme()
 settings.register_templates()
 settings.make_checkpoint()
 settings.substitute_sub_config_docs(__pdoc__)
-
-if settings["numba"]["disable"]:
-    nb_config.DISABLE_JIT = True

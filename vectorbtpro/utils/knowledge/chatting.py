@@ -934,7 +934,10 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
             elif check_installed("llama_index"):
                 embeddings = "llama_index"
             else:
-                raise ValueError("No packages for embeddings installed")
+                raise ValueError(
+                    "No embeddings available. " \
+                    "Please install one of the supported packages: openai, litellm, llama-index."
+                )
         curr_module = sys.modules[__name__]
         found_embeddings = None
         for name, cls in inspect.getmembers(curr_module, inspect.isclass):
@@ -1899,7 +1902,10 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
             elif check_installed("llama_index"):
                 completions = "llama_index"
             else:
-                raise ValueError("No packages for completions installed")
+                raise ValueError(
+                    "No completions available. " \
+                    "Please install one of the supported packages: openai, litellm, llama-index."
+                )
         curr_module = sys.modules[__name__]
         found_completions = None
         for name, cls in inspect.getmembers(curr_module, inspect.isclass):

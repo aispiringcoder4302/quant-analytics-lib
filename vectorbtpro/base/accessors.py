@@ -1679,7 +1679,7 @@ class BaseAccessor(Wrapping):
         Returns:
             SeriesFrame: Aligned object.
 
-        Example:
+        Examples:
             ```pycon
             >>> df1 = pd.DataFrame(
             ...     [[1, 2], [3, 4]],
@@ -1777,7 +1777,7 @@ class BaseAccessor(Wrapping):
         Returns:
             SeriesFrame: Cross aligned object.
 
-        Example:
+        Examples:
             ```pycon
             >>> df1 = pd.DataFrame(
             ...     [[1, 2, 3, 4], [5, 6, 7, 8]],
@@ -2104,7 +2104,7 @@ class BaseAccessor(Wrapping):
         Returns:
             Frame: Concatenated DataFrame.
 
-        Example:
+        Examples:
             ```pycon
             >>> sr = pd.Series([1, 2], index=['x', 'y'])
             >>> df = pd.DataFrame([[3, 4], [5, 6]], index=['x', 'y'], columns=['a', 'b'])
@@ -2519,7 +2519,7 @@ class BaseAccessor(Wrapping):
         !!! note
             All required variables will broadcast against each other prior to the evaluation.
 
-        Example:
+        Examples:
             ```pycon
             >>> sr = pd.Series([1, 2, 3], index=['x', 'y', 'z'])
             >>> df = pd.DataFrame([[4, 5, 6]], index=['x', 'y', 'z'], columns=['a', 'b', 'c'])

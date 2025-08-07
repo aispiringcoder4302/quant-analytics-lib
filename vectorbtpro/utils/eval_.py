@@ -50,7 +50,7 @@ def evaluate(expr: str, context: tp.KwargsLike = None) -> tp.Any:
     expr = inspect.cleandoc(expr)
     if context is None:
         context = {}
-    if "\n" in expr:
+    if "\n" in expr or ";" in expr:
         tree = ast.parse(expr)
         eval_expr = ast.Expression(tree.body[-1].value)
         exec_expr = ast.Module(tree.body[:-1], type_ignores=[])
@@ -140,8 +140,7 @@ class JupyterKernel(Configured):
         startup_timeout (int): Seconds to wait for the kernel to become ready.
         **manager_kwargs: Keyword arguments for the kernel manager.
 
-    Example:
-
+    Examples:
         ```pycon
         >>> with vbt.JupyterKernel() as kernel:
         ...     output = kernel.execute("print('Hello, world!')")

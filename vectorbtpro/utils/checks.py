@@ -741,26 +741,39 @@ def is_deep_equal(
                     raise e
                 _check_array(np.testing.assert_allclose)
         elif isinstance(obj1, (tuple, list)):
-            for i in range(len(obj1)):
+            if len(obj1) != len(obj2):
+                raise AssertionError(f"Length mismatch: {len(obj1)} != {len(obj2)}")
+            for i, (item1, item2) in enumerate(zip(obj1, obj2)):
                 if not is_deep_equal(
-                    obj1[i],
-                    obj2[i],
+                    item1,
+                    item2,
                     check_exact=check_exact,
                     debug=debug,
                     only_types=only_types,
-                    _key=f"[{i}]" if _key is None else _key + f"[{i}]",
+                    _key=f"{_key}[{i}]" if _key else f"[{i}]",
                     **kwargs,
                 ):
                     return False
         elif isinstance(obj1, dict):
-            for k in obj1.keys():
+            keys1 = set(obj1.keys())
+            keys2 = set(obj2.keys())
+            if keys1 != keys2:
+                missing = keys1 - keys2
+                extra = keys2 - keys1
+                msg = []
+                if missing:
+                    msg.append(f"missing keys {missing}")
+                if extra:
+                    msg.append(f"unexpected keys {extra}")
+                raise AssertionError("Key mismatch: " + "; ".join(msg))
+            for k in keys1:
                 if not is_deep_equal(
                     obj1[k],
                     obj2[k],
                     check_exact=check_exact,
                     debug=debug,
                     only_types=only_types,
-                    _key=f"['{k}']" if _key is None else _key + f"['{k}']",
+                    _key=f"{_key}['{k}']" if _key else f"['{k}']",
                     **kwargs,
                 ):
                     return False

@@ -144,3 +144,4 @@ dmypy.json
 .virtual_documents/
 /knowledge/
 .vscode
+vbt.*

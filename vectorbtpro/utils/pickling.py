@@ -982,7 +982,7 @@ class Pickleable(Base):
             to parse configs coming from untrusted sources as those can contain malicious code!
 
         Examples:
-            File `types.ini`:
+            File `types.cfg`:
 
             ```ini
             string = 'hello world'
@@ -992,6 +992,7 @@ class Pickleable(Base):
             exp_float = 1e-10
             nan = np.nan
             inf = np.inf
+            neg_inf = -np.inf
             numpy = !np.array([1, 2, 3])
             pandas = !pd.Series([1, 2, 3])
             expression = !dict(sub_dict2=dict(some="value"))
@@ -1001,7 +1002,7 @@ class Pickleable(Base):
             ```pycon
             >>> from vectorbtpro import *
 
-            >>> vbt.pprint(vbt.pdict.load("types.ini"))
+            >>> vbt.pprint(vbt.pdict.load("types.cfg"))
             pdict(
                 string='hello world',
                 boolean=False,
@@ -1010,6 +1011,7 @@ class Pickleable(Base):
                 exp_float=1e-10,
                 nan=np.nan,
                 inf=np.inf,
+                neg_inf=-np.inf,
                 numpy=<numpy.ndarray object at 0x7fe1bf84f690 of shape (3,)>,
                 pandas=<pandas.core.series.Series object at 0x7fe1c9a997f0 of shape (3,)>,
                 expression=dict(
@@ -1021,7 +1023,7 @@ class Pickleable(Base):
             )
             ```
 
-            File `refs.ini`:
+            File `refs.cfg`:
 
             ```ini
             [top]
@@ -1037,7 +1039,7 @@ class Pickleable(Base):
             ```
 
             ```pycon
-            >>> vbt.pdict.load("refs.ini")["sr"]
+            >>> vbt.pdict.load("refs.cfg")["sr"]
             2023-01-01    10756.12
             2023-01-02    10876.76
             2023-01-03    11764.33
@@ -1246,11 +1248,15 @@ class Pickleable(Base):
 
     def encode_yaml(
         self,
+        root_key: tp.Optional[str] = None,
         unpack_objects: bool = True,
         compress_unpacked: bool = True,
         use_refs: bool = True,
         use_class_ids: bool = True,
         use_ruamel: tp.Optional[bool] = None,
+        collapse_keys: tp.Union[bool, str] = True,
+        collapse_sep: str = ".",
+        collapse_esc: tp.Optional[str] = "\\",
         yaml_kwargs: tp.KwargsLike = None,
         **encode_node_kwargs,
     ) -> str:
@@ -1281,6 +1287,9 @@ class Pickleable(Base):
             suppressed even for repeated structures.
 
         Args:
+            root_key (Optional[str]): Root key for the YAML mapping.
+
+                Can contain the `collapse_sep` character to represent a nested structure (won't be escaped).
             unpack_objects (bool): If True, `Pickleable` objects are represented via their
                 reconstruction state (`!rec:...`) rather than being pickled as opaque blobs.
             compress_unpacked (bool): If True, the unpacked reconstruction state is simplified
@@ -1290,12 +1299,22 @@ class Pickleable(Base):
             use_class_ids (bool): Enable use of registered class IDs for `!type` and `!rec:...`
                 tags instead of raw pickles.
             use_ruamel (Optional[bool]): Override auto-detection of the YAML engine.
-                
+
                 If None, presence of the `ruamel` package is checked and used if available.
+            collapse_keys (Union[bool, str]): Whether to collapse nested dictionary keys.
+
+                Supports the following values:
+
+                * "none" or False: no collapsing.
+                * "single" or True: flatten 1-key chains.
+                * "all": flatten every path.
+            collapse_sep (str): Separator inserted between collapsed segments.
+            collapse_esc (Optional[str]): Prefix that protects literal `collapse_sep` inside keys.
+
+                Set to None to disable escaping.
             yaml_kwargs (KwargsLike): Keyword arguments for the underlying `dump` method of
                 the chosen YAML engine.
-            **encode_node_kwargs: Keyword arguments for `Pickleable.encode_yaml_node`
-                when recursively representing sub-objects.
+            **encode_node_kwargs: Keyword arguments for `Pickleable.encode_yaml_node`.
 
         Returns:
             str: YAML-formatted string representing the instance.
@@ -1359,7 +1378,83 @@ class Pickleable(Base):
             obj = self.encode_yaml_node(dumper, obj, **encode_node_kwargs)
             if isinstance(obj, Node):
                 return obj
+
             return dumper.represent_sequence("!tuple", list(obj))
+
+        if collapse_keys is True:
+            collapse_keys = "single"
+        elif collapse_keys is False:
+            collapse_keys = "none"
+        elif isinstance(collapse_keys, str):
+            collapse_keys = collapse_keys.lower()
+        if not isinstance(collapse_keys, str) or collapse_keys not in ("none", "single", "all"):
+            raise ValueError(f"Invalid collapse_keys: {collapse_keys!r}")
+
+        def _escape_key(key):
+            if collapse_esc is None:
+                return key
+            return key.replace(collapse_esc, collapse_esc + collapse_esc).replace(
+                collapse_sep, collapse_esc + collapse_sep
+            )
+
+        class _CollapsedDict(dict):
+            __slots__ = ()
+
+        def _collapse_dict(d):
+            if type(d) is not dict:
+                return d
+            if not d:
+                return _CollapsedDict()
+            if collapse_keys == "none":
+                return _CollapsedDict({_escape_key(k) if isinstance(k, str) else k: v for k, v in d.items()})
+
+            result = {}
+
+            def _visit(curr, path):
+                if type(curr) is dict and not curr:
+                    key = collapse_sep.join(path) if path else ""
+                    result[key] = _CollapsedDict()
+                    return
+
+                if type(curr) is dict:
+                    if collapse_keys == "single" and len(curr) > 1 and path:
+                        combined = collapse_sep.join(path)
+                        inner = _CollapsedDict()
+                        for k, v in curr.items():
+                            if isinstance(k, str):
+                                k_esc = _escape_key(str(k))
+                                collapsed = _collapse_dict(v) if type(v) is dict else v
+                                if type(collapsed) is dict and len(collapsed) == 1:
+                                    sk, sv = next(iter(collapsed.items()))
+                                    inner[f"{k_esc}{collapse_sep}{sk}" if sk else k_esc] = sv
+                                else:
+                                    inner[k_esc] = collapsed
+                            else:
+                                inner[k] = _collapse_dict(v) if type(v) is dict else v
+                        result[combined] = inner
+                    else:
+                        for k, v in curr.items():
+                            if isinstance(k, str):
+                                _visit(v, path + [_escape_key(str(k))])
+                            else:
+                                result[k] = _collapse_dict(v) if type(v) is dict else v
+                else:
+                    key = collapse_sep.join(path) if path else ""
+                    result[key] = curr
+
+            _visit(d, [])
+            return _CollapsedDict(result)
+
+        def _represent_mapping(dumper, obj):
+            obj = self.encode_yaml_node(dumper, obj, **encode_node_kwargs)
+            if isinstance(obj, Node):
+                return obj
+
+            if isinstance(obj, _CollapsedDict):
+                return dumper.represent_mapping("tag:yaml.org,2002:map", obj)
+            if collapse_keys != "none" and any(isinstance(v, dict) for v in obj.values()):
+                obj = _collapse_dict(obj)
+            return dumper.represent_mapping("tag:yaml.org,2002:map", obj)
 
         def _represent_object(dumper, obj):
             obj = self.encode_yaml_node(dumper, obj, **encode_node_kwargs)
@@ -1388,6 +1483,7 @@ class Pickleable(Base):
                     mapping = mapping.get("init_kwargs", {})
                 else:
                     mapping = {k + "~": v for k, v in mapping.items()}
+                mapping = _collapse_dict(mapping)
                 return dumper.represent_mapping(f"!rec:{class_id}", mapping)
 
             encoded = base64.b64encode(dumps(obj)).decode("ascii")
@@ -1398,7 +1494,14 @@ class Pickleable(Base):
         else:
             representer = dumper_cls
         representer.add_representer(tuple, _represent_tuple)
+        representer.add_representer(_CollapsedDict, _represent_mapping)
+        representer.add_representer(dict, _represent_mapping)
         representer.add_multi_representer(object, _represent_object)
+
+        if root_key is not None:
+            obj = {root_key: self}
+        else:
+            obj = self
 
         if yaml_kwargs is None:
             yaml_kwargs = {}
@@ -1408,7 +1511,7 @@ class Pickleable(Base):
             from io import StringIO
 
             buf = StringIO()
-            yaml_engine.dump(self, buf, **yaml_kwargs)
+            yaml_engine.dump(obj, buf, **yaml_kwargs)
             yaml_engine.representer.yaml_representers.clear()
             yaml_engine.representer.yaml_representers.update(orig_yaml_representers)
             yaml_engine.representer.yaml_multi_representers.clear()
@@ -1417,7 +1520,7 @@ class Pickleable(Base):
         dumper_cls = yaml_kwargs.pop("Dumper", dumper_cls)
         yaml_kwargs.setdefault("sort_keys", False)
         yaml_kwargs.setdefault("allow_unicode", True)
-        return yaml_engine.dump(self, Dumper=dumper_cls, **yaml_kwargs)
+        return yaml_engine.dump(obj, Dumper=dumper_cls, **yaml_kwargs)
 
     @classmethod
     def decode_yaml_node(cls, loader: tp.Any, tag: str, node: tp.Any, **kwargs) -> tp.Any:
@@ -1446,6 +1549,8 @@ class Pickleable(Base):
         use_class_ids: bool = True,
         code_context: tp.KwargsLike = None,
         use_ruamel: tp.Optional[bool] = None,
+        collapse_sep: str = ".",
+        collapse_esc: tp.Optional[str] = "\\",
         yaml_kwargs: tp.KwargsLike = None,
         check_type: bool = True,
         **decode_node_kwargs,
@@ -1479,18 +1584,25 @@ class Pickleable(Base):
         Args:
             yaml_str (str): YAML content to decode.
             run_code (bool): Whether to execute code in `!expr` tags and to unpickle `!pickle` payloads.
-            
+
                 If False, those tags yield raw content.
             pack_objects (bool): If True, reconstruction mappings (`!rec:...`) are converted back into objects;
                 otherwise raw mappings are returned.
             use_class_ids (bool): Enable resolution of `!type` references to actual classes via registered IDs.
             code_context (KwargsLike): Optional namespace for code evaluation; prepopulated with existing
                 imports when not provided.
-            use_ruamel (Optional[bool]): Override auto-detection of YAML backend.
-            yaml_kwargs (KwargsLike): Forwarded to the underlying `load` method of the chosen YAML engine.
+            use_ruamel (Optional[bool]): Override auto-detection of the YAML engine.
+
+                If None, presence of the `ruamel` package is checked and used if available.
+            collapse_sep (str): Separator inserted between collapsed segments.
+            collapse_esc (Optional[str]): Prefix that protects literal `collapse_sep` inside keys.
+
+                Set to None to disable escaping.
+            yaml_kwargs (KwargsLike): Keyword arguments for the underlying `load` method of
+                the chosen YAML engine.
             check_type (bool): If True, ensures the final decoded object is an instance of this class
                 and raises if it is not.
-            **decode_node_kwargs: Passed to `Pickleable.decode_yaml_node` during node preprocessing.
+            **encode_node_kwargs: Keyword arguments for `Pickleable.decode_yaml_node`.
 
         Returns:
             Pickleable: The reconstructed object, respecting type checking if requested.
@@ -1500,6 +1612,105 @@ class Pickleable(Base):
             ConstructorError: On failures during object construction, such as missing
                 class IDs when required, disabled class references, or invalid serialized content.
             ImportError: If the requested YAML backend is unavailable or cannot be imported.
+
+        !!! warning
+            Unpickling byte streams and running code has important security implications. Don't attempt
+            to parse configs coming from untrusted sources as those can contain malicious code!
+
+        Examples:
+            File `types.yaml`:
+
+            ```yaml
+            string: 'hello world'
+            boolean: false
+            int: 123
+            float: 123.45
+            exp_float: 1e-10
+            nan: .nan
+            inf: .inf
+            neg_inf: -.inf
+            none:
+            list:
+              - &one 1
+              - &two 2
+              - &three 3
+            dict:
+              a: *one
+              b: *two
+              c: *three
+            collapsed_dict.a: 1
+            collapsed_dict.b: 2
+            collapsed_dict.c: 3
+            escaped_dict\.a: 1
+            escaped_dict\.b: 2
+            escaped_dict\.c: 3
+            tuple: !tuple [1, 2, 3]
+            type: !type pd.Series
+            instance: !rec:pd.Series
+              data: [1, 2, 3]
+            expl_instance: !rec:pd.Timedelta
+              init_args~: []
+              init_kwargs~:
+                days: 1
+              attr_dct~: {}
+            pickle: !pickle
+              gASVSAAAAAAAAACMHnBhbmRhcy5fbGlicy50c2xpYnMudGltZWRlbHRhc5SME190aW1lZGVsdGFfdW5waWNrbGWUk5SKBgAAT5GUTksKhpRSlC4=
+            expression: !expr dict(sub_dict2=dict(some="value"))
+            mult_expression: !expr |
+              import math
+
+              math.floor(1.5)
+            ```
+
+            ```pycon
+            >>> from vectorbtpro import *
+
+            >>> vbt.pprint(vbt.pdict.load("types.yml"))
+            pdict({
+                'string': 'hello world',
+                'boolean': False,
+                'int': 123,
+                'float': 123.45,
+                'exp_float': 1e-10,
+                'nan': np.nan,
+                'inf': np.inf,
+                'neg_inf': -np.inf,
+                'none': None,
+                'list': [
+                    1,
+                    2,
+                    3
+                ],
+                'dict': dict(
+                    a=1,
+                    b=2,
+                    c=3
+                ),
+                'collapsed_dict': dict(
+                    a=1,
+                    b=2,
+                    c=3
+                ),
+                'escaped_dict.a': 1,
+                'escaped_dict.b': 2,
+                'escaped_dict.c': 3,
+                'tuple': (
+                    1,
+                    2,
+                    3
+                ),
+                'type': <class 'pandas.core.series.Series'>,
+                'instance': <pandas.core.series.Series object at 0x14d14a7d0 with shape (3,)>,
+                'expl_instance': Timedelta('1 days 00:00:00'),
+                'pickle': Timedelta('1 days 00:00:00'),
+                'expression': dict(
+                    sub_dict2=dict(
+                        some='value'
+                    )
+                ),
+                'mult_expression': 1
+            })
+            ```
         """
         from vectorbtpro.utils.eval_ import evaluate
 
@@ -1520,6 +1731,7 @@ class Pickleable(Base):
             from ruamel.yaml import YAML
             from ruamel.yaml.nodes import Node, ScalarNode, SequenceNode, MappingNode
             from ruamel.yaml.constructor import ConstructorError
+            from ruamel.yaml.comments import CommentedMap
 
             yaml_engine = YAML(typ="safe")
             yaml_constructors = yaml_engine.constructor.yaml_constructors
@@ -1534,6 +1746,8 @@ class Pickleable(Base):
             import yaml as _pyyaml
             from yaml.nodes import Node, ScalarNode, SequenceNode, MappingNode
             from yaml.constructor import ConstructorError
+
+            CommentedMap = type(None)
 
             class _Loader(_pyyaml.SafeLoader):
                 pass
@@ -1556,7 +1770,59 @@ class Pickleable(Base):
             node = cls.decode_yaml_node(loader, "!tuple", node, **decode_node_kwargs)
             if not isinstance(node, Node):
                 return node
+
             return tuple(loader.construct_sequence(node))
+
+        def _construct_mapping(loader, node):
+            node = cls.decode_yaml_node(loader, "tag:yaml.org,2002:map", node, **decode_node_kwargs)
+            if not isinstance(node, Node):
+                return node
+
+            return _expand_dict(loader.construct_mapping(node, deep=True))
+
+        def _split_key(key):
+            if collapse_esc is None:
+                return key.split(collapse_sep)
+
+            parts, buf = [], []
+            i, n = 0, len(key)
+
+            while i < n:
+                c = key[i]
+                if c == collapse_esc:
+                    i += 1
+                    if i == n:
+                        buf.append(collapse_esc)
+                        break
+                    buf.append(key[i])
+                elif c == collapse_sep:
+                    parts.append("".join(buf))
+                    buf.clear()
+                else:
+                    buf.append(c)
+                i += 1
+
+            parts.append("".join(buf))
+            return parts
+
+        def _expand_dict(obj):
+            if type(obj) not in (dict, CommentedMap):
+                return obj
+
+            out = {}
+            for k, v in obj.items():
+                if isinstance(k, str):
+                    segs = _split_key(k)
+                else:
+                    segs = [k]
+                cursor = out
+                for seg in segs[:-1]:
+                    nxt = cursor.setdefault(seg, {})
+                    if type(nxt) not in (dict, CommentedMap):
+                        cursor[seg] = nxt = {"": nxt}
+                    cursor = nxt
+                cursor[segs[-1]] = v
+            return out
 
         def _construct_object(loader, tag, node):
             node = cls.decode_yaml_node(loader, tag, node, **decode_node_kwargs)
@@ -1581,7 +1847,7 @@ class Pickleable(Base):
 
             if tag.startswith("!rec:"):
                 class_id = tag[len("!rec:") :]
-                mapping = loader.construct_mapping(node, deep=True)
+                mapping = _expand_dict(loader.construct_mapping(node, deep=True))
                 if not pack_objects:
                     return mapping
                 init_args = mapping.pop("init_args~", ())
@@ -1600,7 +1866,7 @@ class Pickleable(Base):
             if isinstance(node, SequenceNode):
                 return loader.construct_sequence(node)
             if isinstance(node, MappingNode):
-                return loader.construct_mapping(node, deep=True)
+                return _expand_dict(loader.construct_mapping(node, deep=True))
             if hasattr(loader, "construct_object"):
                 return loader.construct_object(node)
             return node
@@ -1611,6 +1877,7 @@ class Pickleable(Base):
         else:
             constructor = loader_cls
         constructor.add_constructor("!tuple", _construct_tuple)
+        constructor.add_constructor("tag:yaml.org,2002:map", _construct_mapping)
         constructor.add_multi_constructor("", _construct_object)
 
         if yaml_kwargs is None:

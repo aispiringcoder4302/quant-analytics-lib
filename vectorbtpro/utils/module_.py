@@ -205,12 +205,18 @@ def search_package(
 def find_class(path: str) -> tp.Optional[tp.Type]:
     """Return a class object based on its fully qualified path.
 
+    The path should be a dot-separated string representing the module and class name,
+    or a reference name that can be resolved to a class.
+
     Args:
         path (str): Dot-separated path to the class.
 
     Returns:
         Optional[Type]: Class if found; otherwise, None.
     """
+    refname = resolve_refname(path)
+    if isinstance(refname, str):
+        path = refname
     try:
         path_parts = path.split(".")
         module_path = ".".join(path_parts[:-1])
