@@ -1075,7 +1075,7 @@ def trend_labels_1d_nb(
         return pct_trend_labels_1d_nb(high, low, pivots, normalize=False)
     if mode == TrendLabelMode.PctChangeNorm:
         return pct_trend_labels_1d_nb(high, low, pivots, normalize=True)
-    raise ValueError("Invalid trend mode")
+    raise ValueError("Invalid TrendLabelMode option")
 
 
 @register_chunkable(

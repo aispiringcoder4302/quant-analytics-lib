@@ -317,10 +317,10 @@ class AVData(RemoteData):
         interval_type = None
         if timeframe is not None:
             if not isinstance(timeframe, str):
-                raise ValueError(f"Invalid timeframe: '{timeframe}'")
+                raise ValueError(f"Invalid timeframe: {timeframe!r}")
             split = dt.split_freq_str(timeframe)
             if split is None:
-                raise ValueError(f"Invalid timeframe: '{timeframe}'")
+                raise ValueError(f"Invalid timeframe: {timeframe!r}")
             multiplier, unit = split
             if unit == "m":
                 interval = str(multiplier) + "min"
@@ -405,7 +405,7 @@ class AVData(RemoteData):
 
                         category = TechIndicators
                 else:
-                    raise ValueError(f"Invalid category: '{category}'")
+                    raise ValueError(f"Invalid category: {category!r}")
             else:
                 if use_parser:
                     raise TypeError("Category must be a string")
@@ -505,10 +505,10 @@ class AVData(RemoteData):
                     if k in args:
                         matched_params[k] = v
                     else:
-                        raise ValueError(f"Function '{function}' does not expect parameter '{k}'")
+                        raise ValueError(f"Function {function!r} does not expect parameter {k!r}")
                 for arg in req_args:
                     if arg not in matched_params:
-                        raise ValueError(f"Function '{function}' requires parameter '{arg}'")
+                        raise ValueError(f"Function {function!r} requires parameter {arg!r}")
             else:
                 matched_params = dict(params)
                 matched_params["function"] = function

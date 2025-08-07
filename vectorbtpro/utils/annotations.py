@@ -168,7 +168,7 @@ def flatten_annotations(
                     arg_v = arg_v.resolve()
                 new_k = f"{k}_{i}"
                 if new_k in annotations:
-                    raise ValueError(f"Unpacked key {new_k} already exists in annotations")
+                    raise ValueError(f"Unpacked key {new_k!r} already exists in annotations")
                 flat_annotations[new_k] = arg_v
                 var_args_map[new_k] = k
         elif isinstance(v, VarKwargs):
@@ -176,7 +176,7 @@ def flatten_annotations(
                 if isinstance(arg_v, Union):
                     arg_v = arg_v.resolve()
                 if arg_k in annotations:
-                    raise ValueError(f"Unpacked key {arg_k} already exists in annotations")
+                    raise ValueError(f"Unpacked key {arg_k!r} already exists in annotations")
                 flat_annotations[arg_k] = arg_v
                 var_kwargs_map[arg_k] = k
         elif not only_var_args:

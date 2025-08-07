@@ -293,7 +293,7 @@ def annotate_args(
                 if allow_partial:
                     ann_args[p.name] = dict(kind=p.kind)
                 else:
-                    raise TypeError(f"missing a required argument: '{p.name}'")
+                    raise TypeError(f"missing a required argument: {p.name!r}")
         elif p.kind == p.VAR_POSITIONAL:
             var_positional = True
             if len(args) > 0 or not only_passed:
@@ -314,7 +314,7 @@ def annotate_args(
                     if allow_partial:
                         ann_args[p.name] = dict(kind=p.kind)
                     else:
-                        raise TypeError(f"missing a required argument: '{p.name}'")
+                        raise TypeError(f"missing a required argument: {p.name!r}")
         elif p.kind == p.KEYWORD_ONLY:
             if p.name in kwargs:
                 ann_args[p.name] = dict(kind=p.kind, value=kwargs.pop(p.name))
@@ -329,12 +329,12 @@ def annotate_args(
 
     if not var_positional:
         if len(args) == 1:
-            raise TypeError(f"{func.__name__}() got an unexpected positional argument after '{last_pos}'")
+            raise TypeError(f"{func.__name__}() got an unexpected positional argument after {last_pos!r}")
         if len(args) > 1:
-            raise TypeError(f"{func.__name__}() got {len(args)} unexpected positional arguments after '{last_pos}'")
+            raise TypeError(f"{func.__name__}() got {len(args)} unexpected positional arguments after {last_pos!r}")
     if not var_keyword:
         if len(kwargs) == 1:
-            raise TypeError(f"{func.__name__}() got an unexpected keyword argument '{list(kwargs.keys())[0]}'")
+            raise TypeError(f"{func.__name__}() got an unexpected keyword argument {list(kwargs.keys())[0]!r}")
         if len(kwargs) > 1:
             raise TypeError(f"{func.__name__}() got unexpected keyword arguments {list(kwargs.keys())}")
     if flatten:
@@ -409,7 +409,7 @@ def flatten_ann_args(ann_args: tp.AnnArgs) -> tp.FlatAnnArgs:
                         dct["annotation"] = ann_arg["annotation"]
                 new_arg_name = f"{arg_name}_{i}"
                 if new_arg_name in flat_ann_args:
-                    raise ValueError(f"Unpacked key {new_arg_name} already exists in annotated arguments")
+                    raise ValueError(f"Unpacked key {new_arg_name!r} already exists in annotated arguments")
                 flat_ann_args[new_arg_name] = dct
         elif ann_arg["kind"] == inspect.Parameter.VAR_KEYWORD:
             for var_arg_name, var_value in ann_arg["value"].items():
@@ -423,7 +423,7 @@ def flatten_ann_args(ann_args: tp.AnnArgs) -> tp.FlatAnnArgs:
                             raise TypeError("VarArgs used for variable keyword arguments")
                         dct["annotation"] = ann_arg["annotation"]
                 if var_arg_name in flat_ann_args:
-                    raise ValueError(f"Unpacked key {var_arg_name} already exists in annotated arguments")
+                    raise ValueError(f"Unpacked key {var_arg_name!r} already exists in annotated arguments")
                 flat_ann_args[var_arg_name] = dct
         else:
             dct = dict(kind=ann_arg["kind"])
@@ -516,7 +516,7 @@ def match_flat_ann_arg(
             if return_index:
                 return i
             return ann_arg["value"]
-    raise KeyError(f"Query '{query}' could not be matched with any argument")
+    raise KeyError(f"Query {query!r} could not be matched with any argument")
 
 
 def match_ann_arg(
@@ -577,7 +577,7 @@ def match_and_set_flat_ann_arg(
             ann_arg["value"] = new_value
             matched = True
     if not matched:
-        raise KeyError(f"Query '{query}' could not be matched with any argument")
+        raise KeyError(f"Query {query!r} could not be matched with any argument")
 
 
 def ignore_flat_ann_args(flat_ann_args: tp.FlatAnnArgs, ignore_args: tp.Iterable[tp.AnnArgQuery]) -> tp.FlatAnnArgs:

@@ -398,7 +398,7 @@ def iter_chunk_meta(
                 if n_chunks.lower() == "auto":
                     n_chunks = multiprocessing.cpu_count()
                 else:
-                    raise ValueError(f"Invalid n_chunks: '{n_chunks}'")
+                    raise ValueError(f"Invalid n_chunks: {n_chunks!r}")
             if n_chunks == 0:
                 raise ValueError("Chunk count cannot be zero")
             if size is not None:
@@ -423,7 +423,7 @@ def iter_chunk_meta(
                 if chunk_len.lower() == "auto":
                     chunk_len = multiprocessing.cpu_count()
                 else:
-                    raise ValueError(f"Invalid chunk_len: '{chunk_len}'")
+                    raise ValueError(f"Invalid chunk_len: {chunk_len!r}")
             if chunk_len == 0:
                 raise ValueError("Chunk length cannot be zero")
             for chunk_i, i in enumerate(range(0, size, chunk_len)):
@@ -1002,7 +1002,7 @@ class MappingTaker(ContainerTaker):
                                 size = new_size
                             elif size != new_size:
                                 warn(
-                                    f"Arguments with keys '{size_k}' and '{k}' have conflicting sizes "
+                                    f"Arguments with keys {size_k!r} and {k!r} have conflicting sizes "
                                     f"{size} and {new_size}. Setting size to None."
                                 )
                                 return None
@@ -1029,7 +1029,7 @@ class MappingTaker(ContainerTaker):
             else:
                 if not silence_warnings:
                     warn(
-                        f"Argument with key '{k}' not found in MappingTaker.cont_take_spec. "
+                        f"Argument with key {k!r} not found in MappingTaker.cont_take_spec. "
                         "Setting its specification to None."
                     )
                 take_spec = None
@@ -1779,7 +1779,7 @@ class Chunker(Configured):
             if take_spec is MISSING:
                 take_spec = None
                 if not silence_warnings:
-                    warn(f"Argument '{k}' not found in arg_take_spec. Setting its specification to None.")
+                    warn(f"Argument {k!r} not found in arg_take_spec. Setting its specification to None.")
             result = cls.take_from_arg(
                 v["value"],
                 take_spec,
@@ -1929,7 +1929,7 @@ class Chunker(Configured):
                             annotation = annotation.replace(arg_query=k)
                     if k in arg_take_spec:
                         raise ValueError(
-                            f"Two specifications found in annotations for the key '{k}': "
+                            f"Two specifications found in annotations for the key {k!r}: "
                             f"{arg_take_spec[k]} and {annotation}"
                         )
                     arg_take_spec[k] = annotation
@@ -1969,7 +1969,7 @@ class Chunker(Configured):
                             raise ValueError(
                                 "Two specifications found in annotations: "
                                 f"{arg_take_spec[var_args_map[k]]} ('*{var_args_map[k]}') and "
-                                f"{flat_arg_take_spec[k]} ('{k}')"
+                                f"{flat_arg_take_spec[k]} ({k!r})"
                             )
                         if var_args_name is None:
                             var_args_name = var_args_map[k]
@@ -1988,7 +1988,7 @@ class Chunker(Configured):
                             raise ValueError(
                                 "Two specifications found in annotations: "
                                 f"{arg_take_spec[var_kwargs_map[k]]} ('**{var_kwargs_map[k]}') and "
-                                f"{flat_arg_take_spec[k]} ('{k}')"
+                                f"{flat_arg_take_spec[k]} ({k!r})"
                             )
                         if var_kwargs_name is None:
                             var_kwargs_name = var_kwargs_map[k]
@@ -2138,7 +2138,7 @@ class Chunker(Configured):
                             size = new_size
                         elif size != new_size:
                             warn(
-                                f"Arguments '{size_k}' and '{k}' have conflicting sizes "
+                                f"Arguments {size_k!r} and {k!r} have conflicting sizes "
                                 f"{size} and {new_size}. Setting size to None."
                             )
                             return None

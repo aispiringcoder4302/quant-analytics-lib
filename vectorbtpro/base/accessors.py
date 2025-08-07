@@ -674,7 +674,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             if freq is not None:
                 rule = rule.replace(target_freq=freq)
             return rule
-        raise ValueError(f"Cannot build Resampler from {rule}")
+        raise ValueError(f"Cannot build Resampler from {rule!r}")
 
     # ############# Points and ranges ############# #
 

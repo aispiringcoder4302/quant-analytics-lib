@@ -759,7 +759,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
             yaml.Representer = CustomRepresenter
         for k, v in kwargs.items():
             if not hasattr(yaml, k):
-                raise AttributeError(f"Invalid YAML attribute: '{k}'")
+                raise AttributeError(f"Invalid YAML attribute: {k!r}")
             if isinstance(v, tuple):
                 getattr(yaml, k)(*v)
             elif isinstance(v, dict):
@@ -781,7 +781,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         import json
 
         return json.dumps(obj, **kwargs)
-    raise ValueError(f"Invalid dump engine: '{dump_engine}'")
+    raise ValueError(f"Invalid dump_engine: {dump_engine!r}")
 
 
 def get_dump_language(dump_engine: str) -> str:

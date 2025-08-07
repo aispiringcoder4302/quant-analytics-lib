@@ -245,10 +245,10 @@ class PolygonData(RemoteData):
 
         # Resolve the timeframe
         if not isinstance(timeframe, str):
-            raise ValueError(f"Invalid timeframe: '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: {timeframe!r}")
         split = dt.split_freq_str(timeframe)
         if split is None:
-            raise ValueError(f"Invalid timeframe: '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: {timeframe!r}")
         multiplier, unit = split
         if unit == "s":
             unit = "second"
@@ -379,7 +379,7 @@ class PolygonData(RemoteData):
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(
-                    f"Symbol '{str(symbol)}' raised an exception. Returning incomplete data. "
+                    f"Symbol {symbol!r} raised an exception. Returning incomplete data. "
                     "Use update() method to fetch missing data."
                 )
 

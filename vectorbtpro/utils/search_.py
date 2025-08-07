@@ -94,7 +94,7 @@ def parse_path_str(path_str: str) -> tp.PathKey:
     tokens = []
     first_match = FIRST_TOKEN_REGEX.match(path_str)
     if not first_match:
-        raise ValueError(f"Invalid path syntax: '{path_str}'")
+        raise ValueError(f"Invalid path_str: {path_str!r}")
     if first_match.group(1):
         tokens.append(first_match.group(1))
     elif first_match.group(2):
@@ -116,7 +116,7 @@ def parse_path_str(path_str: str) -> tp.PathKey:
             tokens.append(int(index_bracket))
         pos = match.end()
     if pos != len(path_str):
-        raise ValueError(f"Invalid path syntax at position {pos}: '{path_str}'")
+        raise ValueError(f"Invalid path_str syntax at position {pos}: {path_str!r}")
     return tuple(tokens)
 
 
@@ -538,7 +538,7 @@ def contains_in_obj(
     elif traversal.upper() == "BFS":
         stack = deque([(None, 0, obj)])
     else:
-        raise ValueError(f"Invalid traversal: '{traversal}'")
+        raise ValueError(f"Invalid traversal: {traversal!r}")
     while stack:
         if not isinstance(stack, deque):
             key, depth, obj = stack.pop()
@@ -651,7 +651,7 @@ def find_in_obj(
     elif traversal.upper() == "BFS":
         stack = deque([(None, 0, obj)])
     else:
-        raise ValueError(f"Invalid traversal: '{traversal}'")
+        raise ValueError(f"Invalid traversal: {traversal!r}")
     while stack:
         if not isinstance(stack, deque):
             key, depth, obj = stack.pop()
@@ -982,7 +982,7 @@ def flatten_obj(
     elif traversal.upper() == "BFS":
         stack = deque([(None, 0, obj)])
     else:
-        raise ValueError(f"Invalid traversal: '{traversal}'")
+        raise ValueError(f"Invalid traversal: {traversal!r}")
     while stack:
         if not isinstance(stack, deque):
             key, depth, obj = stack.pop()
@@ -1145,7 +1145,7 @@ def find_exact(
             return [(0, len(target))]
         if return_type == "match":
             return [target]
-        raise ValueError(f"Invalid return type: '{return_type}'")
+        raise ValueError(f"Invalid return_type: {return_type!r}")
     return []
 
 
@@ -1188,7 +1188,7 @@ def find_start(
             return [(0, len(target))]
         if return_type == "match":
             return [target]
-        raise ValueError(f"Invalid return type: '{return_type}'")
+        raise ValueError(f"Invalid return_type: {return_type!r}")
     return []
 
 
@@ -1231,7 +1231,7 @@ def find_end(
             return [(0, len(target))]
         if return_type == "match":
             return [target]
-        raise ValueError(f"Invalid return type: '{return_type}'")
+        raise ValueError(f"Invalid return_type: {return_type!r}")
     return []
 
 
@@ -1281,7 +1281,7 @@ def find_substring(
         elif return_type == "match":
             occurrences.append(string[idx : idx + substr_len])
         else:
-            raise ValueError(f"Invalid return type: '{return_type}'")
+            raise ValueError(f"Invalid return_type: {return_type!r}")
         start = idx + 1
     return occurrences
 
@@ -1345,7 +1345,7 @@ def find_regex(
         if group is not None:
             return [match.group(group) for match in matches if match.group(group) is not None]
         return [match.group() for match in matches]
-    raise ValueError(f"Invalid return type: '{return_type}'")
+    raise ValueError(f"Invalid return_type: {return_type!r}")
 
 
 def find_fuzzy(
@@ -1411,7 +1411,7 @@ def find_fuzzy(
         return [(match.start, match.end) for match in matches]
     if return_type == "match":
         return [string[match.start : match.end] for match in matches]
-    raise ValueError(f"Invalid return type: '{return_type}'")
+    raise ValueError(f"Invalid return_type: {return_type!r}")
 
 
 def find_rapidfuzz(
@@ -1506,7 +1506,7 @@ def find(
         return find_fuzzy(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
     if mode.lower() == "rapidfuzz":
         return find_rapidfuzz(target, string, ignore_case=ignore_case, return_type=return_type, **kwargs)
-    raise ValueError(f"Invalid mode: '{mode}'")
+    raise ValueError(f"Invalid mode: {mode!r}")
 
 
 def replace_exact(
@@ -1745,7 +1745,7 @@ def replace(
         return replace_fuzzy(target, replacement, string, ignore_case=ignore_case, **kwargs)
     if mode.lower() == "rapidfuzz":
         raise NotImplementedError("RapidFuzz not supported")
-    raise ValueError(f"Invalid mode: '{mode}'")
+    raise ValueError(f"Invalid mode: {mode!r}")
 
 
 search_config = ReadonlyConfig(

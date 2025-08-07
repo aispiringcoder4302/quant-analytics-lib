@@ -473,7 +473,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                     filter_name = k[len("inv_check_") :]
                 if filter_name is not None:
                     if filter_name not in filters:
-                        raise ValueError(f"Metric '{subplot_name}' requires filter '{filter_name}'")
+                        raise ValueError(f"Metric {subplot_name!r} requires filter {filter_name!r}")
                     subplot_filters.add(filter_name)
 
             for filter_name in subplot_filters:
@@ -820,7 +820,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 subplot_layout[yaxis] = merge_dicts(dict(), yaxis_kwargs)
                 fig.update_layout(**subplot_layout)
             except Exception as e:
-                warn(f"Subplot '{subplot_name}' raised an exception")
+                warn(f"Subplot {subplot_name!r} raised an exception")
                 raise e
 
         # Hide legend labels

@@ -241,7 +241,7 @@ class AlpacaData(RemoteData):
                 client_config = {k: v for k, v in client_config.items() if k in arg_names}
                 client = OptionHistoricalDataClient(**client_config)
             else:
-                raise ValueError(f"Invalid client type: '{client_type}'")
+                raise ValueError(f"Invalid client_type: {client_type!r}")
         elif has_client_config:
             raise ValueError("Cannot apply client_config to already initialized client")
         return client
@@ -361,7 +361,7 @@ class AlpacaData(RemoteData):
         freq = timeframe
         split = dt.split_freq_str(timeframe)
         if split is None:
-            raise ValueError(f"Invalid timeframe: '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: {timeframe!r}")
         multiplier, unit = split
         if unit == "m":
             unit = TimeFrameUnit.Minute
@@ -374,7 +374,7 @@ class AlpacaData(RemoteData):
         elif unit == "M":
             unit = TimeFrameUnit.Month
         else:
-            raise ValueError(f"Invalid timeframe: '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: {timeframe!r}")
         timeframe = TimeFrame(multiplier, unit)
 
         if start is not None:
@@ -397,7 +397,7 @@ class AlpacaData(RemoteData):
         if asof is not None:
             asof = dt.to_naive_datetime(asof)
             if asof.hour != 0 or asof.minute != 0 or asof.second != 0:
-                raise ValueError(f"Invalid asof: '{asof}'")
+                raise ValueError(f"Invalid asof: {asof!r}")
             asof = asof.strftime("%Y-%m-%d")
         if currency is not None:
             currency = currency.upper()
@@ -442,7 +442,7 @@ class AlpacaData(RemoteData):
                 )
                 df = client.get_stock_trades(request).df
             else:
-                raise ValueError(f"Invalid data type: '{data_type}'")
+                raise ValueError(f"Invalid data_type: {data_type!r}")
         elif isinstance(client, CryptoHistoricalDataClient):
             if data_type.lower() in ("bar", "bars"):
                 request = CryptoBarsRequest(
@@ -464,7 +464,7 @@ class AlpacaData(RemoteData):
                 )
                 df = client.get_crypto_trades(request).df
             else:
-                raise ValueError(f"Invalid data type: '{data_type}'")
+                raise ValueError(f"Invalid data_type: {data_type!r}")
         elif isinstance(client, OptionHistoricalDataClient):
             if data_type.lower() in ("bar", "bars"):
                 request = OptionBarsRequest(
@@ -486,9 +486,9 @@ class AlpacaData(RemoteData):
                 )
                 df = client.get_option_trades(request).df
             else:
-                raise ValueError(f"Invalid data type: '{data_type}'")
+                raise ValueError(f"Invalid data_type: {data_type!r}")
         else:
-            raise TypeError(f"Invalid client of type {type(client)}")
+            raise ValueError(f"Invalid client: {client!r}")
 
         if isinstance(df.index, pd.MultiIndex):
             df = df.droplevel("symbol", axis=0)

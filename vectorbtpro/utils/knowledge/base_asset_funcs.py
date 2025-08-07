@@ -811,7 +811,7 @@ class QueryAssetFunc(AssetFunc):
         elif return_type.lower() == "bool":
             as_filter = False
         else:
-            raise ValueError(f"Invalid return type: '{return_type}'")
+            raise ValueError(f"Invalid return_type: {return_type!r}")
         if as_filter and isinstance(new_d, bool):
             if new_d:
                 return d

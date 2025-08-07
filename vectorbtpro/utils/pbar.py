@@ -96,7 +96,7 @@ class ProgressBar(Base):
         elif bar_type.lower() == "tqdm":
             from tqdm import tqdm as bar_type
         else:
-            raise ValueError(f"Invalid bar_type: '{bar_type}'")
+            raise ValueError(f"Invalid bar_type: {bar_type!r}")
         if force_open_bar is None:
             force_open_bar = pbar_cfg["force_open_bar"]
         if reuse is None:
@@ -348,14 +348,10 @@ class ProgressBar(Base):
                     reuse = self.reuse
                 if reuse and self.registry.has_conflict(self):
                     new_bar_id = self.registry.generate_bar_id()
-                    if isinstance(self.bar_id, str):
-                        bar_id = f"'{self.bar_id}'"
-                    else:
-                        bar_id = self.bar_id
                     if not self.silence_warnings:
                         warn(
-                            f"Two active progress bars share the same bar id {bar_id}. "
-                            f"Setting bar id of the new progress bar to '{new_bar_id}'."
+                            f"Two active progress bars share the same bar id {self.bar_id!r}. "
+                            f"Setting bar id of the new progress bar to {new_bar_id!r}."
                         )
                     self._bar_id = new_bar_id
                 pending_bar = self.registry.get_pending_instance(self)
@@ -435,11 +431,9 @@ class ProgressBar(Base):
             return True
         if self.bar is None:
             if self.bar_id is not None:
-                if isinstance(self.bar_id, str):
-                    bar_id = f"'{self.bar_id}'"
-                else:
-                    bar_id = self.bar_id
-                raise ValueError(f'Progress bar with bar id {bar_id} must be opened first. Use "with" statement.')
+                raise ValueError(
+                    f'Progress bar with bar id {self.bar_id!r} must be opened first. Use "with" statement.'
+                )
             else:
                 raise ValueError('Progress bar must be opened first. Use "with" statement.')
         if self.bar.disable:

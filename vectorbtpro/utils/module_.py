@@ -264,7 +264,7 @@ def get_package_meta(pkg_name: str) -> dict:
         dict: Dictionary containing metadata such as 'dist_name', 'version', and 'link'.
     """
     if pkg_name not in opt_dep_config:
-        raise KeyError(f"Package '{pkg_name}' not found in opt_dep_config")
+        raise KeyError(f"Package {pkg_name!r} not found in opt_dep_config")
     dist_name = opt_dep_config[pkg_name].get("dist_name", pkg_name)
     version = opt_dep_config[pkg_name].get("version", "")
     link = opt_dep_config[pkg_name].get("link", f"https://pypi.org/project/{dist_name}/")

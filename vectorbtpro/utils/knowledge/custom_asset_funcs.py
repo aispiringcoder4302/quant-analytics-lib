@@ -922,7 +922,7 @@ class AggChannelAssetFunc(AggThreadAssetFunc):
             guild_id = link_parts[0]
             channel_id = link_parts[1]
             return f"https://discord.com/channels/{guild_id}/{channel_id}"
-        raise ValueError(f"Invalid link: '{link}'")
+        raise ValueError(f"Invalid link: {link!r}")
 
     @classmethod
     def call(

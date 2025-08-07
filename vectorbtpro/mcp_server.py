@@ -147,7 +147,7 @@ def search(
         elif return_metadata.lower() == "none":
             results = results.remove_metadata()
         elif return_metadata.lower() != "full":
-            raise ValueError(f"Invalid return_metadata: '{return_metadata}'")
+            raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
 
         dumps = results.dump()
         context = "==== Result 1 ====\n\n"
@@ -299,7 +299,7 @@ def find(
         elif return_metadata.lower() == "none":
             results = results.remove_metadata()
         elif return_metadata.lower() != "full":
-            raise ValueError(f"Invalid return_metadata: '{return_metadata}'")
+            raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
 
         dumps = results.dump()
         context = "==== Result 1 ====\n\n"
@@ -348,7 +348,7 @@ def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) 
     refname = auto_cast(refname)
     resolved_refname = resolve_refname(refname)
     if not resolved_refname:
-        raise ValueError(f"Reference name '{refname}' cannot be resolved to an object")
+        raise ValueError(f"Reference name {refname!r} cannot be resolved to an object")
     obj = get_refname_obj(resolved_refname)
     df = get_attrs(obj=obj, own_only=own_only, incl_private=incl_private)
 
@@ -394,7 +394,7 @@ def get_source(refname: tp.Union[str, tp.List[str]]) -> str:
     for name in refname:
         resolved_name = resolve_refname(name)
         if not resolved_name:
-            raise ValueError(f"Reference name '{name}' cannot be resolved to an object")
+            raise ValueError(f"Reference name {name!r} cannot be resolved to an object")
         sources.append(get_source(resolved_name))
     return "\n\n".join(sources)
 

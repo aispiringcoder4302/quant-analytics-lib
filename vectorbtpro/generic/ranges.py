@@ -2349,7 +2349,7 @@ class PatternRanges(Ranges):
                         for k, v in search_config.asdict().items():
                             if v is not MISSING:
                                 if k in param_product:
-                                    raise ValueError(f"Parameter '{k}' is re-defined in a search configuration")
+                                    raise ValueError(f"Parameter {k!r} is re-defined in a search configuration")
                                 new_search_config[k] = v
                             if k in param_product:
                                 new_search_config[k] = param_product[k][i]

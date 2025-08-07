@@ -2891,7 +2891,7 @@ class SettingsConfig(Config):
 
             template_name = self["plotting"]["themes"][theme]["template_name"]
             if template_name is None:
-                raise ValueError(f"Must provide template name for the theme '{theme}'")
+                raise ValueError(f"Must provide template name for the theme {theme!r}")
             color_map = self["plotting"]["themes"][theme]["color_map"]
             template = pio.templates[template_name].to_plotly_json()
             if len(color_map) > 0:

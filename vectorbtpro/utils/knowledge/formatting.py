@@ -1510,7 +1510,7 @@ def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[Conten
                     found_formatter = cls
                     break
         if found_formatter is None:
-            raise ValueError(f"Invalid formatter: '{formatter}'")
+            raise ValueError(f"Invalid formatter: {formatter!r}")
         formatter = found_formatter
     if isinstance(formatter, type):
         checks.assert_subclass_of(formatter, ContentFormatter, arg_name="formatter")

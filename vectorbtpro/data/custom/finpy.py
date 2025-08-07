@@ -298,7 +298,7 @@ class FinPyData(RemoteData):
 
         split = dt.split_freq_str(timeframe)
         if split is None:
-            raise ValueError(f"Invalid timeframe: '{timeframe}'")
+            raise ValueError(f"Invalid timeframe: {timeframe!r}")
         multiplier, unit = split
 
         if unit == "s":

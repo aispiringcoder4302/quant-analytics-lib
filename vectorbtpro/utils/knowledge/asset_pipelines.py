@@ -97,7 +97,7 @@ class AssetPipeline(Base):
                                 found_func = True
                                 break
                 if not found_func:
-                    raise ValueError(f"Function '{func}' not found")
+                    raise ValueError(f"Function {func!r} not found")
         if isinstance(func, AssetFunc):
             raise TypeError("Function must be a subclass of AssetFunc, not an instance")
         if isinstance(func, type) and issubclass(func, AssetFunc):
@@ -373,7 +373,7 @@ class ComplexAssetPipeline(AssetPipeline):
                     elif var_name in builtin_functions:
                         return getattr(builtins, var_name)
                     else:
-                        raise ValueError(f"Variable '{var_name}' is not defined in the context")
+                        raise ValueError(f"Variable {var_name!r} is not defined in the context")
                 elif isinstance(arg, ast.List):
                     return [self.process_argument(elem) for elem in arg.elts]
                 elif isinstance(arg, ast.Tuple):
@@ -397,7 +397,7 @@ class ComplexAssetPipeline(AssetPipeline):
                 kw_args = {}
                 for kw in node.keywords:
                     if kw.arg is None:
-                        raise ValueError(f"Dynamic keyword argument names are not allowed in '{func_name}'")
+                        raise ValueError(f"Dynamic keyword argument names are not allowed in {func_name!r}")
                     kw_name = kw.arg
                     kw_value = self.process_argument(kw.value)
                     kw_args[kw_name] = kw_value

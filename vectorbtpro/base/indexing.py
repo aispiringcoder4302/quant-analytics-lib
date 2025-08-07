@@ -2388,7 +2388,7 @@ class AutoIdxr(UniIdxr, DefineMixin):
                                     _ = dt.to_timestamp(value)
                                     kind = "datetime"
                                 except Exception:
-                                    raise ValueError(f"'{value}' is neither a frequency nor a datetime")
+                                    raise ValueError(f"{value!r} is neither a frequency nor a datetime")
                         elif checks.is_frequency(value):
                             kind = "frequency"
                         else:
@@ -2419,7 +2419,7 @@ class AutoIdxr(UniIdxr, DefineMixin):
         elif kind.lower() == "frequency":
             idx = PointIdxr(every=value, **_expand_target_kwargs(PointIdxr, **idxr_kwargs))
         else:
-            raise ValueError(f"Invalid kind: '{kind}'")
+            raise ValueError(f"Invalid kind: {kind!r}")
         return idx.get(index=index, freq=freq)
 
 
@@ -3124,7 +3124,7 @@ class IdxFrame(IdxSetterFactory, DefineMixin):
                     for row, v in sr.items():
                         idx_items.append((row, col, v))
             else:
-                raise ValueError(f"Invalid split: '{split}'")
+                raise ValueError(f"Invalid split: {split!r}")
         else:
             idx_items = [(df.index, df.columns, df.values)]
         new_idx_items = []

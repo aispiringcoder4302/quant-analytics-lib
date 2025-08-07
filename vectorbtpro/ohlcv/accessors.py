@@ -330,7 +330,7 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
                     generic_nb.sum_reduce_nb,
                 )
             else:
-                raise ValueError(f"Cannot match feature '{feature}'")
+                raise ValueError(f"Cannot match feature {feature!r}")
         new_obj = pd.DataFrame(sr_dct)
         return self.replace(
             wrapper=wrapper_meta["new_wrapper"],

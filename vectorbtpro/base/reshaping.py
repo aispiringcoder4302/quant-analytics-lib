@@ -784,7 +784,7 @@ def broadcast_index(
                                     index = indexes.repeat_index(index, len(new_index), ignore_ranges=ignore_ranges)
                             new_index = indexes.stack_indexes([new_index, index], **clean_index_kwargs)
         else:
-            raise ValueError(f"Invalid value '{index_from}' for {'columns' if axis == 1 else 'index'}_from")
+            raise ValueError(f"Invalid index_from for {'columns' if axis == 1 else 'index'}: {index_from!r}")
     else:
         if not isinstance(index_from, pd.Index):
             index_from = pd.Index(index_from)
@@ -1894,9 +1894,9 @@ def broadcast(
             old_obj = aligned_objs[k]
             new_obj = ready_objs[k]
             if _axis in (None, 0) and new_obj.ndim >= 1 and new_obj.shape[0] > 1 and new_obj.shape[0] != to_shape[0]:
-                raise ValueError(f"Could not broadcast argument {k} of shape {new_obj.shape} to {to_shape}")
+                raise ValueError(f"Could not broadcast argument {k!r} of shape {new_obj.shape} to {to_shape}")
             if _axis in (None, 1) and new_obj.ndim == 2 and new_obj.shape[1] > 1 and new_obj.shape[1] != to_shape[1]:
-                raise ValueError(f"Could not broadcast argument {k} of shape {new_obj.shape} to {to_shape}")
+                raise ValueError(f"Could not broadcast argument {k!r} of shape {new_obj.shape} to {to_shape}")
             if _keep_flex:
                 if n_params > 0 and _axis in (None, 1):
                     if len(to_shape) == 1:

@@ -501,7 +501,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                     filter_name = k[len("inv_check_") :]
                 if filter_name is not None:
                     if filter_name not in filters:
-                        raise ValueError(f"Metric '{metric_name}' requires filter '{filter_name}'")
+                        raise ValueError(f"Metric {metric_name!r} requires filter {filter_name!r}")
                     metric_filters.add(filter_name)
 
             for filter_name in metric_filters:
@@ -753,7 +753,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                         elif _agg_func is None and agg_func is not None:
                             if not _silence_warnings:
                                 warn(
-                                    f"Metric '{metric_name}' returned multiple values "
+                                    f"Metric {metric_name!r} returned multiple values "
                                     "despite having no aggregation function",
                                 )
                             continue
@@ -761,10 +761,10 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                     # Store metric
                     if t in stats_dct:
                         if not _silence_warnings:
-                            warn(f"Duplicate metric title '{t}'")
+                            warn(f"Duplicate metric title {t!r}")
                     stats_dct[t] = v
             except Exception as e:
-                warn(f"Metric '{metric_name}' raised an exception")
+                warn(f"Metric {metric_name!r} raised an exception")
                 raise e
 
         # Return the stats

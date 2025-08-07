@@ -308,13 +308,13 @@ class VBTAsset(KnowledgeAsset):
                 if release.title == release_name:
                     found_release = release
             if found_release is None:
-                raise Exception(f"Release '{release_name}' not found")
+                raise Exception(f"Release {release_name!r} not found")
             release = found_release
             assets = release.get_assets()
             if asset_name is not None:
                 asset = next((a for a in assets if a.name == asset_name), None)
                 if asset is None:
-                    raise Exception(f"Asset '{asset_name}' not found in release {release_name}")
+                    raise Exception(f"Asset {asset_name!r} not found in release {release_name!r}")
             else:
                 assets_list = list(assets)
                 if len(assets_list) == 1:
@@ -335,12 +335,12 @@ class VBTAsset(KnowledgeAsset):
                 if release.get("name") == release_name:
                     release_info = release
             if release_info is None:
-                raise ValueError(f"Release '{release_name}' not found")
+                raise ValueError(f"Release {release_name!r} not found")
             assets = release_info.get("assets", [])
             if asset_name is not None:
                 asset = next((a for a in assets if a["name"] == asset_name), None)
                 if asset is None:
-                    raise Exception(f"Asset '{asset_name}' not found in release {release_name}")
+                    raise Exception(f"Asset {asset_name!r} not found in release {release_name!r}")
             else:
                 if len(assets) == 1:
                     asset = assets[0]
@@ -440,7 +440,7 @@ class VBTAsset(KnowledgeAsset):
             if len(found) == 0:
                 if allow_empty:
                     return found
-                raise NoItemFoundError(f"No item matching '{link}'")
+                raise NoItemFoundError(f"No item matching {link!r}")
             if single_item and len(found) > 1:
                 if consolidate:
                     top_parents = self.get_top_parent_links(list(found))
@@ -451,11 +451,11 @@ class VBTAsset(KnowledgeAsset):
                                     return found.replace(data=[d], single_item=True)
                                 return d
                 links_block = "\n".join([d["link"] for d in found])
-                raise MultipleItemsFoundError(f"Multiple items matching '{link}':\n\n{links_block}")
+                raise MultipleItemsFoundError(f"Multiple items matching {link!r}:\n\n{links_block}")
         elif found is None:
             if allow_empty:
                 return found
-            raise NoItemFoundError(f"No item matching '{link}'")
+            raise NoItemFoundError(f"No item matching {link!r}")
         return found
 
     @classmethod
@@ -2125,7 +2125,7 @@ class PagesAsset(VBTAsset):
                         if isinstance(incl_bases, int):
                             levels = levels[: incl_bases + 1]
                         else:
-                            raise TypeError(f"Invalid incl_bases: {incl_bases}")
+                            raise ValueError(f"Invalid incl_bases: {incl_bases!r}")
                     for level in levels:
                         classes.extend([_cls for _cls in mro if _cls in level_classes[level]])
                     for c in classes:
@@ -2167,7 +2167,7 @@ class PagesAsset(VBTAsset):
                                     if refname_level[parent_refname] + 1 > incl_bases:
                                         continue
                                 else:
-                                    raise TypeError(f"Invalid incl_bases: {incl_bases}")
+                                    raise ValueError(f"Invalid incl_bases: {incl_bases!r}")
                             base_refnames.append(refname)
                             base_refnames_set.add(refname)
                             refname_level[refname] = refname_level[parent_refname] + 1
@@ -2232,14 +2232,14 @@ class PagesAsset(VBTAsset):
                                             if anc_level > incl_ancestors:
                                                 break
                                         else:
-                                            raise TypeError(f"Invalid incl_ancestors: {incl_ancestors}")
+                                            raise ValueError(f"Invalid incl_ancestors: {incl_ancestors!r}")
                                 else:
                                     if not isinstance(incl_base_ancestors, bool):
                                         if isinstance(incl_base_ancestors, int):
                                             if anc_level > incl_base_ancestors:
                                                 break
                                         else:
-                                            raise TypeError(f"Invalid incl_base_ancestors: {incl_base_ancestors}")
+                                            raise ValueError(f"Invalid incl_base_ancestors: {incl_base_ancestors!r}")
                                 if refname not in anc_refnames_set:
                                     anc_refnames.append(refname)
                                     anc_refnames_set.add(refname)
@@ -3563,7 +3563,7 @@ class MessagesAsset(VBTAsset):
                     if d2["channel"] == name_or_link:
                         new_data.append(d2)
                 return self.replace(data=new_data, single_item=False)
-            raise NoItemFoundError(f"No channel or link matching '{name_or_link}'")
+            raise NoItemFoundError(f"No channel or link matching {name_or_link!r}")
         new_data = []
         for d2 in self.data:
             if d2["channel"] == d["channel"] and (incl_link or d2["link"] != d["link"]):
@@ -4117,7 +4117,7 @@ def find_assets(
             else:
                 asset_key = all_asset_names.index(asset_name.lower())
                 if asset_key == -1:
-                    raise ValueError(f"Invalid asset name: '{asset_name}'")
+                    raise ValueError(f"Invalid asset_name: {asset_name!r}")
                 asset_keys.append(asset_key)
         new_asset_names = reorder_list(all_asset_names, asset_keys, skip_missing=True)
         asset_names = new_asset_names

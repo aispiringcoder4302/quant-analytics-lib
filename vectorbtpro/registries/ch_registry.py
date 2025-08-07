@@ -174,7 +174,7 @@ class ChunkableRegistry(Base):
         """
         setup = self.get_setup(setup_id_or_func)
         if setup is None:
-            raise KeyError(f"Setup for {setup_id_or_func} not registered")
+            raise KeyError(f"Setup for {setup_id_or_func!r} not registered")
 
         if target_func is not None:
             func = target_func
@@ -214,7 +214,7 @@ class ChunkableRegistry(Base):
                 option = resolve_chunked_option(option=option)
                 if option is None:
                     return setup_id_or_func
-            raise KeyError(f"Setup for {setup_id_or_func} not registered")
+            raise KeyError(f"Setup for {setup_id_or_func!r} not registered")
 
         if target_func is not None:
             func = target_func

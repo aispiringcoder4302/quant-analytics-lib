@@ -330,7 +330,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
         idx_setters = records.get()
         for k in idx_setters:
             if k in self.arg_config and not self.arg_config[k].get("broadcast", False):
-                raise ValueError(f"Field {k} is not broadcastable and cannot be included in records")
+                raise ValueError(f"Field {k!r} is not broadcastable and cannot be included in records")
         rename_fields = arg_config.get("rename_fields", {})
         new_idx_setters = {}
         for k, v in idx_setters.items():
@@ -719,7 +719,7 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
                     new_fill_value = self.broadcast_named_args[k]
             if new_fill_value is not None:
                 if not np.isscalar(new_fill_value):
-                    raise TypeError(f"Argument '{k}' (and its default) must be a scalar when also provided via records")
+                    raise TypeError(f"Argument {k!r} (and its default) must be a scalar when also provided via records")
                 if "reindex_kwargs" not in arg_broadcast_kwargs:
                     arg_broadcast_kwargs["reindex_kwargs"] = {}
                 if k not in arg_broadcast_kwargs["reindex_kwargs"]:

@@ -528,7 +528,7 @@ class Records(Analyzable, metaclass=MetaRecords):
             for field in dtype.names:
                 if field not in records_arr.dtype.names:
                     if field not in field_names:
-                        raise TypeError(f"Field '{field}' from {dtype} cannot be found in records or config")
+                        raise TypeError(f"Field {field!r} from {dtype} cannot be found in records or config")
         if col_mapper is None:
             col_mapper = ColumnMapper(wrapper, records_arr[self.get_field_name("col")])
 

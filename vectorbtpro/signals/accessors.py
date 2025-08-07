@@ -2552,7 +2552,7 @@ class SignalsAccessor(GenericAccessor):
             return "<-"
         if relation == enums.SignalRelation.ManyMany:
             return "<->"
-        raise ValueError(f"Invalid relation: {relation}")
+        raise ValueError(f"Invalid relation: {relation!r}")
 
     # ############# Ranges ############# #
 
@@ -2826,7 +2826,7 @@ class SignalsAccessor(GenericAccessor):
             if -1 in row_idxs:
                 raise ValueError("Some columns have no signals. Use other signal index types.")
             return pd.Index(index[row_idxs], name=signal_index_name)
-        raise ValueError(f"Invalid signal_index_type: '{signal_index_type}'")
+        raise ValueError(f"Invalid signal_index_type: {signal_index_type!r}")
 
     def unravel(
         self,

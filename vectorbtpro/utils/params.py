@@ -1834,12 +1834,12 @@ class Parameterizer(Configured):
                     elif kind == "labels" or (kind is None and param_index is not None and s in param_index):
                         new_selection.add(param_index.get_loc(s))
                     else:
-                        raise ValueError(f"Selection {selection} couldn't be matched with parameter index")
+                        raise ValueError(f"Selection {selection!r} couldn't be matched with parameter index")
                 selection = new_selection
                 if len(selection) == 0:
-                    raise ValueError(f"Selection {selection} is empty")
+                    raise ValueError(f"Selection {selection!r} is empty")
             else:
-                raise ValueError(f"Selection {selection} couldn't be matched with parameter index")
+                raise ValueError(f"Selection {selection!r} couldn't be matched with parameter index")
         if param_index is not None:
             param_index = param_index[list(selection)]
         new_param_configs = []
@@ -1851,7 +1851,7 @@ class Parameterizer(Configured):
                 if len(selection) == 0:
                     break
         if len(selection) > 0:
-            raise ValueError(f"Selection {selection} couldn't be matched")
+            raise ValueError(f"Selection {selection!r} couldn't be matched")
         return new_param_configs, param_index, single_comb
 
     @classmethod
@@ -1992,7 +1992,7 @@ class Parameterizer(Configured):
                 else:
                     if k not in new_param_config:
                         raise ValueError(
-                            f"Mono-chunks cannot be built because key '{k}' is not present in all parameter configs"
+                            f"Mono-chunks cannot be built because key {k!r} is not present in all parameter configs"
                         )
                     if v is not new_param_config[k][-1]:
                         all_same[k] = False

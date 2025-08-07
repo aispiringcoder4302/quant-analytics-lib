@@ -3430,7 +3430,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 if source_rbound == "pandas":
                     resampler = resampler.replace(source_index=resampler.source_rbound_index)
                 else:
-                    raise ValueError(f"Invalid source_rbound: '{source_rbound}'")
+                    raise ValueError(f"Invalid source_rbound: {source_rbound!r}")
             else:
                 resampler = resampler.replace(source_index=source_rbound)
         if isinstance(target_rbound, bool):
@@ -3443,7 +3443,7 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 if target_rbound == "pandas":
                     resampler = resampler.replace(target_index=resampler.target_rbound_index)
                 else:
-                    raise ValueError(f"Invalid target_rbound: '{target_rbound}'")
+                    raise ValueError(f"Invalid target_rbound: {target_rbound!r}")
             else:
                 resampler = resampler.replace(target_index=target_rbound)
 
@@ -7347,7 +7347,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 return df[df.ffill().iloc[-1].idxmax()]
 
         else:
-            raise ValueError(f"Invalid band_name: '{band_name}'")
+            raise ValueError(f"Invalid band_name: {band_name!r}")
         if return_meta:
             return dict(band_name=band_name, band_title=band_title, band_func=_band_func)
         return _band_func(self.obj)
@@ -7515,7 +7515,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 band_title = band_func_meta["band_title"]
                 band_func = band_func_meta["band_func"]
             if band_func is not None and not callable(band_func):
-                raise TypeError(f"Argument {arg_name} has wrong type '{type(band_func)}'")
+                raise TypeError(f"Argument {arg_name!r} has wrong type '{type(band_func)}'")
             return band_func, band_title
 
         plot_lower, lower_name = _resolve_band_and_name(plot_lower, "plot_lower")
@@ -7546,7 +7546,7 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 elif colorize == "last":
                     colorize = lambda x: x.ffill().iloc[-1]
                 else:
-                    raise ValueError(f"Argument colorize has wrong value '{colorize}'")
+                    raise ValueError(f"Argument colorize has wrong value {colorize!r}")
             if colorize is not None and not callable(colorize):
                 raise TypeError(f"Argument colorize has wrong type '{type(colorize)}'")
         if colorize is not None:

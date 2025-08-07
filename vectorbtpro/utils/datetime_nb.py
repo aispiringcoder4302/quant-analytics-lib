@@ -699,7 +699,7 @@ def within_fixed_dtc_nb(
         _start_c = -1
         _end_c = end_c
     else:
-        raise ValueError("Invalid previous DTC status")
+        raise ValueError("Invalid DTCS option")
 
     if _start_c == -1:
         a = 0
@@ -807,7 +807,7 @@ def within_periodic_dtc_nb(
         _start_c = -1
         _end_c = end_c
     else:
-        raise ValueError("Invalid previous DTC status")
+        raise ValueError("Invalid DTCS option")
 
     if _start_c == -1:
         a = 0

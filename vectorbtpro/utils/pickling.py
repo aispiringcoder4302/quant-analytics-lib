@@ -190,7 +190,7 @@ def compress(
 
                 bytes_ = blosc.compress(bytes_, **compress_kwargs)
         else:
-            raise ValueError(f"Invalid compression format: '{compression}'")
+            raise ValueError(f"Invalid compression: {compression!r}")
     return bytes_
 
 
@@ -240,7 +240,7 @@ def decompress(
                     raise ValueError("ZIP archive is empty")
                 if file_name is not None:
                     if file_name not in namelist:
-                        raise FileNotFoundError(f"'{file_name}' not found in the ZIP archive")
+                        raise FileNotFoundError(f"{file_name!r} not found in the ZIP archive")
                 else:
                     if len(namelist) == 1:
                         file_name = namelist[0]
@@ -290,7 +290,7 @@ def decompress(
 
                 bytes_ = blosc.decompress(bytes_, as_bytearray=True, **decompress_kwargs)
         else:
-            raise ValueError(f"Invalid compression format: '{compression}'")
+            raise ValueError(f"Invalid compression: {compression!r}")
     return bytes_
 
 
@@ -623,7 +623,7 @@ def get_class_from_id(class_id: str) -> tp.Optional[tp.Type]:
     cls = find_class(class_id)
     if cls is not None:
         return cls
-    raise ValueError(f"Please register an instance of RecInfo for '{class_id}'")
+    raise ValueError(f"Please register an instance of RecInfo for {class_id!r}")
 
 
 def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.Any:
@@ -659,7 +659,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
             if cls is None:
                 cls = cls_name
     if not isinstance(cls, type):
-        raise ValueError(f"Please register an instance of RecInfo for '{cls}'")
+        raise ValueError(f"Please register an instance of RecInfo for {cls!r}")
     if not found_rec:
         class_path = type(cls).__module__ + "." + type(cls).__name__
         if class_path in rec_info_registry:
@@ -866,7 +866,7 @@ class Pickleable(Base):
                             _k = _get_path(k)
                         else:
                             _k = _get_path(parent_k) + "." + _get_path(k)
-                        raise ValueError(f"Must define reconstruction state for '{_k}'")
+                        raise ValueError(f"Must define reconstruction state for {_k!r}")
                     new_v = vars(rec_state)
                     if compress_unpacked and (len(new_v["init_args"]) == 0 and len(new_v["attr_dct"]) == 0):
                         new_v = new_v["init_kwargs"]
@@ -1107,9 +1107,9 @@ class Pickleable(Base):
             ref_section = ".".join(ref.split(".")[:-1])
             ref_key = ref.split(".")[-1]
             if ref_section not in dct:
-                raise ValueError(f"Referenced section '{ref_section}' not found")
+                raise ValueError(f"Referenced section {ref_section!r} not found")
             if ref_key not in dct[ref_section]:
-                raise ValueError(f"Referenced object '{ref}' not found")
+                raise ValueError(f"Referenced object {ref!r} not found")
             return ref_section, ref_key
 
         new_dct = dict()
@@ -1969,11 +1969,11 @@ class Pickleable(Base):
         if file_format is not None:
             file_format = file_format.lower()
             if file_format not in serialization_extensions:
-                raise ValueError(f"Invalid file format: '{file_format}'")
+                raise ValueError(f"Invalid file_format: {file_format!r}")
         if compression not in (None, False):
             compression = compression.lower()
             if compression not in compression_extensions:
-                raise ValueError(f"Invalid compression format: '{compression}'")
+                raise ValueError(f"Invalid compression: {compression!r}")
         for _ in range(len(suffixes)):
             path = path.with_suffix("")
 
@@ -2054,12 +2054,14 @@ class Pickleable(Base):
         if len(paths) == 1:
             return paths[0]
         if len(paths) > 1:
-            raise ValueError(f"Multiple files found with path '{path}': {paths}. Please provide an extension.")
-        error_message = f"No file found with path '{path}'"
+            raise ValueError(
+                f"Multiple files found under path {str(path.resolve())!r}: {paths}. Please provide an extension."
+            )
+        error_message = f"No file found with path {str(path.resolve())!r}"
         if file_format is not None:
-            error_message += f", file format '{file_format}'"
+            error_message += f", file format {file_format!r}"
         if compression not in (None, False):
-            error_message += f", compression '{compression}'"
+            error_message += f", compression {compression!r}"
         raise FileNotFoundError(error_message)
 
     @classmethod
@@ -2129,7 +2131,7 @@ class Pickleable(Base):
             with open(path, "w") as f:
                 f.write(str_)
         else:
-            raise ValueError(f"Invalid file extension: '{path.suffix}'")
+            raise ValueError(f"Invalid file extension: {path.suffix!r}")
         return path
 
     @classmethod
@@ -2176,7 +2178,7 @@ class Pickleable(Base):
                 str_ = f.read()
             return cls.decode_yaml(str_, **kwargs)
         else:
-            raise ValueError(f"Invalid file extension: '{path.suffix}'")
+            raise ValueError(f"Invalid file extension: {path.suffix!r}")
 
     def __sizeof__(self) -> int:
         return len(self.dumps())

@@ -770,7 +770,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
                     new_data_reversed.append(item)
             new_data = list(reversed(new_data_reversed))
         else:
-            raise ValueError(f"Invalid keep option: '{keep}'")
+            raise ValueError(f"Invalid keep: {keep!r}")
         if inplace:
             self.modify_data(new_data)
             return None
@@ -1595,7 +1595,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             elif return_type.lower() == "bool":
                 as_filter = False
             else:
-                raise ValueError(f"Invalid return type: '{return_type}'")
+                raise ValueError(f"Invalid return_type: {return_type!r}")
             if as_filter and isinstance(result, pd.Series) and result.dtype == "bool":
                 result = df[result]
             if isinstance(result, pd.Series):
@@ -1605,7 +1605,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             else:
                 new_obj = result
         else:
-            raise ValueError(f"Invalid query engine: '{query_engine}'")
+            raise ValueError(f"Invalid query_engine: {query_engine!r}")
         return new_obj
 
     def filter(self: KnowledgeAssetT, *args, **kwargs) -> KnowledgeAssetT:

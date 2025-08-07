@@ -394,7 +394,7 @@ def row_stack_merge(
                         elif wrap.lower() in ("df", "frame", "dataframe"):
                             new_objs.append(pd.DataFrame(obj, **_wrap_kwargs))
                         else:
-                            raise ValueError(f"Invalid wrapping option: '{wrap}'")
+                            raise ValueError(f"Invalid wrap: {wrap!r}")
                 if default_index and not checks.is_default_index(new_objs[-1].index, check_names=True):
                     default_index = False
             objs = new_objs
@@ -547,7 +547,7 @@ def column_stack_merge(
                     new_index = pd.RangeIndex(start=max_length - obj.wrapper.shape[0], stop=max_length)
                     new_obj = obj.replace(wrapper=obj.wrapper.replace(index=new_index))
                 else:
-                    raise ValueError(f"Invalid index resetting option: '{reset_index}'")
+                    raise ValueError(f"Invalid reset_index: {reset_index!r}")
                 new_objs.append(new_obj)
             objs = new_objs
         kwargs = merge_dicts(dict(wrapper_kwargs=dict(keys=keys)), kwargs)
@@ -588,7 +588,7 @@ def column_stack_merge(
                         elif wrap.lower() in ("df", "frame", "dataframe"):
                             new_objs.append(pd.DataFrame(obj, **_wrap_kwargs))
                         else:
-                            raise ValueError(f"Invalid wrapping option: '{wrap}'")
+                            raise ValueError(f"Invalid wrap: {wrap!r}")
                 if (
                     default_columns
                     and isinstance(new_objs[-1], pd.DataFrame)
@@ -622,7 +622,7 @@ def column_stack_merge(
                 elif isinstance(reset_index, str) and reset_index.lower() == "from_end":
                     new_obj[-len(obj) :, start_col:end_col] = obj
                 else:
-                    raise ValueError(f"Invalid index resetting option: '{reset_index}'")
+                    raise ValueError(f"Invalid reset_index: {reset_index!r}")
                 start_col = end_col
             return new_obj
         return column_stack_arrays(objs)
@@ -637,7 +637,7 @@ def column_stack_merge(
             elif isinstance(reset_index, str) and reset_index.lower() == "from_end":
                 new_obj.index = pd.RangeIndex(start=max_length - len(new_obj), stop=max_length)
             else:
-                raise ValueError(f"Invalid index resetting option: '{reset_index}'")
+                raise ValueError(f"Invalid reset_index: {reset_index!r}")
             new_objs.append(new_obj)
         objs = new_objs
         kwargs = merge_dicts(dict(sort=True), kwargs)
@@ -853,7 +853,7 @@ def resolve_merge_func(merge_func: tp.MergeFuncLike) -> tp.Optional[tp.Callable]
         return None
     if isinstance(merge_func, str):
         if merge_func.lower() not in merge_func_config:
-            raise ValueError(f"Invalid merging function name: '{merge_func}'")
+            raise ValueError(f"Invalid merge_func: {merge_func!r}")
         return merge_func_config[merge_func.lower()]
     if checks.is_sequence(merge_func):
         return partial(mixed_merge, merge_funcs=merge_func)

@@ -161,7 +161,7 @@ def interp_nb(arr: tp.FlexArray1d, i: int, source_size: int, target_size: int, i
         return discrete_interp_nb(arr, i, source_size, target_size)
     if interp_mode == InterpMode.Mixed:
         return mixed_interp_nb(arr, i, source_size, target_size)
-    raise ValueError("Invalid interpolation mode")
+    raise ValueError("Invalid InterpMode option")
 
 
 @register_jitted(cache=True)
@@ -384,13 +384,13 @@ def pattern_similarity_nb(
         _max_error_interp_mode = max_error_interp_mode
     max_size = max(arr.shape[0], pattern.shape[0])
     if error_type != ErrorType.Absolute and error_type != ErrorType.Relative:
-        raise ValueError("Invalid error type")
+        raise ValueError("Invalid ErrorType option")
     if (
         distance_measure != DistanceMeasure.MAE
         and distance_measure != DistanceMeasure.MSE
         and distance_measure != DistanceMeasure.RMSE
     ):
-        raise ValueError("Invalid distance mode")
+        raise ValueError("Invalid DistanceMeasure option")
     if minp is None:
         minp = arr.shape[0]
 

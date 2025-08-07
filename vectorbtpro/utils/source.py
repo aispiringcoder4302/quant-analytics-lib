@@ -98,11 +98,11 @@ def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = 
         except ModuleNotFoundError:
             continue
     if module is None:
-        raise ImportError(f"Could not import any part of '{qualname}'")
+        raise ImportError(f"Could not import any part of {qualname!r}")
 
     filepath = inspect.getsourcefile(module) or inspect.getfile(module)
     if not filepath or not os.path.exists(filepath):
-        raise FileNotFoundError(f"No pure-Python source for '{module.__name__}'")
+        raise FileNotFoundError(f"No pure-Python source for {module.__name__!r}")
 
     with open(filepath, encoding="utf-8") as fh:
         source = fh.read()
@@ -116,7 +116,7 @@ def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = 
     tree = ast.parse(source, filename=filepath)
     target = _find(tree, chain)
     if target is None:
-        raise ValueError(f"Could not locate '{'.'.join(chain)}' in '{module.__name__}'")
+        raise ValueError(f"Could not locate {'.'.join(chain)!r} in {module.__name__!r}")
 
     if isinstance(target, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and target.decorator_list:
         start = min(d.lineno for d in target.decorator_list) - 1
@@ -338,8 +338,8 @@ def cut_from_source(
 
         i += 1
     if section_found:
-        raise ValueError(f"Code section '{section_name}' not closed")
-    raise ValueError(f"Code section '{section_name}' not found")
+        raise ValueError(f"Code section {section_name!r} not closed")
+    raise ValueError(f"Code section {section_name!r} not found")
 
 
 def suggest_module_path(
@@ -1416,7 +1416,7 @@ def refactor_source(
         elif output_format.lower() == "udiff":
             format_prompt = UDIFF_FORMAT_PROMPT
         else:
-            raise ValueError(f"Invalid output format: '{output_format}'")
+            raise ValueError(f"Invalid output_format: {output_format!r}")
     if system_prompt:
         system_prompt += "\n\n====\n\n"
     system_prompt += f"Output format:\n\n{format_prompt}"
@@ -1542,7 +1542,7 @@ def refactor_source(
                     print(output)
                     output = apply_patches(input, output, start_line=chunk_start_line, fuzzy_kwargs=fuzzy_kwargs)
                 elif output_format.lower() != "full":
-                    raise ValueError(f"Invalid output format: '{output_format}'")
+                    raise ValueError(f"Invalid output_format: {output_format!r}")
             output = add_source_indent(output, indent)
             new_chunk = leading + output + trailing
             processed.append(new_chunk)

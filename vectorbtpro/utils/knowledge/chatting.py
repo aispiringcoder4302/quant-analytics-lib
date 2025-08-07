@@ -378,7 +378,7 @@ def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokeni
                     found_tokenizer = cls
                     break
         if found_tokenizer is None:
-            raise ValueError(f"Invalid tokenizer: '{tokenizer}'")
+            raise ValueError(f"Invalid tokenizer: {tokenizer!r}")
         tokenizer = found_tokenizer
     if isinstance(tokenizer, type):
         checks.assert_subclass_of(tokenizer, Tokenizer, arg_name="tokenizer")
@@ -849,7 +849,7 @@ class LlamaIndexEmbeddings(Embeddings):
                 return_first=True,
             )
             if found_embedding is None:
-                raise ValueError(f"Embedding '{embedding}' not found")
+                raise ValueError(f"Embedding {embedding!r} not found")
             embedding = found_embedding
         if isinstance(embedding, type):
             checks.assert_subclass_of(embedding, BaseEmbedding, arg_name="embedding")
@@ -947,7 +947,7 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
                     found_embeddings = cls
                     break
         if found_embeddings is None:
-            raise ValueError(f"Invalid embeddings: '{embeddings}'")
+            raise ValueError(f"Invalid embeddings: {embeddings!r}")
         embeddings = found_embeddings
     if isinstance(embeddings, type):
         checks.assert_subclass_of(embeddings, Embeddings, arg_name="embeddings")
@@ -1805,7 +1805,7 @@ class LlamaIndexCompletions(Completions):
                 return_first=True,
             )
             if found_llm is None:
-                raise ValueError(f"LLM '{llm}' not found")
+                raise ValueError(f"LLM {llm!r} not found")
             llm = found_llm
         if isinstance(llm, type):
             checks.assert_subclass_of(llm, LLM, arg_name="llm")
@@ -1915,7 +1915,7 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
                     found_completions = cls
                     break
         if found_completions is None:
-            raise ValueError(f"Invalid completions: '{completions}'")
+            raise ValueError(f"Invalid completions: {completions!r}")
         completions = found_completions
     if isinstance(completions, type):
         checks.assert_subclass_of(completions, Completions, arg_name="completions")
@@ -3122,7 +3122,7 @@ class MarkdownSplitter(SourceSplitter):
                 yield chunk
             return
 
-        raise ValueError(f"Invalid split_by: '{self.split_by}'")
+        raise ValueError(f"Invalid split_by: {self.split_by!r}")
 
 
 class LlamaIndexSplitter(TextSplitter):
@@ -3195,7 +3195,7 @@ class LlamaIndexSplitter(TextSplitter):
                 return_first=True,
             )
             if found_node_parser is None:
-                raise ValueError(f"Node parser '{node_parser}' not found")
+                raise ValueError(f"Node parser {node_parser!r} not found")
             node_parser = found_node_parser
         if isinstance(node_parser, type):
             checks.assert_subclass_of(node_parser, NodeParser, arg_name="node_parser")
@@ -3273,7 +3273,7 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
                     found_text_splitter = cls
                     break
         if found_text_splitter is None:
-            raise ValueError(f"Invalid text splitter: '{text_splitter}'")
+            raise ValueError(f"Invalid text_splitter: {text_splitter!r}")
         text_splitter = found_text_splitter
     if isinstance(text_splitter, type):
         checks.assert_subclass_of(text_splitter, TextSplitter, arg_name="text_splitter")
@@ -4668,7 +4668,7 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
                     found_obj_store = cls
                     break
         if found_obj_store is None:
-            raise ValueError(f"Invalid object store: '{obj_store}'")
+            raise ValueError(f"Invalid obj_store: {obj_store!r}")
         obj_store = found_obj_store
     if isinstance(obj_store, type):
         checks.assert_subclass_of(obj_store, ObjectStore, arg_name="obj_store")
@@ -5435,7 +5435,7 @@ class DocumentRanker(Configured):
             elif self.score_func.lower() == "dot":
                 score_matrix = np.dot(emb1, emb2.T)
             else:
-                raise ValueError(f"Invalid distance function: '{self.score_func}'")
+                raise ValueError(f"Invalid score_func: {self.score_func!r}")
         else:
             score_matrix = self.score_func(emb1, emb2)
 
@@ -5798,7 +5798,7 @@ class DocumentRanker(Configured):
                 top_k_indices = np.where(kmeans.labels_ == high_score_cluster)[0]
                 top_k = max(top_k_indices) + 1
             else:
-                raise ValueError(f"Invalid top_k method: '{top_k}'")
+                raise ValueError(f"Invalid top_k: {top_k!r}")
         elif callable(top_k):
             top_k = top_k(scores)
         if checks.is_float(top_k):
