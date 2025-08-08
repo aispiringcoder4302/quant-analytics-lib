@@ -4352,9 +4352,11 @@ class IndicatorFactory(Configured):
         except ImportError as e:
             if "cannot import name 'NaN' from 'numpy'" in str(e):
                 warn(
-                    "Cannot import name 'NaN' from 'numpy'. "
+                    "Cannot import name 'NaN' from 'numpy'.\n\n"
                     "Current version of Pandas TA is not compatible with the latest NumPy. "
-                    "Please install an older version of NumPy, e.g., 1.26.4."
+                    "Please install an older version of NumPy, e.g., 1.26.4. "
+                    "Or, go to the source of pandas_ta.momentum.squeeze_pro on your disk and "
+                    "comment out the line `from numpy import NaN as npNaN`."
                 )
                 return []
             raise e
@@ -4415,8 +4417,11 @@ class IndicatorFactory(Configured):
         except ImportError as e:
             if "cannot import name 'NaN' from 'numpy'" in str(e):
                 raise ImportError(
+                    "Cannot import name 'NaN' from 'numpy'.\n\n"
                     "Current version of Pandas TA is not compatible with the latest NumPy. "
-                    "Please install an older version of NumPy, e.g., 1.26.4."
+                    "Please install an older version of NumPy, e.g., 1.26.4. "
+                    "Or, go to the source of pandas_ta.momentum.squeeze_pro on your disk and "
+                    "comment out the line `from numpy import NaN as npNaN`."
                 ) from e
             raise e
 

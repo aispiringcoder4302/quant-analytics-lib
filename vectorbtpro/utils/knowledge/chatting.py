@@ -625,10 +625,6 @@ class OpenAIEmbeddings(Embeddings):
         assert_can_import("openai")
         from openai import OpenAI
 
-        super_arg_names = set(get_func_arg_names(Embeddings.__init__))
-        for k in list(kwargs.keys()):
-            if k in super_arg_names:
-                kwargs.pop(k)
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = openai_config.pop("model", None)
         def_client_kwargs = openai_config.pop("client_kwargs", None)
@@ -638,9 +634,9 @@ class OpenAIEmbeddings(Embeddings):
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_kwargs = get_func_kwargs(type(self).__init__)
+        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
         for k in list(openai_config.keys()):
-            if k in init_kwargs:
+            if k in init_arg_names:
                 openai_config.pop(k)
 
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
@@ -723,10 +719,6 @@ class LiteLLMEmbeddings(Embeddings):
 
         assert_can_import("litellm")
 
-        super_arg_names = set(get_func_arg_names(Embeddings.__init__))
-        for k in list(kwargs.keys()):
-            if k in super_arg_names:
-                kwargs.pop(k)
         litellm_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = litellm_config.pop("model", None)
         def_embedding_kwargs = litellm_config.pop("embedding_kwargs", None)
@@ -735,9 +727,9 @@ class LiteLLMEmbeddings(Embeddings):
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_kwargs = get_func_kwargs(type(self).__init__)
+        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
         for k in list(litellm_config.keys()):
-            if k in init_kwargs:
+            if k in init_arg_names:
                 litellm_config.pop(k)
         embedding_kwargs = merge_dicts(litellm_config, def_embedding_kwargs, embedding_kwargs)
 
@@ -809,10 +801,6 @@ class LlamaIndexEmbeddings(Embeddings):
         assert_can_import("llama_index")
         from llama_index.core.embeddings import BaseEmbedding
 
-        super_arg_names = set(get_func_arg_names(Embeddings.__init__))
-        for k in list(kwargs.keys()):
-            if k in super_arg_names:
-                kwargs.pop(k)
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_embedding = llama_index_config.pop("embedding", None)
         def_embedding_kwargs = llama_index_config.pop("embedding_kwargs", None)
@@ -821,9 +809,9 @@ class LlamaIndexEmbeddings(Embeddings):
             embedding = def_embedding
         if embedding is None:
             raise ValueError("Must provide an embedding name or path")
-        init_kwargs = get_func_kwargs(type(self).__init__)
+        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
         for k in list(llama_index_config.keys()):
-            if k in init_kwargs:
+            if k in init_arg_names:
                 llama_index_config.pop(k)
 
         if isinstance(embedding, str):
@@ -1555,10 +1543,6 @@ class OpenAICompletions(Completions):
         assert_can_import("openai")
         from openai import OpenAI
 
-        super_arg_names = set(get_func_arg_names(Completions.__init__))
-        for k in list(kwargs.keys()):
-            if k in super_arg_names:
-                kwargs.pop(k)
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = openai_config.pop("model", None)
         def_quick_model = openai_config.pop("quick_model", None)
@@ -1569,9 +1553,9 @@ class OpenAICompletions(Completions):
             model = def_quick_model if self.quick_mode else def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_kwargs = get_func_kwargs(type(self).__init__)
+        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
         for k in list(openai_config.keys()):
-            if k in init_kwargs:
+            if k in init_arg_names:
                 openai_config.pop(k)
 
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
@@ -1765,10 +1749,6 @@ class LlamaIndexCompletions(Completions):
         assert_can_import("llama_index")
         from llama_index.core.llms import LLM
 
-        super_arg_names = set(get_func_arg_names(Completions.__init__))
-        for k in list(kwargs.keys()):
-            if k in super_arg_names:
-                kwargs.pop(k)
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_llm = llama_index_config.pop("llm", None)
         def_llm_kwargs = llama_index_config.pop("llm_kwargs", None)
@@ -1777,9 +1757,9 @@ class LlamaIndexCompletions(Completions):
             llm = def_llm
         if llm is None:
             raise ValueError("Must provide an LLM name or path")
-        init_kwargs = get_func_kwargs(type(self).__init__)
+        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
         for k in list(llama_index_config.keys()):
-            if k in init_kwargs:
+            if k in init_arg_names:
                 llama_index_config.pop(k)
 
         if isinstance(llm, str):
@@ -3155,19 +3135,15 @@ class LlamaIndexSplitter(TextSplitter):
         assert_can_import("llama_index")
         from llama_index.core.node_parser import NodeParser
 
-        super_arg_names = set(get_func_arg_names(TextSplitter.__init__))
-        for k in list(kwargs.keys()):
-            if k in super_arg_names:
-                kwargs.pop(k)
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_node_parser = llama_index_config.pop("node_parser", None)
         def_node_parser_kwargs = llama_index_config.pop("node_parser_kwargs", None)
 
         if node_parser is None:
             node_parser = def_node_parser
-        init_kwargs = get_func_kwargs(type(self).__init__)
+        init_arg_names = set(get_func_arg_names(TextSplitter.__init__)) | set(get_func_arg_names(type(self).__init__))
         for k in list(llama_index_config.keys()):
-            if k in init_kwargs:
+            if k in init_arg_names:
                 llama_index_config.pop(k)
 
         if isinstance(node_parser, str):
@@ -4332,7 +4308,8 @@ class LMDBStore(ObjectStore):
         dumps_kwargs = self.resolve_setting(dumps_kwargs, "dumps_kwargs", merge=True)
         loads_kwargs = self.resolve_setting(loads_kwargs, "loads_kwargs", merge=True)
         lmdb_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        for arg_name in get_func_arg_names(ObjectStore.__init__) + get_func_arg_names(type(self).__init__):
+        init_arg_names = set(get_func_arg_names(ObjectStore.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for arg_name in init_arg_names:
             if arg_name in lmdb_config:
                 del lmdb_config[arg_name]
         if "mirror" in lmdb_config:

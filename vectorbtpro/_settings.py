@@ -376,6 +376,7 @@ _settings["numpy"] = numpy
 
 numba = frozen_cfg(
     disable=False,
+    boundscheck=False,
     parallel=None,
     silence_warnings=False,
     check_func_type=True,
@@ -3023,6 +3024,8 @@ for k, v in settings["env"].items():
 
 if settings["numba"]["disable"]:
     nb_config.DISABLE_JIT = True
+if settings["numba"]["boundscheck"]:
+    nb_config.BOUNDSCHECK = True
 
 settings.reset_theme()
 settings.register_templates()
