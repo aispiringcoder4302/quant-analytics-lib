@@ -85,6 +85,7 @@ opt_dep_config = HybridConfig(
         platformdirs=dict(),
         mcp=dict(),
         jupyter_client=dict(),
+        huggingface_hub=dict(dist_name="huggingface-hub"),
     )
 )
 """_"""

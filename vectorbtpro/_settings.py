@@ -2485,6 +2485,9 @@ $context
                     )
                 ),
             ),
+            huggingface=flex_cfg(
+                model="Qwen/Qwen3-Embedding-8B",
+            ),
         ),
         completions="auto",
         completions_config=flex_cfg(),
@@ -2505,6 +2508,10 @@ $context
                         quick_model="gpt-4o-mini",
                     )
                 ),
+            ),
+            huggingface=flex_cfg(
+                model="openai/gpt-oss-120b",
+                quick_model="openai/gpt-oss-20b",
             ),
         ),
         text_splitter="segment",

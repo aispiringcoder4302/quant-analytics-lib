@@ -71,6 +71,16 @@ if tp.TYPE_CHECKING:
 else:
     BM25TokenizerT = "bm25s.tokenization.Tokenizer"
     BM25T = "bm25s.BM25"
+if tp.TYPE_CHECKING:
+    from huggingface_hub import (
+        InferenceClient as InferenceClientT, 
+        ChatCompletionOutput as ChatCompletionOutputT,
+        ChatCompletionStreamOutput as ChatCompletionStreamOutputT,
+    )
+else:
+    InferenceClientT = "huggingface_hub.InferenceClient"
+    ChatCompletionOutputT = "huggingface_hub.ChatCompletionOutput"
+    ChatCompletionStreamOutputT = "huggingface_hub.ChatCompletionStreamOutput"
 
 __all__ = [
     "Tokenizer",
@@ -81,11 +91,13 @@ __all__ = [
     "OpenAIEmbeddings",
     "LiteLLMEmbeddings",
     "LlamaIndexEmbeddings",
+    "HuggingFaceEmbeddings",
     "embed",
     "Completions",
     "OpenAICompletions",
     "LiteLLMCompletions",
     "LlamaIndexCompletions",
+    "HuggingFaceCompletions",
     "complete",
     "completed",
     "TextSplitter",
@@ -885,6 +897,106 @@ class LlamaIndexEmbeddings(Embeddings):
         return [embedding for embedding in self.embedding.get_text_embedding_batch(batch)]
 
 
+class HuggingFaceEmbeddings(Embeddings):
+    """Embeddings class for HuggingFace Inference.
+
+    Args:
+        model (Optional[str]): HuggingFace model identifier.
+        client_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient`.
+        feature_extraction_kwargs (KwargsLike): Keyword arguments for `InferenceClient.feature_extraction`.
+        **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `feature_extraction_kwargs`.
+
+    !!! info
+        For default settings, see `chat.embeddings_configs.huggingface` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "huggingface"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.huggingface"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        feature_extraction_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Embeddings.__init__(
+            self,
+            model=model,
+            client_kwargs=client_kwargs,
+            feature_extraction_kwargs=feature_extraction_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("huggingface_hub")
+        from huggingface_hub import InferenceClient
+
+        huggingface_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = huggingface_config.pop("model", None)
+        def_client_kwargs = huggingface_config.pop("client_kwargs", None)
+        def_feature_extraction_kwargs = huggingface_config.pop("feature_extraction_kwargs", None)
+
+        if model is None:
+            model = def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(huggingface_config.keys()):
+            if k in init_arg_names:
+                huggingface_config.pop(k)
+
+        client_arg_names = set(get_func_arg_names(InferenceClient.__init__))
+        _client_kwargs = {}
+        _feature_extraction_kwargs = {}
+        for k, v in huggingface_config.items():
+            if k in client_arg_names:
+                _client_kwargs[k] = v
+            else:
+                _feature_extraction_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        feature_extraction_kwargs = merge_dicts(
+            _feature_extraction_kwargs,
+            def_feature_extraction_kwargs,
+            feature_extraction_kwargs,
+        )
+        client = InferenceClient(model=model, **client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._feature_extraction_kwargs = feature_extraction_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> InferenceClientT:
+        """HuggingFace Inference client instance.
+
+        Returns:
+            InferenceClient: HuggingFace Inference client instance.
+        """
+        return self._client
+
+    @property
+    def feature_extraction_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `InferenceClient.feature_extraction`.
+
+        Returns:
+            Kwargs: Keyword arguments for feature extraction.
+        """
+        return self._feature_extraction_kwargs
+
+    def get_embedding(self, query: str) -> tp.List[float]:
+        return self.client.feature_extraction(query, **self.feature_extraction_kwargs)[0].tolist()
+
+    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
+        return self.client.feature_extraction(batch, **self.feature_extraction_kwargs).tolist()
+
+
 def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Embeddings]:
     """Return a subclass or instance of `Embeddings` based on the provided identifier or object.
 
@@ -896,6 +1008,7 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
             * "openai" for `OpenAIEmbeddings`
             * "litellm" for `LiteLLMEmbeddings`
             * "llama_index" for `LlamaIndexEmbeddings`
+            * "huggingface" for `HuggingFaceEmbeddings`
             * "auto" to select the first available option
 
             If None, configuration from `vectorbtpro._settings` is used.
@@ -921,10 +1034,12 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
                 embeddings = "litellm"
             elif check_installed("llama_index"):
                 embeddings = "llama_index"
+            elif check_installed("huggingface_hub"):
+                embeddings = "huggingface"
             else:
                 raise ValueError(
-                    "No embeddings available. " \
-                    "Please install one of the supported packages: openai, litellm, llama-index."
+                    "No embeddings available. "
+                    "Please install one of the supported packages: openai, litellm, llama-index, huggingface-hub."
                 )
         curr_module = sys.modules[__name__]
         found_embeddings = None
@@ -1847,6 +1962,119 @@ class LlamaIndexCompletions(Completions):
         return response_chunk.delta
 
 
+class HuggingFaceCompletions(Completions):
+    """Completions class for HuggingFace Inference.
+
+    Args:
+        model (Optional[str]): HuggingFace model identifier.
+        client_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient`.
+        chat_completion_kwargs (KwargsLike): Keyword arguments for `InferenceClient.chat_completion`.
+        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `chat_completion_kwargs`.
+
+    !!! info
+        For default settings, see `chat.completions_configs.huggingface` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "huggingface"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.huggingface"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        chat_completion_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Completions.__init__(
+            self,
+            model=model,
+            client_kwargs=client_kwargs,
+            chat_completion_kwargs=chat_completion_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("huggingface_hub")
+        from huggingface_hub import InferenceClient
+
+        huggingface_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = huggingface_config.pop("model", None)
+        def_quick_model = huggingface_config.pop("quick_model", None)
+        def_client_kwargs = huggingface_config.pop("client_kwargs", None)
+        def_chat_completion_kwargs = huggingface_config.pop("chat_completion_kwargs", None)
+
+        if model is None:
+            model = def_quick_model if self.quick_mode else def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(huggingface_config.keys()):
+            if k in init_arg_names:
+                huggingface_config.pop(k)
+
+        client_arg_names = set(get_func_arg_names(InferenceClient.__init__))
+        _client_kwargs = {}
+        _chat_completion_kwargs = {}
+        for k, v in huggingface_config.items():
+            if k in client_arg_names:
+                _client_kwargs[k] = v
+            else:
+                _chat_completion_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        chat_completion_kwargs = merge_dicts(_chat_completion_kwargs, def_chat_completion_kwargs, chat_completion_kwargs)
+        client = InferenceClient(model=model, **client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._chat_completion_kwargs = chat_completion_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> InferenceClientT:
+        """HuggingFace Inference client instance.
+
+        Returns:
+            InferenceClient: HuggingFace Inference client instance.
+        """
+        return self._client
+
+    @property
+    def chat_completion_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `InferenceClient.chat_completion`.
+
+        Returns:
+            Kwargs: Keyword arguments for chat completion.
+        """
+        return self._chat_completion_kwargs
+    
+    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionOutputT:
+        return self.client.chat_completion(
+            messages=messages,
+            model=self.model,
+            stream=False,
+            **self.chat_completion_kwargs,
+        )
+
+    def get_message_content(self, response: ChatCompletionOutputT) -> tp.Optional[str]:
+        return response.choices[0].message.content
+
+    def get_stream_response(self, messages: tp.ChatMessages) -> ChatCompletionStreamOutputT:
+        return self.client.chat_completion(
+            messages=messages,
+            model=self.model,
+            stream=True,
+            **self.chat_completion_kwargs,
+        )
+
+    def get_delta_content(self, response_chunk: ChatCompletionStreamOutputT) -> tp.Optional[str]:
+        return response_chunk.choices[0].delta.content
+
+
 def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[Completions]:
     """Resolve and return a `Completions` subclass or instance.
 
@@ -1858,6 +2086,7 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
             * "openai" for `OpenAICompletions`
             * "litellm" for `LiteLLMCompletions`
             * "llama_index" for `LlamaIndexCompletions`
+            * "huggingface" for `HuggingFaceCompletions`
             * "auto" to select the first available option
 
     Returns:
@@ -1881,10 +2110,12 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
                 completions = "litellm"
             elif check_installed("llama_index"):
                 completions = "llama_index"
+            elif check_installed("huggingface_hub"):
+                completions = "huggingface"
             else:
                 raise ValueError(
-                    "No completions available. " \
-                    "Please install one of the supported packages: openai, litellm, llama-index."
+                    "No completions available. "
+                    "Please install one of the supported packages: openai, litellm, llama-index, huggingface-hub."
                 )
         curr_module = sys.modules[__name__]
         found_completions = None
