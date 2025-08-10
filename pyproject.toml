@@ -165,7 +165,9 @@ knwl = [
     "toml",
     "PyYAML",
     "litellm",
-    "llama_index"
+    "llama_index",
+    "huggingface-hub",
+    "google-genai",
 ]
 mcp-base = [
     "mcp",

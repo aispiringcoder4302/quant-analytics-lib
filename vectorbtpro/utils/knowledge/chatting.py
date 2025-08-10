@@ -18,6 +18,7 @@ import hashlib
 import inspect
 import re
 import sys
+import time
 from pathlib import Path
 from collections.abc import MutableMapping
 
@@ -73,7 +74,7 @@ else:
     BM25T = "bm25s.BM25"
 if tp.TYPE_CHECKING:
     from huggingface_hub import (
-        InferenceClient as InferenceClientT, 
+        InferenceClient as InferenceClientT,
         ChatCompletionOutput as ChatCompletionOutputT,
         ChatCompletionStreamOutput as ChatCompletionStreamOutputT,
     )
@@ -81,6 +82,13 @@ else:
     InferenceClientT = "huggingface_hub.InferenceClient"
     ChatCompletionOutputT = "huggingface_hub.ChatCompletionOutput"
     ChatCompletionStreamOutputT = "huggingface_hub.ChatCompletionStreamOutput"
+if tp.TYPE_CHECKING:
+    from google.genai import Client as GenAIClientT
+    from google.genai.types import Content as ContentT, GenerateContentResponse as GenerateContentResponseT
+else:
+    GenAIClientT = "google.genai.Client"
+    ContentT = "google.genai.types.Content"
+    GenerateContentResponseT = "google.genai.types.GenerateContentResponse"
 
 __all__ = [
     "Tokenizer",
@@ -92,12 +100,14 @@ __all__ = [
     "LiteLLMEmbeddings",
     "LlamaIndexEmbeddings",
     "HuggingFaceEmbeddings",
+    "GoogleEmbeddings",
     "embed",
     "Completions",
     "OpenAICompletions",
     "LiteLLMCompletions",
     "LlamaIndexCompletions",
     "HuggingFaceCompletions",
+    "GoogleCompletions",
     "complete",
     "completed",
     "TextSplitter",
@@ -997,6 +1007,140 @@ class HuggingFaceEmbeddings(Embeddings):
         return self.client.feature_extraction(batch, **self.feature_extraction_kwargs).tolist()
 
 
+class GoogleEmbeddings(Embeddings):
+    """Embeddings class for Google GenAI (Gemini).
+
+    Args:
+        model (Optional[str]): Google GenAI model identifier.
+        client_kwargs (KwargsLike): Keyword arguments for Google GenAI client configuration.
+        embeddings_kwargs (KwargsLike): Keyword arguments for embedding generation.
+        **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `embeddings_kwargs`.
+
+    !!! info
+        For default settings, see `chat.embeddings_configs.google` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "google"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.google"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        embeddings_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Embeddings.__init__(
+            self,
+            model=model,
+            client_kwargs=client_kwargs,
+            embeddings_kwargs=embeddings_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("google.genai")
+        from google.genai import Client
+
+        google_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = google_config.pop("model", None)
+        def_client_kwargs = google_config.pop("client_kwargs", None)
+        def_embeddings_kwargs = google_config.pop("embeddings_kwargs", None)
+
+        if model is None:
+            model = def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(google_config.keys()):
+            if k in init_arg_names:
+                google_config.pop(k)
+
+        client_arg_names = set(get_func_arg_names(Client.__init__))
+        _client_kwargs = {}
+        _embeddings_kwargs = {}
+        for k, v in google_config.items():
+            if k in client_arg_names:
+                _client_kwargs[k] = v
+            else:
+                _embeddings_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        embeddings_kwargs = merge_dicts(_embeddings_kwargs, def_embeddings_kwargs, embeddings_kwargs)
+
+        client = Client(**client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._embeddings_kwargs = embeddings_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> GenAIClientT:
+        """Google GenAI client instance.
+
+        Returns:
+            Client: Google GenAI client instance.
+        """
+        return self._client
+
+    @property
+    def embeddings_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for Google embedding generation.
+
+        Returns:
+            Kwargs: Keyword arguments for generating embeddings.
+        """
+        return self._embeddings_kwargs
+
+    def normalize_embedding(self, embedding: tp.List[float]) -> tp.List[float]:
+        """Normalize a single embedding vector.
+
+        Args:
+            embedding (List[float]): Embedding vector to normalize.
+
+        Returns:
+            List[float]: Normalized embedding vector.
+        """
+        embedding_values_np = np.array(embedding)
+        normed_embedding = embedding_values_np / np.linalg.norm(embedding_values_np)
+        return normed_embedding.tolist()
+
+    def get_embedding(self, query: str) -> tp.List[float]:
+        from google.genai.errors import ClientError
+
+        attempted = False
+        while True:
+            try:
+                response = self.client.models.embed_content(model=self.model, contents=query, **self.embeddings_kwargs)
+                return self.normalize_embedding(response.embeddings[0].values)
+            except ClientError as e:
+                if e.code == 429 and not attempted:
+                    time.sleep(60)
+                    attempted = True
+                else:
+                    raise e
+
+    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
+        from google.genai.errors import ClientError
+
+        attempted = False
+        while True:
+            try:
+                response = self.client.models.embed_content(model=self.model, contents=batch, **self.embeddings_kwargs)
+                return list(map(lambda x: self.normalize_embedding(x.values), response.embeddings))
+            except ClientError as e:
+                if e.code == 429 and not attempted:
+                    time.sleep(60)
+                    attempted = True
+                else:
+                    raise e
+
+
 def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Embeddings]:
     """Return a subclass or instance of `Embeddings` based on the provided identifier or object.
 
@@ -1009,6 +1153,7 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
             * "litellm" for `LiteLLMEmbeddings`
             * "llama_index" for `LlamaIndexEmbeddings`
             * "huggingface" for `HuggingFaceEmbeddings`
+            * "google" for `GoogleEmbeddings`
             * "auto" to select the first available option
 
             If None, configuration from `vectorbtpro._settings` is used.
@@ -1036,10 +1181,12 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
                 embeddings = "llama_index"
             elif check_installed("huggingface_hub"):
                 embeddings = "huggingface"
+            elif check_installed("google.genai"):
+                embeddings = "google"
             else:
                 raise ValueError(
                     "No embeddings available. "
-                    "Please install one of the supported packages: openai, litellm, llama-index, huggingface-hub."
+                    "Please install one of the supported packages: openai, litellm, llama-index, huggingface-hub, google-genai."
                 )
         curr_module = sys.modules[__name__]
         found_embeddings = None
@@ -2023,7 +2170,9 @@ class HuggingFaceCompletions(Completions):
             else:
                 _chat_completion_kwargs[k] = v
         client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
-        chat_completion_kwargs = merge_dicts(_chat_completion_kwargs, def_chat_completion_kwargs, chat_completion_kwargs)
+        chat_completion_kwargs = merge_dicts(
+            _chat_completion_kwargs, def_chat_completion_kwargs, chat_completion_kwargs
+        )
         client = InferenceClient(model=model, **client_kwargs)
 
         self._model = model
@@ -2051,7 +2200,7 @@ class HuggingFaceCompletions(Completions):
             Kwargs: Keyword arguments for chat completion.
         """
         return self._chat_completion_kwargs
-    
+
     def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionOutputT:
         return self.client.chat_completion(
             messages=messages,
@@ -2075,6 +2224,165 @@ class HuggingFaceCompletions(Completions):
         return response_chunk.choices[0].delta.content
 
 
+class GoogleCompletions(Completions):
+    """Completions class for Google GenAI (Gemini).
+
+    Args:
+        model (Optional[str]): Google GenAI model identifier.
+        client_kwargs (KwargsLike): Keyword arguments for Google GenAI client configuration.
+        completions_kwargs (KwargsLike): Keyword arguments for content generation.
+        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `completions_kwargs`.
+
+    !!! info
+        For default settings, see `chat.completions_configs.google` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "google"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.google"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        completions_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Completions.__init__(
+            self,
+            model=model,
+            client_kwargs=client_kwargs,
+            completions_kwargs=completions_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("google.genai")
+        from google.genai import Client
+
+        google_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = google_config.pop("model", None)
+        def_quick_model = google_config.pop("quick_model", None)
+        def_client_kwargs = google_config.pop("client_kwargs", None)
+        def_completions_kwargs = google_config.pop("completions_kwargs", None)
+
+        if model is None:
+            model = def_quick_model if self.quick_mode else def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(google_config.keys()):
+            if k in init_arg_names:
+                google_config.pop(k)
+
+        client_arg_names = set(get_func_arg_names(Client.__init__))
+        _client_kwargs = {}
+        _completions_kwargs = {}
+        for k, v in google_config.items():
+            if k in client_arg_names:
+                _client_kwargs[k] = v
+            else:
+                _completions_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        completions_kwargs = merge_dicts(_completions_kwargs, def_completions_kwargs, completions_kwargs)
+
+        client = Client(**client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._completions_kwargs = completions_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> GenAIClientT:
+        """Google GenAI client instance.
+
+        Returns:
+            Client: Google GenAI client instance.
+        """
+        return self._client
+
+    @property
+    def completions_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for Google content generation.
+
+        Returns:
+            Kwargs: Keyword arguments for content generation.
+        """
+        return self._completions_kwargs
+
+    def format_messages(self, messages: tp.ChatMessages) -> tp.Union[tp.List[ContentT], tp.List[str]]:
+        """Format messages to Google GenAI format.
+        
+        Args:
+            messages (ChatMessages): List of dictionaries representing the conversation history.
+            
+        Returns:
+            Union[List[Content], List[str]]: List of `google.genai.types.Content` objects and system instruction.
+        """
+        from google.genai.types import Content, Part
+
+        contents = []
+        system_instruction = []
+        for message in messages:
+            if isinstance(message, dict):
+                role = message.pop("role", "user")
+                text = message.pop("content", "")
+                if role == "assistant":
+                    role = "model"
+                elif role == "system":
+                    system_instruction.append(text)
+                    continue
+                content = Content(role=role, parts=[Part.from_text(text=text)])
+                contents.append(content)
+            elif isinstance(message, str):
+                content = Content(role="user", parts=[Part.from_text(text=message)])
+                contents.append(content)
+            else:
+                raise TypeError(f"Unsupported message type: {type(message)}. Expected dict or str.")
+        return contents, system_instruction
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> GenerateContentResponseT:
+        from google.genai.types import GenerateContentConfig
+
+        formatted_messages, system_instruction = self.format_messages(messages)
+        completions_kwargs = dict(self.completions_kwargs)
+        config = dict(completions_kwargs.pop("config", {}))
+        if system_instruction:
+            config["system_instruction"] = system_instruction
+        return self.client.models.generate_content(
+            model=self.model,
+            contents=formatted_messages,
+            config=GenerateContentConfig(**config),
+            **completions_kwargs,
+        )
+
+    def get_message_content(self, response: GenerateContentResponseT) -> tp.Optional[str]:
+        return response.text
+
+    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[GenerateContentResponseT]:
+        from google.genai.types import GenerateContentConfig
+
+        formatted_messages, system_instruction = self.format_messages(messages)
+        completions_kwargs = dict(self.completions_kwargs)
+        config = dict(completions_kwargs.pop("config", {}))
+        if system_instruction:
+            config["system_instruction"] = system_instruction
+        return self.client.models.generate_content_stream(
+            model=self.model,
+            contents=formatted_messages,
+            config=GenerateContentConfig(**config),
+            **completions_kwargs,
+        )
+
+    def get_delta_content(self, response_chunk: GenerateContentResponseT) -> tp.Optional[str]:
+        return response_chunk.text
+
+
 def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[Completions]:
     """Resolve and return a `Completions` subclass or instance.
 
@@ -2087,6 +2395,7 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
             * "litellm" for `LiteLLMCompletions`
             * "llama_index" for `LlamaIndexCompletions`
             * "huggingface" for `HuggingFaceCompletions`
+            * "google" for `GoogleCompletions`
             * "auto" to select the first available option
 
     Returns:
@@ -2112,10 +2421,12 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
                 completions = "llama_index"
             elif check_installed("huggingface_hub"):
                 completions = "huggingface"
+            elif check_installed("google.genai"):
+                completions = "google"
             else:
                 raise ValueError(
                     "No completions available. "
-                    "Please install one of the supported packages: openai, litellm, llama-index, huggingface-hub."
+                    "Please install one of the supported packages: openai, litellm, llama-index, huggingface-hub, google-genai."
                 )
         curr_module = sys.modules[__name__]
         found_completions = None

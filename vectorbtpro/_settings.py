@@ -2445,9 +2445,9 @@ window.onload = function() {
             return_chunks=False,
         ),
         max_tokens=100_000,
-        system_prompt=r"You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
-        system_as_user=True,
-        context_template=r"""Context information is below.
+        system_prompt=r"You are a helpful assistant. Answer the query based on the provided context information (if any).",
+        system_as_user=False,
+        context_template=r"""Context information:
 ---------------------
 $context
 ---------------------""",
@@ -2488,24 +2488,31 @@ $context
             huggingface=flex_cfg(
                 model="Qwen/Qwen3-Embedding-8B",
             ),
+            google=flex_cfg(
+                model="gemini-embedding-001",
+                config=flex_cfg(
+                    output_dimensionality=768,
+                ),
+                batch_size=100,
+            ),
         ),
         completions="auto",
         completions_config=flex_cfg(),
         completions_configs=flex_cfg(
             openai=flex_cfg(
-                model="gpt-4o",
-                quick_model="gpt-4o-mini",
+                model="gpt-5",
+                quick_model="gpt-5-mini",
             ),
             litellm=flex_cfg(
-                model="gpt-4o",
-                quick_model="gpt-4o-mini",
+                model="gpt-5",
+                quick_model="gpt-5-mini",
             ),
             llama_index=flex_cfg(
                 llm="openai",
                 llm_configs=flex_cfg(
                     openai=flex_cfg(
-                        model="gpt-4o",
-                        quick_model="gpt-4o-mini",
+                        model="gpt-5",
+                        quick_model="gpt-5-mini",
                     )
                 ),
             ),
@@ -2513,6 +2520,10 @@ $context
                 model="openai/gpt-oss-120b",
                 quick_model="openai/gpt-oss-20b",
             ),
+            google=flex_cfg(
+                model="gemini-2.5-flash",
+                quick_model="gemini-2.5-flash-lite",
+            )
         ),
         text_splitter="segment",
         text_splitter_config=flex_cfg(
