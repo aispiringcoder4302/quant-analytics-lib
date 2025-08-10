@@ -89,6 +89,14 @@ else:
     GenAIClientT = "google.genai.Client"
     ContentT = "google.genai.types.Content"
     GenerateContentResponseT = "google.genai.types.GenerateContentResponse"
+if tp.TYPE_CHECKING:
+    from anthropic import Client as AnthropicClientT, Stream as AnthropicStreamT
+    from anthropic.types import Message as AnthropicMessageT, MessageStreamEvent as AnthropicMessageStreamEventT
+else:
+    AnthropicClientT = "anthropic.Client"
+    AnthropicStreamT = "anthropic.Stream"
+    AnthropicMessageT = "anthropic.types.Message"
+    AnthropicMessageStreamEventT = "anthropic.types.MessageStreamEvent"
 
 __all__ = [
     "Tokenizer",
@@ -108,6 +116,7 @@ __all__ = [
     "LlamaIndexCompletions",
     "HuggingFaceCompletions",
     "GoogleCompletions",
+    "AnthropicCompletions",
     "complete",
     "completed",
     "TextSplitter",
@@ -1186,8 +1195,15 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
             else:
                 raise ValueError(
                     "No embeddings available. "
-                    "Please install one of the supported packages: openai, litellm, llama-index, huggingface-hub, google-genai."
+                    "Please install one of the supported packages: "
+                    "openai, "
+                    "litellm, "
+                    "llama-index, "
+                    "huggingface-hub, "
+                    "google-genai."
                 )
+        if embeddings.lower() == "anthropic":
+            raise ValueError("Anthropic does not provide embeddings. Please use a different embeddings provider.")
         curr_module = sys.modules[__name__]
         found_embeddings = None
         for name, cls in inspect.getmembers(curr_module, inspect.isclass):
@@ -2317,10 +2333,10 @@ class GoogleCompletions(Completions):
 
     def format_messages(self, messages: tp.ChatMessages) -> tp.Union[tp.List[ContentT], tp.List[str]]:
         """Format messages to Google GenAI format.
-        
+
         Args:
             messages (ChatMessages): List of dictionaries representing the conversation history.
-            
+
         Returns:
             Union[List[Content], List[str]]: List of `google.genai.types.Content` objects and system instruction.
         """
@@ -2332,6 +2348,9 @@ class GoogleCompletions(Completions):
             if isinstance(message, dict):
                 role = message.pop("role", "user")
                 text = message.pop("content", "")
+                if len(message) > 0:
+                    raise ValueError(f"Unsupported message format: {message}. Expected dict with 'role' and 'content'.")
+
                 if role == "assistant":
                     role = "model"
                 elif role == "system":
@@ -2348,39 +2367,244 @@ class GoogleCompletions(Completions):
 
     def get_chat_response(self, messages: tp.ChatMessages) -> GenerateContentResponseT:
         from google.genai.types import GenerateContentConfig
+        from google.genai.errors import ClientError
 
         formatted_messages, system_instruction = self.format_messages(messages)
         completions_kwargs = dict(self.completions_kwargs)
         config = dict(completions_kwargs.pop("config", {}))
         if system_instruction:
             config["system_instruction"] = system_instruction
-        return self.client.models.generate_content(
-            model=self.model,
-            contents=formatted_messages,
-            config=GenerateContentConfig(**config),
-            **completions_kwargs,
-        )
+
+        attempted = False
+        while True:
+            try:
+                return self.client.models.generate_content(
+                    model=self.model,
+                    contents=formatted_messages,
+                    config=GenerateContentConfig(**config),
+                    **completions_kwargs,
+                )
+            except ClientError as e:
+                if e.code == 429 and not attempted:
+                    time.sleep(60)
+                    attempted = True
+                else:
+                    raise e
 
     def get_message_content(self, response: GenerateContentResponseT) -> tp.Optional[str]:
         return response.text
 
     def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[GenerateContentResponseT]:
         from google.genai.types import GenerateContentConfig
+        from google.genai.errors import ClientError
 
         formatted_messages, system_instruction = self.format_messages(messages)
         completions_kwargs = dict(self.completions_kwargs)
         config = dict(completions_kwargs.pop("config", {}))
         if system_instruction:
             config["system_instruction"] = system_instruction
-        return self.client.models.generate_content_stream(
-            model=self.model,
-            contents=formatted_messages,
-            config=GenerateContentConfig(**config),
-            **completions_kwargs,
-        )
+
+        attempted = False
+        while True:
+            try:
+                return self.client.models.generate_content_stream(
+                    model=self.model,
+                    contents=formatted_messages,
+                    config=GenerateContentConfig(**config),
+                    **completions_kwargs,
+                )
+            except ClientError as e:
+                if e.code == 429 and not attempted:
+                    time.sleep(60)
+                    attempted = True
+                else:
+                    raise e
 
     def get_delta_content(self, response_chunk: GenerateContentResponseT) -> tp.Optional[str]:
         return response_chunk.text
+
+
+class AnthropicCompletions(Completions):
+    """Completions class for Anthropic (Claude).
+
+    Args:
+        model (Optional[str]): Anthropic model identifier.
+        client_type (Union[None, str, type]): Anthropic client type.
+
+            Supported values:
+
+            * "anthropic": `anthropic.Anthropic`
+            * "bedrock": `anthropic.AnthropicBedrock`
+            * "vertex": `anthropic.AnthropicVertex`
+            * type: Custom Anthropic client class
+        client_kwargs (KwargsLike): Keyword arguments for Anthropic client configuration.
+        messages_kwargs (KwargsLike): Keyword arguments for message creation.
+        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `messages_kwargs`.
+
+    !!! info
+        For default settings, see `chat.completions_configs.anthropic` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "anthropic"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.anthropic"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_type: tp.Union[None, str, type] = None,
+        client_kwargs: tp.KwargsLike = None,
+        messages_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Completions.__init__(
+            self,
+            model=model,
+            client_type=client_type,
+            client_kwargs=client_kwargs,
+            messages_kwargs=messages_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("anthropic")
+
+        anthropic_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = anthropic_config.pop("model", None)
+        def_client_type = anthropic_config.pop("client_type", None)
+        def_quick_model = anthropic_config.pop("quick_model", None)
+        def_client_kwargs = anthropic_config.pop("client_kwargs", None)
+        def_messages_kwargs = anthropic_config.pop("messages_kwargs", None)
+
+        if model is None:
+            model = def_quick_model if self.quick_mode else def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(anthropic_config.keys()):
+            if k in init_arg_names:
+                anthropic_config.pop(k)
+
+        if client_type is None:
+            client_type = def_client_type
+        if isinstance(client_type, str) and client_type.lower() == "anthropic":
+            from anthropic import Anthropic
+
+            client_type = Anthropic
+        elif isinstance(client_type, str) and client_type.lower() == "bedrock":
+            from anthropic import AnthropicBedrock
+
+            client_type = AnthropicBedrock
+        elif isinstance(client_type, str) and client_type.lower() == "vertex":
+            from anthropic import AnthropicVertex
+
+            client_type = AnthropicVertex
+        elif not isinstance(client_type, type):
+            raise ValueError(f"Invalid client_type: {client_type!r}")
+
+        client_arg_names = set(get_func_arg_names(client_type.__init__))
+        _client_kwargs = {}
+        _messages_kwargs = {}
+        for k, v in anthropic_config.items():
+            if k in client_arg_names:
+                _client_kwargs[k] = v
+            else:
+                _messages_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        messages_kwargs = merge_dicts(_messages_kwargs, def_messages_kwargs, messages_kwargs)
+
+        client = client_type(**client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._messages_kwargs = messages_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> AnthropicClientT:
+        """Anthropic client instance.
+
+        Returns:
+            Anthropic: Anthropic client instance.
+        """
+        return self._client
+
+    @property
+    def messages_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for Anthropic message creation.
+
+        Returns:
+            Kwargs: Keyword arguments for message creation.
+        """
+        return self._messages_kwargs
+
+    def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[tp.Dict[str, str]], str]:
+        """Format messages to Anthropic format.
+
+        Args:
+            messages (ChatMessages): List of dictionaries representing the conversation history.
+
+        Returns:
+            Tuple[List[Dict[str, str]], str]: List of message dictionaries and system message.
+        """
+        formatted_messages = []
+        system_message = ""
+
+        for message in messages:
+            if isinstance(message, dict):
+                role = message.pop("role", "user")
+                content = message.pop("content", "")
+                if len(message) > 0:
+                    raise ValueError(f"Unsupported message format: {message}. Expected dict with 'role' and 'content'.")
+
+                if role == "system":
+                    system_message = content
+                elif role in ["user", "assistant"]:
+                    formatted_messages.append({"role": role, "content": content})
+            elif isinstance(message, str):
+                formatted_messages.append({"role": "user", "content": message})
+            else:
+                raise TypeError(f"Unsupported message type: {type(message)}. Expected dict or str.")
+
+        return formatted_messages, system_message
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> AnthropicMessageT:
+        formatted_messages, system_message = self.format_messages(messages)
+        messages_kwargs = dict(self.messages_kwargs)
+        if system_message:
+            messages_kwargs["system"] = system_message
+
+        return self.client.messages.create(
+            model=self.model,
+            messages=formatted_messages,
+            stream=False,
+            **messages_kwargs,
+        )
+
+    def get_message_content(self, response: AnthropicMessageT) -> tp.Optional[str]:
+        return response.content[0].text
+
+    def get_stream_response(self, messages: tp.ChatMessages) -> AnthropicStreamT:
+        formatted_messages, system_message = self.format_messages(messages)
+        messages_kwargs = dict(self.messages_kwargs)
+        if system_message:
+            messages_kwargs["system"] = system_message
+
+        return self.client.messages.create(
+            model=self.model,
+            messages=formatted_messages,
+            stream=True,
+            **messages_kwargs,
+        )
+
+    def get_delta_content(self, response_chunk: AnthropicMessageStreamEventT) -> tp.Optional[str]:
+        if response_chunk.type == "content_block_delta":
+            return response_chunk.delta.text
+        return None
 
 
 def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[Completions]:
@@ -2396,6 +2620,7 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
             * "llama_index" for `LlamaIndexCompletions`
             * "huggingface" for `HuggingFaceCompletions`
             * "google" for `GoogleCompletions`
+            * "anthropic" for `AnthropicCompletions`
             * "auto" to select the first available option
 
     Returns:
@@ -2423,10 +2648,18 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
                 completions = "huggingface"
             elif check_installed("google.genai"):
                 completions = "google"
+            elif check_installed("anthropic"):
+                completions = "anthropic"
             else:
                 raise ValueError(
                     "No completions available. "
-                    "Please install one of the supported packages: openai, litellm, llama-index, huggingface-hub, google-genai."
+                    "Please install one of the supported packages: "
+                    "openai, "
+                    "litellm, "
+                    "llama-index, "
+                    "huggingface-hub, "
+                    "google-genai, "
+                    "anthropic."
                 )
         curr_module = sys.modules[__name__]
         found_completions = None

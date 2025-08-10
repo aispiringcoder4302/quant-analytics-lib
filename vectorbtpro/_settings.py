@@ -2523,7 +2523,15 @@ $context
             google=flex_cfg(
                 model="gemini-2.5-flash",
                 quick_model="gemini-2.5-flash-lite",
-            )
+            ),
+            anthropic=flex_cfg(
+                model="claude-sonnet-4-0",
+                quick_model="claude-3-5-haiku-latest",
+                client_type="anthropic",
+                messages_kwargs=flex_cfg(
+                    max_tokens=4096,
+                ),
+            ),
         ),
         text_splitter="segment",
         text_splitter_config=flex_cfg(

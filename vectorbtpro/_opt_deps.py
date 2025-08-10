@@ -87,6 +87,7 @@ opt_dep_config = HybridConfig(
         "jupyter_client": {},
         "huggingface_hub": {"dist_name": "huggingface-hub"},
         "google.genai": {"dist_name": "google-genai"},
+        "anthropic": {},
     }
 )
 """_"""

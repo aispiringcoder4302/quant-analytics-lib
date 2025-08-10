@@ -168,6 +168,7 @@ knwl = [
     "llama_index",
     "huggingface-hub",
     "google-genai",
+    "anthropic",
 ]
 mcp-base = [
     "mcp",
