@@ -97,6 +97,11 @@ else:
     AnthropicStreamT = "anthropic.Stream"
     AnthropicMessageT = "anthropic.types.Message"
     AnthropicMessageStreamEventT = "anthropic.types.MessageStreamEvent"
+if tp.TYPE_CHECKING:
+    from ollama import Client as OllamaClientT, ChatResponse as OllamaChatResponseT
+else:
+    OllamaClientT = "ollama.Client"
+    OllamaChatResponseT = "ollama.ChatResponse"
 
 __all__ = [
     "Tokenizer",
@@ -109,6 +114,7 @@ __all__ = [
     "LlamaIndexEmbeddings",
     "HuggingFaceEmbeddings",
     "GoogleEmbeddings",
+    "OllamaEmbeddings",
     "embed",
     "Completions",
     "OpenAICompletions",
@@ -117,6 +123,7 @@ __all__ = [
     "HuggingFaceCompletions",
     "GoogleCompletions",
     "AnthropicCompletions",
+    "OllamaCompletions",
     "complete",
     "completed",
     "TextSplitter",
@@ -536,7 +543,7 @@ class Embeddings(Configured):
 
     @property
     def pbar_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for configuring `vectorbtpro.utils.pbar.ProgressBar`.
+        """Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
 
         Returns:
             Kwargs: Keyword arguments for the progress bar.
@@ -922,7 +929,7 @@ class HuggingFaceEmbeddings(Embeddings):
     Args:
         model (Optional[str]): HuggingFace model identifier.
         client_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient`.
-        feature_extraction_kwargs (KwargsLike): Keyword arguments for `InferenceClient.feature_extraction`.
+        feature_extraction_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient.feature_extraction`.
         **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `feature_extraction_kwargs`.
 
     !!! info
@@ -1002,7 +1009,7 @@ class HuggingFaceEmbeddings(Embeddings):
 
     @property
     def feature_extraction_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `InferenceClient.feature_extraction`.
+        """Keyword arguments for `huggingface_hub.InferenceClient.feature_extraction`.
 
         Returns:
             Kwargs: Keyword arguments for feature extraction.
@@ -1021,8 +1028,8 @@ class GoogleEmbeddings(Embeddings):
 
     Args:
         model (Optional[str]): Google GenAI model identifier.
-        client_kwargs (KwargsLike): Keyword arguments for Google GenAI client configuration.
-        embeddings_kwargs (KwargsLike): Keyword arguments for embedding generation.
+        client_kwargs (KwargsLike): Keyword arguments for `google.genai.Client`.
+        embeddings_kwargs (KwargsLike): Keyword arguments for `google.genai.Client.models.embed_content`.
         **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `embeddings_kwargs`.
 
     !!! info
@@ -1099,7 +1106,7 @@ class GoogleEmbeddings(Embeddings):
 
     @property
     def embeddings_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for Google embedding generation.
+        """Keyword arguments for `google.genai.Client.models.embed_content`.
 
         Returns:
             Kwargs: Keyword arguments for generating embeddings.
@@ -1150,6 +1157,105 @@ class GoogleEmbeddings(Embeddings):
                     raise e
 
 
+class OllamaEmbeddings(Embeddings):
+    """Embeddings class for Ollama.
+
+    Args:
+        model (Optional[str]): Ollama model identifier.
+        client_kwargs (KwargsLike): Keyword arguments for `ollama.Client`.
+        embed_kwargs (KwargsLike): Keyword arguments for `ollama.Client.embed`.
+        **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `embed_kwargs`.
+
+    !!! info
+        For default settings, see `chat.embeddings_configs.ollama` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "ollama"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.ollama"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        embed_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Embeddings.__init__(
+            self,
+            model=model,
+            client_kwargs=client_kwargs,
+            embed_kwargs=embed_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("ollama")
+        from ollama import Client
+
+        ollama_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = ollama_config.pop("model", None)
+        def_client_kwargs = ollama_config.pop("client_kwargs", None)
+        def_embed_kwargs = ollama_config.pop("embed_kwargs", None)
+
+        if model is None:
+            model = def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(ollama_config.keys()):
+            if k in init_arg_names:
+                ollama_config.pop(k)
+
+        client_arg_names = set(get_func_arg_names(Client.__init__))
+        _client_kwargs = {}
+        _embed_kwargs = {}
+        for k, v in ollama_config.items():
+            if k in client_arg_names:
+                _client_kwargs[k] = v
+            else:
+                _embed_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        embed_kwargs = merge_dicts(_embed_kwargs, def_embed_kwargs, embed_kwargs)
+
+        client = Client(**client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._embed_kwargs = embed_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> OllamaClientT:
+        """Ollama client instance.
+
+        Returns:
+            Client: Ollama client instance.
+        """
+        return self._client
+
+    @property
+    def embed_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `ollama.Client.embed`.
+
+        Returns:
+            Kwargs: Keyword arguments for generating embeddings.
+        """
+        return self._embed_kwargs
+
+    def get_embedding(self, query: str) -> tp.List[float]:
+        response = self.client.embed(model=self.model, input=query, **self.embed_kwargs)
+        return response["embeddings"][0]
+
+    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
+        response = self.client.embed(model=self.model, input=batch, **self.embed_kwargs)
+        return response["embeddings"]
+
+
 def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Embeddings]:
     """Return a subclass or instance of `Embeddings` based on the provided identifier or object.
 
@@ -1163,6 +1269,7 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
             * "llama_index" for `LlamaIndexEmbeddings`
             * "huggingface" for `HuggingFaceEmbeddings`
             * "google" for `GoogleEmbeddings`
+            * "ollama" for `OllamaEmbeddings`
             * "auto" to select the first available option
 
             If None, configuration from `vectorbtpro._settings` is used.
@@ -1192,6 +1299,8 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
                 embeddings = "huggingface"
             elif check_installed("google.genai"):
                 embeddings = "google"
+            elif check_installed("ollama"):
+                embeddings = "ollama"
             else:
                 raise ValueError(
                     "No embeddings available. "
@@ -1200,7 +1309,8 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
                     "litellm, "
                     "llama-index, "
                     "huggingface-hub, "
-                    "google-genai."
+                    "google-genai, "
+                    "ollama."
                 )
         if embeddings.lower() == "anthropic":
             raise ValueError("Anthropic does not provide embeddings. Please use a different embeddings provider.")
@@ -1954,7 +2064,7 @@ class LiteLLMCompletions(Completions):
 
     @property
     def completion_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for the `litellm.completion` API call.
+        """Keyword arguments for `litellm.completion`.
 
         Returns:
             Kwargs: Keyword arguments for the completion API call.
@@ -2131,7 +2241,7 @@ class HuggingFaceCompletions(Completions):
     Args:
         model (Optional[str]): HuggingFace model identifier.
         client_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient`.
-        chat_completion_kwargs (KwargsLike): Keyword arguments for `InferenceClient.chat_completion`.
+        chat_completion_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient.chat_completion`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `chat_completion_kwargs`.
 
     !!! info
@@ -2210,7 +2320,7 @@ class HuggingFaceCompletions(Completions):
 
     @property
     def chat_completion_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `InferenceClient.chat_completion`.
+        """Keyword arguments for `huggingface_hub.InferenceClient.chat_completion`.
 
         Returns:
             Kwargs: Keyword arguments for chat completion.
@@ -2245,8 +2355,8 @@ class GoogleCompletions(Completions):
 
     Args:
         model (Optional[str]): Google GenAI model identifier.
-        client_kwargs (KwargsLike): Keyword arguments for Google GenAI client configuration.
-        completions_kwargs (KwargsLike): Keyword arguments for content generation.
+        client_kwargs (KwargsLike): Keyword arguments for `google.genai.Client`.
+        completions_kwargs (KwargsLike): Keyword arguments for `google.genai.Client.models.generate_content`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `completions_kwargs`.
 
     !!! info
@@ -2324,7 +2434,7 @@ class GoogleCompletions(Completions):
 
     @property
     def completions_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for Google content generation.
+        """Keyword arguments for `google.genai.Client.models.generate_content`.
 
         Returns:
             Kwargs: Keyword arguments for content generation.
@@ -2437,8 +2547,8 @@ class AnthropicCompletions(Completions):
             * "bedrock": `anthropic.AnthropicBedrock`
             * "vertex": `anthropic.AnthropicVertex`
             * type: Custom Anthropic client class
-        client_kwargs (KwargsLike): Keyword arguments for Anthropic client configuration.
-        messages_kwargs (KwargsLike): Keyword arguments for message creation.
+        client_kwargs (KwargsLike): Keyword arguments for `client_type`
+        messages_kwargs (KwargsLike): Keyword arguments for `anthropic.Client.messages.create`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `messages_kwargs`.
 
     !!! info
@@ -2535,7 +2645,7 @@ class AnthropicCompletions(Completions):
 
     @property
     def messages_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for Anthropic message creation.
+        """Keyword arguments for `anthropic.Client.messages.create`.
 
         Returns:
             Kwargs: Keyword arguments for message creation.
@@ -2607,6 +2717,117 @@ class AnthropicCompletions(Completions):
         return None
 
 
+class OllamaCompletions(Completions):
+    """Completions class for Ollama.
+
+    Args:
+        model (Optional[str]): Ollama model identifier.
+        client_kwargs (KwargsLike): Keyword arguments for `ollama.Client`.
+        chat_kwargs (KwargsLike): Keyword arguments for `ollama.Client.chat`.
+        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `chat_kwargs`.
+
+    !!! info
+        For default settings, see `chat.completions_configs.ollama` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "ollama"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.ollama"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        chat_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Completions.__init__(
+            self,
+            model=model,
+            client_kwargs=client_kwargs,
+            chat_kwargs=chat_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("ollama")
+        import ollama
+
+        ollama_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = ollama_config.pop("model", None)
+        def_quick_model = ollama_config.pop("quick_model", None)
+        def_client_kwargs = ollama_config.pop("client_kwargs", None)
+        def_chat_kwargs = ollama_config.pop("chat_kwargs", None)
+
+        if model is None:
+            model = def_quick_model if self.quick_mode else def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(ollama_config.keys()):
+            if k in init_arg_names:
+                ollama_config.pop(k)
+
+        _client_kwargs = {}
+        _chat_kwargs = {}
+        for k, v in ollama_config.items():
+            _chat_kwargs[k] = v
+        
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        chat_kwargs = merge_dicts(_chat_kwargs, def_chat_kwargs, chat_kwargs)
+        
+        client = ollama.Client(**client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._chat_kwargs = chat_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> OllamaClientT:
+        """Ollama client instance.
+
+        Returns:
+            Client: Ollama client instance.
+        """
+        return self._client
+
+    @property
+    def chat_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `ollama.Client.chat`.
+
+        Returns:
+            Kwargs: Keyword arguments for chat completion.
+        """
+        return self._chat_kwargs
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> OllamaChatResponseT:
+        return self.client.chat(
+            model=self.model,
+            messages=messages,
+            stream=False,
+            **self.chat_kwargs,
+        )
+
+    def get_message_content(self, response: OllamaChatResponseT) -> tp.Optional[str]:
+        return response["message"]["content"]
+
+    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[OllamaChatResponseT]:
+        return self.client.chat(
+            model=self.model,
+            messages=messages,
+            stream=True,
+            **self.chat_kwargs,
+        )
+
+    def get_delta_content(self, response_chunk: OllamaChatResponseT) -> tp.Optional[str]:
+        return response_chunk["message"]["content"]
+
+
 def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[Completions]:
     """Resolve and return a `Completions` subclass or instance.
 
@@ -2621,6 +2842,7 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
             * "huggingface" for `HuggingFaceCompletions`
             * "google" for `GoogleCompletions`
             * "anthropic" for `AnthropicCompletions`
+            * "ollama" for `OllamaCompletions`
             * "auto" to select the first available option
 
     Returns:
@@ -2650,6 +2872,8 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
                 completions = "google"
             elif check_installed("anthropic"):
                 completions = "anthropic"
+            elif check_installed("ollama"):
+                completions = "ollama"
             else:
                 raise ValueError(
                     "No completions available. "
@@ -2659,7 +2883,8 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
                     "llama-index, "
                     "huggingface-hub, "
                     "google-genai, "
-                    "anthropic."
+                    "anthropic, "
+                    "ollama."
                 )
         curr_module = sys.modules[__name__]
         found_completions = None

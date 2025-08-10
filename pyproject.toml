@@ -169,6 +169,7 @@ knwl = [
     "huggingface-hub",
     "google-genai",
     "anthropic",
+    "ollama",
 ]
 mcp-base = [
     "mcp",

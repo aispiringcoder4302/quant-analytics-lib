@@ -2495,6 +2495,7 @@ $context
                 ),
                 batch_size=100,
             ),
+            ollama=flex_cfg(),
         ),
         completions="auto",
         completions_config=flex_cfg(),
@@ -2532,6 +2533,7 @@ $context
                     max_tokens=4096,
                 ),
             ),
+            ollama=flex_cfg(),
         ),
         text_splitter="segment",
         text_splitter_config=flex_cfg(

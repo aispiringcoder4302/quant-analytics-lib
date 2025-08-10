@@ -88,6 +88,7 @@ opt_dep_config = HybridConfig(
         "huggingface_hub": {"dist_name": "huggingface-hub"},
         "google.genai": {"dist_name": "google-genai"},
         "anthropic": {},
+        "ollama": {},
     }
 )
 """_"""
