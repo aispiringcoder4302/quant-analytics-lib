@@ -31,6 +31,7 @@ from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, Configured, 
 from vectorbtpro.utils.decorators import memoized_method, hybrid_method
 from vectorbtpro.utils.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs, get_forward_args
+from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
 from vectorbtpro.utils.warnings_ import warn
 
@@ -42,11 +43,39 @@ if tp.TYPE_CHECKING:
     from openai import OpenAI as OpenAIT, Stream as StreamT
     from openai.types.chat.chat_completion import ChatCompletion as ChatCompletionT
     from openai.types.chat.chat_completion_chunk import ChatCompletionChunk as ChatCompletionChunkT
+    from openai.types.responses import Response as ResponseT, ResponseStreamEvent as ResponseStreamEventT
 else:
     OpenAIT = "openai.OpenAI"
     StreamT = "openai.Stream"
     ChatCompletionT = "openai.types.chat.chat_completion.ChatCompletion"
     ChatCompletionChunkT = "openai.types.chat.chat_completion_chunk.ChatCompletionChunk"
+    ResponseT = "openai.types.responses.Response"
+    ResponseStreamEventT = "openai.types.responses.ResponseStreamEvent"
+if tp.TYPE_CHECKING:
+    from anthropic import Client as AnthropicClientT, Stream as AnthropicStreamT
+    from anthropic.types import Message as AnthropicMessageT, MessageStreamEvent as AnthropicMessageStreamEventT
+else:
+    AnthropicClientT = "anthropic.Client"
+    AnthropicStreamT = "anthropic.Stream"
+    AnthropicMessageT = "anthropic.types.Message"
+    AnthropicMessageStreamEventT = "anthropic.types.MessageStreamEvent"
+if tp.TYPE_CHECKING:
+    from google.genai import Client as GenAIClientT
+    from google.genai.types import Content as ContentT, GenerateContentResponse as GenerateContentResponseT
+else:
+    GenAIClientT = "google.genai.Client"
+    ContentT = "google.genai.types.Content"
+    GenerateContentResponseT = "google.genai.types.GenerateContentResponse"
+if tp.TYPE_CHECKING:
+    from huggingface_hub import (
+        InferenceClient as InferenceClientT,
+        ChatCompletionOutput as ChatCompletionOutputT,
+        ChatCompletionStreamOutput as ChatCompletionStreamOutputT,
+    )
+else:
+    InferenceClientT = "huggingface_hub.InferenceClient"
+    ChatCompletionOutputT = "huggingface_hub.ChatCompletionOutput"
+    ChatCompletionStreamOutputT = "huggingface_hub.ChatCompletionStreamOutput"
 if tp.TYPE_CHECKING:
     from litellm import ModelResponse as ModelResponseT, CustomStreamWrapper as CustomStreamWrapperT
 else:
@@ -73,31 +102,6 @@ else:
     BM25TokenizerT = "bm25s.tokenization.Tokenizer"
     BM25T = "bm25s.BM25"
 if tp.TYPE_CHECKING:
-    from huggingface_hub import (
-        InferenceClient as InferenceClientT,
-        ChatCompletionOutput as ChatCompletionOutputT,
-        ChatCompletionStreamOutput as ChatCompletionStreamOutputT,
-    )
-else:
-    InferenceClientT = "huggingface_hub.InferenceClient"
-    ChatCompletionOutputT = "huggingface_hub.ChatCompletionOutput"
-    ChatCompletionStreamOutputT = "huggingface_hub.ChatCompletionStreamOutput"
-if tp.TYPE_CHECKING:
-    from google.genai import Client as GenAIClientT
-    from google.genai.types import Content as ContentT, GenerateContentResponse as GenerateContentResponseT
-else:
-    GenAIClientT = "google.genai.Client"
-    ContentT = "google.genai.types.Content"
-    GenerateContentResponseT = "google.genai.types.GenerateContentResponse"
-if tp.TYPE_CHECKING:
-    from anthropic import Client as AnthropicClientT, Stream as AnthropicStreamT
-    from anthropic.types import Message as AnthropicMessageT, MessageStreamEvent as AnthropicMessageStreamEventT
-else:
-    AnthropicClientT = "anthropic.Client"
-    AnthropicStreamT = "anthropic.Stream"
-    AnthropicMessageT = "anthropic.types.Message"
-    AnthropicMessageStreamEventT = "anthropic.types.MessageStreamEvent"
-if tp.TYPE_CHECKING:
     from ollama import Client as OllamaClientT, ChatResponse as OllamaChatResponseT
 else:
     OllamaClientT = "ollama.Client"
@@ -110,19 +114,19 @@ __all__ = [
     "detokenize",
     "Embeddings",
     "OpenAIEmbeddings",
+    "GeminiEmbeddings",
+    "HFInferenceEmbeddings",
     "LiteLLMEmbeddings",
     "LlamaIndexEmbeddings",
-    "HuggingFaceEmbeddings",
-    "GoogleEmbeddings",
     "OllamaEmbeddings",
     "embed",
     "Completions",
     "OpenAICompletions",
+    "AnthropicCompletions",
+    "GeminiCompletions",
+    "HFInferenceCompletions",
     "LiteLLMCompletions",
     "LlamaIndexCompletions",
-    "HuggingFaceCompletions",
-    "GoogleCompletions",
-    "AnthropicCompletions",
     "OllamaCompletions",
     "complete",
     "completed",
@@ -724,6 +728,240 @@ class OpenAIEmbeddings(Embeddings):
         return [embedding.embedding for embedding in response.data]
 
 
+class GeminiEmbeddings(Embeddings):
+    """Embeddings class for Google GenAI (Gemini).
+
+    Args:
+        model (Optional[str]): Gemini model identifier.
+        client_kwargs (KwargsLike): Keyword arguments for `google.genai.Client`.
+        embeddings_kwargs (KwargsLike): Keyword arguments for `google.genai.Client.models.embed_content`.
+        **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `embeddings_kwargs`.
+
+    !!! info
+        For default settings, see `chat.embeddings_configs.gemini` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "gemini"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.gemini"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        embeddings_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Embeddings.__init__(
+            self,
+            model=model,
+            client_kwargs=client_kwargs,
+            embeddings_kwargs=embeddings_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("google.genai")
+        from google.genai import Client
+
+        gemini_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = gemini_config.pop("model", None)
+        def_client_kwargs = gemini_config.pop("client_kwargs", None)
+        def_embeddings_kwargs = gemini_config.pop("embeddings_kwargs", None)
+
+        if model is None:
+            model = def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(gemini_config.keys()):
+            if k in init_arg_names:
+                gemini_config.pop(k)
+
+        client_arg_names = set(get_func_arg_names(Client.__init__))
+        _client_kwargs = {}
+        _embeddings_kwargs = {}
+        for k, v in gemini_config.items():
+            if k in client_arg_names:
+                _client_kwargs[k] = v
+            else:
+                _embeddings_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        embeddings_kwargs = merge_dicts(_embeddings_kwargs, def_embeddings_kwargs, embeddings_kwargs)
+
+        client = Client(**client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._embeddings_kwargs = embeddings_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> GenAIClientT:
+        """Gemini client instance.
+
+        Returns:
+            Client: Gemini client instance.
+        """
+        return self._client
+
+    @property
+    def embeddings_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `google.genai.Client.models.embed_content`.
+
+        Returns:
+            Kwargs: Keyword arguments for generating embeddings.
+        """
+        return self._embeddings_kwargs
+
+    def normalize_embedding(self, embedding: tp.List[float]) -> tp.List[float]:
+        """Normalize a single embedding vector.
+
+        Args:
+            embedding (List[float]): Embedding vector to normalize.
+
+        Returns:
+            List[float]: Normalized embedding vector.
+        """
+        embedding_values_np = np.array(embedding)
+        normed_embedding = embedding_values_np / np.linalg.norm(embedding_values_np)
+        return normed_embedding.tolist()
+
+    def get_embedding(self, query: str) -> tp.List[float]:
+        from google.genai.errors import ClientError
+
+        attempted = False
+        while True:
+            try:
+                response = self.client.models.embed_content(model=self.model, contents=query, **self.embeddings_kwargs)
+                return self.normalize_embedding(response.embeddings[0].values)
+            except ClientError as e:
+                if e.code == 429 and not attempted:
+                    time.sleep(60)
+                    attempted = True
+                else:
+                    raise e
+
+    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
+        from google.genai.errors import ClientError
+
+        attempted = False
+        while True:
+            try:
+                response = self.client.models.embed_content(model=self.model, contents=batch, **self.embeddings_kwargs)
+                return list(map(lambda x: self.normalize_embedding(x.values), response.embeddings))
+            except ClientError as e:
+                if e.code == 429 and not attempted:
+                    time.sleep(60)
+                    attempted = True
+                else:
+                    raise e
+
+
+class HFInferenceEmbeddings(Embeddings):
+    """Embeddings class for HuggingFace Inference.
+
+    Args:
+        model (Optional[str]): HuggingFace model identifier.
+        client_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient`.
+        feature_extraction_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient.feature_extraction`.
+        **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `feature_extraction_kwargs`.
+
+    !!! info
+        For default settings, see `chat.embeddings_configs.hf_inference` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "hf_inference"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.hf_inference"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        feature_extraction_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Embeddings.__init__(
+            self,
+            model=model,
+            client_kwargs=client_kwargs,
+            feature_extraction_kwargs=feature_extraction_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("huggingface_hub")
+        from huggingface_hub import InferenceClient
+
+        hf_inference_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = hf_inference_config.pop("model", None)
+        def_client_kwargs = hf_inference_config.pop("client_kwargs", None)
+        def_feature_extraction_kwargs = hf_inference_config.pop("feature_extraction_kwargs", None)
+
+        if model is None:
+            model = def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(hf_inference_config.keys()):
+            if k in init_arg_names:
+                hf_inference_config.pop(k)
+
+        client_arg_names = set(get_func_arg_names(InferenceClient.__init__))
+        _client_kwargs = {}
+        _feature_extraction_kwargs = {}
+        for k, v in hf_inference_config.items():
+            if k in client_arg_names:
+                _client_kwargs[k] = v
+            else:
+                _feature_extraction_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        feature_extraction_kwargs = merge_dicts(
+            _feature_extraction_kwargs,
+            def_feature_extraction_kwargs,
+            feature_extraction_kwargs,
+        )
+        client = InferenceClient(model=model, **client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._feature_extraction_kwargs = feature_extraction_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> InferenceClientT:
+        """HuggingFace Inference client instance.
+
+        Returns:
+            InferenceClient: HuggingFace Inference client instance.
+        """
+        return self._client
+
+    @property
+    def feature_extraction_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `huggingface_hub.InferenceClient.feature_extraction`.
+
+        Returns:
+            Kwargs: Keyword arguments for feature extraction.
+        """
+        return self._feature_extraction_kwargs
+
+    def get_embedding(self, query: str) -> tp.List[float]:
+        return self.client.feature_extraction(query, **self.feature_extraction_kwargs)[0].tolist()
+
+    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
+        return self.client.feature_extraction(batch, **self.feature_extraction_kwargs).tolist()
+
+
 class LiteLLMEmbeddings(Embeddings):
     """Embeddings class for LiteLLM.
 
@@ -923,245 +1161,13 @@ class LlamaIndexEmbeddings(Embeddings):
         return [embedding for embedding in self.embedding.get_text_embedding_batch(batch)]
 
 
-class HuggingFaceEmbeddings(Embeddings):
-    """Embeddings class for HuggingFace Inference.
-
-    Args:
-        model (Optional[str]): HuggingFace model identifier.
-        client_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient`.
-        feature_extraction_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient.feature_extraction`.
-        **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `feature_extraction_kwargs`.
-
-    !!! info
-        For default settings, see `chat.embeddings_configs.huggingface` in `vectorbtpro._settings.knowledge`.
-    """
-
-    _short_name: tp.ClassVar[tp.Optional[str]] = "huggingface"
-
-    _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.huggingface"
-
-    def __init__(
-        self,
-        model: tp.Optional[str] = None,
-        client_kwargs: tp.KwargsLike = None,
-        feature_extraction_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> None:
-        Embeddings.__init__(
-            self,
-            model=model,
-            client_kwargs=client_kwargs,
-            feature_extraction_kwargs=feature_extraction_kwargs,
-            **kwargs,
-        )
-
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("huggingface_hub")
-        from huggingface_hub import InferenceClient
-
-        huggingface_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        def_model = huggingface_config.pop("model", None)
-        def_client_kwargs = huggingface_config.pop("client_kwargs", None)
-        def_feature_extraction_kwargs = huggingface_config.pop("feature_extraction_kwargs", None)
-
-        if model is None:
-            model = def_model
-        if model is None:
-            raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
-        for k in list(huggingface_config.keys()):
-            if k in init_arg_names:
-                huggingface_config.pop(k)
-
-        client_arg_names = set(get_func_arg_names(InferenceClient.__init__))
-        _client_kwargs = {}
-        _feature_extraction_kwargs = {}
-        for k, v in huggingface_config.items():
-            if k in client_arg_names:
-                _client_kwargs[k] = v
-            else:
-                _feature_extraction_kwargs[k] = v
-        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
-        feature_extraction_kwargs = merge_dicts(
-            _feature_extraction_kwargs,
-            def_feature_extraction_kwargs,
-            feature_extraction_kwargs,
-        )
-        client = InferenceClient(model=model, **client_kwargs)
-
-        self._model = model
-        self._client = client
-        self._feature_extraction_kwargs = feature_extraction_kwargs
-
-    @property
-    def model(self) -> str:
-        return self._model
-
-    @property
-    def client(self) -> InferenceClientT:
-        """HuggingFace Inference client instance.
-
-        Returns:
-            InferenceClient: HuggingFace Inference client instance.
-        """
-        return self._client
-
-    @property
-    def feature_extraction_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `huggingface_hub.InferenceClient.feature_extraction`.
-
-        Returns:
-            Kwargs: Keyword arguments for feature extraction.
-        """
-        return self._feature_extraction_kwargs
-
-    def get_embedding(self, query: str) -> tp.List[float]:
-        return self.client.feature_extraction(query, **self.feature_extraction_kwargs)[0].tolist()
-
-    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
-        return self.client.feature_extraction(batch, **self.feature_extraction_kwargs).tolist()
-
-
-class GoogleEmbeddings(Embeddings):
-    """Embeddings class for Google GenAI (Gemini).
-
-    Args:
-        model (Optional[str]): Google GenAI model identifier.
-        client_kwargs (KwargsLike): Keyword arguments for `google.genai.Client`.
-        embeddings_kwargs (KwargsLike): Keyword arguments for `google.genai.Client.models.embed_content`.
-        **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `embeddings_kwargs`.
-
-    !!! info
-        For default settings, see `chat.embeddings_configs.google` in `vectorbtpro._settings.knowledge`.
-    """
-
-    _short_name: tp.ClassVar[tp.Optional[str]] = "google"
-
-    _settings_path: tp.SettingsPath = "knowledge.chat.embeddings_configs.google"
-
-    def __init__(
-        self,
-        model: tp.Optional[str] = None,
-        client_kwargs: tp.KwargsLike = None,
-        embeddings_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> None:
-        Embeddings.__init__(
-            self,
-            model=model,
-            client_kwargs=client_kwargs,
-            embeddings_kwargs=embeddings_kwargs,
-            **kwargs,
-        )
-
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("google.genai")
-        from google.genai import Client
-
-        google_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        def_model = google_config.pop("model", None)
-        def_client_kwargs = google_config.pop("client_kwargs", None)
-        def_embeddings_kwargs = google_config.pop("embeddings_kwargs", None)
-
-        if model is None:
-            model = def_model
-        if model is None:
-            raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
-        for k in list(google_config.keys()):
-            if k in init_arg_names:
-                google_config.pop(k)
-
-        client_arg_names = set(get_func_arg_names(Client.__init__))
-        _client_kwargs = {}
-        _embeddings_kwargs = {}
-        for k, v in google_config.items():
-            if k in client_arg_names:
-                _client_kwargs[k] = v
-            else:
-                _embeddings_kwargs[k] = v
-        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
-        embeddings_kwargs = merge_dicts(_embeddings_kwargs, def_embeddings_kwargs, embeddings_kwargs)
-
-        client = Client(**client_kwargs)
-
-        self._model = model
-        self._client = client
-        self._embeddings_kwargs = embeddings_kwargs
-
-    @property
-    def model(self) -> str:
-        return self._model
-
-    @property
-    def client(self) -> GenAIClientT:
-        """Google GenAI client instance.
-
-        Returns:
-            Client: Google GenAI client instance.
-        """
-        return self._client
-
-    @property
-    def embeddings_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `google.genai.Client.models.embed_content`.
-
-        Returns:
-            Kwargs: Keyword arguments for generating embeddings.
-        """
-        return self._embeddings_kwargs
-
-    def normalize_embedding(self, embedding: tp.List[float]) -> tp.List[float]:
-        """Normalize a single embedding vector.
-
-        Args:
-            embedding (List[float]): Embedding vector to normalize.
-
-        Returns:
-            List[float]: Normalized embedding vector.
-        """
-        embedding_values_np = np.array(embedding)
-        normed_embedding = embedding_values_np / np.linalg.norm(embedding_values_np)
-        return normed_embedding.tolist()
-
-    def get_embedding(self, query: str) -> tp.List[float]:
-        from google.genai.errors import ClientError
-
-        attempted = False
-        while True:
-            try:
-                response = self.client.models.embed_content(model=self.model, contents=query, **self.embeddings_kwargs)
-                return self.normalize_embedding(response.embeddings[0].values)
-            except ClientError as e:
-                if e.code == 429 and not attempted:
-                    time.sleep(60)
-                    attempted = True
-                else:
-                    raise e
-
-    def get_embedding_batch(self, batch: tp.List[str]) -> tp.List[tp.List[float]]:
-        from google.genai.errors import ClientError
-
-        attempted = False
-        while True:
-            try:
-                response = self.client.models.embed_content(model=self.model, contents=batch, **self.embeddings_kwargs)
-                return list(map(lambda x: self.normalize_embedding(x.values), response.embeddings))
-            except ClientError as e:
-                if e.code == 429 and not attempted:
-                    time.sleep(60)
-                    attempted = True
-                else:
-                    raise e
-
-
 class OllamaEmbeddings(Embeddings):
     """Embeddings class for Ollama.
 
     Args:
         model (Optional[str]): Ollama model identifier.
+
+            Pulls the model if not already available locally.
         client_kwargs (KwargsLike): Keyword arguments for `ollama.Client`.
         embed_kwargs (KwargsLike): Keyword arguments for `ollama.Client.embed`.
         **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `embed_kwargs`.
@@ -1220,6 +1226,27 @@ class OllamaEmbeddings(Embeddings):
         embed_kwargs = merge_dicts(_embed_kwargs, def_embed_kwargs, embed_kwargs)
 
         client = Client(**client_kwargs)
+        model_installed = False
+        for installed_model in client.list().models:
+            if installed_model.model == model:
+                model_installed = True
+                break
+        if not model_installed:
+            pbar = None
+            status = None
+            for response in client.pull(model, stream=True):
+                if pbar is not None and status is not None and response.status != status:
+                    pbar.refresh()
+                    pbar.exit()
+                    pbar = None
+                    status = None
+                if response.completed is not None:
+                    status = response.status
+                    if pbar is None:
+                        pbar = ProgressBar(total=response.total, show_progress=self.show_progress, **self.pbar_kwargs)
+                        pbar.enter()
+                    pbar.set_prefix(status)
+                    pbar.update_to(response.completed)
 
         self._model = model
         self._client = client
@@ -1265,10 +1292,10 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
             Supported identifiers:
 
             * "openai" for `OpenAIEmbeddings`
+            * "gemini" for `GeminiEmbeddings`
+            * "hf_inference" for `HFInferenceEmbeddings`
             * "litellm" for `LiteLLMEmbeddings`
             * "llama_index" for `LlamaIndexEmbeddings`
-            * "huggingface" for `HuggingFaceEmbeddings`
-            * "google" for `GoogleEmbeddings`
             * "ollama" for `OllamaEmbeddings`
             * "auto" to select the first available option
 
@@ -1287,18 +1314,19 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
         embeddings = chat_cfg["embeddings"]
     if isinstance(embeddings, str):
         if embeddings.lower() == "auto":
+            import os
             from vectorbtpro.utils.module_ import check_installed
 
-            if check_installed("openai"):
+            if check_installed("openai") and os.getenv("OPENAI_API_KEY"):
                 embeddings = "openai"
+            elif check_installed("google.genai") and os.getenv("GEMINI_API_KEY"):
+                embeddings = "gemini"
+            elif check_installed("huggingface_hub") and os.getenv("HF_TOKEN"):
+                embeddings = "hf_inference"
             elif check_installed("litellm"):
                 embeddings = "litellm"
             elif check_installed("llama_index"):
                 embeddings = "llama_index"
-            elif check_installed("huggingface_hub"):
-                embeddings = "huggingface"
-            elif check_installed("google.genai"):
-                embeddings = "google"
             elif check_installed("ollama"):
                 embeddings = "ollama"
             else:
@@ -1306,10 +1334,10 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
                     "No embeddings available. "
                     "Please install one of the supported packages: "
                     "openai, "
+                    "google-genai, "
+                    "huggingface-hub, "
                     "litellm, "
                     "llama-index, "
-                    "huggingface-hub, "
-                    "google-genai, "
                     "ollama."
                 )
         if embeddings.lower() == "anthropic":
@@ -1318,7 +1346,7 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
         found_embeddings = None
         for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Embeddings"):
-                _short_name: tp.ClassVar[tp.Optional[str]] = getattr(cls, "_short_name", None)
+                _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == embeddings.lower():
                     found_embeddings = cls
                     break
@@ -1358,7 +1386,156 @@ def embed(query: tp.MaybeList[str], embeddings: tp.EmbeddingsLike = None, **kwar
 # ############# Completions ############# #
 
 
-class Completions(Configured):
+class ThoughtProcessor:
+    """Processes content that may include `<think>...</think>` segments.
+
+    Works for both streaming and non-streaming inputs. When `include_thoughts` is
+    True, tags and their content pass through unchanged. When False, thought regions
+    and tags are removed.
+
+    Args:
+        include_thoughts (bool): Whether to keep or remove thought regions.
+    """
+
+    OPEN_TAG = "<think>"
+    """Opening tag for thought segments."""
+
+    CLOSE_TAG = "</think>"
+    """Closing tag for thought segments."""
+
+    def __init__(self, include_thoughts: bool = True) -> None:
+        self._include_thoughts = include_thoughts
+        self._thinking = False
+        self._thinking_source = None
+
+    @property
+    def include_thoughts(self) -> bool:
+        """Whether to include thinking messages (wrapped in `<think>` tags) in output.
+
+        Returns:
+            bool: True if thinking messages should be included, False otherwise.
+        """
+        return self._include_thoughts
+
+    def reset_thought_state(self) -> None:
+        """Resets the internal streaming state.
+
+        Clears any active thought segment without emitting a closing tag. Call this
+        before starting a new, unrelated stream if reusing the same instance.
+        """
+        self._thinking = False
+        self._thinking_source = None
+
+    def process_thought(
+        self,
+        *,
+        thought: tp.Optional[str] = None,
+        content: tp.Optional[str] = None,
+        flush: bool = False,
+    ) -> tp.Optional[str]:
+        """Processes a unit of input for both streaming and non-streaming use.
+
+        Accepts `thought`, `content`, both, or neither. When both are provided
+        and no thought is currently open, the output equals `<think>{thought}</think>{content}`
+        if `include_thoughts` is True, or just `{content}` if False.
+
+        Stateful behavior:
+
+        * Explicit thoughts (`thought`) open an explicit segment on first call,
+        and close automatically when a plain `content` chunk without tags
+        is processed, or when `ThoughtProcessor.process_thought` is called with neither argument.
+        * Inline `<think>`/`</think>` tokens inside `content` are handled
+        even if they span multiple calls.
+
+        Args:
+            thought (Optional[str]): Reasoning content from a separate channel (explicit thoughts).
+            content (Optional[str]): Natural language content that may contain inline tags.
+            flush (bool): If True, flushes the current thought state, closing any open thought segment.
+
+        Returns:
+            Optional[str]: The output string for this call, or None if nothing should be emitted.
+        """
+        out = None
+
+        if thought is not None:
+            if not self._thinking:
+                self._thinking = True
+                self._thinking_source = "explicit"
+                if self.include_thoughts:
+                    out = (out or "") + self.OPEN_TAG + (thought or "")
+            else:
+                if self.include_thoughts:
+                    out = (out or "") + (thought or "")
+
+        if content is not None:
+            s = content or ""
+            if (
+                self._thinking
+                and self._thinking_source == "explicit"
+                and s != ""
+                and (self.OPEN_TAG not in s and self.CLOSE_TAG not in s)
+            ):
+                self._thinking = False
+                self._thinking_source = None
+                piece = (self.CLOSE_TAG + s) if self.include_thoughts else s
+                out = (out or "") + piece if piece else out
+            else:
+
+                def _parse_inline(chunk):
+                    i = 0
+                    parts = []
+                    while i < len(chunk):
+                        if not self._thinking:
+                            j = chunk.find(self.OPEN_TAG, i)
+                            if j == -1:
+                                parts.append(chunk[i:])
+                                break
+                            pre = chunk[i:j]
+                            if pre:
+                                parts.append(pre)
+                            self._thinking = True
+                            self._thinking_source = "inline"
+                            i = j + len(self.OPEN_TAG)
+                            if self.include_thoughts:
+                                parts.append(self.OPEN_TAG)
+                        else:
+                            k = chunk.find(self.CLOSE_TAG, i)
+                            if k == -1:
+                                seg = chunk[i:]
+                                if self.include_thoughts and seg:
+                                    parts.append(seg)
+                                break
+                            thought_piece = chunk[i:k]
+                            if self.include_thoughts and thought_piece:
+                                parts.append(thought_piece)
+                            self._thinking = False
+                            self._thinking_source = None
+                            i = k + len(self.CLOSE_TAG)
+                            if self.include_thoughts:
+                                parts.append(self.CLOSE_TAG)
+                    return "".join(parts)
+
+                piece = _parse_inline(s)
+                out = (out or "") + piece if piece else out
+
+        if ((thought is None and content is None) or flush) and self._thinking:
+            self._thinking = False
+            self._thinking_source = None
+            if self.include_thoughts:
+                out = (out or "") + self.CLOSE_TAG
+
+        return out if out not in ("", None) else None
+
+    def flush_thought(self) -> tp.Optional[str]:
+        """Flushes the current thought state, closing any open thought segment.
+
+        Returns:
+            Optional[str]: The output string for this call, or None if nothing should be emitted.
+        """
+        return self.process_thought(flush=True)
+
+
+class Completions(ThoughtProcessor, Configured):
     """Abstract class for completion providers.
 
     Args:
@@ -1396,7 +1573,10 @@ class Completions(Configured):
         minimal_format (Optional[bool]): Boolean indicating if the input is minimally formatted.
         quick_mode (Optional[bool]): Boolean indicating whether quick mode is enabled.
         silence_warnings (Optional[bool]): Flag to suppress warning messages.
+        show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
+        pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
         template_context (KwargsLike): Additional context for template substitution.
+        include_thoughts (Optional[bool]): Whether to keep or remove thought regions.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
@@ -1427,7 +1607,10 @@ class Completions(Configured):
         minimal_format: tp.Optional[bool] = None,
         quick_mode: tp.Optional[bool] = None,
         silence_warnings: tp.Optional[bool] = None,
+        show_progress: tp.Optional[bool] = None,
+        pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
+        include_thoughts: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
@@ -1446,7 +1629,10 @@ class Completions(Configured):
             minimal_format=minimal_format,
             quick_mode=quick_mode,
             silence_warnings=silence_warnings,
+            show_progress=show_progress,
+            pbar_kwargs=pbar_kwargs,
             template_context=template_context,
+            include_thoughts=include_thoughts,
             **kwargs,
         )
 
@@ -1465,7 +1651,10 @@ class Completions(Configured):
         minimal_format = self.resolve_setting(minimal_format, "minimal_format", default=None)
         quick_mode = self.resolve_setting(quick_mode, "quick_mode")
         silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings")
+        show_progress = self.resolve_setting(show_progress, "show_progress")
+        pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
+        include_thoughts = self.resolve_setting(include_thoughts, "include_thoughts")
 
         tokenizer = resolve_tokenizer(tokenizer)
         formatter = resolve_formatter(formatter)
@@ -1485,7 +1674,11 @@ class Completions(Configured):
         self._minimal_format = minimal_format
         self._quick_mode = quick_mode
         self._silence_warnings = silence_warnings
+        self._show_progress = show_progress
+        self._pbar_kwargs = pbar_kwargs
         self._template_context = template_context
+
+        ThoughtProcessor.__init__(self, include_thoughts=include_thoughts)
 
     @property
     def context(self) -> str:
@@ -1640,6 +1833,24 @@ class Completions(Configured):
             bool: True if warnings are suppressed, False otherwise.
         """
         return self._silence_warnings
+
+    @property
+    def show_progress(self) -> tp.Optional[bool]:
+        """Whether to display a progress bar.
+
+        Returns:
+            Optional[bool]: True if progress bar is shown, False otherwise.
+        """
+        return self._show_progress
+
+    @property
+    def pbar_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `vectorbtpro.utils.pbar.ProgressBar`.
+
+        Returns:
+            Kwargs: Keyword arguments for the progress bar.
+        """
+        return self._pbar_kwargs
 
     @property
     def template_context(self) -> tp.Kwargs:
@@ -1820,6 +2031,7 @@ class Completions(Configured):
             response = self.get_stream_response(messages)
         else:
             response = self.get_chat_response(messages)
+        self.reset_thought_state()
 
         if isinstance(formatter, type):
             formatter_kwargs = dict(formatter_kwargs)
@@ -1857,10 +2069,14 @@ class Completions(Configured):
                     if new_content is not None:
                         formatter.append(new_content)
                 content = formatter.content
+                flushed_content = self.flush_thought()
+                if flushed_content:
+                    content += flushed_content
         else:
-            content = self.get_message_content(response)
-            if content is None:
-                content = ""
+            content = self.get_message_content(response) or ""
+            flushed_content = self.flush_thought()
+            if flushed_content:
+                content += flushed_content
             formatter.append_once(content)
 
         chat_history.append(dict(role="user", content=message))
@@ -1901,7 +2117,12 @@ class OpenAICompletions(Completions):
         model (Optional[str]): Identifier for the model to use.
         client_kwargs (KwargsLike): Keyword arguments for `openai.OpenAI`.
         completions_kwargs (KwargsLike): Keyword arguments for `openai.Completions.create`.
-        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `completions_kwargs`.
+        responses_kwargs (KwargsLike): Keyword arguments for `openai.Responses.create`.
+        use_responses (bool): Whether to use the Responses API instead of the Completions API.
+
+            Note that thought summarization is not supported in the Completions API.
+        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs`,
+            `completions_kwargs`, or `responses_kwargs`.
 
     !!! info
         For default settings, see `chat.completions_configs.openai` in `vectorbtpro._settings.knowledge`.
@@ -1916,6 +2137,8 @@ class OpenAICompletions(Completions):
         model: tp.Optional[str] = None,
         client_kwargs: tp.KwargsLike = None,
         completions_kwargs: tp.KwargsLike = None,
+        responses_kwargs: tp.KwargsLike = None,
+        use_responses: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
@@ -1923,6 +2146,8 @@ class OpenAICompletions(Completions):
             model=model,
             client_kwargs=client_kwargs,
             completions_kwargs=completions_kwargs,
+            responses_kwargs=responses_kwargs,
+            use_responses=use_responses,
             **kwargs,
         )
 
@@ -1936,6 +2161,8 @@ class OpenAICompletions(Completions):
         def_quick_model = openai_config.pop("quick_model", None)
         def_client_kwargs = openai_config.pop("client_kwargs", None)
         def_completions_kwargs = openai_config.pop("completions_kwargs", None)
+        def_responses_kwargs = openai_config.pop("responses_kwargs", None)
+        def_use_responses = openai_config.pop("use_responses", None)
 
         if model is None:
             model = def_quick_model if self.quick_mode else def_model
@@ -1949,18 +2176,26 @@ class OpenAICompletions(Completions):
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
         _client_kwargs = {}
         _completions_kwargs = {}
+        _responses_kwargs = {}
         for k, v in openai_config.items():
             if k in client_arg_names:
                 _client_kwargs[k] = v
             else:
                 _completions_kwargs[k] = v
+                _responses_kwargs[k] = v
         client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
         completions_kwargs = merge_dicts(_completions_kwargs, def_completions_kwargs, completions_kwargs)
+        responses_kwargs = merge_dicts(_responses_kwargs, def_responses_kwargs, responses_kwargs)
         client = OpenAI(**client_kwargs)
+
+        if use_responses is None:
+            use_responses = def_use_responses
 
         self._model = model
         self._client = client
         self._completions_kwargs = completions_kwargs
+        self._responses_kwargs = responses_kwargs
+        self._use_responses = use_responses
 
     @property
     def model(self) -> str:
@@ -1984,554 +2219,126 @@ class OpenAICompletions(Completions):
         """
         return self._completions_kwargs
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionT:
-        return self.client.chat.completions.create(
-            messages=messages,
-            model=self.model,
-            stream=False,
-            **self.completions_kwargs,
-        )
-
-    def get_message_content(self, response: ChatCompletionT) -> tp.Optional[str]:
-        return response.choices[0].message.content
-
-    def get_stream_response(self, messages: tp.ChatMessages) -> StreamT:
-        return self.client.chat.completions.create(
-            messages=messages,
-            model=self.model,
-            stream=True,
-            **self.completions_kwargs,
-        )
-
-    def get_delta_content(self, response_chunk: ChatCompletionChunkT) -> tp.Optional[str]:
-        return response_chunk.choices[0].delta.content
-
-
-class LiteLLMCompletions(Completions):
-    """Completions class for LiteLLM.
-
-    Args:
-        model (Optional[str]): Identifier for the model to use.
-        completion_kwargs (KwargsLike): Keyword arguments for `litellm.completion`.
-        **kwargs: Keyword arguments for `Completions` or used as `completion_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.litellm` in `vectorbtpro._settings.knowledge`.
-    """
-
-    _short_name: tp.ClassVar[tp.Optional[str]] = "litellm"
-
-    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.litellm"
-
-    def __init__(
-        self,
-        model: tp.Optional[str] = None,
-        completion_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> None:
-        Completions.__init__(
-            self,
-            model=model,
-            completion_kwargs=completion_kwargs,
-            **kwargs,
-        )
-
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("litellm")
-
-        super_arg_names = set(get_func_arg_names(Completions.__init__))
-        for k in list(kwargs.keys()):
-            if k in super_arg_names:
-                kwargs.pop(k)
-        litellm_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        def_model = litellm_config.pop("model", None)
-        def_quick_model = litellm_config.pop("quick_model", None)
-        def_completion_kwargs = litellm_config.pop("completion_kwargs", None)
-
-        if model is None:
-            model = def_quick_model if self.quick_mode else def_model
-        if model is None:
-            raise ValueError("Must provide a model")
-        completion_kwargs = merge_dicts(litellm_config, def_completion_kwargs, completion_kwargs)
-
-        self._model = model
-        self._completion_kwargs = completion_kwargs
-
     @property
-    def model(self) -> str:
-        return self._model
-
-    @property
-    def completion_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `litellm.completion`.
+    def responses_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `openai.Responses.create`.
 
         Returns:
-            Kwargs: Keyword arguments for the completion API call.
+            Kwargs: Keyword arguments for the responses API call.
         """
-        return self._completion_kwargs
-
-    def get_chat_response(self, messages: tp.ChatMessages) -> ModelResponseT:
-        from litellm import completion
-
-        return completion(
-            messages=messages,
-            model=self.model,
-            stream=False,
-            **self.completion_kwargs,
-        )
-
-    def get_message_content(self, response: ModelResponseT) -> tp.Optional[str]:
-        return response.choices[0].message.content
-
-    def get_stream_response(self, messages: tp.ChatMessages) -> CustomStreamWrapperT:
-        from litellm import completion
-
-        return completion(
-            messages=messages,
-            model=self.model,
-            stream=True,
-            **self.completion_kwargs,
-        )
-
-    def get_delta_content(self, response_chunk: ModelResponseT) -> tp.Optional[str]:
-        return response_chunk.choices[0].delta.content
-
-
-class LlamaIndexCompletions(Completions):
-    """Completions class for LlamaIndex.
-
-    LLM can be provided via `llm`, which can be either the name of the class (case doesn't matter),
-    the path or its suffix to the class (case matters), or a subclass or an instance of
-    `llama_index.core.llms.LLM`.
-
-    Args:
-        llm (Union[None, str, MaybeType[LLM]]): Identifier, class path, subclass, or instance of
-            `llama_index.core.llms.LLM`.
-        llm_kwargs (KwargsLike): Additional parameters for LLM initialization.
-        **kwargs: Keyword arguments for `Completions` or used as `llm_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.llama_index` in `vectorbtpro._settings.knowledge`.
-    """
-
-    _short_name: tp.ClassVar[tp.Optional[str]] = "llama_index"
-
-    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.llama_index"
-
-    def __init__(
-        self,
-        llm: tp.Union[None, str, tp.MaybeType[LLMT]] = None,
-        llm_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> None:
-        Completions.__init__(
-            self,
-            llm=llm,
-            llm_kwargs=llm_kwargs,
-            **kwargs,
-        )
-
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("llama_index")
-        from llama_index.core.llms import LLM
-
-        llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        def_llm = llama_index_config.pop("llm", None)
-        def_llm_kwargs = llama_index_config.pop("llm_kwargs", None)
-
-        if llm is None:
-            llm = def_llm
-        if llm is None:
-            raise ValueError("Must provide an LLM name or path")
-        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
-        for k in list(llama_index_config.keys()):
-            if k in init_arg_names:
-                llama_index_config.pop(k)
-
-        if isinstance(llm, str):
-            import llama_index.llms
-            from vectorbtpro.utils.module_ import search_package
-
-            def _match_func(k, v):
-                if isinstance(v, type) and issubclass(v, LLM):
-                    if "." in llm:
-                        if k.endswith(llm):
-                            return True
-                    else:
-                        if k.split(".")[-1].lower() == llm.lower():
-                            return True
-                        if k.split(".")[-1].replace("LLM", "").lower() == llm.lower().replace("_", ""):
-                            return True
-                return False
-
-            found_llm = search_package(
-                llama_index.llms,
-                _match_func,
-                path_attrs=True,
-                return_first=True,
-            )
-            if found_llm is None:
-                raise ValueError(f"LLM {llm!r} not found")
-            llm = found_llm
-        if isinstance(llm, type):
-            checks.assert_subclass_of(llm, LLM, arg_name="llm")
-            llm_name = llm.__name__.replace("LLM", "").lower()
-            module_name = llm.__module__
-        else:
-            checks.assert_instance_of(llm, LLM, arg_name="llm")
-            llm_name = type(llm).__name__.replace("LLM", "").lower()
-            module_name = type(llm).__module__
-        llm_configs = llama_index_config.pop("llm_configs", {})
-        if llm_name in llm_configs:
-            llama_index_config = merge_dicts(llama_index_config, llm_configs[llm_name])
-        elif module_name in llm_configs:
-            llama_index_config = merge_dicts(llama_index_config, llm_configs[module_name])
-        llm_kwargs = merge_dicts(llama_index_config, def_llm_kwargs, llm_kwargs)
-        def_model = llm_kwargs.pop("model", None)
-        quick_model = llm_kwargs.pop("quick_model", None)
-        model = quick_model if self.quick_mode else def_model
-        if model is None:
-            func_kwargs = get_func_kwargs(type(llm).__init__)
-            model = func_kwargs.get("model", None)
-        else:
-            llm_kwargs["model"] = model
-        if isinstance(llm, type):
-            llm = llm(**llm_kwargs)
-        elif len(kwargs) > 0:
-            raise ValueError("Cannot apply config to already initialized LLM")
-
-        self._model = model
-        self._llm = llm
+        return self._responses_kwargs
 
     @property
-    def model(self) -> tp.Optional[str]:
-        return self._model
-
-    @property
-    def llm(self) -> LLMT:
-        """Initialized LLM instance used for generating completions.
+    def use_responses(self) -> bool:
+        """Whether to use the Responses API instead of the Completions API.
 
         Returns:
-            LLM: Initialized LLM instance.
+            bool: Whether to use the Responses API.
         """
-        return self._llm
+        return self._use_responses
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> ChatResponseT:
-        from llama_index.core.llms import ChatMessage
-
-        return self.llm.chat(list(map(lambda x: ChatMessage(**dict(x)), messages)))
-
-    def get_message_content(self, response: ChatResponseT) -> tp.Optional[str]:
-        return response.message.content
-
-    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[ChatResponseT]:
-        from llama_index.core.llms import ChatMessage
-
-        return self.llm.stream_chat(list(map(lambda x: ChatMessage(**dict(x)), messages)))
-
-    def get_delta_content(self, response_chunk: ChatResponseT) -> tp.Optional[str]:
-        return response_chunk.delta
-
-
-class HuggingFaceCompletions(Completions):
-    """Completions class for HuggingFace Inference.
-
-    Args:
-        model (Optional[str]): HuggingFace model identifier.
-        client_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient`.
-        chat_completion_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient.chat_completion`.
-        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `chat_completion_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.huggingface` in `vectorbtpro._settings.knowledge`.
-    """
-
-    _short_name: tp.ClassVar[tp.Optional[str]] = "huggingface"
-
-    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.huggingface"
-
-    def __init__(
-        self,
-        model: tp.Optional[str] = None,
-        client_kwargs: tp.KwargsLike = None,
-        chat_completion_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> None:
-        Completions.__init__(
-            self,
-            model=model,
-            client_kwargs=client_kwargs,
-            chat_completion_kwargs=chat_completion_kwargs,
-            **kwargs,
-        )
-
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("huggingface_hub")
-        from huggingface_hub import InferenceClient
-
-        huggingface_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        def_model = huggingface_config.pop("model", None)
-        def_quick_model = huggingface_config.pop("quick_model", None)
-        def_client_kwargs = huggingface_config.pop("client_kwargs", None)
-        def_chat_completion_kwargs = huggingface_config.pop("chat_completion_kwargs", None)
-
-        if model is None:
-            model = def_quick_model if self.quick_mode else def_model
-        if model is None:
-            raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
-        for k in list(huggingface_config.keys()):
-            if k in init_arg_names:
-                huggingface_config.pop(k)
-
-        client_arg_names = set(get_func_arg_names(InferenceClient.__init__))
-        _client_kwargs = {}
-        _chat_completion_kwargs = {}
-        for k, v in huggingface_config.items():
-            if k in client_arg_names:
-                _client_kwargs[k] = v
-            else:
-                _chat_completion_kwargs[k] = v
-        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
-        chat_completion_kwargs = merge_dicts(
-            _chat_completion_kwargs, def_chat_completion_kwargs, chat_completion_kwargs
-        )
-        client = InferenceClient(model=model, **client_kwargs)
-
-        self._model = model
-        self._client = client
-        self._chat_completion_kwargs = chat_completion_kwargs
-
-    @property
-    def model(self) -> str:
-        return self._model
-
-    @property
-    def client(self) -> InferenceClientT:
-        """HuggingFace Inference client instance.
-
-        Returns:
-            InferenceClient: HuggingFace Inference client instance.
-        """
-        return self._client
-
-    @property
-    def chat_completion_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `huggingface_hub.InferenceClient.chat_completion`.
-
-        Returns:
-            Kwargs: Keyword arguments for chat completion.
-        """
-        return self._chat_completion_kwargs
-
-    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionOutputT:
-        return self.client.chat_completion(
-            messages=messages,
-            model=self.model,
-            stream=False,
-            **self.chat_completion_kwargs,
-        )
-
-    def get_message_content(self, response: ChatCompletionOutputT) -> tp.Optional[str]:
-        return response.choices[0].message.content
-
-    def get_stream_response(self, messages: tp.ChatMessages) -> ChatCompletionStreamOutputT:
-        return self.client.chat_completion(
-            messages=messages,
-            model=self.model,
-            stream=True,
-            **self.chat_completion_kwargs,
-        )
-
-    def get_delta_content(self, response_chunk: ChatCompletionStreamOutputT) -> tp.Optional[str]:
-        return response_chunk.choices[0].delta.content
-
-
-class GoogleCompletions(Completions):
-    """Completions class for Google GenAI (Gemini).
-
-    Args:
-        model (Optional[str]): Google GenAI model identifier.
-        client_kwargs (KwargsLike): Keyword arguments for `google.genai.Client`.
-        completions_kwargs (KwargsLike): Keyword arguments for `google.genai.Client.models.generate_content`.
-        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `completions_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.google` in `vectorbtpro._settings.knowledge`.
-    """
-
-    _short_name: tp.ClassVar[tp.Optional[str]] = "google"
-
-    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.google"
-
-    def __init__(
-        self,
-        model: tp.Optional[str] = None,
-        client_kwargs: tp.KwargsLike = None,
-        completions_kwargs: tp.KwargsLike = None,
-        **kwargs,
-    ) -> None:
-        Completions.__init__(
-            self,
-            model=model,
-            client_kwargs=client_kwargs,
-            completions_kwargs=completions_kwargs,
-            **kwargs,
-        )
-
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("google.genai")
-        from google.genai import Client
-
-        google_config = merge_dicts(self.get_settings(inherit=False), kwargs)
-        def_model = google_config.pop("model", None)
-        def_quick_model = google_config.pop("quick_model", None)
-        def_client_kwargs = google_config.pop("client_kwargs", None)
-        def_completions_kwargs = google_config.pop("completions_kwargs", None)
-
-        if model is None:
-            model = def_quick_model if self.quick_mode else def_model
-        if model is None:
-            raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
-        for k in list(google_config.keys()):
-            if k in init_arg_names:
-                google_config.pop(k)
-
-        client_arg_names = set(get_func_arg_names(Client.__init__))
-        _client_kwargs = {}
-        _completions_kwargs = {}
-        for k, v in google_config.items():
-            if k in client_arg_names:
-                _client_kwargs[k] = v
-            else:
-                _completions_kwargs[k] = v
-        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
-        completions_kwargs = merge_dicts(_completions_kwargs, def_completions_kwargs, completions_kwargs)
-
-        client = Client(**client_kwargs)
-
-        self._model = model
-        self._client = client
-        self._completions_kwargs = completions_kwargs
-
-    @property
-    def model(self) -> str:
-        return self._model
-
-    @property
-    def client(self) -> GenAIClientT:
-        """Google GenAI client instance.
-
-        Returns:
-            Client: Google GenAI client instance.
-        """
-        return self._client
-
-    @property
-    def completions_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `google.genai.Client.models.generate_content`.
-
-        Returns:
-            Kwargs: Keyword arguments for content generation.
-        """
-        return self._completions_kwargs
-
-    def format_messages(self, messages: tp.ChatMessages) -> tp.Union[tp.List[ContentT], tp.List[str]]:
-        """Format messages to Google GenAI format.
+    def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[tp.Dict[str, str]], str]:
+        """Format messages to Responses API format.
 
         Args:
             messages (ChatMessages): List of dictionaries representing the conversation history.
 
         Returns:
-            Union[List[Content], List[str]]: List of `google.genai.types.Content` objects and system instruction.
+            Tuple[List[Dict[str, str]], str]: List of message dictionaries and system instructions.
         """
-        from google.genai.types import Content, Part
-
-        contents = []
-        system_instruction = []
+        input = []
+        instructions = []
         for message in messages:
             if isinstance(message, dict):
                 role = message.pop("role", "user")
-                text = message.pop("content", "")
+                content = message.pop("content", "")
                 if len(message) > 0:
                     raise ValueError(f"Unsupported message format: {message}. Expected dict with 'role' and 'content'.")
 
-                if role == "assistant":
-                    role = "model"
-                elif role == "system":
-                    system_instruction.append(text)
+                if role == "system":
+                    instructions.append(content)
                     continue
-                content = Content(role=role, parts=[Part.from_text(text=text)])
-                contents.append(content)
+                input.append(dict(role=role, content=content))
             elif isinstance(message, str):
-                content = Content(role="user", parts=[Part.from_text(text=message)])
-                contents.append(content)
+                input.append(dict(role="user", content=message))
             else:
                 raise TypeError(f"Unsupported message type: {type(message)}. Expected dict or str.")
-        return contents, system_instruction
+        if instructions:
+            instructions = "\n".join(instructions)
+        else:
+            instructions = None
+        return input, instructions
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> GenerateContentResponseT:
-        from google.genai.types import GenerateContentConfig
-        from google.genai.errors import ClientError
+    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionT:
+        if self.use_responses:
+            input, instructions = self.format_messages(messages)
+            return self.client.responses.create(
+                model=self.model,
+                instructions=instructions,
+                input=input,
+                stream=False,
+                **self.responses_kwargs,
+            )
+        else:
+            return self.client.chat.completions.create(
+                messages=messages,
+                model=self.model,
+                stream=False,
+                **self.completions_kwargs,
+            )
 
-        formatted_messages, system_instruction = self.format_messages(messages)
-        completions_kwargs = dict(self.completions_kwargs)
-        config = dict(completions_kwargs.pop("config", {}))
-        if system_instruction:
-            config["system_instruction"] = system_instruction
+    def get_message_content(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.Optional[str]:
+        if self.use_responses:
+            out = None
+            for output in response.output:
+                if output.type == "reasoning":
+                    for summary in output.summary:
+                        if summary.type == "summary_text":
+                            thought = self.process_thought(thought=summary.text, flush=True)
+                            if thought is not None:
+                                if out is None:
+                                    out = ""
+                                out += thought
+                if output.type == "message":
+                    for content in output.content:
+                        if content.type == "output_text":
+                            text = self.process_thought(content=content.text, flush=True)
+                            if text is not None:
+                                if out is None:
+                                    out = ""
+                                out += text
+            return out
+        return response.choices[0].message.content
 
-        attempted = False
-        while True:
-            try:
-                return self.client.models.generate_content(
-                    model=self.model,
-                    contents=formatted_messages,
-                    config=GenerateContentConfig(**config),
-                    **completions_kwargs,
-                )
-            except ClientError as e:
-                if e.code == 429 and not attempted:
-                    time.sleep(60)
-                    attempted = True
-                else:
-                    raise e
+    def get_stream_response(self, messages: tp.ChatMessages) -> StreamT:
+        if self.use_responses:
+            input, instructions = self.format_messages(messages)
+            return self.client.responses.create(
+                model=self.model,
+                instructions=instructions,
+                input=input,
+                stream=True,
+                **self.responses_kwargs,
+            )
+        else:
+            return self.client.chat.completions.create(
+                messages=messages,
+                model=self.model,
+                stream=True,
+                **self.completions_kwargs,
+            )
 
-    def get_message_content(self, response: GenerateContentResponseT) -> tp.Optional[str]:
-        return response.text
-
-    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[GenerateContentResponseT]:
-        from google.genai.types import GenerateContentConfig
-        from google.genai.errors import ClientError
-
-        formatted_messages, system_instruction = self.format_messages(messages)
-        completions_kwargs = dict(self.completions_kwargs)
-        config = dict(completions_kwargs.pop("config", {}))
-        if system_instruction:
-            config["system_instruction"] = system_instruction
-
-        attempted = False
-        while True:
-            try:
-                return self.client.models.generate_content_stream(
-                    model=self.model,
-                    contents=formatted_messages,
-                    config=GenerateContentConfig(**config),
-                    **completions_kwargs,
-                )
-            except ClientError as e:
-                if e.code == 429 and not attempted:
-                    time.sleep(60)
-                    attempted = True
-                else:
-                    raise e
-
-    def get_delta_content(self, response_chunk: GenerateContentResponseT) -> tp.Optional[str]:
-        return response_chunk.text
+    def get_delta_content(
+        self,
+        response_chunk: tp.Union[ChatCompletionChunkT, ResponseStreamEventT],
+    ) -> tp.Optional[str]:
+        if self.use_responses:
+            if response_chunk.type == "response.reasoning_summary_text.delta":
+                return self.process_thought(thought=response_chunk.delta)
+            if response_chunk.type == "response.output_text.delta":
+                return self.process_thought(content=response_chunk.delta)
+            return self.flush_thought()
+        return response_chunk.choices[0].delta.content
 
 
 class AnthropicCompletions(Completions):
@@ -2696,7 +2503,29 @@ class AnthropicCompletions(Completions):
         )
 
     def get_message_content(self, response: AnthropicMessageT) -> tp.Optional[str]:
-        return response.content[0].text
+        from anthropic.types import ThinkingBlock, TextBlock
+
+        content = None
+        for block in response.content:
+            if isinstance(block, ThinkingBlock):
+                thinking = self.process_thought(thought=block.thinking, flush=True)
+                if thinking is not None:
+                    if content is None:
+                        content = ""
+                    content += thinking
+            elif isinstance(block, TextBlock):
+                text = self.process_thought(content=block.text, flush=True)
+                if text is not None:
+                    if content is None:
+                        content = ""
+                    content += text
+            else:
+                out = self.flush_thought()
+                if out is not None:
+                    if content is None:
+                        content = ""
+                    content += out
+        return content
 
     def get_stream_response(self, messages: tp.ChatMessages) -> AnthropicStreamT:
         formatted_messages, system_message = self.format_messages(messages)
@@ -2712,9 +2541,592 @@ class AnthropicCompletions(Completions):
         )
 
     def get_delta_content(self, response_chunk: AnthropicMessageStreamEventT) -> tp.Optional[str]:
-        if response_chunk.type == "content_block_delta":
-            return response_chunk.delta.text
-        return None
+        from anthropic.types import RawContentBlockDeltaEvent, ThinkingDelta, TextDelta
+
+        if isinstance(response_chunk, RawContentBlockDeltaEvent) and isinstance(response_chunk.delta, ThinkingDelta):
+            return self.process_thought(thought=response_chunk.delta.thinking)
+        if isinstance(response_chunk, RawContentBlockDeltaEvent) and isinstance(response_chunk.delta, TextDelta):
+            return self.process_thought(content=response_chunk.delta.text)
+        return self.flush_thought()
+
+
+class GeminiCompletions(Completions):
+    """Completions class for Google GenAI (Gemini).
+
+    Args:
+        model (Optional[str]): Gemini model identifier.
+        client_kwargs (KwargsLike): Keyword arguments for `google.genai.Client`.
+        completions_kwargs (KwargsLike): Keyword arguments for `google.genai.Client.models.generate_content`.
+        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `completions_kwargs`.
+
+    !!! info
+        For default settings, see `chat.completions_configs.gemini` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "gemini"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.gemini"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        completions_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Completions.__init__(
+            self,
+            model=model,
+            client_kwargs=client_kwargs,
+            completions_kwargs=completions_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("google.genai")
+        from google.genai import Client
+
+        gemini_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = gemini_config.pop("model", None)
+        def_quick_model = gemini_config.pop("quick_model", None)
+        def_client_kwargs = gemini_config.pop("client_kwargs", None)
+        def_completions_kwargs = gemini_config.pop("completions_kwargs", None)
+
+        if model is None:
+            model = def_quick_model if self.quick_mode else def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(gemini_config.keys()):
+            if k in init_arg_names:
+                gemini_config.pop(k)
+
+        client_arg_names = set(get_func_arg_names(Client.__init__))
+        _client_kwargs = {}
+        _completions_kwargs = {}
+        for k, v in gemini_config.items():
+            if k in client_arg_names:
+                _client_kwargs[k] = v
+            else:
+                _completions_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        completions_kwargs = merge_dicts(_completions_kwargs, def_completions_kwargs, completions_kwargs)
+
+        client = Client(**client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._completions_kwargs = completions_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> GenAIClientT:
+        """Gemini client instance.
+
+        Returns:
+            Client: Gemini client instance.
+        """
+        return self._client
+
+    @property
+    def completions_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `google.genai.Client.models.generate_content`.
+
+        Returns:
+            Kwargs: Keyword arguments for content generation.
+        """
+        return self._completions_kwargs
+
+    def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[ContentT], tp.List[str]]:
+        """Format messages to Gemini format.
+
+        Args:
+            messages (ChatMessages): List of dictionaries representing the conversation history.
+
+        Returns:
+            Union[List[Content], List[str]]: List of `google.genai.types.Content` objects and system instructions.
+        """
+        from google.genai.types import Content, Part
+
+        contents = []
+        system_instruction = []
+        for message in messages:
+            if isinstance(message, dict):
+                role = message.pop("role", "user")
+                text = message.pop("content", "")
+                if len(message) > 0:
+                    raise ValueError(f"Unsupported message format: {message}. Expected dict with 'role' and 'content'.")
+
+                if role == "assistant":
+                    role = "model"
+                elif role == "system":
+                    system_instruction.append(text)
+                    continue
+                content = Content(role=role, parts=[Part.from_text(text=text)])
+                contents.append(content)
+            elif isinstance(message, str):
+                content = Content(role="user", parts=[Part.from_text(text=message)])
+                contents.append(content)
+            else:
+                raise TypeError(f"Unsupported message type: {type(message)}. Expected dict or str.")
+        return contents, system_instruction
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> GenerateContentResponseT:
+        from google.genai.types import GenerateContentConfig
+        from google.genai.errors import ClientError
+
+        formatted_messages, system_instruction = self.format_messages(messages)
+        completions_kwargs = dict(self.completions_kwargs)
+        config = dict(completions_kwargs.pop("config", {}))
+        if system_instruction:
+            config["system_instruction"] = system_instruction
+
+        attempted = False
+        while True:
+            try:
+                return self.client.models.generate_content(
+                    model=self.model,
+                    contents=formatted_messages,
+                    config=GenerateContentConfig(**config),
+                    **completions_kwargs,
+                )
+            except ClientError as e:
+                if e.code == 429 and not attempted:
+                    time.sleep(60)
+                    attempted = True
+                else:
+                    raise e
+
+    def get_message_content(self, response: GenerateContentResponseT) -> tp.Optional[str]:
+        content = None
+        for part in response.candidates[0].content.parts:
+            if getattr(part, "thought", False):
+                text = self.process_thought(thought=part.text, flush=True)
+                if text is not None:
+                    if content is None:
+                        content = ""
+                    content += text
+            else:
+                text = self.process_thought(content=part.text, flush=True)
+                if text is not None:
+                    if content is None:
+                        content = ""
+                    content += text
+        return content
+
+    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[GenerateContentResponseT]:
+        from google.genai.types import GenerateContentConfig
+        from google.genai.errors import ClientError
+
+        formatted_messages, system_instruction = self.format_messages(messages)
+        completions_kwargs = dict(self.completions_kwargs)
+        config = dict(completions_kwargs.pop("config", {}))
+        if system_instruction:
+            config["system_instruction"] = system_instruction
+
+        attempted = False
+        while True:
+            try:
+                return self.client.models.generate_content_stream(
+                    model=self.model,
+                    contents=formatted_messages,
+                    config=GenerateContentConfig(**config),
+                    **completions_kwargs,
+                )
+            except ClientError as e:
+                if e.code == 429 and not attempted:
+                    time.sleep(60)
+                    attempted = True
+                else:
+                    raise e
+
+    def get_delta_content(self, response_chunk: GenerateContentResponseT) -> tp.Optional[str]:
+        content = None
+        for part in response_chunk.candidates[0].content.parts:
+            if getattr(part, "thought", False):
+                text = self.process_thought(thought=part.text)
+                if text is not None:
+                    if content is None:
+                        content = ""
+                    content += text
+            else:
+                text = self.process_thought(content=part.text)
+                if text is not None:
+                    if content is None:
+                        content = ""
+                    content += text
+        return content
+
+
+class HFInferenceCompletions(Completions):
+    """Completions class for HuggingFace Inference.
+
+    Args:
+        model (Optional[str]): HuggingFace model identifier.
+        client_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient`.
+        chat_completion_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient.chat_completion`.
+        **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `chat_completion_kwargs`.
+
+    !!! info
+        For default settings, see `chat.completions_configs.hf_inference` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "hf_inference"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.hf_inference"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        client_kwargs: tp.KwargsLike = None,
+        chat_completion_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Completions.__init__(
+            self,
+            model=model,
+            client_kwargs=client_kwargs,
+            chat_completion_kwargs=chat_completion_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("huggingface_hub")
+        from huggingface_hub import InferenceClient
+
+        hf_inference_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = hf_inference_config.pop("model", None)
+        def_quick_model = hf_inference_config.pop("quick_model", None)
+        def_client_kwargs = hf_inference_config.pop("client_kwargs", None)
+        def_chat_completion_kwargs = hf_inference_config.pop("chat_completion_kwargs", None)
+
+        if model is None:
+            model = def_quick_model if self.quick_mode else def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(hf_inference_config.keys()):
+            if k in init_arg_names:
+                hf_inference_config.pop(k)
+
+        client_arg_names = set(get_func_arg_names(InferenceClient.__init__))
+        _client_kwargs = {}
+        _chat_completion_kwargs = {}
+        for k, v in hf_inference_config.items():
+            if k in client_arg_names:
+                _client_kwargs[k] = v
+            else:
+                _chat_completion_kwargs[k] = v
+        client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
+        chat_completion_kwargs = merge_dicts(
+            _chat_completion_kwargs, def_chat_completion_kwargs, chat_completion_kwargs
+        )
+        client = InferenceClient(model=model, **client_kwargs)
+
+        self._model = model
+        self._client = client
+        self._chat_completion_kwargs = chat_completion_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> InferenceClientT:
+        """HuggingFace Inference client instance.
+
+        Returns:
+            InferenceClient: HuggingFace Inference client instance.
+        """
+        return self._client
+
+    @property
+    def chat_completion_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `huggingface_hub.InferenceClient.chat_completion`.
+
+        Returns:
+            Kwargs: Keyword arguments for chat completion.
+        """
+        return self._chat_completion_kwargs
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionOutputT:
+        return self.client.chat_completion(
+            messages=messages,
+            model=self.model,
+            stream=False,
+            **self.chat_completion_kwargs,
+        )
+
+    def get_message_content(self, response: ChatCompletionOutputT) -> tp.Optional[str]:
+        message = response.choices[0].message
+        if hasattr(message, "thinking"):
+            thought = message.thinking
+        elif hasattr(message, "reasoning"):
+            thought = message.reasoning
+        elif hasattr(message, "reasoning_content"):
+            thought = message.reasoning_content
+        else:
+            thought = None
+        content = message.content
+        return self.process_thought(thought=thought, content=content, flush=True)
+
+    def get_stream_response(self, messages: tp.ChatMessages) -> ChatCompletionStreamOutputT:
+        return self.client.chat_completion(
+            messages=messages,
+            model=self.model,
+            stream=True,
+            **self.chat_completion_kwargs,
+        )
+
+    def get_delta_content(self, response_chunk: ChatCompletionStreamOutputT) -> tp.Optional[str]:
+        delta = response_chunk.choices[0].delta
+        if hasattr(delta, "thinking"):
+            thought = delta.thinking
+        elif hasattr(delta, "reasoning"):
+            thought = delta.reasoning
+        elif hasattr(delta, "reasoning_content"):
+            thought = delta.reasoning_content
+        else:
+            thought = None
+        content = delta.content
+        return self.process_thought(thought=thought, content=content)
+
+
+class LiteLLMCompletions(Completions):
+    """Completions class for LiteLLM.
+
+    Args:
+        model (Optional[str]): Identifier for the model to use.
+        completion_kwargs (KwargsLike): Keyword arguments for `litellm.completion`.
+        **kwargs: Keyword arguments for `Completions` or used as `completion_kwargs`.
+
+    !!! info
+        For default settings, see `chat.completions_configs.litellm` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "litellm"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.litellm"
+
+    def __init__(
+        self,
+        model: tp.Optional[str] = None,
+        completion_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Completions.__init__(
+            self,
+            model=model,
+            completion_kwargs=completion_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("litellm")
+
+        super_arg_names = set(get_func_arg_names(Completions.__init__))
+        for k in list(kwargs.keys()):
+            if k in super_arg_names:
+                kwargs.pop(k)
+        litellm_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_model = litellm_config.pop("model", None)
+        def_quick_model = litellm_config.pop("quick_model", None)
+        def_completion_kwargs = litellm_config.pop("completion_kwargs", None)
+
+        if model is None:
+            model = def_quick_model if self.quick_mode else def_model
+        if model is None:
+            raise ValueError("Must provide a model")
+        completion_kwargs = merge_dicts(litellm_config, def_completion_kwargs, completion_kwargs)
+
+        self._model = model
+        self._completion_kwargs = completion_kwargs
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def completion_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `litellm.completion`.
+
+        Returns:
+            Kwargs: Keyword arguments for the completion API call.
+        """
+        return self._completion_kwargs
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> ModelResponseT:
+        from litellm import completion
+
+        return completion(
+            messages=messages,
+            model=self.model,
+            stream=False,
+            **self.completion_kwargs,
+        )
+
+    def get_message_content(self, response: ModelResponseT) -> tp.Optional[str]:
+        message = response.choices[0].message
+        reasoning_content = getattr(message, "reasoning_content", None)
+        return self.process_thought(thought=reasoning_content, content=message.content, flush=True)
+
+    def get_stream_response(self, messages: tp.ChatMessages) -> CustomStreamWrapperT:
+        from litellm import completion
+
+        return completion(
+            messages=messages,
+            model=self.model,
+            stream=True,
+            **self.completion_kwargs,
+        )
+
+    def get_delta_content(self, response_chunk: ModelResponseT) -> tp.Optional[str]:
+        delta = response_chunk.choices[0].delta
+        reasoning_content = getattr(delta, "reasoning_content", None)
+        return self.process_thought(thought=reasoning_content, content=delta.content)
+
+
+class LlamaIndexCompletions(Completions):
+    """Completions class for LlamaIndex.
+
+    LLM can be provided via `llm`, which can be either the name of the class (case doesn't matter),
+    the path or its suffix to the class (case matters), or a subclass or an instance of
+    `llama_index.core.llms.LLM`.
+
+    Args:
+        llm (Union[None, str, MaybeType[LLM]]): Identifier, class path, subclass, or instance of
+            `llama_index.core.llms.LLM`.
+        llm_kwargs (KwargsLike): Additional parameters for LLM initialization.
+        **kwargs: Keyword arguments for `Completions` or used as `llm_kwargs`.
+
+    !!! info
+        For default settings, see `chat.completions_configs.llama_index` in `vectorbtpro._settings.knowledge`.
+    """
+
+    _short_name: tp.ClassVar[tp.Optional[str]] = "llama_index"
+
+    _settings_path: tp.SettingsPath = "knowledge.chat.completions_configs.llama_index"
+
+    def __init__(
+        self,
+        llm: tp.Union[None, str, tp.MaybeType[LLMT]] = None,
+        llm_kwargs: tp.KwargsLike = None,
+        **kwargs,
+    ) -> None:
+        Completions.__init__(
+            self,
+            llm=llm,
+            llm_kwargs=llm_kwargs,
+            **kwargs,
+        )
+
+        from vectorbtpro.utils.module_ import assert_can_import
+
+        assert_can_import("llama_index")
+        from llama_index.core.llms import LLM
+
+        llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_llm = llama_index_config.pop("llm", None)
+        def_llm_kwargs = llama_index_config.pop("llm_kwargs", None)
+
+        if llm is None:
+            llm = def_llm
+        if llm is None:
+            raise ValueError("Must provide an LLM name or path")
+        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        for k in list(llama_index_config.keys()):
+            if k in init_arg_names:
+                llama_index_config.pop(k)
+
+        if isinstance(llm, str):
+            import llama_index.llms
+            from vectorbtpro.utils.module_ import search_package
+
+            def _match_func(k, v):
+                if isinstance(v, type) and issubclass(v, LLM):
+                    if "." in llm:
+                        if k.endswith(llm):
+                            return True
+                    else:
+                        if k.split(".")[-1].lower() == llm.lower():
+                            return True
+                        if k.split(".")[-1].replace("LLM", "").lower() == llm.lower().replace("_", ""):
+                            return True
+                return False
+
+            found_llm = search_package(
+                llama_index.llms,
+                _match_func,
+                path_attrs=True,
+                return_first=True,
+            )
+            if found_llm is None:
+                raise ValueError(f"LLM {llm!r} not found")
+            llm = found_llm
+        if isinstance(llm, type):
+            checks.assert_subclass_of(llm, LLM, arg_name="llm")
+            llm_name = llm.__name__.replace("LLM", "").lower()
+            module_name = llm.__module__
+        else:
+            checks.assert_instance_of(llm, LLM, arg_name="llm")
+            llm_name = type(llm).__name__.replace("LLM", "").lower()
+            module_name = type(llm).__module__
+        llm_configs = llama_index_config.pop("llm_configs", {})
+        if llm_name in llm_configs:
+            llama_index_config = merge_dicts(llama_index_config, llm_configs[llm_name])
+        elif module_name in llm_configs:
+            llama_index_config = merge_dicts(llama_index_config, llm_configs[module_name])
+        llm_kwargs = merge_dicts(llama_index_config, def_llm_kwargs, llm_kwargs)
+        def_model = llm_kwargs.pop("model", None)
+        quick_model = llm_kwargs.pop("quick_model", None)
+        model = quick_model if self.quick_mode else def_model
+        if model is None:
+            func_kwargs = get_func_kwargs(type(llm).__init__)
+            model = func_kwargs.get("model", None)
+        else:
+            llm_kwargs["model"] = model
+        if isinstance(llm, type):
+            llm = llm(**llm_kwargs)
+        elif len(kwargs) > 0:
+            raise ValueError("Cannot apply config to already initialized LLM")
+
+        self._model = model
+        self._llm = llm
+
+    @property
+    def model(self) -> tp.Optional[str]:
+        return self._model
+
+    @property
+    def llm(self) -> LLMT:
+        """Initialized LLM instance used for generating completions.
+
+        Returns:
+            LLM: Initialized LLM instance.
+        """
+        return self._llm
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> ChatResponseT:
+        from llama_index.core.llms import ChatMessage
+
+        return self.llm.chat(list(map(lambda x: ChatMessage(**dict(x)), messages)))
+
+    def get_message_content(self, response: ChatResponseT) -> tp.Optional[str]:
+        return response.message.content
+
+    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[ChatResponseT]:
+        from llama_index.core.llms import ChatMessage
+
+        return self.llm.stream_chat(list(map(lambda x: ChatMessage(**dict(x)), messages)))
+
+    def get_delta_content(self, response_chunk: ChatResponseT) -> tp.Optional[str]:
+        return response_chunk.delta
 
 
 class OllamaCompletions(Completions):
@@ -2722,6 +3134,8 @@ class OllamaCompletions(Completions):
 
     Args:
         model (Optional[str]): Ollama model identifier.
+
+            Pulls the model if not already available locally.
         client_kwargs (KwargsLike): Keyword arguments for `ollama.Client`.
         chat_kwargs (KwargsLike): Keyword arguments for `ollama.Client.chat`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `chat_kwargs`.
@@ -2752,7 +3166,7 @@ class OllamaCompletions(Completions):
         from vectorbtpro.utils.module_ import assert_can_import
 
         assert_can_import("ollama")
-        import ollama
+        from ollama import Client
 
         ollama_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = ollama_config.pop("model", None)
@@ -2773,11 +3187,32 @@ class OllamaCompletions(Completions):
         _chat_kwargs = {}
         for k, v in ollama_config.items():
             _chat_kwargs[k] = v
-        
+
         client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
         chat_kwargs = merge_dicts(_chat_kwargs, def_chat_kwargs, chat_kwargs)
-        
-        client = ollama.Client(**client_kwargs)
+
+        client = Client(**client_kwargs)
+        model_installed = False
+        for installed_model in client.list().models:
+            if installed_model.model == model:
+                model_installed = True
+                break
+        if not model_installed:
+            pbar = None
+            status = None
+            for response in client.pull(model, stream=True):
+                if pbar is not None and status is not None and response.status != status:
+                    pbar.refresh()
+                    pbar.exit()
+                    pbar = None
+                    status = None
+                if response.completed is not None:
+                    status = response.status
+                    if pbar is None:
+                        pbar = ProgressBar(total=response.total, show_progress=self.show_progress, **self.pbar_kwargs)
+                        pbar.enter()
+                    pbar.set_prefix(status)
+                    pbar.update_to(response.completed)
 
         self._model = model
         self._client = client
@@ -2814,7 +3249,17 @@ class OllamaCompletions(Completions):
         )
 
     def get_message_content(self, response: OllamaChatResponseT) -> tp.Optional[str]:
-        return response["message"]["content"]
+        message = response["message"]
+        if hasattr(message, "thinking"):
+            thought = message.thinking
+        elif hasattr(message, "reasoning"):
+            thought = message.reasoning
+        elif hasattr(message, "reasoning_content"):
+            thought = message.reasoning_content
+        else:
+            thought = None
+        content = message.content
+        return self.process_thought(thought=thought, content=content, flush=True)
 
     def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[OllamaChatResponseT]:
         return self.client.chat(
@@ -2825,7 +3270,17 @@ class OllamaCompletions(Completions):
         )
 
     def get_delta_content(self, response_chunk: OllamaChatResponseT) -> tp.Optional[str]:
-        return response_chunk["message"]["content"]
+        message = response_chunk["message"]
+        if hasattr(message, "thinking"):
+            thought = message.thinking
+        elif hasattr(message, "reasoning"):
+            thought = message.reasoning
+        elif hasattr(message, "reasoning_content"):
+            thought = message.reasoning_content
+        else:
+            thought = None
+        content = message.content
+        return self.process_thought(thought=thought, content=content)
 
 
 def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[Completions]:
@@ -2837,11 +3292,11 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
             Supported identifiers:
 
             * "openai" for `OpenAICompletions`
+            * "anthropic" for `AnthropicCompletions`
+            * "gemini" for `GeminiCompletions`
+            * "hf_inference" for `HFInferenceCompletions`
             * "litellm" for `LiteLLMCompletions`
             * "llama_index" for `LlamaIndexCompletions`
-            * "huggingface" for `HuggingFaceCompletions`
-            * "google" for `GoogleCompletions`
-            * "anthropic" for `AnthropicCompletions`
             * "ollama" for `OllamaCompletions`
             * "auto" to select the first available option
 
@@ -2858,20 +3313,21 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
         completions = chat_cfg["completions"]
     if isinstance(completions, str):
         if completions.lower() == "auto":
+            import os
             from vectorbtpro.utils.module_ import check_installed
 
-            if check_installed("openai"):
+            if check_installed("openai") and os.getenv("OPENAI_API_KEY"):
                 completions = "openai"
+            elif check_installed("anthropic") and os.getenv("ANTHROPIC_API_KEY"):
+                completions = "anthropic"
+            elif check_installed("google.genai") and os.getenv("GEMINI_API_KEY"):
+                completions = "gemini"
+            elif check_installed("huggingface_hub") and os.getenv("HF_TOKEN"):
+                completions = "hf_inference"
             elif check_installed("litellm"):
                 completions = "litellm"
             elif check_installed("llama_index"):
                 completions = "llama_index"
-            elif check_installed("huggingface_hub"):
-                completions = "huggingface"
-            elif check_installed("google.genai"):
-                completions = "google"
-            elif check_installed("anthropic"):
-                completions = "anthropic"
             elif check_installed("ollama"):
                 completions = "ollama"
             else:
@@ -5290,7 +5746,15 @@ class LMDBStore(ObjectStore):
 
         assert_can_import("lmdbm")
 
-        dir_path = self.resolve_setting(dir_path, "dir_path")
+        lmdb_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+        def_dir_path = lmdb_config.pop("dir_path", None)
+        def_mkdir_kwargs = lmdb_config.pop("mkdir_kwargs", None)
+        def_dumps_kwargs = lmdb_config.pop("dumps_kwargs", None)
+        def_loads_kwargs = lmdb_config.pop("loads_kwargs", None)
+        def_open_kwargs = lmdb_config.pop("open_kwargs", None)
+
+        if dir_path is None:
+            dir_path = def_dir_path
         template_context = self.template_context
         if isinstance(dir_path, CustomTemplate):
             cache_dir = self.get_setting("cache_dir", default=None)
@@ -5304,17 +5768,17 @@ class LMDBStore(ObjectStore):
                     release_dir = release_dir.substitute(template_context, eval_id="release_dir")
                 template_context = flat_merge_dicts(dict(release_dir=release_dir), template_context)
             dir_path = dir_path.substitute(template_context, eval_id="dir_path")
-        mkdir_kwargs = self.resolve_setting(mkdir_kwargs, "mkdir_kwargs", merge=True)
-        dumps_kwargs = self.resolve_setting(dumps_kwargs, "dumps_kwargs", merge=True)
-        loads_kwargs = self.resolve_setting(loads_kwargs, "loads_kwargs", merge=True)
-        lmdb_config = merge_dicts(self.get_settings(inherit=False), kwargs)
+
+        mkdir_kwargs = merge_dicts(def_mkdir_kwargs, mkdir_kwargs)
+        dumps_kwargs = merge_dicts(def_dumps_kwargs, dumps_kwargs)
+        loads_kwargs = merge_dicts(def_loads_kwargs, loads_kwargs)
+
         init_arg_names = set(get_func_arg_names(ObjectStore.__init__)) | set(get_func_arg_names(type(self).__init__))
         for arg_name in init_arg_names:
             if arg_name in lmdb_config:
                 del lmdb_config[arg_name]
         if "mirror" in lmdb_config:
             del lmdb_config["mirror"]
-        def_open_kwargs = lmdb_config.pop("open_kwargs", None)
         open_kwargs = merge_dicts(lmdb_config, def_open_kwargs, open_kwargs)
 
         self._dir_path = dir_path
@@ -5640,7 +6104,7 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
         found_obj_store = None
         for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Store"):
-                _short_name: tp.ClassVar[tp.Optional[str]] = getattr(cls, "_short_name", None)
+                _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == obj_store.lower():
                     found_obj_store = cls
                     break

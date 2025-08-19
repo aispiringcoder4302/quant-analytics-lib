@@ -2187,6 +2187,9 @@ knowledge = frozen_cfg(
         remove_code_title=True,
         even_indentation=True,
         newline_before_list=True,
+        think_to_blockquote=True,
+        think_open_tag="<think>",
+        think_close_tag="</think>",
         resolve_extensions=True,
         make_links=True,
         frontmatter_to_code=True,
@@ -2292,11 +2295,18 @@ knowledge = frozen_cfg(
             border-radius: 4px;
             overflow-x: auto;
         }
-        .admonition {
-            background-color: #f9f9f9;
+        blockquote {
             margin: 20px 0;
             padding: 10px 20px;
             border-left: 5px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .admonition {
+            margin: 20px 0;
+            padding: 10px 20px;
+            border-left: 5px solid #ccc;
+            background-color: #f9f9f9;
             border-radius: 4px;
         }
         .admonition > p:first-child {
@@ -2387,7 +2397,7 @@ window.onload = function() {
     content: '';
     width: 300px;
     height: 5px;
-    background: blue;
+    background: #735af2;
     position: absolute;
     top: 0;
     left: 0;
@@ -2445,7 +2455,11 @@ window.onload = function() {
             return_chunks=False,
         ),
         max_tokens=100_000,
-        system_prompt=r"You are a helpful assistant. Answer the query based on the provided context information (if any).",
+        system_prompt=r"""You are a helpful assistant.
+
+Answer the query based on the provided context information (if any).
+
+Use valid Markdown. Wrap any inline code in single backticks and multi-line code in fenced code blocks with a language tag.""",
         system_as_user=False,
         context_template=r"""Context information:
 ---------------------
@@ -2471,13 +2485,31 @@ $context
             openai=flex_cfg(
                 model="text-embedding-3-large",
                 dimensions=256,
+                client_kwargs=flex_cfg(),
+                embeddings_kwargs=flex_cfg(),
+            ),
+            gemini=flex_cfg(
+                model="gemini-embedding-001",
+                config=flex_cfg(
+                    output_dimensionality=768,
+                ),
+                client_kwargs=flex_cfg(),
+                embeddings_kwargs=flex_cfg(),
+                batch_size=100,
+            ),
+            hf_inference=flex_cfg(
+                model="Qwen/Qwen3-Embedding-8B",
+                client_kwargs=flex_cfg(),
+                feature_extraction_kwargs=flex_cfg(),
             ),
             litellm=flex_cfg(
                 model="text-embedding-3-large",
                 dimensions=256,
+                embedding_kwargs=flex_cfg(),
             ),
             llama_index=flex_cfg(
                 embedding="openai",
+                embedding_kwargs=flex_cfg(),
                 embedding_configs=flex_cfg(
                     openai=flex_cfg(
                         model="text-embedding-3-large",
@@ -2485,31 +2517,54 @@ $context
                     )
                 ),
             ),
-            huggingface=flex_cfg(
-                model="Qwen/Qwen3-Embedding-8B",
+            ollama=flex_cfg(
+                model="hf.co/Qwen/Qwen3-Embedding-0.6B-GGUF:Q8_0",
+                client_kwargs=flex_cfg(),
+                embed_kwargs=flex_cfg(),
             ),
-            google=flex_cfg(
-                model="gemini-embedding-001",
-                config=flex_cfg(
-                    output_dimensionality=768,
-                ),
-                batch_size=100,
-            ),
-            ollama=flex_cfg(),
         ),
         completions="auto",
-        completions_config=flex_cfg(),
+        completions_config=flex_cfg(
+            include_thoughts=True,
+        ),
         completions_configs=flex_cfg(
             openai=flex_cfg(
                 model="gpt-5",
                 quick_model="gpt-5-mini",
+                client_kwargs=flex_cfg(),
+                completions_kwargs=flex_cfg(),
+                responses_kwargs=flex_cfg(),
+                use_responses=True,
+            ),
+            anthropic=flex_cfg(
+                model="claude-sonnet-4-0",
+                quick_model="claude-3-5-haiku-latest",
+                client_type="anthropic",
+                client_kwargs=flex_cfg(),
+                messages_kwargs=flex_cfg(
+                    max_tokens=4096,
+                ),
+            ),
+            gemini=flex_cfg(
+                model="gemini-2.5-flash",
+                quick_model="gemini-2.5-flash-lite",
+                client_kwargs=flex_cfg(),
+                completions_kwargs=flex_cfg(),
+            ),
+            hf_inference=flex_cfg(
+                model="openai/gpt-oss-120b",
+                quick_model="openai/gpt-oss-20b",
+                client_kwargs=flex_cfg(),
+                chat_completion_kwargs=flex_cfg(),
             ),
             litellm=flex_cfg(
                 model="gpt-5",
                 quick_model="gpt-5-mini",
+                completion_kwargs=flex_cfg(),
             ),
             llama_index=flex_cfg(
                 llm="openai",
+                llm_kwargs=flex_cfg(),
                 llm_configs=flex_cfg(
                     openai=flex_cfg(
                         model="gpt-5",
@@ -2517,23 +2572,12 @@ $context
                     )
                 ),
             ),
-            huggingface=flex_cfg(
-                model="openai/gpt-oss-120b",
-                quick_model="openai/gpt-oss-20b",
+            ollama=flex_cfg(
+                model="qwen3:4b",
+                quick_model="qwen3:0.6b",
+                client_kwargs=flex_cfg(),
+                chat_kwargs=flex_cfg(),
             ),
-            google=flex_cfg(
-                model="gemini-2.5-flash",
-                quick_model="gemini-2.5-flash-lite",
-            ),
-            anthropic=flex_cfg(
-                model="claude-sonnet-4-0",
-                quick_model="claude-3-5-haiku-latest",
-                client_type="anthropic",
-                messages_kwargs=flex_cfg(
-                    max_tokens=4096,
-                ),
-            ),
-            ollama=flex_cfg(),
         ),
         text_splitter="segment",
         text_splitter_config=flex_cfg(
@@ -2569,6 +2613,7 @@ $chunk_text""",
             ),
             llama_index=flex_cfg(
                 node_parser="sentence",
+                node_parser_kwargs=flex_cfg(),
                 node_parser_configs=flex_cfg(),
             ),
         ),
@@ -2595,8 +2640,10 @@ $chunk_text""",
                 mkdir_kwargs=flex_cfg(),
                 dumps_kwargs=flex_cfg(),
                 loads_kwargs=flex_cfg(),
+                open_kwargs=flex_cfg(
+                    flag="c",
+                ),
                 mirror=True,
-                flag="c",
             ),
             cached=flex_cfg(
                 lazy_open=True,
@@ -2752,7 +2799,7 @@ $chunk_text""",
         }
         .nav-btn {
             background: transparent;
-            color: blue;
+            color: #735af2;
             border: none;
             cursor: pointer;
         }
@@ -2771,7 +2818,7 @@ $chunk_text""",
             background: lightgray;
         }
         .page-link.active {
-            background: blue;
+            background: #735af2;
             color: #fff;
             cursor: default;
         }
@@ -2798,7 +2845,24 @@ $chunk_text""",
             ),
             chat=flex_cfg(
                 chat_dir=RepEval("Path(release_dir) / 'chat'"),
-                system_prompt=r"""You are a helpful assistant (called ChatVBT or `vbt.chat`) with access to VectorBT PRO (also called VBT or `vectorbtpro`) documentation and relevant Discord history. Use only this provided context to generate clear, accurate answers. Do not reference the open-source vectorbt, as VectorBT PRO is a proprietary successor with significant differences.\n\nWhen coding in Python, use:\n```python\nimport vectorbtpro as vbt\n```\n\nIf metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.\n\nFor each query, follow this structure:\n1. Optionally restate the question in your own words.\n2. Answer using only the available context.\n3. Include any relevant links.""",
+                system_prompt=r"""You are a helpful assistant (called ChatVBT or `vbt.chat`) with access to VectorBT PRO (also called VBT or `vectorbtpro`) documentation and relevant Discord history.
+
+Use only the provided context to generate clear, accurate answers. Do not reference the open-source vectorbt, as VectorBT PRO is a proprietary successor with significant differences. When coding in Python, use:
+
+```python
+import vectorbtpro as vbt
+```
+
+If metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.
+
+Use valid Markdown. Wrap any inline code in single backticks and multi-line code in fenced code blocks with a language tag.
+
+For each query, follow this structure:
+
+1. Optionally restate the question in your own words.
+2. Answer using only the available context.
+3. Include any relevant links.
+4. Proofread your response and ensure it is clear, accurate, and formatted correctly.""",
                 doc_ranker_config=flex_cfg(
                     doc_store="lmdb",
                     doc_store_configs=flex_cfg(

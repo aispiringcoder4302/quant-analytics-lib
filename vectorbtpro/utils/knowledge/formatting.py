@@ -51,6 +51,9 @@ class ToMarkdown(Configured):
         even_indentation (Optional[bool]): Whether leading spaces should be adjusted to
             even numbers (e.g., converting 3 spaces to 4).
         newline_before_list (Optional[bool]): Whether a newline should be inserted before list items.
+        think_to_blockquote (Optional[bool]): Whether to convert `<think>` tags into quote blocks.
+        think_open_tag (Optional[str]): Opening tag for the think block.
+        think_close_tag (Optional[str]): Closing tag for the think block.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
@@ -64,6 +67,9 @@ class ToMarkdown(Configured):
         remove_code_title: tp.Optional[bool] = None,
         even_indentation: tp.Optional[bool] = None,
         newline_before_list: tp.Optional[bool] = None,
+        think_to_blockquote: tp.Optional[bool] = None,
+        think_open_tag: tp.Optional[str] = None,
+        think_close_tag: tp.Optional[str] = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
@@ -71,16 +77,25 @@ class ToMarkdown(Configured):
             remove_code_title=remove_code_title,
             even_indentation=even_indentation,
             newline_before_list=newline_before_list,
+            think_to_blockquote=think_to_blockquote,
+            think_open_tag=think_open_tag,
+            think_close_tag=think_close_tag,
             **kwargs,
         )
 
         remove_code_title = self.resolve_setting(remove_code_title, "remove_code_title")
         even_indentation = self.resolve_setting(even_indentation, "even_indentation")
         newline_before_list = self.resolve_setting(newline_before_list, "newline_before_list")
+        think_to_blockquote = self.resolve_setting(think_to_blockquote, "think_to_blockquote")
+        think_open_tag = self.resolve_setting(think_open_tag, "think_open_tag")
+        think_close_tag = self.resolve_setting(think_close_tag, "think_close_tag")
 
         self._remove_code_title = remove_code_title
         self._even_indentation = even_indentation
         self._newline_before_list = newline_before_list
+        self._think_to_blockquote = think_to_blockquote
+        self._think_open_tag = think_open_tag
+        self._think_close_tag = think_close_tag
 
     @property
     def remove_code_title(self) -> bool:
@@ -108,6 +123,33 @@ class ToMarkdown(Configured):
             bool: True if leading spaces should be adjusted to even numbers, False otherwise.
         """
         return self._even_indentation
+
+    @property
+    def think_to_blockquote(self) -> bool:
+        """Whether to convert `<think>` tags into quote blocks.
+
+        Returns:
+            bool: True if `<think>` tags should be converted, False otherwise.
+        """
+        return self._think_to_blockquote
+
+    @property
+    def think_open_tag(self) -> str:
+        """Opening tag for the think block.
+
+        Returns:
+            str: Opening tag for the think block.
+        """
+        return self._think_open_tag
+
+    @property
+    def think_close_tag(self) -> str:
+        """Closing tag for the think block.
+
+        Returns:
+            str: Closing tag for the think block.
+        """
+        return self._think_close_tag
 
     def to_markdown(self, text: str) -> str:
         """Return the given text converted to Markdown format.
@@ -147,6 +189,55 @@ class ToMarkdown(Configured):
 
         if self.newline_before_list:
             markdown = re.sub(r"(?<=[^\n])\n(?=[ \t]*(?:[*+-]\s|\d+\.\s))", "\n\n", markdown)
+
+        if self.think_to_blockquote:
+            open_tag = re.escape(self.think_open_tag)
+            close_tag = re.escape(self.think_close_tag)
+            complete_pattern = re.compile(rf"{open_tag}(.*?){close_tag}", re.DOTALL)
+            open_pattern = re.compile(rf"{open_tag}(.*?)$", re.DOTALL)
+
+            def _repl(m):
+                inner = m.group(1).strip("\n")
+                lines = inner.splitlines()
+                quoted = "\n".join(("> " + ln) if ln.strip() else ">" for ln in lines)
+                start_pos = m.start()
+                end_pos = m.end()
+
+                if start_pos > 0:
+                    text_before = markdown[:start_pos]
+                    lines_before = text_before.split("\n")
+                    last_line_before = lines_before[-1] if lines_before else ""
+                else:
+                    last_line_before = None
+                if end_pos < len(markdown):
+                    text_after = markdown[end_pos:]
+                    lines_after = text_after.split("\n")
+                    first_line_after = lines_after[0] if lines_after else ""
+                else:
+                    first_line_after = None
+                if last_line_before is None or not last_line_before.strip().startswith(">"):
+                    if quoted.strip():
+                        quoted_content = f"> *Thinking...*\n>\n{quoted}"
+                    else:
+                        quoted_content = "> *Thinking...*"
+                else:
+                    quoted_content = quoted
+                if last_line_before is None:
+                    prefix = ""
+                elif last_line_before == "":
+                    prefix = "\n"
+                else:
+                    prefix = "\n\n"
+                if first_line_after is None:
+                    suffix = ""
+                elif first_line_after == "":
+                    suffix = "\n"
+                else:
+                    suffix = "\n\n"
+                return f"{prefix}{quoted_content}{suffix}"
+
+            markdown = complete_pattern.sub(_repl, markdown)
+            markdown = open_pattern.sub(_repl, markdown)
 
         return markdown
 
@@ -338,6 +429,7 @@ class ToHTML(Configured):
                 return f"<{tag}{attributes}>{new_content}</{tag}>"
 
             html = tag_pattern.sub(_replace_urls, html)
+
         return html.strip()
 
 
@@ -450,7 +542,7 @@ class FormatHTML(Configured):
         elif checks.is_function(html_template):
             html_template = RepFunc(html_template)
         elif not isinstance(html_template, CustomTemplate):
-            raise TypeError(f"HTML template must be a string, function, or template")
+            raise TypeError("HTML template must be a string, function, or template")
         style_extras = _prepare_extras(self.get_setting("style_extras")) + _prepare_extras(style_extras)
         head_extras = _prepare_extras(self.get_setting("head_extras")) + _prepare_extras(head_extras)
         body_extras = _prepare_extras(self.get_setting("body_extras")) + _prepare_extras(body_extras)

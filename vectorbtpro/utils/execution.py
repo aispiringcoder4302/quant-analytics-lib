@@ -1308,7 +1308,7 @@ class Executor(Configured):
         filter_results (Optional[bool]): Flag indicating whether to filter
             `NoResult` results after execution.
         raise_no_results (Optional[bool]): Flag indicating whether to raise a
-                `NoResultsException` exception if no results remain.
+            `NoResultsException` exception if no results remain.
 
             This flag applies only when `filter_results` is True and is forwarded to the merging
             function if pre-configured.
