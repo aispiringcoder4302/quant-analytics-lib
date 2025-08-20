@@ -773,10 +773,10 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
     if dump_engine.lower() == "toml":
         from vectorbtpro.utils.module_ import assert_can_import
 
-        assert_can_import("toml")
-        import toml
+        assert_can_import("tomlkit")
+        import tomlkit
 
-        return toml.dumps(obj, **kwargs)
+        return tomlkit.dumps(obj, **kwargs)
     if dump_engine.lower() == "json":
         import json
 

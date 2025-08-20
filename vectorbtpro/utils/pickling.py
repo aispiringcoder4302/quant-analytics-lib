@@ -912,8 +912,8 @@ class Pickleable(Base):
                 parser.set(k, k2, v2)
         with StringIO() as f:
             parser.write(f)
-            str_ = f.getvalue()
-        return str_
+            config_str = f.getvalue()
+        return config_str
 
     @classmethod
     def decode_config_node(cls, key: str, value: tp.Any, **kwargs) -> tp.Any:
@@ -934,7 +934,7 @@ class Pickleable(Base):
     @classmethod
     def decode_config(
         cls: tp.Type[PickleableT],
-        str_: str,
+        config_str: str,
         parse_literals: bool = True,
         run_code: bool = True,
         pack_objects: bool = True,
@@ -955,7 +955,7 @@ class Pickleable(Base):
         Sections containing only a single pair (`_ = _`) are treated as empty dictionaries.
 
         Args:
-            str_ (str): Configuration string to decode.
+            config_str (str): Configuration string to decode.
             parse_literals (bool): Detect Python literals and container types (e.g., `True`, `[]`),
                 including special values like `np.nan`, `np.inf`, and `-np.inf`.
             run_code (bool): Execute Python code prefixed with `!`.
@@ -1057,9 +1057,9 @@ class Pickleable(Base):
         parser.optionxform = str
 
         try:
-            parser.read_string(str_)
+            parser.read_string(config_str)
         except configparser.MissingSectionHeaderError:
-            parser.read_string("[top]\n" + str_)
+            parser.read_string("[top]\n" + config_str)
 
         def _preprocess_key(k):
             k = k.replace("__HASH__", "#")
@@ -2121,15 +2121,15 @@ class Pickleable(Base):
             with open(path, "wb") as f:
                 f.write(bytes_)
         elif suffixes[0] in get_serialization_extensions("config"):
-            str_ = self.encode_config(**kwargs)
+            config_str = self.encode_config(**kwargs)
             check_mkdir(path.parent, **mkdir_kwargs)
             with open(path, "w") as f:
-                f.write(str_)
+                f.write(config_str)
         elif suffixes[0] in get_serialization_extensions("yaml"):
-            str_ = self.encode_yaml(**kwargs)
+            config_str = self.encode_yaml(**kwargs)
             check_mkdir(path.parent, **mkdir_kwargs)
             with open(path, "w") as f:
-                f.write(str_)
+                f.write(config_str)
         else:
             raise ValueError(f"Invalid file extension: {path.suffix!r}")
         return path
@@ -2171,12 +2171,12 @@ class Pickleable(Base):
             return cls.loads(bytes_, compression=compression, **kwargs)
         elif suffixes[0] in get_serialization_extensions("config"):
             with open(path, "r") as f:
-                str_ = f.read()
-            return cls.decode_config(str_, **kwargs)
+                config_str = f.read()
+            return cls.decode_config(config_str, **kwargs)
         elif suffixes[0] in get_serialization_extensions("yaml"):
             with open(path, "r") as f:
-                str_ = f.read()
-            return cls.decode_yaml(str_, **kwargs)
+                config_str = f.read()
+            return cls.decode_yaml(config_str, **kwargs)
         else:
             raise ValueError(f"Invalid file extension: {path.suffix!r}")
 

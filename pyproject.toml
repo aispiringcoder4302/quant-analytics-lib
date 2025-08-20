@@ -162,7 +162,7 @@ knwl = [
     "fuzzysearch",
     "rapidfuzz",
     "nestedtext",
-    "toml",
+    "tomlkit",
     "PyYAML",
     "litellm",
     "llama_index",

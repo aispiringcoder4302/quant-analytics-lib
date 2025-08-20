@@ -69,7 +69,7 @@ opt_dep_config = HybridConfig(
         "nestedtext": {},
         "yaml": {"dist_name": "PyYAML"},
         "ruamel": {"dist_name": "ruamel.yaml"},
-        "toml": {},
+        "tomlkit": {},
         "markdown": {},
         "pygments": {},
         "IPython": {"dist_name": "ipython"},
