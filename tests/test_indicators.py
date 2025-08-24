@@ -136,7 +136,7 @@ class TestFactory:
             indicator1._p_mapper.append(indicator2._p_mapper),
         )
 
-    @pytest.mark.parametrize("test_file_format", ["ini", "yml"])
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
     def test_config(self, tmp_path, test_file_format):
         F = vbt.IndicatorFactory(input_names=["ts"], param_names=["p"], output_names=["out"])
 

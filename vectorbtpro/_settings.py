@@ -129,7 +129,7 @@ For example, to set the default theme to dark, create a configuration file with 
 
     ```ini title="File vbt.cfg"
     [plotting]
-    default_theme = dark
+    default_theme = "dark"
     ```
 
 === "YAML"
@@ -137,6 +137,13 @@ For example, to set the default theme to dark, create a configuration file with 
     ```yaml title="File vbt.yml"
     plotting:
       default_theme: dark
+    ```
+
+=== "TOML"
+
+    ```toml title="File vbt.toml"
+    [plotting]
+    default_theme = "dark"
     ```
 """
 
@@ -646,6 +653,7 @@ pickling = frozen_cfg(
             pickle={"pickle", "pkl", "p"},
             config={"config", "conf", "cfg", "ini"},
             yaml={"yaml", "yml"},
+            toml={"toml"},
         ),
         compression=flex_cfg(
             zip={"zip"},

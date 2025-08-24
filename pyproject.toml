@@ -146,6 +146,7 @@ io = [
 knwl-base = [
     "tabulate",
     "ruamel.yaml",
+    "tomlkit",
     "markdown",
     "Pygments",
     "openai",
@@ -162,7 +163,6 @@ knwl = [
     "fuzzysearch",
     "rapidfuzz",
     "nestedtext",
-    "tomlkit",
     "PyYAML",
     "litellm",
     "llama_index",

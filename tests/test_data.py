@@ -351,7 +351,7 @@ class TestData:
         with pytest.raises(Exception):
             MyData.column_stack((data1, data2.select(["F2"])))
 
-    @pytest.mark.parametrize("test_file_format", ["ini", "yml"])
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
     def test_config(self, tmp_path, test_file_format):
         original_data = MyData.pull(["S1", "S2"], shape=(5, 3), columns=["F1", "F2", "F3"])
         for data in [original_data.to_symbol_oriented(), original_data.to_feature_oriented()]:

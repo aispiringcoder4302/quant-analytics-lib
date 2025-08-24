@@ -880,7 +880,7 @@ class TestConfig:
         cfg.reset()
         assert cfg == config.Config(dict(a=0, dct=dict(b=0)))
 
-    @pytest.mark.parametrize("test_file_format", ["ini", "yml"])
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
     def test_config_save_and_load(self, tmp_path, test_file_format):
         cfg = config.Config(
             dict(a=0, dct=dict(b=[1, 2, 3], dct=config.Config(options_=dict(readonly=False)))),
@@ -905,7 +905,7 @@ class TestConfig:
         assert new_cfg == deepcopy(cfg)
         assert new_cfg.__dict__ == deepcopy(cfg).__dict__
 
-    @pytest.mark.parametrize("test_file_format", ["ini", "yml"])
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
     def test_config_load_update(self, tmp_path, test_file_format):
         cfg1 = config.Config(
             dict(a=0, dct=dict(b=[1, 2, 3], dct=config.Config(options_=dict(readonly=False)))),
@@ -954,7 +954,7 @@ class TestConfig:
         assert cfg5 == deepcopy(cfg1)
         assert cfg5.__dict__ == cfg1.__dict__
 
-    @pytest.mark.parametrize("test_file_format", ["ini", "yml"])
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
     def test_configured(self, tmp_path, test_file_format):
         class H(config.Configured):
             _rec_id = "123456789"
@@ -3194,7 +3194,7 @@ class TestExecution:
 
 
 class TestPickling:
-    @pytest.mark.parametrize("test_file_format", ["ini", "yml"])
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
     def test_pdict(self, tmp_path, test_file_format):
         index = pd.date_range("2023", periods=5)
         columns = pd.Index(["a", "b", "c"], name="symbol")

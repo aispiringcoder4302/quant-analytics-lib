@@ -1035,7 +1035,7 @@ class TestSplitter:
             == "world"
         )
 
-    @pytest.mark.parametrize("test_file_format", ["ini", "yml"])
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
     def test_config(self, tmp_path, test_file_format):
         splitter = vbt.Splitter.from_splits(
             index,

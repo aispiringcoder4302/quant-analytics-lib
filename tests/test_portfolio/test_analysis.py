@@ -1277,7 +1277,7 @@ class TestPortfolio:
         np.testing.assert_array_equal(new_sim_range_pf._sim_start, np.array([5, 30, 30]))
         np.testing.assert_array_equal(new_sim_range_pf._sim_end, np.array([85, 40, 50]))
 
-    @pytest.mark.parametrize("test_file_format", ["ini", "yml"])
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
     def test_config(self, tmp_path, test_file_format):
         pf2 = pf.copy()
         pf2._metrics = pf2._metrics.copy()

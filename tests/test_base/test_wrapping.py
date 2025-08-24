@@ -633,7 +633,7 @@ class TestArrayWrapper:
                 vbt.ArrayWrapper(index, columns2, 2, some_arg=2, check_expected_keys_=False),
             )
 
-    @pytest.mark.parametrize("test_file_format", ["ini", "yml"])
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
     def test_config(self, tmp_path, test_file_format):
         assert vbt.ArrayWrapper.loads(sr2_wrapper.dumps()) == sr2_wrapper
         assert vbt.ArrayWrapper.loads(sr2_wrapper_co.dumps()) == sr2_wrapper_co
