@@ -19,6 +19,7 @@ if typing.TYPE_CHECKING:
     from vectorbtpro.data import *
     from vectorbtpro.generic import *
     from vectorbtpro.indicators import *
+    from vectorbtpro.knowledge import *
     from vectorbtpro.labels import *
     from vectorbtpro.ohlcv import *
     from vectorbtpro.portfolio import *

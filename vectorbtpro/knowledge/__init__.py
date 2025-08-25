@@ -30,10 +30,15 @@ Run for the examples:
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from vectorbtpro.utils.knowledge.asset_pipelines import *
-    from vectorbtpro.utils.knowledge.base_asset_funcs import *
-    from vectorbtpro.utils.knowledge.base_assets import *
-    from vectorbtpro.utils.knowledge.chatting import *
-    from vectorbtpro.utils.knowledge.custom_asset_funcs import *
-    from vectorbtpro.utils.knowledge.custom_assets import *
-    from vectorbtpro.utils.knowledge.formatting import *
+    from vectorbtpro.knowledge.asset_pipelines import *
+    from vectorbtpro.knowledge.base_asset_funcs import *
+    from vectorbtpro.knowledge.base_assets import *
+    from vectorbtpro.knowledge.completions import *
+    from vectorbtpro.knowledge.custom_asset_funcs import *
+    from vectorbtpro.knowledge.custom_assets import *
+    from vectorbtpro.knowledge.doc_ranking import *
+    from vectorbtpro.knowledge.doc_storing import *
+    from vectorbtpro.knowledge.embeddings import *
+    from vectorbtpro.knowledge.formatting import *
+    from vectorbtpro.knowledge.text_splitting import *
+    from vectorbtpro.knowledge.tokenization import *

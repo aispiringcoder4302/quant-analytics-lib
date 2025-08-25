@@ -10,16 +10,16 @@
 
 """Module providing classes for creating and executing asset pipelines.
 
-See `vectorbtpro.utils.knowledge` for the toy dataset.
+See `vectorbtpro.knowledge` for the toy dataset.
 """
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.knowledge.base_asset_funcs import AssetFunc
 from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.base import Base
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.eval_ import evaluate
 from vectorbtpro.utils.execution import Task
-from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc
 from vectorbtpro.utils.module_ import package_shortcut_config
 from vectorbtpro.utils.parsing import get_func_arg_names
 
@@ -53,7 +53,7 @@ class AssetPipeline(Base):
         Args:
             func (AssetFuncLike): Asset function identifier, which may be a tuple,
                 `vectorbtpro.utils.execution.Task`, string, or subclass of
-                `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc`.
+                `vectorbtpro.knowledge.base_asset_funcs.AssetFunc`.
             *args: Positional arguments for `vectorbtpro.utils.execution.Task`.
             prepare (bool): Flag indicating whether to prepare the function's arguments before execution.
             prepare_once (bool): Flag indicating whether to prepare the function's arguments only once.
@@ -71,7 +71,7 @@ class AssetPipeline(Base):
             kwargs = merge_dicts(func.kwargs, kwargs)
             func = func.func
         if isinstance(func, str):
-            from vectorbtpro.utils.knowledge import base_asset_funcs, custom_asset_funcs
+            from vectorbtpro.knowledge import base_asset_funcs, custom_asset_funcs
 
             base_keys = dir(base_asset_funcs)
             custom_keys = dir(custom_asset_funcs)
@@ -204,7 +204,7 @@ class BasicAssetPipeline(AssetPipeline):
         Args:
             func (AssetFuncLike): Asset function identifier, which may be a tuple,
                 `vectorbtpro.utils.execution.Task`, string, or subclass of
-                `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc`.
+                `vectorbtpro.knowledge.base_asset_funcs.AssetFunc`.
             *args: Positional arguments for `BasicAssetPipeline.resolve_task`.
             **kwargs: Keyword arguments for `BasicAssetPipeline.resolve_task`.
 

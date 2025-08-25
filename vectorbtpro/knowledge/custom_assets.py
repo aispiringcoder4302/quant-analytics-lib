@@ -8,10 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing custom asset classes.
-
-See `vectorbtpro.utils.knowledge` for the toy dataset.
-"""
+"""Module providing custom asset classes."""
 
 import inspect
 import io
@@ -32,9 +29,9 @@ from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
 from vectorbtpro.utils.decorators import hybrid_method
-from vectorbtpro.utils.knowledge.asset_pipelines import EarlyReturn, BasicAssetPipeline
-from vectorbtpro.utils.knowledge.base_assets import AssetCacheManager, KnowledgeAsset
-from vectorbtpro.utils.knowledge.formatting import FormatHTML
+from vectorbtpro.knowledge.asset_pipelines import EarlyReturn, BasicAssetPipeline
+from vectorbtpro.knowledge.base_assets import AssetCacheManager, KnowledgeAsset
+from vectorbtpro.knowledge.formatting import FormatHTML
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
@@ -116,9 +113,9 @@ class VBTAsset(KnowledgeAsset):
     """Class for working with VBT content.
 
     Args:
-        *args: Positional arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+        *args: Positional arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
         release_name (Optional[str]): Release name.
-        **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+        **kwargs: Keyword arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
 
     !!! info
         For default settings, see `assets.vbt` in `vectorbtpro._settings.knowledge`.
@@ -484,7 +481,7 @@ class VBTAsset(KnowledgeAsset):
         Returns:
             MaybeVBTAsset: New VBT asset with minimized metadata.
         """
-        from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
+        from vectorbtpro.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
         keys = self.resolve_setting(keys, "minimize_keys")
 
@@ -587,7 +584,7 @@ class VBTAsset(KnowledgeAsset):
     ) -> tp.MaybeVBTAsset:
         """Convert asset data to Markdown format using a dedicated conversion function.
 
-        Uses `VBTAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`.
+        Uses `VBTAsset.apply` on `vectorbtpro.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`.
 
         Args:
             root_metadata_key (Optional[Key]): Key under which to nest metadata.
@@ -596,10 +593,10 @@ class VBTAsset(KnowledgeAsset):
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.DumpAssetFunc`.
             metadata_fence (Optional[str]): Metadata fence to use for formatting.
 
                 Options are "code", "frontmatter", or a custom string.
@@ -714,13 +711,13 @@ class VBTAsset(KnowledgeAsset):
 
                 See `vectorbtpro.utils.pbar.ProgressBar`.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`
-                and forwarded to `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.custom_asset_funcs.ToMarkdownAssetFunc`
+                and forwarded to `vectorbtpro.knowledge.formatting.to_markdown`.
 
         Returns:
             Path: Path to the directory where Markdown files are stored.
         """
-        from vectorbtpro.utils.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
+        from vectorbtpro.knowledge.custom_asset_funcs import ToMarkdownAssetFunc
 
         cache = self.resolve_setting(cache, "cache")
         markdown_dir = self.resolve_setting(cache_dir, "markdown_dir")
@@ -789,7 +786,7 @@ class VBTAsset(KnowledgeAsset):
     ) -> tp.MaybeVBTAsset:
         """Convert asset content to HTML.
 
-        Uses `VBTAsset.apply` on `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
+        Uses `VBTAsset.apply` on `vectorbtpro.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
 
         Args:
             root_metadata_key (Optional[Key]): Key under which to nest metadata.
@@ -798,20 +795,20 @@ class VBTAsset(KnowledgeAsset):
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.DumpAssetFunc`.
             metadata_fence (Optional[str]): Metadata fence to use for formatting.
 
                 Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
-                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+                See `vectorbtpro.knowledge.formatting.to_markdown`.
             format_html_kwargs (KwargsLike): Keyword arguments for HTML formatting.
 
-                See `vectorbtpro.utils.knowledge.formatting.format_html`.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.formatting.to_html`.
+                See `vectorbtpro.knowledge.formatting.format_html`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.formatting.to_html`.
 
         Returns:
             MaybeVBTAsset: New VBT asset converted into HTML format.
@@ -927,7 +924,7 @@ class VBTAsset(KnowledgeAsset):
             template_context (KwargsLike): Additional context for template substitution.
             return_url_map (bool): If True, also return a mapping of links to file paths along
                 with the HTML directory path.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.custom_asset_funcs.ToHTMLAssetFunc`.
 
         Returns:
             Union[Path, Tuple[Path, dict]]: Directory where HTML files are stored, and optionally
@@ -936,7 +933,7 @@ class VBTAsset(KnowledgeAsset):
         !!! note
             An index page is created if there are multiple top-level parent entries.
         """
-        from vectorbtpro.utils.knowledge.custom_asset_funcs import ToHTMLAssetFunc
+        from vectorbtpro.knowledge.custom_asset_funcs import ToHTMLAssetFunc
 
         cache = self.resolve_setting(cache, "cache")
         html_dir = self.resolve_setting(cache_dir, "html_dir")
@@ -1066,7 +1063,7 @@ class VBTAsset(KnowledgeAsset):
         """Display asset(s) as an HTML page.
 
         If multiple HTML pages exist, displays them as iframes within a parent HTML page with
-        pagination using `vectorbtpro.utils.knowledge.formatting.FormatHTML`. Opens the default web
+        pagination using `vectorbtpro.knowledge.formatting.FormatHTML`. Opens the default web
         browser and returns the file path of the generated HTML page.
 
         Args:
@@ -1646,9 +1643,9 @@ class VBTAsset(KnowledgeAsset):
         """Embed the instance's documents.
 
         Args:
-            *args: Positional arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.embed`.
+            *args: Positional arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset.embed`.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.embed`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset.embed`.
 
         Returns:
             Optional[Rankable]: Updated instance with embedded documents, if available.
@@ -1664,9 +1661,9 @@ class VBTAsset(KnowledgeAsset):
         """Rank documents based on their relevance to a provided query.
 
         Args:
-            *args: Positional arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.rank`.
+            *args: Positional arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset.rank`.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.rank`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset.rank`.
 
         Returns:
             Rankable: Updated instance with ranked documents.
@@ -1682,12 +1679,12 @@ class VBTAsset(KnowledgeAsset):
         """Create a chat interface using the generated context.
 
         Args:
-            *args: Positional arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.create_chat`.
+            *args: Positional arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset.create_chat`.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.create_chat`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset.create_chat`.
 
         Returns:
-            Completions: Instance of `vectorbtpro.utils.knowledge.chatting.Completions`
+            Completions: Instance of `vectorbtpro.knowledge.completions.Completions`
                 configured with the generated context.
         """
         template_context = flat_merge_dicts(dict(release_name=self.release_name), template_context)
@@ -1702,9 +1699,9 @@ class VBTAsset(KnowledgeAsset):
         """Chat with a language model using the instance as context.
 
         Args:
-            *args: Positional arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`.
+            *args: Positional arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset.chat`.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset.chat`.
 
         Returns:
             MaybeChatOutput: Completion response or a tuple of the response and the chat instance.
@@ -3114,7 +3111,7 @@ class MessagesAsset(VBTAsset):
     ) -> tp.MaybeMessagesAsset:
         """Aggregate attachments and metadata for each message.
 
-        Applies `MessagesAsset.apply` with `vectorbtpro.utils.knowledge.custom_asset_funcs.AggMessageAssetFunc`
+        Applies `MessagesAsset.apply` with `vectorbtpro.knowledge.custom_asset_funcs.AggMessageAssetFunc`
         to aggregate attachments on a per-message basis. For additional keyword arguments,
         see `MessagesAsset.to_markdown`.
 
@@ -3124,16 +3121,16 @@ class MessagesAsset(VBTAsset):
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.DumpAssetFunc`.
             metadata_fence (Optional[str]): Metadata fence to use for formatting.
 
                 Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
-                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+                See `vectorbtpro.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
@@ -3169,7 +3166,7 @@ class MessagesAsset(VBTAsset):
 
         Collects messages grouped by the "block" field using `MessagesAsset.collect`
         (with `uniform_groups` defaulting to True) and then applies
-        `vectorbtpro.utils.knowledge.custom_asset_funcs.AggBlockAssetFunc` to aggregate each group.
+        `vectorbtpro.knowledge.custom_asset_funcs.AggBlockAssetFunc` to aggregate each group.
 
         Args:
             collect_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.collect`.
@@ -3183,16 +3180,16 @@ class MessagesAsset(VBTAsset):
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.DumpAssetFunc`.
             metadata_fence (Optional[str]): Metadata fence to use for formatting.
 
                 Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
-                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+                See `vectorbtpro.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
@@ -3236,7 +3233,7 @@ class MessagesAsset(VBTAsset):
 
         Collects messages grouped by the "thread" field using `MessagesAsset.collect`
         (with `uniform_groups` defaulting to True) and then applies
-        `vectorbtpro.utils.knowledge.custom_asset_funcs.AggThreadAssetFunc` to aggregate each group.
+        `vectorbtpro.knowledge.custom_asset_funcs.AggThreadAssetFunc` to aggregate each group.
 
         Args:
             collect_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.collect`.
@@ -3250,16 +3247,16 @@ class MessagesAsset(VBTAsset):
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.DumpAssetFunc`.
             metadata_fence (Optional[str]): Metadata fence to use for formatting.
 
                 Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
-                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+                See `vectorbtpro.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
@@ -3303,7 +3300,7 @@ class MessagesAsset(VBTAsset):
 
         Collects messages grouped by the "channel" field using `MessagesAsset.collect`
         (with `uniform_groups` defaulting to True) and then applies
-        `vectorbtpro.utils.knowledge.custom_asset_funcs.AggChannelAssetFunc` to aggregate each group.
+        `vectorbtpro.knowledge.custom_asset_funcs.AggChannelAssetFunc` to aggregate each group.
 
         Args:
             collect_kwargs (KwargsLike): Keyword arguments for `MessagesAsset.collect`.
@@ -3317,16 +3314,16 @@ class MessagesAsset(VBTAsset):
             clean_metadata (Optional[bool]): If True, remove empty metadata fields.
             clean_metadata_kwargs (KwargsLike): Keyword arguments for cleaning metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
             dump_metadata_kwargs (KwargsLike): Keyword arguments for dumping metadata.
 
-                See `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc`.
+                See `vectorbtpro.knowledge.base_asset_funcs.DumpAssetFunc`.
             metadata_fence (Optional[str]): Metadata fence to use for formatting.
 
                 Options are "code", "frontmatter", or a custom string.
             to_markdown_kwargs (KwargsLike): Keyword arguments for markdown conversion.
 
-                See `vectorbtpro.utils.knowledge.formatting.to_markdown`.
+                See `vectorbtpro.knowledge.formatting.to_markdown`.
             **kwargs: Keyword arguments for `MessagesAsset.apply`.
 
         Returns:
@@ -4296,7 +4293,7 @@ def chat_about(
 ) -> tp.MaybeChatOutput:
     """Initiate a chat session for the given object(s) and return the resulting chat output.
 
-    Uses `find_assets` with `combine=True` and `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.chat`
+    Uses `find_assets` with `combine=True` and `vectorbtpro.knowledge.base_assets.KnowledgeAsset.chat`
     to retrieve assets (defaulting to the asset name `examples`) and execute the chat. Keyword arguments are
     distributed automatically between the asset search and chat methods based on parameter names, unless
     some keys cannot be found in both signatures. In such a case, the key will be used for chatting.
@@ -4368,7 +4365,7 @@ def search(
 ) -> tp.Union[tp.MaybeVBTAsset, tp.Path]:
     """Search for assets relevant to the provided query and return a ranked asset or display output.
 
-    Uses `find_assets` with `combine=True` and `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.rank`.
+    Uses `find_assets` with `combine=True` and `vectorbtpro.knowledge.base_assets.KnowledgeAsset.rank`.
     Keyword arguments are distributed among these two methods automatically, unless some keys cannot be
     found in both signatures. In such a case, the key will be used for ranking. If this is not wanted,
     specify the `find_assets`-related arguments explicitly with `find_assets_kwargs`.
@@ -4383,7 +4380,7 @@ def search(
             Running the same method again will use the cached documents.
         cache_key (Optional[str]): Unique identifier for the cached asset.
         asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of
-            `vectorbtpro.utils.knowledge.base_assets.AssetCacheManager`.
+            `vectorbtpro.knowledge.base_assets.AssetCacheManager`.
         asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.
@@ -4496,7 +4493,7 @@ def chat(
     """Process a query and generate a chat response.
 
     Distribute keyword arguments between the internal `find_assets` function and the chat method of
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`. The function calls `find_assets` with
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset`. The function calls `find_assets` with
     `obj_or_query=None`, `as_query=True`, and `combine=True`. Any extra keyword arguments that match the
     parameters of `find_assets` are assigned there unless already provided via `find_assets_kwargs`, while the
     rest are passed to the chat method. Metadata in aggregated messages is minimized by default, and if
@@ -4511,7 +4508,7 @@ def chat(
             Running the same method again will use the cached documents.
         cache_key (Optional[str]): Unique identifier for the cached asset.
         asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of
-            `vectorbtpro.utils.knowledge.base_assets.AssetCacheManager`.
+            `vectorbtpro.knowledge.base_assets.AssetCacheManager`.
         asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
         aggregate_messages (Union[bool, str]): Option to aggregate messages;
             if a string, it specifies the aggregation key.

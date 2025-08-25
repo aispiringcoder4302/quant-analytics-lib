@@ -24,11 +24,12 @@ from pathlib import Path
 from types import ModuleType, FunctionType
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.knowledge.text_splitting import split_text
+from vectorbtpro.knowledge.completions import completed
+from vectorbtpro.knowledge.custom_assets import search
 from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.formatting import dump, get_dump_language
-from vectorbtpro.utils.knowledge.chatting import split_text, completed
-from vectorbtpro.utils.knowledge.custom_assets import search
 from vectorbtpro.utils.module_ import assert_can_import
 from vectorbtpro.utils.path_ import check_mkdir, get_common_prefix
 from vectorbtpro.utils.pbar import ProgressBar
@@ -1199,10 +1200,10 @@ def refactor_source(
         search_kwargs (KwargsLike): Keyword arguments for searching for knowledge.
 
             By default, uses the source as the search query and top 20 results.
-            See `vectorbtpro.utils.knowledge.custom_assets.search`.
+            See `vectorbtpro.knowledge.custom_assets.search`.
         to_context_kwargs (KwargsLike): Keyword arguments for converting the search results to context.
 
-            See `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_context`.
+            See `vectorbtpro.knowledge.custom_assets.VBTAsset.to_context`.
         dump_engine (str): Name of the dump engine.
 
             See `vectorbtpro.utils.formatting.dump`.
@@ -1213,7 +1214,7 @@ def refactor_source(
         split_text_kwargs (KwargsLike): Keyword arguments for splitting the source.
 
             By default, uses "python" as `text_splitter`, 2000 as `chunk_size`, and 0 as `chunk_overlap`.
-            See `vectorbtpro.utils.knowledge.chatting.split_text`.
+            See `vectorbtpro.knowledge.text_splitting.split_text`.
         keep_history (Union[bool, int, slice]): Whether to keep the history of the conversation.
 
             If True, keeps the history of the conversation.
@@ -1242,7 +1243,7 @@ def refactor_source(
 
             Does not apply when processing multiple sources.
         return_path (bool): Whether to return the path to the updated source file or the HTML diff file.
-        **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.completed`.
+        **kwargs: Keyword arguments for `vectorbtpro.knowledge.completions.completed`.
 
     Returns:
         Union[RefactorSourceOutput, RefactorSourceOutputs]: Result of the refactoring process.
@@ -1658,7 +1659,7 @@ def refactor_markdown(
         split_text_kwargs (KwargsLike): Keyword arguments for splitting the source.
 
             By default, uses "markdown" as `text_splitter`.
-            See `vectorbtpro.utils.knowledge.chatting.split_text`.
+            See `vectorbtpro.knowledge.text_splitting.split_text`.
         **kwargs: Keyword arguments for `refactor_source`.
 
     Returns:

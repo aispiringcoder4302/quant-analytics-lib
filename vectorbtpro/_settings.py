@@ -2938,7 +2938,7 @@ For each query, follow this structure:
 """_"""
 
 __pdoc__["knowledge"] = Sub(
-    """Sub-configuration with settings applied across `vectorbtpro.utils.knowledge`.
+    """Sub-configuration with settings applied across `vectorbtpro.knowledge`.
 
 ```python
 ${config_doc}

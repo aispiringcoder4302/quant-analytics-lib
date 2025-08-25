@@ -107,8 +107,8 @@ def search(
     Returns:
         str: Context string containing the search results.
     """
-    from vectorbtpro.utils.knowledge.custom_assets import search
-    from vectorbtpro.utils.knowledge.chatting import tokenize, detokenize
+    from vectorbtpro.knowledge.custom_assets import search
+    from vectorbtpro.knowledge.tokenization import tokenize, detokenize
     from vectorbtpro.utils.pbar import ProgressHidden
 
     with ProgressHidden():
@@ -251,8 +251,8 @@ def find(
     Returns:
         str: Context string containing the search results.
     """
-    from vectorbtpro.utils.knowledge.custom_assets import find_assets
-    from vectorbtpro.utils.knowledge.chatting import tokenize, detokenize
+    from vectorbtpro.knowledge.custom_assets import find_assets
+    from vectorbtpro.knowledge.tokenization import tokenize, detokenize
     from vectorbtpro.utils.pbar import ProgressHidden
 
     with ProgressHidden():

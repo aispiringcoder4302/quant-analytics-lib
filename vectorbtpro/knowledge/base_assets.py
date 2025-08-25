@@ -10,7 +10,7 @@
 
 """Module providing base classes for managing knowledge assets.
 
-See `vectorbtpro.utils.knowledge` for the toy dataset.
+See `vectorbtpro.knowledge` for the toy dataset.
 """
 
 import hashlib
@@ -24,12 +24,12 @@ import textwrap
 import pandas as pd
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.knowledge.doc_ranking import RankContextable
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.execution import Task, execute, NoResult
-from vectorbtpro.utils.knowledge.chatting import RankContextable
 from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import dir_tree_from_paths, remove_dir, check_mkdir
@@ -719,7 +719,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             Optional[KnowledgeAsset]: New asset with empty items removed,
                 or None if modified in place.
         """
-        from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
+        from vectorbtpro.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
         new_data = [d for d in self.data if not FindRemoveAssetFunc.is_empty_func(None, d)]
         if inplace:
@@ -953,7 +953,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         * Callable or a tuple containing a callable and its arguments.
         * Instance of `vectorbtpro.utils.execution.Task`.
-        * Subclass of `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc` or its prefix/full name.
+        * Subclass of `vectorbtpro.knowledge.base_asset_funcs.AssetFunc` or its prefix/full name.
         * List of any of the above, which will use `BasicAssetPipeline`.
         * Valid expression, which will use `ComplexAssetPipeline`.
 
@@ -982,7 +982,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             [5, 5, 5, 5, 6]
             ```
         """
-        from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline, BasicAssetPipeline, ComplexAssetPipeline
+        from vectorbtpro.knowledge.asset_pipelines import AssetPipeline, BasicAssetPipeline, ComplexAssetPipeline
 
         execute_kwargs = self.resolve_setting(execute_kwargs, "execute_kwargs", merge=True)
         asset_func_meta = {}
@@ -1091,7 +1091,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Return specific data items or subsets of them.
 
         This method retrieves complete data items or extracts portions specified by a nested path.
-        It applies `vectorbtpro.utils.knowledge.base_asset_funcs.GetAssetFunc` via `KnowledgeAsset.apply`.
+        It applies `vectorbtpro.knowledge.base_asset_funcs.GetAssetFunc` via `KnowledgeAsset.apply`.
 
         Args:
             path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to get (e.g. "x.y[0].z").
@@ -1184,7 +1184,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     ) -> tp.MaybeKnowledgeAsset:
         """Set specific data items or their parts.
 
-        This method modifies data items by applying `vectorbtpro.utils.knowledge.base_asset_funcs.SetAssetFunc`
+        This method modifies data items by applying `vectorbtpro.knowledge.base_asset_funcs.SetAssetFunc`
         via `KnowledgeAsset.apply`.
 
         Args:
@@ -1245,7 +1245,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Remove data items or parts of them from the asset.
 
         Leverages `KnowledgeAsset.apply` with
-        `vectorbtpro.utils.knowledge.base_asset_funcs.RemoveAssetFunc` to remove either an entire data item
+        `vectorbtpro.knowledge.base_asset_funcs.RemoveAssetFunc` to remove either an entire data item
         (when a numeric path is provided) or a specific element within a data item based on a hierarchical path
         (e.g., "x.y[0].z").
 
@@ -1299,7 +1299,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Move data items or parts of them within the asset.
 
         Uses `KnowledgeAsset.apply` with
-        `vectorbtpro.utils.knowledge.base_asset_funcs.MoveAssetFunc` to reposition elements within
+        `vectorbtpro.knowledge.base_asset_funcs.MoveAssetFunc` to reposition elements within
         data items. Specify the element to move using `path`. When `new_path` is provided, it designates
         the new token for the element; otherwise, `path` must be given as a dictionary mapping original
         paths to new tokens.
@@ -1359,7 +1359,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Rename data items or parts of them within the asset.
 
         Leverages `KnowledgeAsset.apply` with
-        `vectorbtpro.utils.knowledge.base_asset_funcs.RenameAssetFunc` to change the names of elements within
+        `vectorbtpro.knowledge.base_asset_funcs.RenameAssetFunc` to change the names of elements within
         data items. This function is similar to `move` but uses `new_token` to specify the new name.
 
         Args:
@@ -1412,7 +1412,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     ) -> tp.MaybeKnowledgeAsset:
         """Reorder data items or parts within each item.
 
-        Uses `KnowledgeAsset.apply` with `vectorbtpro.utils.knowledge.base_asset_funcs.ReorderAssetFunc`
+        Uses `KnowledgeAsset.apply` with `vectorbtpro.knowledge.base_asset_funcs.ReorderAssetFunc`
         to reorder data. For dictionaries, keys are reordered using `vectorbtpro.utils.config.reorder_dict`;
         for sequences, ordering follows `vectorbtpro.utils.config.reorder_list`.
 
@@ -1480,7 +1480,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         * "jsonpath.ext", "jsonpath-ng.ext", "jsonpath_ng.ext": Evaluates expressions with the extended
             `jsonpath_ng` package.
         * None or "template": Evaluates each data item as a template using `KnowledgeAsset.apply` with
-            `vectorbtpro.utils.knowledge.base_asset_funcs.QueryAssetFunc`. In the template, use `i`
+            `vectorbtpro.knowledge.base_asset_funcs.QueryAssetFunc`. In the template, use `i`
             for the item index, `d` for the data item, `x` for the value at a specified path, and
             field names for individual fields.
         * "pandas": Evaluates the expression treating data items as rows with their fields as columns.
@@ -1642,7 +1642,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     ) -> tp.MaybeKnowledgeAsset:
         """Return a new `KnowledgeAsset` instance with found occurrences based on the target.
 
-        Uses `KnowledgeAsset.apply` on `vectorbtpro.utils.knowledge.base_asset_funcs.FindAssetFunc`.
+        Uses `KnowledgeAsset.apply` on `vectorbtpro.knowledge.base_asset_funcs.FindAssetFunc`.
 
         Searches each data item with `vectorbtpro.utils.search_.contains_in_obj` when `return_type`
         is "item", "field", or "bool", and uses `vectorbtpro.utils.search_.find_in_obj` and
@@ -1913,7 +1913,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Return a new `KnowledgeAsset` with occurrences replaced according to the specified criteria.
 
         This method applies a find-and-replace operation on the asset data using
-        `vectorbtpro.utils.knowledge.base_asset_funcs.FindReplaceAssetFunc` via `KnowledgeAsset.apply`.
+        `vectorbtpro.knowledge.base_asset_funcs.FindReplaceAssetFunc` via `KnowledgeAsset.apply`.
         It uses `vectorbtpro.utils.search_.find_in_obj` to locate occurrences and
         `vectorbtpro.utils.search_.replace_in_obj` to perform the replacements.
 
@@ -2016,7 +2016,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Remove occurrences of a target from the asset data and return a new `KnowledgeAsset` instance.
 
         This method applies a removal operation on nested data items using `KnowledgeAsset.apply` with
-        `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
+        `vectorbtpro.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
 
         Args:
             target (Union[dict, MaybeList[Any]]): Value or mapping used to identify occurrences for removal.
@@ -2056,7 +2056,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Remove empty objects from the asset data.
 
         This method uses a predefined emptiness check via
-        `vectorbtpro.utils.knowledge.base_asset_funcs.FindRemoveAssetFunc.is_empty_func` to remove empty objects.
+        `vectorbtpro.knowledge.base_asset_funcs.FindRemoveAssetFunc.is_empty_func` to remove empty objects.
 
         Args:
             **kwargs: Keyword arguments for `KnowledgeAsset.find_remove`.
@@ -2064,7 +2064,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Returns:
             MaybeKnowledgeAsset: New asset with empty objects removed.
         """
-        from vectorbtpro.utils.knowledge.base_asset_funcs import FindRemoveAssetFunc
+        from vectorbtpro.knowledge.base_asset_funcs import FindRemoveAssetFunc
 
         return self.find_remove(partial(FindRemoveAssetFunc.is_empty_func, skip_keys=skip_keys), **kwargs)
 
@@ -2079,7 +2079,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Flatten nested elements in the asset data into a flat structure.
 
         This method applies a flattening operation using `KnowledgeAsset.apply` with
-        `vectorbtpro.utils.knowledge.base_asset_funcs.FlattenAssetFunc`. Specify the nested
+        `vectorbtpro.knowledge.base_asset_funcs.FlattenAssetFunc`. Specify the nested
         portion to flatten using the `path` argument. Multiple paths can be provided.
         If `skip_missing` is True and a specified path is missing, the data item will be skipped.
 
@@ -2130,7 +2130,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Reconstruct nested structures from flattened asset data.
 
         This method applies an unflattening operation using `KnowledgeAsset.apply` with
-        `vectorbtpro.utils.knowledge.base_asset_funcs.UnflattenAssetFunc`. Specify the flattened portion to
+        `vectorbtpro.knowledge.base_asset_funcs.UnflattenAssetFunc`. Specify the flattened portion to
         reconstruct using the `path` argument. Multiple paths can be provided. If `skip_missing`
         is True and a specified path is missing, the data item will be skipped.
 
@@ -2173,7 +2173,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         """Dump asset data items using a specified dump engine.
 
         This method applies `KnowledgeAsset.apply` with
-        `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc` to format asset data.
+        `vectorbtpro.knowledge.base_asset_funcs.DumpAssetFunc` to format asset data.
 
         Supported dump engines:
 
@@ -2226,7 +2226,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     ) -> str:
         """Dump asset data list into a single asset representation.
 
-        This method uses `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc.prepare_and_call`
+        This method uses `vectorbtpro.knowledge.base_asset_funcs.DumpAssetFunc.prepare_and_call`
         on the asset's data with the provided parameters.
 
         Args:
@@ -2235,12 +2235,12 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
                 See `vectorbtpro.utils.formatting.dump`.
             template_context (KwargsLike): Additional context for template substitution.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.base_asset_funcs.DumpAssetFunc.prepare_and_call`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.base_asset_funcs.DumpAssetFunc.prepare_and_call`.
 
         Returns:
             str: Dumped asset data as a string.
         """
-        from vectorbtpro.utils.knowledge.base_asset_funcs import DumpAssetFunc
+        from vectorbtpro.knowledge.base_asset_funcs import DumpAssetFunc
 
         return DumpAssetFunc.prepare_and_call(
             self.data,
@@ -2256,7 +2256,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.MaybeKnowledgeAsset:
-        """Convert asset data items to text documents of type `vectorbtpro.utils.knowledge.chatting.TextDocument`.
+        """Convert asset data items to text documents of type `vectorbtpro.knowledge.doc_storing.TextDocument`.
 
         Templates provided via keyword arguments can reference:
 
@@ -2268,7 +2268,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Args:
             document_cls (Optional[Type[StoreDocument]]): Document class to use for creating documents.
 
-                Defaults to `vectorbtpro.utils.knowledge.chatting.TextDocument`.
+                Defaults to `vectorbtpro.knowledge.doc_storing.TextDocument`.
             template_context (KwargsLike): Additional context for template substitution.
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
@@ -2291,15 +2291,15 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     ) -> tp.MaybeKnowledgeAsset:
         """Split text content from the asset.
 
-        This method applies `vectorbtpro.utils.knowledge.base_asset_funcs.SplitTextAssetFunc`
+        This method applies `vectorbtpro.knowledge.base_asset_funcs.SplitTextAssetFunc`
         via `KnowledgeAsset.apply` to split text content using
-        `vectorbtpro.utils.knowledge.chatting.split_text`.
+        `vectorbtpro.knowledge.text_splitting.split_text`.
 
         Args:
             text_path (Optional[PathLikeKey]): Path specifying the location of the text content.
             document_cls (Optional[Type[StoreDocument]]): Document class to use for creating documents.
 
-                Defaults to `vectorbtpro.utils.knowledge.chatting.TextDocument`.
+                Defaults to `vectorbtpro.knowledge.doc_storing.TextDocument`.
             merge_chunks (Optional[bool]): If True, merge all text chunks into a single list.
             **kwargs: Keyword arguments for `KnowledgeAsset.apply`.
 
@@ -2386,7 +2386,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         The reduction function `func` can be a callable, a tuple pairing a function with its arguments,
         a `vectorbtpro.utils.execution.Task` instance, a subclass (or its prefix/full name) of
-        `vectorbtpro.utils.knowledge.base_asset_funcs.AssetFunc`, or an expression/template.
+        `vectorbtpro.knowledge.base_asset_funcs.AssetFunc`, or an expression/template.
         In templates, use "i" for the data item index and "d1"/"d2" (or "x1"/"x2") for operands.
 
         If an initializer is provided, the reduction starts with `d1` as the initializer and
@@ -2445,7 +2445,7 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         if isinstance(func, str) and not func.isidentifier():
             func = RepEval(func)
         elif not isinstance(func, CustomTemplate):
-            from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline
+            from vectorbtpro.knowledge.asset_pipelines import AssetPipeline
 
             func, args, kwargs = AssetPipeline.resolve_task(
                 func,
@@ -2827,20 +2827,22 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     ) -> tp.Optional[tp.MaybeKnowledgeAsset]:
         """Embed documents in the asset.
 
-        Converts the asset's data to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
+        Converts the asset's data to `vectorbtpro.knowledge.doc_storing.TextDocument` format using
         `KnowledgeAsset.to_documents` if needed, then embeds them with
-        `vectorbtpro.utils.knowledge.chatting.embed_documents` using provided keyword arguments.
+        `vectorbtpro.knowledge.embeddings.embed_documents` using provided keyword arguments.
         Optionally unwraps the embedded documents if `wrap_documents` is False.
 
         Args:
             to_documents_kwargs (KwargsLike): Keyword arguments for `KnowledgeAsset.to_documents`.
             wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.embed_documents`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.embeddings.embed_documents`.
 
         Returns:
             Optional[MaybeKnowledgeAsset]: New asset with embedded documents, or None if embedding fails.
         """
-        from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, embed_documents
+        from vectorbtpro.knowledge.doc_storing import StoreDocument
+        from vectorbtpro.knowledge.doc_ranking import EmbeddedDocument
+        from vectorbtpro.knowledge.embeddings import embed_documents
 
         if self.data and not isinstance(self.data[0], StoreDocument):
             if to_documents_kwargs is None:
@@ -2884,9 +2886,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     ) -> tp.MaybeKnowledgeAsset:
         """Rank documents by their similarity to a query.
 
-        Converts the asset's data to `vectorbtpro.utils.knowledge.chatting.TextDocument` format using
+        Converts the asset's data to `vectorbtpro.knowledge.doc_storing.TextDocument` format using
         `KnowledgeAsset.to_documents` if necessary, then ranks the documents with
-        `vectorbtpro.utils.knowledge.chatting.rank_documents` using provided keyword arguments.
+        `vectorbtpro.knowledge.doc_ranking.rank_documents` using provided keyword arguments.
         If caching is enabled with `cache_documents` and `cache_key`, the generated text documents are
         stored or loaded via an asset cache manager.
 
@@ -2902,12 +2904,13 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
             asset_cache_manager (Optional[MaybeType[AssetCacheManager]]): Class or instance of `AssetCacheManager`.
             asset_cache_manager_kwargs (KwargsLike): Keyword arguments to initialize or update `asset_cache_manager`.
             silence_warnings (bool): Flag to suppress warning messages.
-            **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.rank_documents`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.doc_ranking.rank_documents`.
 
         Returns:
             MaybeKnowledgeAsset: New asset with documents ranked based on similarity to the query.
         """
-        from vectorbtpro.utils.knowledge.chatting import StoreDocument, ScoredDocument, rank_documents
+        from vectorbtpro.knowledge.doc_storing import StoreDocument
+        from vectorbtpro.knowledge.doc_ranking import ScoredDocument, rank_documents
 
         if cache_documents:
             if asset_cache_manager is None:
@@ -2983,7 +2986,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         Returns:
             str: Resulting context string.
         """
-        from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, ScoredDocument
+        from vectorbtpro.knowledge.doc_storing import StoreDocument
+        from vectorbtpro.knowledge.doc_ranking import EmbeddedDocument, ScoredDocument
 
         if dump_all is None:
             dump_all = (

@@ -8,10 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing base asset function classes.
-
-See `vectorbtpro.utils.knowledge` for the toy dataset.
-"""
+"""Module providing base asset function classes."""
 
 import attr
 
@@ -41,7 +38,7 @@ class AssetFunc(Base):
     """Identifier for the asset function's short name used in expressions."""
 
     _wrap: tp.ClassVar[tp.Optional[bool]] = None
-    """Indicates whether the result should be wrapped with `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`."""
+    """Indicates whether the result should be wrapped with `vectorbtpro.knowledge.base_assets.KnowledgeAsset`."""
 
     @classmethod
     def prepare(cls, *args, **kwargs) -> tp.ArgsKwargs:
@@ -91,7 +88,7 @@ class AssetFunc(Base):
 
 class GetAssetFunc(AssetFunc):
     """Asset function class for retrieving asset data with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.get`.
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.get`.
 
     Extracts data based on a specified path and optionally transforms it using a provided template.
     """
@@ -123,14 +120,14 @@ class GetAssetFunc(AssetFunc):
             template_context (KwargsLike): Additional context for template substitution.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Additional keyword arguments.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         keep_path = asset_cls.resolve_setting(keep_path, "keep_path")
@@ -214,7 +211,7 @@ class GetAssetFunc(AssetFunc):
 
 class SetAssetFunc(AssetFunc):
     """Asset function class for setting asset data with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.set`.
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.set`.
 
     Updates the asset data at specified paths with a given value, optionally applying transformations.
     """
@@ -248,14 +245,14 @@ class SetAssetFunc(AssetFunc):
             template_context (KwargsLike): Additional context for template substitution.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Additional keyword arguments.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
@@ -328,7 +325,7 @@ class SetAssetFunc(AssetFunc):
 
 class RemoveAssetFunc(AssetFunc):
     """Asset function class for removing an asset field from a knowledge asset with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.remove`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.remove`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "remove"
 
@@ -355,14 +352,14 @@ class RemoveAssetFunc(AssetFunc):
             changed_only (Optional[bool]): If True, returns only data items that were modified.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Additional keyword arguments.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
@@ -407,7 +404,7 @@ class RemoveAssetFunc(AssetFunc):
 
 class MoveAssetFunc(AssetFunc):
     """Asset function class for moving an asset field within a knowledge asset with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.move`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.move`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "move"
 
@@ -438,14 +435,14 @@ class MoveAssetFunc(AssetFunc):
             changed_only (Optional[bool]): If True, returns only data items that were modified.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Additional keyword arguments.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
@@ -504,7 +501,7 @@ class MoveAssetFunc(AssetFunc):
 
 class RenameAssetFunc(MoveAssetFunc):
     """Asset function class for renaming an asset field in a knowledge asset with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.rename`.
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.rename`.
 
     Converts the rename operation into a move operation with token replacement.
     """
@@ -536,14 +533,14 @@ class RenameAssetFunc(MoveAssetFunc):
             changed_only (Optional[bool]): If True, returns only data items that were modified.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Additional keyword arguments.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
@@ -583,7 +580,7 @@ class RenameAssetFunc(MoveAssetFunc):
 
 class ReorderAssetFunc(AssetFunc):
     """Asset function class for reordering asset data with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.reorder`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.reorder`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "reorder"
 
@@ -618,14 +615,14 @@ class ReorderAssetFunc(AssetFunc):
             template_context (KwargsLike): Additional context for template substitution.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Additional keyword arguments.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
@@ -730,7 +727,7 @@ class ReorderAssetFunc(AssetFunc):
 
 class QueryAssetFunc(AssetFunc):
     """Asset function class for querying asset data with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.query`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.query`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "query"
 
@@ -754,14 +751,14 @@ class QueryAssetFunc(AssetFunc):
                 returns a boolean indicating a match.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Additional keyword arguments.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
@@ -821,7 +818,7 @@ class QueryAssetFunc(AssetFunc):
 
 class FindAssetFunc(AssetFunc):
     """Asset function class for searching in asset data with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.find`.
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.find`.
 
     Implements logic to locate assets using configurable search parameters.
     """
@@ -870,7 +867,7 @@ class FindAssetFunc(AssetFunc):
             return_path (Optional[bool]): Specifies whether to include the path in the returned result.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search_.find_in_obj`
                 and `vectorbtpro.utils.search_.find`.
 
@@ -878,7 +875,7 @@ class FindAssetFunc(AssetFunc):
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         per_path = asset_cls.resolve_setting(per_path, "per_path")
@@ -1265,7 +1262,7 @@ class FindAssetFunc(AssetFunc):
 
 class FindReplaceAssetFunc(FindAssetFunc):
     """Asset function class for performing asset-level find and replace operations with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.find_replace`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.find_replace`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "find_replace"
 
@@ -1299,7 +1296,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
             changed_only (Optional[bool]): If True, returns only data items that were modified.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search_.find_in_obj`
                 and `vectorbtpro.utils.search_.replace`.
 
@@ -1307,7 +1304,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         per_path = asset_cls.resolve_setting(per_path, "per_path")
@@ -1510,7 +1507,7 @@ class FindReplaceAssetFunc(FindAssetFunc):
 
 class FindRemoveAssetFunc(FindAssetFunc):
     """Asset function class for executing removal with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.find_remove`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.find_remove`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "find_remove"
 
@@ -1542,7 +1539,7 @@ class FindRemoveAssetFunc(FindAssetFunc):
             changed_only (Optional[bool]): If True, returns only data items that were modified.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Keyword arguments distributed between `vectorbtpro.utils.search_.find_in_obj`
                 and `vectorbtpro.utils.search_.find`.
 
@@ -1550,7 +1547,7 @@ class FindRemoveAssetFunc(FindAssetFunc):
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         per_path = asset_cls.resolve_setting(per_path, "per_path")
@@ -1672,7 +1669,7 @@ class FindRemoveAssetFunc(FindAssetFunc):
 
 class FlattenAssetFunc(AssetFunc):
     """Asset function class for performing flattening with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.flatten`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.flatten`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "flatten"
 
@@ -1697,14 +1694,14 @@ class FlattenAssetFunc(AssetFunc):
             changed_only (Optional[bool]): If True, returns only data items that were modified.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.flatten_obj`.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
@@ -1759,7 +1756,7 @@ class FlattenAssetFunc(AssetFunc):
 
 class UnflattenAssetFunc(AssetFunc):
     """Asset function class for applying the unflatten transformation with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.unflatten`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.unflatten`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "unflatten"
 
@@ -1784,14 +1781,14 @@ class UnflattenAssetFunc(AssetFunc):
             changed_only (Optional[bool]): If True, returns only data items that were modified.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Keyword arguments for `vectorbtpro.utils.search_.unflatten_obj`.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         skip_missing = asset_cls.resolve_setting(skip_missing, "skip_missing")
@@ -1844,7 +1841,7 @@ class UnflattenAssetFunc(AssetFunc):
 
 class DumpAssetFunc(AssetFunc):
     """Asset function class for performing the dump operation with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.dump`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.dump`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "dump"
 
@@ -1866,14 +1863,14 @@ class DumpAssetFunc(AssetFunc):
                 See `vectorbtpro.utils.formatting.dump`.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Additional keyword arguments to merge with the resolved settings.
 
         Returns:
             Kwargs: Dictionary containing the resolved dumping-related keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         dump_engine = asset_cls.resolve_setting(dump_engine, "dump_engine")
@@ -1899,14 +1896,14 @@ class DumpAssetFunc(AssetFunc):
             template_context (KwargsLike): Additional context for template substitution.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Keyword arguments for `vectorbtpro.utils.formatting.dump`.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
@@ -1941,7 +1938,8 @@ class DumpAssetFunc(AssetFunc):
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> tp.Any:
-        from vectorbtpro.utils.knowledge.chatting import StoreDocument, EmbeddedDocument, ScoredDocument
+        from vectorbtpro.knowledge.doc_storing import StoreDocument
+        from vectorbtpro.knowledge.doc_ranking import EmbeddedDocument, ScoredDocument
 
         if source is not None:
             _template_context = flat_merge_dicts(
@@ -1966,7 +1964,7 @@ class DumpAssetFunc(AssetFunc):
 
 class ToDocsAssetFunc(AssetFunc):
     """Asset function class for converting asset data into document objects with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.to_documents`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.to_documents`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "to_docs"
 
@@ -1985,24 +1983,24 @@ class ToDocsAssetFunc(AssetFunc):
         Args:
             document_cls (Optional[Type[StoreDocument]]): Document class to use for creating documents.
 
-                Defaults to `vectorbtpro.utils.knowledge.chatting.TextDocument`.
+                Defaults to `vectorbtpro.knowledge.doc_storing.TextDocument`.
             template_context (Union[KwargsLike, CustomTemplate]): Additional context for template substitution.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
-            **document_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.StoreData.from_data`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
+            **document_kwargs: Keyword arguments for `vectorbtpro.knowledge.doc_storing.StoreData.from_data`.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
 
         document_cls = asset_cls.resolve_setting(document_cls, "document_cls")
         if document_cls is None:
-            from vectorbtpro.utils.knowledge.chatting import TextDocument
+            from vectorbtpro.knowledge.doc_storing import TextDocument
 
             document_cls = TextDocument
         template_context = asset_cls.resolve_setting(template_context, "template_context", merge=True)
@@ -2039,7 +2037,7 @@ class ToDocsAssetFunc(AssetFunc):
         **document_kwargs,
     ) -> tp.Any:
         if document_cls is None:
-            from vectorbtpro.utils.knowledge.chatting import TextDocument
+            from vectorbtpro.knowledge.doc_storing import TextDocument
 
             document_cls = TextDocument
 
@@ -2057,7 +2055,7 @@ class ToDocsAssetFunc(AssetFunc):
 
 class SplitTextAssetFunc(AssetFunc):
     """Asset function class for splitting text with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.split_text`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.split_text`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "split_text"
 
@@ -2077,20 +2075,20 @@ class SplitTextAssetFunc(AssetFunc):
             text_path (Optional[PathLikeKey]): Path specifying the location of the text content.
             document_cls (Optional[Type[StoreDocument]]): Document class to use for creating documents.
 
-                Defaults to `vectorbtpro.utils.knowledge.chatting.TextDocument`.
+                Defaults to `vectorbtpro.knowledge.doc_storing.TextDocument`.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
-            **split_text_kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.split_text`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
+            **split_text_kwargs: Keyword arguments for `vectorbtpro.knowledge.text_splitting.split_text`.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
-        from vectorbtpro.utils.knowledge.chatting import resolve_text_splitter
+        from vectorbtpro.knowledge.text_splitting import resolve_text_splitter
 
         text_path = asset_cls.resolve_setting(text_path, "text_path", sub_path="document_kwargs")
         split_text_kwargs = asset_cls.resolve_setting(
@@ -2120,7 +2118,7 @@ class SplitTextAssetFunc(AssetFunc):
         **split_text_kwargs,
     ) -> tp.Any:
         if document_cls is None:
-            from vectorbtpro.utils.knowledge.chatting import TextDocument
+            from vectorbtpro.knowledge.doc_storing import TextDocument
 
             document_cls = TextDocument
 
@@ -2133,7 +2131,7 @@ class SplitTextAssetFunc(AssetFunc):
 
 class ReduceAssetFunc(AssetFunc):
     """Abstract class defining an asset function for reducing data with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.reduce`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.reduce`."""
 
     _wrap: tp.ClassVar[tp.Optional[bool]] = False
 
@@ -2167,7 +2165,7 @@ class ReduceAssetFunc(AssetFunc):
 
 class CollectAssetFunc(ReduceAssetFunc):
     """Asset function class for collecting data with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.collect`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.collect`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "collect"
 
@@ -2186,14 +2184,14 @@ class CollectAssetFunc(ReduceAssetFunc):
             sort_keys (Optional[bool]): Whether to sort the keys.
             asset_cls (Optional[Type[KnowledgeAsset]]): Asset class to use for resolving settings.
 
-                Defaults to `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset`.
+                Defaults to `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
             **kwargs: Additional keyword arguments.
 
         Returns:
             ArgsKwargs: Tuple containing the positional arguments and keyword arguments.
         """
         if asset_cls is None:
-            from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
+            from vectorbtpro.knowledge.base_assets import KnowledgeAsset
 
             asset_cls = KnowledgeAsset
         sort_keys = asset_cls.resolve_setting(sort_keys, "sort_keys")
@@ -2237,7 +2235,7 @@ class CollectAssetFunc(ReduceAssetFunc):
 
 class MergeDictsAssetFunc(ReduceAssetFunc):
     """Asset function class for merging dictionaries with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.merge_dicts`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.merge_dicts`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "merge_dicts"
 
@@ -2254,7 +2252,7 @@ class MergeDictsAssetFunc(ReduceAssetFunc):
 
 class MergeListsAssetFunc(ReduceAssetFunc):
     """Asset function class for merging lists with
-    `vectorbtpro.utils.knowledge.base_assets.KnowledgeAsset.merge_lists`."""
+    `vectorbtpro.knowledge.base_assets.KnowledgeAsset.merge_lists`."""
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "merge_lists"
 

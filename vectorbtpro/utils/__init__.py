@@ -34,7 +34,6 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.hashing import *
     from vectorbtpro.utils.image_ import *
     from vectorbtpro.utils.jitting import *
-    from vectorbtpro.utils.knowledge import *
     from vectorbtpro.utils.magic_decorators import *
     from vectorbtpro.utils.mapping import *
     from vectorbtpro.utils.math_ import *

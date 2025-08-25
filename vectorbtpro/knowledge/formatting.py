@@ -8,10 +8,7 @@
 # or its parts is strictly prohibited.
 # ===================================================================================
 
-"""Module providing content formatting classes.
-
-See `vectorbtpro.utils.knowledge` for the toy dataset.
-"""
+"""Module providing content formatting classes."""
 
 import io
 import re
