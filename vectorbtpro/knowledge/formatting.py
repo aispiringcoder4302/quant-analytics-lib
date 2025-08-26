@@ -190,8 +190,8 @@ class ToMarkdown(Configured):
         if self.think_to_blockquote:
             open_tag = re.escape(self.think_open_tag)
             close_tag = re.escape(self.think_close_tag)
-            complete_pattern = re.compile(rf"{open_tag}(.*?){close_tag}", re.DOTALL)
-            open_pattern = re.compile(rf"{open_tag}(.*?)$", re.DOTALL)
+            complete_pattern = re.compile(rf"(?<!`)({open_tag})(.*?){close_tag}(?!`)", re.DOTALL)
+            open_pattern = re.compile(rf"(?<!`)({open_tag})(.*?)$", re.DOTALL)
 
             def _repl(m):
                 inner = m.group(1).strip("\n")
