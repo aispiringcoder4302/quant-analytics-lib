@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from vectorbtpro.data.custom.finpy import *
     from vectorbtpro.data.custom.gbm import *
     from vectorbtpro.data.custom.gbm_ohlc import *
+    from vectorbtpro.data.custom.gbm_tick import *
     from vectorbtpro.data.custom.hdf import *
     from vectorbtpro.data.custom.local import *
     from vectorbtpro.data.custom.ndl import *
@@ -34,6 +35,7 @@ if TYPE_CHECKING:
     from vectorbtpro.data.custom.polygon import *
     from vectorbtpro.data.custom.random import *
     from vectorbtpro.data.custom.random_ohlc import *
+    from vectorbtpro.data.custom.random_tick import *
     from vectorbtpro.data.custom.remote import *
     from vectorbtpro.data.custom.sql import *
     from vectorbtpro.data.custom.synthetic import *

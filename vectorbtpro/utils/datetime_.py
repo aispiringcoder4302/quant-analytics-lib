@@ -1589,8 +1589,6 @@ def to_ns(obj: tp.ArrayLike, tz_naive_ns: tp.Optional[bool] = None) -> tp.ArrayL
         obj = np.datetime64(obj)
     if isinstance(obj, timedelta):
         obj = np.timedelta64(obj)
-    if isinstance(obj, pd.DatetimeIndex):
-        obj = obj.tz_localize(None).tz_localize("utc")
     if isinstance(obj, pd.PeriodIndex):
         obj = obj.to_timestamp()
     if isinstance(obj, pd.DatetimeIndex):

@@ -4051,6 +4051,33 @@ class TestCustom:
             ),
         )
 
+    def test_random_tick_data(self):
+        assert_series_equal(
+            vbt.RandomTickData.pull(start="2021-01-01 UTC", end="2021-01-06 UTC", seed=42).get(),
+            pd.Series(
+                [
+                    100.49671415301123,
+                    100.35776307348756,
+                    101.00776880200878,
+                    102.54614727815496,
+                    102.3060320136544,
+                    102.06649578352217,
+                ],
+                index=pd.DatetimeIndex(
+                    [
+                        pd.Timestamp("2021-01-01 00:00:00+00:00"),
+                        pd.Timestamp("2021-01-02 14:19:57.742986442+00:00"),
+                        pd.Timestamp("2021-01-03 17:50:31.494276822+00:00"),
+                        pd.Timestamp("2021-01-04 10:26:14.506488086+00:00"),
+                        pd.Timestamp("2021-01-05 03:30:57.150700858+00:00"),
+                        pd.Timestamp("2021-01-05 22:32:14.427953540+00:00"),
+                    ],
+                    dtype="datetime64[ns, UTC]",
+                    freq=None,
+                ),
+            ),
+        )
+
     def test_gbm_data(self):
         assert_series_equal(
             vbt.GBMData.pull(start="2021-01-01 UTC", end="2021-01-06 UTC", seed=42).get(),
@@ -4148,6 +4175,33 @@ class TestCustom:
                     freq="1D",
                 ),
                 columns=pd.Index(["Open", "High", "Low", "Close"], dtype="object"),
+            ),
+        )
+
+    def test_gbm_tick_data(self):
+        assert_series_equal(
+            vbt.GBMTickData.pull(start="2021-01-01 UTC", end="2021-01-06 UTC", seed=42).get(),
+            pd.Series(
+                [
+                    100.49292505095792, 
+                    100.34905764408163, 
+                    100.99606643427086, 
+                    102.54091282498935, 
+                    102.29597577584751, 
+                    102.05164055663859,
+                ],
+                index=pd.DatetimeIndex(
+                    [
+                        pd.Timestamp("2021-01-01 00:00:00+00:00"),
+                        pd.Timestamp("2021-01-02 14:19:57.742986442+00:00"),
+                        pd.Timestamp("2021-01-03 17:50:31.494276822+00:00"),
+                        pd.Timestamp("2021-01-04 10:26:14.506488086+00:00"),
+                        pd.Timestamp("2021-01-05 03:30:57.150700858+00:00"),
+                        pd.Timestamp("2021-01-05 22:32:14.427953540+00:00"),
+                    ],
+                    dtype="datetime64[ns, UTC]",
+                    freq=None,
+                ),
             ),
         )
 

@@ -878,6 +878,11 @@ data = frozen_cfg(
             symmetric=False,
             seed=None,
         ),
+        random_tick=flex_cfg(
+            randomness=0.5,
+            step=1,
+            pin_ends=False,
+        ),
         gbm=flex_cfg(
             start_value=100.0,
             mean=0.0,
@@ -892,6 +897,11 @@ data = frozen_cfg(
             std=0.001,
             dt=1.0,
             seed=None,
+        ),
+        gbm_tick=flex_cfg(
+            randomness=0.5,
+            step=1,
+            pin_ends=False,
         ),
         # Local
         local=flex_cfg(),
