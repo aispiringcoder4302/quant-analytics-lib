@@ -342,13 +342,17 @@ def talib_plot_func(func_name: str) -> tp.Callable:
     from vectorbtpro.utils.module_ import assert_can_import
 
     assert_can_import("talib")
-    from talib import abstract
+    from talib.abstract import Function
+    try:
+        from talib.abstract import TA_OUTPUT_FLAGS
+    except ImportError:
+        from talib._ta_lib import TA_OUTPUT_FLAGS
     from vectorbtpro._settings import settings
 
     plotting_cfg = settings["plotting"]
 
     func_name = func_name.upper()
-    info = abstract.Function(func_name).info
+    info = Function(func_name).info
     output_names = info["output_names"]
     output_flags = info["output_flags"]
 
@@ -396,10 +400,10 @@ def talib_plot_func(func_name: str) -> tp.Callable:
         for output_name in output_names:
             flags = set(output_flags.get(output_name))
             found_priority = False
-            if abstract.TA_OUTPUT_FLAGS[2048] in flags:
+            if TA_OUTPUT_FLAGS[2048] in flags:
                 priority_outputs = priority_outputs + [output_name]
                 found_priority = True
-            if abstract.TA_OUTPUT_FLAGS[4096] in flags:
+            if TA_OUTPUT_FLAGS[4096] in flags:
                 priority_outputs = [output_name] + priority_outputs
                 found_priority = True
             if not found_priority:
@@ -411,22 +415,22 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             trace_kwargs = {}
             plot_func_name = "lineplot"
 
-            if abstract.TA_OUTPUT_FLAGS[2] in flags:
+            if TA_OUTPUT_FLAGS[2] in flags:
                 # Dotted Line
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = dict()
                 trace_kwargs["line"]["dash"] = "dashdot"
-            if abstract.TA_OUTPUT_FLAGS[4] in flags:
+            if TA_OUTPUT_FLAGS[4] in flags:
                 # Dashed Line
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = dict()
                 trace_kwargs["line"]["dash"] = "dash"
-            if abstract.TA_OUTPUT_FLAGS[8] in flags:
+            if TA_OUTPUT_FLAGS[8] in flags:
                 # Dot
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = dict()
                 trace_kwargs["line"]["dash"] = "dot"
-            if abstract.TA_OUTPUT_FLAGS[16] in flags:
+            if TA_OUTPUT_FLAGS[16] in flags:
                 # Histogram
                 hist = np.asarray(output)
                 hist_diff = generic_nb.diff_1d_nb(hist)
@@ -443,14 +447,14 @@ def talib_plot_func(func_name: str) -> tp.Callable:
                 trace_kwargs["marker"]["line"]["width"] = 0
                 kwargs["bargap"] = 0
                 plot_func_name = "barplot"
-            if abstract.TA_OUTPUT_FLAGS[2048] in flags:
+            if TA_OUTPUT_FLAGS[2048] in flags:
                 # Values represent an upper limit
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = {}
                 trace_kwargs["line"]["color"] = adjust_opacity(plotting_cfg["color_schema"]["gray"], 0.75)
                 trace_kwargs["fill"] = "tonexty"
                 trace_kwargs["fillcolor"] = "rgba(128, 128, 128, 0.2)"
-            if abstract.TA_OUTPUT_FLAGS[4096] in flags:
+            if TA_OUTPUT_FLAGS[4096] in flags:
                 # Values represent a lower limit
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = {}
@@ -513,7 +517,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
     output_trace_arg_lines = []
     for output_name in output_names:
         flags = set(output_flags.get(output_name))
-        if abstract.TA_OUTPUT_FLAGS[16] in flags:
+        if TA_OUTPUT_FLAGS[16] in flags:
             plot_trace_name = "plotly.graph_objects.Bar"
         else:
             plot_trace_name = "plotly.graph_objects.Scatter"
