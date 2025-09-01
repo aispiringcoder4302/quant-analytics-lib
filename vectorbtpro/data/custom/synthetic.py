@@ -11,6 +11,7 @@
 """Module providing the `SyntheticData` class for generating synthetic data."""
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.base.accessors import BaseIDXAccessor
 from vectorbtpro.data.custom.custom import CustomData
 from vectorbtpro.utils import datetime_ as dt
 from vectorbtpro.utils.config import merge_dicts
@@ -38,13 +39,21 @@ class SyntheticData(CustomData):
     _settings_path: tp.SettingsPath = dict(custom="data.custom.synthetic")
 
     @classmethod
-    def generate_key(cls, key: tp.Key, index: tp.Index, key_is_feature: bool = False, **kwargs) -> tp.KeyData:
+    def generate_key(
+        cls,
+        key: tp.Key,
+        index: tp.Index,
+        key_is_feature: bool = False,
+        seed: tp.Optional[int] = None,
+        **kwargs,
+    ) -> tp.KeyData:
         """Abstract method to generate synthetic data for a given key.
 
         Args:
             key (Key): Feature or symbol identifier.
             index (Index): Datetime index over which data will be generated.
             key_is_feature (bool): Flag indicating whether the key represents a feature.
+            seed (Optional[int]): Random seed for deterministic output.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -56,7 +65,13 @@ class SyntheticData(CustomData):
         raise NotImplementedError
 
     @classmethod
-    def generate_feature(cls, feature: tp.Feature, index: tp.Index, **kwargs) -> tp.FeatureData:
+    def generate_feature(
+        cls,
+        feature: tp.Feature,
+        index: tp.Index,
+        seed: tp.Optional[int] = None,
+        **kwargs,
+    ) -> tp.FeatureData:
         """Abstract method to generate synthetic data for a feature.
 
         Calls `SyntheticData.generate_key` with `key_is_feature=True`.
@@ -64,15 +79,22 @@ class SyntheticData(CustomData):
         Args:
             feature (Feature): Feature identifier.
             index (Index): Datetime index over which synthetic data is generated.
+            seed (Optional[int]): Random seed for deterministic output.
             **kwargs: Keyword arguments for `SyntheticData.generate_key`.
 
         Returns:
             FeatureData: Generated data and a metadata dictionary.
         """
-        return cls.generate_key(feature, index, key_is_feature=True, **kwargs)
+        return cls.generate_key(feature, index, key_is_feature=True, seed=seed, **kwargs)
 
     @classmethod
-    def generate_symbol(cls, symbol: tp.Symbol, index: tp.Index, **kwargs) -> tp.SymbolData:
+    def generate_symbol(
+        cls,
+        symbol: tp.Symbol,
+        index: tp.Index,
+        seed: tp.Optional[int] = None,
+        **kwargs,
+    ) -> tp.SymbolData:
         """Abstract method to generate synthetic data for a symbol.
 
         Calls `SyntheticData.generate_key` with `key_is_feature=False`.
@@ -80,12 +102,13 @@ class SyntheticData(CustomData):
         Args:
             symbol (Symbol): Symbol identifier.
             index (Index): Datetime index over which synthetic data is generated.
+            seed (Optional[int]): Random seed for deterministic output.
             **kwargs: Keyword arguments for `SyntheticData.generate_key`.
 
         Returns:
             SymbolData: Generated data and a metadata dictionary.
         """
-        return cls.generate_key(symbol, index, key_is_feature=False, **kwargs)
+        return cls.generate_key(symbol, index, key_is_feature=False, seed=seed, **kwargs)
 
     @classmethod
     def fetch_key(
@@ -99,6 +122,9 @@ class SyntheticData(CustomData):
         tz: tp.TimezoneLike = None,
         normalize: tp.Optional[bool] = None,
         inclusive: tp.Optional[str] = None,
+        randomize: tp.Union[None, bool, float] = None,
+        step: tp.Union[None, int, tp.TimedeltaLike] = None,
+        seed: tp.Optional[int] = None,
         **kwargs,
     ) -> tp.KeyData:
         """Generate synthetic data for a given key (feature or symbol).
@@ -123,6 +149,20 @@ class SyntheticData(CustomData):
                 See `vectorbtpro.utils.datetime_.to_timezone`.
             normalize (Optional[bool]): If True, normalizes the datetime index.
             inclusive (Optional[str]): Inclusivity setting for the datetime range.
+            randomize (Union[None, bool, float]): Whether to randomize the index.
+
+                A float between 0 and 1 controls the amount of randomization
+                (0 means no change, 1 means full randomization).
+            step (Union[None, int, TimedeltaLike]): Step for the randomization (e.g., '5m' for 5 minutes).
+
+                Displacements will be multiples of this step. Should be integer if the index is
+                numeric and timedelta-like if the index is datetime.
+            seed (int): Random seed for deterministic output.
+
+                !!! note
+                    When using a seed, pass a unique seed per feature or symbol via
+                    `vectorbtpro.data.base.feature_dict`, `vectorbtpro.data.base.symbol_dict`,
+                    or generally `vectorbtpro.data.base.key_dict`.
             **kwargs: Keyword arguments for `SyntheticData.generate_feature` or
                 `SyntheticData.generate_symbol`.
 
@@ -135,6 +175,9 @@ class SyntheticData(CustomData):
         tz = cls.resolve_custom_setting(tz, "tz")
         normalize = cls.resolve_custom_setting(normalize, "normalize")
         inclusive = cls.resolve_custom_setting(inclusive, "inclusive")
+        randomize = cls.resolve_custom_setting(randomize, "randomize")
+        step = cls.resolve_custom_setting(step, "step")
+        seed = cls.resolve_custom_setting(seed, "seed")
 
         index = dt.date_range(
             start=start,
@@ -142,15 +185,22 @@ class SyntheticData(CustomData):
             periods=periods,
             freq=timeframe,
             normalize=normalize,
-            inclusive=inclusive,
+            inclusive="both" if randomize else inclusive,
         )
         if tz is None:
             tz = index.tz
         if len(index) == 0:
             raise ValueError("Date range is empty")
+        if randomize:
+            index = BaseIDXAccessor(index).randomize(
+                randomness=float(randomize),
+                step=step,
+                inclusive=inclusive,
+                seed=seed,
+            )
         if key_is_feature:
-            return cls.generate_feature(key, index, **kwargs), dict(tz=tz, freq=timeframe)
-        return cls.generate_symbol(key, index, **kwargs), dict(tz=tz, freq=timeframe)
+            return cls.generate_feature(key, index, seed=seed, **kwargs), dict(tz=tz, freq=timeframe)
+        return cls.generate_symbol(key, index, seed=seed, **kwargs), dict(tz=tz, freq=timeframe)
 
     @classmethod
     def fetch_feature(cls, feature: tp.Feature, **kwargs) -> tp.FeatureData:
