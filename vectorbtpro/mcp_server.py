@@ -21,7 +21,37 @@ import argparse
 
 from vectorbtpro import _typing as tp
 
-__all__ = []
+__all__ = [
+    "register_tool",
+]
+
+
+tool_registry = {}
+"""Registry mapping tool names to functions for execution."""
+
+
+def register_tool(arg: tp.Union[None, str, tp.Callable] = None, /, *, name: tp.Optional[str] = None) -> tp.Callable:
+    """Decorator to register a function in `tool_registry`.
+
+    Args:
+        arg (Union[None, str, Callable]): Tool function or its name.
+        name (Optional[str]): Custom name for the tool (if not using the function name).
+
+    Returns:
+        Callable: Registered tool function.
+    """
+    if isinstance(arg, str) and name is None:
+        name = arg
+        arg = None
+
+    def wrapper(func):
+        tool_name = name or func.__name__
+        tool_registry[tool_name] = func
+        return func
+
+    if callable(arg):
+        return wrapper(arg)
+    return wrapper
 
 
 def auto_cast(value: tp.Any) -> tp.Any:
@@ -36,6 +66,7 @@ def auto_cast(value: tp.Any) -> tp.Any:
     return value
 
 
+@register_tool
 def search(
     query: str,
     asset_names: tp.Union[str, tp.List[str]] = "all",
@@ -166,6 +197,7 @@ def search(
         return context
 
 
+@register_tool
 def find(
     refname: tp.Union[str, tp.List[str]],
     resolve: bool = True,
@@ -318,6 +350,7 @@ def find(
         return context
 
 
+@register_tool
 def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) -> str:
     """Get a list of attributes of an object (similar to `dir()`) with their types and reference names.
 
@@ -363,6 +396,7 @@ def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) 
     return "\n".join(display_lines)
 
 
+@register_tool
 def get_source(refname: tp.Union[str, tp.List[str]]) -> str:
     """Get the source code of any object.
 
@@ -403,6 +437,7 @@ current_kernel = None
 """Currently running Jupyter kernel for executing code snippets."""
 
 
+@register_tool
 def run_code(code: str, restart: bool = False, exec_timeout: tp.Optional[float] = None) -> str:
     """Run a code snippet.
 
@@ -476,11 +511,8 @@ def main() -> None:
     args = parser.parse_args()
 
     mcp = FastMCP("VectorBT PRO")
-    mcp.tool()(search)
-    mcp.tool()(find)
-    mcp.tool()(get_attrs)
-    mcp.tool()(get_source)
-    mcp.tool()(run_code)
+    for name, tool in tool_registry.items():
+        mcp.tool(name=name)(tool)
     mcp.run(transport=args.transport)
 
 

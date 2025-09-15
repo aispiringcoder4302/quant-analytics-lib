@@ -153,7 +153,8 @@ knwl-base = [
     "tiktoken",
     "lmdbm",
     "bm25s",
-    "PyStemmer"
+    "PyStemmer",
+    "docstring_parser",
 ]
 knwl = [
     "vectorbtpro[knwl-base]",

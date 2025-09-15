@@ -1858,6 +1858,7 @@ class HasSettings(Base):
     @classmethod
     def set_settings(
         cls,
+        *args,
         path_id: tp.Optional[tp.Hashable] = None,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         populate_: bool = False,
@@ -1866,6 +1867,7 @@ class HasSettings(Base):
         """Update the settings in `vectorbtpro._settings` associated with this class.
 
         Args:
+            *args: Positional arguments to update the settings.
             path_id (Optional[Hashable]): Identifier for the settings path.
             sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
 
@@ -1880,6 +1882,7 @@ class HasSettings(Base):
         """
         from vectorbtpro._settings import settings
 
+        kwargs = dict(*args, **kwargs)
         if isinstance(cls._settings_path, dict):
             if path_id is None:
                 raise ValueError("Must specify path id")
@@ -1896,6 +1899,7 @@ class HasSettings(Base):
             from vectorbtpro.utils.search_ import combine_pathlike_keys
 
             path = combine_pathlike_keys(path, sub_path)
+
         cls_cfg = get_dict_item(settings, path, populate=populate_)
         for k, v in kwargs.items():
             if populate_:

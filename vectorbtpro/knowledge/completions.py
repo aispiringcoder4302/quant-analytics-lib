@@ -14,12 +14,14 @@ import inspect
 import sys
 import time
 from pathlib import Path
+import json
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
 from vectorbtpro.knowledge.tokenization import Tokenizer, TikTokenizer, resolve_tokenizer
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, Configured
+from vectorbtpro.utils.module_ import get_obj
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
@@ -283,6 +285,17 @@ class Completions(ThoughtProcessor, Configured):
         pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
         template_context (KwargsLike): Additional context for template substitution.
         include_thoughts (Optional[bool]): Whether to keep or remove thought regions.
+        tools (Optional[MaybeList[Union[str, Callable]]]): Tools to be used in the conversation.
+
+            If a string is provided, it must be either the name of a registered tool,
+            "registry" to use all available tools from the registry,
+            "mcp" to use the MCP tools from `vectorbtpro.mcp_server.tool_registry`,
+            or "all" to use both all available tools and the MCP tools.
+
+            If a list is provided, it must be a list of registered tool names or functions.
+            Any unregistered functions will be added to the registry.
+        tool_registry (Optional[Dict[str, Callable]]): Registry mapping tool names to functions for execution.
+        max_tool_rounds (Optional[int]): Maximum tool-calling iterations per request.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
@@ -317,6 +330,9 @@ class Completions(ThoughtProcessor, Configured):
         pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         include_thoughts: tp.Optional[bool] = None,
+        tools: tp.Optional[tp.MaybeList[tp.Union[str, tp.Callable]]] = None,
+        tool_registry: tp.Optional[tp.Dict[str, tp.Callable]] = None,
+        max_tool_rounds: tp.Optional[int] = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
@@ -339,6 +355,9 @@ class Completions(ThoughtProcessor, Configured):
             pbar_kwargs=pbar_kwargs,
             template_context=template_context,
             include_thoughts=include_thoughts,
+            tools=tools,
+            tool_registry=tool_registry,
+            max_tool_rounds=max_tool_rounds,
             **kwargs,
         )
 
@@ -361,6 +380,63 @@ class Completions(ThoughtProcessor, Configured):
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
         include_thoughts = self.resolve_setting(include_thoughts, "include_thoughts")
+        tools = self.resolve_setting(tools, "tools")
+        tool_registry = self.resolve_setting(tool_registry, "tool_registry", merge=True)
+        max_tool_rounds = self.resolve_setting(max_tool_rounds, "max_tool_rounds")
+
+        if tools is None:
+            tools = []
+        elif not isinstance(tools, list):
+            tools = [tools]
+
+        def _merge_mcp_into_registry():
+            nonlocal tool_registry
+            from vectorbtpro.mcp_server import tool_registry as mcp_tool_registry
+
+            if not isinstance(tool_registry, dict):
+                tool_registry = dict(tool_registry)
+            added = []
+            for name, func in mcp_tool_registry.items():
+                if name not in tool_registry:
+                    tool_registry[name] = func
+                    added.append(name)
+            return added
+
+        new_tools = []
+        for t in tools:
+            if isinstance(t, str):
+                k = t.lower()
+                if k == "registry":
+                    new_tools.extend(tool_registry.keys())
+                    continue
+                if k in {"mcp", "all"}:
+                    added = _merge_mcp_into_registry()
+                    if k == "mcp":
+                        new_tools.extend(added)
+                    else:
+                        new_tools.extend(tool_registry.keys())
+                    continue
+                if t in tool_registry:
+                    new_tools.append(t)
+                    continue
+                t = get_obj(t)
+
+            if inspect.isfunction(t) and not isinstance(t, str):
+                name = getattr(t, "__name__", None)
+                if not name:
+                    raise ValueError(f"Tool {t!r} is not registered")
+                if name not in tool_registry:
+                    tool_registry = dict(tool_registry)
+                    tool_registry[name] = t
+                new_tools.append(name)
+            elif isinstance(t, str):
+                if t not in tool_registry:
+                    raise ValueError(f"Tool '{t}' is not found in tool_registry")
+                new_tools.append(t)
+            else:
+                raise TypeError(f"Tool {t!r} must be a string or function")
+
+        tools = list(dict.fromkeys(new_tools))
 
         tokenizer = resolve_tokenizer(tokenizer)
         formatter = resolve_formatter(formatter)
@@ -383,6 +459,9 @@ class Completions(ThoughtProcessor, Configured):
         self._show_progress = show_progress
         self._pbar_kwargs = pbar_kwargs
         self._template_context = template_context
+        self._tools = tools
+        self._tool_registry = tool_registry
+        self._max_tool_rounds = max_tool_rounds
 
         ThoughtProcessor.__init__(self, include_thoughts=include_thoughts)
 
@@ -530,6 +609,35 @@ class Completions(ThoughtProcessor, Configured):
             bool: True if quick mode is enabled, False otherwise.
         """
         return self._quick_mode
+
+    @property
+    def tools(self) -> tp.List[str]:
+        """List of tool names to be used in the conversation.
+
+        Each tool name must correspond to a registered tool in the tool registry.
+
+        Returns:
+            List[str]: List of tool names.
+        """
+        return self._tools
+
+    @property
+    def tool_registry(self) -> tp.Dict[str, tp.Callable]:
+        """Registry mapping tool names to functions for execution.
+
+        Returns:
+            Mapping[str, Callable]: Tool registry if configured.
+        """
+        return self._tool_registry
+
+    @property
+    def max_tool_rounds(self) -> int:
+        """Maximum tool-calling iterations per request.
+
+        Returns:
+            int: Max number of tool-call steps.
+        """
+        return self._max_tool_rounds
 
     @property
     def silence_warnings(self) -> bool:
@@ -711,6 +819,291 @@ class Completions(ThoughtProcessor, Configured):
                 dict(role="user", content=message),
             ]
 
+    @classmethod
+    def function_to_tool_spec(cls, func: tp.Callable) -> tp.Kwargs:
+        """Convert a typed Python callable into a minimal tool specification in JSON Schema format.
+
+        Args:
+            func (Callable): Callable with type-annotated parameters.
+
+        Returns:
+            Kwargs: Tool specification for the function.
+        """
+        import types as _types
+        import typing as _typing
+        from typing import Any, get_type_hints, get_origin, get_args, Annotated, Union, Literal
+        from collections.abc import Sequence as ABCSequence, Mapping as ABCMapping
+        from vectorbtpro.utils.module_ import check_installed
+
+        if not callable(func):
+            raise TypeError("Function must be callable")
+
+        PRIMS = {str: "string", int: "integer", float: "number", bool: "boolean"}
+
+        def _json_defaultable(v) -> bool:
+            try:
+                json.dumps(v)
+                return True
+            except TypeError:
+                return False
+
+        def _schema(tp):
+            if tp is Any:
+                return {}
+
+            if tp in PRIMS:
+                return {"type": PRIMS[tp]}
+
+            if tp is type(None):
+                return {"type": "null"}
+
+            origin = get_origin(tp)
+            args = get_args(tp)
+
+            union_type = getattr(_types, "UnionType", None)
+            if origin in (Union, union_type):
+                return {"anyOf": [_schema(a) for a in args]}
+
+            if origin is Literal:
+                vals = list(args)
+                enum_types = {type(v) for v in vals if v is not None}
+                out = {"enum": vals}
+                if len(enum_types) == 1:
+                    inferred = PRIMS.get(enum_types.pop(), None)
+                    if inferred:
+                        out["type"] = inferred
+                return out
+
+            if origin is Annotated and args:
+                base, *meta = args
+                out = _schema(base)
+                for m in meta:
+                    if isinstance(m, str):
+                        out.setdefault("description", m)
+                    elif isinstance(m, dict):
+                        out.update(m)
+                return out
+
+            if origin in (list, ABCSequence):
+                item_t = args[0] if args else Any
+                return {"type": "array", "items": _schema(item_t) if item_t is not Any else {}}
+
+            if origin is tuple:
+                if len(args) == 2 and args[1] is Ellipsis:
+                    return {"type": "array", "items": _schema(args[0])}
+                if args:
+                    return {"type": "array", "items": {"anyOf": [_schema(a) for a in args]}}
+                return {"type": "array"}
+
+            if origin in (dict, ABCMapping):
+                key_t, val_t = (args + (Any, Any))[:2] if args else (Any, Any)
+                if key_t not in (str, Any):
+                    raise ValueError("Only dicts with string keys are supported")
+                addl = _schema(val_t) if val_t is not Any else {}
+                return {"type": "object", "additionalProperties": addl}
+
+            raise ValueError(f"Unsupported annotation: {tp!r}")
+
+        sig = inspect.signature(func)
+        hints = get_type_hints(func, globalns=getattr(func, "__globals__", None), include_extras=True)
+
+        desc = inspect.getdoc(func) or ""
+        param_docs = {}
+        if check_installed("docstring_parser"):
+            from docstring_parser import parse
+
+            try:
+                docstring = parse(desc)
+                desc = docstring.description
+                param_docs = {param.arg_name: param for param in docstring.params}
+            except Exception:
+                pass
+
+        props = {}
+        required = []
+
+        for name, param in sig.parameters.items():
+            if name in ("self", "cls", "cls_or_self"):
+                continue
+            if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+                raise TypeError(f"{func.__name__} uses *args/**kwargs which cannot be expressed in JSON Schema")
+
+            ann = hints.get(name, Any)
+
+            pdoc = param_docs.get(name, None)
+            if pdoc and ann is Any and pdoc.type_name:
+                eval_globals = {}
+                eval_globals.update(getattr(func, "__globals__", {}) or {})
+                eval_globals.update(vars(_typing))
+                try:
+                    ann = eval(pdoc.type_name, eval_globals, {})
+                except Exception:
+                    pass
+            if pdoc and pdoc.is_optional:
+                ann = Union[ann, type(None)]
+
+            sch = _schema(ann)
+
+            if pdoc and pdoc.description:
+                sch = dict(sch)
+                sch["description"] = pdoc.description
+
+            if param.default is inspect._empty:
+                required.append(name)
+            else:
+                if _json_defaultable(param.default):
+                    sch = dict(sch)
+                    sch["default"] = param.default
+
+            props[name] = sch
+
+        tool_spec = {
+            "type": "function",
+            "name": func.__name__,
+            "description": desc,
+            "parameters": {"type": "object", "properties": props, "required": required},
+        }
+        return tool_spec
+
+    @property
+    def supports_tool_calling(self) -> bool:
+        """Whether this provider supports tool calling.
+
+        Returns:
+            bool: True if tool calling is supported, False otherwise.
+        """
+        return False
+
+    def extract_tool_calls(self, response: tp.Any) -> tp.List[tp.Kwargs]:
+        """Extract tool call descriptors from a response.
+
+        Each descriptor should at least include 'id' (if available), 'name', and 'arguments'.
+        Arguments can be a dict or a JSON string; they will be normalized by `Completions.execute_tool_calls`.
+
+        Args:
+            response (Any): Model response to extract tool calls from.
+
+        Returns:
+            List[Kwargs]: List of extracted tool call descriptors.
+        """
+        return []
+
+    def build_tool_message(self, response: tp.Any) -> tp.Optional[tp.MaybeList[tp.Kwargs]]:
+        """Build the assistant message(s) containing tool calls to append to messages.
+
+        Args:
+            response (Any): Model response to build tool message from.
+
+        Returns:
+            Optional[MaybeList[Kwargs]]: Built tool message(s) or None if not required.
+        """
+        return None
+
+    def build_tool_result_messages(
+        self,
+        tool_calls: tp.List[tp.Kwargs],
+        tool_results: tp.List[tp.Kwargs],
+    ) -> tp.List[tp.Kwargs]:
+        """Build provider-specific tool result messages to append to the next request.
+
+        Args:
+            tool_calls (List[Kwargs]): List of tool call descriptors.
+            tool_results (List[Kwargs]): List of tool result descriptors.
+
+        Returns:
+            List[Kwargs]: List of built tool result messages.
+        """
+        raise NotImplementedError
+
+    def normalize_tool_arguments(self, arguments: tp.Any) -> tp.Kwargs:
+        """Normalize tool arguments to a standard format.
+
+        Args:
+            arguments (Any): Tool arguments to normalize.
+
+        Returns:
+            Kwargs: Normalized tool arguments.
+        """
+        if isinstance(arguments, dict):
+            return arguments
+        try:
+            return self.normalize_tool_arguments(json.loads(arguments))
+        except (json.JSONDecodeError, TypeError):
+            try:
+                from vectorbtpro.utils.eval_ import evaluate
+
+                return self.normalize_tool_arguments(evaluate(arguments))
+            except Exception:
+                return {"raw": arguments}
+
+    def execute_tool_calls(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        """Execute tool calls using the provided registry.
+
+        Accepts a list of dicts with at least 'id', 'name', and 'arguments'.
+        Returns a list of dicts with at least 'id', 'name', and 'output' (stringified).
+
+        Args:
+            tool_calls (List[Kwargs]): List of tool call descriptors.
+
+        Returns:
+            List[Kwargs]: List of tool results.
+        """
+        results = []
+        for call in tool_calls:
+            name = call["name"]
+            call_id = call["id"]
+            if not name:
+                out = "No tool name provided"
+            elif name not in self.tool_registry:
+                out = f"Tool not found: {name!r}"
+            else:
+                func = self.tool_registry[name]
+                try:
+                    arguments = self.normalize_tool_arguments(call["arguments"])
+                    out = func(**arguments)
+                except Exception as e:
+                    out = f"Tool execution error: {e!r}"
+                if not isinstance(out, str):
+                    try:
+                        out = json.dumps(out, ensure_ascii=False)
+                    except Exception:
+                        out = str(out)
+            results.append({"id": call_id, "name": name, "output": out})
+        return results
+
+    def chat_until_done(self, messages: tp.ChatMessages) -> tp.Any:
+        """Call the model repeatedly until completion.
+
+        Args:
+            messages (ChatMessages): List of dictionaries representing the conversation history.
+
+        Returns:
+            Any: Final response from the model.
+        """
+        rounds_left = self.max_tool_rounds
+
+        while True:
+            response = self.get_chat_response(messages)
+            print(response)
+            if not self.supports_tool_calling or not self.tool_registry:
+                return response
+            if rounds_left <= 0:
+                return response
+            tool_calls = self.extract_tool_calls(response)
+            if not tool_calls:
+                return response
+            tool_results = self.execute_tool_calls(tool_calls)
+            tool_message = self.build_tool_message(response)
+            if tool_message is not None:
+                if isinstance(tool_message, list):
+                    messages.extend(tool_message)
+                else:
+                    messages.append(tool_message)
+            result_messages = self.build_tool_result_messages(tool_calls, tool_results)
+            if result_messages:
+                messages.extend(result_messages)
+            rounds_left -= 1
+
     def get_completion(
         self,
         message: str,
@@ -736,7 +1129,7 @@ class Completions(ThoughtProcessor, Configured):
         if self.stream:
             response = self.get_stream_response(messages)
         else:
-            response = self.get_chat_response(messages)
+            response = self.chat_until_done(messages)
         self.reset_thought_state()
 
         if isinstance(formatter, type):
@@ -807,7 +1200,7 @@ class Completions(ThoughtProcessor, Configured):
         chat_history = self.chat_history
 
         messages = self.prepare_messages(message)
-        response = self.get_chat_response(messages)
+        response = self.chat_until_done(messages)
         content = self.get_message_content(response)
         if content is None:
             content = ""
@@ -822,13 +1215,13 @@ class OpenAICompletions(Completions):
     Args:
         model (Optional[str]): Identifier for the model to use.
         client_kwargs (KwargsLike): Keyword arguments for `openai.OpenAI`.
-        completions_kwargs (KwargsLike): Keyword arguments for `openai.Completions.create`.
-        responses_kwargs (KwargsLike): Keyword arguments for `openai.Responses.create`.
         use_responses (bool): Whether to use the Responses API instead of the Completions API.
 
             Note that thought summarization is not supported in the Completions API.
+        responses_kwargs (KwargsLike): Keyword arguments for `openai.Responses.create`.
+        completions_kwargs (KwargsLike): Keyword arguments for `openai.Completions.create`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs`,
-            `completions_kwargs`, or `responses_kwargs`.
+            `responses_kwargs`, or `completions_kwargs`.
 
     !!! info
         For default settings, see `chat.completions_configs.openai` in `vectorbtpro._settings.knowledge`.
@@ -842,18 +1235,18 @@ class OpenAICompletions(Completions):
         self,
         model: tp.Optional[str] = None,
         client_kwargs: tp.KwargsLike = None,
-        completions_kwargs: tp.KwargsLike = None,
-        responses_kwargs: tp.KwargsLike = None,
         use_responses: tp.Optional[bool] = None,
+        responses_kwargs: tp.KwargsLike = None,
+        completions_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
             self,
             model=model,
             client_kwargs=client_kwargs,
-            completions_kwargs=completions_kwargs,
-            responses_kwargs=responses_kwargs,
             use_responses=use_responses,
+            responses_kwargs=responses_kwargs,
+            completions_kwargs=completions_kwargs,
             **kwargs,
         )
 
@@ -866,9 +1259,9 @@ class OpenAICompletions(Completions):
         def_model = openai_config.pop("model", None)
         def_quick_model = openai_config.pop("quick_model", None)
         def_client_kwargs = openai_config.pop("client_kwargs", None)
-        def_completions_kwargs = openai_config.pop("completions_kwargs", None)
-        def_responses_kwargs = openai_config.pop("responses_kwargs", None)
         def_use_responses = openai_config.pop("use_responses", None)
+        def_responses_kwargs = openai_config.pop("responses_kwargs", None)
+        def_completions_kwargs = openai_config.pop("completions_kwargs", None)
 
         if model is None:
             model = def_quick_model if self.quick_mode else def_model
@@ -879,29 +1272,37 @@ class OpenAICompletions(Completions):
             if k in init_arg_names:
                 openai_config.pop(k)
 
+        if use_responses is None:
+            use_responses = def_use_responses
+
         client_arg_names = set(get_func_arg_names(OpenAI.__init__))
         _client_kwargs = {}
-        _completions_kwargs = {}
         _responses_kwargs = {}
+        _completions_kwargs = {}
         for k, v in openai_config.items():
             if k in client_arg_names:
                 _client_kwargs[k] = v
             else:
-                _completions_kwargs[k] = v
                 _responses_kwargs[k] = v
+                _completions_kwargs[k] = v
         client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
-        completions_kwargs = merge_dicts(_completions_kwargs, def_completions_kwargs, completions_kwargs)
         responses_kwargs = merge_dicts(_responses_kwargs, def_responses_kwargs, responses_kwargs)
+        responses_kwargs["tools"] = responses_kwargs.get("tools", []) + self.tools
+        for i, tool in enumerate(responses_kwargs["tools"]):
+            if isinstance(tool, str) and tool in self._tool_registry:
+                responses_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+        completions_kwargs = merge_dicts(_completions_kwargs, def_completions_kwargs, completions_kwargs)
+        completions_kwargs["tools"] = completions_kwargs.get("tools", []) + self.tools
+        for i, tool in enumerate(completions_kwargs["tools"]):
+            if isinstance(tool, str) and tool in self._tool_registry:
+                completions_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
         client = OpenAI(**client_kwargs)
-
-        if use_responses is None:
-            use_responses = def_use_responses
 
         self._model = model
         self._client = client
-        self._completions_kwargs = completions_kwargs
-        self._responses_kwargs = responses_kwargs
         self._use_responses = use_responses
+        self._responses_kwargs = responses_kwargs
+        self._completions_kwargs = completions_kwargs
 
     @property
     def model(self) -> str:
@@ -917,13 +1318,13 @@ class OpenAICompletions(Completions):
         return self._client
 
     @property
-    def completions_kwargs(self) -> tp.Kwargs:
-        """Keyword arguments for `openai.Completions.create`.
+    def use_responses(self) -> bool:
+        """Whether to use the Responses API instead of the Completions API.
 
         Returns:
-            Kwargs: Keyword arguments for the completion API call.
+            bool: Whether to use the Responses API.
         """
-        return self._completions_kwargs
+        return self._use_responses
 
     @property
     def responses_kwargs(self) -> tp.Kwargs:
@@ -935,13 +1336,13 @@ class OpenAICompletions(Completions):
         return self._responses_kwargs
 
     @property
-    def use_responses(self) -> bool:
-        """Whether to use the Responses API instead of the Completions API.
+    def completions_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for `openai.Completions.create`.
 
         Returns:
-            bool: Whether to use the Responses API.
+            Kwargs: Keyword arguments for the completion API call.
         """
-        return self._use_responses
+        return self._completions_kwargs
 
     def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[tp.Dict[str, str]], str]:
         """Format messages to Responses API format.
@@ -955,20 +1356,12 @@ class OpenAICompletions(Completions):
         input = []
         instructions = []
         for message in messages:
-            if isinstance(message, dict):
-                role = message.pop("role", "user")
-                content = message.pop("content", "")
-                if len(message) > 0:
-                    raise ValueError(f"Unsupported message format: {message}. Expected dict with 'role' and 'content'.")
-
-                if role == "system":
-                    instructions.append(content)
-                    continue
-                input.append(dict(role=role, content=content))
+            if isinstance(message, dict) and message.get("role", "user") == "system":
+                instructions.append(message.get("content", ""))
             elif isinstance(message, str):
                 input.append(dict(role="user", content=message))
             else:
-                raise TypeError(f"Unsupported message type: {type(message)}. Expected dict or str.")
+                input.append(message)
         if instructions:
             instructions = "\n".join(instructions)
         else:
@@ -1045,6 +1438,120 @@ class OpenAICompletions(Completions):
                 return self.process_thought(content=response_chunk.delta)
             return self.flush_thought()
         return response_chunk.choices[0].delta.content
+
+    @property
+    def supports_tool_calling(self) -> bool:
+        return True
+
+    def extract_tool_calls(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.List[tp.Kwargs]:
+        calls = []
+        if self.use_responses:
+            output = getattr(response, "output", None) or []
+            for idx, item in enumerate(output):
+                if getattr(item, "type", None) == "function_call":
+                    fc = getattr(item, "function_call", None) or item
+                    calls.append(
+                        {
+                            "id": getattr(fc, "call_id", None) or getattr(fc, "id", None) or f"function_call_{idx}",
+                            "name": getattr(fc, "name", None),
+                            "arguments": getattr(fc, "parsed_arguments", None) or getattr(fc, "arguments", None),
+                        }
+                    )
+        else:
+            choices = getattr(response, "choices", None) or []
+            for ch_i, ch in enumerate(choices):
+                msg = getattr(ch, "message", None)
+                if msg:
+                    tcs = getattr(msg, "tool_calls", None) or []
+                    for i, tc in enumerate(tcs):
+                        fn = getattr(tc, "function", None)
+                        calls.append(
+                            {
+                                "id": getattr(tc, "id", None) or f"tool_call_{ch_i}_{i}",
+                                "name": getattr(fn, "name", None) if fn else None,
+                                "arguments": getattr(fn, "arguments", None) if fn else None,
+                            }
+                        )
+                    fc = getattr(msg, "function_call", None)
+                    if fc:
+                        calls.append(
+                            {
+                                "id": f"function_call_{ch_i}",
+                                "name": getattr(fc, "name", None),
+                                "arguments": getattr(fc, "arguments", None),
+                            }
+                        )
+        return calls
+
+    def build_tool_message(
+        self,
+        response: tp.Union[ChatCompletionT, ResponseT],
+    ) -> tp.Optional[tp.MaybeList[tp.Kwargs]]:
+        if self.use_responses:
+            return list(response.output)
+        else:
+            choices = getattr(response, "choices", None) or []
+            if not choices:
+                return None
+            msg = getattr(choices[0], "message", None)
+            if not msg:
+                return None
+            tool_calls = getattr(msg, "tool_calls", None) or []
+            if tool_calls:
+                norm = []
+                for tc in tool_calls:
+                    fn = getattr(tc, "function", None)
+                    norm.append(
+                        {
+                            "id": getattr(tc, "id", None),
+                            "type": "function",
+                            "function": {
+                                "name": getattr(fn, "name", None) if fn else None,
+                                "arguments": getattr(fn, "arguments", None) if fn else None,
+                            },
+                        }
+                    )
+                return {"role": "assistant", "content": "", "tool_calls": norm}
+            if getattr(msg, "function_call", None):
+                return {
+                    "role": "assistant",
+                    "content": "",
+                    "function_call": {
+                        "name": getattr(msg.function_call, "name", None),
+                        "arguments": getattr(msg.function_call, "arguments", None),
+                    },
+                }
+
+            return None
+
+    def build_tool_result_messages(
+        self,
+        tool_calls: tp.List[tp.Kwargs],
+        tool_results: tp.List[tp.Kwargs],
+    ) -> tp.List[tp.Kwargs]:
+        if self.use_responses:
+            messages = []
+            for tr in tool_results:
+                messages.append(
+                    {
+                        "type": "function_call_output",
+                        "call_id": tr["id"],
+                        "output": tr["output"],
+                    }
+                )
+            return messages
+        else:
+            messages = []
+            for tr in tool_results:
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tr["id"],
+                        "name": tr["name"],
+                        "content": tr["output"],
+                    }
+                )
+            return messages
 
 
 class AnthropicCompletions(Completions):

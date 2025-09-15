@@ -2528,7 +2528,7 @@ $context
                 ),
             ),
             ollama=flex_cfg(
-                model="hf.co/Qwen/Qwen3-Embedding-0.6B-GGUF:Q8_0",
+                model="dengcao/Qwen3-Embedding-0.6B",
                 client_kwargs=flex_cfg(),
                 embed_kwargs=flex_cfg(),
             ),
@@ -2536,6 +2536,9 @@ $context
         completions="auto",
         completions_config=flex_cfg(
             include_thoughts=True,
+            tools=None,
+            tool_registry=None,
+            max_tool_rounds=8,
         ),
         completions_configs=flex_cfg(
             openai=flex_cfg(

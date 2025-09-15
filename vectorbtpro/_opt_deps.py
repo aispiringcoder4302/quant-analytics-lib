@@ -89,6 +89,7 @@ opt_dep_config = HybridConfig(
         "google.genai": {"dist_name": "google-genai"},
         "anthropic": {},
         "ollama": {},
+        "docstring_parser": {},
     }
 )
 """_"""
