@@ -181,12 +181,14 @@ def search(
             raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
 
         dumps = results.dump()
-        context = "==== Result 1 ====\n\n"
-        context += dumps[0]
+        context = ["==== Result 1 ====\n\n"]
+        context += [dumps[0]]
         for i, dump in enumerate(dumps[1:], start=2):
-            context += "\n\n==== Result " + str(i) + " ====\n\n"
-            context += dump
-        if not context:
+            context += ["\n\n==== Result " + str(i) + " ====\n\n"]
+            context += [dump]
+        if context:
+            context = "".join(context)
+        else:
             context = "No results found"
         if max_tokens is not None:
             tokens = tokenize(context)
@@ -334,12 +336,14 @@ def find(
             raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
 
         dumps = results.dump()
-        context = "==== Result 1 ====\n\n"
-        context += dumps[0]
+        context = ["==== Result 1 ====\n\n"]
+        context += [dumps[0]]
         for i, dump in enumerate(dumps[1:], start=2):
-            context += "\n\n==== Result " + str(i) + " ====\n\n"
-            context += dump
-        if not context:
+            context += ["\n\n==== Result " + str(i) + " ====\n\n"]
+            context += [dump]
+        if context:
+            context = "".join(context)
+        else:
             context = "No results found"
         if max_tokens is not None:
             tokens = tokenize(context)
