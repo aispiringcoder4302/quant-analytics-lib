@@ -39,6 +39,18 @@ __all__ = [
 ]
 
 
+FENCE_RE = re.compile(
+    r"""
+    ^(?P<prefix>.*?)
+    (?P<indent>[ \t]*)
+    (?P<fence>(?P<char>`|~)(?P=char){2,})
+    (?P<suffix>[^\r\n]*)$
+    """,
+    re.VERBOSE,
+)
+"""Regular expression for matching code fences."""
+
+
 class ToMarkdown(Configured):
     """Class for converting text to Markdown.
 
@@ -51,6 +63,7 @@ class ToMarkdown(Configured):
         think_to_blockquote (Optional[bool]): Whether to convert `<think>` tags into quote blocks.
         think_open_tag (Optional[str]): Opening tag for the think block.
         think_close_tag (Optional[str]): Closing tag for the think block.
+        think_separator (Optional[str]): Separator for think/non-think blocks.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
     !!! info
@@ -67,6 +80,7 @@ class ToMarkdown(Configured):
         think_to_blockquote: tp.Optional[bool] = None,
         think_open_tag: tp.Optional[str] = None,
         think_close_tag: tp.Optional[str] = None,
+        think_separator: tp.Optional[str] = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
@@ -77,6 +91,7 @@ class ToMarkdown(Configured):
             think_to_blockquote=think_to_blockquote,
             think_open_tag=think_open_tag,
             think_close_tag=think_close_tag,
+            think_separator=think_separator,
             **kwargs,
         )
 
@@ -86,6 +101,7 @@ class ToMarkdown(Configured):
         think_to_blockquote = self.resolve_setting(think_to_blockquote, "think_to_blockquote")
         think_open_tag = self.resolve_setting(think_open_tag, "think_open_tag")
         think_close_tag = self.resolve_setting(think_close_tag, "think_close_tag")
+        think_separator = self.resolve_setting(think_separator, "think_separator")
 
         self._remove_code_title = remove_code_title
         self._even_indentation = even_indentation
@@ -93,6 +109,7 @@ class ToMarkdown(Configured):
         self._think_to_blockquote = think_to_blockquote
         self._think_open_tag = think_open_tag
         self._think_close_tag = think_close_tag
+        self._think_separator = think_separator
 
     @property
     def remove_code_title(self) -> bool:
@@ -148,6 +165,15 @@ class ToMarkdown(Configured):
         """
         return self._think_close_tag
 
+    @property
+    def think_separator(self) -> str:
+        """Separator for the think block.
+
+        Returns:
+            str: Separator for the think block.
+        """
+        return self._think_separator
+
     def to_markdown(self, text: str) -> str:
         """Return the given text converted to Markdown format.
 
@@ -187,54 +213,61 @@ class ToMarkdown(Configured):
         if self.newline_before_list:
             markdown = re.sub(r"(?<=[^\n])\n(?=[ \t]*(?:[*+-]\s|\d+\.\s))", "\n\n", markdown)
 
-        if self.think_to_blockquote:
+        if self.think_to_blockquote and (self.think_open_tag in markdown or self.think_close_tag in markdown):
+            INVIS_T_START = "\u2063\u2060"
+            INVIS_T_END = "\u2060\u2063"
+            INVIS_N_START = "\u2062\u2060"
+            INVIS_N_END = "\u2060\u2062"
+
             open_tag = re.escape(self.think_open_tag)
             close_tag = re.escape(self.think_close_tag)
-            complete_pattern = re.compile(rf"(?<!`)({open_tag})(.*?){close_tag}(?!`)", re.DOTALL)
-            open_pattern = re.compile(rf"(?<!`)({open_tag})(.*?)$", re.DOTALL)
+            complete_pattern = re.compile(
+                rf"(?<!`)(?:{open_tag})(?P<inner>.*?){close_tag}(?!`)",
+                re.DOTALL,
+            )
+            open_pattern = re.compile(
+                rf"(?<!`)(?:{open_tag})(?P<inner>.*?)$",
+                re.DOTALL,
+            )
 
-            def _repl(m):
-                inner = m.group(1).strip("\n")
+            segments = []
+            idx = 0
+            for m in complete_pattern.finditer(markdown):
+                gap = markdown[idx : m.start()]
+                if gap.strip():
+                    segments.append(("non-think", gap))
+                segments.append(("think", m.group("inner")))
+                idx = m.end()
+
+            tail = markdown[idx:]
+            m_open_tail = open_pattern.search(tail)
+            if m_open_tail:
+                gap = tail[: m_open_tail.start()]
+                if gap.strip():
+                    segments.append(("non-think", gap))
+                segments.append(("think", m_open_tail.group("inner")))
+            else:
+                if tail.strip():
+                    segments.append(("non-think", tail))
+
+            def _render_think(content):
+                inner = content.strip("\n")
                 lines = inner.splitlines()
-                quoted = "\n".join(("> " + ln) if ln.strip() else ">" for ln in lines)
-                start_pos = m.start()
-                end_pos = m.end()
+                quoted = "\n".join(("> " + ln) if ln.strip() else ">" for ln in lines) if lines else ">"
+                return INVIS_T_START + "> *Thinking...*\n>\n" + quoted + INVIS_T_END
 
-                if start_pos > 0:
-                    text_before = markdown[:start_pos]
-                    lines_before = text_before.split("\n")
-                    last_line_before = lines_before[-1] if lines_before else ""
-                else:
-                    last_line_before = None
-                if end_pos < len(markdown):
-                    text_after = markdown[end_pos:]
-                    lines_after = text_after.split("\n")
-                    first_line_after = lines_after[0] if lines_after else ""
-                else:
-                    first_line_after = None
-                if last_line_before is None or not last_line_before.strip().startswith(">"):
-                    if quoted.strip():
-                        quoted_content = f"> *Thinking...*\n>\n{quoted}"
-                    else:
-                        quoted_content = "> *Thinking...*"
-                else:
-                    quoted_content = quoted
-                if last_line_before is None:
-                    prefix = ""
-                elif last_line_before == "":
-                    prefix = "\n"
-                else:
-                    prefix = "\n\n"
-                if first_line_after is None:
-                    suffix = ""
-                elif first_line_after == "":
-                    suffix = "\n"
-                else:
-                    suffix = "\n\n"
-                return f"{prefix}{quoted_content}{suffix}"
+            def _render_non_think(content):
+                return INVIS_N_START + content + INVIS_N_END
 
-            markdown = complete_pattern.sub(_repl, markdown)
-            markdown = open_pattern.sub(_repl, markdown)
+            rendered_segments = [_render_think(c) if k == "think" else _render_non_think(c) for k, c in segments]
+            cleaned_segments = []
+            for seg in rendered_segments:
+                seg = seg.replace(INVIS_T_START, "").replace(INVIS_T_END, "")
+                seg = seg.replace(INVIS_N_START, "").replace(INVIS_N_END, "")
+                seg = seg.strip()
+                if seg != "":
+                    cleaned_segments.append(seg)
+            markdown = self.think_separator.join(cleaned_segments)
 
         return markdown
 
@@ -458,9 +491,15 @@ class FormatHTML(Configured):
         body_extras (Optional[MaybeList[str]]): Extra content to insert at the end of the `<body>` section.
         invert_colors (Optional[bool]): Flag to enable color inversion.
         invert_colors_style (Optional[str]): CSS styles applied when colors are inverted.
+        refresh_page (Optional[bool]): Flag to enable page refreshing.
+        refresh_script (Optional[str]): JavaScript for page refreshing.
         auto_scroll (Optional[bool]): Flag to enable automatic scrolling during refreshing.
-        auto_scroll_body (Optional[str]): HTML or script to facilitate auto scrolling in the body.
+
+            If None, defaults to `refresh_page`.
+        auto_scroll_script (Optional[str]): JavaScript to facilitate auto scrolling.
         show_spinner (Optional[bool]): Flag to display a loading spinner during refreshing.
+
+            If None, defaults to `refresh_page`.
         spinner_style (Optional[str]): CSS style for the spinner.
         spinner_body (Optional[str]): HTML or script for spinner placement.
         use_pygments (Optional[bool]): Flag to enable code highlighting with Pygments.
@@ -482,8 +521,10 @@ class FormatHTML(Configured):
         body_extras: tp.Optional[tp.MaybeList[str]] = None,
         invert_colors: tp.Optional[bool] = None,
         invert_colors_style: tp.Optional[str] = None,
+        refresh_page: tp.Optional[bool] = None,
+        refresh_script: tp.Optional[str] = None,
         auto_scroll: tp.Optional[bool] = None,
-        auto_scroll_body: tp.Optional[str] = None,
+        auto_scroll_script: tp.Optional[str] = None,
         show_spinner: tp.Optional[bool] = None,
         spinner_style: tp.Optional[str] = None,
         spinner_body: tp.Optional[str] = None,
@@ -502,8 +543,10 @@ class FormatHTML(Configured):
             body_extras=body_extras,
             invert_colors=invert_colors,
             invert_colors_style=invert_colors_style,
+            refresh_page=refresh_page,
+            refresh_script=refresh_script,
             auto_scroll=auto_scroll,
-            auto_scroll_body=auto_scroll_body,
+            auto_scroll_script=auto_scroll_script,
             show_spinner=show_spinner,
             spinner_style=spinner_style,
             spinner_body=spinner_body,
@@ -516,14 +559,21 @@ class FormatHTML(Configured):
         html_template = self.resolve_setting(html_template, "html_template")
         invert_colors = self.resolve_setting(invert_colors, "invert_colors")
         invert_colors_style = self.resolve_setting(invert_colors_style, "invert_colors_style")
+        refresh_page = self.resolve_setting(refresh_page, "refresh_page")
+        refresh_script = self.resolve_setting(refresh_script, "refresh_script")
         auto_scroll = self.resolve_setting(auto_scroll, "auto_scroll")
-        auto_scroll_body = self.resolve_setting(auto_scroll_body, "auto_scroll_body")
+        auto_scroll_script = self.resolve_setting(auto_scroll_script, "auto_scroll_script")
         show_spinner = self.resolve_setting(show_spinner, "show_spinner")
         spinner_style = self.resolve_setting(spinner_style, "spinner_style")
         spinner_body = self.resolve_setting(spinner_body, "spinner_body")
         use_pygments = self.resolve_setting(use_pygments, "use_pygments")
         pygments_kwargs = self.resolve_setting(pygments_kwargs, "pygments_kwargs", merge=True)
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
+
+        if auto_scroll is None:
+            auto_scroll = refresh_page
+        if show_spinner is None:
+            show_spinner = refresh_page
 
         def _prepare_extras(extras):
             if extras is None:
@@ -545,8 +595,10 @@ class FormatHTML(Configured):
         body_extras = _prepare_extras(self.get_setting("body_extras")) + _prepare_extras(body_extras)
         if invert_colors:
             style_extras = "\n".join([style_extras, invert_colors_style])
+        if refresh_page:
+            head_extras = "\n".join([head_extras, refresh_script])
         if auto_scroll:
-            body_extras = "\n".join([body_extras, auto_scroll_body])
+            head_extras = "\n".join([head_extras, auto_scroll_script])
         if show_spinner:
             style_extras = "\n".join([style_extras, spinner_style])
             body_extras = "\n".join([body_extras, spinner_body])
@@ -674,6 +726,8 @@ class ContentFormatter(Configured):
         close_output (Optional[bool]): Whether to close the output stream after writing.
         update_interval (Optional[float]): Time interval in seconds for updates.
         minimal_format (Optional[bool]): Boolean indicating if the input is minimally formatted.
+        think_open_tag (Optional[str]): Opening tag for the think block.
+        think_close_tag (Optional[str]): Closing tag for the think block.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
 
@@ -695,6 +749,8 @@ class ContentFormatter(Configured):
         close_output: tp.Optional[bool] = None,
         update_interval: tp.Optional[float] = None,
         minimal_format: tp.Optional[bool] = None,
+        think_open_tag: tp.Optional[str] = None,
+        think_close_tag: tp.Optional[str] = None,
         template_context: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
@@ -706,6 +762,8 @@ class ContentFormatter(Configured):
             close_output=close_output,
             update_interval=update_interval,
             minimal_format=minimal_format,
+            think_open_tag=think_open_tag,
+            think_close_tag=think_close_tag,
             template_context=template_context,
             **kwargs,
         )
@@ -716,6 +774,8 @@ class ContentFormatter(Configured):
         close_output = self.resolve_setting(close_output, "close_output")
         update_interval = self.resolve_setting(update_interval, "update_interval")
         minimal_format = self.resolve_setting(minimal_format, "minimal_format")
+        think_open_tag = self.resolve_setting(think_open_tag, "think_open_tag")
+        think_close_tag = self.resolve_setting(think_close_tag, "think_close_tag")
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
 
         if isinstance(output_to, (str, Path)):
@@ -732,6 +792,8 @@ class ContentFormatter(Configured):
         self._close_output = close_output
         self._update_interval = update_interval
         self._minimal_format = minimal_format
+        self._think_open_tag = think_open_tag
+        self._think_close_tag = think_close_tag
         self._template_context = template_context
 
         self._last_update = None
@@ -739,6 +801,8 @@ class ContentFormatter(Configured):
         self._current_line = []
         self._in_code_block = False
         self._code_block_indent = ""
+        self._code_fence_char = "`"
+        self._code_fence_len = 3
         self._buffer = []
         self._content = ""
 
@@ -797,6 +861,24 @@ class ContentFormatter(Configured):
         return self._minimal_format
 
     @property
+    def think_open_tag(self) -> str:
+        """Opening tag for the think block.
+
+        Returns:
+            str: Opening tag for the think block.
+        """
+        return self._think_open_tag
+
+    @property
+    def think_close_tag(self) -> str:
+        """Closing tag for the think block.
+
+        Returns:
+            str: Closing tag for the think block.
+        """
+        return self._think_close_tag
+
+    @property
     def template_context(self) -> tp.Kwargs:
         """Additional context for template substitution.
 
@@ -851,6 +933,24 @@ class ContentFormatter(Configured):
         return self._code_block_indent
 
     @property
+    def code_fence_char(self) -> str:
+        """Character used for code fences.
+
+        Returns:
+            str: Character used for code fences.
+        """
+        return self._code_fence_char
+
+    @property
+    def code_fence_len(self) -> int:
+        """Length of the code fence.
+
+        Returns:
+            int: Length of the code fence.
+        """
+        return self._code_fence_len
+
+    @property
     def buffer(self) -> tp.List[str]:
         """List of buffered strings.
 
@@ -885,29 +985,41 @@ class ContentFormatter(Configured):
         Returns:
             str: Processed line with updated code block state.
         """
-        start = 0
-        while True:
-            idx = line.find("```", start)
-            if idx == -1:
-                break
-            if not self.in_code_block:
-                self._in_code_block = True
-                if line[:idx].strip() == "":
-                    self._code_block_indent = line[:idx]
-                else:
-                    self._code_block_indent = ""
-            else:
-                self._in_code_block = False
-            start = idx + 3
+        stripped = line.rstrip("\r\n")
+        m = FENCE_RE.match(stripped)
+        if not m:
+            return line
+
+        prefix = m.group("prefix")
+        block_indent = m.group("indent")
+        fence_chars = m.group("fence")
+        fence_char = m.group("char")
+        fence_len = len(fence_chars)
+        suffix = m.group("suffix")
+
+        if not self.in_code_block and (prefix.strip() == "" or prefix.strip().endswith(self.think_open_tag)):
+            self._in_code_block = True
+            self._code_block_indent = block_indent
+            self._code_fence_char = fence_char
+            self._code_fence_len = fence_len
+        elif (
+            self.in_code_block
+            and len(block_indent) <= len(self.code_block_indent)
+            and fence_char == self.code_fence_char
+            and fence_len >= self.code_fence_len
+            and (suffix.strip() == "" or suffix.strip().startswith(self.think_close_tag))
+        ):
+            self._in_code_block = False
         return line
 
-    def flush(self, final: bool = False) -> None:
+    def flush(self, complete: bool = False, final: bool = False) -> None:
         """Flush the buffered content and process complete and incomplete lines.
 
         This method processes the current contents of the buffer, formatting complete lines and
         appending them to the overall content.
 
         Args:
+            complete (bool): Treat the last line as complete.
             final (bool): Whether the update finalizes the content.
 
         Returns:
@@ -918,7 +1030,7 @@ class ContentFormatter(Configured):
 
         lines = new_content.splitlines(keepends=True)
         for line in lines:
-            if final or line.endswith("\n") or line.endswith("\r\n"):
+            if complete or final or line.endswith("\n") or line.endswith("\r\n"):
                 stripped_line = line.rstrip("\r\n")
                 self.current_line.append(stripped_line)
                 complete_line = "".join(self.current_line)
@@ -927,12 +1039,14 @@ class ContentFormatter(Configured):
                 self.current_line.clear()
             else:
                 self.current_line.append(line)
-        if final and self.current_line:
+
+        if (complete or final) and self.current_line:
             complete_line = "".join(self.current_line)
             formatted_line = self.format_line(complete_line)
             self.lines.append(formatted_line)
             self.current_line.clear()
 
+        closing_fence = f"{self.code_block_indent}{self.code_fence_char * self.code_fence_len}"
         if final:
             self._content = "".join(self.lines)
         else:
@@ -940,10 +1054,10 @@ class ContentFormatter(Configured):
             if self.current_line:
                 content.extend(self.current_line)
                 if self.in_code_block:
-                    content.append("\n" + self.code_block_indent + "```")
+                    content.append("\n" + closing_fence)
             else:
                 if self.in_code_block:
-                    content.append(self.code_block_indent + "```")
+                    content.append(closing_fence)
             self._content = "".join(content)
 
     def buffer_update(self) -> None:
@@ -955,10 +1069,11 @@ class ContentFormatter(Configured):
         if self.buffer_output and self.output_to is not None:
             print("".join(self.buffer), end="", file=self.output_to, flush=self.flush_output)
 
-    def update(self, final: bool = False) -> None:
+    def update(self, complete: bool = False, final: bool = False) -> None:
         """Update the content by processing the buffer and flushing outputs if necessary.
 
         Args:
+            complete (bool): Treat the last line as complete.
             final (bool): Whether the update finalizes the content.
 
         Returns:
@@ -967,14 +1082,15 @@ class ContentFormatter(Configured):
         self._last_update = time.time()
         if self.buffer:
             self.buffer_update()
-        if self.buffer or (final and self.current_line):
-            self.flush(final=final)
+        if self.buffer or ((complete or final) and self.current_line):
+            self.flush(complete=complete, final=final)
 
-    def append(self, new_content: str, final: bool = False) -> None:
+    def append(self, new_content: str, complete: bool = False, final: bool = False) -> None:
         """Append new content to the buffer and perform an update if necessary.
 
         Args:
             new_content (str): String content to append.
+            complete (bool): Treat the last line as complete.
             final (bool): Whether the update finalizes the content.
 
         Returns:
@@ -984,12 +1100,13 @@ class ContentFormatter(Configured):
             print(new_content, end="", file=self.output_to, flush=self.flush_output)
         self.buffer.append(new_content)
         if (
-            final
+            complete
+            or final
             or self.last_update is None
             or self.update_interval is None
             or (time.time() - self.last_update >= self.update_interval)
         ):
-            self.update(final=final)
+            self.update(complete=complete, final=final)
 
     def append_once(self, content: str) -> None:
         """Append final content to the buffer and finalize the formatting process.
@@ -1089,8 +1206,8 @@ class IPythonFormatter(ContentFormatter):
         """
         self.display_handle.update(self.content)
 
-    def update(self, final: bool = False) -> None:
-        ContentFormatter.update(self, final=final)
+    def update(self, complete: bool = False, final: bool = False) -> None:
+        ContentFormatter.update(self, complete=complete, final=final)
         self.update_display()
 
 
@@ -1229,8 +1346,6 @@ class HTMLFileFormatter(ContentFormatter):
         temp_files (Optional[bool]): Indicates if HTML content is saved as temporary files.
         file_prefix_len (Optional[int]): Number of characters for the truncated title prefix.
         file_suffix_len (Optional[int]): Number of characters for the random hash suffix.
-        auto_scroll (Optional[bool]): Flag to enable automatic scrolling during refreshing.
-        show_spinner (Optional[bool]): Flag to display a loading spinner during refreshing.
         open_browser (Optional[bool]): Flag indicating whether to open the web browser.
         to_markdown_kwargs (KwargsLike): Keyword arguments for `to_markdown`.
         to_html_kwargs (KwargsLike): Keyword arguments for `to_html`.
@@ -1249,14 +1364,12 @@ class HTMLFileFormatter(ContentFormatter):
         self,
         *args,
         page_title: str = "",
-        refresh_page: tp.Optional[bool] = None,
         dir_path: tp.Optional[tp.PathLike] = None,
         mkdir_kwargs: tp.KwargsLike = None,
         temp_files: tp.Optional[bool] = None,
         file_prefix_len: tp.Optional[int] = None,
         file_suffix_len: tp.Optional[int] = None,
-        auto_scroll: tp.Optional[bool] = None,
-        show_spinner: tp.Optional[bool] = None,
+        refresh_page: tp.Optional[bool] = None,
         open_browser: tp.Optional[bool] = None,
         to_markdown_kwargs: tp.KwargsLike = None,
         to_html_kwargs: tp.KwargsLike = None,
@@ -1267,14 +1380,12 @@ class HTMLFileFormatter(ContentFormatter):
             self,
             *args,
             page_title=page_title,
-            refresh_page=refresh_page,
             dir_path=dir_path,
             mkdir_kwargs=mkdir_kwargs,
             temp_files=temp_files,
             file_prefix_len=file_prefix_len,
             file_suffix_len=file_suffix_len,
-            auto_scroll=auto_scroll,
-            show_spinner=show_spinner,
+            refresh_page=refresh_page,
             open_browser=open_browser,
             to_markdown_kwargs=to_markdown_kwargs,
             to_html_kwargs=to_html_kwargs,
@@ -1282,14 +1393,12 @@ class HTMLFileFormatter(ContentFormatter):
             **kwargs,
         )
 
-        refresh_page = self.resolve_setting(refresh_page, "refresh_page")
         dir_path = self.resolve_setting(dir_path, "dir_path")
         mkdir_kwargs = self.resolve_setting(mkdir_kwargs, "mkdir_kwargs", merge=True)
         temp_files = self.resolve_setting(temp_files, "temp_files")
         file_prefix_len = self.resolve_setting(file_prefix_len, "file_prefix_len")
         file_suffix_len = self.resolve_setting(file_suffix_len, "file_suffix_len")
-        auto_scroll = self.resolve_setting(auto_scroll, "auto_scroll")
-        show_spinner = self.resolve_setting(show_spinner, "show_spinner")
+        refresh_page = self.resolve_setting(refresh_page, "refresh_page")
         open_browser = self.resolve_setting(open_browser, "open_browser")
 
         if self.minimal_format:
@@ -1323,14 +1432,12 @@ class HTMLFileFormatter(ContentFormatter):
             dir_path = dir_path.substitute(template_context, eval_id="dir_path")
 
         self._page_title = page_title
-        self._refresh_page = refresh_page
         self._dir_path = dir_path
         self._mkdir_kwargs = mkdir_kwargs
         self._temp_files = temp_files
         self._file_prefix_len = file_prefix_len
         self._file_suffix_len = file_suffix_len
-        self._auto_scroll = auto_scroll
-        self._show_spinner = show_spinner
+        self._refresh_page = refresh_page
         self._open_browser = open_browser
         self._to_markdown_kwargs = to_markdown_kwargs
         self._to_html_kwargs = to_html_kwargs
@@ -1346,15 +1453,6 @@ class HTMLFileFormatter(ContentFormatter):
             str: Title text for the HTML page.
         """
         return self._page_title
-
-    @property
-    def refresh_page(self) -> bool:
-        """Determines whether the HTML page should refresh.
-
-        Returns:
-            bool: True if the page is set to refresh, otherwise False.
-        """
-        return self._refresh_page
 
     @property
     def dir_path(self) -> tp.Optional[tp.Path]:
@@ -1404,22 +1502,13 @@ class HTMLFileFormatter(ContentFormatter):
         return self._file_suffix_len
 
     @property
-    def auto_scroll(self) -> bool:
-        """Specifies whether automatic scrolling is enabled.
+    def refresh_page(self) -> bool:
+        """Determines whether the HTML page should refresh.
 
         Returns:
-            bool: True if auto-scrolling is enabled during page refresh, otherwise False.
+            bool: True if the page is set to refresh, otherwise False.
         """
-        return self._auto_scroll
-
-    @property
-    def show_spinner(self) -> bool:
-        """Indicates if a loading spinner is displayed during page refresh.
-
-        Returns:
-            bool: True if the spinner is enabled, otherwise False.
-        """
-        return self._show_spinner
+        return self._refresh_page
 
     @property
     def open_browser(self) -> bool:
@@ -1477,22 +1566,7 @@ class HTMLFileFormatter(ContentFormatter):
             str: Formatted HTML content.
         """
         _format_html_kwargs = dict(self.format_html_kwargs)
-        if not final and self.refresh_page:
-            refresh_content = max(1, int(self.update_interval)) if self.update_interval is not None else 1
-            head_extras = list(_format_html_kwargs.get("head_extras", []))
-            if head_extras is None:
-                head_extras = []
-            if isinstance(head_extras, str):
-                head_extras = [head_extras]
-            else:
-                head_extras = list(head_extras)
-            head_extras.insert(0, f'<meta http-equiv="refresh" content="{refresh_content}">')
-            _format_html_kwargs["head_extras"] = head_extras
-            html_content = '<div id="overlay" class="overlay"></div>\n' + html_content
-            if self.auto_scroll and "auto_scroll" not in _format_html_kwargs:
-                _format_html_kwargs["auto_scroll"] = True
-            if self.show_spinner and "show_spinner" not in _format_html_kwargs:
-                _format_html_kwargs["show_spinner"] = True
+        _format_html_kwargs["refresh_page"] = self.refresh_page and not final
         return format_html(
             title=self.page_title,
             html_content=html_content,
@@ -1546,8 +1620,8 @@ class HTMLFileFormatter(ContentFormatter):
 
             webbrowser.open("file://" + str(Path(self.file_handle.name).resolve()))
 
-    def update(self, final: bool = False) -> None:
-        ContentFormatter.update(self, final=final)
+    def update(self, complete: bool = False, final: bool = False) -> None:
+        ContentFormatter.update(self, complete=complete, final=final)
 
         markdown_content = to_markdown(self.content, **self.to_markdown_kwargs)
         html_content = to_html(markdown_content, **self.to_html_kwargs)
@@ -1606,3 +1680,207 @@ def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[Conten
     else:
         checks.assert_instance_of(formatter, ContentFormatter, arg_name="formatter")
     return formatter
+
+
+class ThoughtProcessor(Configured):
+    """Processes content that may include `<think>...</think>` segments.
+
+    Works for both streaming and non-streaming inputs. When `include_thoughts` is
+    True, tags and their content pass through unchanged. When False, thought regions
+    and tags are removed.
+
+    Args:
+        think_open_tag (Optional[str]): Opening tag for the think block.
+        think_close_tag (Optional[str]): Closing tag for the think block.
+        include_thoughts (Optional[bool]): Whether to keep or remove thought regions.
+    """
+
+    _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
+
+    def __init__(
+        self, 
+        think_open_tag: tp.Optional[str] = None,
+        think_close_tag: tp.Optional[str] = None,
+        include_thoughts: tp.Optional[bool] = None,
+        **kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            think_open_tag=think_open_tag,
+            think_close_tag=think_close_tag,
+            include_thoughts=include_thoughts,
+            **kwargs,
+        )
+
+        think_open_tag = self.resolve_setting(think_open_tag, "think_open_tag")
+        think_close_tag = self.resolve_setting(think_close_tag, "think_close_tag")
+        include_thoughts = self.resolve_setting(include_thoughts, "include_thoughts")
+
+        self._think_open_tag = think_open_tag
+        self._think_close_tag = think_close_tag
+        self._include_thoughts = include_thoughts
+
+        self._thinking = False
+        self._thinking_source = None
+
+    @property
+    def think_open_tag(self) -> str:
+        """Opening tag for the think block.
+
+        Returns:
+            str: Opening tag for the think block.
+        """
+        return self._think_open_tag
+
+    @property
+    def think_close_tag(self) -> str:
+        """Closing tag for the think block.
+
+        Returns:
+            str: Closing tag for the think block.
+        """
+        return self._think_close_tag
+
+    @property
+    def include_thoughts(self) -> bool:
+        """Whether to include thinking messages (wrapped in `<think>` tags) in output.
+
+        Returns:
+            bool: True if thinking messages should be included, False otherwise.
+        """
+        return self._include_thoughts
+
+    @property
+    def thinking(self) -> bool:
+        """Whether the processor is currently in a thinking state.
+
+        Returns:
+            bool: True if the processor is thinking, False otherwise.
+        """
+        return self._thinking
+
+    @property
+    def thinking_source(self) -> tp.Optional[str]:
+        """Source of the current thinking state.
+
+        Returns:
+            Optional[str]: The source of the current thinking state, or None if not thinking.
+        """
+        return self._thinking_source
+
+    def reset_thought_state(self) -> None:
+        """Resets the internal streaming state.
+
+        Clears any active thought segment without emitting a closing tag. Call this
+        before starting a new, unrelated stream if reusing the same instance.
+        """
+        self._thinking = False
+        self._thinking_source = None
+
+    def process_thought(
+        self,
+        *,
+        thought: tp.Optional[str] = None,
+        content: tp.Optional[str] = None,
+        flush: bool = False,
+    ) -> tp.Optional[str]:
+        """Processes a unit of input for both streaming and non-streaming use.
+
+        Accepts `thought`, `content`, both, or neither. When both are provided
+        and no thought is currently open, the output equals `<think>{thought}</think>{content}`
+        if `include_thoughts` is True, or just `{content}` if False.
+
+        Stateful behavior:
+
+        * Explicit thoughts (`thought`) open an explicit segment on first call,
+        and close automatically when a plain `content` chunk without tags
+        is processed, or when `ThoughtProcessor.process_thought` is called with neither argument.
+        * Inline `<think>`/`</think>` tokens inside `content` are handled
+        even if they span multiple calls.
+
+        Args:
+            thought (Optional[str]): Reasoning content from a separate channel (explicit thoughts).
+            content (Optional[str]): Natural language content that may contain inline tags.
+            flush (bool): If True, flushes the current thought state, closing any open thought segment.
+
+        Returns:
+            Optional[str]: The output string for this call, or None if nothing should be emitted.
+        """
+        out = None
+
+        if thought is not None:
+            if not self.thinking:
+                self._thinking = True
+                self._thinking_source = "explicit"
+                if self.include_thoughts:
+                    out = (out or "") + self.think_open_tag + (thought or "")
+            else:
+                if self.include_thoughts:
+                    out = (out or "") + (thought or "")
+
+        if content is not None:
+            s = content or ""
+            if (
+                self.thinking
+                and self.thinking_source == "explicit"
+                and s != ""
+                and (self.think_open_tag not in s and self.think_close_tag not in s)
+            ):
+                self._thinking = False
+                self._thinking_source = None
+                piece = (self.think_close_tag + s) if self.include_thoughts else s
+                out = (out or "") + piece if piece else out
+            else:
+
+                def _parse_inline(chunk):
+                    i = 0
+                    parts = []
+                    while i < len(chunk):
+                        if not self.thinking:
+                            j = chunk.find(self.think_open_tag, i)
+                            if j == -1:
+                                parts.append(chunk[i:])
+                                break
+                            pre = chunk[i:j]
+                            if pre:
+                                parts.append(pre)
+                            self._thinking = True
+                            self._thinking_source = "inline"
+                            i = j + len(self.think_open_tag)
+                            if self.include_thoughts:
+                                parts.append(self.think_open_tag)
+                        else:
+                            k = chunk.find(self.think_close_tag, i)
+                            if k == -1:
+                                seg = chunk[i:]
+                                if self.include_thoughts and seg:
+                                    parts.append(seg)
+                                break
+                            thought_piece = chunk[i:k]
+                            if self.include_thoughts and thought_piece:
+                                parts.append(thought_piece)
+                            self._thinking = False
+                            self._thinking_source = None
+                            i = k + len(self.think_close_tag)
+                            if self.include_thoughts:
+                                parts.append(self.think_close_tag)
+                    return "".join(parts)
+
+                piece = _parse_inline(s)
+                out = (out or "") + piece if piece else out
+
+        if ((thought is None and content is None) or flush) and self.thinking:
+            self._thinking = False
+            self._thinking_source = None
+            if self.include_thoughts:
+                out = (out or "") + self.think_close_tag
+
+        return out if out not in ("", None) else None
+
+    def flush_thought(self) -> tp.Optional[str]:
+        """Flushes the current thought state, closing any open thought segment.
+
+        Returns:
+            Optional[str]: The output string for this call, or None if nothing should be emitted.
+        """
+        return self.process_thought(flush=True)

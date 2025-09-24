@@ -730,16 +730,16 @@ def prepare_refname(
             if the reference name cannot be determined.
     """
 
-    def _raise_error():
+    def _raise_error(refname):
         raise ValueError(
-            "Couldn't find the reference name, or the object is external. "
+            f"Couldn't find the reference name {refname!r}, or the object is external. "
             "If the object is internal, please decompose the object or provide a string instead."
         )
 
     refname = get_refname(obj, module=module, resolve=resolve)
     if refname is None:
         if raise_error:
-            _raise_error()
+            _raise_error(refname)
         return None
     if isinstance(refname, list):
         raise ValueError("Multiple reference names found:\n\n* {}".format("\n* ".join(refname)))
@@ -747,7 +747,7 @@ def prepare_refname(
         module, qualname = get_refname_module_and_qualname(refname)
         if module.__name__.split(".")[0] != "vectorbtpro" and vbt_only:
             if raise_error:
-                _raise_error()
+                _raise_error(refname)
             return None
         if return_parts:
             return refname, module, qualname

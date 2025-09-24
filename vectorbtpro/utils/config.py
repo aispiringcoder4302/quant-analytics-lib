@@ -112,6 +112,24 @@ def convert_to_dict(dct: tp.DictLike, nested: bool = True) -> dict:
     return dct
 
 
+def get(obj: tp.Any, attr: str, default: tp.Optional[tp.Any] = None) -> tp.Any:
+    """Retrieve an attribute or dictionary item from an object.
+    
+    Args:
+        obj (Any): Object to retrieve the attribute from.
+        attr (str): Attribute name to retrieve.
+        default (Optional[Any]): Default value to return if the attribute is not found.
+
+    Returns:
+        Any: Value of the attribute or the default value.
+    """
+    if hasattr(obj, attr):
+        return getattr(obj, attr)
+    if isinstance(obj, dict):
+        return obj.get(attr, default)
+    return default
+
+
 def get_dict_item(dct: dict, k: tp.PathLikeKey, populate: bool = False) -> tp.Any:
     """Retrieve an item from a dictionary using a nested key.
 

@@ -1115,7 +1115,6 @@ class VBTAsset(KnowledgeAsset):
                     head_extras=head_extras,
                     body_extras=body_extras,
                     invert_colors=invert_colors,
-                    auto_scroll=False,
                 ).format_html(title=title, pages=pages)
         with tempfile.NamedTemporaryFile(
             "w",
@@ -4102,22 +4101,21 @@ def find_assets(
         examples_kwargs["latest_first"] = False
 
     all_asset_names = ["api", "docs", "messages", "examples"]
-    if isinstance(asset_names, str) and asset_names.lower() == "all":
-        asset_names = all_asset_names
-    else:
-        if isinstance(asset_names, (str, type(Ellipsis))):
-            asset_names = [asset_names]
-        asset_keys = []
-        for asset_name in asset_names:
-            if asset_name is Ellipsis or asset_name == "...":
-                asset_keys.append(Ellipsis)
-            else:
-                asset_key = all_asset_names.index(asset_name.lower())
-                if asset_key == -1:
-                    raise ValueError(f"Invalid asset_name: {asset_name!r}")
-                asset_keys.append(asset_key)
-        new_asset_names = reorder_list(all_asset_names, asset_keys, skip_missing=True)
-        asset_names = new_asset_names
+    if isinstance(asset_names, (str, type(Ellipsis))):
+        asset_names = [asset_names]
+    asset_keys = []
+    for asset_name in asset_names:
+        if asset_name == "all":
+            asset_keys.extend(range(len(all_asset_names)))
+        elif asset_name is Ellipsis or asset_name == "...":
+            asset_keys.append(Ellipsis)
+        else:
+            asset_key = all_asset_names.index(asset_name.lower())
+            if asset_key == -1:
+                raise ValueError(f"Invalid asset_name: {asset_name!r}")
+            asset_keys.append(asset_key)
+    new_asset_names = reorder_list(all_asset_names, asset_keys, skip_missing=True)
+    asset_names = new_asset_names
 
     if "api" in asset_names or "docs" in asset_names:
         if pages_asset is None:

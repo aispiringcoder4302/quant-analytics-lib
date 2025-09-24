@@ -2107,7 +2107,7 @@ knowledge = frozen_cfg(
     cache_mkdir_kwargs=flex_cfg(),
     clear_cache=False,
     asset_cache_dir=RepEval("Path(cache_dir) / 'asset_cache'"),
-    max_cache_count=5,
+    max_cache_count=24,
     save_cache_kwargs=flex_cfg(),
     load_cache_kwargs=flex_cfg(),
     per_path=True,
@@ -2200,6 +2200,8 @@ knowledge = frozen_cfg(
         think_to_blockquote=True,
         think_open_tag="<think>",
         think_close_tag="</think>",
+        think_separator="\n\n---\n\n",
+        include_thoughts=True,
         resolve_extensions=True,
         make_links=True,
         frontmatter_to_code=True,
@@ -2363,6 +2365,7 @@ knowledge = frozen_cfg(
     $html_metadata
     $html_content
     $body_extras
+    <div id="bottom" aria-hidden="true"></div>
 </body>
 </html>""",
         root_style_extras=[],
@@ -2376,26 +2379,15 @@ knowledge = frozen_cfg(
             r"""<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]],processEscapes:!0,processEnvironments:!0},options:{ignoreHtmlClass:".*|",processHtmlClass:"arithmatex"}},document$.subscribe(()=>{MathJax.startup.output.clearCache(),MathJax.typesetClear(),MathJax.texReset(),MathJax.typesetPromise()});</script>""",
         ],
         invert_colors=False,
-        invert_colors_style=""":root {
+        invert_colors_style=r""":root {
     filter: invert(100%);
 }""",
-        auto_scroll=False,
-        auto_scroll_body="""<script>
-function scrollToBottom() {
-    window.scrollTo(0, document.body.scrollHeight);
-}
-function hasMetaRefresh() {
-    return document.querySelector('meta[http-equiv="refresh"]') !== null;
-}
-window.onload = function() {
-    if (hasMetaRefresh()) {
-        scrollToBottom();
-        setInterval(scrollToBottom, 100);
-    }
-};
-</script>""",
-        show_spinner=False,
-        spinner_style=""".loader {
+        refresh_page=False,
+        refresh_script=r"""<meta http-equiv="refresh" content="1">""",
+        auto_scroll=None,
+        auto_scroll_script=r"""<script>!function(){let e="autoscroll:disabled";function t(){try{sessionStorage.setItem(e,"1")}catch{}}let n=(()=>{try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch{return!1}})();function o(){if(!function t(){try{return"1"===sessionStorage.getItem(e)}catch{return!1}}()&&!n&&null!==document.querySelector('meta[http-equiv="refresh" i]')){let t;t=4,function e(){(function e(){let t=document.scrollingElement||document.documentElement||document.body,n=Math.max(0,t.scrollHeight-t.clientHeight-5);t.scrollTop=n})(),t-- >0&&requestAnimationFrame(e)}()}}window.addEventListener("wheel",t,{passive:!0,once:!0}),window.addEventListener("touchstart",t,{passive:!0,once:!0}),window.addEventListener("touchmove",t,{passive:!0,once:!0}),window.addEventListener("pointerdown",t,{passive:!0,once:!0}),window.addEventListener("mousedown",t,{passive:!0,once:!0}),window.addEventListener("keydown",e=>{["ArrowUp","ArrowDown","PageUp","PageDown","Home","End"," ","Spacebar"].includes(e.key)&&t()},{once:!0}),document.addEventListener("DOMContentLoaded",o,{once:!0}),window.addEventListener("pageshow",o,{once:!0}),window.addEventListener("load",o,{once:!0})}();</script>""",
+        show_spinner=None,
+        spinner_style=r""".loader {
     width: 300px;
     height: 5px;
     margin: 0 auto;
@@ -2425,7 +2417,7 @@ window.onload = function() {
     }
 }
     """,
-        spinner_body="""<span class="loader"></span>""",
+        spinner_body=r"""<span class="loader"></span>""",
         output_to=None,
         flush_output=True,
         buffer_output=True,
@@ -2443,11 +2435,9 @@ window.onload = function() {
                 dir_path=RepEval("Path(cache_dir) / 'html'"),
                 mkdir_kwargs=flex_cfg(),
                 temp_files=False,
-                refresh_page=True,
                 file_prefix_len=20,
                 file_suffix_len=6,
-                auto_scroll=True,
-                show_spinner=True,
+                refresh_page=True,
             ),
         ),
     ),
@@ -2535,10 +2525,9 @@ $context
         ),
         completions="auto",
         completions_config=flex_cfg(
-            include_thoughts=True,
             tools=None,
             tool_registry=None,
-            max_tool_rounds=8,
+            max_tool_rounds=None,
         ),
         completions_configs=flex_cfg(
             openai=flex_cfg(

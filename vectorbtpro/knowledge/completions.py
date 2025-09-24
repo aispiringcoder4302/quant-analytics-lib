@@ -15,12 +15,14 @@ import sys
 import time
 from pathlib import Path
 import json
+import re
+import io
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter
+from vectorbtpro.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter, ThoughtProcessor
 from vectorbtpro.knowledge.tokenization import Tokenizer, TikTokenizer, resolve_tokenizer
 from vectorbtpro.utils import checks
-from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, Configured
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, get
 from vectorbtpro.utils.module_ import get_obj
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
 from vectorbtpro.utils.pbar import ProgressBar
@@ -94,156 +96,7 @@ __all__ = [
 ]
 
 
-class ThoughtProcessor:
-    """Processes content that may include `<think>...</think>` segments.
-
-    Works for both streaming and non-streaming inputs. When `include_thoughts` is
-    True, tags and their content pass through unchanged. When False, thought regions
-    and tags are removed.
-
-    Args:
-        include_thoughts (bool): Whether to keep or remove thought regions.
-    """
-
-    OPEN_TAG = "<think>"
-    """Opening tag for thought segments."""
-
-    CLOSE_TAG = "</think>"
-    """Closing tag for thought segments."""
-
-    def __init__(self, include_thoughts: bool = True) -> None:
-        self._include_thoughts = include_thoughts
-        self._thinking = False
-        self._thinking_source = None
-
-    @property
-    def include_thoughts(self) -> bool:
-        """Whether to include thinking messages (wrapped in `<think>` tags) in output.
-
-        Returns:
-            bool: True if thinking messages should be included, False otherwise.
-        """
-        return self._include_thoughts
-
-    def reset_thought_state(self) -> None:
-        """Resets the internal streaming state.
-
-        Clears any active thought segment without emitting a closing tag. Call this
-        before starting a new, unrelated stream if reusing the same instance.
-        """
-        self._thinking = False
-        self._thinking_source = None
-
-    def process_thought(
-        self,
-        *,
-        thought: tp.Optional[str] = None,
-        content: tp.Optional[str] = None,
-        flush: bool = False,
-    ) -> tp.Optional[str]:
-        """Processes a unit of input for both streaming and non-streaming use.
-
-        Accepts `thought`, `content`, both, or neither. When both are provided
-        and no thought is currently open, the output equals `<think>{thought}</think>{content}`
-        if `include_thoughts` is True, or just `{content}` if False.
-
-        Stateful behavior:
-
-        * Explicit thoughts (`thought`) open an explicit segment on first call,
-        and close automatically when a plain `content` chunk without tags
-        is processed, or when `ThoughtProcessor.process_thought` is called with neither argument.
-        * Inline `<think>`/`</think>` tokens inside `content` are handled
-        even if they span multiple calls.
-
-        Args:
-            thought (Optional[str]): Reasoning content from a separate channel (explicit thoughts).
-            content (Optional[str]): Natural language content that may contain inline tags.
-            flush (bool): If True, flushes the current thought state, closing any open thought segment.
-
-        Returns:
-            Optional[str]: The output string for this call, or None if nothing should be emitted.
-        """
-        out = None
-
-        if thought is not None:
-            if not self._thinking:
-                self._thinking = True
-                self._thinking_source = "explicit"
-                if self.include_thoughts:
-                    out = (out or "") + self.OPEN_TAG + (thought or "")
-            else:
-                if self.include_thoughts:
-                    out = (out or "") + (thought or "")
-
-        if content is not None:
-            s = content or ""
-            if (
-                self._thinking
-                and self._thinking_source == "explicit"
-                and s != ""
-                and (self.OPEN_TAG not in s and self.CLOSE_TAG not in s)
-            ):
-                self._thinking = False
-                self._thinking_source = None
-                piece = (self.CLOSE_TAG + s) if self.include_thoughts else s
-                out = (out or "") + piece if piece else out
-            else:
-
-                def _parse_inline(chunk):
-                    i = 0
-                    parts = []
-                    while i < len(chunk):
-                        if not self._thinking:
-                            j = chunk.find(self.OPEN_TAG, i)
-                            if j == -1:
-                                parts.append(chunk[i:])
-                                break
-                            pre = chunk[i:j]
-                            if pre:
-                                parts.append(pre)
-                            self._thinking = True
-                            self._thinking_source = "inline"
-                            i = j + len(self.OPEN_TAG)
-                            if self.include_thoughts:
-                                parts.append(self.OPEN_TAG)
-                        else:
-                            k = chunk.find(self.CLOSE_TAG, i)
-                            if k == -1:
-                                seg = chunk[i:]
-                                if self.include_thoughts and seg:
-                                    parts.append(seg)
-                                break
-                            thought_piece = chunk[i:k]
-                            if self.include_thoughts and thought_piece:
-                                parts.append(thought_piece)
-                            self._thinking = False
-                            self._thinking_source = None
-                            i = k + len(self.CLOSE_TAG)
-                            if self.include_thoughts:
-                                parts.append(self.CLOSE_TAG)
-                    return "".join(parts)
-
-                piece = _parse_inline(s)
-                out = (out or "") + piece if piece else out
-
-        if ((thought is None and content is None) or flush) and self._thinking:
-            self._thinking = False
-            self._thinking_source = None
-            if self.include_thoughts:
-                out = (out or "") + self.CLOSE_TAG
-
-        return out if out not in ("", None) else None
-
-    def flush_thought(self) -> tp.Optional[str]:
-        """Flushes the current thought state, closing any open thought segment.
-
-        Returns:
-            Optional[str]: The output string for this call, or None if nothing should be emitted.
-        """
-        return self.process_thought(flush=True)
-
-
-class Completions(ThoughtProcessor, Configured):
+class Completions(ThoughtProcessor):
     """Abstract class for completion providers.
 
     Args:
@@ -284,7 +137,6 @@ class Completions(ThoughtProcessor, Configured):
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
         template_context (KwargsLike): Additional context for template substitution.
-        include_thoughts (Optional[bool]): Whether to keep or remove thought regions.
         tools (Optional[MaybeList[Union[str, Callable]]]): Tools to be used in the conversation.
 
             If a string is provided, it must be either the name of a registered tool,
@@ -296,7 +148,7 @@ class Completions(ThoughtProcessor, Configured):
             Any unregistered functions will be added to the registry.
         tool_registry (Optional[Dict[str, Callable]]): Registry mapping tool names to functions for execution.
         max_tool_rounds (Optional[int]): Maximum tool-calling iterations per request.
-        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
+        **kwargs: Keyword arguments for `vectorbtpro.knowledge.formatting.ThoughtProcessor`.
 
     !!! info
         For default settings, see `vectorbtpro._settings.knowledge` and
@@ -329,13 +181,12 @@ class Completions(ThoughtProcessor, Configured):
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
-        include_thoughts: tp.Optional[bool] = None,
         tools: tp.Optional[tp.MaybeList[tp.Union[str, tp.Callable]]] = None,
         tool_registry: tp.Optional[tp.Dict[str, tp.Callable]] = None,
         max_tool_rounds: tp.Optional[int] = None,
         **kwargs,
     ) -> None:
-        Configured.__init__(
+        ThoughtProcessor.__init__(
             self,
             context=context,
             chat_history=chat_history,
@@ -354,7 +205,6 @@ class Completions(ThoughtProcessor, Configured):
             show_progress=show_progress,
             pbar_kwargs=pbar_kwargs,
             template_context=template_context,
-            include_thoughts=include_thoughts,
             tools=tools,
             tool_registry=tool_registry,
             max_tool_rounds=max_tool_rounds,
@@ -379,7 +229,6 @@ class Completions(ThoughtProcessor, Configured):
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
-        include_thoughts = self.resolve_setting(include_thoughts, "include_thoughts")
         tools = self.resolve_setting(tools, "tools")
         tool_registry = self.resolve_setting(tool_registry, "tool_registry", merge=True)
         max_tool_rounds = self.resolve_setting(max_tool_rounds, "max_tool_rounds")
@@ -462,8 +311,6 @@ class Completions(ThoughtProcessor, Configured):
         self._tools = tools
         self._tool_registry = tool_registry
         self._max_tool_rounds = max_tool_rounds
-
-        ThoughtProcessor.__init__(self, include_thoughts=include_thoughts)
 
     @property
     def context(self) -> str:
@@ -631,11 +478,11 @@ class Completions(ThoughtProcessor, Configured):
         return self._tool_registry
 
     @property
-    def max_tool_rounds(self) -> int:
+    def max_tool_rounds(self) -> tp.Optional[int]:
         """Maximum tool-calling iterations per request.
 
         Returns:
-            int: Max number of tool-call steps.
+            Optional[int]: Max number of tool-call steps, or None if not set.
         """
         return self._max_tool_rounds
 
@@ -685,7 +532,7 @@ class Completions(ThoughtProcessor, Configured):
         return None
 
     def get_chat_response(self, messages: tp.ChatMessages, **kwargs) -> tp.Any:
-        """Return a chat response based on the provided messages
+        """Return a chat response based on the provided messages.
 
         Args:
             messages (ChatMessages): List of dictionaries representing the conversation history.
@@ -732,7 +579,7 @@ class Completions(ThoughtProcessor, Configured):
         """Return the content extracted from a streaming response chunk.
 
         Args:
-            response (Any): Streaming response object.
+            response_chunk (Any): Streaming response chunk object.
 
         Returns:
             Optional[str]: Content extracted from the streaming response chunk.
@@ -974,37 +821,51 @@ class Completions(ThoughtProcessor, Configured):
         """
         return False
 
-    def extract_tool_calls(self, response: tp.Any) -> tp.List[tp.Kwargs]:
-        """Extract tool call descriptors from a response.
+    def get_chat_tool_calls(self, response: tp.Any) -> tp.List[tp.Kwargs]:
+        """Return tool call descriptors from a chat response.
 
         Each descriptor should at least include 'id' (if available), 'name', and 'arguments'.
         Arguments can be a dict or a JSON string; they will be normalized by `Completions.execute_tool_calls`.
 
         Args:
-            response (Any): Model response to extract tool calls from.
+            response (Any): Chat response object.
 
         Returns:
             List[Kwargs]: List of extracted tool call descriptors.
         """
         return []
 
-    def build_tool_message(self, response: tp.Any) -> tp.Optional[tp.MaybeList[tp.Kwargs]]:
-        """Build the assistant message(s) containing tool calls to append to messages.
+    def get_stream_tool_calls(self, response_chunks: tp.Iterator[tp.Any]) -> tp.List[tp.Kwargs]:
+        """Return tool call descriptors from a streaming response.
+
+        Each descriptor should at least include 'id' (if available), 'name', and 'arguments'.
+        Arguments can be a dict or a JSON string; they will be normalized by `Completions.execute_tool_calls`.
 
         Args:
-            response (Any): Model response to build tool message from.
+            response_chunks (Iterator[Any]): Iterator of streaming response chunk objects.
 
         Returns:
-            Optional[MaybeList[Kwargs]]: Built tool message(s) or None if not required.
+            List[Kwargs]: List of extracted tool call descriptors.
         """
-        return None
+        return []
 
-    def build_tool_result_messages(
+    def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        """Return assistant messages built from tool calls.
+
+        Args:
+            tool_calls (List[Kwargs]): List of tool call descriptors.
+
+        Returns:
+            List[Kwargs]: Built assistant messages.
+        """
+        raise NotImplementedError
+
+    def get_tool_result_messages(
         self,
         tool_calls: tp.List[tp.Kwargs],
         tool_results: tp.List[tp.Kwargs],
     ) -> tp.List[tp.Kwargs]:
-        """Build provider-specific tool result messages to append to the next request.
+        """Return provider-specific tool result messages to append to the next request.
 
         Args:
             tool_calls (List[Kwargs]): List of tool call descriptors.
@@ -1071,38 +932,72 @@ class Completions(ThoughtProcessor, Configured):
             results.append({"id": call_id, "name": name, "output": out})
         return results
 
-    def chat_until_done(self, messages: tp.ChatMessages) -> tp.Any:
-        """Call the model repeatedly until completion.
+    @classmethod
+    def format_payload(cls, payload: str, language: tp.Optional[str] = None) -> str:
+        """Return a fenced Markdown code block that safely contains `payload`,
+        even if `payload` contains backtick or tilde code fences.
 
         Args:
-            messages (ChatMessages): List of dictionaries representing the conversation history.
+            payload (str): Raw payload string.
+            language (Optional[str]): Programming language for syntax highlighting.
 
         Returns:
-            Any: Final response from the model.
+            str: Formatted payload string.
         """
-        rounds_left = self.max_tool_rounds
+        max_ticks = max((len(m.group(0)) for m in re.finditer(r"`+", payload)), default=0)
+        max_tildes = max((len(m.group(0)) for m in re.finditer(r"~+", payload)), default=0)
+        if max_ticks <= max_tildes:
+            fence_char = "`"
+            n = max(3, max_ticks + 1)
+        else:
+            fence_char = "~"
+            n = max(3, max_tildes + 1)
 
-        while True:
-            response = self.get_chat_response(messages)
-            print(response)
-            if not self.supports_tool_calling or not self.tool_registry:
-                return response
-            if rounds_left <= 0:
-                return response
-            tool_calls = self.extract_tool_calls(response)
-            if not tool_calls:
-                return response
-            tool_results = self.execute_tool_calls(tool_calls)
-            tool_message = self.build_tool_message(response)
-            if tool_message is not None:
-                if isinstance(tool_message, list):
-                    messages.extend(tool_message)
-                else:
-                    messages.append(tool_message)
-            result_messages = self.build_tool_result_messages(tool_calls, tool_results)
-            if result_messages:
-                messages.extend(result_messages)
-            rounds_left -= 1
+        fence = fence_char * n
+        info = f"{language.strip()}" if language else ""
+        return f"{fence}{info}\n{payload}\n{fence}"
+
+    def format_tool_calls(self, tool_calls: tp.List[tp.Kwargs]) -> str:
+        """Format tool calls into a string representation.
+
+        Args:
+            tool_calls (List[Kwargs]): List of tool call descriptors.
+
+        Returns:
+            str: Formatted string representation of the tool calls.
+        """
+        out = []
+        for call in tool_calls:
+            name = call.get("name", "unknown")
+            arguments = call.get("arguments", {})
+            if isinstance(arguments, dict):
+                try:
+                    arguments = json.dumps(arguments, ensure_ascii=False)
+                except Exception:
+                    arguments = str(arguments)
+            payload = self.format_payload(arguments, language="json")
+            out.append(f"**Tool:** `{name}`\n\n**Request:**\n{payload}")
+        return self.process_thought(thought="\n\n".join(out))
+
+    def format_tool_results(self, tool_results: tp.List[tp.Kwargs]) -> str:
+        """Format tool results into a string representation.
+
+        Args:
+            tool_results (List[Kwargs]): List of tool result descriptors.
+
+        Returns:
+            str: Formatted string representation of the tool results.
+        """
+        out = []
+        for result in tool_results:
+            name = result.get("name", "unknown")
+            output = result.get("output", "")
+            if output:
+                payload = self.format_payload(output, language="text")
+                out.append(f"**Tool:** `{name}`\n\n**Response:**\n{payload}")
+            else:
+                out.append(f"**Tool:** `{name}`\n\n**Response:** No output")
+        return self.process_thought(thought="\n\n" + "\n\n".join(out))
 
     def get_completion(
         self,
@@ -1113,24 +1008,18 @@ class Completions(ThoughtProcessor, Configured):
 
         Args:
             message (str): User message to generate a completion for.
-            return_response (bool): Flag to return the raw response along with the file path.
+            return_response (bool): Flag to return the last raw response along with the file path.
 
         Returns:
             ChatOutput: File path for the formatted output; if `return_response` is True,
-                a tuple containing the file path and raw response.
+                a tuple containing the file path and last raw response.
         """
         chat_history = self.chat_history
         stream = self.stream
+        max_tool_rounds = self.max_tool_rounds
         formatter = self.formatter
         formatter_kwargs = self.formatter_kwargs
         template_context = self.template_context
-
-        messages = self.prepare_messages(message)
-        if self.stream:
-            response = self.get_stream_response(messages)
-        else:
-            response = self.chat_until_done(messages)
-        self.reset_thought_state()
 
         if isinstance(formatter, type):
             formatter_kwargs = dict(formatter_kwargs)
@@ -1161,22 +1050,60 @@ class Completions(ThoughtProcessor, Configured):
             formatter = formatter(**formatter_kwargs)
         elif formatter_kwargs:
             formatter = formatter.replace(**formatter_kwargs)
-        if stream:
-            with formatter:
-                for i, response_chunk in enumerate(response):
-                    new_content = self.get_delta_content(response_chunk)
+        with formatter:
+            self.reset_thought_state()
+            messages = self.prepare_messages(message)
+
+            while True:
+                if stream:
+                    response = self.get_stream_response(messages)
+                    response_chunks = []
+                    content_chunks = []
+                    for response_chunk in response:
+                        new_content = self.get_delta_content(response_chunk)
+                        if new_content is not None:
+                            formatter.append(new_content)
+                            content_chunks.append(new_content)
+                        response_chunks.append(response_chunk)
+                    messages.append(dict(role="assistant", content="".join(content_chunks)))
+                    tool_calls = self.get_stream_tool_calls(response_chunks)
+                else:
+                    response = self.get_chat_response(messages)
+                    new_content = self.get_message_content(response)
                     if new_content is not None:
-                        formatter.append(new_content)
-                content = formatter.content
+                        formatter.append(new_content, complete=True)
+                        messages.append(dict(role="assistant", content=formatter.content))
+                    tool_calls = self.get_chat_tool_calls(response)
+
+                if not self.supports_tool_calling or not self.tool_registry:
+                    break
+                if self.max_tool_rounds is not None and max_tool_rounds <= 0:
+                    break
+                if not tool_calls:
+                    break
+                new_content = self.format_tool_calls(tool_calls)
+                if new_content is not None:
+                    formatter.append(new_content, complete=True)
+                tool_results = self.execute_tool_calls(tool_calls)
+                new_content = self.format_tool_results(tool_results)
                 flushed_content = self.flush_thought()
                 if flushed_content:
-                    content += flushed_content
-        else:
-            content = self.get_message_content(response) or ""
+                    new_content += flushed_content
+                if new_content is not None:
+                    formatter.append(new_content, complete=True)
+                tool_call_messages = self.get_tool_call_messages(tool_calls)
+                if tool_call_messages:
+                    messages.extend(tool_call_messages)
+                tool_result_messages = self.get_tool_result_messages(tool_calls, tool_results)
+                if tool_result_messages:
+                    messages.extend(tool_result_messages)
+                if max_tool_rounds is not None:
+                    max_tool_rounds -= 1
+
+            content = formatter.content
             flushed_content = self.flush_thought()
             if flushed_content:
                 content += flushed_content
-            formatter.append_once(content)
 
         chat_history.append(dict(role="user", content=message))
         chat_history.append(dict(role="assistant", content=content))
@@ -1197,16 +1124,10 @@ class Completions(ThoughtProcessor, Configured):
         Returns:
             str: Generated completion text.
         """
-        chat_history = self.chat_history
-
-        messages = self.prepare_messages(message)
-        response = self.chat_until_done(messages)
-        content = self.get_message_content(response)
-        if content is None:
-            content = ""
-        chat_history.append(dict(role="user", content=message))
-        chat_history.append(dict(role="assistant", content=content))
-        return content
+        buf = io.StringIO()
+        new_formatter = ContentFormatter(output_to=buf)
+        new_completions = self.replace(formatter=new_formatter, formatter_kwargs={})
+        return new_completions.get_completion(message)
 
 
 class OpenAICompletions(Completions):
@@ -1295,7 +1216,9 @@ class OpenAICompletions(Completions):
         completions_kwargs["tools"] = completions_kwargs.get("tools", []) + self.tools
         for i, tool in enumerate(completions_kwargs["tools"]):
             if isinstance(tool, str) and tool in self._tool_registry:
-                completions_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+                tool_spec = self.function_to_tool_spec(self._tool_registry[tool])
+                tool_spec = {"type": tool_spec.pop("type", "function"), "function": tool_spec}
+                completions_kwargs["tools"][i] = tool_spec
         client = OpenAI(**client_kwargs)
 
         self._model = model
@@ -1443,88 +1366,161 @@ class OpenAICompletions(Completions):
     def supports_tool_calling(self) -> bool:
         return True
 
-    def extract_tool_calls(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.List[tp.Kwargs]:
-        calls = []
+    def get_chat_tool_calls(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
-            output = getattr(response, "output", None) or []
+            tool_calls = []
+            output = get(response, "output", None) or []
             for idx, item in enumerate(output):
-                if getattr(item, "type", None) == "function_call":
-                    fc = getattr(item, "function_call", None) or item
-                    calls.append(
+                if get(item, "type", None) == "function_call":
+                    fc = get(item, "function_call", None) or item
+                    tool_calls.append(
                         {
-                            "id": getattr(fc, "call_id", None) or getattr(fc, "id", None) or f"function_call_{idx}",
-                            "name": getattr(fc, "name", None),
-                            "arguments": getattr(fc, "parsed_arguments", None) or getattr(fc, "arguments", None),
+                            "id": get(fc, "call_id", None) or get(fc, "id", None) or f"function_call_{idx}",
+                            "name": get(fc, "name", None),
+                            "arguments": get(fc, "parsed_arguments", None) or get(fc, "arguments", None),
                         }
                     )
+            return tool_calls
         else:
-            choices = getattr(response, "choices", None) or []
+            tool_calls = []
+            choices = get(response, "choices", None) or []
             for ch_i, ch in enumerate(choices):
-                msg = getattr(ch, "message", None)
+                msg = get(ch, "message", None)
                 if msg:
-                    tcs = getattr(msg, "tool_calls", None) or []
+                    tcs = get(msg, "tool_calls", None) or []
                     for i, tc in enumerate(tcs):
-                        fn = getattr(tc, "function", None)
-                        calls.append(
+                        fn = get(tc, "function", None)
+                        tool_calls.append(
                             {
-                                "id": getattr(tc, "id", None) or f"tool_call_{ch_i}_{i}",
-                                "name": getattr(fn, "name", None) if fn else None,
-                                "arguments": getattr(fn, "arguments", None) if fn else None,
+                                "id": get(tc, "id", None) or f"tool_call_{ch_i}_{i}",
+                                "name": get(fn, "name", None) if fn else None,
+                                "arguments": get(fn, "arguments", None) if fn else None,
+                                "legacy": False
                             }
                         )
-                    fc = getattr(msg, "function_call", None)
+                    fc = get(msg, "function_call", None)
                     if fc:
-                        calls.append(
+                        tool_calls.append(
                             {
                                 "id": f"function_call_{ch_i}",
-                                "name": getattr(fc, "name", None),
-                                "arguments": getattr(fc, "arguments", None),
+                                "name": get(fc, "name", None),
+                                "arguments": get(fc, "arguments", None),
+                                "legacy": True
                             }
                         )
-        return calls
+            return tool_calls
 
-    def build_tool_message(
+    def get_stream_tool_calls(
         self,
-        response: tp.Union[ChatCompletionT, ResponseT],
-    ) -> tp.Optional[tp.MaybeList[tp.Kwargs]]:
+        response_chunks: tp.Iterator[tp.Union[ChatCompletionChunkT, ResponseStreamEventT]],
+    ) -> tp.List[tp.Kwargs]:
         if self.use_responses:
-            return list(response.output)
+            tool_call_mapping = {}
+            for response_chunk in response_chunks:
+                output_index = get(response_chunk, "output_index", None)
+                if output_index:
+                    if get(response_chunk, "type", None) == "response.output_item.added":
+                        item = get(response_chunk, "item", None)
+                        if item:
+                            if get(item, "type", None) == "function_call":
+                                fc = get(item, "function_call", None) or item
+                                tool_call_mapping[output_index] = {
+                                    "id": get(fc, "call_id", None)
+                                    or get(fc, "id", None)
+                                    or f"function_call_{len(tool_call_mapping)}",
+                                    "name": get(fc, "name", None),
+                                    "arguments": "",
+                                }
+                    elif get(response_chunk, "type", None) == "response.function_call_arguments.delta":
+                        delta = get(response_chunk, "delta", None)
+                        if delta:
+                            tool_call_mapping[output_index]["arguments"] += delta
+            tool_calls = [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
         else:
-            choices = getattr(response, "choices", None) or []
-            if not choices:
-                return None
-            msg = getattr(choices[0], "message", None)
-            if not msg:
-                return None
-            tool_calls = getattr(msg, "tool_calls", None) or []
-            if tool_calls:
-                norm = []
-                for tc in tool_calls:
-                    fn = getattr(tc, "function", None)
-                    norm.append(
-                        {
-                            "id": getattr(tc, "id", None),
-                            "type": "function",
-                            "function": {
-                                "name": getattr(fn, "name", None) if fn else None,
-                                "arguments": getattr(fn, "arguments", None) if fn else None,
-                            },
-                        }
-                    )
-                return {"role": "assistant", "content": "", "tool_calls": norm}
-            if getattr(msg, "function_call", None):
-                return {
-                    "role": "assistant",
-                    "content": "",
-                    "function_call": {
-                        "name": getattr(msg.function_call, "name", None),
-                        "arguments": getattr(msg.function_call, "arguments", None),
-                    },
-                }
+            tool_call_mapping = {}
+            for response_chunk in response_chunks:
+                for choice in get(response_chunk, "choices", []) or []:
+                    delta = get(choice, "delta", None) or {}
+                    for tc in get(delta, "tool_calls", []) or []:
+                        idx = get(tc, "index", None)
+                        if idx is not None:
+                            entry = tool_call_mapping.setdefault(idx, {
+                                "id": None,
+                                "name": None,
+                                "arguments": "",
+                                "legacy": False
+                            })
+                            if get(tc, "id", None):
+                                entry["id"] = tc.id
+                            fn = get(tc, "function", None)
+                            if fn:
+                                if get(fn, "name", None):
+                                    entry["name"] = fn.name
+                                if get(fn, "arguments", None):
+                                    entry["arguments"] += fn.arguments
+                    fc = get(delta, "function_call", None)
+                    if fc:
+                        idx = len(tool_call_mapping)
+                        entry = tool_call_mapping.setdefault(idx, {
+                            "id": f"function_call_{idx}",
+                            "name": None,
+                            "arguments": "",
+                            "legacy": True
+                        })
+                        if get(fc, "name", None):
+                            entry["name"] = fc.name
+                        if get(fc, "arguments", None):
+                            entry["arguments"] += fc.arguments
+            tool_calls = [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
+        return tool_calls
 
-            return None
+    def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.Optional[tp.List[tp.Kwargs]]:
+        if self.use_responses:
+            messages = []
+            for tc in tool_calls:
+                messages.append(
+                    {
+                        "type": "function_call",
+                        "call_id": tc.get("id", None),
+                        "name": tc.get("name", None),
+                        "arguments": tc.get("arguments", None),
+                    }
+                )
+            return messages
+        else:
+            legacy_messages = []
+            norm_tool_calls = []
+            for tc in tool_calls:
+                if tc.get("legacy", False):
+                    legacy_messages.append({
+                        "role": "assistant",
+                        "content": "",
+                        "function_call": {
+                            "name": tc.get("name", None),
+                            "arguments": tc.get("arguments", None),
+                        },
+                    })
+                else:
+                    norm_tool_calls.append({
+                        "id": tc.get("id", None),
+                        "type": "function",
+                        "function": {
+                            "name": tc.get("name", None),
+                            "arguments": tc.get("arguments", None),
+                        },
+                    })
+            if norm_tool_calls:
+                new_messages = [{
+                    "role": "assistant", 
+                    "content": "", 
+                    "tool_calls": norm_tool_calls,
+                }]
+            else:
+                new_messages = []
+            messages = legacy_messages + new_messages
+            return messages
 
-    def build_tool_result_messages(
+    def get_tool_result_messages(
         self,
         tool_calls: tp.List[tp.Kwargs],
         tool_results: tp.List[tp.Kwargs],
@@ -1917,7 +1913,7 @@ class GeminiCompletions(Completions):
     def get_message_content(self, response: GenerateContentResponseT) -> tp.Optional[str]:
         content = None
         for part in response.candidates[0].content.parts:
-            if getattr(part, "thought", False):
+            if get(part, "thought", False):
                 text = self.process_thought(thought=part.text, flush=True)
                 if text is not None:
                     if content is None:
@@ -1960,7 +1956,7 @@ class GeminiCompletions(Completions):
     def get_delta_content(self, response_chunk: GenerateContentResponseT) -> tp.Optional[str]:
         content = None
         for part in response_chunk.candidates[0].content.parts:
-            if getattr(part, "thought", False):
+            if get(part, "thought", False):
                 text = self.process_thought(thought=part.text)
                 if text is not None:
                     if content is None:
@@ -2186,7 +2182,7 @@ class LiteLLMCompletions(Completions):
 
     def get_message_content(self, response: ModelResponseT) -> tp.Optional[str]:
         message = response.choices[0].message
-        reasoning_content = getattr(message, "reasoning_content", None)
+        reasoning_content = get(message, "reasoning_content", None)
         return self.process_thought(thought=reasoning_content, content=message.content, flush=True)
 
     def get_stream_response(self, messages: tp.ChatMessages) -> CustomStreamWrapperT:
@@ -2201,7 +2197,7 @@ class LiteLLMCompletions(Completions):
 
     def get_delta_content(self, response_chunk: ModelResponseT) -> tp.Optional[str]:
         delta = response_chunk.choices[0].delta
-        reasoning_content = getattr(delta, "reasoning_content", None)
+        reasoning_content = get(delta, "reasoning_content", None)
         return self.process_thought(thought=reasoning_content, content=delta.content)
 
 
