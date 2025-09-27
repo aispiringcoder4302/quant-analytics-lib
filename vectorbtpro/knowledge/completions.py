@@ -17,12 +17,14 @@ from pathlib import Path
 import json
 import re
 import io
+from copy import deepcopy
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter, ThoughtProcessor
-from vectorbtpro.knowledge.tokenization import Tokenizer, TikTokenizer, resolve_tokenizer
+from vectorbtpro.knowledge.tokenization import Tokenizer, TikTokenizer, resolve_tokenizer, tokenize
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, get
+from vectorbtpro.utils.formatting import dump, get_dump_language, head_and_tail
 from vectorbtpro.utils.module_ import get_obj
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
 from vectorbtpro.utils.pbar import ProgressBar
@@ -133,10 +135,6 @@ class Completions(ThoughtProcessor):
         formatter_kwargs (KwargsLike): Keyword arguments to initialize or update `formatter`.
         minimal_format (Optional[bool]): Boolean indicating if the input is minimally formatted.
         quick_mode (Optional[bool]): Boolean indicating whether quick mode is enabled.
-        silence_warnings (Optional[bool]): Flag to suppress warning messages.
-        show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
-        pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
-        template_context (KwargsLike): Additional context for template substitution.
         tools (Optional[MaybeList[Union[str, Callable]]]): Tools to be used in the conversation.
 
             If a string is provided, it must be either the name of a registered tool,
@@ -148,6 +146,22 @@ class Completions(ThoughtProcessor):
             Any unregistered functions will be added to the registry.
         tool_registry (Optional[Dict[str, Callable]]): Registry mapping tool names to functions for execution.
         max_tool_rounds (Optional[int]): Maximum tool-calling iterations per request.
+        tool_dump_kwargs (KwargsLike): Keyword arguments for dumping structured data from tools.
+
+            See `vectorbtpro.utils.formatting.dump`.
+        tool_request_template (Optional[CustomTemplateLike]): Template for tool requests.
+
+            The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
+        tool_response_template (Optional[CustomTemplateLike]): Template for tool responses.
+
+            The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
+        tool_response_payload (Optional[str]): Payload mode for tool responses.
+
+            Can be one of "none", "compact" (only head and tail), and "full".
+        silence_warnings (Optional[bool]): Flag to suppress warning messages.
+        show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
+        pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
+        template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.knowledge.formatting.ThoughtProcessor`.
 
     !!! info
@@ -177,13 +191,17 @@ class Completions(ThoughtProcessor):
         formatter_kwargs: tp.KwargsLike = None,
         minimal_format: tp.Optional[bool] = None,
         quick_mode: tp.Optional[bool] = None,
+        tools: tp.Optional[tp.MaybeList[tp.Union[str, tp.Callable]]] = None,
+        tool_registry: tp.Optional[tp.Dict[str, tp.Callable]] = None,
+        max_tool_rounds: tp.Optional[int] = None,
+        tool_dump_kwargs: tp.KwargsLike = None,
+        tool_request_template: tp.CustomTemplateLike = None,
+        tool_response_template: tp.CustomTemplateLike = None,
+        tool_response_payload: tp.Optional[str] = None,
         silence_warnings: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
-        tools: tp.Optional[tp.MaybeList[tp.Union[str, tp.Callable]]] = None,
-        tool_registry: tp.Optional[tp.Dict[str, tp.Callable]] = None,
-        max_tool_rounds: tp.Optional[int] = None,
         **kwargs,
     ) -> None:
         ThoughtProcessor.__init__(
@@ -201,13 +219,17 @@ class Completions(ThoughtProcessor):
             formatter_kwargs=formatter_kwargs,
             minimal_format=minimal_format,
             quick_mode=quick_mode,
+            tools=tools,
+            tool_registry=tool_registry,
+            max_tool_rounds=max_tool_rounds,
+            tool_dump_kwargs=tool_dump_kwargs,
+            tool_request_template=tool_request_template,
+            tool_response_template=tool_response_template,
+            tool_response_payload=tool_response_payload,
             silence_warnings=silence_warnings,
             show_progress=show_progress,
             pbar_kwargs=pbar_kwargs,
             template_context=template_context,
-            tools=tools,
-            tool_registry=tool_registry,
-            max_tool_rounds=max_tool_rounds,
             **kwargs,
         )
 
@@ -225,13 +247,17 @@ class Completions(ThoughtProcessor):
         formatter_kwargs = self.resolve_setting(formatter_kwargs, "formatter_kwargs", default=None, merge=True)
         minimal_format = self.resolve_setting(minimal_format, "minimal_format", default=None)
         quick_mode = self.resolve_setting(quick_mode, "quick_mode")
+        tools = self.resolve_setting(tools, "tools")
+        tool_registry = self.resolve_setting(tool_registry, "tool_registry", merge=True)
+        max_tool_rounds = self.resolve_setting(max_tool_rounds, "max_tool_rounds")
+        tool_dump_kwargs = self.resolve_setting(tool_dump_kwargs, "tool_dump_kwargs", merge=True)
+        tool_request_template = self.resolve_setting(tool_request_template, "tool_request_template")
+        tool_response_template = self.resolve_setting(tool_response_template, "tool_response_template")
+        tool_response_payload = self.resolve_setting(tool_response_payload, "tool_response_payload")
         silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings")
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
         template_context = self.resolve_setting(template_context, "template_context", merge=True)
-        tools = self.resolve_setting(tools, "tools")
-        tool_registry = self.resolve_setting(tool_registry, "tool_registry", merge=True)
-        max_tool_rounds = self.resolve_setting(max_tool_rounds, "max_tool_rounds")
 
         if tools is None:
             tools = []
@@ -304,13 +330,17 @@ class Completions(ThoughtProcessor):
         self._formatter_kwargs = formatter_kwargs
         self._minimal_format = minimal_format
         self._quick_mode = quick_mode
+        self._tools = tools
+        self._tool_registry = tool_registry
+        self._max_tool_rounds = max_tool_rounds
+        self._tool_dump_kwargs = tool_dump_kwargs
+        self._tool_request_template = tool_request_template
+        self._tool_response_template = tool_response_template
+        self._tool_response_payload = tool_response_payload
         self._silence_warnings = silence_warnings
         self._show_progress = show_progress
         self._pbar_kwargs = pbar_kwargs
         self._template_context = template_context
-        self._tools = tools
-        self._tool_registry = tool_registry
-        self._max_tool_rounds = max_tool_rounds
 
     @property
     def context(self) -> str:
@@ -485,6 +515,50 @@ class Completions(ThoughtProcessor):
             Optional[int]: Max number of tool-call steps, or None if not set.
         """
         return self._max_tool_rounds
+
+    @property
+    def tool_dump_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for dumping structured data from tools.
+
+        See `vectorbtpro.utils.formatting.dump`.
+
+        Returns:
+            Kwargs: Dictionary of keyword arguments.
+        """
+        return self._tool_dump_kwargs
+
+    @property
+    def tool_request_template(self) -> tp.CustomTemplateLike:
+        """Template for tool requests.
+
+        The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
+
+        Returns:
+            CustomTemplateLike: Tool request template.
+        """
+        return self._tool_request_template
+
+    @property
+    def tool_response_template(self) -> tp.CustomTemplateLike:
+        """Template for tool responses.
+
+        The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
+
+        Returns:
+            CustomTemplateLike: Tool response template.
+        """
+        return self._tool_response_template
+
+    @property
+    def tool_response_payload(self) -> str:
+        """Payload mode for tool responses.
+
+        Can be one of "none", "compact" (only head and tail), and "full".
+
+        Returns:
+            str: Tool response payload mode.
+        """
+        return self._tool_response_payload
 
     @property
     def silence_warnings(self) -> bool:
@@ -667,11 +741,12 @@ class Completions(ThoughtProcessor):
             ]
 
     @classmethod
-    def function_to_tool_spec(cls, func: tp.Callable) -> tp.Kwargs:
+    def function_to_tool_spec(cls, func: tp.Callable, strict: bool = False) -> tp.Kwargs:
         """Convert a typed Python callable into a minimal tool specification in JSON Schema format.
 
         Args:
             func (Callable): Callable with type-annotated parameters.
+            strict (bool): If True, make the schema strict.
 
         Returns:
             Kwargs: Tool specification for the function.
@@ -682,17 +757,47 @@ class Completions(ThoughtProcessor):
         from collections.abc import Sequence as ABCSequence, Mapping as ABCMapping
         from vectorbtpro.utils.module_ import check_installed
 
+        try:
+            from typing import (
+                TypedDict as _TypedDict,
+                Required as _Required,
+                NotRequired as _NotRequired,
+            )
+        except Exception:
+            try:
+                from typing_extensions import (
+                    TypedDict as _TypedDict,
+                    Required as _Required,
+                    NotRequired as _NotRequired,
+                )
+            except Exception:
+                _TypedDict = _Required = _NotRequired = None
+
         if not callable(func):
             raise TypeError("Function must be callable")
 
         PRIMS = {str: "string", int: "integer", float: "number", bool: "boolean"}
 
-        def _json_defaultable(v) -> bool:
+        def _json_defaultable(v):
             try:
                 json.dumps(v)
                 return True
             except TypeError:
                 return False
+
+        _TD_META = getattr(_typing, "_TypedDictMeta", None)
+
+        def _is_typeddict(tp_obj):
+            if _TD_META is not None and isinstance(tp_obj, _TD_META):
+                return True
+            return isinstance(tp_obj, type) and hasattr(tp_obj, "__annotations__") and hasattr(tp_obj, "__total__")
+
+        def _unwrap_required_markers(ann):
+            if _Required is not None and get_origin(ann) is _Required:
+                return get_args(ann)[0], True, False
+            if _NotRequired is not None and get_origin(ann) is _NotRequired:
+                return get_args(ann)[0], False, True
+            return ann, None, None
 
         def _schema(tp):
             if tp is Any:
@@ -703,6 +808,38 @@ class Completions(ThoughtProcessor):
 
             if tp is type(None):
                 return {"type": "null"}
+
+            if _TypedDict is not None and _is_typeddict(tp):
+                annotations = {}
+                for base in reversed(getattr(tp, "__mro__", ())):
+                    if _is_typeddict(base):
+                        annotations.update(getattr(base, "__annotations__", {}) or {})
+                required_keys = set(getattr(tp, "__required_keys__", set()))
+                optional_keys = set(getattr(tp, "__optional_keys__", set()))
+                props = {}
+                if not required_keys and not optional_keys:
+                    total = getattr(tp, "__total__", True)
+                    inferred_required, inferred_optional = set(), set()
+                    for key, ann in annotations.items():
+                        base_ann, is_req, is_opt = _unwrap_required_markers(ann)
+                        props[key] = _schema(base_ann)
+                        if is_req is True:
+                            inferred_required.add(key)
+                        elif is_opt is True:
+                            inferred_optional.add(key)
+                        else:
+                            (inferred_required if total else inferred_optional).add(key)
+                    required_keys, optional_keys = inferred_required, inferred_optional
+                else:
+                    for key, ann in annotations.items():
+                        base_ann, _, _ = _unwrap_required_markers(ann)
+                        props[key] = _schema(base_ann)
+                return {
+                    "type": "object",
+                    "properties": props,
+                    "required": sorted(required_keys),
+                    "additionalProperties": False,
+                }
 
             origin = get_origin(tp)
             args = get_args(tp)
@@ -739,10 +876,22 @@ class Completions(ThoughtProcessor):
                 if len(args) == 2 and args[1] is Ellipsis:
                     return {"type": "array", "items": _schema(args[0])}
                 if args:
-                    return {"type": "array", "items": {"anyOf": [_schema(a) for a in args]}}
+                    item_schemas = [_schema(a) for a in args]
+                    return {
+                        "type": "array",
+                        "items": item_schemas,
+                        "additionalItems": False,
+                        "minItems": len(item_schemas),
+                        "maxItems": len(item_schemas),
+                    }
                 return {"type": "array"}
 
             if origin in (dict, ABCMapping):
+                if strict:
+                    raise ValueError(
+                        "Strict mode: mapping/dict parameters are not supported. "
+                        "Use a TypedDict or fixed-object schema instead."
+                    )
                 key_t, val_t = (args + (Any, Any))[:2] if args else (Any, Any)
                 if key_t not in (str, Any):
                     raise ValueError("Only dicts with string keys are supported")
@@ -750,6 +899,50 @@ class Completions(ThoughtProcessor):
                 return {"type": "object", "additionalProperties": addl}
 
             raise ValueError(f"Unsupported annotation: {tp!r}")
+
+        def _nullable(sch):
+            if not isinstance(sch, dict):
+                return sch
+            if "anyOf" in sch:
+                anyof = list(sch["anyOf"])
+                if not any(isinstance(x, dict) and x.get("type") == "null" for x in anyof):
+                    anyof.append({"type": "null"})
+                return {**sch, "anyOf": anyof}
+            return {"anyOf": [sch, {"type": "null"}]}
+
+        def _strictify(schema, path="<root>"):
+            if not isinstance(schema, dict):
+                return schema
+            if schema == {}:
+                raise ValueError(
+                    f"Strict mode: unresolved type at {path}. " "Annotate with a concrete type instead of 'Any'."
+                )
+            t = schema.get("type")
+
+            if "anyOf" in schema:
+                schema["anyOf"] = [_strictify(s, f"{path}/anyOf[{i}]") for i, s in enumerate(schema["anyOf"])]
+                return schema
+
+            if t == "object":
+                props = dict(schema.get("properties", {}))
+                pre_required = set(schema.get("required", []))
+                for k, v in list(props.items()):
+                    if k not in pre_required:
+                        props[k] = _nullable(v)
+                for k, v in list(props.items()):
+                    props[k] = _strictify(v, f"{path}/properties/{k}")
+                schema["properties"] = props
+                schema["required"] = sorted(list(props.keys()))
+                schema["additionalProperties"] = False
+                return schema
+
+            if t == "array":
+                if "items" not in schema or schema["items"] == {}:
+                    raise ValueError(f"Strict mode: array at {path or '<root>'} must specify a concrete item schema.")
+                schema["items"] = _strictify(schema["items"], f"{path}/items")
+                return schema
+
+            return schema
 
         sig = inspect.signature(func)
         hints = get_type_hints(func, globalns=getattr(func, "__globals__", None), include_extras=True)
@@ -804,12 +997,19 @@ class Completions(ThoughtProcessor):
 
             props[name] = sch
 
+        parameters_schema = {"type": "object", "properties": props, "required": required}
+        if strict:
+            parameters_schema = _strictify(parameters_schema)
+        else:
+            parameters_schema["additionalProperties"] = False
         tool_spec = {
             "type": "function",
             "name": func.__name__,
             "description": desc,
-            "parameters": {"type": "object", "properties": props, "required": required},
+            "parameters": parameters_schema,
         }
+        if strict:
+            tool_spec["strict"] = True
         return tool_spec
 
     @property
@@ -876,43 +1076,55 @@ class Completions(ThoughtProcessor):
         """
         raise NotImplementedError
 
-    def normalize_tool_arguments(self, arguments: tp.Any) -> tp.Kwargs:
-        """Normalize tool arguments to a standard format.
-
-        Args:
-            arguments (Any): Tool arguments to normalize.
-
-        Returns:
-            Kwargs: Normalized tool arguments.
-        """
-        if isinstance(arguments, dict):
-            return arguments
-        try:
-            return self.normalize_tool_arguments(json.loads(arguments))
-        except (json.JSONDecodeError, TypeError):
-            try:
-                from vectorbtpro.utils.eval_ import evaluate
-
-                return self.normalize_tool_arguments(evaluate(arguments))
-            except Exception:
-                return {"raw": arguments}
-
-    def execute_tool_calls(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
-        """Execute tool calls using the provided registry.
-
-        Accepts a list of dicts with at least 'id', 'name', and 'arguments'.
-        Returns a list of dicts with at least 'id', 'name', and 'output' (stringified).
+    def normalize_tool_calls(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        """Normalize tool calls to a standard format.
 
         Args:
             tool_calls (List[Kwargs]): List of tool call descriptors.
 
         Returns:
+            List[Kwargs]: List of normalized tool call descriptors.
+        """
+
+        def _normalize_arguments(arguments):
+            if isinstance(arguments, dict):
+                return arguments
+            try:
+                return _normalize_arguments(json.loads(arguments))
+            except (json.JSONDecodeError, TypeError):
+                try:
+                    from vectorbtpro.utils.eval_ import evaluate
+
+                    return _normalize_arguments(evaluate(arguments))
+                except Exception:
+                    return {"raw": arguments}
+
+        normalized = []
+        for tc in tool_calls:
+            tc = dict(tc)
+            id = tc.pop("id", None)
+            name = tc.pop("name", None)
+            arguments = _normalize_arguments(tc.pop("arguments", {}))
+            normalized.append({"id": id, "name": name, "arguments": arguments, **tc})
+        return normalized
+
+    def execute_tool_calls(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        """Execute tool calls using the provided registry.
+
+        Args:
+            tool_calls (List[Kwargs]): List of tool call descriptors.
+
+                Each descriptor should at least include 'id', 'name', and 'arguments' (must be a dict).
+
+        Returns:
             List[Kwargs]: List of tool results.
+
+                Each result should include 'id', 'name', and 'output' (must be a string).
         """
         results = []
-        for call in tool_calls:
-            name = call["name"]
-            call_id = call["id"]
+        for tc in tool_calls:
+            name = tc["name"]
+            call_id = tc["id"]
             if not name:
                 out = "No tool name provided"
             elif name not in self.tool_registry:
@@ -920,8 +1132,7 @@ class Completions(ThoughtProcessor):
             else:
                 func = self.tool_registry[name]
                 try:
-                    arguments = self.normalize_tool_arguments(call["arguments"])
-                    out = func(**arguments)
+                    out = func(**tc["arguments"])
                 except Exception as e:
                     out = f"Tool execution error: {e!r}"
                 if not isinstance(out, str):
@@ -957,7 +1168,7 @@ class Completions(ThoughtProcessor):
         info = f"{language.strip()}" if language else ""
         return f"{fence}{info}\n{payload}\n{fence}"
 
-    def format_tool_calls(self, tool_calls: tp.List[tp.Kwargs]) -> str:
+    def format_tool_calls(self, tool_calls: tp.List[tp.Kwargs]) -> tp.Optional[str]:
         """Format tool calls into a string representation.
 
         Args:
@@ -967,37 +1178,85 @@ class Completions(ThoughtProcessor):
             str: Formatted string representation of the tool calls.
         """
         out = []
-        for call in tool_calls:
-            name = call.get("name", "unknown")
-            arguments = call.get("arguments", {})
-            if isinstance(arguments, dict):
-                try:
-                    arguments = json.dumps(arguments, ensure_ascii=False)
-                except Exception:
-                    arguments = str(arguments)
-            payload = self.format_payload(arguments, language="json")
-            out.append(f"**Tool:** `{name}`\n\n**Request:**\n{payload}")
+        for tc in tool_calls:
+            tc = dict(tc)
+            tc["name"] = tc.get("name", "unknown")
+            arguments = tc.get("arguments", {})
+            tool_dump_kwargs = dict(self.tool_dump_kwargs)
+            dump_engine = tool_dump_kwargs.pop("dump_engine", None) or "json"
+            if not isinstance(arguments, str):
+                arguments = dump(arguments, dump_engine=dump_engine, **tool_dump_kwargs)
+            dump_language = get_dump_language(dump_engine)
+            tc["payload"] = self.format_payload(arguments, language=dump_language)
+            tool_request_template = self.tool_request_template
+            if isinstance(tool_request_template, str):
+                tool_request_template = SafeSub(tool_request_template)
+            elif checks.is_function(tool_request_template):
+                tool_request_template = RepFunc(tool_request_template)
+            elif not isinstance(tool_request_template, CustomTemplate):
+                raise TypeError("Tool request template must be a string, function, or template")
+            template_context = flat_merge_dicts(tc, self.template_context)
+            tool_request = tool_request_template.substitute(template_context, eval_id="tool_request_template")
+            if tool_request:
+                out.append(tool_request)
         return self.process_thought(thought="\n\n".join(out))
 
-    def format_tool_results(self, tool_results: tp.List[tp.Kwargs]) -> str:
+    def format_tool_results(self, tool_results: tp.List[tp.Kwargs], prepend_newline: bool = True) -> tp.Optional[str]:
         """Format tool results into a string representation.
 
         Args:
             tool_results (List[Kwargs]): List of tool result descriptors.
+            prepend_newline (bool): Flag to prepend a newline to the output.
 
         Returns:
             str: Formatted string representation of the tool results.
         """
         out = []
-        for result in tool_results:
-            name = result.get("name", "unknown")
-            output = result.get("output", "")
+        for tr in tool_results:
+            tr = dict(tr)
+            tr["name"] = tr.get("name", "unknown")
+            output = tr.get("output", "")
+            tr["token_count"] = len(tokenize(output))
+            show_response = True
             if output:
-                payload = self.format_payload(output, language="text")
-                out.append(f"**Tool:** `{name}`\n\n**Response:**\n{payload}")
+                if self.tool_response_payload.lower() == "none":
+                    tr["payload"] = ""
+                    show_response = False
+                elif self.tool_response_payload.lower() == "compact":
+                    head, tail = head_and_tail(output)
+                    skipped = output[len(head) : -len(tail)]
+                    if skipped:
+                        head = self.format_payload(head, language="text")
+                        tail = self.format_payload(tail, language="text")
+                        middle = (
+                            f"\n\n*... ({len(skipped.splitlines())} lines and {len(skipped)} chars skipped) ...*\n\n"
+                        )
+                        tr["payload"] = head + middle + tail
+                    else:
+                        tr["payload"] = self.format_payload(output, language="text")
+                elif self.tool_response_payload.lower() == "full":
+                    tr["payload"] = self.format_payload(output, language="text")
+                else:
+                    raise ValueError(f"Invalid tool response payload: {self.tool_response_payload!r}")
             else:
-                out.append(f"**Tool:** `{name}`\n\n**Response:** No output")
-        return self.process_thought(thought="\n\n" + "\n\n".join(out))
+                tr["payload"] = ""
+                show_response = False
+            if not show_response:
+                continue
+            tool_response_template = self.tool_response_template
+            if isinstance(tool_response_template, str):
+                tool_response_template = SafeSub(tool_response_template)
+            elif checks.is_function(tool_response_template):
+                tool_response_template = RepFunc(tool_response_template)
+            elif not isinstance(tool_response_template, CustomTemplate):
+                raise TypeError("Tool response template must be a string, function, or template")
+            template_context = flat_merge_dicts(tr, self.template_context)
+            tool_response = tool_response_template.substitute(template_context, eval_id="tool_response_template")
+            if tool_response:
+                out.append(tool_response)
+        if out and prepend_newline:
+            out = [""] + out
+        return self.process_thought(thought="\n\n".join(out))
 
     def get_completion(
         self,
@@ -1061,7 +1320,7 @@ class Completions(ThoughtProcessor):
                     content_chunks = []
                     for response_chunk in response:
                         new_content = self.get_delta_content(response_chunk)
-                        if new_content is not None:
+                        if new_content:
                             formatter.append(new_content)
                             content_chunks.append(new_content)
                         response_chunks.append(response_chunk)
@@ -1070,7 +1329,7 @@ class Completions(ThoughtProcessor):
                 else:
                     response = self.get_chat_response(messages)
                     new_content = self.get_message_content(response)
-                    if new_content is not None:
+                    if new_content:
                         formatter.append(new_content, complete=True)
                         messages.append(dict(role="assistant", content=formatter.content))
                     tool_calls = self.get_chat_tool_calls(response)
@@ -1081,15 +1340,20 @@ class Completions(ThoughtProcessor):
                     break
                 if not tool_calls:
                     break
+
+                tool_calls = self.normalize_tool_calls(tool_calls)
                 new_content = self.format_tool_calls(tool_calls)
-                if new_content is not None:
+                if new_content:
                     formatter.append(new_content, complete=True)
+                    prepend_newline = True
+                else:
+                    prepend_newline = False
                 tool_results = self.execute_tool_calls(tool_calls)
-                new_content = self.format_tool_results(tool_results)
+                new_content = self.format_tool_results(tool_results, prepend_newline=prepend_newline)
                 flushed_content = self.flush_thought()
                 if flushed_content:
                     new_content += flushed_content
-                if new_content is not None:
+                if new_content:
                     formatter.append(new_content, complete=True)
                 tool_call_messages = self.get_tool_call_messages(tool_calls)
                 if tool_call_messages:
@@ -1135,10 +1399,11 @@ class OpenAICompletions(Completions):
 
     Args:
         model (Optional[str]): Identifier for the model to use.
-        client_kwargs (KwargsLike): Keyword arguments for `openai.OpenAI`.
+        strict_schema (Optional[bool]): Whether to enforce strict schema validation.
         use_responses (bool): Whether to use the Responses API instead of the Completions API.
 
             Note that thought summarization is not supported in the Completions API.
+        client_kwargs (KwargsLike): Keyword arguments for `openai.OpenAI`.
         responses_kwargs (KwargsLike): Keyword arguments for `openai.Responses.create`.
         completions_kwargs (KwargsLike): Keyword arguments for `openai.Completions.create`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs`,
@@ -1155,8 +1420,9 @@ class OpenAICompletions(Completions):
     def __init__(
         self,
         model: tp.Optional[str] = None,
-        client_kwargs: tp.KwargsLike = None,
+        strict_schema: tp.Optional[bool] = None,
         use_responses: tp.Optional[bool] = None,
+        client_kwargs: tp.KwargsLike = None,
         responses_kwargs: tp.KwargsLike = None,
         completions_kwargs: tp.KwargsLike = None,
         **kwargs,
@@ -1164,8 +1430,9 @@ class OpenAICompletions(Completions):
         Completions.__init__(
             self,
             model=model,
-            client_kwargs=client_kwargs,
+            strict_schema=strict_schema,
             use_responses=use_responses,
+            client_kwargs=client_kwargs,
             responses_kwargs=responses_kwargs,
             completions_kwargs=completions_kwargs,
             **kwargs,
@@ -1179,8 +1446,9 @@ class OpenAICompletions(Completions):
         openai_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_model = openai_config.pop("model", None)
         def_quick_model = openai_config.pop("quick_model", None)
-        def_client_kwargs = openai_config.pop("client_kwargs", None)
+        def_strict_schema = openai_config.pop("strict_schema", None)
         def_use_responses = openai_config.pop("use_responses", None)
+        def_client_kwargs = openai_config.pop("client_kwargs", None)
         def_responses_kwargs = openai_config.pop("responses_kwargs", None)
         def_completions_kwargs = openai_config.pop("completions_kwargs", None)
 
@@ -1193,6 +1461,8 @@ class OpenAICompletions(Completions):
             if k in init_arg_names:
                 openai_config.pop(k)
 
+        if strict_schema is None:
+            strict_schema = def_strict_schema
         if use_responses is None:
             use_responses = def_use_responses
 
@@ -1211,13 +1481,18 @@ class OpenAICompletions(Completions):
         responses_kwargs["tools"] = responses_kwargs.get("tools", []) + self.tools
         for i, tool in enumerate(responses_kwargs["tools"]):
             if isinstance(tool, str) and tool in self._tool_registry:
-                responses_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+                tool_spec = self.function_to_tool_spec(self._tool_registry[tool], strict=strict_schema)
+                if strict_schema:
+                    tool_spec = self.make_tool_spec_strict(tool_spec)
+                responses_kwargs["tools"][i] = tool_spec
         completions_kwargs = merge_dicts(_completions_kwargs, def_completions_kwargs, completions_kwargs)
         completions_kwargs["tools"] = completions_kwargs.get("tools", []) + self.tools
         for i, tool in enumerate(completions_kwargs["tools"]):
             if isinstance(tool, str) and tool in self._tool_registry:
-                tool_spec = self.function_to_tool_spec(self._tool_registry[tool])
+                tool_spec = self.function_to_tool_spec(self._tool_registry[tool], strict=strict_schema)
                 tool_spec = {"type": tool_spec.pop("type", "function"), "function": tool_spec}
+                if strict_schema:
+                    tool_spec = self.make_tool_spec_strict(tool_spec)
                 completions_kwargs["tools"][i] = tool_spec
         client = OpenAI(**client_kwargs)
 
@@ -1267,6 +1542,97 @@ class OpenAICompletions(Completions):
         """
         return self._completions_kwargs
 
+    @classmethod
+    def make_tool_spec_strict(cls, spec: tp.Kwargs) -> tp.Kwargs:
+        """Make OpenAI tool/function schema dict compatible with strict mode.
+
+        Args:
+            spec (Kwargs): Dict representing either a single tool, a bare function object,
+                or an object containing "tools".
+
+        Returns:
+            Dict: Dict rewritten to be compatible with strict mode.
+        """
+
+        def _nullable(schema):
+            schema = deepcopy(schema)
+            if "enum" in schema and isinstance(schema["enum"], list):
+                if None not in schema["enum"]:
+                    schema["enum"] = schema["enum"] + [None]
+                return schema
+            t = schema.get("type", None)
+            if isinstance(t, list):
+                if "null" not in t:
+                    schema["type"] = t + ["null"]
+            elif isinstance(t, str):
+                schema["type"] = [t, "null"]
+            else:
+                schema["type"] = ["null"]
+            return schema
+
+        def _strictify_schema(schema):
+            schema = deepcopy(schema)
+            t = schema.get("type", None)
+
+            if "anyOf" in schema and isinstance(schema["anyOf"], list):
+                schema["anyOf"] = [_strictify_schema(s) for s in schema["anyOf"]]
+                return schema
+            if "oneOf" in schema and isinstance(schema["oneOf"], list):
+                schema["oneOf"] = [_strictify_schema(s) for s in schema["oneOf"]]
+                return schema
+            if "allOf" in schema and isinstance(schema["allOf"], list):
+                schema["allOf"] = [_strictify_schema(s) for s in schema["allOf"]]
+                return schema
+
+            is_object = (t == "object") or (isinstance(t, list) and "object" in t)
+            if is_object:
+                props = schema.get("properties", None) or {}
+                schema["properties"] = props
+                orig_required = set(schema.get("required", None) or [])
+                schema["additionalProperties"] = False
+                all_keys = list(props.keys())
+                for key in all_keys:
+                    subschema = props[key]
+                    if key not in orig_required:
+                        subschema = _nullable(subschema)
+                    props[key] = _strictify_schema(subschema)
+                schema["required"] = all_keys
+
+            is_array = (t == "array") or (isinstance(t, list) and "array" in t)
+            if is_array:
+                items = schema.get("items", None)
+                if isinstance(items, dict):
+                    schema["items"] = _strictify_schema(items)
+                elif isinstance(items, list):
+                    schema["items"] = [_strictify_schema(s) for s in items]
+
+            return schema
+
+        def _strictify_function(fun):
+            fun = deepcopy(fun)
+            params = fun.get("parameters", None) or {"type": "object", "properties": {}}
+            fun["parameters"] = _strictify_schema(params)
+            fun["strict"] = True
+            return fun
+
+        def _strictify_tool(tool):
+            tool = deepcopy(tool)
+            if tool.get("type", None) == "function" and isinstance(tool.get("function", None), dict):
+                tool["function"] = _strictify_function(tool["function"])
+            return tool
+
+        if not isinstance(spec, dict):
+            raise TypeError("Expected a dict")
+        data = deepcopy(spec)
+        if "tools" in data and isinstance(data["tools"], list):
+            data["tools"] = [_strictify_tool(t) for t in data["tools"]]
+            return data
+        if data.get("type", None) == "function" and isinstance(data.get("function", None), dict):
+            return _strictify_tool(data)
+        if {"name", "parameters"} & set(data.keys()):
+            return _strictify_function(data)
+        return data
+
     def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[tp.Dict[str, str]], str]:
         """Format messages to Responses API format.
 
@@ -1312,25 +1678,30 @@ class OpenAICompletions(Completions):
     def get_message_content(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.Optional[str]:
         if self.use_responses:
             out = None
-            for output in response.output:
-                if output.type == "reasoning":
-                    for summary in output.summary:
-                        if summary.type == "summary_text":
-                            thought = self.process_thought(thought=summary.text, flush=True)
+            for output in get(response, "output", []) or []:
+                if get(output, "type", None) == "reasoning":
+                    for summary in get(output, "summary", []) or []:
+                        if get(summary, "type", None) == "summary_text":
+                            thought = self.process_thought(thought=get(summary, "text", None), flush=True)
                             if thought is not None:
                                 if out is None:
                                     out = ""
                                 out += thought
-                if output.type == "message":
-                    for content in output.content:
-                        if content.type == "output_text":
-                            text = self.process_thought(content=content.text, flush=True)
+                if get(output, "type", None) == "message":
+                    for content in get(output, "content", []) or []:
+                        if get(content, "type", None) == "output_text":
+                            text = self.process_thought(content=get(content, "text", None), flush=True)
                             if text is not None:
                                 if out is None:
                                     out = ""
                                 out += text
             return out
-        return response.choices[0].message.content
+        else:
+            choices = get(response, "choices", None) or []
+            if choices:
+                message = get(choices[0], "message", None)
+                return get(message, "content", None)
+            return None
 
     def get_stream_response(self, messages: tp.ChatMessages) -> StreamT:
         if self.use_responses:
@@ -1355,12 +1726,17 @@ class OpenAICompletions(Completions):
         response_chunk: tp.Union[ChatCompletionChunkT, ResponseStreamEventT],
     ) -> tp.Optional[str]:
         if self.use_responses:
-            if response_chunk.type == "response.reasoning_summary_text.delta":
-                return self.process_thought(thought=response_chunk.delta)
-            if response_chunk.type == "response.output_text.delta":
-                return self.process_thought(content=response_chunk.delta)
+            if get(response_chunk, "type", None) == "response.reasoning_summary_text.delta":
+                return self.process_thought(thought=get(response_chunk, "delta", None))
+            if get(response_chunk, "type", None) == "response.output_text.delta":
+                return self.process_thought(content=get(response_chunk, "delta", None))
             return self.flush_thought()
-        return response_chunk.choices[0].delta.content
+        else:
+            choices = get(response_chunk, "choices", None) or []
+            if choices:
+                delta = get(choices[0], "delta", None)
+                return get(delta, "content", None)
+            return None
 
     @property
     def supports_tool_calling(self) -> bool:
@@ -1395,7 +1771,7 @@ class OpenAICompletions(Completions):
                                 "id": get(tc, "id", None) or f"tool_call_{ch_i}_{i}",
                                 "name": get(fn, "name", None) if fn else None,
                                 "arguments": get(fn, "arguments", None) if fn else None,
-                                "legacy": False
+                                "legacy": False,
                             }
                         )
                     fc = get(msg, "function_call", None)
@@ -1405,7 +1781,7 @@ class OpenAICompletions(Completions):
                                 "id": f"function_call_{ch_i}",
                                 "name": get(fc, "name", None),
                                 "arguments": get(fc, "arguments", None),
-                                "legacy": True
+                                "legacy": True,
                             }
                         )
             return tool_calls
@@ -1444,12 +1820,15 @@ class OpenAICompletions(Completions):
                     for tc in get(delta, "tool_calls", []) or []:
                         idx = get(tc, "index", None)
                         if idx is not None:
-                            entry = tool_call_mapping.setdefault(idx, {
-                                "id": None,
-                                "name": None,
-                                "arguments": "",
-                                "legacy": False
-                            })
+                            entry = tool_call_mapping.setdefault(
+                                idx,
+                                {
+                                    "id": None,
+                                    "name": None,
+                                    "arguments": "",
+                                    "legacy": False,
+                                },
+                            )
                             if get(tc, "id", None):
                                 entry["id"] = tc.id
                             fn = get(tc, "function", None)
@@ -1461,12 +1840,15 @@ class OpenAICompletions(Completions):
                     fc = get(delta, "function_call", None)
                     if fc:
                         idx = len(tool_call_mapping)
-                        entry = tool_call_mapping.setdefault(idx, {
-                            "id": f"function_call_{idx}",
-                            "name": None,
-                            "arguments": "",
-                            "legacy": True
-                        })
+                        entry = tool_call_mapping.setdefault(
+                            idx,
+                            {
+                                "id": f"function_call_{idx}",
+                                "name": None,
+                                "arguments": "",
+                                "legacy": True,
+                            },
+                        )
                         if get(fc, "name", None):
                             entry["name"] = fc.name
                         if get(fc, "arguments", None):
@@ -1483,7 +1865,7 @@ class OpenAICompletions(Completions):
                         "type": "function_call",
                         "call_id": tc.get("id", None),
                         "name": tc.get("name", None),
-                        "arguments": tc.get("arguments", None),
+                        "arguments": json.dumps(tc.get("arguments", None)),
                     }
                 )
             return messages
@@ -1492,29 +1874,35 @@ class OpenAICompletions(Completions):
             norm_tool_calls = []
             for tc in tool_calls:
                 if tc.get("legacy", False):
-                    legacy_messages.append({
+                    legacy_messages.append(
+                        {
+                            "role": "assistant",
+                            "content": "",
+                            "function_call": {
+                                "name": tc.get("name", None),
+                                "arguments": json.dumps(tc.get("arguments", None)),
+                            },
+                        }
+                    )
+                else:
+                    norm_tool_calls.append(
+                        {
+                            "id": tc.get("id", None),
+                            "type": "function",
+                            "function": {
+                                "name": tc.get("name", None),
+                                "arguments": json.dumps(tc.get("arguments", None)),
+                            },
+                        }
+                    )
+            if norm_tool_calls:
+                new_messages = [
+                    {
                         "role": "assistant",
                         "content": "",
-                        "function_call": {
-                            "name": tc.get("name", None),
-                            "arguments": tc.get("arguments", None),
-                        },
-                    })
-                else:
-                    norm_tool_calls.append({
-                        "id": tc.get("id", None),
-                        "type": "function",
-                        "function": {
-                            "name": tc.get("name", None),
-                            "arguments": tc.get("arguments", None),
-                        },
-                    })
-            if norm_tool_calls:
-                new_messages = [{
-                    "role": "assistant", 
-                    "content": "", 
-                    "tool_calls": norm_tool_calls,
-                }]
+                        "tool_calls": norm_tool_calls,
+                    }
+                ]
             else:
                 new_messages = []
             messages = legacy_messages + new_messages

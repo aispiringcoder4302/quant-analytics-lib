@@ -355,7 +355,13 @@ def find(
 
 
 @register_tool
-def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) -> str:
+def get_attrs(
+    refname: str,
+    own_only: bool = False,
+    incl_private: bool = False,
+    incl_types: bool = False,
+    incl_refnames: bool = False,
+) -> str:
     """Get a list of attributes of an object (similar to `dir()`) with their types and reference names.
 
     Can be used to discover the API of VectorBT PRO (vectorbtpro, VBT). For example, use it to
@@ -375,6 +381,9 @@ def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) 
         own_only (bool): If True, include only attributes that are defined directly on the object
             (i.e., attributes defined elsewhere, such as inherited attributes, will be excluded).
         incl_private (bool): If True, include private attributes (those starting with an underscore).
+        incl_types (bool): If True, include attribute types in the output (e.g., `classmethod`).
+        incl_refnames (bool): If True, include attribute reference names in the output
+            (e.g., `vectorbtpro.utils.base.Base.chat`).
 
     Returns:
         str: String containing the list of attributes, each on a new line.
@@ -392,9 +401,9 @@ def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) 
     display_lines = []
     for attr_name, attr_type, attr_refname in df.itertuples():
         line = attr_name
-        if attr_type != "?":
+        if incl_types and attr_type != "?":
             line += f" [{attr_type}]"
-        if attr_refname != "?" and attr_refname != resolved_refname + "." + attr_name:
+        if incl_refnames and attr_refname != "?" and attr_refname != resolved_refname + "." + attr_name:
             line += f" @ {attr_refname}"
         display_lines.append(line)
     return "\n".join(display_lines)

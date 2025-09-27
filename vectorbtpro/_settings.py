@@ -2100,6 +2100,42 @@ ${config_doc}
 
 _settings["search"] = search
 
+formatting = frozen_cfg(
+    dump_engines=flex_cfg(
+        nestedtext=flex_cfg(
+            indent=2,
+        ),
+        pyyaml=flex_cfg(
+            sort_keys=False,
+            default_flow_style=False,
+            allow_unicode=True,
+        ),
+        ruamel=flex_cfg(
+            default_flow_style=False,
+            allow_unicode=True,
+            width=4096,
+            preserve_quotes=True,
+            indent=dict(mapping=2, sequence=4, offset=2),
+        ),
+        json=flex_cfg(
+            ensure_ascii=False,
+            indent=4,
+        ),
+    )
+)
+"""_"""
+
+__pdoc__["formatting"] = Sub(
+    """Sub-configuration with settings applied across `vectorbtpro.utils.formatting`.
+
+```python
+${config_doc}
+```
+"""
+)
+
+_settings["formatting"] = formatting
+
 knowledge = frozen_cfg(
     options_=dict(override_keys={"chat"}),
     cache=True,
@@ -2129,27 +2165,6 @@ knowledge = frozen_cfg(
     ),
     dump_all=False,
     dump_engine="yaml",
-    dump_engine_kwargs=flex_cfg(
-        nestedtext=flex_cfg(
-            indent=2,
-        ),
-        pyyaml=flex_cfg(
-            sort_keys=False,
-            default_flow_style=False,
-            allow_unicode=True,
-        ),
-        ruamel=flex_cfg(
-            default_flow_style=False,
-            allow_unicode=True,
-            width=4096,
-            preserve_quotes=True,
-            indent=dict(mapping=2, sequence=4, offset=2),
-        ),
-        json=flex_cfg(
-            ensure_ascii=False,
-            indent=4,
-        ),
-    ),
     in_dumps=False,
     dump_kwargs=flex_cfg(),
     document_cls=None,
@@ -2528,15 +2543,22 @@ $context
             tools=None,
             tool_registry=None,
             max_tool_rounds=None,
+            tool_dump_kwargs=flex_cfg(
+                dump_engine="json",
+            ),
+            tool_request_template="**Tool request [`$name`]:**\n$payload",
+            tool_response_template="**Tool response [`$name`], $token_count tokens:**\n$payload",
+            tool_response_payload="compact",
         ),
         completions_configs=flex_cfg(
             openai=flex_cfg(
                 model="gpt-5",
                 quick_model="gpt-5-mini",
-                client_kwargs=flex_cfg(),
-                completions_kwargs=flex_cfg(),
-                responses_kwargs=flex_cfg(),
+                strict_schema=False,
                 use_responses=True,
+                client_kwargs=flex_cfg(),
+                responses_kwargs=flex_cfg(),
+                completions_kwargs=flex_cfg(),
             ),
             anthropic=flex_cfg(
                 model="claude-sonnet-4-0",
