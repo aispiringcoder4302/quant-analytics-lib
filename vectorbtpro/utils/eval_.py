@@ -138,6 +138,7 @@ class JupyterKernel(Configured):
 
     Args:
         startup_timeout (int): Seconds to wait for the kernel to become ready.
+        nocolor (bool): Whether to disable color output.
         **manager_kwargs: Keyword arguments for the kernel manager.
 
     Examples:
@@ -159,13 +160,14 @@ class JupyterKernel(Configured):
         ```
     """
 
-    def __init__(self, startup_timeout: int = 60, **manager_kwargs) -> None:
-        Configured.__init__(self, startup_timeout=startup_timeout, **manager_kwargs)
+    def __init__(self, startup_timeout: int = 60, nocolor: bool = True, **manager_kwargs) -> None:
+        Configured.__init__(self, startup_timeout=startup_timeout, nocolor=nocolor, **manager_kwargs)
 
         if manager_kwargs is None:
             manager_kwargs = {}
 
         self._startup_timeout = startup_timeout
+        self._nocolor = nocolor
         self._manager_kwargs = manager_kwargs
 
         self._manager = None
@@ -179,6 +181,15 @@ class JupyterKernel(Configured):
             int: Timeout in seconds.
         """
         return self._startup_timeout
+
+    @property
+    def nocolor(self) -> bool:
+        """Whether to disable color output.
+
+        Returns:
+            bool: True if color output is disabled, False otherwise.
+        """
+        return self._nocolor
 
     @property
     def manager_kwargs(self) -> tp.Kwargs:
@@ -306,7 +317,10 @@ class JupyterKernel(Configured):
 
         self._manager = KernelManager(**self.manager_kwargs)
 
-        self.manager.start_kernel()
+        extra_args = []
+        if self.nocolor:
+            extra_args.append("--InteractiveShell.colors=NoColor")
+        self.manager.start_kernel(extra_arguments=extra_args)
         self._client = self.manager.client()
         self.client.start_channels()
         self.client.wait_for_ready(timeout=self.startup_timeout)

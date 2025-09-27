@@ -741,12 +741,13 @@ class Completions(ThoughtProcessor):
             ]
 
     @classmethod
-    def function_to_tool_spec(cls, func: tp.Callable, strict: bool = False) -> tp.Kwargs:
+    def function_to_tool_spec(cls, func: tp.Callable, strict: bool = False, draft_2020_12: bool = True) -> tp.Kwargs:
         """Convert a typed Python callable into a minimal tool specification in JSON Schema format.
 
         Args:
             func (Callable): Callable with type-annotated parameters.
             strict (bool): If True, make the schema strict.
+            draft_2020_12 (bool): If True, emit tuple arrays using JSON Schema 2020-12.
 
         Returns:
             Kwargs: Tool specification for the function.
@@ -877,13 +878,20 @@ class Completions(ThoughtProcessor):
                     return {"type": "array", "items": _schema(args[0])}
                 if args:
                     item_schemas = [_schema(a) for a in args]
-                    return {
-                        "type": "array",
-                        "items": item_schemas,
-                        "additionalItems": False,
-                        "minItems": len(item_schemas),
-                        "maxItems": len(item_schemas),
-                    }
+                    if draft_2020_12:
+                        return {
+                            "type": "array",
+                            "prefixItems": item_schemas,
+                            "items": False,
+                        }
+                    else:
+                        return {
+                            "type": "array",
+                            "items": item_schemas,
+                            "additionalItems": False,
+                            "minItems": len(item_schemas),
+                            "maxItems": len(item_schemas),
+                        }
                 return {"type": "array"}
 
             if origin in (dict, ABCMapping):
@@ -1060,15 +1068,10 @@ class Completions(ThoughtProcessor):
         """
         raise NotImplementedError
 
-    def get_tool_result_messages(
-        self,
-        tool_calls: tp.List[tp.Kwargs],
-        tool_results: tp.List[tp.Kwargs],
-    ) -> tp.List[tp.Kwargs]:
+    def get_tool_result_messages(self, tool_results: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
         """Return provider-specific tool result messages to append to the next request.
 
         Args:
-            tool_calls (List[Kwargs]): List of tool call descriptors.
             tool_results (List[Kwargs]): List of tool result descriptors.
 
         Returns:
@@ -1226,8 +1229,8 @@ class Completions(ThoughtProcessor):
                     head, tail = head_and_tail(output)
                     skipped = output[len(head) : -len(tail)]
                     if skipped:
-                        head = self.format_payload(head, language="text")
-                        tail = self.format_payload(tail, language="text")
+                        head = self.format_payload(head.strip(), language="text")
+                        tail = self.format_payload(tail.strip(), language="text")
                         middle = (
                             f"\n\n*... ({len(skipped.splitlines())} lines and {len(skipped)} chars skipped) ...*\n\n"
                         )
@@ -1324,14 +1327,15 @@ class Completions(ThoughtProcessor):
                             formatter.append(new_content)
                             content_chunks.append(new_content)
                         response_chunks.append(response_chunk)
-                    messages.append(dict(role="assistant", content="".join(content_chunks)))
+                    if content_chunks:
+                        messages.append(dict(role="assistant", content="".join(content_chunks)))
                     tool_calls = self.get_stream_tool_calls(response_chunks)
                 else:
                     response = self.get_chat_response(messages)
                     new_content = self.get_message_content(response)
                     if new_content:
                         formatter.append(new_content, complete=True)
-                        messages.append(dict(role="assistant", content=formatter.content))
+                        messages.append(dict(role="assistant", content=new_content))
                     tool_calls = self.get_chat_tool_calls(response)
 
                 if not self.supports_tool_calling or not self.tool_registry:
@@ -1358,7 +1362,7 @@ class Completions(ThoughtProcessor):
                 tool_call_messages = self.get_tool_call_messages(tool_calls)
                 if tool_call_messages:
                     messages.extend(tool_call_messages)
-                tool_result_messages = self.get_tool_result_messages(tool_calls, tool_results)
+                tool_result_messages = self.get_tool_result_messages(tool_results)
                 if tool_result_messages:
                     messages.extend(tool_result_messages)
                 if max_tool_rounds is not None:
@@ -1481,19 +1485,20 @@ class OpenAICompletions(Completions):
         responses_kwargs["tools"] = responses_kwargs.get("tools", []) + self.tools
         for i, tool in enumerate(responses_kwargs["tools"]):
             if isinstance(tool, str) and tool in self._tool_registry:
-                tool_spec = self.function_to_tool_spec(self._tool_registry[tool], strict=strict_schema)
-                if strict_schema:
-                    tool_spec = self.make_tool_spec_strict(tool_spec)
-                responses_kwargs["tools"][i] = tool_spec
+                responses_kwargs["tools"][i] = self.function_to_tool_spec(
+                    self._tool_registry[tool],
+                    strict=strict_schema,
+                    use_responses=True,
+                )
         completions_kwargs = merge_dicts(_completions_kwargs, def_completions_kwargs, completions_kwargs)
         completions_kwargs["tools"] = completions_kwargs.get("tools", []) + self.tools
         for i, tool in enumerate(completions_kwargs["tools"]):
             if isinstance(tool, str) and tool in self._tool_registry:
-                tool_spec = self.function_to_tool_spec(self._tool_registry[tool], strict=strict_schema)
-                tool_spec = {"type": tool_spec.pop("type", "function"), "function": tool_spec}
-                if strict_schema:
-                    tool_spec = self.make_tool_spec_strict(tool_spec)
-                completions_kwargs["tools"][i] = tool_spec
+                completions_kwargs["tools"][i] = self.function_to_tool_spec(
+                    self._tool_registry[tool],
+                    strict=strict_schema,
+                    use_responses=False,
+                )
         client = OpenAI(**client_kwargs)
 
         self._model = model
@@ -1543,95 +1548,11 @@ class OpenAICompletions(Completions):
         return self._completions_kwargs
 
     @classmethod
-    def make_tool_spec_strict(cls, spec: tp.Kwargs) -> tp.Kwargs:
-        """Make OpenAI tool/function schema dict compatible with strict mode.
-
-        Args:
-            spec (Kwargs): Dict representing either a single tool, a bare function object,
-                or an object containing "tools".
-
-        Returns:
-            Dict: Dict rewritten to be compatible with strict mode.
-        """
-
-        def _nullable(schema):
-            schema = deepcopy(schema)
-            if "enum" in schema and isinstance(schema["enum"], list):
-                if None not in schema["enum"]:
-                    schema["enum"] = schema["enum"] + [None]
-                return schema
-            t = schema.get("type", None)
-            if isinstance(t, list):
-                if "null" not in t:
-                    schema["type"] = t + ["null"]
-            elif isinstance(t, str):
-                schema["type"] = [t, "null"]
-            else:
-                schema["type"] = ["null"]
-            return schema
-
-        def _strictify_schema(schema):
-            schema = deepcopy(schema)
-            t = schema.get("type", None)
-
-            if "anyOf" in schema and isinstance(schema["anyOf"], list):
-                schema["anyOf"] = [_strictify_schema(s) for s in schema["anyOf"]]
-                return schema
-            if "oneOf" in schema and isinstance(schema["oneOf"], list):
-                schema["oneOf"] = [_strictify_schema(s) for s in schema["oneOf"]]
-                return schema
-            if "allOf" in schema and isinstance(schema["allOf"], list):
-                schema["allOf"] = [_strictify_schema(s) for s in schema["allOf"]]
-                return schema
-
-            is_object = (t == "object") or (isinstance(t, list) and "object" in t)
-            if is_object:
-                props = schema.get("properties", None) or {}
-                schema["properties"] = props
-                orig_required = set(schema.get("required", None) or [])
-                schema["additionalProperties"] = False
-                all_keys = list(props.keys())
-                for key in all_keys:
-                    subschema = props[key]
-                    if key not in orig_required:
-                        subschema = _nullable(subschema)
-                    props[key] = _strictify_schema(subschema)
-                schema["required"] = all_keys
-
-            is_array = (t == "array") or (isinstance(t, list) and "array" in t)
-            if is_array:
-                items = schema.get("items", None)
-                if isinstance(items, dict):
-                    schema["items"] = _strictify_schema(items)
-                elif isinstance(items, list):
-                    schema["items"] = [_strictify_schema(s) for s in items]
-
-            return schema
-
-        def _strictify_function(fun):
-            fun = deepcopy(fun)
-            params = fun.get("parameters", None) or {"type": "object", "properties": {}}
-            fun["parameters"] = _strictify_schema(params)
-            fun["strict"] = True
-            return fun
-
-        def _strictify_tool(tool):
-            tool = deepcopy(tool)
-            if tool.get("type", None) == "function" and isinstance(tool.get("function", None), dict):
-                tool["function"] = _strictify_function(tool["function"])
-            return tool
-
-        if not isinstance(spec, dict):
-            raise TypeError("Expected a dict")
-        data = deepcopy(spec)
-        if "tools" in data and isinstance(data["tools"], list):
-            data["tools"] = [_strictify_tool(t) for t in data["tools"]]
-            return data
-        if data.get("type", None) == "function" and isinstance(data.get("function", None), dict):
-            return _strictify_tool(data)
-        if {"name", "parameters"} & set(data.keys()):
-            return _strictify_function(data)
-        return data
+    def function_to_tool_spec(cls, func: tp.Callable, strict: bool = False, use_responses: bool = True) -> tp.Kwargs:
+        tool_spec = Completions.function_to_tool_spec(func, strict=strict)
+        if not use_responses:
+            tool_spec = {"type": tool_spec.pop("type"), "function": tool_spec}
+        return tool_spec
 
     def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[tp.Dict[str, str]], str]:
         """Format messages to Responses API format.
@@ -1863,9 +1784,9 @@ class OpenAICompletions(Completions):
                 messages.append(
                     {
                         "type": "function_call",
-                        "call_id": tc.get("id", None),
-                        "name": tc.get("name", None),
-                        "arguments": json.dumps(tc.get("arguments", None)),
+                        "call_id": tc["id"],
+                        "name": tc["name"],
+                        "arguments": json.dumps(tc["arguments"]),
                     }
                 )
             return messages
@@ -1879,19 +1800,19 @@ class OpenAICompletions(Completions):
                             "role": "assistant",
                             "content": "",
                             "function_call": {
-                                "name": tc.get("name", None),
-                                "arguments": json.dumps(tc.get("arguments", None)),
+                                "name": tc["name"],
+                                "arguments": json.dumps(tc["arguments"]),
                             },
                         }
                     )
                 else:
                     norm_tool_calls.append(
                         {
-                            "id": tc.get("id", None),
+                            "id": tc["id"],
                             "type": "function",
                             "function": {
-                                "name": tc.get("name", None),
-                                "arguments": json.dumps(tc.get("arguments", None)),
+                                "name": tc["name"],
+                                "arguments": json.dumps(tc["arguments"]),
                             },
                         }
                     )
@@ -1908,11 +1829,7 @@ class OpenAICompletions(Completions):
             messages = legacy_messages + new_messages
             return messages
 
-    def get_tool_result_messages(
-        self,
-        tool_calls: tp.List[tp.Kwargs],
-        tool_results: tp.List[tp.Kwargs],
-    ) -> tp.List[tp.Kwargs]:
+    def get_tool_result_messages(self, tool_results: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
             messages = []
             for tr in tool_results:
@@ -2027,6 +1944,10 @@ class AnthropicCompletions(Completions):
                 _messages_kwargs[k] = v
         client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
         messages_kwargs = merge_dicts(_messages_kwargs, def_messages_kwargs, messages_kwargs)
+        messages_kwargs["tools"] = messages_kwargs.get("tools", []) + self.tools
+        for i, tool in enumerate(messages_kwargs["tools"]):
+            if isinstance(tool, str) and tool in self._tool_registry:
+                messages_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
 
         client = client_type(**client_kwargs)
 
@@ -2056,6 +1977,15 @@ class AnthropicCompletions(Completions):
         """
         return self._messages_kwargs
 
+    @classmethod
+    def function_to_tool_spec(cls, func: tp.Callable) -> tp.Kwargs:
+        tool_spec = Completions.function_to_tool_spec(func, strict=False, draft_2020_12=True)
+        return {
+            "name": tool_spec["name"],
+            "description": tool_spec["description"],
+            "input_schema": tool_spec["parameters"],
+        }
+
     def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[tp.Dict[str, str]], str]:
         """Format messages to Anthropic format.
 
@@ -2065,26 +1995,20 @@ class AnthropicCompletions(Completions):
         Returns:
             Tuple[List[Dict[str, str]], str]: List of message dictionaries and system message.
         """
-        formatted_messages = []
-        system_message = ""
-
+        new_messages = []
+        system_messages = []
         for message in messages:
-            if isinstance(message, dict):
-                role = message.pop("role", "user")
-                content = message.pop("content", "")
-                if len(message) > 0:
-                    raise ValueError(f"Unsupported message format: {message}. Expected dict with 'role' and 'content'.")
-
-                if role == "system":
-                    system_message = content
-                elif role in ["user", "assistant"]:
-                    formatted_messages.append({"role": role, "content": content})
+            if isinstance(message, dict) and message.get("role", "user") == "system":
+                system_messages.append(message.get("content", ""))
             elif isinstance(message, str):
-                formatted_messages.append({"role": "user", "content": message})
+                new_messages.append(dict(role="user", content=message))
             else:
-                raise TypeError(f"Unsupported message type: {type(message)}. Expected dict or str.")
-
-        return formatted_messages, system_message
+                new_messages.append(message)
+        if system_messages:
+            system_message = "\n".join(system_messages)
+        else:
+            system_message = None
+        return new_messages, system_message
 
     def get_chat_response(self, messages: tp.ChatMessages) -> AnthropicMessageT:
         formatted_messages, system_message = self.format_messages(messages)
@@ -2145,6 +2069,99 @@ class AnthropicCompletions(Completions):
         if isinstance(response_chunk, RawContentBlockDeltaEvent) and isinstance(response_chunk.delta, TextDelta):
             return self.process_thought(content=response_chunk.delta.text)
         return self.flush_thought()
+
+    @property
+    def supports_tool_calling(self) -> bool:
+        return True
+
+    def get_chat_tool_calls(self, response: AnthropicMessageT) -> tp.List[tp.Kwargs]:
+        from anthropic.types import ToolUseBlock
+
+        tool_calls = []
+        for block in response.content:
+            if isinstance(block, ToolUseBlock):
+                tool_calls.append(
+                    {
+                        "id": block.id,
+                        "name": block.name,
+                        "arguments": block.input,
+                    }
+                )
+        return tool_calls
+
+    def get_stream_tool_calls(self, response_chunks: tp.Iterator[AnthropicMessageStreamEventT]) -> tp.List[tp.Kwargs]:
+        from anthropic.types import (
+            RawMessageStartEvent,
+            RawContentBlockStartEvent,
+            RawContentBlockDeltaEvent,
+            RawContentBlockStopEvent,
+            ToolUseBlock,
+            InputJSONDelta,
+        )
+
+        results = []
+        active = {}
+        for response_chunk in response_chunks:
+            if isinstance(response_chunk, RawMessageStartEvent):
+                active.clear()
+                continue
+            if isinstance(response_chunk, RawContentBlockStartEvent):
+                cb = response_chunk.content_block
+                if isinstance(cb, ToolUseBlock):
+                    active[response_chunk.index] = {
+                        "id": cb.id,
+                        "name": cb.name,
+                        "arguments": "",
+                    }
+                continue
+            if isinstance(response_chunk, RawContentBlockDeltaEvent):
+                d = response_chunk.delta
+                if isinstance(d, InputJSONDelta):
+                    st = active.get(response_chunk.index)
+                    if st is not None:
+                        st["arguments"] += d.partial_json
+                continue
+            if isinstance(response_chunk, RawContentBlockStopEvent):
+                st = active.pop(response_chunk.index, None)
+                if st is not None:
+                    results.append(st)
+                continue
+        return results
+
+    def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.Optional[tp.List[tp.Kwargs]]:
+        content_blocks = []
+        for tc in tool_calls:
+            content_blocks.append(
+                {
+                    "type": "tool_use",
+                    "id": tc["id"],
+                    "name": tc["name"],
+                    "input": tc["arguments"],
+                }
+            )
+        return [
+            {
+                "role": "assistant",
+                "content": content_blocks,
+            }
+        ]
+
+    def get_tool_result_messages(self, tool_results: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        content_blocks = []
+        for tr in tool_results:
+            content_blocks.append(
+                {
+                    "type": "tool_result",
+                    "tool_use_id": tr["id"],
+                    "content": tr["output"],
+                }
+            )
+        return [
+            {
+                "role": "user",
+                "content": content_blocks,
+            }
+        ]
 
 
 class GeminiCompletions(Completions):
