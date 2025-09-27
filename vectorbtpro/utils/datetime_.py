@@ -1997,9 +1997,9 @@ def get_dt_index_gaps(
     index = prepare_dt_index(index, **kwargs)
     checks.assert_instance_of(index, pd.DatetimeIndex)
     if not index.is_unique:
-        raise ValueError("Datetime index must be unique")
+        index = index.unique()
     if not index.is_monotonic_increasing:
-        raise ValueError("Datetime index must be monotonically increasing")
+        index = index.sort_values()
     if freq is None:
         freq = infer_index_freq(index, freq="auto", allow_numeric=False, freq_from_n=False)
     else:
