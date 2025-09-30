@@ -609,7 +609,7 @@ class Completions(ThoughtProcessor):
         """Return a chat response based on the provided messages.
 
         Args:
-            messages (ChatMessages): List of dictionaries representing the conversation history.
+            messages (ChatMessages): List representing the conversation history.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -638,7 +638,7 @@ class Completions(ThoughtProcessor):
         """Return a streaming response generated from the provided messages.
 
         Args:
-            messages (ChatMessages): List of dictionaries representing the conversation history.
+            messages (ChatMessages): List representing the conversation history.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -740,8 +740,16 @@ class Completions(ThoughtProcessor):
                 dict(role="user", content=message),
             ]
 
-    @classmethod
-    def function_to_tool_spec(cls, func: tp.Callable, strict: bool = False, draft_2020_12: bool = True) -> tp.Kwargs:
+    @property
+    def supports_tool_calling(self) -> bool:
+        """Whether this provider supports tool calling.
+
+        Returns:
+            bool: True if tool calling is supported, False otherwise.
+        """
+        return False
+
+    def function_to_tool_spec(self, func: tp.Callable, strict: bool = False, draft_2020_12: bool = True) -> tp.Kwargs:
         """Convert a typed Python callable into a minimal tool specification in JSON Schema format.
 
         Args:
@@ -1019,15 +1027,6 @@ class Completions(ThoughtProcessor):
         if strict:
             tool_spec["strict"] = True
         return tool_spec
-
-    @property
-    def supports_tool_calling(self) -> bool:
-        """Whether this provider supports tool calling.
-
-        Returns:
-            bool: True if tool calling is supported, False otherwise.
-        """
-        return False
 
     def get_chat_tool_calls(self, response: tp.Any) -> tp.List[tp.Kwargs]:
         """Return tool call descriptors from a chat response.
@@ -1482,27 +1481,12 @@ class OpenAICompletions(Completions):
                 _completions_kwargs[k] = v
         client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
         responses_kwargs = merge_dicts(_responses_kwargs, def_responses_kwargs, responses_kwargs)
-        responses_kwargs["tools"] = responses_kwargs.get("tools", []) + self.tools
-        for i, tool in enumerate(responses_kwargs["tools"]):
-            if isinstance(tool, str) and tool in self._tool_registry:
-                responses_kwargs["tools"][i] = self.function_to_tool_spec(
-                    self._tool_registry[tool],
-                    strict=strict_schema,
-                    use_responses=True,
-                )
         completions_kwargs = merge_dicts(_completions_kwargs, def_completions_kwargs, completions_kwargs)
-        completions_kwargs["tools"] = completions_kwargs.get("tools", []) + self.tools
-        for i, tool in enumerate(completions_kwargs["tools"]):
-            if isinstance(tool, str) and tool in self._tool_registry:
-                completions_kwargs["tools"][i] = self.function_to_tool_spec(
-                    self._tool_registry[tool],
-                    strict=strict_schema,
-                    use_responses=False,
-                )
         client = OpenAI(**client_kwargs)
 
         self._model = model
         self._client = client
+        self._strict_schema = strict_schema
         self._use_responses = use_responses
         self._responses_kwargs = responses_kwargs
         self._completions_kwargs = completions_kwargs
@@ -1521,11 +1505,20 @@ class OpenAICompletions(Completions):
         return self._client
 
     @property
+    def strict_schema(self) -> bool:
+        """Whether to enforce strict schema validation.
+
+        Returns:
+            bool: True if strict schema validation is enforced, False otherwise.
+        """
+        return self._strict_schema
+
+    @property
     def use_responses(self) -> bool:
         """Whether to use the Responses API instead of the Completions API.
 
         Returns:
-            bool: Whether to use the Responses API.
+            bool: True if the Responses API is used, False if the Completions API is used.
         """
         return self._use_responses
 
@@ -1547,54 +1540,72 @@ class OpenAICompletions(Completions):
         """
         return self._completions_kwargs
 
-    @classmethod
-    def function_to_tool_spec(cls, func: tp.Callable, strict: bool = False, use_responses: bool = True) -> tp.Kwargs:
-        tool_spec = Completions.function_to_tool_spec(func, strict=strict)
-        if not use_responses:
-            tool_spec = {"type": tool_spec.pop("type"), "function": tool_spec}
-        return tool_spec
-
-    def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[tp.Dict[str, str]], str]:
-        """Format messages to Responses API format.
+    def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[tp.Dict[str, str]], tp.Optional[str]]:
+        """Format messages.
 
         Args:
-            messages (ChatMessages): List of dictionaries representing the conversation history.
+            messages (ChatMessages): List representing the conversation history.
 
         Returns:
             Tuple[List[Dict[str, str]], str]: List of message dictionaries and system instructions.
         """
-        input = []
+        new_messages = []
         instructions = []
         for message in messages:
-            if isinstance(message, dict) and message.get("role", "user") == "system":
+            if self.use_responses and isinstance(message, dict) and message.get("role", "user") == "system":
                 instructions.append(message.get("content", ""))
             elif isinstance(message, str):
-                input.append(dict(role="user", content=message))
+                new_messages.append(dict(role="user", content=message))
             else:
-                input.append(message)
+                new_messages.append(message)
         if instructions:
             instructions = "\n".join(instructions)
         else:
             instructions = None
-        return input, instructions
+        return new_messages, instructions
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionT:
+    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+        """Format keyword arguments for the API call.
+
+        Args:
+            messages (ChatMessages): List representing the conversation history.
+
+        Returns:
+            Kwargs: Keyword arguments for the API call.
+        """
         if self.use_responses:
             input, instructions = self.format_messages(messages)
-            return self.client.responses.create(
+            responses_kwargs = dict(self.responses_kwargs)
+            responses_kwargs["tools"] = responses_kwargs.get("tools", []) + self.tools
+            for i, tool in enumerate(responses_kwargs["tools"]):
+                if isinstance(tool, str) and tool in self._tool_registry:
+                    responses_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+            return dict(
                 model=self.model,
                 instructions=instructions,
                 input=input,
-                stream=False,
-                **self.responses_kwargs,
+                stream=self.stream,
+                **responses_kwargs,
             )
         else:
-            return self.client.chat.completions.create(
+            input, _ = self.format_messages(messages)
+            completions_kwargs = dict(self.completions_kwargs)
+            completions_kwargs["tools"] = completions_kwargs.get("tools", []) + self.tools
+            for i, tool in enumerate(completions_kwargs["tools"]):
+                if isinstance(tool, str) and tool in self._tool_registry:
+                    completions_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+            return dict(
                 messages=messages,
                 model=self.model,
-                stream=False,
-                **self.completions_kwargs,
+                stream=self.stream,
+                **completions_kwargs,
             )
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionT:
+        if self.use_responses:
+            return self.client.responses.create(**self.format_kwargs(messages))
+        else:
+            return self.client.chat.completions.create(**self.format_kwargs(messages))
 
     def get_message_content(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.Optional[str]:
         if self.use_responses:
@@ -1626,21 +1637,9 @@ class OpenAICompletions(Completions):
 
     def get_stream_response(self, messages: tp.ChatMessages) -> StreamT:
         if self.use_responses:
-            input, instructions = self.format_messages(messages)
-            return self.client.responses.create(
-                model=self.model,
-                instructions=instructions,
-                input=input,
-                stream=True,
-                **self.responses_kwargs,
-            )
+            return self.client.responses.create(**self.format_kwargs(messages))
         else:
-            return self.client.chat.completions.create(
-                messages=messages,
-                model=self.model,
-                stream=True,
-                **self.completions_kwargs,
-            )
+            return self.client.chat.completions.create(**self.format_kwargs(messages))
 
     def get_delta_content(
         self,
@@ -1662,6 +1661,12 @@ class OpenAICompletions(Completions):
     @property
     def supports_tool_calling(self) -> bool:
         return True
+
+    def function_to_tool_spec(self, func: tp.Callable, *_, **__) -> tp.Kwargs:
+        tool_spec = Completions.function_to_tool_spec(self, func, strict=self.strict_schema)
+        if not self.use_responses:
+            tool_spec = {"type": tool_spec.pop("type"), "function": tool_spec}
+        return tool_spec
 
     def get_chat_tool_calls(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
@@ -1715,7 +1720,7 @@ class OpenAICompletions(Completions):
             tool_call_mapping = {}
             for response_chunk in response_chunks:
                 output_index = get(response_chunk, "output_index", None)
-                if output_index:
+                if output_index is not None:
                     if get(response_chunk, "type", None) == "response.output_item.added":
                         item = get(response_chunk, "item", None)
                         if item:
@@ -1777,7 +1782,7 @@ class OpenAICompletions(Completions):
             tool_calls = [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
         return tool_calls
 
-    def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.Optional[tp.List[tp.Kwargs]]:
+    def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
             messages = []
             for tc in tool_calls:
@@ -1944,10 +1949,6 @@ class AnthropicCompletions(Completions):
                 _messages_kwargs[k] = v
         client_kwargs = merge_dicts(_client_kwargs, def_client_kwargs, client_kwargs)
         messages_kwargs = merge_dicts(_messages_kwargs, def_messages_kwargs, messages_kwargs)
-        messages_kwargs["tools"] = messages_kwargs.get("tools", []) + self.tools
-        for i, tool in enumerate(messages_kwargs["tools"]):
-            if isinstance(tool, str) and tool in self._tool_registry:
-                messages_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
 
         client = client_type(**client_kwargs)
 
@@ -1977,20 +1978,11 @@ class AnthropicCompletions(Completions):
         """
         return self._messages_kwargs
 
-    @classmethod
-    def function_to_tool_spec(cls, func: tp.Callable) -> tp.Kwargs:
-        tool_spec = Completions.function_to_tool_spec(func, strict=False, draft_2020_12=True)
-        return {
-            "name": tool_spec["name"],
-            "description": tool_spec["description"],
-            "input_schema": tool_spec["parameters"],
-        }
-
-    def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[tp.Dict[str, str]], str]:
+    def format_messages(self, messages: tp.ChatMessages) -> tp.Tuple[tp.List[tp.Dict[str, str]], tp.Optional[str]]:
         """Format messages to Anthropic format.
 
         Args:
-            messages (ChatMessages): List of dictionaries representing the conversation history.
+            messages (ChatMessages): List representing the conversation history.
 
         Returns:
             Tuple[List[Dict[str, str]], str]: List of message dictionaries and system message.
@@ -2010,18 +2002,32 @@ class AnthropicCompletions(Completions):
             system_message = None
         return new_messages, system_message
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> AnthropicMessageT:
+    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+        """Format keyword arguments for the API call.
+
+        Args:
+            messages (ChatMessages): List representing the conversation history.
+
+        Returns:
+            Kwargs: Keyword arguments for the API call.
+        """
         formatted_messages, system_message = self.format_messages(messages)
         messages_kwargs = dict(self.messages_kwargs)
         if system_message:
             messages_kwargs["system"] = system_message
-
-        return self.client.messages.create(
+        messages_kwargs["tools"] = messages_kwargs.get("tools", []) + self.tools
+        for i, tool in enumerate(messages_kwargs["tools"]):
+            if isinstance(tool, str) and tool in self._tool_registry:
+                messages_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+        return dict(
             model=self.model,
             messages=formatted_messages,
-            stream=False,
+            stream=self.stream,
             **messages_kwargs,
         )
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> AnthropicMessageT:
+        return self.client.messages.create(**self.format_kwargs(messages))
 
     def get_message_content(self, response: AnthropicMessageT) -> tp.Optional[str]:
         from anthropic.types import ThinkingBlock, TextBlock
@@ -2049,17 +2055,7 @@ class AnthropicCompletions(Completions):
         return content
 
     def get_stream_response(self, messages: tp.ChatMessages) -> AnthropicStreamT:
-        formatted_messages, system_message = self.format_messages(messages)
-        messages_kwargs = dict(self.messages_kwargs)
-        if system_message:
-            messages_kwargs["system"] = system_message
-
-        return self.client.messages.create(
-            model=self.model,
-            messages=formatted_messages,
-            stream=True,
-            **messages_kwargs,
-        )
+        return self.client.messages.create(**self.format_kwargs(messages))
 
     def get_delta_content(self, response_chunk: AnthropicMessageStreamEventT) -> tp.Optional[str]:
         from anthropic.types import RawContentBlockDeltaEvent, ThinkingDelta, TextDelta
@@ -2073,6 +2069,14 @@ class AnthropicCompletions(Completions):
     @property
     def supports_tool_calling(self) -> bool:
         return True
+
+    def function_to_tool_spec(self, func: tp.Callable, *_, **__) -> tp.Kwargs:
+        tool_spec = Completions.function_to_tool_spec(self, func, strict=False, draft_2020_12=True)
+        return {
+            "name": tool_spec["name"],
+            "description": tool_spec["description"],
+            "input_schema": tool_spec["parameters"],
+        }
 
     def get_chat_tool_calls(self, response: AnthropicMessageT) -> tp.List[tp.Kwargs]:
         from anthropic.types import ToolUseBlock
@@ -2128,7 +2132,7 @@ class AnthropicCompletions(Completions):
                 continue
         return results
 
-    def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.Optional[tp.List[tp.Kwargs]]:
+    def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
         content_blocks = []
         for tc in tool_calls:
             content_blocks.append(
@@ -2259,7 +2263,7 @@ class GeminiCompletions(Completions):
         """Format messages to Gemini format.
 
         Args:
-            messages (ChatMessages): List of dictionaries representing the conversation history.
+            messages (ChatMessages): List representing the conversation history.
 
         Returns:
             Union[List[Content], List[str]]: List of `google.genai.types.Content` objects and system instructions.
@@ -2269,45 +2273,65 @@ class GeminiCompletions(Completions):
         contents = []
         system_instruction = []
         for message in messages:
-            if isinstance(message, dict):
-                role = message.pop("role", "user")
-                text = message.pop("content", "")
-                if len(message) > 0:
-                    raise ValueError(f"Unsupported message format: {message}. Expected dict with 'role' and 'content'.")
-
-                if role == "assistant":
-                    role = "model"
-                elif role == "system":
-                    system_instruction.append(text)
-                    continue
-                content = Content(role=role, parts=[Part.from_text(text=text)])
+            if isinstance(message, dict) and message.get("role", "user") == "system":
+                system_instruction.append(message.get("content", ""))
+            elif isinstance(message, dict) and message.get("role", "user") == "assistant":
+                content = Content(role="model", parts=[Part.from_text(text=message.get("content", ""))])
+                contents.append(content)
+            elif isinstance(message, dict) and message.get("role", "user") == "user":
+                content = Content(role="user", parts=[Part.from_text(text=message.get("content", ""))])
                 contents.append(content)
             elif isinstance(message, str):
                 content = Content(role="user", parts=[Part.from_text(text=message)])
                 contents.append(content)
             else:
-                raise TypeError(f"Unsupported message type: {type(message)}. Expected dict or str.")
+                contents.append(message)
         return contents, system_instruction
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> GenerateContentResponseT:
-        from google.genai.types import GenerateContentConfig
-        from google.genai.errors import ClientError
+    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+        """Format keyword arguments for the API call.
+
+        Args:
+            messages (ChatMessages): List representing the conversation history.
+
+        Returns:
+            Kwargs: Keyword arguments for the API call.
+        """
+        from google.genai.types import GenerateContentConfig, AutomaticFunctionCallingConfig, Tool
 
         formatted_messages, system_instruction = self.format_messages(messages)
         completions_kwargs = dict(self.completions_kwargs)
         config = dict(completions_kwargs.pop("config", {}))
         if system_instruction:
             config["system_instruction"] = system_instruction
+        if "automatic_function_calling" not in config:
+            config["automatic_function_calling"] = AutomaticFunctionCallingConfig(disable=True)
+        tools = config.get("tools", [])
+        if not isinstance(tools, list):
+            tools = [tools]
+        tools = tools + self.tools
+        for i, tool in enumerate(tools):
+            if isinstance(tool, str) and tool in self._tool_registry:
+                tool = self.function_to_tool_spec(self._tool_registry[tool])
+            if not isinstance(tool, Tool):
+                tool = Tool(function_declarations=[tool])
+            tools[i] = tool
+        config["tools"] = tools
+        return dict(
+            model=self.model,
+            contents=formatted_messages,
+            config=GenerateContentConfig(**config),
+            **completions_kwargs,
+        )
 
+    def get_chat_response(self, messages: tp.ChatMessages) -> GenerateContentResponseT:
+        from google.genai.errors import ClientError
+
+        kwargs = self.format_kwargs(messages)
         attempted = False
         while True:
             try:
-                return self.client.models.generate_content(
-                    model=self.model,
-                    contents=formatted_messages,
-                    config=GenerateContentConfig(**config),
-                    **completions_kwargs,
-                )
+                return self.client.models.generate_content(**kwargs)
             except ClientError as e:
                 if e.code == 429 and not attempted:
                     time.sleep(60)
@@ -2333,24 +2357,13 @@ class GeminiCompletions(Completions):
         return content
 
     def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[GenerateContentResponseT]:
-        from google.genai.types import GenerateContentConfig
         from google.genai.errors import ClientError
 
-        formatted_messages, system_instruction = self.format_messages(messages)
-        completions_kwargs = dict(self.completions_kwargs)
-        config = dict(completions_kwargs.pop("config", {}))
-        if system_instruction:
-            config["system_instruction"] = system_instruction
-
+        kwargs = self.format_kwargs(messages)
         attempted = False
         while True:
             try:
-                return self.client.models.generate_content_stream(
-                    model=self.model,
-                    contents=formatted_messages,
-                    config=GenerateContentConfig(**config),
-                    **completions_kwargs,
-                )
+                return self.client.models.generate_content_stream(**kwargs)
             except ClientError as e:
                 if e.code == 429 and not attempted:
                     time.sleep(60)
@@ -2374,6 +2387,76 @@ class GeminiCompletions(Completions):
                         content = ""
                     content += text
         return content
+
+    @property
+    def supports_tool_calling(self) -> bool:
+        return True
+
+    def function_to_tool_spec(self, func: tp.Callable, *_, **__) -> tp.Kwargs:
+        from google.genai.types import FunctionDeclaration
+
+        return FunctionDeclaration.from_callable(client=self.client, callable=func)
+
+    def get_chat_tool_calls(self, response: GenerateContentResponseT) -> tp.List[tp.Kwargs]:
+        tool_calls = []
+        for fc in get(response, "function_calls", []) or []:
+            name = get(fc, "name", None)
+            args = get(fc, "args", None)
+            if args is None and get(fc, "function_call", None):
+                name = name or get(fc.function_call, "name", None)
+                args = get(fc.function_call, "args", None)
+            tool_calls.append(
+                {
+                    "id": f"function_call_{len(tool_calls)}",
+                    "name": name,
+                    "arguments": args,
+                }
+            )
+        return tool_calls
+
+    def get_stream_tool_calls(self, response_chunks: tp.Iterator[GenerateContentResponseT]) -> tp.List[tp.Kwargs]:
+        tool_calls = []
+        for response_chunk in response_chunks:
+            for fc in get(response_chunk, "function_calls", []) or []:
+                name = get(fc, "name", None)
+                args = get(fc, "args", None)
+                if args is None and get(fc, "function_call", None):
+                    name = name or get(fc.function_call, "name", None)
+                    args = get(fc.function_call, "args", None)
+                tool_calls.append(
+                    {
+                        "id": f"function_call_{len(tool_calls)}",
+                        "name": name,
+                        "arguments": args,
+                    }
+                )
+        return tool_calls
+
+    def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        from google.genai.types import Content, Part
+
+        parts = []
+        for tc in tool_calls:
+            parts.append(
+                Part.from_function_call(
+                    name=tc["name"],
+                    args=tc["arguments"],
+                )
+            )
+        return [Content(role="model", parts=parts)]
+
+    def get_tool_result_messages(self, tool_results: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        from google.genai.types import Content, Part
+
+        parts = []
+        for tr in tool_results:
+            parts.append(
+                Part.from_function_response(
+                    name=tr["name"],
+                    response=dict(output=tr["output"]),
+                )
+            )
+        return [Content(role="tool", parts=parts)]
 
 
 class HFInferenceCompletions(Completions):
