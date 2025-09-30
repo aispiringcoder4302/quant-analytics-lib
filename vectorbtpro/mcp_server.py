@@ -317,7 +317,7 @@ def find(
                 latest_first=True,
             ),
             examples_kwargs=dict(
-                return_type="match" if return_metadata.lower() == "none" else "item",
+                return_type="field" if return_metadata.lower() == "none" else "item",
                 latest_first=True,
             ),
             minimize=False,
