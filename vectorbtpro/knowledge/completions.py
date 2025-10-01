@@ -749,7 +749,7 @@ class Completions(ThoughtProcessor):
         """
         return False
 
-    def function_to_tool_spec(self, func: tp.Callable, strict: bool = False, draft_2020_12: bool = True) -> tp.Kwargs:
+    def function_to_tool_spec(self, func: tp.Callable, strict: bool = False, draft_2020_12: bool = False) -> tp.Kwargs:
         """Convert a typed Python callable into a minimal tool specification in JSON Schema format.
 
         Args:
@@ -1397,7 +1397,160 @@ class Completions(ThoughtProcessor):
         return new_completions.get_completion(message)
 
 
-class OpenAICompletions(Completions):
+class OpenAICompatibleMixin:
+    """Mixin class to add OpenAI compatibility features."""
+
+    def get_message_content(self, response: tp.Any) -> tp.Optional[str]:
+        choices = get(response, "choices", None) or []
+        if choices:
+            message = get(choices[0], "message", None)
+            return get(message, "content", None)
+        return None
+
+    def get_delta_content(self, response_chunk: tp.Any) -> tp.Optional[str]:
+        choices = get(response_chunk, "choices", None) or []
+        if choices:
+            delta = get(choices[0], "delta", None)
+            return get(delta, "content", None)
+        return None
+
+    @property
+    def supports_tool_calling(self) -> bool:
+        return True
+
+    def function_to_tool_spec(self, func: tp.Callable, *_, **__) -> tp.Kwargs:
+        tool_spec = Completions.function_to_tool_spec(self, func)
+        tool_spec = {"type": tool_spec.pop("type"), "function": tool_spec}
+        return tool_spec
+
+    def get_chat_tool_calls(self, response: tp.Any) -> tp.List[tp.Kwargs]:
+        print(response)
+        tool_calls = []
+        choices = get(response, "choices", None) or []
+        for ch_i, ch in enumerate(choices):
+            msg = get(ch, "message", None)
+            if msg:
+                tcs = get(msg, "tool_calls", None) or []
+                for i, tc in enumerate(tcs):
+                    fn = get(tc, "function", None)
+                    tool_calls.append(
+                        {
+                            "id": get(tc, "id", None) or f"tool_call_{ch_i}_{i}",
+                            "name": get(fn, "name", None) if fn else None,
+                            "arguments": get(fn, "arguments", None) if fn else None,
+                            "legacy": False,
+                        }
+                    )
+                fc = get(msg, "function_call", None)
+                if fc:
+                    tool_calls.append(
+                        {
+                            "id": f"function_call_{ch_i}",
+                            "name": get(fc, "name", None),
+                            "arguments": get(fc, "arguments", None),
+                            "legacy": True,
+                        }
+                    )
+        return tool_calls
+
+    def get_stream_tool_calls(self, response_chunks: tp.Iterator[tp.Any]) -> tp.List[tp.Kwargs]:
+        tool_call_mapping = {}
+        for response_chunk in response_chunks:
+            for choice in get(response_chunk, "choices", []) or []:
+                delta = get(choice, "delta", None) or {}
+                for tc in get(delta, "tool_calls", []) or []:
+                    idx = get(tc, "index", None)
+                    if idx is not None:
+                        entry = tool_call_mapping.setdefault(
+                            idx,
+                            {
+                                "id": None,
+                                "name": None,
+                                "arguments": "",
+                                "legacy": False,
+                            },
+                        )
+                        if get(tc, "id", None):
+                            entry["id"] = tc.id
+                        fn = get(tc, "function", None)
+                        if fn:
+                            if get(fn, "name", None):
+                                entry["name"] = fn.name
+                            if get(fn, "arguments", None):
+                                entry["arguments"] += fn.arguments
+                fc = get(delta, "function_call", None)
+                if fc:
+                    idx = len(tool_call_mapping)
+                    entry = tool_call_mapping.setdefault(
+                        idx,
+                        {
+                            "id": f"function_call_{idx}",
+                            "name": None,
+                            "arguments": "",
+                            "legacy": True,
+                        },
+                    )
+                    if get(fc, "name", None):
+                        entry["name"] = fc.name
+                    if get(fc, "arguments", None):
+                        entry["arguments"] += fc.arguments
+        tool_calls = [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
+        return tool_calls
+
+    def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        legacy_messages = []
+        norm_tool_calls = []
+        for tc in tool_calls:
+            if tc.get("legacy", False):
+                legacy_messages.append(
+                    {
+                        "role": "assistant",
+                        "content": "",
+                        "function_call": {
+                            "name": tc["name"],
+                            "arguments": json.dumps(tc["arguments"]),
+                        },
+                    }
+                )
+            else:
+                norm_tool_calls.append(
+                    {
+                        "id": tc["id"],
+                        "type": "function",
+                        "function": {
+                            "name": tc["name"],
+                            "arguments": json.dumps(tc["arguments"]),
+                        },
+                    }
+                )
+        if norm_tool_calls:
+            new_messages = [
+                {
+                    "role": "assistant",
+                    "content": "",
+                    "tool_calls": norm_tool_calls,
+                }
+            ]
+        else:
+            new_messages = []
+        messages = legacy_messages + new_messages
+        return messages
+
+    def get_tool_result_messages(self, tool_results: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        messages = []
+        for tr in tool_results:
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tr["id"],
+                    "name": tr["name"],
+                    "content": tr["output"],
+                }
+            )
+        return messages
+
+
+class OpenAICompletions(OpenAICompatibleMixin, Completions):
     """Completions class for OpenAI.
 
     Args:
@@ -1629,11 +1782,7 @@ class OpenAICompletions(Completions):
                                 out += text
             return out
         else:
-            choices = get(response, "choices", None) or []
-            if choices:
-                message = get(choices[0], "message", None)
-                return get(message, "content", None)
-            return None
+            return OpenAICompatibleMixin.get_message_content(self, response)
 
     def get_stream_response(self, messages: tp.ChatMessages) -> StreamT:
         if self.use_responses:
@@ -1652,21 +1801,13 @@ class OpenAICompletions(Completions):
                 return self.process_thought(content=get(response_chunk, "delta", None))
             return self.flush_thought()
         else:
-            choices = get(response_chunk, "choices", None) or []
-            if choices:
-                delta = get(choices[0], "delta", None)
-                return get(delta, "content", None)
-            return None
-
-    @property
-    def supports_tool_calling(self) -> bool:
-        return True
+            return OpenAICompatibleMixin.get_delta_content(self, response_chunk)
 
     def function_to_tool_spec(self, func: tp.Callable, *_, **__) -> tp.Kwargs:
-        tool_spec = Completions.function_to_tool_spec(self, func, strict=self.strict_schema)
-        if not self.use_responses:
-            tool_spec = {"type": tool_spec.pop("type"), "function": tool_spec}
-        return tool_spec
+        if self.use_responses:
+            return Completions.function_to_tool_spec(self, func, strict=self.strict_schema)
+        else:
+            return OpenAICompatibleMixin.function_to_tool_spec(self, func)
 
     def get_chat_tool_calls(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
@@ -1684,33 +1825,7 @@ class OpenAICompletions(Completions):
                     )
             return tool_calls
         else:
-            tool_calls = []
-            choices = get(response, "choices", None) or []
-            for ch_i, ch in enumerate(choices):
-                msg = get(ch, "message", None)
-                if msg:
-                    tcs = get(msg, "tool_calls", None) or []
-                    for i, tc in enumerate(tcs):
-                        fn = get(tc, "function", None)
-                        tool_calls.append(
-                            {
-                                "id": get(tc, "id", None) or f"tool_call_{ch_i}_{i}",
-                                "name": get(fn, "name", None) if fn else None,
-                                "arguments": get(fn, "arguments", None) if fn else None,
-                                "legacy": False,
-                            }
-                        )
-                    fc = get(msg, "function_call", None)
-                    if fc:
-                        tool_calls.append(
-                            {
-                                "id": f"function_call_{ch_i}",
-                                "name": get(fc, "name", None),
-                                "arguments": get(fc, "arguments", None),
-                                "legacy": True,
-                            }
-                        )
-            return tool_calls
+            return OpenAICompatibleMixin.get_chat_tool_calls(self, response)
 
     def get_stream_tool_calls(
         self,
@@ -1737,50 +1852,9 @@ class OpenAICompletions(Completions):
                         delta = get(response_chunk, "delta", None)
                         if delta:
                             tool_call_mapping[output_index]["arguments"] += delta
-            tool_calls = [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
+            return [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
         else:
-            tool_call_mapping = {}
-            for response_chunk in response_chunks:
-                for choice in get(response_chunk, "choices", []) or []:
-                    delta = get(choice, "delta", None) or {}
-                    for tc in get(delta, "tool_calls", []) or []:
-                        idx = get(tc, "index", None)
-                        if idx is not None:
-                            entry = tool_call_mapping.setdefault(
-                                idx,
-                                {
-                                    "id": None,
-                                    "name": None,
-                                    "arguments": "",
-                                    "legacy": False,
-                                },
-                            )
-                            if get(tc, "id", None):
-                                entry["id"] = tc.id
-                            fn = get(tc, "function", None)
-                            if fn:
-                                if get(fn, "name", None):
-                                    entry["name"] = fn.name
-                                if get(fn, "arguments", None):
-                                    entry["arguments"] += fn.arguments
-                    fc = get(delta, "function_call", None)
-                    if fc:
-                        idx = len(tool_call_mapping)
-                        entry = tool_call_mapping.setdefault(
-                            idx,
-                            {
-                                "id": f"function_call_{idx}",
-                                "name": None,
-                                "arguments": "",
-                                "legacy": True,
-                            },
-                        )
-                        if get(fc, "name", None):
-                            entry["name"] = fc.name
-                        if get(fc, "arguments", None):
-                            entry["arguments"] += fc.arguments
-            tool_calls = [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
-        return tool_calls
+            return OpenAICompatibleMixin.get_stream_tool_calls(self, response_chunks)
 
     def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
@@ -1796,43 +1870,7 @@ class OpenAICompletions(Completions):
                 )
             return messages
         else:
-            legacy_messages = []
-            norm_tool_calls = []
-            for tc in tool_calls:
-                if tc.get("legacy", False):
-                    legacy_messages.append(
-                        {
-                            "role": "assistant",
-                            "content": "",
-                            "function_call": {
-                                "name": tc["name"],
-                                "arguments": json.dumps(tc["arguments"]),
-                            },
-                        }
-                    )
-                else:
-                    norm_tool_calls.append(
-                        {
-                            "id": tc["id"],
-                            "type": "function",
-                            "function": {
-                                "name": tc["name"],
-                                "arguments": json.dumps(tc["arguments"]),
-                            },
-                        }
-                    )
-            if norm_tool_calls:
-                new_messages = [
-                    {
-                        "role": "assistant",
-                        "content": "",
-                        "tool_calls": norm_tool_calls,
-                    }
-                ]
-            else:
-                new_messages = []
-            messages = legacy_messages + new_messages
-            return messages
+            return OpenAICompatibleMixin.get_tool_call_messages(self, tool_calls)
 
     def get_tool_result_messages(self, tool_results: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
@@ -1847,17 +1885,7 @@ class OpenAICompletions(Completions):
                 )
             return messages
         else:
-            messages = []
-            for tr in tool_results:
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tr["id"],
-                        "name": tr["name"],
-                        "content": tr["output"],
-                    }
-                )
-            return messages
+            return OpenAICompatibleMixin.get_tool_result_messages(self, tool_results)
 
 
 class AnthropicCompletions(Completions):
@@ -2071,7 +2099,7 @@ class AnthropicCompletions(Completions):
         return True
 
     def function_to_tool_spec(self, func: tp.Callable, *_, **__) -> tp.Kwargs:
-        tool_spec = Completions.function_to_tool_spec(self, func, strict=False, draft_2020_12=True)
+        tool_spec = Completions.function_to_tool_spec(self, func)
         return {
             "name": tool_spec["name"],
             "description": tool_spec["description"],
@@ -2459,7 +2487,7 @@ class GeminiCompletions(Completions):
         return [Content(role="tool", parts=parts)]
 
 
-class HFInferenceCompletions(Completions):
+class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
     """Completions class for HuggingFace Inference.
 
     Args:
@@ -2551,13 +2579,29 @@ class HFInferenceCompletions(Completions):
         """
         return self._chat_completion_kwargs
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionOutputT:
-        return self.client.chat_completion(
+    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+        """Format keyword arguments for the API call.
+
+        Args:
+            messages (ChatMessages): List representing the conversation history.
+
+        Returns:
+            Kwargs: Keyword arguments for the API call.
+        """
+        chat_completion_kwargs = dict(self.chat_completion_kwargs)
+        chat_completion_kwargs["tools"] = chat_completion_kwargs.get("tools", []) + self.tools
+        for i, tool in enumerate(chat_completion_kwargs["tools"]):
+            if isinstance(tool, str) and tool in self._tool_registry:
+                chat_completion_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+        return dict(
             messages=messages,
             model=self.model,
-            stream=False,
-            **self.chat_completion_kwargs,
+            stream=self.stream,
+            **chat_completion_kwargs,
         )
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionOutputT:
+        return self.client.chat_completion(**self.format_kwargs(messages))
 
     def get_message_content(self, response: ChatCompletionOutputT) -> tp.Optional[str]:
         message = response.choices[0].message
@@ -2573,12 +2617,7 @@ class HFInferenceCompletions(Completions):
         return self.process_thought(thought=thought, content=content, flush=True)
 
     def get_stream_response(self, messages: tp.ChatMessages) -> ChatCompletionStreamOutputT:
-        return self.client.chat_completion(
-            messages=messages,
-            model=self.model,
-            stream=True,
-            **self.chat_completion_kwargs,
-        )
+        return self.client.chat_completion(**self.format_kwargs(messages))
 
     def get_delta_content(self, response_chunk: ChatCompletionStreamOutputT) -> tp.Optional[str]:
         delta = response_chunk.choices[0].delta
