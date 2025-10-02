@@ -1682,6 +1682,32 @@ def resolve_formatter(formatter: tp.ContentFormatterLike) -> tp.MaybeType[Conten
     return formatter
 
 
+class RawStr(str):
+    """String class that also carries a `raw` (unprocessed) version."""
+
+    __slots__ = ("_raw",)
+
+    def __new__(cls, value: str, *, raw: tp.Optional[str] = None) -> tp.Self:
+        obj = super().__new__(cls, value)
+        obj._raw = value if raw is None else raw
+        return obj
+
+    @property
+    def raw(self) -> str:
+        """Unprocessed version of the string.
+
+        Returns:
+            str: Unprocessed version of the string.
+        """
+        return self._raw
+
+    def __getnewargs_ex__(self) -> tp.Tuple[tp.Tuple[str], tp.Dict[str, tp.Any]]:
+        return (str(self),), {"raw": self._raw}
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({str.__repr__(self)}, raw={self._raw!r})"
+
+
 class ThoughtProcessor(Configured):
     """Processes content that may include `<think>...</think>` segments.
 
@@ -1698,7 +1724,7 @@ class ThoughtProcessor(Configured):
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
 
     def __init__(
-        self, 
+        self,
         think_open_tag: tp.Optional[str] = None,
         think_close_tag: tp.Optional[str] = None,
         include_thoughts: tp.Optional[bool] = None,
@@ -1783,7 +1809,7 @@ class ThoughtProcessor(Configured):
         thought: tp.Optional[str] = None,
         content: tp.Optional[str] = None,
         flush: bool = False,
-    ) -> tp.Optional[str]:
+    ) -> tp.Optional[RawStr]:
         """Processes a unit of input for both streaming and non-streaming use.
 
         Accepts `thought`, `content`, both, or neither. When both are provided
@@ -1804,8 +1830,10 @@ class ThoughtProcessor(Configured):
             flush (bool): If True, flushes the current thought state, closing any open thought segment.
 
         Returns:
-            Optional[str]: The output string for this call, or None if nothing should be emitted.
+            Optional[RawStr]: The output string for this call, or None if nothing should be emitted.
         """
+        raw_in = (thought or "") + (content or "")
+
         out = None
 
         if thought is not None:
@@ -1875,12 +1903,12 @@ class ThoughtProcessor(Configured):
             if self.include_thoughts:
                 out = (out or "") + self.think_close_tag
 
-        return out if out not in ("", None) else None
+        return RawStr(out, raw=raw_in) if out not in ("", None) else None
 
-    def flush_thought(self) -> tp.Optional[str]:
+    def flush_thought(self) -> tp.Optional[RawStr]:
         """Flushes the current thought state, closing any open thought segment.
 
         Returns:
-            Optional[str]: The output string for this call, or None if nothing should be emitted.
+            Optional[RawStr]: The output string for this call, or None if nothing should be emitted.
         """
         return self.process_thought(flush=True)

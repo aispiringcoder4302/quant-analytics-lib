@@ -17,10 +17,15 @@ from pathlib import Path
 import json
 import re
 import io
-from copy import deepcopy
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter, ThoughtProcessor
+from vectorbtpro.knowledge.formatting import (
+    ContentFormatter, 
+    HTMLFileFormatter, 
+    resolve_formatter, 
+    RawStr, 
+    ThoughtProcessor,
+)
 from vectorbtpro.knowledge.tokenization import Tokenizer, TikTokenizer, resolve_tokenizer, tokenize
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, get
@@ -1324,6 +1329,8 @@ class Completions(ThoughtProcessor):
                         new_content = self.get_delta_content(response_chunk)
                         if new_content:
                             formatter.append(new_content)
+                            if isinstance(new_content, RawStr):
+                                new_content = new_content.raw
                             content_chunks.append(new_content)
                         response_chunks.append(response_chunk)
                     if content_chunks:
@@ -1334,6 +1341,8 @@ class Completions(ThoughtProcessor):
                     new_content = self.get_message_content(response)
                     if new_content:
                         formatter.append(new_content, complete=True)
+                        if isinstance(new_content, RawStr):
+                            new_content = new_content.raw
                         messages.append(dict(role="assistant", content=new_content))
                     tool_calls = self.get_chat_tool_calls(response)
 
@@ -1424,7 +1433,6 @@ class OpenAICompatibleMixin:
         return tool_spec
 
     def get_chat_tool_calls(self, response: tp.Any) -> tp.List[tp.Kwargs]:
-        print(response)
         tool_calls = []
         choices = get(response, "choices", None) or []
         for ch_i, ch in enumerate(choices):
