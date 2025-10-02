@@ -2641,7 +2641,7 @@ class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
         return self.process_thought(thought=thought, content=content)
 
 
-class LiteLLMCompletions(Completions):
+class LiteLLMCompletions(OpenAICompatibleMixin, Completions):
     """Completions class for LiteLLM.
 
     Args:
@@ -2705,15 +2705,31 @@ class LiteLLMCompletions(Completions):
         """
         return self._completion_kwargs
 
+    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+        """Format keyword arguments for the API call.
+
+        Args:
+            messages (ChatMessages): List representing the conversation history.
+
+        Returns:
+            Kwargs: Keyword arguments for the API call.
+        """
+        completion_kwargs = dict(self.completion_kwargs)
+        completion_kwargs["tools"] = completion_kwargs.get("tools", []) + self.tools
+        for i, tool in enumerate(completion_kwargs["tools"]):
+            if isinstance(tool, str) and tool in self._tool_registry:
+                completion_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+        return dict(
+            messages=messages,
+            model=self.model,
+            stream=self.stream,
+            **completion_kwargs,
+        )
+
     def get_chat_response(self, messages: tp.ChatMessages) -> ModelResponseT:
         from litellm import completion
 
-        return completion(
-            messages=messages,
-            model=self.model,
-            stream=False,
-            **self.completion_kwargs,
-        )
+        return completion(**self.format_kwargs(messages))
 
     def get_message_content(self, response: ModelResponseT) -> tp.Optional[str]:
         message = response.choices[0].message
@@ -2723,12 +2739,7 @@ class LiteLLMCompletions(Completions):
     def get_stream_response(self, messages: tp.ChatMessages) -> CustomStreamWrapperT:
         from litellm import completion
 
-        return completion(
-            messages=messages,
-            model=self.model,
-            stream=True,
-            **self.completion_kwargs,
-        )
+        return completion(**self.format_kwargs(messages))
 
     def get_delta_content(self, response_chunk: ModelResponseT) -> tp.Optional[str]:
         delta = response_chunk.choices[0].delta
