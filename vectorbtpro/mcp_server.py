@@ -74,7 +74,7 @@ def search(
     bm25_fallback: bool = True,
     return_chunks: bool = True,
     return_metadata: str = "none",
-    max_tokens: tp.Optional[int] = 5_000,
+    max_tokens: tp.Optional[int] = 2_000,
     n: tp.Optional[int] = None,
     page: int = 1,
 ) -> str:
@@ -129,7 +129,7 @@ def search(
             Defaults to "none".
         max_tokens (Optional[int]): Maximum number of tokens to return in the results.
 
-            Defaults to 5,000.
+            Defaults to 2,000.
         n (Optional[int]): Number of results to return per page.
 
             If specified, it will return the first `n` results that fit within the `max_tokens` limit.
@@ -213,7 +213,7 @@ def find(
     aggregate_api: bool = False,
     aggregate_messages: bool = False,
     return_metadata: str = "none",
-    max_tokens: tp.Optional[int] = 5_000,
+    max_tokens: tp.Optional[int] = 2_000,
     n: tp.Optional[int] = None,
     page: int = 1,
 ) -> str:
@@ -247,9 +247,6 @@ def find(
             * "examples": Code examples across all assets.
             * "all": All of the above, in the order specified above.
 
-            Do not use "examples" with other assets, as examples are already included in those assets.
-            Use them separately to get only examples.
-
             Order matters. May also include ellipsis. For example, `["messages", "..."]` puts
             "messages" at the beginning and all other assets in their usual order at the end.
 
@@ -277,7 +274,7 @@ def find(
             Defaults to "none".
         max_tokens (Optional[int]): Maximum number of tokens to return in the results.
 
-            Defaults to 5,000.
+            Defaults to 2,000.
         n (Optional[int]): Number of results to return per page.
 
             If specified, it will return the first `n` results that fit within the `max_tokens` limit.

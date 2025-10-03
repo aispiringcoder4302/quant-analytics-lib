@@ -1335,7 +1335,7 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
         found_text_splitter = None
         for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Splitter"):
-                _short_name: tp.ClassVar[tp.Optional[str]] = getattr(cls, "_short_name", None)
+                _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == text_splitter.lower():
                     found_text_splitter = cls
                     break

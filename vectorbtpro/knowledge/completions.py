@@ -19,13 +19,7 @@ import re
 import io
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.knowledge.formatting import (
-    ContentFormatter,
-    HTMLFileFormatter,
-    resolve_formatter,
-    RawStr,
-    ThoughtProcessor,
-)
+from vectorbtpro.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter, ThoughtProcessor
 from vectorbtpro.knowledge.tokenization import Tokenizer, TikTokenizer, resolve_tokenizer, tokenize
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, has, get
@@ -1330,8 +1324,6 @@ class Completions(ThoughtProcessor):
                         new_content = self.get_delta_content(response_chunk)
                         if new_content:
                             formatter.append(new_content)
-                            if isinstance(new_content, RawStr):
-                                new_content = new_content.raw
                             content_chunks.append(new_content)
                         response_chunks.append(response_chunk)
                     if content_chunks:
@@ -1342,8 +1334,6 @@ class Completions(ThoughtProcessor):
                     new_content = self.get_message_content(response)
                     if new_content:
                         formatter.append(new_content, complete=True)
-                        if isinstance(new_content, RawStr):
-                            new_content = new_content.raw
                         messages.append(dict(role="assistant", content=new_content))
                     tool_calls = self.get_chat_tool_calls(response)
 
@@ -1415,12 +1405,18 @@ class OpenAICompatibleMixin:
         if choices:
             message = get(choices[0], "message", None)
             return get(message, "content", None)
+        message = get(response, "message", None)
+        if message:
+            return get(message, "content", None)
         return None
 
     def get_delta_content(self, response_chunk: tp.Any) -> tp.Optional[str]:
         choices = get(response_chunk, "choices", None) or []
         if choices:
             delta = get(choices[0], "delta", None)
+            return get(delta, "content", None)
+        delta = get(response_chunk, "delta", None)
+        if delta:
             return get(delta, "content", None)
         return None
 
@@ -1434,82 +1430,185 @@ class OpenAICompatibleMixin:
         return tool_spec
 
     def get_chat_tool_calls(self, response: tp.Any) -> tp.List[tp.Kwargs]:
+        def _iter_messages(obj):
+            choices = get(obj, "choices", None)
+            if choices:
+                for ch in choices or []:
+                    msg = get(ch, "message", None)
+                    if msg:
+                        yield msg
+            else:
+                msg = get(obj, "message", None) or obj
+                if msg:
+                    yield msg
+
+        def _extract_from_message(msg, ch_i=0):
+            out = []
+            for i, tc in enumerate(get(msg, "tool_calls", []) or []):
+                fn = get(tc, "function", None)
+                out.append(
+                    {
+                        "id": get(tc, "id", None) or f"tool_call_{ch_i}_{i}",
+                        "name": get(fn, "name", None) if fn else None,
+                        "arguments": get(fn, "arguments", None) if fn else None,
+                        "legacy": False,
+                    }
+                )
+            fc = get(msg, "function_call", None)
+            if fc:
+                out.append(
+                    {
+                        "id": get(fc, "id", None) or f"function_call_{ch_i}",
+                        "name": get(fc, "name", None),
+                        "arguments": get(fc, "arguments", None),
+                        "legacy": True,
+                    }
+                )
+            return out
+
         tool_calls = []
-        choices = get(response, "choices", None) or []
-        for ch_i, ch in enumerate(choices):
-            msg = get(ch, "message", None)
-            if msg:
-                tcs = get(msg, "tool_calls", None) or []
-                for i, tc in enumerate(tcs):
-                    fn = get(tc, "function", None)
-                    tool_calls.append(
-                        {
-                            "id": get(tc, "id", None) or f"tool_call_{ch_i}_{i}",
-                            "name": get(fn, "name", None) if fn else None,
-                            "arguments": get(fn, "arguments", None) if fn else None,
-                            "legacy": False,
-                        }
-                    )
-                fc = get(msg, "function_call", None)
-                if fc:
-                    tool_calls.append(
-                        {
-                            "id": f"function_call_{ch_i}",
-                            "name": get(fc, "name", None),
-                            "arguments": get(fc, "arguments", None),
-                            "legacy": True,
-                        }
-                    )
+        for ch_i, msg in enumerate(_iter_messages(response)):
+            tool_calls.extend(_extract_from_message(msg, ch_i))
         return tool_calls
 
     def get_stream_tool_calls(self, response_chunks: tp.Iterator[tp.Any]) -> tp.List[tp.Kwargs]:
         tool_call_mapping = {}
-        for response_chunk in response_chunks:
-            for choice in get(response_chunk, "choices", []) or []:
-                delta = get(choice, "delta", None) or {}
-                for tc in get(delta, "tool_calls", []) or []:
-                    idx = get(tc, "index", None)
-                    if idx is not None:
-                        entry = tool_call_mapping.setdefault(
-                            idx,
-                            {
-                                "id": None,
-                                "name": None,
-                                "arguments": "",
-                                "legacy": False,
-                            },
-                        )
-                        if get(tc, "id", None):
-                            entry["id"] = tc.id
-                        fn = get(tc, "function", None)
-                        if fn:
-                            if get(fn, "name", None):
-                                entry["name"] = fn.name
-                            if get(fn, "arguments", None):
-                                entry["arguments"] += fn.arguments
-                fc = get(delta, "function_call", None)
-                if fc:
-                    idx = len(tool_call_mapping)
-                    entry = tool_call_mapping.setdefault(
-                        idx,
-                        {
-                            "id": f"function_call_{idx}",
-                            "name": None,
-                            "arguments": "",
-                            "legacy": True,
-                        },
-                    )
-                    if get(fc, "name", None):
-                        entry["name"] = fc.name
-                    if get(fc, "arguments", None):
-                        entry["arguments"] += fc.arguments
+        fc_entry = None
+
+        def _iter_deltas(obj):
+            choices = get(obj, "choices", None)
+            if choices:
+                for ch in choices or []:
+                    delta = get(ch, "delta", None)
+                    if delta:
+                        yield delta
+            else:
+                delta = get(obj, "delta", None)
+                if delta:
+                    yield delta
+
+        def _alloc_index():
+            i = 0
+            while i in tool_call_mapping:
+                i += 1
+            return i
+
+        def _extract_from_delta(delta):
+            nonlocal fc_entry
+
+            for tc in get(delta, "tool_calls", []) or []:
+                idx = get(tc, "index", None)
+                if idx is None:
+                    idx = _alloc_index()
+                entry = tool_call_mapping.setdefault(
+                    idx,
+                    {
+                        "id": f"tool_call_{idx}",
+                        "name": None,
+                        "arguments": "",
+                        "legacy": False,
+                    },
+                )
+                tc_id = get(tc, "id", None)
+                if tc_id:
+                    entry["id"] = tc_id
+                fn = get(tc, "function", None)
+                if fn:
+                    name = get(fn, "name", None)
+                    if name:
+                        entry["name"] = name
+                    args = get(fn, "arguments", None)
+                    if args:
+                        entry["arguments"] += args
+
+            fc = get(delta, "function_call", None)
+            if fc:
+                if fc_entry is None:
+                    fc_entry = {
+                        "id": get(fc, "id", None) or f"function_call_{len(tool_call_mapping)}",
+                        "name": None,
+                        "arguments": "",
+                        "legacy": True,
+                    }
+                name = get(fc, "name", None)
+                if name:
+                    fc_entry["name"] = name
+                args = get(fc, "arguments", None)
+                if args:
+                    fc_entry["arguments"] += args
+
+        def _merge_final_message(msg):
+            nonlocal fc_entry
+
+            for i, tc in enumerate(get(msg, "tool_calls", []) or []):
+                idx = get(tc, "index", None)
+                if idx is None:
+                    idx = i
+                entry = tool_call_mapping.setdefault(
+                    idx,
+                    {
+                        "id": f"tool_call_{idx}",
+                        "name": None,
+                        "arguments": "",
+                        "legacy": False,
+                    },
+                )
+                tc_id = get(tc, "id", None)
+                if tc_id:
+                    entry["id"] = tc_id
+                fn = get(tc, "function", None)
+                if fn:
+                    name = get(fn, "name", None)
+                    if name:
+                        entry["name"] = name
+                    args = get(fn, "arguments", None)
+                    if args is not None:
+                        entry["arguments"] = args
+
+            fc = get(msg, "function_call", None)
+            if fc:
+                if fc_entry is None:
+                    fc_entry = {
+                        "id": get(fc, "id", None) or f"function_call_{len(tool_call_mapping)}",
+                        "name": None,
+                        "arguments": "",
+                        "legacy": True,
+                    }
+                name = get(fc, "name", None)
+                if name:
+                    fc_entry["name"] = name
+                args = get(fc, "arguments", None)
+                if args is not None:
+                    fc_entry["arguments"] = args
+
+        for chunk in response_chunks:
+            for delta in _iter_deltas(chunk):
+                _extract_from_delta(delta)
+            msg = get(chunk, "message", None)
+            if msg:
+                _merge_final_message(msg)
+
         tool_calls = [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
+        if fc_entry:
+            tool_calls.append(fc_entry)
         return tool_calls
+
+    @property
+    def should_dump_arguments(self) -> bool:
+        """Whether to dump tool call arguments to a string before sending.
+
+        Returns:
+            bool: True if tool call arguments should be dumped, False otherwise.
+        """
+        return True
 
     def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
         legacy_messages = []
         norm_tool_calls = []
         for tc in tool_calls:
+            arguments = tc["arguments"]
+            if self.should_dump_arguments:
+                arguments = json.dumps(arguments)
             if tc.get("legacy", False):
                 legacy_messages.append(
                     {
@@ -1517,7 +1616,7 @@ class OpenAICompatibleMixin:
                         "content": "",
                         "function_call": {
                             "name": tc["name"],
-                            "arguments": json.dumps(tc["arguments"]),
+                            "arguments": arguments,
                         },
                     }
                 )
@@ -1528,7 +1627,7 @@ class OpenAICompatibleMixin:
                         "type": "function",
                         "function": {
                             "name": tc["name"],
-                            "arguments": json.dumps(tc["arguments"]),
+                            "arguments": arguments,
                         },
                     }
                 )
@@ -2989,7 +3088,7 @@ class LlamaIndexCompletions(Completions):
         return messages
 
 
-class OllamaCompletions(Completions):
+class OllamaCompletions(OpenAICompatibleMixin, Completions):
     """Completions class for Ollama.
 
     Args:
@@ -3100,13 +3199,29 @@ class OllamaCompletions(Completions):
         """
         return self._chat_kwargs
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> OllamaChatResponseT:
-        return self.client.chat(
-            model=self.model,
+    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+        """Format keyword arguments for the API call.
+
+        Args:
+            messages (ChatMessages): List representing the conversation history.
+
+        Returns:
+            Kwargs: Keyword arguments for the API call.
+        """
+        chat_kwargs = dict(self.chat_kwargs)
+        chat_kwargs["tools"] = chat_kwargs.get("tools", []) + self.tools
+        for i, tool in enumerate(chat_kwargs["tools"]):
+            if isinstance(tool, str) and tool in self._tool_registry:
+                chat_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+        return dict(
             messages=messages,
-            stream=False,
-            **self.chat_kwargs,
+            model=self.model,
+            stream=self.stream,
+            **chat_kwargs,
         )
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> OllamaChatResponseT:
+        return self.client.chat(**self.format_kwargs(messages))
 
     def get_message_content(self, response: OllamaChatResponseT) -> tp.Optional[str]:
         message = response["message"]
@@ -3122,12 +3237,7 @@ class OllamaCompletions(Completions):
         return self.process_thought(thought=thought, content=content, flush=True)
 
     def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[OllamaChatResponseT]:
-        return self.client.chat(
-            model=self.model,
-            messages=messages,
-            stream=True,
-            **self.chat_kwargs,
-        )
+        return self.client.chat(**self.format_kwargs(messages))
 
     def get_delta_content(self, response_chunk: OllamaChatResponseT) -> tp.Optional[str]:
         message = response_chunk["message"]
@@ -3141,6 +3251,17 @@ class OllamaCompletions(Completions):
             thought = None
         content = message.content
         return self.process_thought(thought=thought, content=content)
+
+    def get_stream_tool_calls(self, response_chunks: tp.Iterator[OllamaChatResponseT]) -> tp.List[tp.Kwargs]:
+        for response_chunk in response_chunks:
+            tool_calls = self.get_chat_tool_calls(response_chunk)
+            if tool_calls:
+                return tool_calls
+        return []
+
+    @property
+    def should_dump_arguments(self) -> bool:
+        return False
 
 
 def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[Completions]:
@@ -3206,7 +3327,7 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
         found_completions = None
         for name, cls in inspect.getmembers(curr_module, inspect.isclass):
             if name.endswith("Completions"):
-                _short_name: tp.ClassVar[tp.Optional[str]] = getattr(cls, "_short_name", None)
+                _short_name = getattr(cls, "_short_name", None)
                 if _short_name is not None and _short_name.lower() == completions.lower():
                     found_completions = cls
                     break
