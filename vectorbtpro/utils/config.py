@@ -112,6 +112,23 @@ def convert_to_dict(dct: tp.DictLike, nested: bool = True) -> dict:
     return dct
 
 
+def has(obj: tp.Any, attr: str) -> bool:
+    """Check if an attribute or dictionary item exists in an object.
+
+    Args:
+        obj (Any): Object to check the attribute in.
+        attr (str): Attribute name to check.
+
+    Returns:
+        bool: True if the attribute exists, False otherwise.
+    """
+    if hasattr(obj, attr):
+        return True
+    if isinstance(obj, dict):
+        return attr in obj
+    return False
+
+
 def get(obj: tp.Any, attr: str, default: tp.Optional[tp.Any] = None) -> tp.Any:
     """Retrieve an attribute or dictionary item from an object.
     

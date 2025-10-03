@@ -20,15 +20,15 @@ import io
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.knowledge.formatting import (
-    ContentFormatter, 
-    HTMLFileFormatter, 
-    resolve_formatter, 
-    RawStr, 
+    ContentFormatter,
+    HTMLFileFormatter,
+    resolve_formatter,
+    RawStr,
     ThoughtProcessor,
 )
 from vectorbtpro.knowledge.tokenization import Tokenizer, TikTokenizer, resolve_tokenizer, tokenize
 from vectorbtpro.utils import checks
-from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, get
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, has, get
 from vectorbtpro.utils.formatting import dump, get_dump_language, head_and_tail
 from vectorbtpro.utils.module_ import get_obj
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
@@ -79,10 +79,11 @@ else:
     ModelResponseT = "litellm.ModelResponse"
     CustomStreamWrapperT = "litellm.CustomStreamWrapper"
 if tp.TYPE_CHECKING:
-    from llama_index.core.llms import LLM as LLMT, ChatResponse as ChatResponseT
+    from llama_index.core.llms import LLM as LLMT, ChatResponse as ChatResponseT, ChatMessage as ChatMessageT
 else:
     LLMT = "llama_index.core.llms.LLM"
     ChatResponseT = "llama_index.core.llms.ChatResponse"
+    ChatMessageT = "llama_index.core.llms.ChatMessage"
 if tp.TYPE_CHECKING:
     from ollama import Client as OllamaClientT, ChatResponse as OllamaChatResponseT
 else:
@@ -2613,12 +2614,12 @@ class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
 
     def get_message_content(self, response: ChatCompletionOutputT) -> tp.Optional[str]:
         message = response.choices[0].message
-        if hasattr(message, "thinking"):
-            thought = message.thinking
-        elif hasattr(message, "reasoning"):
-            thought = message.reasoning
-        elif hasattr(message, "reasoning_content"):
-            thought = message.reasoning_content
+        if has(message, "thinking"):
+            thought = get(message, "thinking")
+        elif has(message, "reasoning"):
+            thought = get(message, "reasoning")
+        elif has(message, "reasoning_content"):
+            thought = get(message, "reasoning_content")
         else:
             thought = None
         content = message.content
@@ -2629,12 +2630,12 @@ class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
 
     def get_delta_content(self, response_chunk: ChatCompletionStreamOutputT) -> tp.Optional[str]:
         delta = response_chunk.choices[0].delta
-        if hasattr(delta, "thinking"):
-            thought = delta.thinking
-        elif hasattr(delta, "reasoning"):
-            thought = delta.reasoning
-        elif hasattr(delta, "reasoning_content"):
-            thought = delta.reasoning_content
+        if has(delta, "thinking"):
+            thought = get(delta, "thinking")
+        elif has(delta, "reasoning"):
+            thought = get(delta, "reasoning")
+        elif has(delta, "reasoning_content"):
+            thought = get(delta, "reasoning_content")
         else:
             thought = None
         content = delta.content
@@ -2772,12 +2773,14 @@ class LlamaIndexCompletions(Completions):
         self,
         llm: tp.Union[None, str, tp.MaybeType[LLMT]] = None,
         llm_kwargs: tp.KwargsLike = None,
+        chat_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
         Completions.__init__(
             self,
             llm=llm,
             llm_kwargs=llm_kwargs,
+            chat_kwargs=chat_kwargs,
             **kwargs,
         )
 
@@ -2789,6 +2792,7 @@ class LlamaIndexCompletions(Completions):
         llama_index_config = merge_dicts(self.get_settings(inherit=False), kwargs)
         def_llm = llama_index_config.pop("llm", None)
         def_llm_kwargs = llama_index_config.pop("llm_kwargs", None)
+        def_chat_kwargs = llama_index_config.pop("chat_kwargs", None)
 
         if llm is None:
             llm = def_llm
@@ -2851,8 +2855,11 @@ class LlamaIndexCompletions(Completions):
         elif len(kwargs) > 0:
             raise ValueError("Cannot apply config to already initialized LLM")
 
+        chat_kwargs = merge_dicts(def_chat_kwargs, chat_kwargs)
+
         self._model = model
         self._llm = llm
+        self._chat_kwargs = chat_kwargs
 
     @property
     def model(self) -> tp.Optional[str]:
@@ -2867,21 +2874,119 @@ class LlamaIndexCompletions(Completions):
         """
         return self._llm
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> ChatResponseT:
+    @property
+    def chat_kwargs(self) -> tp.Kwargs:
+        """Keyword arguments for LLM chat methods.
+
+        Returns:
+            Kwargs: Keyword arguments for chat methods.
+        """
+        return self._chat_kwargs
+
+    def format_messages(self, messages: tp.ChatMessages) -> tp.List[ChatMessageT]:
+        """Format messages.
+
+        Args:
+            messages (ChatMessages): List representing the conversation history.
+
+        Returns:
+            List[ChatMessage]: List of chat messages.
+        """
         from llama_index.core.llms import ChatMessage
 
-        return self.llm.chat(list(map(lambda x: ChatMessage(**dict(x)), messages)))
+        new_messages = []
+        for message in messages:
+            if isinstance(message, dict):
+                new_messages.append(ChatMessage(**message))
+            elif isinstance(message, str):
+                new_messages.append(ChatMessage(role="user", content=message))
+            else:
+                new_messages.append(message)
+        return new_messages
+
+    def get_chat_response(self, messages: tp.ChatMessages) -> ChatResponseT:
+        from llama_index.core.tools import FunctionTool
+
+        messages = self.format_messages(messages)
+        tools = self.tools
+        if tools:
+            fns = [self.tool_registry[tool] for tool in tools]
+            tools = [FunctionTool.from_defaults(fn=fn) for fn in fns]
+            return self.llm.chat_with_tools(tools, chat_history=messages, **self.chat_kwargs)
+        else:
+            return self.llm.chat(messages, **self.chat_kwargs)
 
     def get_message_content(self, response: ChatResponseT) -> tp.Optional[str]:
-        return response.message.content
+        return self.process_thought(content=response.message.content, flush=True)
 
     def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[ChatResponseT]:
-        from llama_index.core.llms import ChatMessage
+        from llama_index.core.tools import FunctionTool
 
-        return self.llm.stream_chat(list(map(lambda x: ChatMessage(**dict(x)), messages)))
+        messages = self.format_messages(messages)
+        tools = self.tools
+        if tools:
+            fns = [self.tool_registry[tool] for tool in tools]
+            tools = [FunctionTool.from_defaults(fn=fn) for fn in fns]
+            return self.llm.stream_chat_with_tools(tools, chat_history=messages, **self.chat_kwargs)
+        else:
+            return self.llm.stream_chat(messages, **self.chat_kwargs)
 
     def get_delta_content(self, response_chunk: ChatResponseT) -> tp.Optional[str]:
-        return response_chunk.delta
+        return self.process_thought(content=response_chunk.delta)
+
+    @property
+    def supports_tool_calling(self) -> bool:
+        return True
+
+    def get_chat_tool_calls(self, response: ChatResponseT) -> tp.List[tp.Kwargs]:
+        tool_call_mapping = {}
+        for i, tc in enumerate(self.llm.get_tool_calls_from_response(response, error_on_no_tool_call=False)):
+            tool_call_mapping[i] = {
+                "id": tc.tool_id,
+                "name": tc.tool_name,
+                "arguments": tc.tool_kwargs,
+            }
+        additional_kwargs = get(response.message, "additional_kwargs", {})
+        tool_calls = get(additional_kwargs, "tool_calls", [])
+        for i, tc in enumerate(tool_calls):
+            tool_call_mapping[i]["tool_call"] = tc
+        return [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
+
+    def get_stream_tool_calls(self, response_chunks: tp.Iterator[ChatResponseT]) -> tp.List[tp.Kwargs]:
+        tool_call_mapping = {}
+        for chunk in response_chunks:
+            for i, tc in enumerate(self.get_chat_tool_calls(chunk)):
+                tool_call_mapping[i] = tc
+        return [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
+
+    def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        from llama_index.core.llms import ChatMessage
+
+        return [
+            ChatMessage(
+                role="assistant",
+                content=None,
+                additional_kwargs={
+                    "tool_calls": list(map(lambda x: x["tool_call"], tool_calls)),
+                },
+            )
+        ]
+
+    def get_tool_result_messages(self, tool_results: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
+        from llama_index.core.llms import ChatMessage
+
+        messages = []
+        for tr in tool_results:
+            messages.append(
+                ChatMessage(
+                    role="tool",
+                    content=tr["output"],
+                    additional_kwargs={
+                        "tool_call_id": tr["id"],
+                    },
+                )
+            )
+        return messages
 
 
 class OllamaCompletions(Completions):
