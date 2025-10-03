@@ -69,8 +69,9 @@ def auto_cast(value: tp.Any) -> tp.Any:
 @register_tool
 def search(
     query: str,
-    asset_names: tp.Union[str, tp.List[str]] = "all",
+    asset_names: tp.Optional[tp.List[str]] = None,
     search_method: str = "hybrid",
+    bm25_fallback: bool = True,
     return_chunks: bool = True,
     return_metadata: str = "none",
     max_tokens: tp.Optional[int] = 5_000,
@@ -94,25 +95,28 @@ def search(
         query (str): Search query.
 
             Do not reinstate the name "VectorBT PRO" in the query, as it is already implied.
-        asset_names (Union[str, List[str]]): One or more asset names to search. Supported names:
+        asset_names (Optional[List[str]]): Asset names to search. Supported names:
 
             * "api": API reference. Best for specific API queries.
             * "docs": Regular documentation, including getting started, features, tutorials, guides,
                 recipes, and legal information. Best for general queries.
             * "messages": Discord messages and discussions. Best for support queries.
             * "examples": Code examples across all assets. Best for practical implementation queries.
-            * "all": All of the above. Best for comprehensive queries.
 
             Order doesn't matter.
 
-            Defaults to "all".
+            Defaults to all.
         search_method (str): Strategy for document search. Supported strategies:
 
             * "bm25": Uses BM25 for lexical search. Best for specific keywords.
             * "embeddings": Uses embeddings for semantic search. Best for general queries.
             * "hybrid": Combines both embeddings and BM25. Best for balanced search.
 
-            Defaults to "hybrid". If embeddings are not available, it falls back to "bm25".
+            Defaults to "hybrid".
+        bm25_fallback (bool): Whether to fallback to BM25 if some embeddings are not available;
+            otherwise, missing embeddings will be generated, which may take longer.
+
+            Defaults to True.
         return_chunks (bool): Whether to return the chunks of the results; otherwise, returns the full results.
 
             Defaults to True.
@@ -152,9 +156,11 @@ def search(
         n = auto_cast(n)
         page = auto_cast(page)
 
-        if search_method == "embeddings":
+        if asset_names is None:
+            asset_names = "all"
+        if bm25_fallback and search_method == "embeddings":
             search_method = "embeddings_fallback"
-        elif search_method == "hybrid":
+        elif bm25_fallback and search_method == "hybrid":
             search_method = "hybrid_fallback"
 
         results = search(
@@ -201,9 +207,9 @@ def search(
 
 @register_tool
 def find(
-    refname: tp.Union[str, tp.List[str]],
+    refnames: tp.List[str],
     resolve: bool = True,
-    asset_names: tp.Union[str, tp.List[str]] = "all",
+    asset_names: tp.Optional[tp.List[str]] = None,
     aggregate_api: bool = False,
     aggregate_messages: bool = False,
     return_metadata: str = "none",
@@ -211,7 +217,7 @@ def find(
     n: tp.Optional[int] = None,
     page: int = 1,
 ) -> str:
-    """Find VectorBT PRO (vectorbtpro, VBT) assets relevant to a specific object and
+    """Find VectorBT PRO (vectorbtpro, VBT) assets relevant to specific objects and
     return the results as a context string.
 
     This can be used to find assets mentioning specific VBT objects, such as modules, classes,
@@ -221,19 +227,18 @@ def find(
     If any of the mentioned targets are found in an asset, it will be returned.
 
     Args:
-        refname (Union[str, List[str]]): One or more references to the object(s).
+        refnames (List[str]): Reference names of the objects.
 
             A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
             or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
 
-            If multiple references are provided, returns a code example if any of the references
-            are found in the code example.
+            Returns a code example if any of the references are found in the code example.
         resolve (bool): Whether to resolve the object's reference name.
 
             Set to False to find any string, not just VBT objects, such as "SQLAlchemy".
             In this case, `refname` becomes a simple string to match against.
             Defaults to True.
-        asset_names (Union[str, List[str]]): One or more asset names to search. Supported names:
+        asset_names (Optional[List[str]]): Asset names to search. Supported names:
 
             * "api": API reference.
             * "docs": Regular documentation, including getting started, features, tutorials, guides,
@@ -248,7 +253,7 @@ def find(
             Order matters. May also include ellipsis. For example, `["messages", "..."]` puts
             "messages" at the beginning and all other assets in their usual order at the end.
 
-            Defaults to "all".
+            Defaults to all.
         aggregate_api (bool): Whether to aggregate all children of the object into a single context.
 
             If True, the context will contain all the children of the object, such as methods,
@@ -290,7 +295,7 @@ def find(
     from vectorbtpro.utils.pbar import ProgressHidden
 
     with ProgressHidden():
-        refname = auto_cast(refname)
+        refnames = auto_cast(refnames)
         resolve = auto_cast(resolve)
         asset_names = auto_cast(asset_names)
         aggregate_api = auto_cast(aggregate_api)
@@ -300,8 +305,11 @@ def find(
         n = auto_cast(n)
         page = auto_cast(page)
 
+        if asset_names is None:
+            asset_names = "all"
+
         results = find_assets(
-            refname,
+            refnames,
             resolve=resolve,
             asset_names=asset_names,
             api_kwargs=dict(
@@ -372,7 +380,7 @@ def get_attrs(
     is shown only when the attribute is not defined directly on the object.
 
     Args:
-        refname (str): Reference to the object.
+        refname (str): Reference name of the object.
 
             A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
             or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
@@ -410,7 +418,7 @@ def get_attrs(
 
 
 @register_tool
-def get_source(refname: tp.Union[str, tp.List[str]]) -> str:
+def get_source(refname: str) -> str:
     """Get the source code of any object.
 
     This can be used to inspect the implementation of VectorBT PRO (vectorbtpro, VBT) objects,
@@ -419,7 +427,7 @@ def get_source(refname: tp.Union[str, tp.List[str]]) -> str:
     may not have a traditional source code representation.
 
     Args:
-        refname (Union[str, List[str]]): One or more references to the object(s).
+        refname (str): Reference name of the object.
 
             A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
             or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
@@ -434,16 +442,11 @@ def get_source(refname: tp.Union[str, tp.List[str]]) -> str:
     from vectorbtpro.utils.module_ import resolve_refname
 
     refname = auto_cast(refname)
-    if isinstance(refname, str):
-        refname = [refname]
+    resolved_name = resolve_refname(refname)
+    if not resolved_name:
+        raise ValueError(f"Reference name {refname!r} cannot be resolved to an object")
 
-    sources = []
-    for name in refname:
-        resolved_name = resolve_refname(name)
-        if not resolved_name:
-            raise ValueError(f"Reference name {name!r} cannot be resolved to an object")
-        sources.append(get_source(resolved_name))
-    return "\n\n".join(sources)
+    return get_source(resolved_name)
 
 
 current_kernel = None
