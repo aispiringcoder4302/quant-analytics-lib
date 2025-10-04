@@ -2216,7 +2216,7 @@ knowledge = frozen_cfg(
         think_open_tag="<think>",
         think_close_tag="</think>",
         think_separator="\n\n---\n\n",
-        include_thoughts=True,
+        hide_thoughts=False,
         resolve_extensions=True,
         make_links=True,
         frontmatter_to_code=True,
@@ -2400,7 +2400,7 @@ knowledge = frozen_cfg(
         refresh_page=False,
         refresh_script=r"""<meta http-equiv="refresh" content="1">""",
         auto_scroll=None,
-        auto_scroll_script=r"""<script>!function(){let e="autoscroll:disabled";function t(){try{sessionStorage.setItem(e,"1")}catch{}}let n=(()=>{try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch{return!1}})();function o(){if(!function t(){try{return"1"===sessionStorage.getItem(e)}catch{return!1}}()&&!n&&null!==document.querySelector('meta[http-equiv="refresh" i]')){let t;t=4,function e(){(function e(){let t=document.scrollingElement||document.documentElement||document.body,n=Math.max(0,t.scrollHeight-t.clientHeight-5);t.scrollTop=n})(),t-- >0&&requestAnimationFrame(e)}()}}window.addEventListener("wheel",t,{passive:!0,once:!0}),window.addEventListener("touchstart",t,{passive:!0,once:!0}),window.addEventListener("touchmove",t,{passive:!0,once:!0}),window.addEventListener("pointerdown",t,{passive:!0,once:!0}),window.addEventListener("mousedown",t,{passive:!0,once:!0}),window.addEventListener("keydown",e=>{["ArrowUp","ArrowDown","PageUp","PageDown","Home","End"," ","Spacebar"].includes(e.key)&&t()},{once:!0}),document.addEventListener("DOMContentLoaded",o,{once:!0}),window.addEventListener("pageshow",o,{once:!0}),window.addEventListener("load",o,{once:!0})}();</script>""",
+        auto_scroll_script=r"""<script>!function(){let e="autoscroll:disabled";function o(){try{sessionStorage.setItem(e,"1")}catch{}}function t(){try{return"1"===sessionStorage.getItem(e)}catch{return!1}}let n=(()=>{try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch{return!1}})(),c=()=>null!==document.querySelector('meta[http-equiv="refresh" i]'),r=()=>document.scrollingElement||document.documentElement||document.body,s=()=>Math.max(0,r().scrollHeight-r().clientHeight-10);function l(){if(t()||n||!c())return;let e=4;!function o(){r().scrollTop=s(),--e>0&&requestAnimationFrame(o)}()}addEventListener("wheel",o,{passive:!0,once:!0}),addEventListener("touchstart",o,{passive:!0,once:!0}),addEventListener("touchmove",o,{passive:!0,once:!0}),addEventListener("pointerdown",o,{passive:!0,once:!0}),addEventListener("mousedown",o,{passive:!0,once:!0}),addEventListener("keydown",e=>{["ArrowUp","ArrowDown","PageUp","PageDown","Home","End"," ","Spacebar"].includes(e.key)&&o()},{once:!0}),addEventListener("DOMContentLoaded",l,{once:!0}),addEventListener("pageshow",l,{once:!0}),addEventListener("load",l,{once:!0}),addEventListener("scroll",()=>{t()&&r().scrollTop>=s()&&function o(){try{sessionStorage.removeItem(e)}catch{}}()},{passive:!0})}();</script>""",
         show_spinner=None,
         spinner_style=r""".loader {
     width: 300px;
@@ -2546,9 +2546,9 @@ $context
             tool_dump_kwargs=flex_cfg(
                 dump_engine="json",
             ),
-            tool_request_template="**Tool request [`$name`]:**\n$payload",
-            tool_response_template="**Tool response [`$name`], $token_count tokens:**\n$payload",
-            tool_response_payload="compact",
+            tool_request_template="**🛠️ Tool request [`$name`]**\n$payload",
+            tool_response_template=RepEval("f\"**{'✅' if success else '❌'} Tool response [`{name}`, {token_count} tokens]**\\n{payload}\""),
+            tool_display_format="minimal",
         ),
         completions_configs=flex_cfg(
             openai=flex_cfg(

@@ -1711,14 +1711,14 @@ class RawStr(str):
 class ThoughtProcessor(Configured):
     """Processes content that may include `<think>...</think>` segments.
 
-    Works for both streaming and non-streaming inputs. When `include_thoughts` is
-    True, tags and their content pass through unchanged. When False, thought regions
+    Works for both streaming and non-streaming inputs. When `hide_thoughts` is
+    False, tags and their content pass through unchanged. When True, thought regions
     and tags are removed.
 
     Args:
         think_open_tag (Optional[str]): Opening tag for the think block.
         think_close_tag (Optional[str]): Closing tag for the think block.
-        include_thoughts (Optional[bool]): Whether to keep or remove thought regions.
+        hide_thoughts (Optional[bool]): Whether to hide thought regions.
     """
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.formatting"]
@@ -1727,24 +1727,24 @@ class ThoughtProcessor(Configured):
         self,
         think_open_tag: tp.Optional[str] = None,
         think_close_tag: tp.Optional[str] = None,
-        include_thoughts: tp.Optional[bool] = None,
+        hide_thoughts: tp.Optional[bool] = None,
         **kwargs,
     ) -> None:
         Configured.__init__(
             self,
             think_open_tag=think_open_tag,
             think_close_tag=think_close_tag,
-            include_thoughts=include_thoughts,
+            hide_thoughts=hide_thoughts,
             **kwargs,
         )
 
         think_open_tag = self.resolve_setting(think_open_tag, "think_open_tag")
         think_close_tag = self.resolve_setting(think_close_tag, "think_close_tag")
-        include_thoughts = self.resolve_setting(include_thoughts, "include_thoughts")
+        hide_thoughts = self.resolve_setting(hide_thoughts, "hide_thoughts")
 
         self._think_open_tag = think_open_tag
         self._think_close_tag = think_close_tag
-        self._include_thoughts = include_thoughts
+        self._hide_thoughts = hide_thoughts
 
         self._thinking = False
         self._thinking_source = None
@@ -1768,13 +1768,13 @@ class ThoughtProcessor(Configured):
         return self._think_close_tag
 
     @property
-    def include_thoughts(self) -> bool:
-        """Whether to include thinking messages (wrapped in `<think>` tags) in output.
+    def hide_thoughts(self) -> bool:
+        """Whether to hide thinking messages from output.
 
         Returns:
-            bool: True if thinking messages should be included, False otherwise.
+            bool: True if thinking messages should be hidden, False otherwise.
         """
-        return self._include_thoughts
+        return self._hide_thoughts
 
     @property
     def thinking(self) -> bool:
@@ -1814,7 +1814,7 @@ class ThoughtProcessor(Configured):
 
         Accepts `thought`, `content`, both, or neither. When both are provided
         and no thought is currently open, the output equals `<think>{thought}</think>{content}`
-        if `include_thoughts` is True, or just `{content}` if False.
+        if `hide_thoughts` is False, or just `{content}` if True.
 
         Stateful behavior:
 
@@ -1840,10 +1840,10 @@ class ThoughtProcessor(Configured):
             if not self.thinking:
                 self._thinking = True
                 self._thinking_source = "explicit"
-                if self.include_thoughts:
+                if not self.hide_thoughts:
                     out = (out or "") + self.think_open_tag + (thought or "")
             else:
-                if self.include_thoughts:
+                if not self.hide_thoughts:
                     out = (out or "") + (thought or "")
 
         if content is not None:
@@ -1856,7 +1856,7 @@ class ThoughtProcessor(Configured):
             ):
                 self._thinking = False
                 self._thinking_source = None
-                piece = (self.think_close_tag + s) if self.include_thoughts else s
+                piece = (self.think_close_tag + s) if not self.hide_thoughts else s
                 out = (out or "") + piece if piece else out
             else:
 
@@ -1875,22 +1875,22 @@ class ThoughtProcessor(Configured):
                             self._thinking = True
                             self._thinking_source = "inline"
                             i = j + len(self.think_open_tag)
-                            if self.include_thoughts:
+                            if not self.hide_thoughts:
                                 parts.append(self.think_open_tag)
                         else:
                             k = chunk.find(self.think_close_tag, i)
                             if k == -1:
                                 seg = chunk[i:]
-                                if self.include_thoughts and seg:
+                                if not self.hide_thoughts and seg:
                                     parts.append(seg)
                                 break
                             thought_piece = chunk[i:k]
-                            if self.include_thoughts and thought_piece:
+                            if not self.hide_thoughts and thought_piece:
                                 parts.append(thought_piece)
                             self._thinking = False
                             self._thinking_source = None
                             i = k + len(self.think_close_tag)
-                            if self.include_thoughts:
+                            if not self.hide_thoughts:
                                 parts.append(self.think_close_tag)
                     return "".join(parts)
 
@@ -1900,7 +1900,7 @@ class ThoughtProcessor(Configured):
         if ((thought is None and content is None) or flush) and self.thinking:
             self._thinking = False
             self._thinking_source = None
-            if self.include_thoughts:
+            if not self.hide_thoughts:
                 out = (out or "") + self.think_close_tag
 
         return RawStr(out, raw=raw_in) if out not in ("", None) else None

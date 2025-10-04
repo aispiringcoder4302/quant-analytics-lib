@@ -135,7 +135,7 @@ class Completions(ThoughtProcessor):
         formatter_kwargs (KwargsLike): Keyword arguments to initialize or update `formatter`.
         minimal_format (Optional[bool]): Boolean indicating if the input is minimally formatted.
         quick_mode (Optional[bool]): Boolean indicating whether quick mode is enabled.
-        tools (Optional[MaybeList[Union[str, Callable]]]): Tools to be used in the conversation.
+        tools (Optional[Tools]): Tools to be used in the conversation.
 
             If a string is provided, it must be either the name of a registered tool,
             "registry" to use all available tools from the registry,
@@ -155,9 +155,14 @@ class Completions(ThoughtProcessor):
         tool_response_template (Optional[CustomTemplateLike]): Template for tool responses.
 
             The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
-        tool_response_payload (Optional[str]): Payload mode for tool responses.
+        tool_display_format (Optional[str]): Format for displaying tool information.
 
-            Can be one of "none", "compact" (only head and tail), and "full".
+            Supports the following options:
+
+            * "none": don't display tool information.
+            * "minimal": display calls but don't display tool request/response payloads.
+            * "compact": display only head and tail of tool request/response payloads.
+            * "full": display full tool request/response payloads.
         silence_warnings (Optional[bool]): Flag to suppress warning messages.
         show_progress (Optional[bool]): Flag indicating whether to display the progress bar.
         pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
@@ -191,13 +196,13 @@ class Completions(ThoughtProcessor):
         formatter_kwargs: tp.KwargsLike = None,
         minimal_format: tp.Optional[bool] = None,
         quick_mode: tp.Optional[bool] = None,
-        tools: tp.Optional[tp.MaybeList[tp.Union[str, tp.Callable]]] = None,
+        tools: tp.Optional[tp.Tools] = None,
         tool_registry: tp.Optional[tp.Dict[str, tp.Callable]] = None,
         max_tool_rounds: tp.Optional[int] = None,
         tool_dump_kwargs: tp.KwargsLike = None,
         tool_request_template: tp.CustomTemplateLike = None,
         tool_response_template: tp.CustomTemplateLike = None,
-        tool_response_payload: tp.Optional[str] = None,
+        tool_display_format: tp.Optional[str] = None,
         silence_warnings: tp.Optional[bool] = None,
         show_progress: tp.Optional[bool] = None,
         pbar_kwargs: tp.KwargsLike = None,
@@ -225,7 +230,7 @@ class Completions(ThoughtProcessor):
             tool_dump_kwargs=tool_dump_kwargs,
             tool_request_template=tool_request_template,
             tool_response_template=tool_response_template,
-            tool_response_payload=tool_response_payload,
+            tool_display_format=tool_display_format,
             silence_warnings=silence_warnings,
             show_progress=show_progress,
             pbar_kwargs=pbar_kwargs,
@@ -253,7 +258,7 @@ class Completions(ThoughtProcessor):
         tool_dump_kwargs = self.resolve_setting(tool_dump_kwargs, "tool_dump_kwargs", merge=True)
         tool_request_template = self.resolve_setting(tool_request_template, "tool_request_template")
         tool_response_template = self.resolve_setting(tool_response_template, "tool_response_template")
-        tool_response_payload = self.resolve_setting(tool_response_payload, "tool_response_payload")
+        tool_display_format = self.resolve_setting(tool_display_format, "tool_display_format")
         silence_warnings = self.resolve_setting(silence_warnings, "silence_warnings")
         show_progress = self.resolve_setting(show_progress, "show_progress")
         pbar_kwargs = self.resolve_setting(pbar_kwargs, "pbar_kwargs", merge=True)
@@ -336,7 +341,7 @@ class Completions(ThoughtProcessor):
         self._tool_dump_kwargs = tool_dump_kwargs
         self._tool_request_template = tool_request_template
         self._tool_response_template = tool_response_template
-        self._tool_response_payload = tool_response_payload
+        self._tool_display_format = tool_display_format
         self._silence_warnings = silence_warnings
         self._show_progress = show_progress
         self._pbar_kwargs = pbar_kwargs
@@ -550,15 +555,15 @@ class Completions(ThoughtProcessor):
         return self._tool_response_template
 
     @property
-    def tool_response_payload(self) -> str:
-        """Payload mode for tool responses.
+    def tool_display_format(self) -> str:
+        """Display format for tool responses.
 
-        Can be one of "none", "compact" (only head and tail), and "full".
+        Can be one of "none", "minimal", "compact", and "full".
 
         Returns:
-            str: Tool response payload mode.
+            str: Tool display format.
         """
-        return self._tool_response_payload
+        return self._tool_display_format
 
     @property
     def silence_warnings(self) -> bool:
@@ -1116,12 +1121,12 @@ class Completions(ThoughtProcessor):
         Args:
             tool_calls (List[Kwargs]): List of tool call descriptors.
 
-                Each descriptor should at least include 'id', 'name', and 'arguments' (must be a dict).
+                Each descriptor should at least include 'id', 'name', and 'arguments' (dict).
 
         Returns:
             List[Kwargs]: List of tool results.
 
-                Each result should include 'id', 'name', and 'output' (must be a string).
+                Each result should include 'id', 'name', 'output' (string), and 'success' (boolean).
         """
         results = []
         for tc in tool_calls:
@@ -1129,20 +1134,24 @@ class Completions(ThoughtProcessor):
             call_id = tc["id"]
             if not name:
                 out = "No tool name provided"
+                success = False
             elif name not in self.tool_registry:
                 out = f"Tool not found: {name!r}"
+                success = False
             else:
                 func = self.tool_registry[name]
                 try:
                     out = func(**tc["arguments"])
+                    success = True
                 except Exception as e:
                     out = f"Tool execution error: {e!r}"
+                    success = False
                 if not isinstance(out, str):
                     try:
                         out = json.dumps(out, ensure_ascii=False)
                     except Exception:
                         out = str(out)
-            results.append({"id": call_id, "name": name, "output": out})
+            results.append({"id": call_id, "name": name, "output": out, "success": success})
         return results
 
     @classmethod
@@ -1177,8 +1186,11 @@ class Completions(ThoughtProcessor):
             tool_calls (List[Kwargs]): List of tool call descriptors.
 
         Returns:
-            str: Formatted string representation of the tool calls.
+            Optional[str]: Formatted string representation of the tool calls, or None if not displayed.
         """
+        if self.tool_display_format.lower() == "none":
+            return None
+
         out = []
         for tc in tool_calls:
             tc = dict(tc)
@@ -1189,7 +1201,31 @@ class Completions(ThoughtProcessor):
             if not isinstance(arguments, str):
                 arguments = dump(arguments, dump_engine=dump_engine, **tool_dump_kwargs)
             dump_language = get_dump_language(dump_engine)
-            tc["payload"] = self.format_payload(arguments, language=dump_language)
+
+            tc["token_count"] = len(tokenize(arguments))
+            if arguments:
+                if self.tool_display_format.lower() == "minimal":
+                    tc["payload"] = ""
+                elif self.tool_display_format.lower() == "compact":
+                    head, tail = head_and_tail(arguments)
+                    skipped = arguments[len(head) : -len(tail)]
+                    n_lines_skipped = len(skipped.splitlines())
+                    if skipped:
+                        head = self.format_payload(head.strip(), language=dump_language)
+                        tail = self.format_payload(tail.strip(), language=dump_language)
+                        if n_lines_skipped == 1:
+                            middle = f"\n\n*... ({len(skipped)} chars skipped) ...*\n\n"
+                        else:
+                            middle = f"\n\n*... ({n_lines_skipped} lines skipped) ...*\n\n"
+                        tc["payload"] = head + middle + tail
+                    else:
+                        tc["payload"] = self.format_payload(arguments, language=dump_language)
+                elif self.tool_display_format.lower() == "full":
+                    tc["payload"] = self.format_payload(arguments, language=dump_language)
+                else:
+                    raise ValueError(f"Invalid tool display format: {self.tool_display_format!r}")
+            else:
+                tc["payload"] = ""
             tool_request_template = self.tool_request_template
             if isinstance(tool_request_template, str):
                 tool_request_template = SafeSub(tool_request_template)
@@ -1211,40 +1247,40 @@ class Completions(ThoughtProcessor):
             prepend_newline (bool): Flag to prepend a newline to the output.
 
         Returns:
-            str: Formatted string representation of the tool results.
+            Optional[str]: Formatted string representation of the tool results, or None if not displayed.
         """
+        if self.tool_display_format.lower() == "none":
+            return None
+
         out = []
         for tr in tool_results:
             tr = dict(tr)
             tr["name"] = tr.get("name", "unknown")
             output = tr.get("output", "")
             tr["token_count"] = len(tokenize(output))
-            show_response = True
             if output:
-                if self.tool_response_payload.lower() == "none":
+                if self.tool_display_format.lower() == "minimal":
                     tr["payload"] = ""
-                    show_response = False
-                elif self.tool_response_payload.lower() == "compact":
+                elif self.tool_display_format.lower() == "compact":
                     head, tail = head_and_tail(output)
                     skipped = output[len(head) : -len(tail)]
+                    n_lines_skipped = len(skipped.splitlines())
                     if skipped:
                         head = self.format_payload(head.strip(), language="text")
                         tail = self.format_payload(tail.strip(), language="text")
-                        middle = (
-                            f"\n\n*... ({len(skipped.splitlines())} lines and {len(skipped)} chars skipped) ...*\n\n"
-                        )
+                        if n_lines_skipped == 1:
+                            middle = f"\n\n*... ({len(skipped)} chars skipped) ...*\n\n"
+                        else:
+                            middle = f"\n\n*... ({n_lines_skipped} lines skipped) ...*\n\n"
                         tr["payload"] = head + middle + tail
                     else:
                         tr["payload"] = self.format_payload(output, language="text")
-                elif self.tool_response_payload.lower() == "full":
+                elif self.tool_display_format.lower() == "full":
                     tr["payload"] = self.format_payload(output, language="text")
                 else:
-                    raise ValueError(f"Invalid tool response payload: {self.tool_response_payload!r}")
+                    raise ValueError(f"Invalid tool display format: {self.tool_display_format!r}")
             else:
                 tr["payload"] = ""
-                show_response = False
-            if not show_response:
-                continue
             tool_response_template = self.tool_response_template
             if isinstance(tool_response_template, str):
                 tool_response_template = SafeSub(tool_response_template)
@@ -1355,7 +1391,10 @@ class Completions(ThoughtProcessor):
                 new_content = self.format_tool_results(tool_results, prepend_newline=prepend_newline)
                 flushed_content = self.flush_thought()
                 if flushed_content:
-                    new_content += flushed_content
+                    if not new_content:
+                        new_content = flushed_content
+                    else:
+                        new_content += flushed_content
                 if new_content:
                     formatter.append(new_content, complete=True)
                 tool_call_messages = self.get_tool_call_messages(tool_calls)
@@ -1720,7 +1759,7 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
             model = def_quick_model if self.quick_mode else def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(openai_config.keys()):
             if k in init_arg_names:
                 openai_config.pop(k)
@@ -2053,7 +2092,7 @@ class AnthropicCompletions(Completions):
             model = def_quick_model if self.quick_mode else def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(anthropic_config.keys()):
             if k in init_arg_names:
                 anthropic_config.pop(k)
@@ -2351,7 +2390,7 @@ class GeminiCompletions(Completions):
             model = def_quick_model if self.quick_mode else def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(gemini_config.keys()):
             if k in init_arg_names:
                 gemini_config.pop(k)
@@ -2642,7 +2681,7 @@ class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
             model = def_quick_model if self.quick_mode else def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(hf_inference_config.keys()):
             if k in init_arg_names:
                 hf_inference_config.pop(k)
@@ -2774,7 +2813,7 @@ class LiteLLMCompletions(OpenAICompatibleMixin, Completions):
 
         assert_can_import("litellm")
 
-        super_arg_names = set(get_func_arg_names(Completions.__init__))
+        super_arg_names = self.get_init_arg_names()
         for k in list(kwargs.keys()):
             if k in super_arg_names:
                 kwargs.pop(k)
@@ -2897,7 +2936,7 @@ class LlamaIndexCompletions(Completions):
             llm = def_llm
         if llm is None:
             raise ValueError("Must provide an LLM name or path")
-        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(llama_index_config.keys()):
             if k in init_arg_names:
                 llama_index_config.pop(k)
@@ -3137,7 +3176,7 @@ class OllamaCompletions(OpenAICompatibleMixin, Completions):
             model = def_quick_model if self.quick_mode else def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Completions.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(ollama_config.keys()):
             if k in init_arg_names:
                 ollama_config.pop(k)

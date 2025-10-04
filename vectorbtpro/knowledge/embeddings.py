@@ -257,7 +257,7 @@ class OpenAIEmbeddings(Embeddings):
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(openai_config.keys()):
             if k in init_arg_names:
                 openai_config.pop(k)
@@ -355,7 +355,7 @@ class GeminiEmbeddings(Embeddings):
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(gemini_config.keys()):
             if k in init_arg_names:
                 gemini_config.pop(k)
@@ -489,7 +489,7 @@ class HFInferenceEmbeddings(Embeddings):
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(hf_inference_config.keys()):
             if k in init_arg_names:
                 hf_inference_config.pop(k)
@@ -584,7 +584,7 @@ class LiteLLMEmbeddings(Embeddings):
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(litellm_config.keys()):
             if k in init_arg_names:
                 litellm_config.pop(k)
@@ -666,7 +666,7 @@ class LlamaIndexEmbeddings(Embeddings):
             embedding = def_embedding
         if embedding is None:
             raise ValueError("Must provide an embedding name or path")
-        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(llama_index_config.keys()):
             if k in init_arg_names:
                 llama_index_config.pop(k)
@@ -790,7 +790,7 @@ class OllamaEmbeddings(Embeddings):
             model = def_model
         if model is None:
             raise ValueError("Must provide a model")
-        init_arg_names = set(get_func_arg_names(Embeddings.__init__)) | set(get_func_arg_names(type(self).__init__))
+        init_arg_names = self.get_init_arg_names()
         for k in list(ollama_config.keys()):
             if k in init_arg_names:
                 ollama_config.pop(k)

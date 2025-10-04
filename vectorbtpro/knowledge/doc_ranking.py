@@ -1544,6 +1544,8 @@ def embed_documents(
     Returns:
         Optional[EmbeddedDocuments]: Embedded documents output.
     """
+    if documents is not None and not documents:
+        return []
     if doc_ranker is None:
         doc_ranker = DocumentRanker
     if isinstance(doc_ranker, type):
@@ -1600,6 +1602,8 @@ def rank_documents(
     Returns:
         RankedDocuments: Ranked documents based on the query relevance.
     """
+    if documents is not None and not documents:
+        return []
     if doc_ranker is None:
         doc_ranker = DocumentRanker
     if isinstance(doc_ranker, type):

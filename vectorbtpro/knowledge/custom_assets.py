@@ -56,6 +56,7 @@ __all__ = [
     "quick_search",
     "chat",
     "quick_chat",
+    "interact",
 ]
 
 
@@ -4486,6 +4487,7 @@ def chat(
     rank_kwargs: tp.KwargsLike = None,
     wrap_documents: tp.Optional[bool] = True,
     silence_warnings: bool = False,
+    attach_context: bool = True,
     **kwargs,
 ) -> tp.MaybeChatOutput:
     """Process a query and generate a chat response.
@@ -4520,6 +4522,9 @@ def chat(
         rank_kwargs (KwargsLike): Keyword arguments for `VBTAsset.rank`.
         wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
         silence_warnings (bool): Flag to suppress warning messages.
+        attach_context (bool): If True, attaches additional context to the chat session.
+
+            This may include relevant information or metadata that can enhance the interaction.
         **kwargs: Keyword arguments for `find_assets` or `VBTAsset.chat`.
 
     Returns:
@@ -4537,52 +4542,58 @@ def chat(
                 find_assets_kwargs[k] = v
         else:
             chat_kwargs[k] = v
-    find_assets_kwargs["aggregate_messages"] = aggregate_messages
-    if cache_documents:
-        if asset_cache_manager is None:
-            asset_cache_manager = AssetCacheManager
-        if asset_cache_manager_kwargs is None:
-            asset_cache_manager_kwargs = {}
-        if isinstance(asset_cache_manager, type):
-            checks.assert_subclass_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
-            asset_cache_manager = asset_cache_manager(**asset_cache_manager_kwargs)
+    if attach_context:
+        find_assets_kwargs["aggregate_messages"] = aggregate_messages
+        if cache_documents:
+            if asset_cache_manager is None:
+                asset_cache_manager = AssetCacheManager
+            if asset_cache_manager_kwargs is None:
+                asset_cache_manager_kwargs = {}
+            if isinstance(asset_cache_manager, type):
+                checks.assert_subclass_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
+                asset_cache_manager = asset_cache_manager(**asset_cache_manager_kwargs)
+            else:
+                checks.assert_instance_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
+                if asset_cache_manager_kwargs:
+                    asset_cache_manager = asset_cache_manager.replace(**asset_cache_manager_kwargs)
+                asset_cache_manager_kwargs = {}
+            if cache_key is None:
+                cache_key = asset_cache_manager.generate_cache_key(**find_assets_kwargs)
+            asset = asset_cache_manager.load_asset(cache_key)
+            if asset is None:
+                if not silence_warnings:
+                    warn("Caching documents...")
+                    silence_warnings = True
         else:
-            checks.assert_instance_of(asset_cache_manager, AssetCacheManager, "asset_cache_manager")
-            if asset_cache_manager_kwargs:
-                asset_cache_manager = asset_cache_manager.replace(**asset_cache_manager_kwargs)
-            asset_cache_manager_kwargs = {}
-        if cache_key is None:
-            cache_key = asset_cache_manager.generate_cache_key(**find_assets_kwargs)
-        asset = asset_cache_manager.load_asset(cache_key)
+            asset = None
         if asset is None:
-            if not silence_warnings:
-                warn("Caching documents...")
-                silence_warnings = True
-    else:
-        asset = None
-    if asset is None:
-        asset = find_assets(None, as_query=True, **find_assets_kwargs)
-    if rank_kwargs is None:
-        rank_kwargs = {}
-    else:
-        rank_kwargs = dict(rank_kwargs)
-    rank_kwargs["cache_documents"] = cache_documents
-    rank_kwargs["cache_key"] = cache_key
-    rank_kwargs["asset_cache_manager"] = asset_cache_manager
-    rank_kwargs["asset_cache_manager_kwargs"] = asset_cache_manager_kwargs
-    rank_kwargs["silence_warnings"] = silence_warnings
-    if "wrap_documents" not in rank_kwargs:
-        rank_kwargs["wrap_documents"] = wrap_documents
-    return asset.chat(
+            asset = find_assets(None, as_query=True, **find_assets_kwargs)
+        if rank_kwargs is None:
+            rank_kwargs = {}
+        else:
+            rank_kwargs = dict(rank_kwargs)
+        rank_kwargs["cache_documents"] = cache_documents
+        rank_kwargs["cache_key"] = cache_key
+        rank_kwargs["asset_cache_manager"] = asset_cache_manager
+        rank_kwargs["asset_cache_manager_kwargs"] = asset_cache_manager_kwargs
+        rank_kwargs["silence_warnings"] = silence_warnings
+        if "wrap_documents" not in rank_kwargs:
+            rank_kwargs["wrap_documents"] = wrap_documents
+        return asset.chat(
+            query,
+            chat_history,
+            rank=rank,
+            top_k=top_k,
+            min_top_k=min_top_k,
+            max_top_k=max_top_k,
+            cutoff=cutoff,
+            return_chunks=return_chunks,
+            rank_kwargs=rank_kwargs,
+            **chat_kwargs,
+        )
+    return VBTAsset().chat(
         query,
         chat_history,
-        rank=rank,
-        top_k=top_k,
-        min_top_k=min_top_k,
-        max_top_k=max_top_k,
-        cutoff=cutoff,
-        return_chunks=return_chunks,
-        rank_kwargs=rank_kwargs,
         **chat_kwargs,
     )
 
@@ -4620,5 +4631,48 @@ def quick_chat(
         max_top_k=max_top_k,
         rank_kwargs=rank_kwargs,
         quick_mode=True,
+        **kwargs,
+    )
+
+
+def interact(
+    query: str,
+    chat_history: tp.ChatHistory = None,
+    *,
+    tools: tp.Optional[tp.Tools] = "all",
+    attach_context: bool = False,
+    **kwargs,
+) -> tp.MaybeChatOutput:
+    """Engage in an interactive chat session with tool support.
+
+    This function extends the capabilities of `chat` by integrating tools that can be utilized during
+    the chat session. It allows for dynamic interaction, enabling the chat to leverage external functionalities
+    as needed.
+
+    Args:
+        query (str): Query string to process.
+        chat_history (ChatHistory): Chat history, a list of dictionaries with defined roles.
+        tools (Optional[Tools]): Tools to be used in the conversation.
+
+            If a string is provided, it must be either the name of a registered tool,
+            "registry" to use all available tools from the registry,
+            "mcp" to use the MCP tools from `vectorbtpro.mcp_server.tool_registry`,
+            or "all" to use both all available tools and the MCP tools.
+
+            If a list is provided, it must be a list of registered tool names or functions.
+            Any unregistered functions will be added to the registry.
+        attach_context (bool): If True, attaches additional context to the chat session.
+
+            This may include relevant information or metadata that can enhance the interaction.
+        **kwargs: Keyword arguments for `chat`.
+
+    Returns:
+        MaybeChatOutput: Chat response generated by the asset's chat method.
+    """
+    return chat(
+        query,
+        chat_history,
+        tools=tools,
+        attach_context=attach_context,
         **kwargs,
     )

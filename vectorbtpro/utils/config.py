@@ -2131,6 +2131,23 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
             if issubclass(cls, Configured) and cls._writeable_attrs is not None:
                 writeable_attrs |= cls._writeable_attrs
         return writeable_attrs
+    
+    @classmethod
+    def get_init_arg_names(cls) -> tp.Set[str]:
+        """Return the initialization argument names for this class and its base configuration classes.
+
+        Returns:
+            Set[str]: Set of initialization argument names.
+        """
+        if isinstance(cls, type):
+            cls = cls
+        else:
+            cls = type(cls)
+        arg_names = set()
+        for cls in inspect.getmro(cls):
+            if issubclass(cls, Configured):
+                arg_names |= set(get_func_arg_names(cls.__init__))
+        return arg_names
 
     @classmethod
     def resolve_merge_kwargs(

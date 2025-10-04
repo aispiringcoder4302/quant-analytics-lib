@@ -854,6 +854,8 @@ def head_and_tail(
     head_max_chars: int = 1000,
     tail_max_lines: int = 10,
     tail_max_chars: int = 1000,
+    min_skipped_lines: int = 5,
+    min_skipped_chars: int = 500,
 ) -> tp.Tuple[str, str]:
     """Return head and tail segments of a string under line/char caps.
 
@@ -863,6 +865,8 @@ def head_and_tail(
         head_max_chars (int): Maximum characters allowed in the head (including newlines).
         tail_max_lines (int): Maximum lines allowed in the tail.
         tail_max_chars (int): Maximum characters allowed in the tail (including newlines).
+        min_skipped_lines (int): Minimum lines to skip for truncation.
+        min_skipped_chars (int): Minimum characters to skip for truncation.
 
     Returns:
         Tuple[str, str]: Head and tail ("" if fully covered by head) segments.
@@ -907,9 +911,13 @@ def head_and_tail(
     lines = text.splitlines(keepends=True)
     head = _take_segment_from_lines(lines, head_max_lines, head_max_chars, side="start")
     if len(head) >= len(text):
-        return head, ""
+        return text, ""
 
     tail = _take_segment_from_lines(lines, tail_max_lines, tail_max_chars, side="end")
     allowed_tail = len(text) - len(head)
     tail = tail[-allowed_tail:]
+    mid = text[len(head) : len(text) - len(tail)]
+    if len(mid.splitlines()) <= min_skipped_lines and len(mid) <= min_skipped_chars:
+        return text, ""
+
     return head, tail

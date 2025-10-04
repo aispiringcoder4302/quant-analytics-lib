@@ -206,6 +206,37 @@ def search(
 
 
 @register_tool
+def resolve_refnames(refnames: tp.List[str]) -> str:
+    """Resolve reference names to their fully-qualified names.
+
+    Output format:
+
+    * Success: `OK <input> <resolved>`
+	* Failure: `FAIL <input>`
+
+    Args:
+        refnames (List[str]): Reference names to resolve.
+
+            A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
+            or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
+    
+    Returns:
+        str: Output string containing the resolution results.
+    """
+    from vectorbtpro.utils.module_ import resolve_refname
+
+    output = []
+    for refname in refnames:
+        refname = auto_cast(refname)
+        resolved_name = resolve_refname(refname)
+        if resolved_name:
+            output.append(f"OK {refname} {resolved_name}")
+        else:
+            output.append(f"FAIL {refname}")
+    return "\n".join(output)
+
+
+@register_tool
 def find(
     refnames: tp.List[str],
     resolve: bool = True,
@@ -225,6 +256,10 @@ def find(
     targets such as `vbt.Portfolio`, `Portfolio(...)`, `pf = ...`, etc.
 
     If any of the mentioned targets are found in an asset, it will be returned.
+
+    !!! note
+        All references must be valid; if any reference cannot be resolved, will raise an error.
+        Thus, when passing multiple references, use `resolve_refnames` to verify them first.
 
     Args:
         refnames (List[str]): Reference names of the objects.
@@ -504,7 +539,7 @@ def run_code(code: str, restart: bool = False, exec_timeout: tp.Optional[float] 
         current_kernel.start()
     if restart:
         current_kernel.restart()
-    return current_kernel.execute(code, exec_timeout=exec_timeout)
+    return current_kernel.execute(code, exec_timeout=exec_timeout, raise_on_error=True)
 
 
 def main() -> None:
