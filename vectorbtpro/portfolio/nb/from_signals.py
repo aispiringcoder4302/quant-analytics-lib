@@ -1484,6 +1484,7 @@ def from_basic_signals_nb(
         limit_tif=base_ch.flex_array_gl_slicer,
         limit_expiry=base_ch.flex_array_gl_slicer,
         limit_reverse=base_ch.flex_array_gl_slicer,
+        limit_delay=base_ch.flex_array_gl_slicer,
         limit_order_price=base_ch.flex_array_gl_slicer,
         upon_adj_limit_conflict=base_ch.flex_array_gl_slicer,
         upon_opp_limit_conflict=base_ch.flex_array_gl_slicer,
@@ -1568,6 +1569,7 @@ def from_signals_nb(
     limit_tif: tp.FlexArray2dLike = -1,
     limit_expiry: tp.FlexArray2dLike = -1,
     limit_reverse: tp.FlexArray2dLike = False,
+    limit_delay: tp.FlexArray2dLike = False,
     limit_order_price: tp.FlexArray2dLike = LimitOrderPrice.AutoLimit,
     upon_adj_limit_conflict: tp.FlexArray2dLike = PendingConflictMode.KeepIgnore,
     upon_opp_limit_conflict: tp.FlexArray2dLike = PendingConflictMode.CancelExecute,
@@ -1820,6 +1822,7 @@ def from_signals_nb(
 
             If True, a buy/sell limit is compared against high/low (instead of low/high) and
             the limit delta is inverted.
+        limit_delay (FlexArray2dLike): Flag to prevent limit orders from being placed immediately.
         limit_order_price (FlexArray2dLike): Price for limit orders.
 
             Provided as a scalar, or per row, column, or element.
@@ -2008,6 +2011,7 @@ def from_signals_nb(
     limit_tif_ = to_2d_array_nb(np.asarray(limit_tif))
     limit_expiry_ = to_2d_array_nb(np.asarray(limit_expiry))
     limit_reverse_ = to_2d_array_nb(np.asarray(limit_reverse))
+    limit_delay_ = to_2d_array_nb(np.asarray(limit_delay))
     limit_order_price_ = to_2d_array_nb(np.asarray(limit_order_price))
     upon_adj_limit_conflict_ = to_2d_array_nb(np.asarray(upon_adj_limit_conflict))
     upon_opp_limit_conflict_ = to_2d_array_nb(np.asarray(upon_opp_limit_conflict))
@@ -2935,7 +2939,8 @@ def from_signals_nb(
                                 can_execute = True
                                 if _stop_order_type == OrderType.Limit:
                                     # Use close to check whether the limit price was hit
-                                    if stop_hit_on_close or _stop_exit_price == StopExitPrice.Close:
+                                    _limit_delay = flex_select_nb(limit_delay_, i, col)
+                                    if stop_hit_on_close or _stop_exit_price == StopExitPrice.Close or _limit_delay:
                                         # Cannot place a limit order at the close price and execute right away
                                         can_execute = False
                                     if can_execute:
@@ -3072,14 +3077,17 @@ def from_signals_nb(
                             _order_type = flex_select_nb(order_type_, _i, col)
                             if _order_type == OrderType.Limit:
                                 # Use close to check whether the limit price was hit
+                                _limit_delay = flex_select_nb(limit_delay_, i, col)
                                 can_use_ohlc = False
                                 if user_on_close:
                                     # Cannot place a limit order at the close price and execute right away
                                     _price = _close
                                     can_execute = False
-                                elif user_on_open:
+                                elif user_on_open and not _limit_delay:
                                     _price = _open
                                     can_use_ohlc = True
+                                elif _limit_delay:
+                                    can_execute = False
                                 if can_execute:
                                     _limit_delta = flex_select_nb(limit_delta_, _i, col)
                                     _delta_format = flex_select_nb(delta_format_, _i, col)
@@ -4363,6 +4371,7 @@ def no_signal_func_nb(c: SignalContext, *args) -> tp.Tuple[bool, bool, bool, boo
         limit_tif=base_ch.flex_array_gl_slicer,
         limit_expiry=base_ch.flex_array_gl_slicer,
         limit_reverse=base_ch.flex_array_gl_slicer,
+        limit_delay=base_ch.flex_array_gl_slicer,
         limit_order_price=base_ch.flex_array_gl_slicer,
         upon_adj_limit_conflict=base_ch.flex_array_gl_slicer,
         upon_opp_limit_conflict=base_ch.flex_array_gl_slicer,
@@ -4454,6 +4463,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     limit_tif: tp.FlexArray2dLike = -1,
     limit_expiry: tp.FlexArray2dLike = -1,
     limit_reverse: tp.FlexArray2dLike = False,
+    limit_delay: tp.FlexArray2dLike = False,
     limit_order_price: tp.FlexArray2dLike = LimitOrderPrice.AutoLimit,
     upon_adj_limit_conflict: tp.FlexArray2dLike = PendingConflictMode.KeepIgnore,
     upon_opp_limit_conflict: tp.FlexArray2dLike = PendingConflictMode.CancelExecute,
@@ -4713,6 +4723,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
             If True, a buy/sell limit is compared against high/low (instead of low/high) and
             the limit delta is inverted.
+        limit_delay (FlexArray2dLike): Flag to prevent limit orders from being placed immediately.
         limit_order_price (FlexArray2dLike): Price for limit orders.
 
             Provided as a scalar, or per row, column, or element.
@@ -4893,6 +4904,7 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     limit_tif_ = to_2d_array_nb(np.asarray(limit_tif))
     limit_expiry_ = to_2d_array_nb(np.asarray(limit_expiry))
     limit_reverse_ = to_2d_array_nb(np.asarray(limit_reverse))
+    limit_delay_ = to_2d_array_nb(np.asarray(limit_delay))
     limit_order_price_ = to_2d_array_nb(np.asarray(limit_order_price))
     upon_adj_limit_conflict_ = to_2d_array_nb(np.asarray(upon_adj_limit_conflict))
     upon_opp_limit_conflict_ = to_2d_array_nb(np.asarray(upon_opp_limit_conflict))
@@ -5910,7 +5922,8 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                                 can_execute = True
                                 if _stop_order_type == OrderType.Limit:
                                     # Use close to check whether the limit price was hit
-                                    if stop_hit_on_close or _stop_exit_price == StopExitPrice.Close:
+                                    _limit_delay = flex_select_nb(limit_delay_, i, col)
+                                    if stop_hit_on_close or _stop_exit_price == StopExitPrice.Close or _limit_delay:
                                         # Cannot place a limit order at the close price and execute right away
                                         can_execute = False
                                     if can_execute:
@@ -6047,14 +6060,17 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                             _order_type = flex_select_nb(order_type_, _i, col)
                             if _order_type == OrderType.Limit:
                                 # Use close to check whether the limit price was hit
+                                _limit_delay = flex_select_nb(limit_delay_, i, col)
                                 can_use_ohlc = False
                                 if user_on_close:
                                     # Cannot place a limit order at the close price and execute right away
                                     _price = _close
                                     can_execute = False
-                                elif user_on_open:
+                                elif user_on_open and not _limit_delay:
                                     _price = _open
                                     can_use_ohlc = True
+                                elif _limit_delay:
+                                    can_execute = False
                                 if can_execute:
                                     _limit_delta = flex_select_nb(limit_delta_, _i, col)
                                     _delta_format = flex_select_nb(delta_format_, _i, col)

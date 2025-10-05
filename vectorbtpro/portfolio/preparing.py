@@ -1268,6 +1268,11 @@ fs_arg_config = ReadonlyConfig(
             subdtype=np.bool_,
             broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=False)),
         ),
+        limit_delay=dict(
+            broadcast=True,
+            subdtype=np.bool_,
+            broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=False)),
+        ),
         limit_order_price=dict(
             broadcast=True,
             map_enum_kwargs=dict(enum=enums.LimitOrderPrice, ignore_type=(int, float)),

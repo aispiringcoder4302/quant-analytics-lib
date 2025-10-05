@@ -3208,6 +3208,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         limit_tif: tp.Optional[tp.ArrayLike] = None,
         limit_expiry: tp.Optional[tp.ArrayLike] = None,
         limit_reverse: tp.Optional[tp.ArrayLike] = None,
+        limit_delay: tp.Optional[tp.ArrayLike] = None,
         limit_order_price: tp.Optional[tp.ArrayLike] = None,
         upon_adj_limit_conflict: tp.Optional[tp.ArrayLike] = None,
         upon_opp_limit_conflict: tp.Optional[tp.ArrayLike] = None,
@@ -3499,6 +3500,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Broadcasts. If True, a buy/sell limit is compared against high/low (instead of low/high)
                 and the limit delta is inverted.
+            limit_delay (Optional[ArrayLike]): Flag to prevent limit orders from being placed immediately.
             limit_order_price (Optional[ArrayLike]): Price for limit orders.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.LimitOrderPrice`. Positive values are

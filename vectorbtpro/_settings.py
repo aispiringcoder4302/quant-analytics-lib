@@ -1806,6 +1806,7 @@ portfolio = frozen_cfg(
         upon_opposite_entry="reversereduce",
         order_type="market",
         limit_reverse=False,
+        limit_delay=False,
         limit_delta=np.nan,
         limit_tif=-1,
         limit_expiry=-1,
