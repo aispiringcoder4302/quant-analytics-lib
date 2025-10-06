@@ -276,8 +276,8 @@ class CCXTData(RemoteData):
     @staticmethod
     def fetch_find_earliest_date(
         fetch_func: tp.Callable,
-        start: tp.DatetimeLike = 0,
-        end: tp.DatetimeLike = "now",
+        start: tp.Optional[tp.DatetimeLike] = None,
+        end: tp.Optional[tp.DatetimeLike] = None,
         tz: tp.TimezoneLike = None,
         for_internal_use: bool = False,
     ) -> tp.Optional[tp.Timestamp]:
@@ -512,7 +512,7 @@ class CCXTData(RemoteData):
             return dict(fetch_func=_fetch, start=start, end=end, tz=tz)
 
         # Establish the timestamps
-        if find_earliest_date and start is not None:
+        if find_earliest_date:
             start = cls.fetch_find_earliest_date(_fetch, start=start, end=end, tz=tz, for_internal_use=True)
         if start is not None:
             start_ts = dt.datetime_to_ms(dt.to_tzaware_datetime(start, naive_tz=tz, tz="utc"))
