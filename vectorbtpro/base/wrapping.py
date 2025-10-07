@@ -402,7 +402,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each chunk.
 
                 See `vectorbtpro.utils.chunking.iter_chunk_meta`.
-            select (bool): Flag indicating whether to select chunks using `ArraySelector`.
+            select (bool): Flag indicating whether to select chunks using `vectorbtpro.utils.chunking.ArraySelector`.
             wrap (Optional[bool]): Flag to specify whether to wrap the result.
             return_chunk_meta (bool): Flag indicating whether to yield chunk metadata alongside each chunk.
 

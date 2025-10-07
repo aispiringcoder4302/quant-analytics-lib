@@ -876,8 +876,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
             chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each chunk.
 
                 See `vectorbtpro.utils.chunking.iter_chunk_meta`.
-            select (bool): Determines whether to use `ArraySelector` (if True) or
-                `ArraySlicer` (if False) for extracting the chunk.
+            select (bool): Determines whether to use `vectorbtpro.utils.chunking.ArraySelector` (if True) or
+                `vectorbtpro.utils.chunking.ArraySlicer` (if False) for extracting the chunk.
             return_chunk_meta (bool): Flag indicating whether to yield chunk metadata alongside each chunk.
 
         Yields:

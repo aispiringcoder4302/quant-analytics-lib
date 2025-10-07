@@ -530,7 +530,8 @@ EmbeddedDocuments = List[EmbeddedDocument]
 ScoredDocuments = List[Union[float, ScoredDocument]]
 RankedDocuments = List[Union[StoreDocument, ScoredDocument]]
 TopKLike = Union[None, int, float, str, Callable]
-Tools = MaybeList[Union[str, Callable]]
+Tool = Union[str, Callable]
+Tools = Union[Tool, List[Tool], Dict[str, Tool]]
 
 # Chaining
 PipeFunc = Union[str, Callable, Tuple[Union[str, Callable], str]]

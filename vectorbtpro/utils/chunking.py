@@ -301,19 +301,19 @@ class ArraySizer(ShapeSizer):
 class ChunkMeta(DefineMixin):
     """Class representing metadata for a chunk."""
 
-    uuid: str = define.field()
+    uuid: str = define.field(factory=lambda: str(uuid.uuid4()))
     """Unique identifier for the chunk, used for caching."""
 
-    idx: int = define.field()
+    idx: tp.Optional[int] = define.field(default=None)
     """Index of the chunk."""
 
-    start: tp.Optional[int] = define.field()
+    start: tp.Optional[int] = define.field(default=None)
     """Starting index of the chunk range (inclusive); may be None."""
 
-    end: tp.Optional[int] = define.field()
+    end: tp.Optional[int] = define.field(default=None)
     """Ending index of the chunk range (exclusive); may be None."""
 
-    indices: tp.Optional[tp.Sequence[int]] = define.field()
+    indices: tp.Optional[tp.Sequence[int]] = define.field(default=None)
     """Sequence of indices included in the chunk; takes precedence over `start` and `end` 
     if provided, and may be None."""
 
@@ -643,6 +643,8 @@ class ChunkSelector(ChunkTaker, DimRetainer, DefineMixin):
         return None
 
     def take(self, obj: tp.Sequence, chunk_meta: ChunkMeta, **kwargs) -> tp.Any:
+        if chunk_meta.idx is None:
+            raise ValueError("ChunkMeta.idx is required for selection")
         if self.keep_dims:
             return obj[chunk_meta.idx : chunk_meta.idx + 1]
         return obj[chunk_meta.idx]
@@ -686,6 +688,8 @@ class ShapeSelector(ChunkSelector, AxisSpecifier, DefineMixin):
         return ShapeSizer.get_obj_size(obj, self.axis, single_type=self.single_type)
 
     def take(self, obj: tp.ShapeLike, chunk_meta: ChunkMeta, **kwargs) -> tp.Shape:
+        if chunk_meta.idx is None:
+            raise ValueError("ChunkMeta.idx is required for selection")
         if checks.is_int(obj):
             obj = (obj,)
         checks.assert_instance_of(obj, tuple)
@@ -752,6 +756,8 @@ class ArraySelector(ShapeSelector):
         from vectorbtpro.base.wrapping import Wrapping
         from vectorbtpro.base.indexing import PandasIndexer
 
+        if chunk_meta.idx is None:
+            raise ValueError("ChunkMeta.idx is required for selection")
         if isinstance(obj, Wrapping):
             shape = obj.wrapper.shape
         else:

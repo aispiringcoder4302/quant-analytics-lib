@@ -57,12 +57,14 @@ def fix_field_in_records(
     Returns:
         None: Function modifies the record arrays in place.
     """
-    for _chunk_meta in chunk_meta:
+    for idx, _chunk_meta in enumerate(chunk_meta):
+        if chunk_meta.idx is not None:
+            idx = chunk_meta.idx
         if mapper is None:
-            record_arrays[_chunk_meta.idx][field] += _chunk_meta.start
+            record_arrays[idx][field] += _chunk_meta.start
         else:
             _chunk_meta_mapped = mapper.map(_chunk_meta, ann_args=ann_args)
-            record_arrays[_chunk_meta.idx][field] += _chunk_meta_mapped.start
+            record_arrays[idx][field] += _chunk_meta_mapped.start
 
 
 def merge_records(

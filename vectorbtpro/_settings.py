@@ -2542,7 +2542,7 @@ $context
         completions="auto",
         completions_config=flex_cfg(
             tools=None,
-            tool_registry=None,
+            tool_registry=flex_cfg(),
             max_tool_rounds=None,
             tool_dump_kwargs=flex_cfg(
                 dump_engine="json",

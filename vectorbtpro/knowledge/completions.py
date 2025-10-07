@@ -152,9 +152,15 @@ class Completions(ThoughtProcessor):
         tool_request_template (Optional[CustomTemplateLike]): Template for tool requests.
 
             The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
+
+            Allowed keys include `id`, `name`, `arguments`, `token_count`, and `payload`,
+            as well as the keys from `template_context`.
         tool_response_template (Optional[CustomTemplateLike]): Template for tool responses.
 
             The template can be a string, a function, or an instance of `vectorbtpro.utils.template.CustomTemplate`.
+
+            Allowed keys include `id`, `name`, `output`, `success`, `token_count`, and `payload`,
+            as well as the keys from `template_context`.
         tool_display_format (Optional[str]): Format for displaying tool information.
 
             Supports the following options:
@@ -266,7 +272,7 @@ class Completions(ThoughtProcessor):
 
         if tools is None:
             tools = []
-        elif not isinstance(tools, list):
+        elif not isinstance(tools, (list, dict)):
             tools = [tools]
 
         def _merge_mcp_into_registry():
@@ -284,6 +290,11 @@ class Completions(ThoughtProcessor):
 
         new_tools = []
         for t in tools:
+            if isinstance(tools, dict):
+                name = t
+                t = tools[t]
+            else:
+                name = None
             if isinstance(t, str):
                 k = t.lower()
                 if k == "registry":
@@ -302,7 +313,8 @@ class Completions(ThoughtProcessor):
                 t = get_obj(t)
 
             if inspect.isfunction(t) and not isinstance(t, str):
-                name = getattr(t, "__name__", None)
+                if not name:
+                    name = getattr(t, "__name__", None)
                 if not name:
                     raise ValueError(f"Tool {t!r} is not registered")
                 if name not in tool_registry:
@@ -610,11 +622,12 @@ class Completions(ThoughtProcessor):
         """
         return None
 
-    def get_chat_response(self, messages: tp.ChatMessages, **kwargs) -> tp.Any:
+    def get_chat_response(self, messages: tp.ChatMessages, enable_tools: bool = True, **kwargs) -> tp.Any:
         """Return a chat response based on the provided messages.
 
         Args:
             messages (ChatMessages): List representing the conversation history.
+            enable_tools (bool): Whether to enable tool usage.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -639,11 +652,12 @@ class Completions(ThoughtProcessor):
         """
         raise NotImplementedError
 
-    def get_stream_response(self, messages: tp.ChatMessages, **kwargs) -> tp.Any:
+    def get_stream_response(self, messages: tp.ChatMessages, enable_tools: bool = True, **kwargs) -> tp.Any:
         """Return a streaming response generated from the provided messages.
 
         Args:
             messages (ChatMessages): List representing the conversation history.
+            enable_tools (bool): Whether to enable tool usage.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -754,11 +768,18 @@ class Completions(ThoughtProcessor):
         """
         return False
 
-    def function_to_tool_spec(self, func: tp.Callable, strict: bool = False, draft_2020_12: bool = False) -> tp.Kwargs:
+    def function_to_tool_spec(
+        self,
+        func: tp.Callable,
+        name: tp.Optional[str] = None,
+        strict: bool = False,
+        draft_2020_12: bool = False,
+    ) -> tp.Kwargs:
         """Convert a typed Python callable into a minimal tool specification in JSON Schema format.
 
         Args:
             func (Callable): Callable with type-annotated parameters.
+            name (Optional[str]): Name of the tool.
             strict (bool): If True, make the schema strict.
             draft_2020_12 (bool): If True, emit tuple arrays using JSON Schema 2020-12.
 
@@ -789,6 +810,9 @@ class Completions(ThoughtProcessor):
 
         if not callable(func):
             raise TypeError("Function must be callable")
+
+        if name is None:
+            name = func.__name__
 
         PRIMS = {str: "string", int: "integer", float: "number", bool: "boolean"}
 
@@ -983,15 +1007,15 @@ class Completions(ThoughtProcessor):
         props = {}
         required = []
 
-        for name, param in sig.parameters.items():
-            if name in ("self", "cls", "cls_or_self"):
+        for pname, param in sig.parameters.items():
+            if pname in ("self", "cls", "cls_or_self"):
                 continue
             if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
-                raise TypeError(f"{func.__name__} uses *args/**kwargs which cannot be expressed in JSON Schema")
+                raise TypeError(f"{name} uses *args/**kwargs which cannot be expressed in JSON Schema")
 
-            ann = hints.get(name, Any)
+            ann = hints.get(pname, Any)
 
-            pdoc = param_docs.get(name, None)
+            pdoc = param_docs.get(pname, None)
             if pdoc and ann is Any and pdoc.type_name:
                 eval_globals = {}
                 eval_globals.update(getattr(func, "__globals__", {}) or {})
@@ -1010,13 +1034,13 @@ class Completions(ThoughtProcessor):
                 sch["description"] = pdoc.description
 
             if param.default is inspect._empty:
-                required.append(name)
+                required.append(pname)
             else:
                 if _json_defaultable(param.default):
                     sch = dict(sch)
                     sch["default"] = param.default
 
-            props[name] = sch
+            props[pname] = sch
 
         parameters_schema = {"type": "object", "properties": props, "required": required}
         if strict:
@@ -1025,7 +1049,7 @@ class Completions(ThoughtProcessor):
             parameters_schema["additionalProperties"] = False
         tool_spec = {
             "type": "function",
-            "name": func.__name__,
+            "name": name,
             "description": desc,
             "parameters": parameters_schema,
         }
@@ -1352,8 +1376,9 @@ class Completions(ThoughtProcessor):
             messages = self.prepare_messages(message)
 
             while True:
+                enable_tools = max_tool_rounds is None or max_tool_rounds > 0
                 if stream:
-                    response = self.get_stream_response(messages)
+                    response = self.get_stream_response(messages, enable_tools=enable_tools)
                     response_chunks = []
                     content_chunks = []
                     for response_chunk in response:
@@ -1366,7 +1391,7 @@ class Completions(ThoughtProcessor):
                         messages.append(dict(role="assistant", content="".join(content_chunks)))
                     tool_calls = self.get_stream_tool_calls(response_chunks)
                 else:
-                    response = self.get_chat_response(messages)
+                    response = self.get_chat_response(messages, enable_tools=enable_tools)
                     new_content = self.get_message_content(response)
                     if new_content:
                         formatter.append(new_content, complete=True)
@@ -1374,8 +1399,6 @@ class Completions(ThoughtProcessor):
                     tool_calls = self.get_chat_tool_calls(response)
 
                 if not self.supports_tool_calling or not self.tool_registry:
-                    break
-                if self.max_tool_rounds is not None and max_tool_rounds <= 0:
                     break
                 if not tool_calls:
                     break
@@ -1463,8 +1486,8 @@ class OpenAICompatibleMixin:
     def supports_tool_calling(self) -> bool:
         return True
 
-    def function_to_tool_spec(self, func: tp.Callable, *_, **__) -> tp.Kwargs:
-        tool_spec = Completions.function_to_tool_spec(self, func)
+    def function_to_tool_spec(self, func: tp.Callable, *args, **kwargs) -> tp.Kwargs:
+        tool_spec = Completions.function_to_tool_spec(self, func, *args, **kwargs)
         tool_spec = {"type": tool_spec.pop("type"), "function": tool_spec}
         return tool_spec
 
@@ -1864,22 +1887,30 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
             instructions = None
         return new_messages, instructions
 
-    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+    def format_kwargs(self, messages: tp.ChatMessages, enable_tools: bool = True) -> tp.Kwargs:
         """Format keyword arguments for the API call.
 
         Args:
             messages (ChatMessages): List representing the conversation history.
+            enable_tools (bool): Whether to enable tool usage.
 
         Returns:
             Kwargs: Keyword arguments for the API call.
         """
+        if not enable_tools:
+            messages = list(messages)
+            messages += [{"role": "user", "content": "Write the final answer without calling tools."}]
         if self.use_responses:
             input, instructions = self.format_messages(messages)
             responses_kwargs = dict(self.responses_kwargs)
             responses_kwargs["tools"] = responses_kwargs.get("tools", []) + self.tools
             for i, tool in enumerate(responses_kwargs["tools"]):
                 if isinstance(tool, str) and tool in self._tool_registry:
-                    responses_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+                    tool_spec = self.function_to_tool_spec(self._tool_registry[tool], name=tool)
+                    responses_kwargs["tools"][i] = tool_spec
+            if not enable_tools:
+                responses_kwargs.pop("tools", None)
+                responses_kwargs.pop("tool_choice", None)
             return dict(
                 model=self.model,
                 instructions=instructions,
@@ -1893,7 +1924,11 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
             completions_kwargs["tools"] = completions_kwargs.get("tools", []) + self.tools
             for i, tool in enumerate(completions_kwargs["tools"]):
                 if isinstance(tool, str) and tool in self._tool_registry:
-                    completions_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+                    tool_spec = self.function_to_tool_spec(self._tool_registry[tool], name=tool)
+                    completions_kwargs["tools"][i] = tool_spec
+            if not enable_tools:
+                completions_kwargs.pop("tools", None)
+                completions_kwargs.pop("tool_choice", None)
             return dict(
                 messages=messages,
                 model=self.model,
@@ -1901,11 +1936,11 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
                 **completions_kwargs,
             )
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionT:
+    def get_chat_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> ChatCompletionT:
         if self.use_responses:
-            return self.client.responses.create(**self.format_kwargs(messages))
+            return self.client.responses.create(**self.format_kwargs(messages, enable_tools=enable_tools))
         else:
-            return self.client.chat.completions.create(**self.format_kwargs(messages))
+            return self.client.chat.completions.create(**self.format_kwargs(messages, enable_tools=enable_tools))
 
     def get_message_content(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.Optional[str]:
         if self.use_responses:
@@ -1931,11 +1966,11 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
         else:
             return OpenAICompatibleMixin.get_message_content(self, response)
 
-    def get_stream_response(self, messages: tp.ChatMessages) -> StreamT:
+    def get_stream_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> StreamT:
         if self.use_responses:
-            return self.client.responses.create(**self.format_kwargs(messages))
+            return self.client.responses.create(**self.format_kwargs(messages, enable_tools=enable_tools))
         else:
-            return self.client.chat.completions.create(**self.format_kwargs(messages))
+            return self.client.chat.completions.create(**self.format_kwargs(messages, enable_tools=enable_tools))
 
     def get_delta_content(
         self,
@@ -1950,11 +1985,11 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
         else:
             return OpenAICompatibleMixin.get_delta_content(self, response_chunk)
 
-    def function_to_tool_spec(self, func: tp.Callable, *_, **__) -> tp.Kwargs:
+    def function_to_tool_spec(self, func: tp.Callable, *args, **kwargs) -> tp.Kwargs:
         if self.use_responses:
-            return Completions.function_to_tool_spec(self, func, strict=self.strict_schema)
+            return Completions.function_to_tool_spec(self, func, *args, strict=self.strict_schema, **kwargs)
         else:
-            return OpenAICompatibleMixin.function_to_tool_spec(self, func)
+            return OpenAICompatibleMixin.function_to_tool_spec(self, func, *args, **kwargs)
 
     def get_chat_tool_calls(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
@@ -2177,15 +2212,19 @@ class AnthropicCompletions(Completions):
             system_message = None
         return new_messages, system_message
 
-    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+    def format_kwargs(self, messages: tp.ChatMessages, enable_tools: bool = True) -> tp.Kwargs:
         """Format keyword arguments for the API call.
 
         Args:
             messages (ChatMessages): List representing the conversation history.
+            enable_tools (bool): Whether to enable tool usage.
 
         Returns:
             Kwargs: Keyword arguments for the API call.
         """
+        if not enable_tools:
+            messages = list(messages)
+            messages += [{"role": "user", "content": "Write the final answer without calling tools."}]
         formatted_messages, system_message = self.format_messages(messages)
         messages_kwargs = dict(self.messages_kwargs)
         if system_message:
@@ -2193,7 +2232,10 @@ class AnthropicCompletions(Completions):
         messages_kwargs["tools"] = messages_kwargs.get("tools", []) + self.tools
         for i, tool in enumerate(messages_kwargs["tools"]):
             if isinstance(tool, str) and tool in self._tool_registry:
-                messages_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+                messages_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool], name=tool)
+        if not enable_tools:
+            messages_kwargs.pop("tools", None)
+            messages_kwargs.pop("tool_choice", None)
         return dict(
             model=self.model,
             messages=formatted_messages,
@@ -2201,8 +2243,8 @@ class AnthropicCompletions(Completions):
             **messages_kwargs,
         )
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> AnthropicMessageT:
-        return self.client.messages.create(**self.format_kwargs(messages))
+    def get_chat_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> AnthropicMessageT:
+        return self.client.messages.create(**self.format_kwargs(messages, enable_tools=enable_tools))
 
     def get_message_content(self, response: AnthropicMessageT) -> tp.Optional[str]:
         from anthropic.types import ThinkingBlock, TextBlock
@@ -2229,8 +2271,8 @@ class AnthropicCompletions(Completions):
                     content += out
         return content
 
-    def get_stream_response(self, messages: tp.ChatMessages) -> AnthropicStreamT:
-        return self.client.messages.create(**self.format_kwargs(messages))
+    def get_stream_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> AnthropicStreamT:
+        return self.client.messages.create(**self.format_kwargs(messages, enable_tools=enable_tools))
 
     def get_delta_content(self, response_chunk: AnthropicMessageStreamEventT) -> tp.Optional[str]:
         from anthropic.types import RawContentBlockDeltaEvent, ThinkingDelta, TextDelta
@@ -2245,8 +2287,8 @@ class AnthropicCompletions(Completions):
     def supports_tool_calling(self) -> bool:
         return True
 
-    def function_to_tool_spec(self, func: tp.Callable, *_, **__) -> tp.Kwargs:
-        tool_spec = Completions.function_to_tool_spec(self, func)
+    def function_to_tool_spec(self, func: tp.Callable, *args, **kwargs) -> tp.Kwargs:
+        tool_spec = Completions.function_to_tool_spec(self, func, *args, **kwargs)
         return {
             "name": tool_spec["name"],
             "description": tool_spec["description"],
@@ -2463,17 +2505,28 @@ class GeminiCompletions(Completions):
                 contents.append(message)
         return contents, system_instruction
 
-    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+    def format_kwargs(self, messages: tp.ChatMessages, enable_tools: bool = True) -> tp.Kwargs:
         """Format keyword arguments for the API call.
 
         Args:
             messages (ChatMessages): List representing the conversation history.
+            enable_tools (bool): Whether to enable tool usage.
 
         Returns:
             Kwargs: Keyword arguments for the API call.
         """
-        from google.genai.types import GenerateContentConfig, AutomaticFunctionCallingConfig, Tool
+        from google.genai.types import (
+            GenerateContentConfig,
+            AutomaticFunctionCallingConfig,
+            Tool,
+            ToolConfig,
+            FunctionCallingConfig,
+            FunctionCallingConfigMode,
+        )
 
+        if not enable_tools:
+            messages = list(messages)
+            messages += [{"role": "user", "content": "Write the final answer without calling tools."}]
         formatted_messages, system_instruction = self.format_messages(messages)
         completions_kwargs = dict(self.completions_kwargs)
         config = dict(completions_kwargs.pop("config", {}))
@@ -2487,11 +2540,14 @@ class GeminiCompletions(Completions):
         tools = tools + self.tools
         for i, tool in enumerate(tools):
             if isinstance(tool, str) and tool in self._tool_registry:
-                tool = self.function_to_tool_spec(self._tool_registry[tool])
+                tool = self.function_to_tool_spec(self._tool_registry[tool], name=tool)
             if not isinstance(tool, Tool):
                 tool = Tool(function_declarations=[tool])
             tools[i] = tool
         config["tools"] = tools
+        if not enable_tools:
+            config.pop("tools", None)
+            config.pop("tool_config", None)
         return dict(
             model=self.model,
             contents=formatted_messages,
@@ -2499,10 +2555,10 @@ class GeminiCompletions(Completions):
             **completions_kwargs,
         )
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> GenerateContentResponseT:
+    def get_chat_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> GenerateContentResponseT:
         from google.genai.errors import ClientError
 
-        kwargs = self.format_kwargs(messages)
+        kwargs = self.format_kwargs(messages, enable_tools=enable_tools)
         attempted = False
         while True:
             try:
@@ -2531,10 +2587,14 @@ class GeminiCompletions(Completions):
                     content += text
         return content
 
-    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[GenerateContentResponseT]:
+    def get_stream_response(
+        self,
+        messages: tp.ChatMessages,
+        enable_tools: bool = True,
+    ) -> tp.Iterator[GenerateContentResponseT]:
         from google.genai.errors import ClientError
 
-        kwargs = self.format_kwargs(messages)
+        kwargs = self.format_kwargs(messages, enable_tools=enable_tools)
         attempted = False
         while True:
             try:
@@ -2567,7 +2627,7 @@ class GeminiCompletions(Completions):
     def supports_tool_calling(self) -> bool:
         return True
 
-    def function_to_tool_spec(self, func: tp.Callable, *_, **__) -> tp.Kwargs:
+    def function_to_tool_spec(self, func: tp.Callable, *args, **kwargs) -> tp.Kwargs:
         from google.genai.types import FunctionDeclaration
 
         return FunctionDeclaration.from_callable(client=self.client, callable=func)
@@ -2726,20 +2786,27 @@ class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
         """
         return self._chat_completion_kwargs
 
-    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+    def format_kwargs(self, messages: tp.ChatMessages, enable_tools: bool = True) -> tp.Kwargs:
         """Format keyword arguments for the API call.
 
         Args:
             messages (ChatMessages): List representing the conversation history.
+            enable_tools (bool): Whether to enable tool usage.
 
         Returns:
             Kwargs: Keyword arguments for the API call.
         """
+        if not enable_tools:
+            messages = list(messages)
+            messages += [{"role": "user", "content": "Write the final answer without calling tools."}]
         chat_completion_kwargs = dict(self.chat_completion_kwargs)
         chat_completion_kwargs["tools"] = chat_completion_kwargs.get("tools", []) + self.tools
         for i, tool in enumerate(chat_completion_kwargs["tools"]):
             if isinstance(tool, str) and tool in self._tool_registry:
-                chat_completion_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+                chat_completion_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool], name=tool)
+        if not enable_tools:
+            chat_completion_kwargs.pop("tools", None)
+            chat_completion_kwargs.pop("tool_choice", None)
         return dict(
             messages=messages,
             model=self.model,
@@ -2747,8 +2814,8 @@ class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
             **chat_completion_kwargs,
         )
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> ChatCompletionOutputT:
-        return self.client.chat_completion(**self.format_kwargs(messages))
+    def get_chat_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> ChatCompletionOutputT:
+        return self.client.chat_completion(**self.format_kwargs(messages, enable_tools=enable_tools))
 
     def get_message_content(self, response: ChatCompletionOutputT) -> tp.Optional[str]:
         message = response.choices[0].message
@@ -2763,8 +2830,8 @@ class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
         content = message.content
         return self.process_thought(thought=thought, content=content, flush=True)
 
-    def get_stream_response(self, messages: tp.ChatMessages) -> ChatCompletionStreamOutputT:
-        return self.client.chat_completion(**self.format_kwargs(messages))
+    def get_stream_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> ChatCompletionStreamOutputT:
+        return self.client.chat_completion(**self.format_kwargs(messages, enable_tools=enable_tools))
 
     def get_delta_content(self, response_chunk: ChatCompletionStreamOutputT) -> tp.Optional[str]:
         delta = response_chunk.choices[0].delta
@@ -2844,20 +2911,27 @@ class LiteLLMCompletions(OpenAICompatibleMixin, Completions):
         """
         return self._completion_kwargs
 
-    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+    def format_kwargs(self, messages: tp.ChatMessages, enable_tools: bool = True) -> tp.Kwargs:
         """Format keyword arguments for the API call.
 
         Args:
             messages (ChatMessages): List representing the conversation history.
+            enable_tools (bool): Whether to enable tool usage.
 
         Returns:
             Kwargs: Keyword arguments for the API call.
         """
+        if not enable_tools:
+            messages = list(messages)
+            messages += [{"role": "user", "content": "Write the final answer without calling tools."}]
         completion_kwargs = dict(self.completion_kwargs)
         completion_kwargs["tools"] = completion_kwargs.get("tools", []) + self.tools
         for i, tool in enumerate(completion_kwargs["tools"]):
             if isinstance(tool, str) and tool in self._tool_registry:
-                completion_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+                completion_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool], name=tool)
+        if not enable_tools:
+            completion_kwargs.pop("tools", None)
+            completion_kwargs.pop("tool_choice", None)
         return dict(
             messages=messages,
             model=self.model,
@@ -2865,20 +2939,20 @@ class LiteLLMCompletions(OpenAICompatibleMixin, Completions):
             **completion_kwargs,
         )
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> ModelResponseT:
+    def get_chat_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> ModelResponseT:
         from litellm import completion
 
-        return completion(**self.format_kwargs(messages))
+        return completion(**self.format_kwargs(messages, enable_tools=enable_tools))
 
     def get_message_content(self, response: ModelResponseT) -> tp.Optional[str]:
         message = response.choices[0].message
         reasoning_content = get(message, "reasoning_content", None)
         return self.process_thought(thought=reasoning_content, content=message.content, flush=True)
 
-    def get_stream_response(self, messages: tp.ChatMessages) -> CustomStreamWrapperT:
+    def get_stream_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> CustomStreamWrapperT:
         from litellm import completion
 
-        return completion(**self.format_kwargs(messages))
+        return completion(**self.format_kwargs(messages, enable_tools=enable_tools))
 
     def get_delta_content(self, response_chunk: ModelResponseT) -> tp.Optional[str]:
         delta = response_chunk.choices[0].delta
@@ -3021,11 +3095,12 @@ class LlamaIndexCompletions(Completions):
         """
         return self._chat_kwargs
 
-    def format_messages(self, messages: tp.ChatMessages) -> tp.List[ChatMessageT]:
+    def format_messages(self, messages: tp.ChatMessages, enable_tools: bool = True) -> tp.List[ChatMessageT]:
         """Format messages.
 
         Args:
             messages (ChatMessages): List representing the conversation history.
+            enable_tools (bool): Whether to enable tool usage.
 
         Returns:
             List[ChatMessage]: List of chat messages.
@@ -3042,12 +3117,15 @@ class LlamaIndexCompletions(Completions):
                 new_messages.append(message)
         return new_messages
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> ChatResponseT:
+    def get_chat_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> ChatResponseT:
         from llama_index.core.tools import FunctionTool
 
-        messages = self.format_messages(messages)
+        if not enable_tools:
+            messages = list(messages)
+            messages += [{"role": "user", "content": "Write the final answer without calling tools."}]
+        messages = self.format_messages(messages, enable_tools=enable_tools)
         tools = self.tools
-        if tools:
+        if enable_tools and tools:
             fns = [self.tool_registry[tool] for tool in tools]
             tools = [FunctionTool.from_defaults(fn=fn) for fn in fns]
             return self.llm.chat_with_tools(tools, chat_history=messages, **self.chat_kwargs)
@@ -3057,12 +3135,15 @@ class LlamaIndexCompletions(Completions):
     def get_message_content(self, response: ChatResponseT) -> tp.Optional[str]:
         return self.process_thought(content=response.message.content, flush=True)
 
-    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[ChatResponseT]:
+    def get_stream_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> tp.Iterator[ChatResponseT]:
         from llama_index.core.tools import FunctionTool
 
-        messages = self.format_messages(messages)
+        if not enable_tools:
+            messages = list(messages)
+            messages += [{"role": "user", "content": "Write the final answer without calling tools."}]
+        messages = self.format_messages(messages, enable_tools=enable_tools)
         tools = self.tools
-        if tools:
+        if enable_tools and tools:
             fns = [self.tool_registry[tool] for tool in tools]
             tools = [FunctionTool.from_defaults(fn=fn) for fn in fns]
             return self.llm.stream_chat_with_tools(tools, chat_history=messages, **self.chat_kwargs)
@@ -3238,7 +3319,7 @@ class OllamaCompletions(OpenAICompatibleMixin, Completions):
         """
         return self._chat_kwargs
 
-    def format_kwargs(self, messages: tp.ChatMessages) -> tp.Kwargs:
+    def format_kwargs(self, messages: tp.ChatMessages, enable_tools: bool = True) -> tp.Kwargs:
         """Format keyword arguments for the API call.
 
         Args:
@@ -3247,11 +3328,17 @@ class OllamaCompletions(OpenAICompatibleMixin, Completions):
         Returns:
             Kwargs: Keyword arguments for the API call.
         """
+        if not enable_tools:
+            messages = list(messages)
+            messages += [{"role": "user", "content": "Write the final answer without calling tools."}]
         chat_kwargs = dict(self.chat_kwargs)
         chat_kwargs["tools"] = chat_kwargs.get("tools", []) + self.tools
         for i, tool in enumerate(chat_kwargs["tools"]):
             if isinstance(tool, str) and tool in self._tool_registry:
-                chat_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool])
+                chat_kwargs["tools"][i] = self.function_to_tool_spec(self._tool_registry[tool], name=tool)
+        if not enable_tools:
+            chat_kwargs.pop("tools", None)
+            chat_kwargs.pop("tool_choice", None)
         return dict(
             messages=messages,
             model=self.model,
@@ -3259,8 +3346,8 @@ class OllamaCompletions(OpenAICompatibleMixin, Completions):
             **chat_kwargs,
         )
 
-    def get_chat_response(self, messages: tp.ChatMessages) -> OllamaChatResponseT:
-        return self.client.chat(**self.format_kwargs(messages))
+    def get_chat_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> OllamaChatResponseT:
+        return self.client.chat(**self.format_kwargs(messages, enable_tools=enable_tools))
 
     def get_message_content(self, response: OllamaChatResponseT) -> tp.Optional[str]:
         message = response["message"]
@@ -3275,8 +3362,12 @@ class OllamaCompletions(OpenAICompatibleMixin, Completions):
         content = message.content
         return self.process_thought(thought=thought, content=content, flush=True)
 
-    def get_stream_response(self, messages: tp.ChatMessages) -> tp.Iterator[OllamaChatResponseT]:
-        return self.client.chat(**self.format_kwargs(messages))
+    def get_stream_response(
+        self,
+        messages: tp.ChatMessages,
+        enable_tools: bool = True,
+    ) -> tp.Iterator[OllamaChatResponseT]:
+        return self.client.chat(**self.format_kwargs(messages, enable_tools=enable_tools))
 
     def get_delta_content(self, response_chunk: OllamaChatResponseT) -> tp.Optional[str]:
         message = response_chunk["message"]
