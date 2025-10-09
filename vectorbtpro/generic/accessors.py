@@ -6113,8 +6113,9 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         if fig is None:
             fig = make_subplots(specs=[[{"secondary_y": True}]])
-            if "width" in plotting_cfg["layout"]:
-                fig.update_layout(width=plotting_cfg["layout"]["width"] + 100)
+            width = plotting_cfg["layout"].get("width", None)
+            if width is not None:
+                fig.update_layout(width=width + 100)
         fig.update_layout(**layout_kwargs)
 
         other.vbt.ts_heatmap(**heatmap_kwargs, add_trace_kwargs=add_trace_kwargs, fig=fig)

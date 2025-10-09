@@ -58,8 +58,8 @@ def fix_field_in_records(
         None: Function modifies the record arrays in place.
     """
     for idx, _chunk_meta in enumerate(chunk_meta):
-        if chunk_meta.idx is not None:
-            idx = chunk_meta.idx
+        if _chunk_meta.idx is not None:
+            idx = _chunk_meta.idx
         if mapper is None:
             record_arrays[idx][field] += _chunk_meta.start
         else:

@@ -58,9 +58,9 @@ def attach_px_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
                 layout_cfg = settings["plotting"]["layout"]
 
                 layout_kwargs = dict(
-                    template=kwargs.pop("template", layout_cfg["template"]),
-                    width=kwargs.pop("width", layout_cfg["width"]),
-                    height=kwargs.pop("height", layout_cfg["height"]),
+                    template=kwargs.pop("template", layout_cfg.get("template", None)),
+                    width=kwargs.pop("width", layout_cfg.get("width", None)),
+                    height=kwargs.pop("height", layout_cfg.get("height", None)),
                 )
                 layout = merge_dicts(layout_kwargs, layout)
                 # Fix category_orders
