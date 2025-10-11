@@ -71,7 +71,7 @@ def search(
     query: str,
     asset_names: tp.Optional[tp.List[str]] = None,
     search_method: str = "hybrid",
-    bm25_fallback: bool = True,
+    bm25_fallback: bool = __name__ == "__main__",
     return_chunks: bool = True,
     return_metadata: str = "none",
     max_tokens: tp.Optional[int] = 2_000,
@@ -116,7 +116,7 @@ def search(
         bm25_fallback (bool): Whether to fallback to BM25 if some embeddings are not available;
             otherwise, missing embeddings will be generated, which may take longer.
 
-            Defaults to True.
+            Defaults to True when running in MCP, False otherwise.
         return_chunks (bool): Whether to return the chunks of the results; otherwise, returns the full results.
 
             Defaults to True.
