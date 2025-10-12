@@ -140,8 +140,9 @@ dmypy.json
 .github_gist_token
 /venvs/
 /work/
-/*.ipynb
 .virtual_documents/
 /knowledge/
 .vscode
 vbt.*
+notebooks/
+*.ipynb
