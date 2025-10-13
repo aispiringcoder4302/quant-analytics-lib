@@ -2467,7 +2467,7 @@ class PortfolioOptimizer(Analyzable):
             2010-03-31 00:00:00+00:00  0.497465  0.500215  0.002319
             ```
 
-            !!! hint
+            !!! tip
                 There is little benefit to using a Numba-compiled loop unless rebalancing thousands
                 of times. Typically, a regular Python loop with a Numba-compiled allocation function suffices.
         """
@@ -3343,7 +3343,7 @@ class PortfolioOptimizer(Analyzable):
         has its own wrapper that holds groups instead of columns, while the wrapper of the `PortfolioOptimizer`
         instance contains regular columns grouped by groups.
 
-        !!! hint
+        !!! tip
             Wrap arrays with `vectorbtpro.generic.splitting.base.Takeable` to split them automatically.
 
         Args:
@@ -3577,7 +3577,7 @@ class PortfolioOptimizer(Analyzable):
             2010-05-13 00:00:00+00:00  0.434084  0.281246  0.284670
             ```
 
-            !!! hint
+            !!! tip
                 There is little reason to use a Numba-compiled loop, except when rebalancing thousands of times.
                 Typically, a regular Python loop with a Numba-compiled optimization function is sufficient.
         """

@@ -2633,7 +2633,7 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
     Delegates cache management to its child setups of type `CARunSetup`. A single unbound cacheable
     can be bound to multiple instances, establishing a one-to-many relationship with `CARunSetup` instances.
 
-    !!! hint
+    !!! tip
         Access unbound callables using class attributes instead of instance attributes.
     """
 

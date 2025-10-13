@@ -311,7 +311,7 @@ using `Records.save` and later load it with `Records.load`.
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `Records.metrics`.
 
 ```pycon
@@ -336,7 +336,7 @@ Name: first, dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Records.subplots`.
 
 This class does not include dedicated subplots by default, but you can add custom subplots in a subclass.

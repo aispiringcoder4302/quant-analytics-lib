@@ -145,7 +145,7 @@ class Completions(ThoughtProcessor):
             If a list is provided, it must be a list of registered tool names or functions.
             Any unregistered functions will be added to the registry.
         tool_registry (Optional[Dict[str, Callable]]): Registry mapping tool names to functions for execution.
-        max_tool_rounds (Optional[int]): Maximum tool-calling iterations per request.
+        max_tool_calls (Optional[int]): Maximum number of tool calls per request.
         tool_dump_kwargs (KwargsLike): Keyword arguments for dumping structured data from tools.
 
             See `vectorbtpro.utils.formatting.dump`.
@@ -204,7 +204,7 @@ class Completions(ThoughtProcessor):
         quick_mode: tp.Optional[bool] = None,
         tools: tp.Optional[tp.Tools] = None,
         tool_registry: tp.Optional[tp.Dict[str, tp.Callable]] = None,
-        max_tool_rounds: tp.Optional[int] = None,
+        max_tool_calls: tp.Optional[int] = None,
         tool_dump_kwargs: tp.KwargsLike = None,
         tool_request_template: tp.CustomTemplateLike = None,
         tool_response_template: tp.CustomTemplateLike = None,
@@ -232,7 +232,7 @@ class Completions(ThoughtProcessor):
             quick_mode=quick_mode,
             tools=tools,
             tool_registry=tool_registry,
-            max_tool_rounds=max_tool_rounds,
+            max_tool_calls=max_tool_calls,
             tool_dump_kwargs=tool_dump_kwargs,
             tool_request_template=tool_request_template,
             tool_response_template=tool_response_template,
@@ -260,7 +260,7 @@ class Completions(ThoughtProcessor):
         quick_mode = self.resolve_setting(quick_mode, "quick_mode")
         tools = self.resolve_setting(tools, "tools")
         tool_registry = self.resolve_setting(tool_registry, "tool_registry", merge=True)
-        max_tool_rounds = self.resolve_setting(max_tool_rounds, "max_tool_rounds")
+        max_tool_calls = self.resolve_setting(max_tool_calls, "max_tool_calls")
         tool_dump_kwargs = self.resolve_setting(tool_dump_kwargs, "tool_dump_kwargs", merge=True)
         tool_request_template = self.resolve_setting(tool_request_template, "tool_request_template")
         tool_response_template = self.resolve_setting(tool_response_template, "tool_response_template")
@@ -349,7 +349,7 @@ class Completions(ThoughtProcessor):
         self._quick_mode = quick_mode
         self._tools = tools
         self._tool_registry = tool_registry
-        self._max_tool_rounds = max_tool_rounds
+        self._max_tool_calls = max_tool_calls
         self._tool_dump_kwargs = tool_dump_kwargs
         self._tool_request_template = tool_request_template
         self._tool_response_template = tool_response_template
@@ -525,13 +525,13 @@ class Completions(ThoughtProcessor):
         return self._tool_registry
 
     @property
-    def max_tool_rounds(self) -> tp.Optional[int]:
-        """Maximum tool-calling iterations per request.
+    def max_tool_calls(self) -> tp.Optional[int]:
+        """Maximum number of tool calls per request.
 
         Returns:
             Optional[int]: Max number of tool-call steps, or None if not set.
         """
-        return self._max_tool_rounds
+        return self._max_tool_calls
 
     @property
     def tool_dump_kwargs(self) -> tp.Kwargs:
@@ -1337,7 +1337,7 @@ class Completions(ThoughtProcessor):
         """
         chat_history = self.chat_history
         stream = self.stream
-        max_tool_rounds = self.max_tool_rounds
+        max_tool_calls = self.max_tool_calls
         formatter = self.formatter
         formatter_kwargs = self.formatter_kwargs
         template_context = self.template_context
@@ -1376,7 +1376,7 @@ class Completions(ThoughtProcessor):
             messages = self.prepare_messages(message)
 
             while True:
-                enable_tools = max_tool_rounds is None or max_tool_rounds > 0
+                enable_tools = max_tool_calls is None or max_tool_calls > 0
                 if stream:
                     response = self.get_stream_response(messages, enable_tools=enable_tools)
                     response_chunks = []
@@ -1426,8 +1426,8 @@ class Completions(ThoughtProcessor):
                 tool_result_messages = self.get_tool_result_messages(tool_results)
                 if tool_result_messages:
                     messages.extend(tool_result_messages)
-                if max_tool_rounds is not None:
-                    max_tool_rounds -= 1
+                if max_tool_calls is not None:
+                    max_tool_calls -= 1
 
             content = formatter.content
             flushed_content = self.flush_thought()

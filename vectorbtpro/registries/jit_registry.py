@@ -122,7 +122,7 @@ You can also disable jitting globally:
 <function __main__.sum_nb(a)>
 ```
 
-!!! hint
+!!! tip
     If no additional options are used and only one jitter is registered per task,
     you can disable resolution to improve performance.
 
@@ -153,7 +153,7 @@ or as False to disable jitting (see `vectorbtpro.utils.jitting.resolve_jitted_op
 133 ms ± 2.32 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 ```
 
-!!! hint
+!!! tip
     As a rule of thumb, when a function accepts a `jitted` parameter, the jitted functions it
     calls are typically resolved using `JITRegistry.resolve_option`.
 

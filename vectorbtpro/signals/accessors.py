@@ -53,7 +53,7 @@ Run for the examples below:
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `SignalsAccessor.metrics`.
 
 ```pycon
@@ -162,7 +162,7 @@ Name: 0, dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `SignalsAccessor.subplots`.
 
 Subplots functionality is inherited from `vectorbtpro.generic.accessors.GenericAccessor`.
@@ -1341,7 +1341,7 @@ class SignalsAccessor(GenericAccessor):
             * `vectorbtpro.signals.nb.first_place_nb` as entry placement function.
             * `vectorbtpro.signals.nb.stop_place_nb` as exit placement function.
 
-        !!! hint
+        !!! tip
             Default arguments will generate an exit signal strictly between two entry signals.
             If both entry signals are too close to each other, no exit will be generated.
 
@@ -1600,7 +1600,7 @@ class SignalsAccessor(GenericAccessor):
             * `vectorbtpro.signals.nb.first_place_nb` as entry placement function.
             * `vectorbtpro.signals.nb.ohlc_stop_place_nb` as exit placement function.
 
-        !!! hint
+        !!! tip
             Default arguments will generate an exit signal strictly between two entry signals.
             If both entry signals are too close to each other, no exit will be generated.
 

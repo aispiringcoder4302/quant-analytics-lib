@@ -238,7 +238,7 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
                 See `vectorbtpro.utils.tagging.match_tags`.
             column (Optional[Column]): Identifier of the column to select.
 
-                !!! hint
+                !!! tip
                     There are two methods to select a column:
 
                     * `obj['a'].stats()` computes statistics for column 'a' only.
@@ -299,14 +299,14 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
             See `vectorbtpro.utils.template` for template logic.
 
-        !!! hint
+        !!! tip
             Optional (resolution) arguments are passed only if they appear in the function's signature,
             while mandatory arguments are always passed. Optional arguments are defined via `settings`
             (globally), whereas mandatory arguments can be set using default metric settings or
             `{metric_name}_kwargs`. Overriding optional arguments does not make them mandatory;
             use `pass_{arg}=True` to enforce passing.
 
-        !!! hint
+        !!! tip
             Resolve and reuse object attributes wherever possible to leverage built-in caching,
             even if global caching is disabled.
         """

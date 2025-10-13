@@ -308,7 +308,7 @@ __pdoc__["caching"] = Sub(
 !!! note
     The `use_cached_accessors` setting is applied only at import.
 
-!!! hint
+!!! tip
     Enable `register_lazily` at startup to register unbound cacheables.
 
 ```python
@@ -2415,7 +2415,7 @@ knowledge = frozen_cfg(
     content: '';
     width: 300px;
     height: 5px;
-    background: #735af2;
+    background: #6e53f9;
     position: absolute;
     top: 0;
     left: 0;
@@ -2543,7 +2543,7 @@ $context
         completions_config=flex_cfg(
             tools=None,
             tool_registry=flex_cfg(),
-            max_tool_rounds=None,
+            max_tool_calls=None,
             tool_dump_kwargs=flex_cfg(
                 dump_engine="json",
             ),
@@ -2824,7 +2824,7 @@ $chunk_text""",
         }
         .nav-btn {
             background: transparent;
-            color: #735af2;
+            color: #6e53f9;
             border: none;
             cursor: pointer;
         }
@@ -2843,7 +2843,7 @@ $chunk_text""",
             background: lightgray;
         }
         .page-link.active {
-            background: #735af2;
+            background: #6e53f9;
             color: #fff;
             cursor: default;
         }

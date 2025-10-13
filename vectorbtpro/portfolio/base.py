@@ -2956,7 +2956,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             follows the specified `call_seq`. This means the last asset in the sequence is processed only after
             the others, which can affect rebalancing. Use `CallSeqType.Auto` for dynamic execution order.
 
-        !!! hint
+        !!! tip
             All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
             to preserve their original shapes for flexible indexing and memory efficiency.
             Each can be provided per frame, series, row, column, or individual element.
@@ -3741,7 +3741,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             follows the specified `call_seq`. This means the last asset in the sequence is processed only after
             the others, which can affect rebalancing. Use `CallSeqType.Auto` for dynamic execution order.
 
-        !!! hint
+        !!! tip
             All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
             to preserve their original shapes for flexible indexing and memory efficiency.
             Each can be provided per frame, series, row, column, or individual element.
@@ -4675,7 +4675,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> PortfolioResultT:
         """Build a portfolio using a custom order function.
 
-        !!! hint
+        !!! tip
             See `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb` for illustrations.
 
         Prepared using `vectorbtpro.portfolio.preparing.FOFPreparer`.
@@ -4906,7 +4906,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             defaults (typically NaN for floating arrays and preset flags for integer arrays).
             Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
 
-        !!! hint
+        !!! tip
             All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
             to preserve their original shapes for flexible indexing and memory efficiency.
             Each can be provided per frame, series, row, column, or individual element.
@@ -5496,7 +5496,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             defaults (typically NaN for floating arrays and preset flags for integer arrays).
             Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
 
-        !!! hint
+        !!! tip
             All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
             to preserve their original shapes for flexible indexing and memory efficiency.
             Each can be provided per frame, series, row, column, or individual element.

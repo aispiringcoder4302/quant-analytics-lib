@@ -57,7 +57,7 @@ Name: my_open1, dtype: float64
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `OHLCVDFAccessor.metrics`
     for more details.
 
@@ -79,7 +79,7 @@ Name: agg_stats, dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `OHLCVDFAccessor.subplots` for more details.
 
 The `OHLCVDFAccessor` provides a single subplot based on `OHLCVDFAccessor.plot` (excluding volume):

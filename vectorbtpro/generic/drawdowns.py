@@ -66,7 +66,7 @@ Generic accessors provide a `drawdowns` property and a `get_drawdowns` method:
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `Drawdowns.metrics`.
 
 ```pycon
@@ -162,7 +162,7 @@ Name: group, dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Drawdowns.subplots`.
 
 The `Drawdowns` class provides a single subplot through `Drawdowns.plot`:

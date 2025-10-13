@@ -68,7 +68,7 @@ dtype: int64
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `GenericAccessor.metrics`.
 
 ```pycon
@@ -183,7 +183,7 @@ Name: 0, dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `GenericAccessor.subplots`.
 
 `GenericAccessor` provides a single subplot via `GenericAccessor.plot`:

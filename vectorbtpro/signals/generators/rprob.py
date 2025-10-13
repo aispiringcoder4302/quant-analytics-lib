@@ -52,7 +52,7 @@ class _RPROB(RPROB):
         * `RPROB.run` for the main entry point.
         * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the entry placement.
 
-    !!! hint
+    !!! tip
         All parameters can be provided as a single value (per frame) or as a NumPy array
         (per row, column, or element).
 

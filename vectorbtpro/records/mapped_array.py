@@ -317,7 +317,7 @@ using `MappedArray.save` and load it using `MappedArray.load`.
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `MappedArray.metrics`.
 
 Metrics for mapped arrays are computed similarly to those for `vectorbtpro.generic.accessors.GenericAccessor`:
@@ -398,7 +398,7 @@ For plots that require an index, such as scatterplots, first convert the mapped 
 ![](/assets/images/api/mapped_to_pd_plot.light.svg#only-light){: .iimg loading=lazy }
 ![](/assets/images/api/mapped_to_pd_plot.dark.svg#only-dark){: .iimg loading=lazy }
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `MappedArray.subplots`.
 
 `MappedArray` provides a single subplot derived from `MappedArray.to_pd` and
@@ -1432,7 +1432,7 @@ class MappedArray(Analyzable):
             For instance, `np.array([0, 1, 0])` for a single column is interpreted as three distinct segments,
             not two. See `vectorbtpro.utils.array_.index_repeating_rows_nb`.
 
-        !!! hint
+        !!! tip
             Use `MappedArray.sort` to order the mapped array appropriately before reduction if needed.
         """
         if idx_arr is None:

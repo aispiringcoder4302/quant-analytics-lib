@@ -91,7 +91,7 @@ class _STX(STX):
         * `STX.run` for the main entry point.
         * `vectorbtpro.signals.nb.stop_place_nb` for details on the exit placement.
 
-    !!! hint
+    !!! tip
         All parameter values can be specified as a single value (per frame) or as a NumPy array
         (per row, column, or element). To generate multiple combinations, pass them as lists.
     """

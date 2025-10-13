@@ -51,7 +51,7 @@ class _RAND(RAND):
         * `RAND.run` for the main entry point.
         * `vectorbtpro.signals.nb.rand_place_nb` for details on the entry placement.
 
-    !!! hint
+    !!! tip
         The parameter `n` may be provided as either a single value (per frame) or a NumPy array (per column).
 
         To create multiple combinations, specify `n` as a list.

@@ -329,7 +329,7 @@ Get count and PnL of trades with a duration longer than 2 days:
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `Trades.metrics`.
 
 ```pycon
@@ -477,7 +477,7 @@ Name: group, dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Trades.subplots`.
 
 The `Trades` class provides two subplots based on `Trades.plot` and `Trades.plot_pnl`:

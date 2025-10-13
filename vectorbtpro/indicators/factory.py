@@ -5411,7 +5411,7 @@ class IndicatorFactory(Configured):
 
                 Defaults to False. Otherwise, uses `vectorbtpro.utils.eval_.evaluate`.
 
-                !!! hint
+                !!! tip
                     By default, operates on NumPy objects using NumExpr.
                     If you want to operate on Pandas objects, set `keep_pd` to True.
             pd_eval_kwargs (KwargsLike): Keyword arguments for `pd.eval`.

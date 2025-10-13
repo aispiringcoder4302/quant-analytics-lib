@@ -226,7 +226,7 @@ class _OHLCSTX(OHLCSTX):
         * `OHLCSTX.run` for the main entry point.
         * `vectorbtpro.signals.nb.ohlc_stop_place_nb` for details on the exit placement.
 
-    !!! hint
+    !!! tip
         All parameters may be provided as a single value (per frame) or as a NumPy array
         (per row, column, or element).
 

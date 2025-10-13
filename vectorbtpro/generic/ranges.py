@@ -65,7 +65,7 @@ All generic accessors have a `ranges` property and a `get_ranges` method:
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `Ranges.metrics`.
 
 ```pycon
@@ -106,7 +106,7 @@ Name: group, dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Ranges.subplots`.
 
 The `Ranges` class provides a single subplot via `Ranges.plot`:
