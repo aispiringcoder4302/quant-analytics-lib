@@ -83,7 +83,7 @@ ind-base = [
 ind = [
     "vectorbtpro[ind-base]",
     "ta",
-    "pandas_ta",
+    # "pandas_ta",
     "technical",
     "smartmoneyconcepts>0.0.10"
 ]
@@ -125,7 +125,8 @@ pfopt-base = [
     "Riskfolio-Lib>=3.3.0"
 ]
 pfopt = [
-    "vectorbtpro[pfopt-base]"
+    "vectorbtpro[pfopt-base]",
+    # universal-portfolios
 ]
 stats = [
     "quantstats>=0.0.37"
