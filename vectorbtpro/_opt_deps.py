@@ -23,7 +23,6 @@ opt_dep_config = HybridConfig(
         "ccxt": {"version": ">=1.89.14"},
         "ta": {},
         "pandas_ta": {"dist_name": "pandas-ta"},
-        "pandas_ta_classic": {"dist_name": "pandas-ta-classic"},
         "talib": {"dist_name": "TA-Lib"},
         "bottleneck": {},
         "numexpr": {},
