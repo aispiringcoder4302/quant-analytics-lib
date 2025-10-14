@@ -11,7 +11,7 @@ authors = [{ name = "Oleg Polakow", email = "olegpolakow@vectorbt.pro" }]
 readme = "README.md"
 requires-python = "~=3.8"
 dependencies = [
-    "numpy>=1.20.0",
+    "numpy>=1.24.4",
     "pandas>=1.5.0",
     "numba>=0.53.1, <0.57.0; python_version<'3.10'",
     "numba>=0.56.0, <0.57.0; python_version>='3.10' and python_version<'3.11'",
@@ -83,7 +83,6 @@ ind-base = [
 ind = [
     "vectorbtpro[ind-base]",
     "ta",
-    # "pandas_ta",
     "technical",
     "smartmoneyconcepts>0.0.10"
 ]
@@ -125,8 +124,7 @@ pfopt-base = [
     "Riskfolio-Lib>=3.3.0"
 ]
 pfopt = [
-    "vectorbtpro[pfopt-base]",
-    # universal-portfolios
+    "vectorbtpro[pfopt-base]"
 ]
 stats = [
     "quantstats>=0.0.37"
@@ -180,14 +178,19 @@ mcp-base = [
 mcp = [
     "vectorbtpro[mcp-base]"
 ]
-base = [
-    "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,io-base,knwl-base,mcp-base]"
-]
 base-no-talib = [
     "vectorbtpro[data-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,io-base,knwl-base,mcp-base]"
 ]
+base = [
+    "vectorbtpro[base-no-talib,ind-base]"
+]
 all = [
     "vectorbtpro[data,ind,perf,opt,exec,plot,pfopt,stats,msg,io,knwl,mcp]"
+]
+all-plus = [
+    "vectorbtpro[all]",
+    "pandas_ta",
+    "universal-portfolios"
 ]
 
 [tool.setuptools]

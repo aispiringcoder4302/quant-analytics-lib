@@ -1671,9 +1671,9 @@ class Pickleable(Base):
             collapsed_dict.a: 1
             collapsed_dict.b: 2
             collapsed_dict.c: 3
-            escaped_dict\.a: 1
-            escaped_dict\.b: 2
-            escaped_dict\.c: 3
+            escaped_dict\\.a: 1
+            escaped_dict\\.b: 2
+            escaped_dict\\.c: 3
             tuple: !tuple [1, 2, 3]
             class: !class pd.Series
             instance: !rec:pd.Series

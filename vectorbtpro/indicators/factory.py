@@ -3910,7 +3910,11 @@ class IndicatorFactory(Configured):
                     ),
                     *map(
                         lambda x: "pandas_ta:" + x if prepend_location else x,
-                        cls.list_pandas_ta_indicators() if check_installed("pandas_ta") else [],
+                        (
+                            cls.list_pandas_ta_indicators()
+                            if check_installed("pandas_ta") or check_installed("pandas_ta_classic")
+                            else []
+                        ),
                     ),
                     *map(
                         lambda x: "ta:" + x if prepend_location else x,
@@ -4344,22 +4348,22 @@ class IndicatorFactory(Configured):
         !!! note
             Returns only the indicators that have been successfully parsed.
         """
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("pandas_ta")
         try:
             import pandas_ta
         except ImportError as e:
-            if "cannot import name 'NaN' from 'numpy'" in str(e):
-                warn(
-                    "Cannot import name 'NaN' from 'numpy'.\n\n"
-                    "Current version of Pandas TA is not compatible with the latest NumPy. "
-                    "Please install an older version of NumPy, e.g., 1.26.4. "
-                    "Or, go to the source of pandas_ta.momentum.squeeze_pro on your disk and "
-                    "comment out the line `from numpy import NaN as npNaN`."
-                )
-                return []
-            raise e
+            try:
+                import pandas_ta_classic as pandas_ta
+            except ImportError:
+                if "cannot import name 'NaN' from 'numpy'" in str(e):
+                    warn(
+                        "Cannot import name 'NaN' from 'numpy'.\n\n"
+                        "Current version of Pandas TA is not compatible with the latest NumPy. "
+                        "Please install an older version of NumPy, e.g., 1.26.4. "
+                        "Or, go to the source of pandas_ta.momentum.squeeze_pro on your disk and "
+                        "comment out the line `from numpy import NaN as npNaN`."
+                    )
+                    return []
+                raise e
 
         indicators = set()
         for func_name in [_k for k, v in pandas_ta.Category.items() for _k in v]:
@@ -4381,10 +4385,10 @@ class IndicatorFactory(Configured):
     ) -> tp.Type[IndicatorBase]:
         """Build an indicator class around a Pandas TA function.
 
-        Requires `pandas-ta` installed. See https://github.com/twopirllc/pandas-ta for details.
+        Requires Pandas TA installed. See https://pypi.org/project/pandas-ta/ for details.
 
         Args:
-            func_name (str): Name of the `pandas_ta` function to wrap.
+            func_name (str): Name of the Pandas TA function to wrap.
 
                 The function name is case-insensitive.
             parse_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory.parse_pandas_ta_config`.
@@ -4409,21 +4413,22 @@ class IndicatorFactory(Configured):
             2020-01-05  4.5  1.5  4.0  2.0
             ```
         """
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("pandas_ta")
         try:
             import pandas_ta
         except ImportError as e:
-            if "cannot import name 'NaN' from 'numpy'" in str(e):
-                raise ImportError(
-                    "Cannot import name 'NaN' from 'numpy'.\n\n"
-                    "Current version of Pandas TA is not compatible with the latest NumPy. "
-                    "Please install an older version of NumPy, e.g., 1.26.4. "
-                    "Or, go to the source of pandas_ta.momentum.squeeze_pro on your disk and "
-                    "comment out the line `from numpy import NaN as npNaN`."
-                ) from e
-            raise e
+            try:
+                import pandas_ta_classic as pandas_ta
+            except ImportError:
+                if "cannot import name 'NaN' from 'numpy'" in str(e):
+                    warn(
+                        "Cannot import name 'NaN' from 'numpy'.\n\n"
+                        "Current version of Pandas TA is not compatible with the latest NumPy. "
+                        "Please install an older version of NumPy, e.g., 1.26.4. "
+                        "Or, go to the source of pandas_ta.momentum.squeeze_pro on your disk and "
+                        "comment out the line `from numpy import NaN as npNaN`."
+                    )
+                    return []
+                raise e
 
         func_name = func_name.lower()
         func = getattr(pandas_ta, func_name)
@@ -4450,6 +4455,14 @@ class IndicatorFactory(Configured):
                     **{name: param_tuple[i] for i, name in enumerate(config["param_names"])},
                     **kwargs_,
                 )
+                if output is None:
+                    if config["output_names"] == 1:
+                        output = pd.Series([np.nan] * len(input_tuple[0]), index=input_tuple[0].index)
+                    else:
+                        output = pd.DataFrame(
+                            {name: [np.nan] * len(input_tuple[0]) for name in config["output_names"]},
+                            index=input_tuple[0].index,
+                        )
                 if isinstance(output, tuple):
                     _outputs = []
                     for o in output:
