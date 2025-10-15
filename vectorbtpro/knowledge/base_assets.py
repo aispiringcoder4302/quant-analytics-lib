@@ -2829,20 +2829,19 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Converts the asset's data to `vectorbtpro.knowledge.doc_storing.TextDocument` format using
         `KnowledgeAsset.to_documents` if needed, then embeds them with
-        `vectorbtpro.knowledge.embeddings.embed_documents` using provided keyword arguments.
+        `vectorbtpro.knowledge.doc_ranking.embed_documents` using provided keyword arguments.
         Optionally unwraps the embedded documents if `wrap_documents` is False.
 
         Args:
             to_documents_kwargs (KwargsLike): Keyword arguments for `KnowledgeAsset.to_documents`.
             wrap_documents (Optional[bool]): Flag indicating whether to preserve the document embedding structure.
-            **kwargs: Keyword arguments for `vectorbtpro.knowledge.embeddings.embed_documents`.
+            **kwargs: Keyword arguments for `vectorbtpro.knowledge.doc_ranking.embed_documents`.
 
         Returns:
             Optional[MaybeKnowledgeAsset]: New asset with embedded documents, or None if embedding fails.
         """
         from vectorbtpro.knowledge.doc_storing import StoreDocument
-        from vectorbtpro.knowledge.doc_ranking import EmbeddedDocument
-        from vectorbtpro.knowledge.embeddings import embed_documents
+        from vectorbtpro.knowledge.doc_ranking import EmbeddedDocument, embed_documents
 
         if self.data and not isinstance(self.data[0], StoreDocument):
             if to_documents_kwargs is None:
