@@ -351,15 +351,16 @@ class TestData:
         with pytest.raises(Exception):
             MyData.column_stack((data1, data2.select(["F2"])))
 
-    def test_config(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_config(self, tmp_path, test_file_format):
         original_data = MyData.pull(["S1", "S2"], shape=(5, 3), columns=["F1", "F2", "F3"])
         for data in [original_data.to_symbol_oriented(), original_data.to_feature_oriented()]:
             assert MyData.loads(data.dumps()) == data
             data.save(tmp_path / "data")
             new_data = MyData.load(tmp_path / "data")
             assert new_data == data
-            data.save(tmp_path / "data", file_format="ini")
-            new_data = MyData.load(tmp_path / "data", file_format="ini")
+            data.save(tmp_path / "data", file_format=test_file_format)
+            new_data = MyData.load(tmp_path / "data", file_format=test_file_format)
             assert new_data == data
 
     @pytest.mark.parametrize("test_keys_are_features", [False, True])
@@ -4018,6 +4019,31 @@ class TestCustom:
                 columns=pd.Index(["S1", "S2"], name="symbol"),
             ),
         )
+        assert_series_equal(
+            vbt.RandomData.pull(start="2021-01-01 UTC", end="2021-01-06 UTC", randomize=0.5, seed=42).get(),
+            pd.Series(
+                [
+                    100.49671415301123,
+                    100.35776307348756,
+                    101.00776880200878,
+                    102.54614727815496,
+                    102.3060320136544,
+                    102.06649578352217,
+                ],
+                index=pd.DatetimeIndex(
+                    [
+                        pd.Timestamp("2021-01-01 00:00:00+00:00"),
+                        pd.Timestamp("2021-01-02 14:19:57.742986442+00:00"),
+                        pd.Timestamp("2021-01-03 17:50:31.494276822+00:00"),
+                        pd.Timestamp("2021-01-04 10:26:14.506488086+00:00"),
+                        pd.Timestamp("2021-01-05 03:30:57.150700858+00:00"),
+                        pd.Timestamp("2021-01-05 22:32:14.427953540+00:00"),
+                    ],
+                    dtype="datetime64[ns, UTC]",
+                    freq=None,
+                ),
+            ),
+        )
 
     def test_random_ohlc_data(self):
         assert_frame_equal(
@@ -4116,6 +4142,31 @@ class TestCustom:
                     freq="D",
                 ),
                 columns=pd.Index(["S1", "S2"], name="symbol"),
+            ),
+        )
+        assert_series_equal(
+            vbt.GBMData.pull(start="2021-01-01 UTC", end="2021-01-06 UTC", randomize=0.1, seed=42).get(),
+            pd.Series(
+                [
+                    100.49292505095792, 
+                    100.34905764408163, 
+                    100.99606643427086, 
+                    102.54091282498935, 
+                    102.29597577584751, 
+                    102.05164055663859,
+                ],
+                index=pd.DatetimeIndex(
+                    [
+                        pd.Timestamp("2021-01-01 00:00:00+00:00"),
+                        pd.Timestamp("2021-01-02 02:51:59.548597288+00:00"),
+                        pd.Timestamp("2021-01-03 03:34:06.298855364+00:00"),
+                        pd.Timestamp("2021-01-04 02:05:14.901297617+00:00"),
+                        pd.Timestamp("2021-01-05 00:42:11.430140172+00:00"),
+                        pd.Timestamp("2021-01-05 23:42:26.885590708+00:00"),
+                    ],
+                    dtype="datetime64[ns, UTC]",
+                    freq=None,
+                ),
             ),
         )
 

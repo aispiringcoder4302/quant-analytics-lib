@@ -77,26 +77,22 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.datetime_ import DTC, DTCNT
     from vectorbtpro.utils.selection import PosSel, LabelSel
     from vectorbtpro.utils.merging import MergeFunc
-    from vectorbtpro.utils.knowledge.base_asset_funcs import AssetFunc
-    from vectorbtpro.utils.knowledge.asset_pipelines import AssetPipeline
-    from vectorbtpro.utils.knowledge.base_assets import KnowledgeAsset
-    from vectorbtpro.utils.knowledge.chatting import (
-        Tokenizer,
-        Embeddings,
-        Completions,
-        TextSplitter,
-        StoreDocument,
-        ObjectStore,
-        EmbeddedDocument,
-        ScoredDocument,
-    )
-    from vectorbtpro.utils.knowledge.custom_assets import (
+    from vectorbtpro.knowledge.base_asset_funcs import AssetFunc
+    from vectorbtpro.knowledge.asset_pipelines import AssetPipeline
+    from vectorbtpro.knowledge.base_assets import KnowledgeAsset
+    from vectorbtpro.knowledge.tokenization import Tokenizer
+    from vectorbtpro.knowledge.embeddings import Embeddings
+    from vectorbtpro.knowledge.completions import Completions
+    from vectorbtpro.knowledge.text_splitting import TextSplitter
+    from vectorbtpro.knowledge.doc_storing import StoreDocument, ObjectStore
+    from vectorbtpro.knowledge.doc_ranking import EmbeddedDocument, ScoredDocument
+    from vectorbtpro.knowledge.custom_assets import (
         VBTAsset,
         PagesAsset,
         MessagesAsset,
         ExamplesAsset,
     )
-    from vectorbtpro.utils.knowledge.formatting import ContentFormatter
+    from vectorbtpro.knowledge.formatting import ContentFormatter
     from vectorbtpro.base.indexing import hslice
     from vectorbtpro.base.grouping.base import Grouper
     from vectorbtpro.base.resampling.base import Resampler
@@ -511,7 +507,7 @@ Token = int
 Tokens = List[Token]
 EmbeddingsLike = Union[None, str, MaybeType[Embeddings]]
 CompletionsLike = Union[None, str, MaybeType[Completions]]
-ChatMessage = dict
+ChatMessage = Any
 ChatMessages = List[ChatMessage]
 ChatHistory = MutableSequence[ChatMessage]
 ChatOutput = Union[Optional[Path], Tuple[Optional[Path], Any]]
@@ -534,6 +530,8 @@ EmbeddedDocuments = List[EmbeddedDocument]
 ScoredDocuments = List[Union[float, ScoredDocument]]
 RankedDocuments = List[Union[StoreDocument, ScoredDocument]]
 TopKLike = Union[None, int, float, str, Callable]
+Tool = Union[str, Callable]
+Tools = Union[Tool, List[Tool], Dict[str, Tool]]
 
 # Chaining
 PipeFunc = Union[str, Callable, Tuple[Union[str, Callable], str]]

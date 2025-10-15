@@ -280,12 +280,13 @@ class TestMappedArray:
                 mapped_array2.replace(some_arg=2, check_expected_keys_=False),
             )
 
-    def test_config(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_config(self, tmp_path, test_file_format):
         assert vbt.MappedArray.loads(mapped_array.dumps()) == mapped_array
         mapped_array.save(tmp_path / "mapped_array")
         assert vbt.MappedArray.load(tmp_path / "mapped_array") == mapped_array
-        mapped_array.save(tmp_path / "mapped_array", file_format="ini")
-        assert vbt.MappedArray.load(tmp_path / "mapped_array", file_format="ini") == mapped_array
+        mapped_array.save(tmp_path / "mapped_array", file_format=test_file_format)
+        assert vbt.MappedArray.load(tmp_path / "mapped_array", file_format=test_file_format) == mapped_array
 
     def test_mapped_arr(self):
         np.testing.assert_array_equal(mapped_array["a"].values, np.array([10.0, 11.0, 12.0]))
@@ -1866,13 +1867,14 @@ class TestRecords:
             vbt.MappedArray.column_stack(records1.map_field("some_field2"), records2.map_field("some_field2")).values,
         )
 
-    def test_config(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_config(self, tmp_path, test_file_format):
         assert vbt.Records.loads(records["a"].dumps()) == records["a"]
         assert vbt.Records.loads(records.dumps()) == records
         records.save(tmp_path / "records")
         assert vbt.Records.load(tmp_path / "records") == records
-        records.save(tmp_path / "records", file_format="ini")
-        assert vbt.Records.load(tmp_path / "records", file_format="ini") == records
+        records.save(tmp_path / "records", file_format=test_file_format)
+        assert vbt.Records.load(tmp_path / "records", file_format=test_file_format) == records
 
     def test_field_config(self):
         records2 = vbt.records.Records(wrapper, records_arr)

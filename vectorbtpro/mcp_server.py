@@ -21,7 +21,37 @@ import argparse
 
 from vectorbtpro import _typing as tp
 
-__all__ = []
+__all__ = [
+    "register_tool",
+]
+
+
+tool_registry = {}
+"""Registry mapping tool names to functions for execution."""
+
+
+def register_tool(arg: tp.Union[None, str, tp.Callable] = None, /, *, name: tp.Optional[str] = None) -> tp.Callable:
+    """Decorator to register a function in `tool_registry`.
+
+    Args:
+        arg (Union[None, str, Callable]): Tool function or its name.
+        name (Optional[str]): Custom name for the tool (if not using the function name).
+
+    Returns:
+        Callable: Registered tool function.
+    """
+    if isinstance(arg, str) and name is None:
+        name = arg
+        arg = None
+
+    def wrapper(func):
+        tool_name = name or func.__name__
+        tool_registry[tool_name] = func
+        return func
+
+    if callable(arg):
+        return wrapper(arg)
+    return wrapper
 
 
 def auto_cast(value: tp.Any) -> tp.Any:
@@ -36,13 +66,15 @@ def auto_cast(value: tp.Any) -> tp.Any:
     return value
 
 
+@register_tool
 def search(
     query: str,
-    asset_names: tp.Union[str, tp.List[str]] = "all",
+    asset_names: tp.Optional[tp.List[str]] = None,
     search_method: str = "hybrid",
+    bm25_fallback: bool = __name__ == "__main__",
     return_chunks: bool = True,
     return_metadata: str = "none",
-    max_tokens: tp.Optional[int] = 5_000,
+    max_tokens: tp.Optional[int] = 2_000,
     n: tp.Optional[int] = None,
     page: int = 1,
 ) -> str:
@@ -63,25 +95,28 @@ def search(
         query (str): Search query.
 
             Do not reinstate the name "VectorBT PRO" in the query, as it is already implied.
-        asset_names (Union[str, List[str]]): One or more asset names to search. Supported names:
+        asset_names (Optional[List[str]]): Asset names to search. Supported names:
 
             * "api": API reference. Best for specific API queries.
             * "docs": Regular documentation, including getting started, features, tutorials, guides,
                 recipes, and legal information. Best for general queries.
             * "messages": Discord messages and discussions. Best for support queries.
             * "examples": Code examples across all assets. Best for practical implementation queries.
-            * "all": All of the above. Best for comprehensive queries.
 
             Order doesn't matter.
 
-            Defaults to "all".
+            Defaults to all.
         search_method (str): Strategy for document search. Supported strategies:
 
             * "bm25": Uses BM25 for lexical search. Best for specific keywords.
             * "embeddings": Uses embeddings for semantic search. Best for general queries.
             * "hybrid": Combines both embeddings and BM25. Best for balanced search.
 
-            Defaults to "hybrid". If embeddings are not available, it falls back to "bm25".
+            Defaults to "hybrid".
+        bm25_fallback (bool): Whether to fallback to BM25 if some embeddings are not available;
+            otherwise, missing embeddings will be generated, which may take longer.
+
+            Defaults to True when running in MCP, False otherwise.
         return_chunks (bool): Whether to return the chunks of the results; otherwise, returns the full results.
 
             Defaults to True.
@@ -94,7 +129,7 @@ def search(
             Defaults to "none".
         max_tokens (Optional[int]): Maximum number of tokens to return in the results.
 
-            Defaults to 5,000.
+            Defaults to 2,000.
         n (Optional[int]): Number of results to return per page.
 
             If specified, it will return the first `n` results that fit within the `max_tokens` limit.
@@ -107,8 +142,8 @@ def search(
     Returns:
         str: Context string containing the search results.
     """
-    from vectorbtpro.utils.knowledge.custom_assets import search
-    from vectorbtpro.utils.knowledge.chatting import tokenize, detokenize
+    from vectorbtpro.knowledge.custom_assets import search
+    from vectorbtpro.knowledge.tokenization import tokenize, detokenize
     from vectorbtpro.utils.pbar import ProgressHidden
 
     with ProgressHidden():
@@ -121,9 +156,11 @@ def search(
         n = auto_cast(n)
         page = auto_cast(page)
 
-        if search_method == "embeddings":
+        if asset_names is None:
+            asset_names = "all"
+        if bm25_fallback and search_method == "embeddings":
             search_method = "embeddings_fallback"
-        elif search_method == "hybrid":
+        elif bm25_fallback and search_method == "hybrid":
             search_method = "hybrid_fallback"
 
         results = search(
@@ -147,15 +184,17 @@ def search(
         elif return_metadata.lower() == "none":
             results = results.remove_metadata()
         elif return_metadata.lower() != "full":
-            raise ValueError(f"Invalid return_metadata: '{return_metadata}'")
+            raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
 
         dumps = results.dump()
-        context = "==== Result 1 ====\n\n"
-        context += dumps[0]
+        context = ["==== Result 1 ====\n\n"]
+        context += [dumps[0]]
         for i, dump in enumerate(dumps[1:], start=2):
-            context += "\n\n==== Result " + str(i) + " ====\n\n"
-            context += dump
-        if not context:
+            context += ["\n\n==== Result " + str(i) + " ====\n\n"]
+            context += [dump]
+        if context:
+            context = "".join(context)
+        else:
             context = "No results found"
         if max_tokens is not None:
             tokens = tokenize(context)
@@ -166,18 +205,50 @@ def search(
         return context
 
 
+@register_tool
+def resolve_refnames(refnames: tp.List[str]) -> str:
+    """Resolve reference names to their fully-qualified names.
+
+    Output format:
+
+    * Success: `OK <input> <resolved>`
+	* Failure: `FAIL <input>`
+
+    Args:
+        refnames (List[str]): Reference names to resolve.
+
+            A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
+            or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
+    
+    Returns:
+        str: Output string containing the resolution results.
+    """
+    from vectorbtpro.utils.module_ import resolve_refname
+
+    output = []
+    for refname in refnames:
+        refname = auto_cast(refname)
+        resolved_name = resolve_refname(refname)
+        if resolved_name:
+            output.append(f"OK {refname} {resolved_name}")
+        else:
+            output.append(f"FAIL {refname}")
+    return "\n".join(output)
+
+
+@register_tool
 def find(
-    refname: tp.Union[str, tp.List[str]],
+    refnames: tp.List[str],
     resolve: bool = True,
-    asset_names: tp.Union[str, tp.List[str]] = "all",
+    asset_names: tp.Optional[tp.List[str]] = None,
     aggregate_api: bool = False,
     aggregate_messages: bool = False,
     return_metadata: str = "none",
-    max_tokens: tp.Optional[int] = 5_000,
+    max_tokens: tp.Optional[int] = 2_000,
     n: tp.Optional[int] = None,
     page: int = 1,
 ) -> str:
-    """Find VectorBT PRO (vectorbtpro, VBT) assets relevant to a specific object and
+    """Find VectorBT PRO (vectorbtpro, VBT) assets relevant to specific objects and
     return the results as a context string.
 
     This can be used to find assets mentioning specific VBT objects, such as modules, classes,
@@ -186,20 +257,23 @@ def find(
 
     If any of the mentioned targets are found in an asset, it will be returned.
 
+    !!! note
+        All references must be valid; if any reference cannot be resolved, will raise an error.
+        Thus, when passing multiple references, use `resolve_refnames` to verify them first.
+
     Args:
-        refname (Union[str, List[str]]): One or more references to the object(s).
+        refnames (List[str]): Reference names of the objects.
 
             A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
             or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
 
-            If multiple references are provided, returns a code example if any of the references
-            are found in the code example.
+            Returns a code example if any of the references are found in the code example.
         resolve (bool): Whether to resolve the object's reference name.
 
             Set to False to find any string, not just VBT objects, such as "SQLAlchemy".
             In this case, `refname` becomes a simple string to match against.
             Defaults to True.
-        asset_names (Union[str, List[str]]): One or more asset names to search. Supported names:
+        asset_names (Optional[List[str]]): Asset names to search. Supported names:
 
             * "api": API reference.
             * "docs": Regular documentation, including getting started, features, tutorials, guides,
@@ -208,13 +282,10 @@ def find(
             * "examples": Code examples across all assets.
             * "all": All of the above, in the order specified above.
 
-            Do not use "examples" with other assets, as examples are already included in those assets.
-            Use them separately to get only examples.
-
             Order matters. May also include ellipsis. For example, `["messages", "..."]` puts
             "messages" at the beginning and all other assets in their usual order at the end.
 
-            Defaults to "all".
+            Defaults to all.
         aggregate_api (bool): Whether to aggregate all children of the object into a single context.
 
             If True, the context will contain all the children of the object, such as methods,
@@ -238,7 +309,7 @@ def find(
             Defaults to "none".
         max_tokens (Optional[int]): Maximum number of tokens to return in the results.
 
-            Defaults to 5,000.
+            Defaults to 2,000.
         n (Optional[int]): Number of results to return per page.
 
             If specified, it will return the first `n` results that fit within the `max_tokens` limit.
@@ -251,12 +322,12 @@ def find(
     Returns:
         str: Context string containing the search results.
     """
-    from vectorbtpro.utils.knowledge.custom_assets import find_assets
-    from vectorbtpro.utils.knowledge.chatting import tokenize, detokenize
+    from vectorbtpro.knowledge.custom_assets import find_assets
+    from vectorbtpro.knowledge.tokenization import tokenize, detokenize
     from vectorbtpro.utils.pbar import ProgressHidden
 
     with ProgressHidden():
-        refname = auto_cast(refname)
+        refnames = auto_cast(refnames)
         resolve = auto_cast(resolve)
         asset_names = auto_cast(asset_names)
         aggregate_api = auto_cast(aggregate_api)
@@ -266,8 +337,11 @@ def find(
         n = auto_cast(n)
         page = auto_cast(page)
 
+        if asset_names is None:
+            asset_names = "all"
+
         results = find_assets(
-            refname,
+            refnames,
             resolve=resolve,
             asset_names=asset_names,
             api_kwargs=dict(
@@ -283,7 +357,7 @@ def find(
                 latest_first=True,
             ),
             examples_kwargs=dict(
-                return_type="match" if return_metadata.lower() == "none" else "item",
+                return_type="field" if return_metadata.lower() == "none" else "item",
                 latest_first=True,
             ),
             minimize=False,
@@ -299,15 +373,17 @@ def find(
         elif return_metadata.lower() == "none":
             results = results.remove_metadata()
         elif return_metadata.lower() != "full":
-            raise ValueError(f"Invalid return_metadata: '{return_metadata}'")
+            raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
 
         dumps = results.dump()
-        context = "==== Result 1 ====\n\n"
-        context += dumps[0]
+        context = ["==== Result 1 ====\n\n"]
+        context += [dumps[0]]
         for i, dump in enumerate(dumps[1:], start=2):
-            context += "\n\n==== Result " + str(i) + " ====\n\n"
-            context += dump
-        if not context:
+            context += ["\n\n==== Result " + str(i) + " ====\n\n"]
+            context += [dump]
+        if context:
+            context = "".join(context)
+        else:
             context = "No results found"
         if max_tokens is not None:
             tokens = tokenize(context)
@@ -318,7 +394,14 @@ def find(
         return context
 
 
-def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) -> str:
+@register_tool
+def get_attrs(
+    refname: str,
+    own_only: bool = False,
+    incl_private: bool = False,
+    incl_types: bool = False,
+    incl_refnames: bool = False,
+) -> str:
     """Get a list of attributes of an object (similar to `dir()`) with their types and reference names.
 
     Can be used to discover the API of VectorBT PRO (vectorbtpro, VBT). For example, use it to
@@ -329,7 +412,7 @@ def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) 
     is shown only when the attribute is not defined directly on the object.
 
     Args:
-        refname (str): Reference to the object.
+        refname (str): Reference name of the object.
 
             A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
             or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
@@ -338,6 +421,9 @@ def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) 
         own_only (bool): If True, include only attributes that are defined directly on the object
             (i.e., attributes defined elsewhere, such as inherited attributes, will be excluded).
         incl_private (bool): If True, include private attributes (those starting with an underscore).
+        incl_types (bool): If True, include attribute types in the output (e.g., `classmethod`).
+        incl_refnames (bool): If True, include attribute reference names in the output
+            (e.g., `vectorbtpro.utils.base.Base.chat`).
 
     Returns:
         str: String containing the list of attributes, each on a new line.
@@ -348,22 +434,23 @@ def get_attrs(refname: str, own_only: bool = False, incl_private: bool = False) 
     refname = auto_cast(refname)
     resolved_refname = resolve_refname(refname)
     if not resolved_refname:
-        raise ValueError(f"Reference name '{refname}' cannot be resolved to an object")
+        raise ValueError(f"Reference name {refname!r} cannot be resolved to an object")
     obj = get_refname_obj(resolved_refname)
     df = get_attrs(obj=obj, own_only=own_only, incl_private=incl_private)
 
     display_lines = []
     for attr_name, attr_type, attr_refname in df.itertuples():
         line = attr_name
-        if attr_type != "?":
+        if incl_types and attr_type != "?":
             line += f" [{attr_type}]"
-        if attr_refname != "?" and attr_refname != resolved_refname + "." + attr_name:
+        if incl_refnames and attr_refname != "?" and attr_refname != resolved_refname + "." + attr_name:
             line += f" @ {attr_refname}"
         display_lines.append(line)
     return "\n".join(display_lines)
 
 
-def get_source(refname: tp.Union[str, tp.List[str]]) -> str:
+@register_tool
+def get_source(refname: str) -> str:
     """Get the source code of any object.
 
     This can be used to inspect the implementation of VectorBT PRO (vectorbtpro, VBT) objects,
@@ -372,7 +459,7 @@ def get_source(refname: tp.Union[str, tp.List[str]]) -> str:
     may not have a traditional source code representation.
 
     Args:
-        refname (Union[str, List[str]]): One or more references to the object(s).
+        refname (str): Reference name of the object.
 
             A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
             or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
@@ -387,22 +474,18 @@ def get_source(refname: tp.Union[str, tp.List[str]]) -> str:
     from vectorbtpro.utils.module_ import resolve_refname
 
     refname = auto_cast(refname)
-    if isinstance(refname, str):
-        refname = [refname]
+    resolved_name = resolve_refname(refname)
+    if not resolved_name:
+        raise ValueError(f"Reference name {refname!r} cannot be resolved to an object")
 
-    sources = []
-    for name in refname:
-        resolved_name = resolve_refname(name)
-        if not resolved_name:
-            raise ValueError(f"Reference name '{name}' cannot be resolved to an object")
-        sources.append(get_source(resolved_name))
-    return "\n\n".join(sources)
+    return get_source(resolved_name)
 
 
 current_kernel = None
 """Currently running Jupyter kernel for executing code snippets."""
 
 
+@register_tool
 def run_code(code: str, restart: bool = False, exec_timeout: tp.Optional[float] = None) -> str:
     """Run a code snippet.
 
@@ -456,7 +539,7 @@ def run_code(code: str, restart: bool = False, exec_timeout: tp.Optional[float] 
         current_kernel.start()
     if restart:
         current_kernel.restart()
-    return current_kernel.execute(code, exec_timeout=exec_timeout)
+    return current_kernel.execute(code, exec_timeout=exec_timeout, raise_on_error=True)
 
 
 def main() -> None:
@@ -476,11 +559,8 @@ def main() -> None:
     args = parser.parse_args()
 
     mcp = FastMCP("VectorBT PRO")
-    mcp.tool()(search)
-    mcp.tool()(find)
-    mcp.tool()(get_attrs)
-    mcp.tool()(get_source)
-    mcp.tool()(run_code)
+    for name, tool in tool_registry.items():
+        mcp.tool(name=name)(tool)
     mcp.run(transport=args.transport)
 
 

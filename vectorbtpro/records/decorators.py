@@ -125,14 +125,14 @@ def attach_fields(*args, on_conflict: str = "raise") -> tp.FlexClassWrapper:
                 # Consider only attributes that are not listed in the field config
                 if hasattr(cls, attr_name):
                     if _on_conflict.lower() == "raise":
-                        raise ValueError(f"An attribute with the name '{attr_name}' already exists in {cls}")
+                        raise ValueError(f"An attribute with the name {attr_name!r} already exists in {cls}")
                     if _on_conflict.lower() == "ignore":
                         return
                     if _on_conflict.lower() == "override":
                         return
-                    raise ValueError(f"Value '{_on_conflict}' is invalid for on_conflict")
+                    raise ValueError(f"Value {_on_conflict!r} is invalid for on_conflict")
                 if keyword.iskeyword(attr_name):
-                    raise ValueError(f"Name '{attr_name}' is a keyword and cannot be used as an attribute name")
+                    raise ValueError(f"Name {attr_name!r} is a keyword and cannot be used as an attribute name")
 
         if dtype is not None:
             for field_name in dtype.names:
@@ -177,7 +177,7 @@ def attach_fields(*args, on_conflict: str = "raise") -> tp.FlexClassWrapper:
                     else:
                         mapping = attach_filters
                     if mapping is None:
-                        raise ValueError(f"Field '{field_name}': Mapping is required to attach filters")
+                        raise ValueError(f"Field {field_name!r}: Mapping is required to attach filters")
                     mapping = to_value_mapping(mapping)
 
                     for filter_value, target_filter_name in mapping.items():
@@ -257,7 +257,7 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
 
         for target_name, settings in config.items():
             if target_name.startswith("get_"):
-                raise ValueError(f"Property names cannot have prefix 'get_' ('{target_name}')")
+                raise ValueError(f"Property names cannot have prefix 'get_' (found {target_name!r})")
             method_name = settings.get("method_name", "get_" + target_name)
             obj_type = settings.get("obj_type", "records")
             group_by_aware = settings.get("group_by_aware", True)

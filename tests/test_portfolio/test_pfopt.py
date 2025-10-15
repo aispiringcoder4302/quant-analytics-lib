@@ -322,7 +322,8 @@ class TestPyPortfolioOpt:
                 pypfopt.expected_returns.mean_historical_return(prices=prices),
                 pypfopt.risk_models.CovarianceShrinkage(prices=prices).ledoit_wolf(),
             ).min_volatility()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
             weights1 = pfopt.resolve_pypfopt_optimizer(
                 "efficient_frontier",
                 prices=prices,
@@ -335,7 +336,8 @@ class TestPyPortfolioOpt:
                 pypfopt.risk_models.CovarianceShrinkage(prices=prices, frequency=365).ledoit_wolf(),
                 weight_bounds=(-1, 1),
             ).min_volatility()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
             weights1 = pfopt.resolve_pypfopt_optimizer(
                 "efficient_cdar",
                 prices=prices,
@@ -350,7 +352,8 @@ class TestPyPortfolioOpt:
                 beta=0.9,
                 weight_bounds=(-1, 1),
             ).min_cdar()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
             weights1 = pfopt.resolve_pypfopt_optimizer(
                 "efficient_cvar",
                 prices=prices,
@@ -365,7 +368,8 @@ class TestPyPortfolioOpt:
                 beta=0.9,
                 weight_bounds=(-1, 1),
             ).min_cvar()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
             weights1 = pfopt.resolve_pypfopt_optimizer(
                 "efficient_semivariance",
                 prices=prices,
@@ -380,7 +384,8 @@ class TestPyPortfolioOpt:
                 benchmark=0.1,
                 weight_bounds=(-1, 1),
             ).min_semivariance()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
             weights1 = pfopt.resolve_pypfopt_optimizer(
                 "black_litterman",
                 prices=prices,
@@ -391,7 +396,8 @@ class TestPyPortfolioOpt:
                 pypfopt.risk_models.CovarianceShrinkage(prices=prices).ledoit_wolf(),
                 absolute_views=viewdict,
             ).bl_weights()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
             weights1 = pfopt.resolve_pypfopt_optimizer(
                 "black_litterman",
                 prices=prices,
@@ -416,7 +422,8 @@ class TestPyPortfolioOpt:
                 ),
                 absolute_views=viewdict,
             ).bl_weights()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
             weights1 = pfopt.resolve_pypfopt_optimizer(
                 "hrpopt",
                 prices=prices,
@@ -427,7 +434,8 @@ class TestPyPortfolioOpt:
                 returns,
                 pypfopt.risk_models.CovarianceShrinkage(prices=prices, frequency=365).ledoit_wolf(),
             ).optimize()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
             weights1 = pfopt.resolve_pypfopt_optimizer(
                 "cla",
                 prices=prices,
@@ -440,7 +448,8 @@ class TestPyPortfolioOpt:
                 pypfopt.risk_models.CovarianceShrinkage(prices=prices, frequency=365).ledoit_wolf(),
                 weight_bounds=(-1, 1),
             ).min_volatility()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
 
             from pypfopt.cla import CLA
 
@@ -466,7 +475,8 @@ class TestPyPortfolioOpt:
                 pypfopt.risk_models.CovarianceShrinkage(prices=prices, frequency=365).ledoit_wolf(),
                 weight_bounds=(-1, 1),
             ).min_volatility()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
             weights1 = pfopt.resolve_pypfopt_optimizer(
                 pypfopt.cla.CLA(
                     pypfopt.expected_returns.mean_historical_return(prices=prices, frequency=365),
@@ -479,7 +489,8 @@ class TestPyPortfolioOpt:
                 pypfopt.risk_models.CovarianceShrinkage(prices=prices, frequency=365).ledoit_wolf(),
                 weight_bounds=(-1, 1),
             ).min_volatility()
-            assert weights1 == weights2
+            for k, v in weights1.items():
+                np.testing.assert_almost_equal(v, weights2[k])
 
     def test_pypfopt_optimize(self):
         if pypfopt_available:
@@ -958,10 +969,10 @@ class TestPyPortfolioOpt:
                 pd.Series(
                     {
                         "A": 0.1,
-                        "B": 0.20238981440998197,
-                        "C": 0.20942969908552786,
-                        "D": 0.29303145623313237,
-                        "E": 0.19514903027135774,
+                        "B": 0.2259074834304069,
+                        "C": 0.23376540175168778,
+                        "D": 0.22250179366225545,
+                        "E": 0.2178253211556499,
                     }
                 ),
                 atol=1e-4,

@@ -235,7 +235,13 @@ class Gauge(TraceType, TraceUpdater):
             fig = make_figure(**resolve_dict(make_figure_kwargs))
             if "width" in layout_cfg:
                 # Calculate nice width and height
-                fig.update_layout(width=layout_cfg["width"] * 0.7, height=layout_cfg["width"] * 0.5, margin=dict(t=80))
+                width = layout_cfg.get("width", None)
+                if width is not None:
+                    width *= 0.7
+                height = layout_cfg.get("height", None)
+                if height is not None:
+                    height *= 0.5
+                fig.update_layout(width=width, height=height, margin=dict(t=80))
         fig.update_layout(**layout_kwargs)
 
         _trace_kwargs = merge_dicts(
@@ -1178,9 +1184,9 @@ class Heatmap(TraceType, TraceUpdater):
 
         if fig is None:
             fig = make_figure(**resolve_dict(make_figure_kwargs))
-            if "width" in layout_cfg:
+            max_width = layout_cfg.get("width", None)
+            if max_width is not None:
                 # Calculate nice width and height
-                max_width = layout_cfg["width"]
                 if data is not None:
                     x_len = data.shape[1]
                     y_len = data.shape[0]
@@ -1362,7 +1368,9 @@ class Volume(TraceType, TraceUpdater):
             fig = make_figure(**resolve_dict(make_figure_kwargs))
             if "width" in layout_cfg:
                 # Calculate nice width and height
-                fig.update_layout(width=layout_cfg["width"], height=0.7 * layout_cfg["width"])
+                width = layout_cfg.get("width", None)
+                if width is not None:
+                    fig.update_layout(width=width, height=0.7 * width)
 
         # Non-numeric data types are not supported by go.Volume, so use ticktext
         # Note: Currently plotly displays the entire tick array, in future versions it will be more sensible

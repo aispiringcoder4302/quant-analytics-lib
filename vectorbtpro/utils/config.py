@@ -112,6 +112,41 @@ def convert_to_dict(dct: tp.DictLike, nested: bool = True) -> dict:
     return dct
 
 
+def has(obj: tp.Any, attr: str) -> bool:
+    """Check if an attribute or dictionary item exists in an object.
+
+    Args:
+        obj (Any): Object to check the attribute in.
+        attr (str): Attribute name to check.
+
+    Returns:
+        bool: True if the attribute exists, False otherwise.
+    """
+    if hasattr(obj, attr):
+        return True
+    if isinstance(obj, dict):
+        return attr in obj
+    return False
+
+
+def get(obj: tp.Any, attr: str, default: tp.Optional[tp.Any] = None) -> tp.Any:
+    """Retrieve an attribute or dictionary item from an object.
+    
+    Args:
+        obj (Any): Object to retrieve the attribute from.
+        attr (str): Attribute name to retrieve.
+        default (Optional[Any]): Default value to return if the attribute is not found.
+
+    Returns:
+        Any: Value of the attribute or the default value.
+    """
+    if hasattr(obj, attr):
+        return getattr(obj, attr)
+    if isinstance(obj, dict):
+        return obj.get(attr, default)
+    return default
+
+
 def get_dict_item(dct: dict, k: tp.PathLikeKey, populate: bool = False) -> tp.Any:
     """Retrieve an item from a dictionary using a nested key.
 
@@ -194,7 +229,7 @@ def copy_dict(dct: tp.DictLike, copy_mode: str = "shallow", nested: bool = True)
         return {}
     copy_mode = copy_mode.lower()
     if copy_mode not in {"none", "shallow", "hybrid", "deep"}:
-        raise ValueError(f"Copy mode '{copy_mode}' is not supported")
+        raise ValueError(f"Copy mode {copy_mode!r} is not supported")
 
     if copy_mode == "none":
         return dct
@@ -706,7 +741,7 @@ class Config(pdict):
             for k, v in dct.items():
                 if k in self_dir and (k not in override_keys or (k.startswith("__") and k.endswith("__"))):
                     raise ValueError(
-                        f"Key '{k}' shadows an attribute of the config. "
+                        f"Key {k!r} shadows an attribute of the config. "
                         f"Disable option 'as_attrs' or put the key to 'override_keys'."
                     )
 
@@ -781,7 +816,7 @@ class Config(pdict):
             raise TypeError("Config is read-only")
         if not force and self.get_option("frozen_keys"):
             if k not in self:
-                raise KeyError(f"Config keys are frozen: key '{k}' not found")
+                raise KeyError(f"Config keys are frozen: key {k!r} not found")
         dict.__setitem__(self, k, v)
 
     def __delitem__(self, k: str, force: bool = False) -> None:
@@ -1403,11 +1438,11 @@ class HasSettings(Base):
                 sub_path_settings = cls.get_path_settings(sub_path)
             except SettingsNotFoundError:
                 if sub_path_only:
-                    raise SettingsNotFoundError(f"Found no settings under the path '{sub_path}'")
+                    raise SettingsNotFoundError(f"Found no settings under the path {sub_path!r}")
         try:
             path_settings = get_dict_item(settings, path)
         except KeyError:
-            raise SettingsNotFoundError(f"Found no settings under the path '{path}'")
+            raise SettingsNotFoundError(f"Found no settings under the path {path!r}")
         if sub_path_settings is not None:
             return merge_dicts(path_settings, sub_path_settings)
         return path_settings
@@ -1527,7 +1562,7 @@ class HasSettings(Base):
         )
         if len(paths) == 0:
             if path_id is not None:
-                raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
+                raise SettingsNotFoundError(f"Found no settings associated with the path id {path_id!r}")
             else:
                 raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         setting_dicts = []
@@ -1539,7 +1574,7 @@ class HasSettings(Base):
                 pass
         if len(setting_dicts) == 0:
             if path_id is not None:
-                raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
+                raise SettingsNotFoundError(f"Found no settings associated with the path id {path_id!r}")
             else:
                 raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         if len(setting_dicts) == 1:
@@ -1638,24 +1673,24 @@ class HasSettings(Base):
                     return get_dict_item(sub_path_settings, key)
                 except KeyError:
                     if sub_path_only:
-                        raise SettingNotFoundError(f"Found no key '{key}' in the settings under the path '{sub_path}'")
+                        raise SettingNotFoundError(f"Found no key {key!r} in the settings under the path {sub_path!r}")
             except SettingsNotFoundError:
                 if sub_path_only:
-                    raise SettingsNotFoundError(f"Found no settings under the path '{sub_path}'")
+                    raise SettingsNotFoundError(f"Found no settings under the path {sub_path!r}")
         try:
             path_settings = get_dict_item(settings, path)
         except KeyError:
-            raise SettingsNotFoundError(f"Found no settings under the path '{path}'")
+            raise SettingsNotFoundError(f"Found no settings under the path {path!r}")
         try:
             return get_dict_item(path_settings, key)
         except KeyError:
             if default is MISSING:
                 if sub_path is not None:
                     raise SettingNotFoundError(
-                        f"Found no key '{key}' in the settings under the paths '{path}' and '{sub_path}'"
+                        f"Found no key {key!r} in the settings under the paths {path!r} and {sub_path!r}"
                     )
                 else:
-                    raise SettingNotFoundError(f"Found no key '{key}' in the settings under the path '{path}'")
+                    raise SettingNotFoundError(f"Found no key {key!r} in the settings under the path {path!r}")
         return default
 
     @classmethod
@@ -1693,7 +1728,7 @@ class HasSettings(Base):
         )
         if len(paths) == 0:
             if path_id is not None:
-                raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
+                raise SettingsNotFoundError(f"Found no settings associated with the path id {path_id!r}")
             else:
                 raise SettingsNotFoundError(f"Found no settings associated with the class {cls.__name__}")
         merged_setting = None
@@ -1716,22 +1751,22 @@ class HasSettings(Base):
             if path_id is not None:
                 if sub_path is not None:
                     raise SettingNotFoundError(
-                        f"Found no key '{key}' under the settings associated with the path id '{path_id}' "
-                        f"and sub-path '{sub_path}'"
+                        f"Found no key {key!r} under the settings associated with the path id {path_id!r} "
+                        f"and sub-path {sub_path!r}"
                     )
                 else:
                     raise SettingNotFoundError(
-                        f"Found no key '{key}' under the settings associated with the path id '{path_id}'"
+                        f"Found no key {key!r} under the settings associated with the path id {path_id!r}"
                     )
             else:
                 if sub_path is not None:
                     raise SettingNotFoundError(
-                        f"Found no key '{key}' under the settings associated with the class {cls.__name__} "
-                        f"and sub-path '{sub_path}'"
+                        f"Found no key {key!r} under the settings associated with the class {cls.__name__} "
+                        f"and sub-path {sub_path!r}"
                     )
                 else:
                     raise SettingNotFoundError(
-                        f"Found no key '{key}' under the settings associated with the class {cls.__name__}"
+                        f"Found no key {key!r} under the settings associated with the class {cls.__name__}"
                     )
         return default
 
@@ -1858,6 +1893,7 @@ class HasSettings(Base):
     @classmethod
     def set_settings(
         cls,
+        *args,
         path_id: tp.Optional[tp.Hashable] = None,
         sub_path: tp.Optional[tp.PathLikeKey] = None,
         populate_: bool = False,
@@ -1866,6 +1902,7 @@ class HasSettings(Base):
         """Update the settings in `vectorbtpro._settings` associated with this class.
 
         Args:
+            *args: Positional arguments to update the settings.
             path_id (Optional[Hashable]): Identifier for the settings path.
             sub_path (Optional[PathLikeKey]): Sub-path to extend the settings path.
 
@@ -1880,11 +1917,12 @@ class HasSettings(Base):
         """
         from vectorbtpro._settings import settings
 
+        kwargs = dict(*args, **kwargs)
         if isinstance(cls._settings_path, dict):
             if path_id is None:
                 raise ValueError("Must specify path id")
             if path_id not in cls._settings_path:
-                raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
+                raise SettingsNotFoundError(f"Found no settings associated with the path id {path_id!r}")
             path = cls._settings_path[path_id]
         elif isinstance(cls._settings_path, list):
             path = cls._settings_path[-1]
@@ -1896,13 +1934,14 @@ class HasSettings(Base):
             from vectorbtpro.utils.search_ import combine_pathlike_keys
 
             path = combine_pathlike_keys(path, sub_path)
+
         cls_cfg = get_dict_item(settings, path, populate=populate_)
         for k, v in kwargs.items():
             if populate_:
                 cls_cfg[k] = v
             else:
                 if k not in cls_cfg:
-                    raise SettingNotFoundError(f"Found no key '{k}' in the settings under the path '{path}'")
+                    raise SettingNotFoundError(f"Found no key {k!r} in the settings under the path {path!r}")
                 if isinstance(cls_cfg[k], dict) and isinstance(v, dict):
                     cls_cfg[k] = merge_dicts(cls_cfg[k], v)
                 else:
@@ -1931,7 +1970,7 @@ class HasSettings(Base):
             if path_id is None:
                 raise ValueError("Must specify path id")
             if path_id not in cls._settings_path:
-                raise SettingsNotFoundError(f"Found no settings associated with the path id '{path_id}'")
+                raise SettingsNotFoundError(f"Found no settings associated with the path id {path_id!r}")
             path = cls._settings_path[path_id]
         elif isinstance(cls._settings_path, list):
             path = cls._settings_path[-1]
@@ -1944,7 +1983,7 @@ class HasSettings(Base):
 
             path = combine_pathlike_keys(path, sub_path)
         if not cls.has_path_settings(path):
-            raise SettingsNotFoundError(f"Found no settings under the path '{path}'")
+            raise SettingsNotFoundError(f"Found no settings under the path {path!r}")
         cls_cfg = get_dict_item(settings, path)
         cls_cfg.reset(force=True)
 
@@ -2003,7 +2042,7 @@ class MetaConfigured(type):
             elif _expected_keys_mode.lower() == "disable":
                 setattr(cls, "_expected_keys", None)
             elif not _expected_keys_mode.lower() == "custom":
-                raise ValueError(f"Invalid expected keys mode: '{_expected_keys_mode}'")
+                raise ValueError(f"Invalid _expected_keys_mode: {_expected_keys_mode!r}")
 
 
 class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Chainable, metaclass=MetaConfigured):
@@ -2092,6 +2131,23 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
             if issubclass(cls, Configured) and cls._writeable_attrs is not None:
                 writeable_attrs |= cls._writeable_attrs
         return writeable_attrs
+    
+    @classmethod
+    def get_init_arg_names(cls) -> tp.Set[str]:
+        """Return the initialization argument names for this class and its base configuration classes.
+
+        Returns:
+            Set[str]: Set of initialization argument names.
+        """
+        if isinstance(cls, type):
+            cls = cls
+        else:
+            cls = type(cls)
+        arg_names = set()
+        for cls in inspect.getmro(cls):
+            if issubclass(cls, Configured):
+                arg_names |= set(get_func_arg_names(cls.__init__))
+        return arg_names
 
     @classmethod
     def resolve_merge_kwargs(
@@ -2145,7 +2201,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
                         except KeyError:
                             same_k = False
                         if not same_k:
-                            raise ValueError(f"Objects to be merged must have compatible '{k}'. Pass to override.")
+                            raise ValueError(f"Objects to be merged must have compatible {k!r}. Pass to override.")
                         else:
                             v = config[k]
                     elif _on_merge_conflict.lower() == "first":
@@ -2156,7 +2212,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
                         if k in config:
                             v = config[k]
                     else:
-                        raise ValueError(f"Invalid on_merge_conflict: '{_on_merge_conflict}'")
+                        raise ValueError(f"Invalid on_merge_conflict: {_on_merge_conflict!r}")
                 kwargs[k] = v
         return kwargs
 

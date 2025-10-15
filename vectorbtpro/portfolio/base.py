@@ -796,7 +796,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         for obj in objs:
             if obj is None or isinstance(obj, bool) or (checks.is_np_array(obj) and obj.size == 0):
                 if not checks.is_deep_equal(obj, objs[0]):
-                    raise ValueError(f"Cannot unify scalar in-place outputs with the name '{obj_name}'")
+                    raise ValueError(f"Cannot unify scalar in-place outputs with the name {obj_name!r}")
             else:
                 all_none = False
                 break
@@ -824,7 +824,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         elif grouping == "cash_sharing":
             obj_group_by = None if cash_sharing else False
         else:
-            raise ValueError(f"Grouping '{grouping}' is not supported")
+            raise ValueError(f"Grouping {grouping!r} is not supported")
 
         if obj_type is None and checks.is_np_array(objs[0]):
             n_cols = wrapper.get_shape_2d(group_by=obj_group_by)[1]
@@ -838,7 +838,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             for i, obj in enumerate(objs):
                 wrapped_objs.append(wrappers[i].wrap(obj, group_by=obj_group_by))
             return wrapper.row_stack_arrs(*wrapped_objs, group_by=obj_group_by, wrap=False)
-        raise ValueError(f"Cannot figure out how to stack in-place outputs with the name '{obj_name}' along rows")
+        raise ValueError(f"Cannot figure out how to stack in-place outputs with the name {obj_name!r} along rows")
 
     @classmethod
     def row_stack_in_outputs(
@@ -1230,7 +1230,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         for obj in objs:
             if obj is None or isinstance(obj, bool) or (checks.is_np_array(obj) and obj.size == 0):
                 if not checks.is_deep_equal(obj, objs[0]):
-                    raise ValueError(f"Cannot unify scalar in-place outputs with the name '{obj_name}'")
+                    raise ValueError(f"Cannot unify scalar in-place outputs with the name {obj_name!r}")
             else:
                 all_none = False
                 break
@@ -1258,7 +1258,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         elif grouping == "cash_sharing":
             obj_group_by = None if cash_sharing else False
         else:
-            raise ValueError(f"Grouping '{grouping}' is not supported")
+            raise ValueError(f"Grouping {grouping!r} is not supported")
 
         if obj_type is None and checks.is_np_array(obj):
             if to_2d_shape(objs[0].shape) == wrappers[0].get_shape_2d(group_by=obj_group_by):
@@ -1287,7 +1287,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             for i, obj in enumerate(objs):
                 wrapped_objs.append(wrappers[i].wrap(obj, group_by=obj_group_by))
             return wrapper.column_stack_arrs(*wrapped_objs, group_by=obj_group_by, wrap=False)
-        raise ValueError(f"Cannot figure out how to stack in-place outputs with the name '{obj_name}' along columns")
+        raise ValueError(f"Cannot figure out how to stack in-place outputs with the name {obj_name!r} along columns")
 
     @classmethod
     def column_stack_in_outputs(
@@ -1919,9 +1919,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 if obj.shape == (wrapper.shape_2d[1],):
                     return _wrap_reduced(obj)
         if force_wrapping:
-            raise NotImplementedError(f"Cannot wrap object '{obj_name}'")
+            raise NotImplementedError(f"Cannot wrap object {obj_name!r}")
         if not silence_warnings:
-            warn(f"Cannot figure out how to wrap object '{obj_name}'")
+            warn(f"Cannot figure out how to wrap object {obj_name!r}")
         return obj
 
     def get_in_output(
@@ -1997,11 +1997,11 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 )
             ):
                 if found_field is not None:
-                    raise ValueError(f"Multiple fields for '{field}' found in in_outputs")
+                    raise ValueError(f"Multiple fields for {field!r} found in in_outputs")
                 found_field = _field
                 found_field_options = _field_options
         if found_field is None:
-            raise AttributeError(f"No compatible field for '{field}' found in in_outputs")
+            raise AttributeError(f"No compatible field for {field!r} found in in_outputs")
         obj = getattr(self.in_outputs, found_field)
         if found_attr and checks.is_np_array(obj) and obj.shape == (0, 0):  # for returns
             return None
@@ -2183,9 +2183,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             if obj.shape == (wrapper.shape_2d[1],):
                 return _index_1d_by_col(obj)
         if force_indexing:
-            raise NotImplementedError(f"Cannot index object '{obj_name}'")
+            raise NotImplementedError(f"Cannot index object {obj_name!r}")
         if not silence_warnings:
-            warn(f"Cannot figure out how to index object '{obj_name}'")
+            warn(f"Cannot figure out how to index object {obj_name!r}")
         return obj
 
     def in_outputs_indexing_func(self, wrapper_meta: dict, **kwargs) -> tp.Optional[tp.NamedTuple]:
@@ -2496,9 +2496,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 if obj.shape == (wrapper.shape_2d[1],):
                     return obj
         if force_resampling:
-            raise NotImplementedError(f"Cannot resample object '{obj_name}'")
+            raise NotImplementedError(f"Cannot resample object {obj_name!r}")
         if not silence_warnings:
-            warn(f"Cannot figure out how to resample object '{obj_name}'")
+            warn(f"Cannot figure out how to resample object {obj_name!r}")
         return obj
 
     def resample_in_outputs(
@@ -2956,7 +2956,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             follows the specified `call_seq`. This means the last asset in the sequence is processed only after
             the others, which can affect rebalancing. Use `CallSeqType.Auto` for dynamic execution order.
 
-        !!! hint
+        !!! tip
             All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
             to preserve their original shapes for flexible indexing and memory efficiency.
             Each can be provided per frame, series, row, column, or individual element.
@@ -3208,6 +3208,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         limit_tif: tp.Optional[tp.ArrayLike] = None,
         limit_expiry: tp.Optional[tp.ArrayLike] = None,
         limit_reverse: tp.Optional[tp.ArrayLike] = None,
+        limit_delay: tp.Optional[tp.ArrayLike] = None,
         limit_order_price: tp.Optional[tp.ArrayLike] = None,
         upon_adj_limit_conflict: tp.Optional[tp.ArrayLike] = None,
         upon_opp_limit_conflict: tp.Optional[tp.ArrayLike] = None,
@@ -3499,6 +3500,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
 
                 Broadcasts. If True, a buy/sell limit is compared against high/low (instead of low/high)
                 and the limit delta is inverted.
+            limit_delay (Optional[ArrayLike]): Flag to prevent limit orders from being placed immediately.
             limit_order_price (Optional[ArrayLike]): Price for limit orders.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.LimitOrderPrice`. Positive values are
@@ -3739,7 +3741,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             follows the specified `call_seq`. This means the last asset in the sequence is processed only after
             the others, which can affect rebalancing. Use `CallSeqType.Auto` for dynamic execution order.
 
-        !!! hint
+        !!! tip
             All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
             to preserve their original shapes for flexible indexing and memory efficiency.
             Each can be provided per frame, series, row, column, or individual element.
@@ -4602,7 +4604,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                 **kwargs,
             )
         else:
-            raise ValueError(f"Invalid pf_method: '{pf_method}'")
+            raise ValueError(f"Invalid pf_method: {pf_method!r}")
 
     @classmethod
     def from_order_func(
@@ -4673,7 +4675,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
     ) -> PortfolioResultT:
         """Build a portfolio using a custom order function.
 
-        !!! hint
+        !!! tip
             See `vectorbtpro.portfolio.nb.from_order_func.from_order_func_nb` for illustrations.
 
         Prepared using `vectorbtpro.portfolio.preparing.FOFPreparer`.
@@ -4904,7 +4906,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             defaults (typically NaN for floating arrays and preset flags for integer arrays).
             Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
 
-        !!! hint
+        !!! tip
             All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
             to preserve their original shapes for flexible indexing and memory efficiency.
             Each can be provided per frame, series, row, column, or individual element.
@@ -5494,7 +5496,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             defaults (typically NaN for floating arrays and preset flags for integer arrays).
             Use `vectorbtpro.base.reshaping.BCO` with `fill_value` to override.
 
-        !!! hint
+        !!! tip
             All broadcastable arguments are handled using `vectorbtpro.base.reshaping.broadcast`
             to preserve their original shapes for flexible indexing and memory efficiency.
             Each can be provided per frame, series, row, column, or individual element.
@@ -11534,7 +11536,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
                     )
                 )
             else:
-                raise ValueError(f"Invalid plot_positions: '{plot_positions}'")
+                raise ValueError(f"Invalid plot_positions: {plot_positions!r}")
             fig = positions.direction_long.plot_shapes(
                 column=column,
                 plot_ohlc=False,

@@ -301,19 +301,19 @@ class ArraySizer(ShapeSizer):
 class ChunkMeta(DefineMixin):
     """Class representing metadata for a chunk."""
 
-    uuid: str = define.field()
+    uuid: str = define.field(factory=lambda: str(uuid.uuid4()))
     """Unique identifier for the chunk, used for caching."""
 
-    idx: int = define.field()
+    idx: tp.Optional[int] = define.field(default=None)
     """Index of the chunk."""
 
-    start: tp.Optional[int] = define.field()
+    start: tp.Optional[int] = define.field(default=None)
     """Starting index of the chunk range (inclusive); may be None."""
 
-    end: tp.Optional[int] = define.field()
+    end: tp.Optional[int] = define.field(default=None)
     """Ending index of the chunk range (exclusive); may be None."""
 
-    indices: tp.Optional[tp.Sequence[int]] = define.field()
+    indices: tp.Optional[tp.Sequence[int]] = define.field(default=None)
     """Sequence of indices included in the chunk; takes precedence over `start` and `end` 
     if provided, and may be None."""
 
@@ -398,7 +398,7 @@ def iter_chunk_meta(
                 if n_chunks.lower() == "auto":
                     n_chunks = multiprocessing.cpu_count()
                 else:
-                    raise ValueError(f"Invalid n_chunks: '{n_chunks}'")
+                    raise ValueError(f"Invalid n_chunks: {n_chunks!r}")
             if n_chunks == 0:
                 raise ValueError("Chunk count cannot be zero")
             if size is not None:
@@ -423,7 +423,7 @@ def iter_chunk_meta(
                 if chunk_len.lower() == "auto":
                     chunk_len = multiprocessing.cpu_count()
                 else:
-                    raise ValueError(f"Invalid chunk_len: '{chunk_len}'")
+                    raise ValueError(f"Invalid chunk_len: {chunk_len!r}")
             if chunk_len == 0:
                 raise ValueError("Chunk length cannot be zero")
             for chunk_i, i in enumerate(range(0, size, chunk_len)):
@@ -643,6 +643,8 @@ class ChunkSelector(ChunkTaker, DimRetainer, DefineMixin):
         return None
 
     def take(self, obj: tp.Sequence, chunk_meta: ChunkMeta, **kwargs) -> tp.Any:
+        if chunk_meta.idx is None:
+            raise ValueError("ChunkMeta.idx is required for selection")
         if self.keep_dims:
             return obj[chunk_meta.idx : chunk_meta.idx + 1]
         return obj[chunk_meta.idx]
@@ -686,6 +688,8 @@ class ShapeSelector(ChunkSelector, AxisSpecifier, DefineMixin):
         return ShapeSizer.get_obj_size(obj, self.axis, single_type=self.single_type)
 
     def take(self, obj: tp.ShapeLike, chunk_meta: ChunkMeta, **kwargs) -> tp.Shape:
+        if chunk_meta.idx is None:
+            raise ValueError("ChunkMeta.idx is required for selection")
         if checks.is_int(obj):
             obj = (obj,)
         checks.assert_instance_of(obj, tuple)
@@ -752,6 +756,8 @@ class ArraySelector(ShapeSelector):
         from vectorbtpro.base.wrapping import Wrapping
         from vectorbtpro.base.indexing import PandasIndexer
 
+        if chunk_meta.idx is None:
+            raise ValueError("ChunkMeta.idx is required for selection")
         if isinstance(obj, Wrapping):
             shape = obj.wrapper.shape
         else:
@@ -1002,7 +1008,7 @@ class MappingTaker(ContainerTaker):
                                 size = new_size
                             elif size != new_size:
                                 warn(
-                                    f"Arguments with keys '{size_k}' and '{k}' have conflicting sizes "
+                                    f"Arguments with keys {size_k!r} and {k!r} have conflicting sizes "
                                     f"{size} and {new_size}. Setting size to None."
                                 )
                                 return None
@@ -1029,7 +1035,7 @@ class MappingTaker(ContainerTaker):
             else:
                 if not silence_warnings:
                     warn(
-                        f"Argument with key '{k}' not found in MappingTaker.cont_take_spec. "
+                        f"Argument with key {k!r} not found in MappingTaker.cont_take_spec. "
                         "Setting its specification to None."
                     )
                 take_spec = None
@@ -1779,7 +1785,7 @@ class Chunker(Configured):
             if take_spec is MISSING:
                 take_spec = None
                 if not silence_warnings:
-                    warn(f"Argument '{k}' not found in arg_take_spec. Setting its specification to None.")
+                    warn(f"Argument {k!r} not found in arg_take_spec. Setting its specification to None.")
             result = cls.take_from_arg(
                 v["value"],
                 take_spec,
@@ -1929,7 +1935,7 @@ class Chunker(Configured):
                             annotation = annotation.replace(arg_query=k)
                     if k in arg_take_spec:
                         raise ValueError(
-                            f"Two specifications found in annotations for the key '{k}': "
+                            f"Two specifications found in annotations for the key {k!r}: "
                             f"{arg_take_spec[k]} and {annotation}"
                         )
                     arg_take_spec[k] = annotation
@@ -1969,7 +1975,7 @@ class Chunker(Configured):
                             raise ValueError(
                                 "Two specifications found in annotations: "
                                 f"{arg_take_spec[var_args_map[k]]} ('*{var_args_map[k]}') and "
-                                f"{flat_arg_take_spec[k]} ('{k}')"
+                                f"{flat_arg_take_spec[k]} ({k!r})"
                             )
                         if var_args_name is None:
                             var_args_name = var_args_map[k]
@@ -1988,7 +1994,7 @@ class Chunker(Configured):
                             raise ValueError(
                                 "Two specifications found in annotations: "
                                 f"{arg_take_spec[var_kwargs_map[k]]} ('**{var_kwargs_map[k]}') and "
-                                f"{flat_arg_take_spec[k]} ('{k}')"
+                                f"{flat_arg_take_spec[k]} ({k!r})"
                             )
                         if var_kwargs_name is None:
                             var_kwargs_name = var_kwargs_map[k]
@@ -2138,7 +2144,7 @@ class Chunker(Configured):
                             size = new_size
                         elif size != new_size:
                             warn(
-                                f"Arguments '{size_k}' and '{k}' have conflicting sizes "
+                                f"Arguments {size_k!r} and {k!r} have conflicting sizes "
                                 f"{size} and {new_size}. Setting size to None."
                             )
                             return None

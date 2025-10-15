@@ -198,7 +198,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                         if _self.column_only_select:
                             return _check_out_dim(_self.iloc[column])
                         return _check_out_dim(_self.iloc[:, column])
-                    raise KeyError(f"Group '{column}' not found")
+                    raise KeyError(f"Group {column!r} not found")
             else:
                 if _self.wrapper.ndim == 1:
                     raise TypeError("This instance already contains one column of data")
@@ -207,7 +207,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                         if _self.column_only_select:
                             return _check_out_dim(_self.iloc[column])
                         return _check_out_dim(_self.iloc[:, column])
-                    raise KeyError(f"Column '{column}' not found")
+                    raise KeyError(f"Column {column!r} not found")
             return _check_out_dim(_self[column])
         if _self.wrapper.grouper.is_grouped():
             if _self.wrapper.grouped_ndim == 1:
@@ -278,7 +278,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                 if obj_ungrouped:
                     mask = _wrapper.grouper.group_by == column
                     if not mask.any():
-                        raise KeyError(f"Group '{column}' not found")
+                        raise KeyError(f"Group {column!r} not found")
                     if isinstance(obj, pd.DataFrame):
                         return obj.loc[:, mask]
                     return obj.loc[mask]
@@ -288,7 +288,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                             if isinstance(obj, pd.DataFrame):
                                 return _check_out_dim(obj.iloc[:, column], True)
                             return _check_out_dim(obj.iloc[column], False)
-                        raise KeyError(f"Group '{column}' not found")
+                        raise KeyError(f"Group {column!r} not found")
             else:
                 if _wrapper.ndim == 1:
                     raise TypeError("This instance already contains one column of data")
@@ -297,7 +297,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
                         if isinstance(obj, pd.DataFrame):
                             return _check_out_dim(obj.iloc[:, column], True)
                         return _check_out_dim(obj.iloc[column], False)
-                    raise KeyError(f"Column '{column}' not found")
+                    raise KeyError(f"Column {column!r} not found")
             if isinstance(obj, pd.DataFrame):
                 return _check_out_dim(obj[column], True)
             return _check_out_dim(obj[column], False)
@@ -402,7 +402,7 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
             chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each chunk.
 
                 See `vectorbtpro.utils.chunking.iter_chunk_meta`.
-            select (bool): Flag indicating whether to select chunks using `ArraySelector`.
+            select (bool): Flag indicating whether to select chunks using `vectorbtpro.utils.chunking.ArraySelector`.
             wrap (Optional[bool]): Flag to specify whether to wrap the result.
             return_chunk_meta (bool): Flag indicating whether to yield chunk metadata alongside each chunk.
 
@@ -825,7 +825,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                     except KeyError:
                         same_k = False
                     if not same_k:
-                        raise ValueError(f"Objects to be merged must have compatible '{k}'. Pass to override.")
+                        raise ValueError(f"Objects to be merged must have compatible {k!r}. Pass to override.")
         for k in common_keys:
             if k not in kwargs:
                 if k in init_wrapper.config:
@@ -833,7 +833,7 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 elif "grouper" not in kwargs and k in init_wrapper.grouper.config:
                     kwargs[k] = init_wrapper.grouper.config[k]
                 else:
-                    raise ValueError(f"Objects to be merged must have compatible '{k}'. Pass to override.")
+                    raise ValueError(f"Objects to be merged must have compatible {k!r}. Pass to override.")
         return kwargs
 
     @hybrid_method

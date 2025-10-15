@@ -24,11 +24,12 @@ from pathlib import Path
 from types import ModuleType, FunctionType
 
 from vectorbtpro import _typing as tp
+from vectorbtpro.knowledge.text_splitting import split_text
+from vectorbtpro.knowledge.completions import completed
+from vectorbtpro.knowledge.custom_assets import search
 from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.formatting import dump, get_dump_language
-from vectorbtpro.utils.knowledge.chatting import split_text, completed
-from vectorbtpro.utils.knowledge.custom_assets import search
 from vectorbtpro.utils.module_ import assert_can_import
 from vectorbtpro.utils.path_ import check_mkdir, get_common_prefix
 from vectorbtpro.utils.pbar import ProgressBar
@@ -98,11 +99,11 @@ def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = 
         except ModuleNotFoundError:
             continue
     if module is None:
-        raise ImportError(f"Could not import any part of '{qualname}'")
+        raise ImportError(f"Could not import any part of {qualname!r}")
 
     filepath = inspect.getsourcefile(module) or inspect.getfile(module)
     if not filepath or not os.path.exists(filepath):
-        raise FileNotFoundError(f"No pure-Python source for '{module.__name__}'")
+        raise FileNotFoundError(f"No pure-Python source for {module.__name__!r}")
 
     with open(filepath, encoding="utf-8") as fh:
         source = fh.read()
@@ -116,7 +117,7 @@ def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = 
     tree = ast.parse(source, filename=filepath)
     target = _find(tree, chain)
     if target is None:
-        raise ValueError(f"Could not locate '{'.'.join(chain)}' in '{module.__name__}'")
+        raise ValueError(f"Could not locate {'.'.join(chain)!r} in {module.__name__!r}")
 
     if isinstance(target, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and target.decorator_list:
         start = min(d.lineno for d in target.decorator_list) - 1
@@ -338,8 +339,8 @@ def cut_from_source(
 
         i += 1
     if section_found:
-        raise ValueError(f"Code section '{section_name}' not closed")
-    raise ValueError(f"Code section '{section_name}' not found")
+        raise ValueError(f"Code section {section_name!r} not closed")
+    raise ValueError(f"Code section {section_name!r} not found")
 
 
 def suggest_module_path(
@@ -1199,10 +1200,10 @@ def refactor_source(
         search_kwargs (KwargsLike): Keyword arguments for searching for knowledge.
 
             By default, uses the source as the search query and top 20 results.
-            See `vectorbtpro.utils.knowledge.custom_assets.search`.
+            See `vectorbtpro.knowledge.custom_assets.search`.
         to_context_kwargs (KwargsLike): Keyword arguments for converting the search results to context.
 
-            See `vectorbtpro.utils.knowledge.custom_assets.VBTAsset.to_context`.
+            See `vectorbtpro.knowledge.custom_assets.VBTAsset.to_context`.
         dump_engine (str): Name of the dump engine.
 
             See `vectorbtpro.utils.formatting.dump`.
@@ -1213,7 +1214,7 @@ def refactor_source(
         split_text_kwargs (KwargsLike): Keyword arguments for splitting the source.
 
             By default, uses "python" as `text_splitter`, 2000 as `chunk_size`, and 0 as `chunk_overlap`.
-            See `vectorbtpro.utils.knowledge.chatting.split_text`.
+            See `vectorbtpro.knowledge.text_splitting.split_text`.
         keep_history (Union[bool, int, slice]): Whether to keep the history of the conversation.
 
             If True, keeps the history of the conversation.
@@ -1242,7 +1243,7 @@ def refactor_source(
 
             Does not apply when processing multiple sources.
         return_path (bool): Whether to return the path to the updated source file or the HTML diff file.
-        **kwargs: Keyword arguments for `vectorbtpro.utils.knowledge.chatting.completed`.
+        **kwargs: Keyword arguments for `vectorbtpro.knowledge.completions.completed`.
 
     Returns:
         Union[RefactorSourceOutput, RefactorSourceOutputs]: Result of the refactoring process.
@@ -1416,7 +1417,7 @@ def refactor_source(
         elif output_format.lower() == "udiff":
             format_prompt = UDIFF_FORMAT_PROMPT
         else:
-            raise ValueError(f"Invalid output format: '{output_format}'")
+            raise ValueError(f"Invalid output_format: {output_format!r}")
     if system_prompt:
         system_prompt += "\n\n====\n\n"
     system_prompt += f"Output format:\n\n{format_prompt}"
@@ -1542,7 +1543,7 @@ def refactor_source(
                     print(output)
                     output = apply_patches(input, output, start_line=chunk_start_line, fuzzy_kwargs=fuzzy_kwargs)
                 elif output_format.lower() != "full":
-                    raise ValueError(f"Invalid output format: '{output_format}'")
+                    raise ValueError(f"Invalid output_format: {output_format!r}")
             output = add_source_indent(output, indent)
             new_chunk = leading + output + trailing
             processed.append(new_chunk)
@@ -1658,7 +1659,7 @@ def refactor_markdown(
         split_text_kwargs (KwargsLike): Keyword arguments for splitting the source.
 
             By default, uses "markdown" as `text_splitter`.
-            See `vectorbtpro.utils.knowledge.chatting.split_text`.
+            See `vectorbtpro.knowledge.text_splitting.split_text`.
         **kwargs: Keyword arguments for `refactor_source`.
 
     Returns:

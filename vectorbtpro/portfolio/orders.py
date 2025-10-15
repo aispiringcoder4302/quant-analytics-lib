@@ -49,7 +49,7 @@ Name: count, dtype: int64
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `Orders.metrics`.
 
 ```pycon
@@ -94,7 +94,7 @@ Name: group, dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Orders.subplots`.
 
 The `Orders` class provides a method to generate a subplot from order records:

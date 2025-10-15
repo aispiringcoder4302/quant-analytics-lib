@@ -1056,7 +1056,7 @@ class IndicatorBase(Analyzable):
                         warn("Raw outputs are produced by unique parameter combinations when run_unique=True")
                     return outputs
                 else:
-                    raise ValueError(f"Invalid return_raw: '{return_raw}'")
+                    raise ValueError(f"Invalid return_raw: {return_raw!r}")
 
             if kwargs.get("return_cache", False):
                 if use_run_unique and not silence_warnings:
@@ -3675,22 +3675,22 @@ class IndicatorFactory(Configured):
             if matched_location is not None:
                 location = matched_location
         if not name.isidentifier():
-            raise ValueError(f"Custom name '{name}' must be a valid variable name")
+            raise ValueError(f"Custom name {name!r} must be a valid variable name")
         if not location.isidentifier():
-            raise ValueError(f"Custom location '{location}' must be a valid variable name")
+            raise ValueError(f"Custom location {location!r} must be a valid variable name")
         if location in cls.list_builtin_locations():
-            raise ValueError(f"Custom location '{location}' shadows a built-in location with the same name")
+            raise ValueError(f"Custom location {location!r} shadows a built-in location with the same name")
         if location not in cls.custom_indicators:
             cls.custom_indicators[location] = dict()
         for k in cls.custom_indicators[location]:
             if name.upper() == k.upper():
                 if if_exists.lower() == "raise":
-                    raise ValueError(f"Indicator with name '{name}' already exists under location '{location}'")
+                    raise ValueError(f"Indicator class {name!r} already exists under location {location!r}")
                 if if_exists.lower() == "skip":
                     return None
                 if if_exists.lower() == "override":
                     break
-                raise ValueError(f"Invalid if_exists: '{if_exists}'")
+                raise ValueError(f"Invalid if_exists: {if_exists!r}")
         cls.custom_indicators[location][name] = indicator
 
     @classmethod
@@ -3778,14 +3778,14 @@ class IndicatorFactory(Configured):
             if len(found_indicators) > 1:
                 if return_first:
                     return found_indicators[0]
-                raise KeyError(f"Found multiple custom indicators with name '{name}'")
-            raise KeyError(f"Found no custom indicator with name '{name}'")
+                raise KeyError(f"Found multiple custom indicators with name {name!r}")
+            raise KeyError(f"Found no custom indicator with name {name!r}")
         else:
             for k, v in cls.custom_indicators[location].items():
                 k = k.upper()
                 if k == name:
                     return v
-            raise KeyError(f"Found no custom indicator with name '{name}' under location '{location}'")
+            raise KeyError(f"Found no custom indicator with name {name!r} under location {location!r}")
 
     @classmethod
     def list_custom_indicators(
@@ -3910,7 +3910,11 @@ class IndicatorFactory(Configured):
                     ),
                     *map(
                         lambda x: "pandas_ta:" + x if prepend_location else x,
-                        cls.list_pandas_ta_indicators() if check_installed("pandas_ta") else [],
+                        (
+                            cls.list_pandas_ta_indicators()
+                            if check_installed("pandas_ta") or check_installed("pandas_ta_classic")
+                            else []
+                        ),
                     ),
                     *map(
                         lambda x: "ta:" + x if prepend_location else x,
@@ -4000,7 +4004,7 @@ class IndicatorFactory(Configured):
                     return cls.from_smc(name)
                 if location == "wqa101":
                     return cls.from_wqa101(int(name))
-                raise ValueError(f"Location '{location}' not found")
+                raise ValueError(f"Location {location!r} not found")
             else:
                 import vectorbtpro as vbt
                 from vectorbtpro.utils.module_ import check_installed
@@ -4023,7 +4027,7 @@ class IndicatorFactory(Configured):
                     return cls.from_pandas_ta(name)
                 if check_installed("technical") and name in cls.list_technical_indicators():
                     return cls.from_technical(name)
-        raise ValueError(f"Indicator '{name}' not found")
+        raise ValueError(f"Indicator class {name!r} not found")
 
     # ############# Third party ############# #
 
@@ -4344,20 +4348,22 @@ class IndicatorFactory(Configured):
         !!! note
             Returns only the indicators that have been successfully parsed.
         """
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("pandas_ta")
         try:
             import pandas_ta
         except ImportError as e:
-            if "cannot import name 'NaN' from 'numpy'" in str(e):
-                warn(
-                    "Cannot import name 'NaN' from 'numpy'. "
-                    "Current version of Pandas TA is not compatible with the latest NumPy. "
-                    "Please install an older version of NumPy, e.g., 1.26.4."
-                )
-                return []
-            raise e
+            try:
+                import pandas_ta_classic as pandas_ta
+            except ImportError:
+                if "cannot import name 'NaN' from 'numpy'" in str(e):
+                    warn(
+                        "Cannot import name 'NaN' from 'numpy'.\n\n"
+                        "Current version of Pandas TA is not compatible with the latest NumPy. "
+                        "Please install an older version of NumPy, e.g., 1.26.4. "
+                        "Or, go to the source of pandas_ta.momentum.squeeze_pro on your disk and "
+                        "comment out the line `from numpy import NaN as npNaN`."
+                    )
+                    return []
+                raise e
 
         indicators = set()
         for func_name in [_k for k, v in pandas_ta.Category.items() for _k in v]:
@@ -4379,10 +4385,10 @@ class IndicatorFactory(Configured):
     ) -> tp.Type[IndicatorBase]:
         """Build an indicator class around a Pandas TA function.
 
-        Requires `pandas-ta` installed. See https://github.com/twopirllc/pandas-ta for details.
+        Requires Pandas TA installed. See https://pypi.org/project/pandas-ta/ for details.
 
         Args:
-            func_name (str): Name of the `pandas_ta` function to wrap.
+            func_name (str): Name of the Pandas TA function to wrap.
 
                 The function name is case-insensitive.
             parse_kwargs (KwargsLike): Keyword arguments for `IndicatorFactory.parse_pandas_ta_config`.
@@ -4407,18 +4413,22 @@ class IndicatorFactory(Configured):
             2020-01-05  4.5  1.5  4.0  2.0
             ```
         """
-        from vectorbtpro.utils.module_ import assert_can_import
-
-        assert_can_import("pandas_ta")
         try:
             import pandas_ta
         except ImportError as e:
-            if "cannot import name 'NaN' from 'numpy'" in str(e):
-                raise ImportError(
-                    "Current version of Pandas TA is not compatible with the latest NumPy. "
-                    "Please install an older version of NumPy, e.g., 1.26.4."
-                ) from e
-            raise e
+            try:
+                import pandas_ta_classic as pandas_ta
+            except ImportError:
+                if "cannot import name 'NaN' from 'numpy'" in str(e):
+                    warn(
+                        "Cannot import name 'NaN' from 'numpy'.\n\n"
+                        "Current version of Pandas TA is not compatible with the latest NumPy. "
+                        "Please install an older version of NumPy, e.g., 1.26.4. "
+                        "Or, go to the source of pandas_ta.momentum.squeeze_pro on your disk and "
+                        "comment out the line `from numpy import NaN as npNaN`."
+                    )
+                    return []
+                raise e
 
         func_name = func_name.lower()
         func = getattr(pandas_ta, func_name)
@@ -4445,6 +4455,14 @@ class IndicatorFactory(Configured):
                     **{name: param_tuple[i] for i, name in enumerate(config["param_names"])},
                     **kwargs_,
                 )
+                if output is None:
+                    if config["output_names"] == 1:
+                        output = pd.Series([np.nan] * len(input_tuple[0]), index=input_tuple[0].index)
+                    else:
+                        output = pd.DataFrame(
+                            {name: [np.nan] * len(input_tuple[0]) for name in config["output_names"]},
+                            index=input_tuple[0].index,
+                        )
                 if isinstance(output, tuple):
                     _outputs = []
                     for o in output:
@@ -4528,7 +4546,7 @@ class IndicatorFactory(Configured):
             for attr in dir(module):
                 if cls_name.upper() == attr.upper():
                     return getattr(module, attr)
-        raise AttributeError(f"Indicator '{cls_name}' not found")
+        raise ValueError(f"Indicator class {cls_name!r} not found")
 
     @classmethod
     def parse_ta_config(cls, ind_cls: IndicatorMixinT) -> tp.Kwargs:
@@ -4823,7 +4841,7 @@ class IndicatorFactory(Configured):
         for k, v in funcs.items():
             if func_name.upper() == k.upper():
                 return v
-        raise AttributeError(f"Indicator '{func_name}' not found")
+        raise ValueError(f"Indicator class {func_name!r} not found")
 
     @classmethod
     def from_technical(
@@ -5128,7 +5146,7 @@ class IndicatorFactory(Configured):
                 factory_kwargs=dict(module_name=__name__ + ".techcon", class_name="SUMCON"),
                 **kwargs,
             )
-        raise ValueError(f"Unknown technical consensus class '{cls_name}'")
+        raise ValueError(f"Invalid technical consensus class: {cls_name!r}")
 
     @classmethod
     def list_techcon_indicators(cls) -> tp.List[str]:
@@ -5160,7 +5178,7 @@ class IndicatorFactory(Configured):
                 if camel_to_snake_case(func_name) == camel_to_snake_case(k):
                     return getattr(smc, k)
         if raise_error:
-            raise AttributeError(f"Indicator '{func_name}' not found")
+            raise ValueError(f"Indicator class {func_name!r} not found")
         return None
 
     @classmethod
@@ -5406,7 +5424,7 @@ class IndicatorFactory(Configured):
 
                 Defaults to False. Otherwise, uses `vectorbtpro.utils.eval_.evaluate`.
 
-                !!! hint
+                !!! tip
                     By default, operates on NumPy objects using NumExpr.
                     If you want to operate on Pandas objects, set `keep_pd` to True.
             pd_eval_kwargs (KwargsLike): Keyword arguments for `pd.eval`.
@@ -5650,7 +5668,7 @@ class IndicatorFactory(Configured):
                         else:
                             I = kwargs[ind_name]
                         if not issubclass(I, IndicatorBase):
-                            raise TypeError(f"Indicator class '{ind_name}' must subclass IndicatorBase")
+                            raise TypeError(f"Indicator class {ind_name!r} must subclass IndicatorBase")
 
                         def _ind_func(context: tp.Kwargs, _I: IndicatorBase = I) -> tp.Any:
                             args_ = ()

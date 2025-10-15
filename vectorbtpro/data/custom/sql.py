@@ -632,7 +632,7 @@ class SQLData(DBData):
         for column in table_relation.columns:
             table_column_names.append(column.name)
         if row_number_column not in table_column_names:
-            raise ValueError(f"Row number column '{row_number_column}' not found")
+            raise ValueError(f"Row number column {row_number_column!r} not found")
         query = (
             table_relation.select()
             .with_only_columns(table_relation.columns.get(row_number_column))
@@ -1037,7 +1037,7 @@ class SQLData(DBData):
                     raise ValueError("Can either filter by row numbers or by index, not both")
                 _row_number_column = table.columns.get(row_number_column)
                 if _row_number_column is None:
-                    raise ValueError(f"Row number column '{row_number_column}' not found")
+                    raise ValueError(f"Row number column {row_number_column!r} not found")
                 and_list = []
                 if start_row is not None:
                     and_list.append(_row_number_column >= _to_native_type(start_row))
@@ -1123,11 +1123,11 @@ class SQLData(DBData):
 
             def _check_columns(c, arg_name):
                 if checks.is_int(c):
-                    raise ValueError(f"Must provide column as a string for '{arg_name}'")
+                    raise ValueError(f"Must provide column as a string for {arg_name!r}")
                 elif not isinstance(c, str):
                     for _c in c:
                         if checks.is_int(_c):
-                            raise ValueError(f"Must provide each column as a string for '{arg_name}'")
+                            raise ValueError(f"Must provide each column as a string for {arg_name!r}")
 
             if start is not None:
                 raise ValueError("Start cannot be applied to custom queries")

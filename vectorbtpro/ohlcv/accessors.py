@@ -57,7 +57,7 @@ Name: my_open1, dtype: float64
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `OHLCVDFAccessor.metrics`
     for more details.
 
@@ -79,7 +79,7 @@ Name: agg_stats, dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `OHLCVDFAccessor.subplots` for more details.
 
 The `OHLCVDFAccessor` provides a single subplot based on `OHLCVDFAccessor.plot` (excluding volume):
@@ -103,6 +103,7 @@ from vectorbtpro.data.base import OHLCDataMixin
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.generic.accessors import GenericAccessor, GenericDFAccessor
 from vectorbtpro.ohlcv import nb, enums
+from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
 from vectorbtpro.utils.decorators import hybrid_property
 from vectorbtpro.utils.enum_ import map_enum_fields
@@ -330,12 +331,47 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
                     generic_nb.sum_reduce_nb,
                 )
             else:
-                raise ValueError(f"Cannot match feature '{feature}'")
+                raise ValueError(f"Cannot match feature {feature!r}")
         new_obj = pd.DataFrame(sr_dct)
         return self.replace(
             wrapper=wrapper_meta["new_wrapper"],
             obj=new_obj,
         )
+
+    @classmethod
+    def from_prices(
+        cls,
+        prices: tp.Series,
+        rule: tp.AnyRuleLike,
+        volume: tp.Optional[tp.Series] = None,
+    ) -> OHLCVDFAccessorT:
+        """Create an accessor from a Series of prices and (optionally) volumes.
+
+        Args:
+            rule (AnyRuleLike): Resampler-like specification.
+
+                Can be one of the following:
+
+                * `vectorbtpro.base.resampling.base.Resampler` instance
+                * Pandas `Resampler` instance
+                * Instruction for any of the above
+                * Datetime-like object or iterable used to create a new index
+            prices (Series): Series of prices.
+            volume (Series): Series of volumes.
+
+        Returns:
+            OHLCVDFAccessor: New accessor instance.
+        """
+        checks.assert_instance_of(prices, pd.Series, arg_name="prices")
+        ohlcv_dict = {
+            "Open": prices.vbt.resample_apply(rule, generic_nb.first_reduce_nb),
+            "High": prices.vbt.resample_apply(rule, generic_nb.max_reduce_nb),
+            "Low": prices.vbt.resample_apply(rule, generic_nb.min_reduce_nb),
+            "Close": prices.vbt.resample_apply(rule, generic_nb.last_reduce_nb),
+        }
+        if volume is not None:
+            ohlcv_dict["Volume"] = volume.vbt.resample_apply(rule, generic_nb.sum_reduce_nb)
+        return cls(pd.concat(ohlcv_dict, axis=1))
 
     # ############# Stats ############# #
 

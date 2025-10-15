@@ -473,7 +473,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                     filter_name = k[len("inv_check_") :]
                 if filter_name is not None:
                     if filter_name not in filters:
-                        raise ValueError(f"Metric '{subplot_name}' requires filter '{filter_name}'")
+                        raise ValueError(f"Metric {subplot_name!r} requires filter {filter_name!r}")
                     subplot_filters.add(filter_name)
 
             for filter_name in subplot_filters:
@@ -525,8 +525,10 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                     row_col_tuples.append((row + 1, col + 1))
         shared_xaxes = sub_make_subplots_kwargs.pop("shared_xaxes", True)
         shared_yaxes = sub_make_subplots_kwargs.pop("shared_yaxes", False)
-        default_height = plotting_cfg["layout"]["height"]
-        default_width = plotting_cfg["layout"]["width"] + 50
+        default_height = plotting_cfg["layout"].get("height", None)
+        default_width = plotting_cfg["layout"].get("width", None)
+        if default_width is not None:
+            default_width += 50
         min_space = 10  # space between subplots with no axis sharing
         max_title_spacing = 30
         max_xaxis_spacing = 50
@@ -546,7 +548,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
             yaxis_spacing = 0
         if "height" in sub_layout_kwargs:
             height = sub_layout_kwargs.pop("height")
-        else:
+        elif default_height is not None:
             height = default_height + title_spacing
             if rows > 1:
                 height *= rows
@@ -554,15 +556,19 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 height += legend_height - legend_height * rows
                 if shared_xaxes:
                     height += max_xaxis_spacing - max_xaxis_spacing * rows
+        else:
+            height = None
         if "width" in sub_layout_kwargs:
             width = sub_layout_kwargs.pop("width")
-        else:
+        elif default_width is not None:
             width = default_width
             if cols > 1:
                 width *= cols
                 width += min_space * cols - min_space
                 if shared_yaxes:
                     width += max_yaxis_spacing - max_yaxis_spacing * cols
+        else:
+            width = None
         if height is not None:
             if "vertical_spacing" in sub_make_subplots_kwargs:
                 vertical_spacing = sub_make_subplots_kwargs.pop("vertical_spacing")
@@ -820,7 +826,7 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
                 subplot_layout[yaxis] = merge_dicts(dict(), yaxis_kwargs)
                 fig.update_layout(**subplot_layout)
             except Exception as e:
-                warn(f"Subplot '{subplot_name}' raised an exception")
+                warn(f"Subplot {subplot_name!r} raised an exception")
                 raise e
 
         # Hide legend labels

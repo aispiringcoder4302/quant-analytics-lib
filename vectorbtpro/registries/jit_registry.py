@@ -122,7 +122,7 @@ You can also disable jitting globally:
 <function __main__.sum_nb(a)>
 ```
 
-!!! hint
+!!! tip
     If no additional options are used and only one jitter is registered per task,
     you can disable resolution to improve performance.
 
@@ -153,7 +153,7 @@ or as False to disable jitting (see `vectorbtpro.utils.jitting.resolve_jitted_op
 133 ms ± 2.32 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 ```
 
-!!! hint
+!!! tip
     As a rule of thumb, when a function accepts a `jitted` parameter, the jitted functions it
     calls are typically resolved using `JITRegistry.resolve_option`.
 
@@ -707,7 +707,7 @@ class JITRegistry(Base):
             if not allow_new:
                 if return_missing_task:
                     return task_id_or_func
-                raise KeyError(f"Task id '{task_id}' not registered")
+                raise KeyError(f"Task id {task_id!r} not registered")
         task_setups = self.jitable_setups.get(task_id, dict())
 
         template_context = merge_dicts(
@@ -723,10 +723,10 @@ class JITRegistry(Base):
         if jitter is None:
             if len(task_setups) > 1:
                 raise ValueError(
-                    f"There are multiple registered setups for task id '{task_id}'. Please specify the jitter."
+                    f"There are multiple registered setups for task id {task_id!r}. Please specify the jitter."
                 )
             elif len(task_setups) == 0:
-                raise ValueError(f"There are no registered setups for task id '{task_id}'")
+                raise ValueError(f"There are no registered setups for task id {task_id!r}")
             jitable_setup = list(task_setups.values())[0]
             jitter = jitable_setup.jitter_id
             jitter_id = jitable_setup.jitter_id
@@ -735,14 +735,14 @@ class JITRegistry(Base):
             jitter_id = get_id_of_jitter_type(jitter_type)
             if jitter_id not in task_setups:
                 if not allow_new:
-                    raise KeyError(f"Jitable setup with task id '{task_id}' and jitter id '{jitter_id}' not registered")
+                    raise KeyError(f"Jitable setup with task id {task_id!r} and jitter id {jitter_id!r} not registered")
                 jitable_setup = None
             else:
                 jitable_setup = task_setups[jitter_id]
         if jitter_id is None:
             raise ValueError("Jitter id cannot be None: is jitter registered globally?")
         if jitable_setup is None and py_func is None:
-            raise ValueError(f"Unable to find Python function for task id '{task_id}' and jitter id '{jitter_id}'")
+            raise ValueError(f"Unable to find Python function for task id {task_id!r} and jitter id {jitter_id!r}")
 
         template_context = merge_dicts(
             template_context,

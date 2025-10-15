@@ -211,11 +211,11 @@ class BaseDataMixin(Base):
                 found_indices.append(i)
         if len(found_indices) == 0:
             if raise_error:
-                raise ValueError(f"No features match the feature '{str(feature)}'")
+                raise ValueError(f"No features match the feature {feature!r}")
             return -1
         if len(found_indices) == 1:
             return found_indices[0]
-        raise ValueError(f"Multiple features match the feature '{str(feature)}'")
+        raise ValueError(f"Multiple features match the feature {feature!r}")
 
     def get_symbol_idx(self, symbol: tp.Symbol, raise_error: bool = False) -> int:
         """Return the index of the specified symbol.
@@ -244,11 +244,11 @@ class BaseDataMixin(Base):
                 found_indices.append(i)
         if len(found_indices) == 0:
             if raise_error:
-                raise ValueError(f"No symbols match the symbol '{str(symbol)}'")
+                raise ValueError(f"No symbols match the symbol {symbol!r}")
             return -1
         if len(found_indices) == 1:
             return found_indices[0]
-        raise ValueError(f"Multiple symbols match the symbol '{str(symbol)}'")
+        raise ValueError(f"Multiple symbols match the symbol {symbol!r}")
 
     def select_feature_idxs(self: BaseDataMixinT, idxs: tp.MaybeSequence[int], **kwargs) -> BaseDataMixinT:
         """Select one or more features by their index positions.
@@ -1480,7 +1480,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     if attr_data_type is None:
                         attr_data_type = type(v)
                     elif not isinstance(v, attr_data_type):
-                        raise TypeError(f"Objects to be merged must have the same dict type for '{attr}'")
+                        raise TypeError(f"Objects to be merged must have the same dict type for {attr!r}")
                 kwargs[attr] = getattr(objs[-1], attr)
 
         kwargs = cls.resolve_row_stack_kwargs(*objs, **kwargs)
@@ -1558,7 +1558,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     if attr_data_type is None:
                         attr_data_type = type(v)
                     elif not isinstance(v, attr_data_type):
-                        raise TypeError(f"Objects to be merged must have the same dict type for '{attr}'")
+                        raise TypeError(f"Objects to be merged must have the same dict type for {attr!r}")
                 if (issubclass(data_type, feature_dict) and issubclass(attr_data_type, symbol_dict)) or (
                     issubclass(data_type, symbol_dict) and issubclass(attr_data_type, feature_dict)
                 ):
@@ -1743,7 +1743,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                         else:
                             yield key, self.select_keys(key)
         else:
-            raise ValueError(f"Invalid over: '{over}'")
+            raise ValueError(f"Invalid over: {over!r}")
 
     # ############# Getting ############# #
 
@@ -2258,7 +2258,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     if self.single_symbol:
                         return tuple([list(self.data.values())[i] for i in feature_idxs]), features
                     return tuple([list(self.data.values())[i].iloc[:, symbol_idxs] for i in feature_idxs]), features
-                raise ValueError(f"Invalid per: '{per}'")
+                raise ValueError(f"Invalid per: {per!r}")
             else:
                 if single_symbol:
                     if self.single_feature:
@@ -2278,7 +2278,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     if self.single_feature:
                         return tuple([list(self.data.values())[i] for i in symbol_idxs]), symbols
                     return tuple([list(self.data.values())[i].iloc[:, feature_idxs] for i in symbol_idxs]), symbols
-                raise ValueError(f"Invalid per: '{per}'")
+                raise ValueError(f"Invalid per: {per!r}")
 
         objs, keys = _get_objs()
         if as_dict:
@@ -2546,7 +2546,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     elif missing == "raise":
                         raise ValueError("Symbols have mismatching index")
                     else:
-                        raise ValueError(f"Invalid missing: '{missing}'")
+                        raise ValueError(f"Invalid missing: {missing!r}")
 
         if not index_changed:
             return data
@@ -2609,7 +2609,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     elif missing == "raise":
                         raise ValueError("Symbols have mismatching columns")
                     else:
-                        raise ValueError(f"Invalid missing: '{missing}'")
+                        raise ValueError(f"Invalid missing: {missing!r}")
 
         if not columns_changed:
             return data
@@ -3839,7 +3839,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                             if attr not in attr_dicts:
                                 attr_dicts[attr] = type(attr_value)()
                             elif not isinstance(attr_value, type(attr_dicts[attr])):
-                                raise TypeError(f"Objects to be merged must have the same dict type for '{attr}'")
+                                raise TypeError(f"Objects to be merged must have the same dict type for {attr!r}")
                             attr_dicts[attr][new_k] = attr_value[k]
             for attr in cls_or_self._key_dict_attrs:
                 attr_value = getattr(instance, attr)
@@ -3849,7 +3849,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     if attr not in attr_dicts:
                         attr_dicts[attr] = type(attr_value)()
                     elif not isinstance(attr_value, type(attr_dicts[attr])):
-                        raise TypeError(f"Objects to be merged must have the same dict type for '{attr}'")
+                        raise TypeError(f"Objects to be merged must have the same dict type for {attr!r}")
                     attr_dicts[attr].update(**attr_value)
 
         if "missing_index" not in kwargs:
@@ -3918,14 +3918,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             out = cls.fetch_feature(feature, **fetch_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warn(f"Feature '{str(feature)}' returned None. Skipping.")
+                    warn(f"Feature {feature!r} returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
                 warn(traceback.format_exc())
-                warn(f"Feature '{str(feature)}' raised an exception. Skipping.")
+                warn(f"Feature {feature!r} raised an exception. Skipping.")
         return None
 
     @classmethod
@@ -3980,14 +3980,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             out = cls.fetch_symbol(symbol, **fetch_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warn(f"Symbol '{str(symbol)}' returned None. Skipping.")
+                    warn(f"Symbol {symbol!r} returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
                 warn(traceback.format_exc())
-                warn(f"Symbol '{str(symbol)}' raised an exception. Skipping.")
+                warn(f"Symbol {symbol!r} raised an exception. Skipping.")
         return None
 
     @classmethod
@@ -4293,9 +4293,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if _data.size == 0:
                     if not silence_warnings:
                         if keys_are_features:
-                            warn(f"Feature '{str(k)}' returned an empty array. Skipping.")
+                            warn(f"Feature {k!r} returned an empty array. Skipping.")
                         else:
-                            warn(f"Symbol '{str(k)}' returned an empty array. Skipping.")
+                            warn(f"Symbol {k!r} returned an empty array. Skipping.")
                 else:
                     data[k] = _data
                     returned_kwargs[k] = _returned_kwargs
@@ -4423,14 +4423,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             out = self.update_feature(feature, **update_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warn(f"Feature '{str(feature)}' returned None. Skipping.")
+                    warn(f"Feature {feature!r} returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
                 warn(traceback.format_exc())
-                warn(f"Feature '{str(feature)}' raised an exception. Skipping.")
+                warn(f"Feature {feature!r} raised an exception. Skipping.")
         return None
 
     def update_symbol(
@@ -4476,14 +4476,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             out = self.update_symbol(symbol, **update_kwargs)
             if out is None:
                 if not silence_warnings:
-                    warn(f"Symbol '{str(symbol)}' returned None. Skipping.")
+                    warn(f"Symbol {symbol!r} returned None. Skipping.")
             return out
         except Exception as e:
             if not skip_on_error:
                 raise e
             if not silence_warnings:
                 warn(traceback.format_exc())
-                warn(f"Symbol '{str(symbol)}' raised an exception. Skipping.")
+                warn(f"Symbol {symbol!r} raised an exception. Skipping.")
         return None
 
     def update(
@@ -4585,9 +4585,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 if new_obj.size == 0:
                     if not silence_warnings:
                         if self.feature_oriented:
-                            warn(f"Feature '{str(k)}' returned an empty array. Skipping.")
+                            warn(f"Feature {k!r} returned an empty array. Skipping.")
                         else:
-                            warn(f"Symbol '{str(k)}' returned an empty array. Skipping.")
+                            warn(f"Symbol {k!r} returned an empty array. Skipping.")
                     skip_key = True
                 else:
                     if not isinstance(new_obj, (pd.Series, pd.DataFrame)):
@@ -5044,7 +5044,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     to_2d_array(volume_obj),
                     wrapper=self.wrapper[feature],
                 )
-            raise ValueError(f"Cannot resample feature '{feature}'. Specify resample_func in feature_config.")
+            raise ValueError(f"Cannot resample feature {feature!r}. Specify resample_func in feature_config.")
 
         new_data = self.dict_type()
         if self.feature_oriented:
@@ -5576,7 +5576,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 out = feature_dict({feature_name: out})
             out = Data.from_data(out, **data_kwargs)
         else:
-            raise ValueError(f"Invalid unpack: '{unpack}'")
+            raise ValueError(f"Invalid unpack: {unpack!r}")
         return out
 
     # ############# Persisting ############# #
@@ -6076,7 +6076,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             elif _engine == "auto":
                 assert_can_import_any("pyarrow", "fastparquet")
             else:
-                raise ValueError(f"Invalid engine: '{_engine}'")
+                raise ValueError(f"Invalid engine: {_engine!r}")
             if isinstance(v, pd.Series):
                 v = v.to_frame()
             if _partition_by is not None:
@@ -6612,7 +6612,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 elif _write_format.upper() == "JSON":
                     _write_path /= f"{k}.json"
                 else:
-                    raise ValueError(f"Invalid write format: '{_write_format}'")
+                    raise ValueError(f"Invalid write_format: {_write_format!r}")
             if _write_path.suffix != "":
                 _mkdir_kwargs = self.resolve_key_arg(
                     mkdir_kwargs,
@@ -6686,7 +6686,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 append = False
                 if _table in DuckDBData.list_tables(catalog=_catalog, schema=_schema, connection=_connection):
                     if _if_exists.lower() == "fail":
-                        raise ValueError(f"Table '{_table}' already exists")
+                        raise ValueError(f"Table {_table!r} already exists")
                     elif _if_exists.lower() == "replace":
                         _connection.sql(f'DROP TABLE "{_table}"')
                     elif _if_exists.lower() == "append":

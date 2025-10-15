@@ -205,12 +205,18 @@ def search_package(
 def find_class(path: str) -> tp.Optional[tp.Type]:
     """Return a class object based on its fully qualified path.
 
+    The path should be a dot-separated string representing the module and class name,
+    or a reference name that can be resolved to a class.
+
     Args:
         path (str): Dot-separated path to the class.
 
     Returns:
         Optional[Type]: Class if found; otherwise, None.
     """
+    refname = resolve_refname(path)
+    if isinstance(refname, str):
+        path = refname
     try:
         path_parts = path.split(".")
         module_path = ".".join(path_parts[:-1])
@@ -258,7 +264,7 @@ def get_package_meta(pkg_name: str) -> dict:
         dict: Dictionary containing metadata such as 'dist_name', 'version', and 'link'.
     """
     if pkg_name not in opt_dep_config:
-        raise KeyError(f"Package '{pkg_name}' not found in opt_dep_config")
+        raise KeyError(f"Package {pkg_name!r} not found in opt_dep_config")
     dist_name = opt_dep_config[pkg_name].get("dist_name", pkg_name)
     version = opt_dep_config[pkg_name].get("version", "")
     link = opt_dep_config[pkg_name].get("link", f"https://pypi.org/project/{dist_name}/")
@@ -726,7 +732,7 @@ def prepare_refname(
 
     def _raise_error():
         raise ValueError(
-            "Couldn't find the reference name, or the object is external. "
+            f"Couldn't find the reference name for {obj!r}, or the object is external. "
             "If the object is internal, please decompose the object or provide a string instead."
         )
 

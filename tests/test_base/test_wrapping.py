@@ -633,15 +633,16 @@ class TestArrayWrapper:
                 vbt.ArrayWrapper(index, columns2, 2, some_arg=2, check_expected_keys_=False),
             )
 
-    def test_config(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_config(self, tmp_path, test_file_format):
         assert vbt.ArrayWrapper.loads(sr2_wrapper.dumps()) == sr2_wrapper
         assert vbt.ArrayWrapper.loads(sr2_wrapper_co.dumps()) == sr2_wrapper_co
         assert vbt.ArrayWrapper.loads(sr2_grouped_wrapper.dumps()) == sr2_grouped_wrapper
         assert vbt.ArrayWrapper.loads(sr2_grouped_wrapper_co.dumps()) == sr2_grouped_wrapper_co
         sr2_grouped_wrapper_co.save(tmp_path / "sr2_grouped_wrapper_co")
         assert vbt.ArrayWrapper.load(tmp_path / "sr2_grouped_wrapper_co") == sr2_grouped_wrapper_co
-        sr2_grouped_wrapper_co.save(tmp_path / "sr2_grouped_wrapper_co", file_format="ini")
-        assert vbt.ArrayWrapper.load(tmp_path / "sr2_grouped_wrapper_co", file_format="ini") == sr2_grouped_wrapper_co
+        sr2_grouped_wrapper_co.save(tmp_path / "sr2_grouped_wrapper_co", file_format=test_file_format)
+        assert vbt.ArrayWrapper.load(tmp_path / "sr2_grouped_wrapper_co", file_format=test_file_format) == sr2_grouped_wrapper_co
 
     def test_indexing_func_meta(self):
         # not grouped

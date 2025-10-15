@@ -356,6 +356,102 @@ class BaseIDXAccessor(Configured, IndexApplier):
         """
         return indexes.find_first_occurrence(self.obj, *args, **kwargs)
 
+    def randomize(
+        self,
+        randomness: float = 0.5,
+        step: tp.Union[int, tp.TimedeltaLike] = 1,
+        inclusive: str = "both",
+        seed: tp.Optional[int] = None,
+    ) -> tp.Index:
+        """Randomize the numeric index by moving its points in multiples of a given step.
+
+        Args:
+            randomness (float): Factor between 0 and 1 controlling the amount of randomization.
+
+                0 means no change, 1 means full randomization.
+            step (Union[int, TimedeltaLike]): Step for the randomization (e.g., '5m' for 5 minutes).
+
+                Displacements will be multiples of this step. Should be integer if the index is
+                numeric and timedelta-like if the index is datetime.
+            inclusive (str): Which endpoints to keep fixed in the randomization.
+
+                One of "both", "left", "right", or "neither".
+            seed (Optional[int]): Seed for the random number generator for
+                reproducibility.
+
+        Returns:
+            Index: Randomized index.
+        """
+        inclusive = inclusive.lower()
+        allowed_inclusive = {"both", "left", "right", "neither"}
+        if inclusive not in allowed_inclusive:
+            raise ValueError(f"inclusive must be one of {allowed_inclusive}")
+
+        is_datetime = pd.api.types.is_datetime64_any_dtype(self.obj)
+        is_integer = pd.api.types.is_integer_dtype(self.obj)
+        if not is_datetime and not is_integer:
+            raise TypeError("Index must be Datetime or integer")
+
+        if is_datetime:
+            orig_values = dt.to_ns(self.obj, tz_naive_ns=False)
+        else:
+            orig_values = self.obj.to_numpy()
+        n = len(orig_values)
+        if n < 2:
+            return self.obj
+        start_val, end_val = orig_values[0], orig_values[-1]
+        span = end_val - start_val
+        if span <= 0:
+            return self.obj
+        alpha = np.clip(float(randomness), 0.0, 1.0)
+        if step is None:
+            step = 1
+        elif is_datetime:
+            step = dt.to_ns(dt.to_timedelta64(step))
+
+        n_steps_span = span // step
+        num_slots = n_steps_span + 1
+        if num_slots < n:
+            raise ValueError(
+                "Not enough unique slots between first and last value to place "
+                f"{n} points uniquely (only {num_slots} slots)"
+            )
+
+        rng = np.random.default_rng(seed)
+        target_step_index = np.sort(rng.choice(num_slots, size=n, replace=False)).astype("int64")
+        if inclusive == "both":
+            target_step_index[0] = 0
+            target_step_index[-1] = n_steps_span
+        elif inclusive == "left":
+            target_step_index[0] = 0
+        elif inclusive == "right":
+            target_step_index[-1] = n_steps_span
+
+        orig_step_index = ((orig_values - start_val) // step).astype("int64")
+
+        blend_float = (1.0 - alpha) * orig_step_index + alpha * target_step_index
+        blend_step_index = np.rint(blend_float).astype("int64")
+        lower_step_bound = np.minimum(orig_step_index, target_step_index)
+        upper_step_bound = np.maximum(orig_step_index, target_step_index)
+        blend_step_index = np.clip(blend_step_index, lower_step_bound, upper_step_bound)
+        for i in range(1, len(blend_step_index)):
+            blend_step_index[i] = np.maximum(blend_step_index[i], blend_step_index[i - 1] + 1)
+        blend_step_index = np.clip(blend_step_index, lower_step_bound, upper_step_bound)
+        for i in range(len(blend_step_index) - 2, -1, -1):
+            blend_step_index[i] = np.minimum(blend_step_index[i], blend_step_index[i + 1] - 1)
+
+        new_values = start_val + blend_step_index * step
+
+        if is_datetime:
+            if self.obj.tz is None:
+                randomized_index = pd.to_datetime(new_values)
+            else:
+                randomized_index = pd.to_datetime(new_values, utc=True).tz_convert(self.obj.tz)
+        else:
+            randomized_index = pd.Index(new_values, dtype=self.obj.dtype)
+        randomized_index.name = self.obj.name
+        return randomized_index
+
     # ############# Frequency ############# #
 
     @hybrid_method
@@ -674,7 +770,7 @@ class BaseIDXAccessor(Configured, IndexApplier):
             if freq is not None:
                 rule = rule.replace(target_freq=freq)
             return rule
-        raise ValueError(f"Cannot build Resampler from {rule}")
+        raise ValueError(f"Cannot build Resampler from {rule!r}")
 
     # ############# Points and ranges ############# #
 
@@ -780,8 +876,8 @@ class BaseIDXAccessor(Configured, IndexApplier):
             chunk_meta (Optional[Iterable[ChunkMeta]]): Iterable containing metadata for each chunk.
 
                 See `vectorbtpro.utils.chunking.iter_chunk_meta`.
-            select (bool): Determines whether to use `ArraySelector` (if True) or
-                `ArraySlicer` (if False) for extracting the chunk.
+            select (bool): Determines whether to use `vectorbtpro.utils.chunking.ArraySelector` (if True) or
+                `vectorbtpro.utils.chunking.ArraySlicer` (if False) for extracting the chunk.
             return_chunk_meta (bool): Flag indicating whether to yield chunk metadata alongside each chunk.
 
         Yields:
@@ -1679,7 +1775,7 @@ class BaseAccessor(Wrapping):
         Returns:
             SeriesFrame: Aligned object.
 
-        Example:
+        Examples:
             ```pycon
             >>> df1 = pd.DataFrame(
             ...     [[1, 2], [3, 4]],
@@ -1777,7 +1873,7 @@ class BaseAccessor(Wrapping):
         Returns:
             SeriesFrame: Cross aligned object.
 
-        Example:
+        Examples:
             ```pycon
             >>> df1 = pd.DataFrame(
             ...     [[1, 2, 3, 4], [5, 6, 7, 8]],
@@ -2104,7 +2200,7 @@ class BaseAccessor(Wrapping):
         Returns:
             Frame: Concatenated DataFrame.
 
-        Example:
+        Examples:
             ```pycon
             >>> sr = pd.Series([1, 2], index=['x', 'y'])
             >>> df = pd.DataFrame([[3, 4], [5, 6]], index=['x', 'y'], columns=['a', 'b'])
@@ -2519,7 +2615,7 @@ class BaseAccessor(Wrapping):
         !!! note
             All required variables will broadcast against each other prior to the evaluation.
 
-        Example:
+        Examples:
             ```pycon
             >>> sr = pd.Series([1, 2, 3], index=['x', 'y', 'z'])
             >>> df = pd.DataFrame([[4, 5, 6]], index=['x', 'y', 'z'], columns=['a', 'b', 'c'])

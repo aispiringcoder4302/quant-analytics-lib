@@ -1194,7 +1194,7 @@ class CacheableRegistry(Base):
                 elif kind.lower() == "runnable":
                     setups = set(self.run_setups.values())
                 else:
-                    raise ValueError(f"kind '{kind}' is not supported")
+                    raise ValueError(f"Invalid kind: {kind!r}")
                 for setup in setups:
                     if setup not in exclude:
                         for q in query_like:
@@ -2633,7 +2633,7 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
     Delegates cache management to its child setups of type `CARunSetup`. A single unbound cacheable
     can be bound to multiple instances, establishing a one-to-many relationship with `CARunSetup` instances.
 
-    !!! hint
+    !!! tip
         Access unbound callables using class attributes instead of instance attributes.
     """
 

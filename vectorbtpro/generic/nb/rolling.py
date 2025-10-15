@@ -1360,7 +1360,7 @@ def ma_1d_nb(
         return wwm_mean_1d_nb(arr, window, minp=minp, adjust=adjust)
     if wtype == WType.Vidya:
         return vidya_1d_nb(arr, window, minp=minp)
-    raise ValueError("Invalid rolling mode")
+    raise ValueError("Invalid WType option")
 
 
 @register_chunkable(
@@ -1431,7 +1431,7 @@ def msd_1d_nb(
         return ewm_std_1d_nb(arr, window, minp=minp, adjust=adjust)
     if wtype == WType.Wilder:
         return wwm_std_1d_nb(arr, window, minp=minp, adjust=adjust)
-    raise ValueError("Invalid rolling mode")
+    raise ValueError("Invalid WType option")
 
 
 @register_chunkable(

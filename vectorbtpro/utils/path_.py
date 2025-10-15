@@ -176,7 +176,7 @@ def file_size(file_path: tp.PathLike, readable: bool = True, **kwargs) -> tp.Uni
     """
     file_path = Path(file_path)
     if not file_exists(file_path):
-        raise FileNotFoundError(f"File '{file_path}' not found")
+        raise FileNotFoundError(f"File {str(file_path.resolve())!r} not found")
     n_bytes = file_path.stat().st_size
     if readable:
         return humanize.naturalsize(n_bytes, **kwargs)
@@ -197,7 +197,7 @@ def dir_size(dir_path: tp.PathLike, readable: bool = True, **kwargs) -> tp.Union
     """
     dir_path = Path(dir_path)
     if not dir_exists(dir_path):
-        raise FileNotFoundError(f"Directory '{dir_path}' not found")
+        raise FileNotFoundError(f"Directory {str(dir_path.resolve())!r} not found")
     n_bytes = sum(path.stat().st_size for path in dir_path.glob("**/*") if path.is_file())
     if readable:
         return humanize.naturalsize(n_bytes, **kwargs)
@@ -249,9 +249,9 @@ def check_mkdir(
 
     dir_path = Path(dir_path)
     if dir_path.exists() and not dir_path.is_dir():
-        raise TypeError(f"Path '{dir_path}' is not a directory")
+        raise TypeError(f"Path {str(dir_path.resolve())!r} is not a directory")
     if not dir_path.exists() and not mkdir:
-        raise FileNotFoundError(f"Directory '{dir_path}' not found. Use mkdir=True to proceed.")
+        raise FileNotFoundError(f"Directory {str(dir_path.resolve())!r} not found. Use mkdir=True to proceed.")
     dir_path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
 
 
@@ -301,7 +301,7 @@ def remove_file(file_path: tp.PathLike, missing_ok: bool = False) -> None:
     if file_exists(file_path):
         file_path.unlink()
     elif not missing_ok:
-        raise FileNotFoundError(f"File '{file_path}' not found")
+        raise FileNotFoundError(f"File {str(file_path.resolve())!r} not found")
 
 
 def remove_dir(dir_path: tp.PathLike, missing_ok: bool = False, with_contents: bool = False) -> None:
@@ -319,10 +319,10 @@ def remove_dir(dir_path: tp.PathLike, missing_ok: bool = False, with_contents: b
     dir_path = Path(dir_path)
     if dir_exists(dir_path):
         if any(dir_path.iterdir()) and not with_contents:
-            raise ValueError(f"Directory '{dir_path}' has contents. Use with_contents=True to proceed.")
+            raise ValueError(f"Directory {str(dir_path.resolve())!r} has contents. Use with_contents=True to proceed.")
         shutil.rmtree(dir_path)
     elif not missing_ok:
-        raise FileNotFoundError(f"Directory '{dir_path}' not found")
+        raise FileNotFoundError(f"Directory {str(dir_path.resolve())!r} not found")
 
 
 def get_common_prefix(paths: tp.Iterable[tp.PathLike]) -> str:
@@ -551,9 +551,9 @@ def dir_tree(dir_path: Path, **kwargs) -> str:
     """
     dir_path = Path(dir_path)
     if not dir_path.exists():
-        raise FileNotFoundError(f"Directory '{dir_path}' not found")
+        raise FileNotFoundError(f"Directory {str(dir_path.resolve())!r} not found")
     if not dir_path.is_dir():
-        raise TypeError(f"Path '{dir_path}' is not a directory")
+        raise TypeError(f"Path {str(dir_path.resolve())!r} is not a directory")
     paths = list(dir_path.rglob("*"))
     return dir_tree_from_paths(paths=paths, root=dir_path, **kwargs)
 

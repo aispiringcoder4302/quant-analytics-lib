@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vectorbtpro"
-version = "2025.7.27"
+version = "2025.10.15"
 description = "Next-Generation Quantitative Analysis Tool"
 license = { file = "LICENSE" }
 authors = [{ name = "Oleg Polakow", email = "olegpolakow@vectorbt.pro" }]
@@ -83,7 +83,6 @@ ind-base = [
 ind = [
     "vectorbtpro[ind-base]",
     "ta",
-    "pandas_ta",
     "technical",
     "smartmoneyconcepts>0.0.10"
 ]
@@ -146,13 +145,15 @@ io = [
 knwl-base = [
     "tabulate",
     "ruamel.yaml",
+    "tomlkit",
     "markdown",
     "Pygments",
     "openai",
     "tiktoken",
     "lmdbm",
     "bm25s",
-    "PyStemmer"
+    "PyStemmer",
+    "docstring_parser",
 ]
 knwl = [
     "vectorbtpro[knwl-base]",
@@ -162,10 +163,13 @@ knwl = [
     "fuzzysearch",
     "rapidfuzz",
     "nestedtext",
-    "toml",
     "PyYAML",
     "litellm",
-    "llama_index"
+    "llama_index",
+    "huggingface-hub",
+    "google-genai",
+    "anthropic",
+    "ollama",
 ]
 mcp-base = [
     "mcp",
@@ -174,14 +178,19 @@ mcp-base = [
 mcp = [
     "vectorbtpro[mcp-base]"
 ]
-base = [
-    "vectorbtpro[data-base,ind-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,io-base,knwl-base,mcp-base]"
-]
 base-no-talib = [
     "vectorbtpro[data-base,perf-base,opt-base,exec-base,plot-base,pfopt-base,io-base,knwl-base,mcp-base]"
 ]
-all = [
+base = [
+    "vectorbtpro[base-no-talib,ind-base]"
+]
+all-stable = [
     "vectorbtpro[data,ind,perf,opt,exec,plot,pfopt,stats,msg,io,knwl,mcp]"
+]
+all = [
+    "vectorbtpro[all-stable]",
+    "pandas_ta",
+    "universal-portfolios"
 ]
 
 [tool.setuptools]

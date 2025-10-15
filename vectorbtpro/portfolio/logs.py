@@ -47,7 +47,7 @@ Name: count, dtype: int64
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `Logs.metrics`.
 
 ```pycon
@@ -84,7 +84,7 @@ Name: group, dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `Logs.subplots`.
 
 This class does not have any subplots.

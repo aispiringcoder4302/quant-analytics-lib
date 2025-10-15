@@ -263,7 +263,7 @@ class FileData(LocalData):
                     )
                 ]
                 if len(matched_paths) == 0:
-                    raise FileNotFoundError(f"No paths could be matched with {paths}")
+                    raise FileNotFoundError(f"No paths could be matched for {paths}")
                 if sync:
                     keys = []
                     paths = key_dict()
@@ -281,7 +281,7 @@ class FileData(LocalData):
                 if len(matched_paths) == 1 and single_path:
                     paths = matched_paths[0]
             else:
-                raise TypeError(f"Path '{paths}' is not supported")
+                raise ValueError(f"Invalid paths: {paths!r}")
             if len(keys) == 1 and single_key:
                 keys = keys[0]
 

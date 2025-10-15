@@ -19,6 +19,7 @@ if typing.TYPE_CHECKING:
     from vectorbtpro.data import *
     from vectorbtpro.generic import *
     from vectorbtpro.indicators import *
+    from vectorbtpro.knowledge import *
     from vectorbtpro.labels import *
     from vectorbtpro.ohlcv import *
     from vectorbtpro.portfolio import *
@@ -86,7 +87,10 @@ if settings["importing"]["auto_import"]:
             if hasattr(module, "__all__") and relative_name not in package.__exclude_from__all__:
                 for k in module.__all__:
                     if hasattr(package, k) and getattr(package, k) is not getattr(module, k):
-                        raise ValueError(f"Attempt to override '{k}' in '{package.__name__}' from '{mod_name}'")
+                        raise ValueError(
+                            f"Attempt to override {k!r} from module {package.__name__!r} "
+                            f"with {k!r} from module {module.__name__!r}"
+                        )
                     setattr(package, k, getattr(module, k))
                     package.__all__.append(k)
         return package
@@ -162,7 +166,7 @@ elif star_import.lower() == "minimal":
 elif star_import.lower() == "none":
     __all__ = []
 else:
-    raise ValueError(f"Invalid star import: '{star_import}'")
+    raise ValueError(f"Invalid star_import: {star_import!r}")
 
 
 def whats_imported() -> None:

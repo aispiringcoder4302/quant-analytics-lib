@@ -111,7 +111,7 @@ class HDFData(FileData):
             _full_path = path
         if path.exists():
             if path.is_dir():
-                raise HDFPathNotFoundError(f"No HDF files could be matched with {_full_path}")
+                raise HDFPathNotFoundError(f"No HDF files could be matched with {str(_full_path.resolve())!r}")
             return path, key
         new_path = path.parent
         if key is None:
@@ -158,7 +158,7 @@ class HDFData(FileData):
                         if k.startswith(key) or PurePath("/" + str(k)).match("/" + str(key)):
                             matching_keys.append(k)
                     if len(matching_keys) == 0:
-                        raise HDFKeyNotFoundError(f"No HDF keys could be matched with {key}")
+                        raise HDFKeyNotFoundError(f"No HDF keys could be matched with {key!r}")
                     key_paths = [file_path / k for k in matching_keys]
             except HDFPathNotFoundError:
                 sub_paths = list([Path(p) for p in glob(str(path), recursive=recursive)])

@@ -446,7 +446,7 @@ def deep_getattr(
     Returns:
         Any: Resulting attribute value or the result from calling the attribute.
 
-    !!! hint
+    !!! tip
         If your attribute chain contains only attributes and methods without arguments,
         represent it as a single string.
     """

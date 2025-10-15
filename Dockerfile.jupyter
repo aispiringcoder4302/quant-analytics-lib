@@ -1,10 +1,11 @@
-FROM quay.io/jupyter/scipy-notebook:python-3.11
+FROM quay.io/jupyter/scipy-notebook:python-3.12
 
 USER root
 WORKDIR /tmp
 
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends cmake && \
+    apt-get install -y --no-install-recommends cmake nodejs && \
     rm -rf /var/lib/apt/lists/*
 
 RUN wget https://github.com/ta-lib/ta-lib/releases/download/v0.6.4/ta-lib-0.6.4-src.tar.gz && \
@@ -21,8 +22,13 @@ RUN pip install uv
 
 COPY ./vectorbtpro ./vectorbtpro
 COPY pyproject.toml LICENSE README.md ./
-RUN uv pip install --system --no-cache-dir ".[all]"
-RUN uv pip install --system --no-cache-dir --no-deps "universal-portfolios"
+
+RUN echo "numpy>1.24.3" > override.txt
+RUN uv pip install --system --no-cache-dir ".[all-stable]" --override override.txt
+
+# Unstable or too strict dependencies
+RUN uv pip install --system --no-cache-dir --no-deps pandas-ta
+RUN uv pip install --system --no-cache-dir --no-deps universal-portfolios
 
 # https://github.com/plotly/dash/issues/2580
 RUN jupyter lab build --minimize=False

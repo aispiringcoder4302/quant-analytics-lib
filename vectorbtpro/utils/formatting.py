@@ -689,6 +689,11 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
             * "json": `json` (https://docs.python.org/3/library/json.html)
         **kwargs: Keyword arguments for the dump engine.
 
+            Gets merged with the default settings.
+
+        !!! info
+            For default settings, see `dump_engines[<dump_engine>]` in `vectorbtpro._settings.formatting`.
+
     Returns:
         str: Dumped object as a string.
     """
@@ -696,6 +701,22 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         return obj
     if dump_engine.lower() == "repr":
         return repr(obj)
+
+    from vectorbtpro._settings import settings
+    from vectorbtpro.utils.config import merge_dicts
+
+    dump_engines = settings["formatting"]["dump_engines"]
+
+    if dump_engine.lower() == "yaml":
+        from vectorbtpro.utils.module_ import check_installed
+
+        if check_installed("ruamel"):
+            dump_engine = "ruamel"
+        else:
+            dump_engine = "pyyaml"
+
+    kwargs = merge_dicts(dump_engines.get(dump_engine, {}), kwargs)
+
     if dump_engine.lower() == "repr_doc":
         return repr_doc(obj, **kwargs)
     if dump_engine.lower() == "prettify":
@@ -707,13 +728,6 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
         import nestedtext as nt
 
         return nt.dumps(obj, **kwargs)
-    if dump_engine.lower() == "yaml":
-        from vectorbtpro.utils.module_ import check_installed
-
-        if check_installed("ruamel"):
-            dump_engine = "ruamel"
-        else:
-            dump_engine = "pyyaml"
     if dump_engine.lower() == "pyyaml":
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -759,7 +773,7 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
             yaml.Representer = CustomRepresenter
         for k, v in kwargs.items():
             if not hasattr(yaml, k):
-                raise AttributeError(f"Invalid YAML attribute: '{k}'")
+                raise AttributeError(f"Invalid YAML attribute: {k!r}")
             if isinstance(v, tuple):
                 getattr(yaml, k)(*v)
             elif isinstance(v, dict):
@@ -773,15 +787,15 @@ def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:
     if dump_engine.lower() == "toml":
         from vectorbtpro.utils.module_ import assert_can_import
 
-        assert_can_import("toml")
-        import toml
+        assert_can_import("tomlkit")
+        import tomlkit
 
-        return toml.dumps(obj, **kwargs)
+        return tomlkit.dumps(obj, **kwargs)
     if dump_engine.lower() == "json":
         import json
 
         return json.dumps(obj, **kwargs)
-    raise ValueError(f"Invalid dump engine: '{dump_engine}'")
+    raise ValueError(f"Invalid dump_engine: {dump_engine!r}")
 
 
 def get_dump_language(dump_engine: str) -> str:
@@ -832,3 +846,78 @@ def get_dump_frontmatter(dump_engine: str) -> str:
     if dump_engine.lower() in ("ruamel", "ruamel.yaml"):
         return "---"
     return ""
+
+
+def head_and_tail(
+    text: str,
+    head_max_lines: int = 10,
+    head_max_chars: int = 1000,
+    tail_max_lines: int = 10,
+    tail_max_chars: int = 1000,
+    min_skipped_lines: int = 5,
+    min_skipped_chars: int = 500,
+) -> tp.Tuple[str, str]:
+    """Return head and tail segments of a string under line/char caps.
+
+    Args:
+        text (str): Input text to split.
+        head_max_lines (int): Maximum lines allowed in the head.
+        head_max_chars (int): Maximum characters allowed in the head (including newlines).
+        tail_max_lines (int): Maximum lines allowed in the tail.
+        tail_max_chars (int): Maximum characters allowed in the tail (including newlines).
+        min_skipped_lines (int): Minimum lines to skip for truncation.
+        min_skipped_chars (int): Minimum characters to skip for truncation.
+
+    Returns:
+        Tuple[str, str]: Head and tail ("" if fully covered by head) segments.
+    """
+    if not text:
+        return "", ""
+
+    def _take_segment_from_lines(lines, max_lines, max_chars, side):
+        if not lines or max_lines <= 0 or max_chars <= 0:
+            return ""
+
+        it = lines if side == "start" else reversed(lines)
+        out_chunks = []
+        chars_used = 0
+        lines_used = 0
+
+        for line in it:
+            if lines_used >= max_lines or chars_used >= max_chars:
+                break
+
+            remaining = max_chars - chars_used
+            if len(line) <= remaining:
+                out_chunks.append(line)
+                chars_used += len(line)
+                lines_used += 1
+            else:
+                if side == "start":
+                    chunk = line[:remaining]
+                else:
+                    chunk = line[-remaining:]
+                    if remaining == 1 and line.endswith("\r\n"):
+                        chunk = "\r"
+                out_chunks.append(chunk)
+                chars_used += len(chunk)
+                lines_used += 1
+                break
+
+        if side == "end":
+            out_chunks.reverse()
+        return "".join(out_chunks)
+
+    lines = text.splitlines(keepends=True)
+    head = _take_segment_from_lines(lines, head_max_lines, head_max_chars, side="start")
+    if len(head) >= len(text):
+        return text, ""
+
+    tail = _take_segment_from_lines(lines, tail_max_lines, tail_max_chars, side="end")
+    allowed_tail = len(text) - len(head)
+    tail = tail[-allowed_tail:]
+    mid = text[len(head) : len(text) - len(tail)]
+    if len(mid.splitlines()) <= min_skipped_lines and len(mid) <= min_skipped_chars:
+        return text, ""
+
+    return head, tail

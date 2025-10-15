@@ -77,7 +77,7 @@ Global settings, including `bm_returns` and `year_freq`, can be configured throu
 
 ## Stats
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.stats_builder.StatsBuilderMixin.stats` and `ReturnsAccessor.metrics`.
 
 ```pycon
@@ -109,7 +109,7 @@ dtype: object
 
 ## Plots
 
-!!! hint
+!!! tip
     See `vectorbtpro.generic.plots_builder.PlotsBuilderMixin.plots` and `ReturnsAccessor.subplots`.
 
 The `ReturnsAccessor` class provides a single subplot based on `ReturnsAccessor.plot_cumulative`:

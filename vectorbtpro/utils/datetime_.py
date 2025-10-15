@@ -838,7 +838,7 @@ class DTC(DefineMixin):
             return cls.from_time(dtc)
         if isinstance(dtc, (int, str)):
             return cls.parse_time_str(str(dtc), **parse_kwargs)
-        raise TypeError(f"Invalid type: {type(dtc)}")
+        raise ValueError(f"Invalid dtc: {dtc!r}")
 
     @classmethod
     def is_parsable(
@@ -1589,8 +1589,6 @@ def to_ns(obj: tp.ArrayLike, tz_naive_ns: tp.Optional[bool] = None) -> tp.ArrayL
         obj = np.datetime64(obj)
     if isinstance(obj, timedelta):
         obj = np.timedelta64(obj)
-    if isinstance(obj, pd.DatetimeIndex):
-        obj = obj.tz_localize(None).tz_localize("utc")
     if isinstance(obj, pd.PeriodIndex):
         obj = obj.to_timestamp()
     if isinstance(obj, pd.DatetimeIndex):
@@ -1999,9 +1997,9 @@ def get_dt_index_gaps(
     index = prepare_dt_index(index, **kwargs)
     checks.assert_instance_of(index, pd.DatetimeIndex)
     if not index.is_unique:
-        raise ValueError("Datetime index must be unique")
+        index = index.unique()
     if not index.is_monotonic_increasing:
-        raise ValueError("Datetime index must be monotonically increasing")
+        index = index.sort_values()
     if freq is None:
         freq = infer_index_freq(index, freq="auto", allow_numeric=False, freq_from_n=False)
     else:

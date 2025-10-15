@@ -692,7 +692,7 @@ def is_deep_equal(
                 try:
                     assert_method(obj1[field], obj2[field], **__kwargs)
                 except Exception as e:
-                    raise AssertionError(f"Dtype field '{field}'") from e
+                    raise AssertionError(f"Dtype field {field!r}") from e
         else:
             assert_method(obj1, obj2, **__kwargs)
 
@@ -741,26 +741,39 @@ def is_deep_equal(
                     raise e
                 _check_array(np.testing.assert_allclose)
         elif isinstance(obj1, (tuple, list)):
-            for i in range(len(obj1)):
+            if len(obj1) != len(obj2):
+                raise AssertionError(f"Length mismatch: {len(obj1)} != {len(obj2)}")
+            for i, (item1, item2) in enumerate(zip(obj1, obj2)):
                 if not is_deep_equal(
-                    obj1[i],
-                    obj2[i],
+                    item1,
+                    item2,
                     check_exact=check_exact,
                     debug=debug,
                     only_types=only_types,
-                    _key=f"[{i}]" if _key is None else _key + f"[{i}]",
+                    _key=f"{_key}[{i}]" if _key else f"[{i}]",
                     **kwargs,
                 ):
                     return False
         elif isinstance(obj1, dict):
-            for k in obj1.keys():
+            keys1 = set(obj1.keys())
+            keys2 = set(obj2.keys())
+            if keys1 != keys2:
+                missing = keys1 - keys2
+                extra = keys2 - keys1
+                msg = []
+                if missing:
+                    msg.append(f"missing keys {missing}")
+                if extra:
+                    msg.append(f"unexpected keys {extra}")
+                raise AssertionError("Key mismatch: " + "; ".join(msg))
+            for k in keys1:
                 if not is_deep_equal(
                     obj1[k],
                     obj2[k],
                     check_exact=check_exact,
                     debug=debug,
                     only_types=only_types,
-                    _key=f"['{k}']" if _key is None else _key + f"['{k}']",
+                    _key=f"{_key}['{k}']" if _key else f"['{k}']",
                     **kwargs,
                 ):
                     return False
@@ -999,7 +1012,7 @@ def assert_in(obj1: tp.Any, obj2: tp.Sequence, arg_name: tp.Optional[str] = None
     if arg_name is None:
         x = ""
     else:
-        x = f"for '{arg_name}'"
+        x = f"for {arg_name!r}"
     if obj1 not in obj2:
         raise AssertionError(f"{obj1} not found in {obj2}{x}")
 
@@ -1036,7 +1049,7 @@ def assert_not_none(obj: tp.Any, arg_name: tp.Optional[str] = None) -> None:
     if arg_name is None:
         x = "Argument"
     else:
-        x = f"Argument '{arg_name}'"
+        x = f"Argument {arg_name!r}"
     if obj is None:
         raise AssertionError(f"{x} cannot be None")
 
@@ -1059,7 +1072,7 @@ def assert_instance_of(obj: tp.Any, types: tp.TypeLike, arg_name: tp.Optional[st
     if arg_name is None:
         x = "Argument"
     else:
-        x = f"Argument '{arg_name}'"
+        x = f"Argument {arg_name!r}"
     if not is_instance_of(obj, types):
         if isinstance(types, tuple):
             raise AssertionError(f"{x} must be of one of types {types}, not {type(obj)}")
@@ -1085,7 +1098,7 @@ def assert_not_instance_of(obj: tp.Any, types: tp.TypeLike, arg_name: tp.Optiona
     if arg_name is None:
         x = "Argument"
     else:
-        x = f"Argument '{arg_name}'"
+        x = f"Argument {arg_name!r}"
     if is_instance_of(obj, types):
         if isinstance(types, tuple):
             raise AssertionError(f"{x} cannot be of one of types {types}")
@@ -1110,7 +1123,7 @@ def assert_subclass_of(obj: tp.Type, classes: tp.TypeLike, arg_name: tp.Optional
     if arg_name is None:
         x = "Argument"
     else:
-        x = f"Argument '{arg_name}'"
+        x = f"Argument {arg_name!r}"
     if not is_subclass_of(obj, classes):
         if isinstance(classes, tuple):
             raise AssertionError(f"{x} must be a subclass of one of types {classes}")
@@ -1135,7 +1148,7 @@ def assert_not_subclass_of(obj: tp.Type, classes: tp.TypeLike, arg_name: tp.Opti
     if arg_name is None:
         x = "Argument"
     else:
-        x = f"Argument '{arg_name}'"
+        x = f"Argument {arg_name!r}"
     if is_subclass_of(obj, classes):
         if isinstance(classes, tuple):
             raise AssertionError(f"{x} cannot be a subclass of one of types {classes}")
@@ -1179,7 +1192,7 @@ def assert_dtype(obj: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_name
     if arg_name is None:
         x = "Data type"
     else:
-        x = f"Data type of '{arg_name}'"
+        x = f"Data type of {arg_name!r}"
     obj = to_any_array(obj)
     if isinstance(dtype, tuple):
         if isinstance(obj, pd.DataFrame):
@@ -1218,7 +1231,7 @@ def assert_subdtype(obj: tp.ArrayLike, dtype: tp.MaybeTuple[tp.DTypeLike], arg_n
     if arg_name is None:
         x = "Data type"
     else:
-        x = f"Data type of '{arg_name}'"
+        x = f"Data type of {arg_name!r}"
     obj = to_any_array(obj)
     if isinstance(dtype, tuple):
         if isinstance(obj, pd.DataFrame):
@@ -1470,7 +1483,7 @@ def assert_level_not_exists(obj: tp.Index, level_name: str) -> None:
     else:
         names = [obj.name]
     if level_name in names:
-        raise AssertionError(f"Level {level_name} already exists in {names}")
+        raise AssertionError(f"Level {level_name!r} already exists in {names}")
 
 
 def assert_equal(obj1: tp.Any, obj2: tp.Any, deep: bool = False) -> None:

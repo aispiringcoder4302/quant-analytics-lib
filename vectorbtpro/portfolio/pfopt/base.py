@@ -345,7 +345,7 @@ def resolve_pypfopt_func_kwargs(
 
     for arg_name, arg_value in signature.parameters.items():
         if arg_value.kind == inspect.Parameter.VAR_POSITIONAL:
-            raise TypeError(f"Variable positional arguments in {pypfopt_func} cannot be parsed")
+            raise TypeError(f"Variable positional arguments in {pypfopt_func!r} cannot be parsed")
         elif arg_value.kind == inspect.Parameter.VAR_KEYWORD:
             if var_kwarg_names is None:
                 var_kwarg_names = []
@@ -427,7 +427,7 @@ def resolve_pypfopt_expected_returns(
 
         if hasattr(pypfopt.expected_returns, expected_returns):
             return resolve_pypfopt_func_call(getattr(pypfopt.expected_returns, expected_returns), **kwargs)
-        raise NotImplementedError("Return model '{}' is not supported".format(expected_returns))
+        raise NotImplementedError(f"Return model {expected_returns!r} is not supported")
     if callable(expected_returns):
         return resolve_pypfopt_func_call(expected_returns, **kwargs)
     return expected_returns
@@ -506,7 +506,7 @@ def resolve_pypfopt_cov_matrix(
 
         if hasattr(pypfopt.risk_models, cov_matrix):
             return resolve_pypfopt_func_call(getattr(pypfopt.risk_models, cov_matrix), **kwargs)
-        raise NotImplementedError("Risk model '{}' is not supported".format(cov_matrix))
+        raise NotImplementedError(f"Risk model {cov_matrix!r} is not supported")
     if callable(cov_matrix):
         return resolve_pypfopt_func_call(cov_matrix, **kwargs)
     return cov_matrix
@@ -584,12 +584,12 @@ def resolve_pypfopt_optimizer(
 
         if hasattr(pypfopt, optimizer):
             return resolve_pypfopt_func_call(getattr(pypfopt, optimizer), **kwargs)
-        raise NotImplementedError("Optimizer '{}' is not supported".format(optimizer))
+        raise NotImplementedError(f"Optimizer {optimizer!r} is not supported")
     if isinstance(optimizer, type) and issubclass(optimizer, BaseOptimizer):
         return resolve_pypfopt_func_call(optimizer, **kwargs)
     if isinstance(optimizer, BaseOptimizer):
         return optimizer
-    raise NotImplementedError("Optimizer {} is not supported".format(optimizer))
+    raise NotImplementedError(f"Optimizer {optimizer!r} is not supported")
 
 
 def pypfopt_optimize(
@@ -1723,7 +1723,7 @@ def riskfolio_optimize(
                     )
                     port.w_max, port.w_min = warn_stdout(rp.hrp_constraints)(**matched_kwargs)
                 else:
-                    raise ValueError(f"Constraints method '{constraints_method}' is not supported")
+                    raise NotImplementedError(f"Constraints method {constraints_method!r} is not supported")
 
             # Resolve views
             if views is not None:
@@ -1750,7 +1750,7 @@ def riskfolio_optimize(
                     if ann_factor is not None:
                         Q /= ann_factor
                     else:
-                        warn(f"Set frequency and year frequency to adjust expected returns")
+                        warn("Set frequency and year frequency to adjust expected returns")
                     kwargs["P"] = P
                     unused_arg_names.add("P")
                     kwargs["Q"] = Q
@@ -1787,13 +1787,13 @@ def riskfolio_optimize(
                     if ann_factor is not None:
                         Q_f /= ann_factor
                     else:
-                        warn(f"Set frequency and year frequency to adjust expected returns")
+                        warn("Set frequency and year frequency to adjust expected returns")
                     kwargs["P_f"] = P_f
                     unused_arg_names.add("P_f")
                     kwargs["Q_f"] = Q_f
                     unused_arg_names.add("Q_f")
                 else:
-                    raise ValueError(f"Views method '{constraints_method}' is not supported")
+                    raise NotImplementedError(f"Views method {views_method!r} is not supported")
 
             # Run stats
             for stats_method in stats_methods:
@@ -2467,7 +2467,7 @@ class PortfolioOptimizer(Analyzable):
             2010-03-31 00:00:00+00:00  0.497465  0.500215  0.002319
             ```
 
-            !!! hint
+            !!! tip
                 There is little benefit to using a Numba-compiled loop unless rebalancing thousands
                 of times. Typically, a regular Python loop with a Numba-compiled allocation function suffices.
         """
@@ -2952,7 +2952,7 @@ class PortfolioOptimizer(Analyzable):
             if isinstance(_algo, AlgoResult):
                 weights = _algo.weights[wrapper.columns].values
             else:
-                raise TypeError(f"Algo {_algo} not supported")
+                raise NotImplementedError(f"Algo {_algo!r} is not supported")
             if "on" not in kwargs:
                 group_config["on"] = nb.get_alloc_points_nb(
                     weights,
@@ -3343,7 +3343,7 @@ class PortfolioOptimizer(Analyzable):
         has its own wrapper that holds groups instead of columns, while the wrapper of the `PortfolioOptimizer`
         instance contains regular columns grouped by groups.
 
-        !!! hint
+        !!! tip
             Wrap arrays with `vectorbtpro.generic.splitting.base.Takeable` to split them automatically.
 
         Args:
@@ -3577,7 +3577,7 @@ class PortfolioOptimizer(Analyzable):
             2010-05-13 00:00:00+00:00  0.434084  0.281246  0.284670
             ```
 
-            !!! hint
+            !!! tip
                 There is little reason to use a Numba-compiled loop, except when rebalancing thousands of times.
                 Typically, a regular Python loop with a Numba-compiled optimization function is sufficient.
         """
@@ -3949,7 +3949,7 @@ class PortfolioOptimizer(Analyzable):
             elif dropna.lower() == "head":
                 out = out.iloc[idx_arr.min() :]
             else:
-                raise ValueError(f"Invalid dropna: '{dropna}'")
+                raise ValueError(f"Invalid dropna: {dropna!r}")
         if squeeze_groups and self.wrapper.grouped_ndim == 1:
             n_group_levels = self.wrapper.grouper.get_index().nlevels
             out = out.droplevel(tuple(range(n_group_levels)), axis=1)

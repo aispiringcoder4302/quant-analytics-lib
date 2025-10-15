@@ -20,7 +20,10 @@ pandas_ta_available = True
 try:
     import pandas_ta
 except:
-    pandas_ta_available = False
+    try:
+        import pandas_ta_classic as pandas_ta
+    except:
+        pandas_ta_available = False
 
 talib_available = True
 try:
@@ -136,7 +139,8 @@ class TestFactory:
             indicator1._p_mapper.append(indicator2._p_mapper),
         )
 
-    def test_config(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_config(self, tmp_path, test_file_format):
         F = vbt.IndicatorFactory(input_names=["ts"], param_names=["p"], output_names=["out"])
 
         def apply_func(ts, p, a, b=10):
@@ -149,8 +153,8 @@ class TestFactory:
         assert I.loads(indicator.dumps()).equals(indicator)
         indicator.save(tmp_path / "indicator")
         assert I.load(tmp_path / "indicator").equals(indicator)
-        indicator.save(tmp_path / "indicator", file_format="ini")
-        assert I.load(tmp_path / "indicator", file_format="ini").equals(indicator)
+        indicator.save(tmp_path / "indicator", file_format=test_file_format)
+        assert I.load(tmp_path / "indicator", file_format=test_file_format).equals(indicator)
 
     def test_with_custom_func(self):
         F = vbt.IndicatorFactory(input_names=["ts"], param_names=["p"], output_names=["out"])

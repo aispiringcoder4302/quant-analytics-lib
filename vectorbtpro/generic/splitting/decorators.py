@@ -227,7 +227,7 @@ def split(
                                 var_apply_kwargs[k] = v
                                 assigned = True
                             if not assigned:
-                                raise ValueError(f"Argument '{k}' couldn't be assigned")
+                                raise ValueError(f"Argument {k!r} couldn't be assigned")
                     else:
                         for k, v in var_kwargs.items():
                             if k == "freq":
@@ -530,7 +530,7 @@ def cv_split(
                             )
                             return grid_results, result
                         else:
-                            raise ValueError(f"Invalid return_grid: '{return_grid}'")
+                            raise ValueError(f"Invalid return_grid: {return_grid!r}")
                     return result
                 except Exception as e:
                     if skip_errored or isinstance(e, NoResultsException):

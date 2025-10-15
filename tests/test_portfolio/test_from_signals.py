@@ -2165,6 +2165,27 @@ class TestFromSignals:
                 exits=exits,
                 order_type="limit",
                 slippage=0.01,
+                price=[[np.nan, 3.0, 4.5, 2.5, 1.0, np.inf]],
+                limit_delay=True,
+            ).order_records,
+            np.array(
+                [
+                    (0, 1, 0, 0, 3, 33.333333333333336, 3.0, 0.0, 0, 1, -1),
+                    (0, 2, 0, 0, 1, 22.22222222222222, 4.5, 0.0, 0, 1, -1),
+                    (0, 3, 0, 0, 3, 40.0, 2.5, 0.0, 0, 1, -1),
+                    (0, 4, 0, 0, 4, 100.0, 1.0, 0.0, 0, 1, -1),
+                    (0, 5, 0, 0, 3, 33.333333333333336, 3.0, 0.0, 0, 1, -1),
+                ],
+                dtype=fs_order_dt,
+            ),
+        )
+        assert_records_close(
+            _from_signals_longonly(
+                close=close,
+                entries=entries,
+                exits=exits,
+                order_type="limit",
+                slippage=0.01,
                 limit_delta=[[-np.inf, 0.0, -1 / 2, 1 / 6, 2 / 3, np.inf]],
             ).order_records,
             np.array(
@@ -2320,6 +2341,30 @@ class TestFromSignals:
                 exits=exits,
                 slippage=0.01,
                 order_type="limit",
+                price=[[np.nan, 3.0, 4.5, 2.5, 1.0, np.inf]],
+                limit_delay=True,
+            ).order_records,
+            np.array(
+                [
+                    (0, 1, 0, 0, 3, 33.333333333333336, 3.0, 0.0, 0, 1, -1),
+                    (0, 2, 0, 0, 1, 22.22222222222222, 4.5, 0.0, 0, 1, -1),
+                    (0, 3, 0, 0, 3, 40.0, 2.5, 0.0, 0, 1, -1),
+                    (0, 4, 0, 0, 4, 100.0, 1.0, 0.0, 0, 1, -1),
+                    (0, 5, 0, 0, 3, 33.333333333333336, 3.0, 0.0, 0, 1, -1),
+                ],
+                dtype=fs_order_dt,
+            ),
+        )
+        assert_records_close(
+            _from_signals_longonly(
+                open=open,
+                high=high,
+                low=low,
+                close=close,
+                entries=entries,
+                exits=exits,
+                slippage=0.01,
+                order_type="limit",
                 limit_delta=[[-np.inf, 0.0, -1 / 2, 1 / 6, 2 / 3, np.inf]],
             ).order_records,
             np.array(
@@ -2432,6 +2477,27 @@ class TestFromSignals:
                 exits=exits,
                 order_type="limit",
                 slippage=0.01,
+                price=[[np.nan, 3.0, 4.5, 2.5, 1.0, np.inf]],
+                limit_delay=True,
+            ).order_records,
+            np.array(
+                [
+                    (0, 1, 0, 0, 1, 33.333333333333336, 3.0, 0.0, 1, 1, -1),
+                    (0, 2, 0, 0, 2, 22.22222222222222, 4.5, 0.0, 1, 1, -1),
+                    (0, 3, 0, 0, 1, 40.0, 2.5, 0.0, 1, 1, -1),
+                    (0, 4, 0, 0, 1, 100.0, 1.0, 0.0, 1, 1, -1),
+                    (0, 5, 0, 0, 1, 33.333333333333336, 3.0, 0.0, 1, 1, -1),
+                ],
+                dtype=fs_order_dt,
+            ),
+        )
+        assert_records_close(
+            _from_signals_shortonly(
+                close=close,
+                entries=entries,
+                exits=exits,
+                order_type="limit",
+                slippage=0.01,
                 limit_delta=[[-np.inf, 0.0, -1 / 2, 1 / 6, 2 / 3, np.inf]],
             ).order_records,
             np.array(
@@ -2504,6 +2570,30 @@ class TestFromSignals:
                     (0, 2, 0, 0, 1, 22.22222222222222, 4.5, 0.0, 1, 1, -1),
                     (0, 3, 0, 0, 0, 40.0, 2.5, 0.0, 1, 1, -1),
                     (0, 4, 0, 0, 0, 100.0, 1.0, 0.0, 1, 1, -1),
+                    (0, 5, 0, 0, 1, 33.333333333333336, 3.0, 0.0, 1, 1, -1),
+                ],
+                dtype=fs_order_dt,
+            ),
+        )
+        assert_records_close(
+            _from_signals_shortonly(
+                open=open,
+                high=high,
+                low=low,
+                close=close,
+                entries=entries,
+                exits=exits,
+                order_type="limit",
+                slippage=0.01,
+                price=[[np.nan, 3.0, 4.5, 2.5, 1.0, np.inf]],
+                limit_delay=True,
+            ).order_records,
+            np.array(
+                [
+                    (0, 1, 0, 0, 1, 33.333333333333336, 3.0, 0.0, 1, 1, -1),
+                    (0, 2, 0, 0, 1, 22.22222222222222, 4.5, 0.0, 1, 1, -1),
+                    (0, 3, 0, 0, 1, 40.0, 2.5, 0.0, 1, 1, -1),
+                    (0, 4, 0, 0, 1, 100.0, 1.0, 0.0, 1, 1, -1),
                     (0, 5, 0, 0, 1, 33.333333333333336, 3.0, 0.0, 1, 1, -1),
                 ],
                 dtype=fs_order_dt,

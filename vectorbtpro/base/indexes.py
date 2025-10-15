@@ -480,11 +480,11 @@ def concat_indexes(
         return pd.RangeIndex(stop=sum(map(len, indexes)))
     else:
         if axis == 0:
-            raise ValueError(f"Invalid index concatenation method: '{index_concat_method}'")
+            raise ValueError(f"Invalid index_concat_method for index: {index_concat_method!r}")
         elif axis == 1:
-            raise ValueError(f"Invalid column concatenation method: '{index_concat_method}'")
+            raise ValueError(f"Invalid index_concat_method for columns: {index_concat_method!r}")
         else:
-            raise ValueError(f"Invalid group concatenation method: '{index_concat_method}'")
+            raise ValueError(f"Invalid index_concat_method for groups: {index_concat_method!r}")
     if keys is not None:
         if isinstance(keys[0], pd.Index):
             keys = concat_indexes(
@@ -578,7 +578,7 @@ def drop_levels(
             else:
                 raise KeyError(f"Level at position {level} not found")
         elif strict:
-            raise KeyError(f"Level '{level}' not found")
+            raise KeyError(f"Level {level!r} not found")
     if except_mode:
         levels_to_drop = set(range(index.nlevels)).difference(levels_to_drop)
     if len(levels_to_drop) == 0:
@@ -641,7 +641,7 @@ def rename_levels(index: tp.Index, mapper: tp.MaybeMappingSequence[tp.Level], st
             else:
                 raise KeyError(f"Level at position {k} not found")
         elif strict:
-            raise KeyError(f"Level '{k}' not found")
+            raise KeyError(f"Level {k!r} not found")
     return index
 
 
@@ -697,7 +697,7 @@ def select_levels(
             else:
                 raise KeyError(f"Level at position {level} not found")
         elif strict:
-            raise KeyError(f"Level '{level}' not found")
+            raise KeyError(f"Level {level!r} not found")
     if except_mode:
         levels_to_select = list(set(range(index.nlevels)).difference(levels_to_select))
     if len(levels_to_select) == 0:
@@ -837,11 +837,11 @@ def align_index_to(index1: tp.Index, index2: tp.Index, jitted: tp.JittedOption =
             if name1 is None or name2 is None or name1 == name2:
                 if set(index2.levels[j]).issubset(set(index1.levels[i])):
                     if i in mapper:
-                        raise ValueError(f"There are multiple candidate levels with name {name1} in second index")
+                        raise ValueError(f"There are multiple candidate levels with name {name1!r} in second index")
                     mapper[i] = j
                     continue
                 if name1 == name2 and name1 is not None:
-                    raise ValueError(f"Level {name1} in second index contains values not in first index")
+                    raise ValueError(f"Level {name1!r} in second index contains values not in first index")
     if len(mapper) == 0:
         if len(index1) == len(index2):
             return pd.IndexSlice[:]
@@ -1021,12 +1021,12 @@ def cross_index_with(
             if name1 == name2:
                 if set(index2.levels[j]) == set(index1.levels[i]):
                     if i in levels1 or j in levels2:
-                        raise ValueError(f"There are multiple candidate block levels with name {name1}")
+                        raise ValueError(f"There are multiple candidate block levels with name {name1!r}")
                     levels1.append(i)
                     levels2.append(j)
                     continue
                 if name1 is not None:
-                    raise ValueError(f"Candidate block level {name1} in both indexes has different values")
+                    raise ValueError(f"Candidate block level {name1!r} in both indexes has different values")
 
     if len(levels1) == 0:
         # Regular index product

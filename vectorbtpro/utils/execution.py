@@ -720,7 +720,7 @@ class PathosEngine(ExecutionEngine):
 
             tasks = [(pass_kwargs_as_args, x, {}) for x in tasks]
         else:
-            raise ValueError(f"Invalid pool_type: '{self.pool_type}'")
+            raise ValueError(f"Invalid pool_type: {self.pool_type!r}")
         if size is None and hasattr(tasks, "__len__"):
             size = len(tasks)
         elif keys is not None and hasattr(keys, "__len__"):
@@ -1308,7 +1308,7 @@ class Executor(Configured):
         filter_results (Optional[bool]): Flag indicating whether to filter
             `NoResult` results after execution.
         raise_no_results (Optional[bool]): Flag indicating whether to raise a
-                `NoResultsException` exception if no results remain.
+            `NoResultsException` exception if no results remain.
 
             This flag applies only when `filter_results` is True and is forwarded to the merging
             function if pre-configured.
@@ -2117,7 +2117,7 @@ class Executor(Configured):
             if engine in globals_dict:
                 engine = globals_dict[engine]
             else:
-                raise ValueError(f"Invalid engine name: '{engine}'")
+                raise ValueError(f"Invalid engine: {engine!r}")
         if isinstance(engine, type) and issubclass(engine, ExecutionEngine):
             if engine_name is None:
                 for k, v in engines_cfg.items():
@@ -2169,7 +2169,7 @@ class Executor(Configured):
                         engine_config["pbar_kwargs"] = pbar_kwargs
             engine = partial(engine, **engine_config)
         if not isinstance(engine, ExecutionEngine) and not callable(engine):
-            raise TypeError(f"Invalid engine: {engine}")
+            raise ValueError(f"Invalid engine: {engine!r}")
         return engine, engine_name
 
     @staticmethod
@@ -3177,7 +3177,7 @@ class Executor(Configured):
                     template_context=template_context,
                 )
         else:
-            raise ValueError(f"Invalid distribute: '{self.distribute}'")
+            raise ValueError(f"Invalid distribute: {self.distribute!r}")
 
 
 def execute(

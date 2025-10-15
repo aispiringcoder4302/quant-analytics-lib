@@ -880,7 +880,8 @@ class TestConfig:
         cfg.reset()
         assert cfg == config.Config(dict(a=0, dct=dict(b=0)))
 
-    def test_config_save_and_load(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_config_save_and_load(self, tmp_path, test_file_format):
         cfg = config.Config(
             dict(a=0, dct=dict(b=[1, 2, 3], dct=config.Config(options_=dict(readonly=False)))),
             options_=dict(
@@ -899,12 +900,13 @@ class TestConfig:
         new_cfg = config.Config.load(tmp_path / "config")
         assert new_cfg == deepcopy(cfg)
         assert new_cfg.__dict__ == deepcopy(cfg).__dict__
-        cfg.save(tmp_path / "config", file_format="ini")
-        new_cfg = config.Config.load(tmp_path / "config", file_format="ini")
+        cfg.save(tmp_path / "config", file_format=test_file_format)
+        new_cfg = config.Config.load(tmp_path / "config", file_format=test_file_format)
         assert new_cfg == deepcopy(cfg)
         assert new_cfg.__dict__ == deepcopy(cfg).__dict__
 
-    def test_config_load_update(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_config_load_update(self, tmp_path, test_file_format):
         cfg1 = config.Config(
             dict(a=0, dct=dict(b=[1, 2, 3], dct=config.Config(options_=dict(readonly=False)))),
             options_=dict(
@@ -944,15 +946,16 @@ class TestConfig:
         cfg3.load_update(tmp_path / "config", update_options=True)
         assert cfg3 == deepcopy(cfg1)
         assert cfg3.__dict__ == cfg1.__dict__
-        cfg1.save(tmp_path / "config", file_format="ini")
-        cfg4.load_update(tmp_path / "config", file_format="ini")
+        cfg1.save(tmp_path / "config", file_format=test_file_format)
+        cfg4.load_update(tmp_path / "config", file_format=test_file_format)
         assert cfg4 == deepcopy(cfg1)
         assert cfg4.__dict__ != cfg1.__dict__
-        cfg5.load_update(tmp_path / "config", file_format="ini", update_options=True)
+        cfg5.load_update(tmp_path / "config", file_format=test_file_format, update_options=True)
         assert cfg5 == deepcopy(cfg1)
         assert cfg5.__dict__ == cfg1.__dict__
 
-    def test_configured(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_configured(self, tmp_path, test_file_format):
         class H(config.Configured):
             _rec_id = "123456789"
             _writeable_attrs = {"my_attr", "my_cfg"}
@@ -991,8 +994,8 @@ class TestConfig:
         assert new_h.__dict__ != H(1).__dict__
         assert new_h.my_attr == h.my_attr
         assert new_h.my_cfg == h.my_cfg
-        h.save(tmp_path / "configured", file_format="ini")
-        new_h = H.load(tmp_path / "configured", file_format="ini")
+        h.save(tmp_path / "configured", file_format=test_file_format)
+        new_h = H.load(tmp_path / "configured", file_format=test_file_format)
         assert new_h == h2
         assert new_h != H(1)
         assert new_h.__dict__ == h2.__dict__
@@ -3191,7 +3194,8 @@ class TestExecution:
 
 
 class TestPickling:
-    def test_pdict(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_pdict(self, tmp_path, test_file_format):
         index = pd.date_range("2023", periods=5)
         columns = pd.Index(["a", "b", "c"], name="symbol")
         wrapper = vbt.ArrayWrapper(index, columns)
@@ -3206,14 +3210,14 @@ class TestPickling:
         assert pickling.pdict.load(tmp_path / "pdict") == pdict
         pdict.save(tmp_path / "pdict", rec_state_only=True)
         assert pickling.pdict.load(tmp_path / "pdict") == pdict
-        pdict.save(tmp_path / "pdict", file_format="ini")
-        assert pickling.pdict.load(tmp_path / "pdict", file_format="ini") == pdict
-        pdict.save(tmp_path / "pdict", file_format="ini", nested=False)
-        assert pickling.pdict.load(tmp_path / "pdict", file_format="ini") == pdict
-        pdict.save(tmp_path / "pdict", file_format="ini", use_refs=False)
-        assert pickling.pdict.load(tmp_path / "pdict", file_format="ini", use_refs=False) == pdict
-        pdict.save(tmp_path / "pdict", file_format="ini", use_class_ids=False)
-        assert pickling.pdict.load(tmp_path / "pdict", file_format="ini", use_class_ids=False) == pdict
+        pdict.save(tmp_path / "pdict", file_format=test_file_format)
+        assert pickling.pdict.load(tmp_path / "pdict", file_format=test_file_format) == pdict
+        pdict.save(tmp_path / "pdict", file_format=test_file_format, nested=False)
+        assert pickling.pdict.load(tmp_path / "pdict", file_format=test_file_format) == pdict
+        pdict.save(tmp_path / "pdict", file_format=test_file_format, use_refs=False)
+        assert pickling.pdict.load(tmp_path / "pdict", file_format=test_file_format, use_refs=False) == pdict
+        pdict.save(tmp_path / "pdict", file_format=test_file_format, use_class_ids=False)
+        assert pickling.pdict.load(tmp_path / "pdict", file_format=test_file_format, use_class_ids=False) == pdict
 
     def test_compression(self, tmp_path):
         vbt.Config(a=0).save(tmp_path)

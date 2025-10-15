@@ -333,7 +333,7 @@ class BinanceData(RemoteData):
             if not silence_warnings:
                 warn(traceback.format_exc())
                 warn(
-                    f"Symbol '{str(symbol)}' raised an exception. Returning incomplete data. "
+                    f"Symbol {symbol!r} raised an exception. Returning incomplete data. "
                     "Use update() method to fetch missing data."
                 )
 

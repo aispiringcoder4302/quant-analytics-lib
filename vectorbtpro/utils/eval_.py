@@ -50,7 +50,7 @@ def evaluate(expr: str, context: tp.KwargsLike = None) -> tp.Any:
     expr = inspect.cleandoc(expr)
     if context is None:
         context = {}
-    if "\n" in expr:
+    if "\n" in expr or ";" in expr:
         tree = ast.parse(expr)
         eval_expr = ast.Expression(tree.body[-1].value)
         exec_expr = ast.Module(tree.body[:-1], type_ignores=[])
@@ -133,15 +133,32 @@ class Evaluable(Base):
         return True
 
 
+class KernelExecutionError(RuntimeError):
+    """Exception raised when the kernel reports an execution error."""
+
+    def __init__(
+        self,
+        ename: str,
+        evalue: str,
+        traceback: tp.List[str],
+        output: str,
+    ) -> None:
+        super().__init__(f"{ename}: {evalue}")
+        self.ename = ename
+        self.evalue = evalue
+        self.traceback = traceback
+        self.output = output
+
+
 class JupyterKernel(Configured):
     """Lightweight wrapper class around an IPython kernel process.
 
     Args:
         startup_timeout (int): Seconds to wait for the kernel to become ready.
+        nocolor (bool): Whether to disable color output.
         **manager_kwargs: Keyword arguments for the kernel manager.
 
-    Example:
-
+    Examples:
         ```pycon
         >>> with vbt.JupyterKernel() as kernel:
         ...     output = kernel.execute("print('Hello, world!')")
@@ -157,16 +174,31 @@ class JupyterKernel(Configured):
         ...     output = kernel.execute("1 / 0")
         ...     print(output)
         ZeroDivisionError: division by zero
+        ...     kernel.execute("1 / 0", raise_on_error=True)
+        Traceback (most recent call last):
+        ...
+        KernelExecutionError: ZeroDivisionError: division by zero
         ```
     """
 
-    def __init__(self, startup_timeout: int = 60, **manager_kwargs) -> None:
-        Configured.__init__(self, startup_timeout=startup_timeout, **manager_kwargs)
+    def __init__(
+        self,
+        startup_timeout: int = 60,
+        nocolor: bool = True,
+        **manager_kwargs,
+    ) -> None:
+        Configured.__init__(
+            self,
+            startup_timeout=startup_timeout,
+            nocolor=nocolor,
+            **manager_kwargs,
+        )
 
         if manager_kwargs is None:
             manager_kwargs = {}
 
         self._startup_timeout = startup_timeout
+        self._nocolor = nocolor
         self._manager_kwargs = manager_kwargs
 
         self._manager = None
@@ -180,6 +212,15 @@ class JupyterKernel(Configured):
             int: Timeout in seconds.
         """
         return self._startup_timeout
+
+    @property
+    def nocolor(self) -> bool:
+        """Whether to disable color output.
+
+        Returns:
+            bool: True if color output is disabled, False otherwise.
+        """
+        return self._nocolor
 
     @property
     def manager_kwargs(self) -> tp.Kwargs:
@@ -208,7 +249,12 @@ class JupyterKernel(Configured):
         """
         return self._client
 
-    def collect_output(self, parent_msg_id: str, msg_timeout: tp.Optional[float]) -> str:
+    def collect_output(
+        self,
+        parent_msg_id: str,
+        msg_timeout: tp.Optional[float],
+        raise_on_error: bool = False,
+    ) -> str:
         """Aggregate all messages produced by a single kernel execution.
 
         Args:
@@ -218,6 +264,7 @@ class JupyterKernel(Configured):
             msg_timeout (Optional[float]): Seconds to wait between `IOPub` messages.
 
                 None waits indefinitely.
+            raise_on_error (bool): Whether to raise an error if the kernel execution fails.
 
         Returns:
             str: Newline-joined string containing stdout/stderr, `repr` representations, and tracebacks.
@@ -233,21 +280,29 @@ class JupyterKernel(Configured):
                 msg = self.client.get_iopub_msg(timeout=msg_timeout)
             except queue.Empty:
                 break
-            if msg["parent_header"].get("msg_id") != parent_msg_id:
+            if msg["parent_header"].get("msg_id", None) != parent_msg_id:
                 continue
-            mtype, content = msg["msg_type"], msg["content"]
-            if mtype == "status" and content["execution_state"] == "idle":
+            mtype, content = msg.get("msg_type", None), msg.get("content", {})
+            if mtype == "status" and content.get("execution_state", None) == "idle":
                 break
             if mtype in ("execute_result", "display_data"):
-                for mime, value in content["data"].items():
+                for mime, value in content.get("data", {}).items():
                     if mime.startswith("text/"):
                         outputs.append(value if isinstance(value, str) else str(value))
                     else:
                         outputs.append(f"<{mime}: {type(value).__name__}>")
             elif mtype == "stream":
-                outputs.append(content["text"])
+                outputs.append(content.get("text", ""))
             elif mtype == "error":
-                outputs.extend(content["traceback"])
+                traceback = content.get("traceback", [])
+                outputs.extend(traceback)
+                if raise_on_error:
+                    raise KernelExecutionError(
+                        ename=content.get("ename", "Error"),
+                        evalue=content.get("evalue", ""),
+                        traceback=traceback,
+                        output="\n".join(outputs),
+                    )
         return "\n".join(outputs)
 
     def execute(
@@ -257,6 +312,7 @@ class JupyterKernel(Configured):
         exec_timeout: tp.Optional[float] = None,
         interrupt_grace: float = 5.0,
         msg_timeout: tp.Optional[float] = None,
+        raise_on_error: bool = False,
     ) -> str:
         """Run Python code inside the managed kernel.
 
@@ -272,6 +328,7 @@ class JupyterKernel(Configured):
             msg_timeout (Optional[float]): Seconds to wait between `IOPub` messages.
 
                 None waits indefinitely.
+            raise_on_error (bool): Whether to raise an error if the kernel execution fails.
 
         Returns:
             str: Combined textual output from the cell, including prints, returned `repr` values,
@@ -279,10 +336,19 @@ class JupyterKernel(Configured):
         """
         msg_id = self.client.execute(code, silent=silent)
         if exec_timeout is None:
-            return self.collect_output(msg_id, msg_timeout)
+            return self.collect_output(
+                msg_id,
+                msg_timeout,
+                raise_on_error=raise_on_error,
+            )
 
         with cf.ThreadPoolExecutor(max_workers=1) as pool:
-            future = pool.submit(self.collect_output, msg_id, msg_timeout)
+            future = pool.submit(
+                self.collect_output,
+                msg_id,
+                msg_timeout,
+                raise_on_error=raise_on_error,
+            )
             try:
                 return future.result(timeout=exec_timeout)
             except cf.TimeoutError:
@@ -307,7 +373,10 @@ class JupyterKernel(Configured):
 
         self._manager = KernelManager(**self.manager_kwargs)
 
-        self.manager.start_kernel()
+        extra_args = []
+        if self.nocolor:
+            extra_args.append("--InteractiveShell.colors=NoColor")
+        self.manager.start_kernel(extra_arguments=extra_args)
         self._client = self.manager.client()
         self.client.start_channels()
         self.client.wait_for_ready(timeout=self.startup_timeout)

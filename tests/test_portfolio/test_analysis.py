@@ -1277,7 +1277,8 @@ class TestPortfolio:
         np.testing.assert_array_equal(new_sim_range_pf._sim_start, np.array([5, 30, 30]))
         np.testing.assert_array_equal(new_sim_range_pf._sim_end, np.array([85, 40, 50]))
 
-    def test_config(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_config(self, tmp_path, test_file_format):
         pf2 = pf.copy()
         pf2._metrics = pf2._metrics.copy()
         pf2.metrics["hello"] = "world"
@@ -1287,8 +1288,8 @@ class TestPortfolio:
         assert vbt.Portfolio.loads(pf2.dumps()) == pf2
         pf2.save(tmp_path / "pf")
         assert vbt.Portfolio.load(tmp_path / "pf") == pf2
-        pf2.save(tmp_path / "pf", file_format="ini")
-        assert vbt.Portfolio.load(tmp_path / "pf", file_format="ini") == pf2
+        pf2.save(tmp_path / "pf", file_format=test_file_format)
+        assert vbt.Portfolio.load(tmp_path / "pf", file_format=test_file_format) == pf2
 
     def test_wrapper(self):
         assert_index_equal(pf.wrapper.index, close_na.index)

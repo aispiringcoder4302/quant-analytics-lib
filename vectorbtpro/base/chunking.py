@@ -235,6 +235,8 @@ class FlexArraySelector(ArraySelector, DefineMixin):
         ann_args: tp.Optional[tp.AnnArgs] = None,
         **kwargs,
     ) -> tp.ArrayLike:
+        if chunk_meta.idx is None:
+            raise ValueError("ChunkMeta.idx is required for selection")
         if np.isscalar(obj):
             return obj
         obj = np.asarray(obj)

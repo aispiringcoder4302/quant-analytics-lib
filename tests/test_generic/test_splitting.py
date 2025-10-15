@@ -1035,7 +1035,8 @@ class TestSplitter:
             == "world"
         )
 
-    def test_config(self, tmp_path):
+    @pytest.mark.parametrize("test_file_format", ["ini", "yml", "toml"])
+    def test_config(self, tmp_path, test_file_format):
         splitter = vbt.Splitter.from_splits(
             index,
             [
@@ -1049,8 +1050,8 @@ class TestSplitter:
         assert vbt.Splitter.loads(splitter.dumps()) == splitter
         splitter.save(tmp_path / "splitter")
         assert vbt.Splitter.load(tmp_path / "splitter") == splitter
-        splitter.save(tmp_path / "splitter", file_format="ini")
-        assert vbt.Splitter.load(tmp_path / "splitter", file_format="ini") == splitter
+        splitter.save(tmp_path / "splitter", file_format=test_file_format)
+        assert vbt.Splitter.load(tmp_path / "splitter", file_format=test_file_format) == splitter
 
     def test_indexing(self):
         splitter = vbt.Splitter.from_splits(

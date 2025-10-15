@@ -123,12 +123,28 @@ file name (default is "vbt").
 !!! note
     Environment variables must be set before importing vectorbtpro.
 
-For example, to set the default theme to dark, create a "vbt.ini" file with the following content:
+For example, to set the default theme to dark, create a configuration file with the following content:
 
-```ini
-[plotting]
-default_theme = dark
-```
+=== "INI"
+
+    ```ini title="File vbt.cfg"
+    [plotting]
+    default_theme = "dark"
+    ```
+
+=== "YAML"
+
+    ```yaml title="File vbt.yml"
+    plotting:
+      default_theme: dark
+    ```
+
+=== "TOML"
+
+    ```toml title="File vbt.toml"
+    [plotting]
+    default_theme = "dark"
+    ```
 """
 
 import json
@@ -227,6 +243,23 @@ class flex_cfg(Config):
 
 _settings = {}
 
+env = flex_cfg()
+"""_"""
+
+__pdoc__["env"] = Sub(
+    """Sub-configuration with environment variables.
+
+!!! note
+    All environment variables are set only at import.
+
+```python
+${config_doc}
+```
+"""
+)
+
+_settings["env"] = env
+
 importing = frozen_cfg(
     clear_pycache=False,
     auto_import=True,
@@ -275,7 +308,7 @@ __pdoc__["caching"] = Sub(
 !!! note
     The `use_cached_accessors` setting is applied only at import.
 
-!!! hint
+!!! tip
     Enable `register_lazily` at startup to register unbound cacheables.
 
 ```python
@@ -350,6 +383,7 @@ _settings["numpy"] = numpy
 
 numba = frozen_cfg(
     disable=False,
+    boundscheck=False,
     parallel=None,
     silence_warnings=False,
     check_func_type=True,
@@ -617,7 +651,9 @@ pickling = frozen_cfg(
     extensions=flex_cfg(
         serialization=flex_cfg(
             pickle={"pickle", "pkl", "p"},
-            config={"config", "cfg", "ini"},
+            config={"config", "conf", "cfg", "ini"},
+            yaml={"yaml", "yml"},
+            toml={"toml"},
         ),
         compression=flex_cfg(
             zip={"zip"},
@@ -826,6 +862,8 @@ data = frozen_cfg(
             tz=None,
             normalize=False,
             inclusive="left",
+            randomize=False,
+            step=1,
         ),
         random=flex_cfg(
             start_value=100.0,
@@ -1227,7 +1265,7 @@ plotting = frozen_cfg(
                     "#ab63fa": "#dc3912",
                     "#FECB52": "#17becf",
                     "#FFA15A": "#9467bd",
-                    "rgb(17,17,17)": "#1c1e21",
+                    "rgb(17,17,17)": "#1a1b20",
                 }
             ),
         ),
@@ -1768,6 +1806,7 @@ portfolio = frozen_cfg(
         upon_opposite_entry="reversereduce",
         order_type="market",
         limit_reverse=False,
+        limit_delay=False,
         limit_delta=np.nan,
         limit_tif=-1,
         limit_expiry=-1,
@@ -2062,6 +2101,42 @@ ${config_doc}
 
 _settings["search"] = search
 
+formatting = frozen_cfg(
+    dump_engines=flex_cfg(
+        nestedtext=flex_cfg(
+            indent=2,
+        ),
+        pyyaml=flex_cfg(
+            sort_keys=False,
+            default_flow_style=False,
+            allow_unicode=True,
+        ),
+        ruamel=flex_cfg(
+            default_flow_style=False,
+            allow_unicode=True,
+            width=4096,
+            preserve_quotes=True,
+            indent=dict(mapping=2, sequence=4, offset=2),
+        ),
+        json=flex_cfg(
+            ensure_ascii=False,
+            indent=4,
+        ),
+    )
+)
+"""_"""
+
+__pdoc__["formatting"] = Sub(
+    """Sub-configuration with settings applied across `vectorbtpro.utils.formatting`.
+
+```python
+${config_doc}
+```
+"""
+)
+
+_settings["formatting"] = formatting
+
 knowledge = frozen_cfg(
     options_=dict(override_keys={"chat"}),
     cache=True,
@@ -2069,7 +2144,7 @@ knowledge = frozen_cfg(
     cache_mkdir_kwargs=flex_cfg(),
     clear_cache=False,
     asset_cache_dir=RepEval("Path(cache_dir) / 'asset_cache'"),
-    max_cache_count=5,
+    max_cache_count=24,
     save_cache_kwargs=flex_cfg(),
     load_cache_kwargs=flex_cfg(),
     per_path=True,
@@ -2091,27 +2166,6 @@ knowledge = frozen_cfg(
     ),
     dump_all=False,
     dump_engine="yaml",
-    dump_engine_kwargs=flex_cfg(
-        nestedtext=flex_cfg(
-            indent=2,
-        ),
-        pyyaml=flex_cfg(
-            sort_keys=False,
-            default_flow_style=False,
-            allow_unicode=True,
-        ),
-        ruamel=flex_cfg(
-            default_flow_style=False,
-            allow_unicode=True,
-            width=4096,
-            preserve_quotes=True,
-            indent=dict(mapping=2, sequence=4, offset=2),
-        ),
-        json=flex_cfg(
-            ensure_ascii=False,
-            indent=4,
-        ),
-    ),
     in_dumps=False,
     dump_kwargs=flex_cfg(),
     document_cls=None,
@@ -2159,6 +2213,11 @@ knowledge = frozen_cfg(
         remove_code_title=True,
         even_indentation=True,
         newline_before_list=True,
+        think_to_blockquote=True,
+        think_open_tag="<think>",
+        think_close_tag="</think>",
+        think_separator="\n\n---\n\n",
+        hide_thoughts=False,
         resolve_extensions=True,
         make_links=True,
         frontmatter_to_code=True,
@@ -2264,11 +2323,18 @@ knowledge = frozen_cfg(
             border-radius: 4px;
             overflow-x: auto;
         }
-        .admonition {
-            background-color: #f9f9f9;
+        blockquote {
             margin: 20px 0;
             padding: 10px 20px;
             border-left: 5px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .admonition {
+            margin: 20px 0;
+            padding: 10px 20px;
+            border-left: 5px solid #ccc;
+            background-color: #f9f9f9;
             border-radius: 4px;
         }
         .admonition > p:first-child {
@@ -2315,6 +2381,7 @@ knowledge = frozen_cfg(
     $html_metadata
     $html_content
     $body_extras
+    <div id="bottom" aria-hidden="true"></div>
 </body>
 </html>""",
         root_style_extras=[],
@@ -2328,26 +2395,15 @@ knowledge = frozen_cfg(
             r"""<script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]],processEscapes:!0,processEnvironments:!0},options:{ignoreHtmlClass:".*|",processHtmlClass:"arithmatex"}},document$.subscribe(()=>{MathJax.startup.output.clearCache(),MathJax.typesetClear(),MathJax.texReset(),MathJax.typesetPromise()});</script>""",
         ],
         invert_colors=False,
-        invert_colors_style=""":root {
+        invert_colors_style=r""":root {
     filter: invert(100%);
 }""",
-        auto_scroll=False,
-        auto_scroll_body="""<script>
-function scrollToBottom() {
-    window.scrollTo(0, document.body.scrollHeight);
-}
-function hasMetaRefresh() {
-    return document.querySelector('meta[http-equiv="refresh"]') !== null;
-}
-window.onload = function() {
-    if (hasMetaRefresh()) {
-        scrollToBottom();
-        setInterval(scrollToBottom, 100);
-    }
-};
-</script>""",
-        show_spinner=False,
-        spinner_style=""".loader {
+        refresh_page=False,
+        refresh_script=r"""<meta http-equiv="refresh" content="1">""",
+        auto_scroll=None,
+        auto_scroll_script=r"""<script>!function(){let e="autoscroll:disabled";function o(){try{sessionStorage.setItem(e,"1")}catch{}}function t(){try{return"1"===sessionStorage.getItem(e)}catch{return!1}}let n=(()=>{try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch{return!1}})(),c=()=>null!==document.querySelector('meta[http-equiv="refresh" i]'),r=()=>document.scrollingElement||document.documentElement||document.body,s=()=>Math.max(0,r().scrollHeight-r().clientHeight-10);function l(){if(t()||n||!c())return;let e=4;!function o(){r().scrollTop=s(),--e>0&&requestAnimationFrame(o)}()}addEventListener("wheel",o,{passive:!0,once:!0}),addEventListener("touchstart",o,{passive:!0,once:!0}),addEventListener("touchmove",o,{passive:!0,once:!0}),addEventListener("pointerdown",o,{passive:!0,once:!0}),addEventListener("mousedown",o,{passive:!0,once:!0}),addEventListener("keydown",e=>{["ArrowUp","ArrowDown","PageUp","PageDown","Home","End"," ","Spacebar"].includes(e.key)&&o()},{once:!0}),addEventListener("DOMContentLoaded",l,{once:!0}),addEventListener("pageshow",l,{once:!0}),addEventListener("load",l,{once:!0}),addEventListener("scroll",()=>{t()&&r().scrollTop>=s()&&function o(){try{sessionStorage.removeItem(e)}catch{}}()},{passive:!0})}();</script>""",
+        show_spinner=None,
+        spinner_style=r""".loader {
     width: 300px;
     height: 5px;
     margin: 0 auto;
@@ -2359,7 +2415,7 @@ window.onload = function() {
     content: '';
     width: 300px;
     height: 5px;
-    background: blue;
+    background: #6e53f9;
     position: absolute;
     top: 0;
     left: 0;
@@ -2377,7 +2433,7 @@ window.onload = function() {
     }
 }
     """,
-        spinner_body="""<span class="loader"></span>""",
+        spinner_body=r"""<span class="loader"></span>""",
         output_to=None,
         flush_output=True,
         buffer_output=True,
@@ -2395,11 +2451,9 @@ window.onload = function() {
                 dir_path=RepEval("Path(cache_dir) / 'html'"),
                 mkdir_kwargs=flex_cfg(),
                 temp_files=False,
-                refresh_page=True,
                 file_prefix_len=20,
                 file_suffix_len=6,
-                auto_scroll=True,
-                show_spinner=True,
+                refresh_page=True,
             ),
         ),
     ),
@@ -2417,9 +2471,13 @@ window.onload = function() {
             return_chunks=False,
         ),
         max_tokens=100_000,
-        system_prompt=r"You are a helpful assistant. Given the context information and not prior knowledge, answer the query.",
-        system_as_user=True,
-        context_template=r"""Context information is below.
+        system_prompt=r"""You are a helpful assistant.
+
+Answer the query based on the provided context information (if any).
+
+Use valid Markdown. Wrap any inline code in single backticks and multi-line code in fenced code blocks with a language tag.""",
+        system_as_user=False,
+        context_template=r"""Context information:
 ---------------------
 $context
 ---------------------""",
@@ -2443,13 +2501,31 @@ $context
             openai=flex_cfg(
                 model="text-embedding-3-large",
                 dimensions=256,
+                client_kwargs=flex_cfg(),
+                embeddings_kwargs=flex_cfg(),
+            ),
+            gemini=flex_cfg(
+                model="gemini-embedding-001",
+                config=flex_cfg(
+                    output_dimensionality=768,
+                ),
+                client_kwargs=flex_cfg(),
+                embeddings_kwargs=flex_cfg(),
+                batch_size=100,
+            ),
+            hf_inference=flex_cfg(
+                model="Qwen/Qwen3-Embedding-8B",
+                client_kwargs=flex_cfg(),
+                feature_extraction_kwargs=flex_cfg(),
             ),
             litellm=flex_cfg(
                 model="text-embedding-3-large",
                 dimensions=256,
+                embedding_kwargs=flex_cfg(),
             ),
             llama_index=flex_cfg(
                 embedding="openai",
+                embedding_kwargs=flex_cfg(),
                 embedding_configs=flex_cfg(
                     openai=flex_cfg(
                         model="text-embedding-3-large",
@@ -2457,26 +2533,75 @@ $context
                     )
                 ),
             ),
+            ollama=flex_cfg(
+                model="dengcao/Qwen3-Embedding-0.6B",
+                client_kwargs=flex_cfg(),
+                embed_kwargs=flex_cfg(),
+            ),
         ),
         completions="auto",
-        completions_config=flex_cfg(),
+        completions_config=flex_cfg(
+            tools=None,
+            tool_registry=flex_cfg(),
+            max_tool_calls=None,
+            tool_dump_kwargs=flex_cfg(
+                dump_engine="json",
+            ),
+            tool_request_template="**🛠️ Tool request [`$name`]**\n$payload",
+            tool_response_template=RepEval("f\"**{'✅' if success else '❌'} Tool response [`{name}`, {token_count} tokens]**\\n{payload}\""),
+            tool_display_format="minimal",
+        ),
         completions_configs=flex_cfg(
             openai=flex_cfg(
-                model="gpt-4o",
-                quick_model="gpt-4o-mini",
+                model="gpt-5",
+                quick_model="gpt-5-mini",
+                strict_schema=False,
+                use_responses=True,
+                client_kwargs=flex_cfg(),
+                responses_kwargs=flex_cfg(),
+                completions_kwargs=flex_cfg(),
+            ),
+            anthropic=flex_cfg(
+                model="claude-sonnet-4-0",
+                quick_model="claude-3-5-haiku-latest",
+                client_type="anthropic",
+                client_kwargs=flex_cfg(),
+                messages_kwargs=flex_cfg(
+                    max_tokens=4096,
+                ),
+            ),
+            gemini=flex_cfg(
+                model="gemini-2.5-flash",
+                quick_model="gemini-2.5-flash-lite",
+                client_kwargs=flex_cfg(),
+                completions_kwargs=flex_cfg(),
+            ),
+            hf_inference=flex_cfg(
+                model="openai/gpt-oss-120b",
+                quick_model="openai/gpt-oss-20b",
+                client_kwargs=flex_cfg(),
+                chat_completion_kwargs=flex_cfg(),
             ),
             litellm=flex_cfg(
-                model="gpt-4o",
-                quick_model="gpt-4o-mini",
+                model="gpt-5",
+                quick_model="gpt-5-mini",
+                completion_kwargs=flex_cfg(),
             ),
             llama_index=flex_cfg(
                 llm="openai",
+                llm_kwargs=flex_cfg(),
                 llm_configs=flex_cfg(
                     openai=flex_cfg(
-                        model="gpt-4o",
-                        quick_model="gpt-4o-mini",
+                        model="gpt-5",
+                        quick_model="gpt-5-mini",
                     )
                 ),
+            ),
+            ollama=flex_cfg(
+                model="qwen3:4b",
+                quick_model="qwen3:0.6b",
+                client_kwargs=flex_cfg(),
+                chat_kwargs=flex_cfg(),
             ),
         ),
         text_splitter="segment",
@@ -2513,6 +2638,7 @@ $chunk_text""",
             ),
             llama_index=flex_cfg(
                 node_parser="sentence",
+                node_parser_kwargs=flex_cfg(),
                 node_parser_configs=flex_cfg(),
             ),
         ),
@@ -2539,8 +2665,10 @@ $chunk_text""",
                 mkdir_kwargs=flex_cfg(),
                 dumps_kwargs=flex_cfg(),
                 loads_kwargs=flex_cfg(),
+                open_kwargs=flex_cfg(
+                    flag="c",
+                ),
                 mirror=True,
-                flag="c",
             ),
             cached=flex_cfg(
                 lazy_open=True,
@@ -2696,7 +2824,7 @@ $chunk_text""",
         }
         .nav-btn {
             background: transparent;
-            color: blue;
+            color: #6e53f9;
             border: none;
             cursor: pointer;
         }
@@ -2715,7 +2843,7 @@ $chunk_text""",
             background: lightgray;
         }
         .page-link.active {
-            background: blue;
+            background: #6e53f9;
             color: #fff;
             cursor: default;
         }
@@ -2742,7 +2870,24 @@ $chunk_text""",
             ),
             chat=flex_cfg(
                 chat_dir=RepEval("Path(release_dir) / 'chat'"),
-                system_prompt=r"""You are a helpful assistant with access to VectorBT PRO (also called VBT or vectorbtpro) documentation and relevant Discord history. Use only this provided context to generate clear, accurate answers. Do not reference the open-source vectorbt, as VectorBT PRO is a proprietary successor with significant differences.\n\nWhen coding in Python, use:\n```python\nimport vectorbtpro as vbt\n```\n\nIf metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.\n\nFor each query, follow this structure:\n1. Optionally restate the question in your own words.\n2. Answer using only the available context.\n3. Include any relevant links.""",
+                system_prompt=r"""You are a helpful assistant (called ChatVBT or `vbt.chat`) with access to VectorBT PRO (also called VBT or `vectorbtpro`) documentation and relevant Discord history.
+
+Use only the provided context to generate clear, accurate answers. Do not reference the open-source vectorbt, as VectorBT PRO is a proprietary successor with significant differences. When coding in Python, use:
+
+```python
+import vectorbtpro as vbt
+```
+
+If metadata includes links, reference them to support your answer. Do not include external or fabricated links, and exclude any information not present in the given context.
+
+Use valid Markdown. Wrap any inline code in single backticks and multi-line code in fenced code blocks with a language tag.
+
+For each query, follow this structure:
+
+1. Optionally restate the question in your own words.
+2. Answer using only the available context.
+3. Include any relevant links.
+4. Proofread your response and ensure it is clear, accurate, and formatted correctly.""",
                 doc_ranker_config=flex_cfg(
                     doc_store="lmdb",
                     doc_store_configs=flex_cfg(
@@ -2810,7 +2955,7 @@ $chunk_text""",
 """_"""
 
 __pdoc__["knowledge"] = Sub(
-    """Sub-configuration with settings applied across `vectorbtpro.utils.knowledge`.
+    """Sub-configuration with settings applied across `vectorbtpro.knowledge`.
 
 ```python
 ${config_doc}
@@ -2864,7 +3009,7 @@ class SettingsConfig(Config):
 
             template_name = self["plotting"]["themes"][theme]["template_name"]
             if template_name is None:
-                raise ValueError(f"Must provide template name for the theme '{theme}'")
+                raise ValueError(f"Must provide template name for the theme {theme!r}")
             color_map = self["plotting"]["themes"][theme]["color_map"]
             template = pio.templates[template_name].to_plotly_json()
             if len(color_map) > 0:
@@ -2991,10 +3136,15 @@ if "VBT_SETTINGS_PATH" in os.environ:
 elif settings.file_exists(settings_name):
     settings.load_update(settings_name)
 
+for k, v in settings["env"].items():
+    os.environ[k] = str(v)
+
+if settings["numba"]["disable"]:
+    nb_config.DISABLE_JIT = True
+if settings["numba"]["boundscheck"]:
+    nb_config.BOUNDSCHECK = True
+
 settings.reset_theme()
 settings.register_templates()
 settings.make_checkpoint()
 settings.substitute_sub_config_docs(__pdoc__)
-
-if settings["numba"]["disable"]:
-    nb_config.DISABLE_JIT = True

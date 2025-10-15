@@ -151,16 +151,16 @@ class RelRange(DefineMixin):
     def __attrs_post_init__(self):
         object.__setattr__(self, "offset_anchor", self.offset_anchor.lower())
         if self.offset_anchor not in ("start", "end", "prev_start", "prev_end", "next_start", "next_end"):
-            raise ValueError(f"Invalid offset_anchor: '{self.offset_anchor}'")
+            raise ValueError(f"Invalid offset_anchor: {self.offset_anchor!r}")
         object.__setattr__(self, "offset_space", self.offset_space.lower())
         if self.offset_space not in ("all", "free", "prev"):
-            raise ValueError(f"Invalid offset_space: '{self.offset_space}'")
+            raise ValueError(f"Invalid offset_space: {self.offset_space!r}")
         object.__setattr__(self, "length_space", self.length_space.lower())
         if self.length_space not in ("all", "free", "free_or_prev"):
-            raise ValueError(f"Invalid length_space: '{self.length_space}'")
+            raise ValueError(f"Invalid length_space: {self.length_space!r}")
         object.__setattr__(self, "out_of_bounds", self.out_of_bounds.lower())
         if self.out_of_bounds not in ("keep", "ignore", "warn", "raise"):
-            raise ValueError(f"Invalid out_of_bounds: '{self.out_of_bounds}'")
+            raise ValueError(f"Invalid out_of_bounds: {self.out_of_bounds!r}")
 
     def to_slice(
         self,
@@ -732,7 +732,7 @@ class Splitter(Analyzable):
             if backwards.lower() == "sorted":
                 sort_backwards = True
             else:
-                raise ValueError(f"Invalid backwards: '{backwards}'")
+                raise ValueError(f"Invalid backwards: {backwards!r}")
             backwards = True
         else:
             sort_backwards = False
@@ -2179,7 +2179,7 @@ class Splitter(Analyzable):
                             var_take_kwargs[k] = v
                             assigned = True
                         if not assigned:
-                            raise ValueError(f"Argument '{k}' couldn't be assigned")
+                            raise ValueError(f"Argument {k!r} couldn't be assigned")
                 else:
                     for k, v in var_kwargs.items():
                         if k == "freq":
@@ -2277,7 +2277,7 @@ class Splitter(Analyzable):
                             var_apply_kwargs[k] = v
                             assigned = True
                         if not assigned:
-                            raise ValueError(f"Argument '{k}' couldn't be assigned")
+                            raise ValueError(f"Argument {k!r} couldn't be assigned")
                 else:
                     for k, v in var_kwargs.items():
                         if k == "freq":
@@ -2815,7 +2815,7 @@ class Splitter(Analyzable):
             "slice_or_mask",
             "slice_or_any",
         ):
-            raise ValueError(f"Invalid range_format: '{range_format}'")
+            raise ValueError(f"Invalid range_format: {range_format!r}")
 
         meta = dict()
         meta["was_fixed"] = False
@@ -3370,7 +3370,7 @@ class Splitter(Analyzable):
                     else:
                         i = group_index.get_indexer([g])[0]
                         if i == -1:
-                            raise ValueError(f"Split group '{g}' not found")
+                            raise ValueError(f"Split group {g!r} not found")
                     if mask is None:
                         mask = groups == i
                     else:
@@ -3394,7 +3394,7 @@ class Splitter(Analyzable):
                     else:
                         i = self.split_labels.get_indexer([s])[0]
                         if i == -1:
-                            raise ValueError(f"Split '{s}' not found")
+                            raise ValueError(f"Split {s!r} not found")
                     split_indices.append(i)
                 split_group_indices = split_indices = np.asarray(split_indices)
         if set_ is None:
@@ -3428,7 +3428,7 @@ class Splitter(Analyzable):
                     else:
                         i = group_index.get_indexer([g])[0]
                         if i == -1:
-                            raise ValueError(f"Set group '{g}' not found")
+                            raise ValueError(f"Set group {g!r} not found")
                     if mask is None:
                         mask = groups == i
                     else:
@@ -3452,7 +3452,7 @@ class Splitter(Analyzable):
                     else:
                         i = self.set_labels.get_indexer([s])[0]
                         if i == -1:
-                            raise ValueError(f"Set '{s}' not found")
+                            raise ValueError(f"Set {s!r} not found")
                     set_indices.append(i)
                 set_group_indices = set_indices = np.asarray(set_indices)
         return split_group_indices, set_group_indices, split_indices, set_indices
@@ -3934,7 +3934,7 @@ class Splitter(Analyzable):
                 attach_bounds = attach_bounds.split("_")[0]
                 index_bounds = True
             if attach_bounds.lower() not in ("source", "target"):
-                raise ValueError(f"Invalid attach_bounds: '{attach_bounds}'")
+                raise ValueError(f"Invalid attach_bounds: {attach_bounds!r}")
         if index_combine_kwargs is None:
             index_combine_kwargs = {}
         if stack_axis not in (0, 1):
@@ -4195,7 +4195,7 @@ class Splitter(Analyzable):
                 if attach_bounds is not None:
                     return pd.Series(new_set_objs, index=_attach_bounds(set_labels, one_split_bounds), dtype=object)
             return pd.Series(new_set_objs, index=set_labels, dtype=object)
-        raise ValueError(f"Invalid into: '{into}'")
+        raise ValueError(f"Invalid into: {into!r}")
 
     # ############# Applying ############# #
 
@@ -4431,7 +4431,7 @@ class Splitter(Analyzable):
                 attach_bounds = attach_bounds.split("_")[0]
                 index_bounds = True
             if attach_bounds.lower() not in ("source", "target"):
-                raise ValueError(f"Invalid attach_bounds: '{attach_bounds}'")
+                raise ValueError(f"Invalid attach_bounds: {attach_bounds!r}")
         if index_combine_kwargs is None:
             index_combine_kwargs = {}
         if execute_kwargs is None:
@@ -4765,7 +4765,7 @@ class Splitter(Analyzable):
             execute_kwargs = merge_dicts(dict(show_progress=False if one_set else None), execute_kwargs)
             results = execute(tasks, size=n_sets, keys=keys, **execute_kwargs)
         else:
-            raise ValueError(f"Invalid iteration: '{iteration}'")
+            raise ValueError(f"Invalid iteration: {iteration!r}")
 
         if merge_all:
             if iteration.lower() in ("split_wise", "set_wise"):
@@ -5242,7 +5242,7 @@ class Splitter(Analyzable):
             if not isinstance(column, int):
                 column = self.set_labels.get_indexer([column])[0]
                 if column == -1:
-                    raise ValueError(f"Column '{column}' not found")
+                    raise ValueError(f"Column {column!r} not found")
         else:
             column = 0
         if wrapper_kwargs is None:
@@ -5316,7 +5316,7 @@ class Splitter(Analyzable):
             if not isinstance(column, int):
                 column = self.set_labels.get_indexer([column])[0]
                 if column == -1:
-                    raise ValueError(f"Column '{column}' not found")
+                    raise ValueError(f"Column {column!r} not found")
             new_columns.append(column)
         columns = sorted(new_columns)
         if wrapper_kwargs is None:
@@ -6352,7 +6352,7 @@ class Splitter(Analyzable):
                     index_combine_kwargs = {}
                 index = combine_indexes((split_labels, set_labels), **index_combine_kwargs)
         else:
-            raise ValueError(f"Invalid by: '{by}'")
+            raise ValueError(f"Invalid by: {by!r}")
         return pd.DataFrame(overlap_matrix, index=index, columns=index)
 
     @property

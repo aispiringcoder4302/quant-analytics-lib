@@ -126,7 +126,7 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
         for target_name, settings in config.items():
             settings = dict(settings)
             if target_name.startswith("get_"):
-                raise ValueError(f"Property names cannot have prefix 'get_' ('{target_name}')")
+                raise ValueError(f"Property names cannot have prefix 'get_' (found {target_name!r})")
             method_name = settings.pop("method_name", "get_" + target_name)
             use_in_outputs = settings.pop("use_in_outputs", True)
             method_kwargs = settings.pop("method_kwargs", None)
@@ -161,7 +161,7 @@ def attach_shortcut_properties(config: Config) -> tp.ClassWrapper:
                         pass
 
                 if _method_name is None:
-                    raise ValueError(f"Field '{_target_name}' must be prefilled")
+                    raise ValueError(f"Field {_target_name!r} must be prefilled")
                 return getattr(self, _method_name)(**_method_kwargs)
 
             new_prop.__name__ = target_name
