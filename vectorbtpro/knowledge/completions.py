@@ -1459,8 +1459,8 @@ class Completions(ThoughtProcessor):
         return new_completions.get_completion(message)
 
 
-class OpenAICompatibleMixin:
-    """Mixin class to add OpenAI compatibility features."""
+class OpenAICompatibleCompletions(Completions):
+    """Base class for OpenAI-compatible completion providers."""
 
     def get_message_content(self, response: tp.Any) -> tp.Optional[str]:
         choices = get(response, "choices", None) or []
@@ -1720,7 +1720,7 @@ class OpenAICompatibleMixin:
         return messages
 
 
-class OpenAICompletions(OpenAICompatibleMixin, Completions):
+class OpenAICompletions(OpenAICompatibleCompletions):
     """Completions class for OpenAI.
 
     Args:
@@ -1753,7 +1753,7 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
         completions_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
-        Completions.__init__(
+        OpenAICompatibleCompletions.__init__(
             self,
             model=model,
             strict_schema=strict_schema,
@@ -1964,7 +1964,7 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
                                 out += text
             return out
         else:
-            return OpenAICompatibleMixin.get_message_content(self, response)
+            return OpenAICompatibleCompletions.get_message_content(self, response)
 
     def get_stream_response(self, messages: tp.ChatMessages, enable_tools: bool = True) -> StreamT:
         if self.use_responses:
@@ -1983,13 +1983,13 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
                 return self.process_thought(content=get(response_chunk, "delta", None))
             return self.flush_thought()
         else:
-            return OpenAICompatibleMixin.get_delta_content(self, response_chunk)
+            return OpenAICompatibleCompletions.get_delta_content(self, response_chunk)
 
     def function_to_tool_spec(self, func: tp.Callable, *args, **kwargs) -> tp.Kwargs:
         if self.use_responses:
             return Completions.function_to_tool_spec(self, func, *args, strict=self.strict_schema, **kwargs)
         else:
-            return OpenAICompatibleMixin.function_to_tool_spec(self, func, *args, **kwargs)
+            return OpenAICompatibleCompletions.function_to_tool_spec(self, func, *args, **kwargs)
 
     def get_chat_tool_calls(self, response: tp.Union[ChatCompletionT, ResponseT]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
@@ -2007,7 +2007,7 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
                     )
             return tool_calls
         else:
-            return OpenAICompatibleMixin.get_chat_tool_calls(self, response)
+            return OpenAICompatibleCompletions.get_chat_tool_calls(self, response)
 
     def get_stream_tool_calls(
         self,
@@ -2036,7 +2036,7 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
                             tool_call_mapping[output_index]["arguments"] += delta
             return [tool_call_mapping[i] for i in sorted(tool_call_mapping)]
         else:
-            return OpenAICompatibleMixin.get_stream_tool_calls(self, response_chunks)
+            return OpenAICompatibleCompletions.get_stream_tool_calls(self, response_chunks)
 
     def get_tool_call_messages(self, tool_calls: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
@@ -2052,7 +2052,7 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
                 )
             return messages
         else:
-            return OpenAICompatibleMixin.get_tool_call_messages(self, tool_calls)
+            return OpenAICompatibleCompletions.get_tool_call_messages(self, tool_calls)
 
     def get_tool_result_messages(self, tool_results: tp.List[tp.Kwargs]) -> tp.List[tp.Kwargs]:
         if self.use_responses:
@@ -2067,7 +2067,7 @@ class OpenAICompletions(OpenAICompatibleMixin, Completions):
                 )
             return messages
         else:
-            return OpenAICompatibleMixin.get_tool_result_messages(self, tool_results)
+            return OpenAICompatibleCompletions.get_tool_result_messages(self, tool_results)
 
 
 class AnthropicCompletions(Completions):
@@ -2694,7 +2694,7 @@ class GeminiCompletions(Completions):
         return [Content(role="tool", parts=parts)]
 
 
-class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
+class HFInferenceCompletions(OpenAICompatibleCompletions):
     """Completions class for HuggingFace Inference.
 
     Args:
@@ -2718,7 +2718,7 @@ class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
         chat_completion_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
-        Completions.__init__(
+        OpenAICompatibleCompletions.__init__(
             self,
             model=model,
             client_kwargs=client_kwargs,
@@ -2847,7 +2847,7 @@ class HFInferenceCompletions(OpenAICompatibleMixin, Completions):
         return self.process_thought(thought=thought, content=content)
 
 
-class LiteLLMCompletions(OpenAICompatibleMixin, Completions):
+class LiteLLMCompletions(OpenAICompatibleCompletions):
     """Completions class for LiteLLM.
 
     Args:
@@ -2869,7 +2869,7 @@ class LiteLLMCompletions(OpenAICompatibleMixin, Completions):
         completion_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
-        Completions.__init__(
+        OpenAICompatibleCompletions.__init__(
             self,
             model=model,
             completion_kwargs=completion_kwargs,
@@ -3208,7 +3208,7 @@ class LlamaIndexCompletions(Completions):
         return messages
 
 
-class OllamaCompletions(OpenAICompatibleMixin, Completions):
+class OllamaCompletions(OpenAICompatibleCompletions):
     """Completions class for Ollama.
 
     Args:
@@ -3234,7 +3234,7 @@ class OllamaCompletions(OpenAICompatibleMixin, Completions):
         chat_kwargs: tp.KwargsLike = None,
         **kwargs,
     ) -> None:
-        Completions.__init__(
+        OpenAICompatibleCompletions.__init__(
             self,
             model=model,
             client_kwargs=client_kwargs,
