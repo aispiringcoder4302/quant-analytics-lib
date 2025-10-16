@@ -2291,7 +2291,7 @@ class Pickleable(Base):
             __vbt_expr__ = "dict(sub_dict2=dict(some='value'))"
 
             [mult_expression]
-            __vbt_expr__ = "import math\n\nmath.floor(1.5)"
+            __vbt_expr__ = "import math\\n\\nmath.floor(1.5)"
             ```
 
             ```pycon
