@@ -5233,27 +5233,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     price=_price,
                     limit_price=last_limit_info["init_price"][col],
                 )
-                last_sl_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
-                    val_price=last_val_price[col],
-                    price=_price,
-                    stop_entry_price=last_sl_info["init_price"][col],
-                )
-                last_tsl_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
-                    val_price=last_val_price[col],
-                    price=_price,
-                    stop_entry_price=last_tsl_info["init_price"][col],
-                )
-                last_tsl_info["peak_price"][col] = resolve_dyn_stop_entry_price_nb(
-                    val_price=last_val_price[col],
-                    price=_price,
-                    stop_entry_price=last_tsl_info["peak_price"][col],
-                )
-                last_tp_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
-                    val_price=last_val_price[col],
-                    price=_price,
-                    stop_entry_price=last_tp_info["init_price"][col],
-                )
-
                 limit_signal = is_limit_active_nb(
                     init_idx=last_limit_info["init_idx"][col],
                     init_price=last_limit_info["init_price"][col],
@@ -5265,6 +5244,26 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
                     td_stop_signal = False
                     dt_stop_signal = False
                 else:
+                    last_sl_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
+                        val_price=last_val_price[col],
+                        price=_price,
+                        stop_entry_price=last_sl_info["init_price"][col],
+                    )
+                    last_tsl_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
+                        val_price=last_val_price[col],
+                        price=_price,
+                        stop_entry_price=last_tsl_info["init_price"][col],
+                    )
+                    last_tsl_info["peak_price"][col] = resolve_dyn_stop_entry_price_nb(
+                        val_price=last_val_price[col],
+                        price=_price,
+                        stop_entry_price=last_tsl_info["peak_price"][col],
+                    )
+                    last_tp_info["init_price"][col] = resolve_dyn_stop_entry_price_nb(
+                        val_price=last_val_price[col],
+                        price=_price,
+                        stop_entry_price=last_tp_info["init_price"][col],
+                    )
                     sl_stop_signal = is_stop_active_nb(
                         init_idx=last_sl_info["init_idx"][col],
                         stop=last_sl_info["stop"][col],
