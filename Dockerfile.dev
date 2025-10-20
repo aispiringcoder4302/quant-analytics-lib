@@ -20,8 +20,7 @@ RUN rm -R ta-lib-0.6.4 ta-lib-0.6.4-src.tar.gz
 COPY ./vectorbtpro ./vectorbtpro
 COPY pyproject.toml LICENSE README.md ./
 
-RUN echo "numpy>1.24.3" > override.txt
-RUN uv pip install --no-cache-dir ".[all-stable]" --override override.txt
+RUN uv pip install --no-cache-dir ".[all-stable]"
 
 # Unstable or too strict dependencies
 RUN uv pip install --no-cache-dir --no-deps pandas-ta
