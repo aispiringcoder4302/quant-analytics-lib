@@ -2526,6 +2526,33 @@ class TestData:
             assert_frame_equal(
                 data.run(
                     ["talib_sma", "talib_ema"],
+                    func_name=vbt.run_func_dict(talib_sma="f1", talib_ema="f2"),
+                    timeperiod=vbt.run_func_dict(f1=3, f2=4),
+                    hide_params=True,
+                ),
+                pd.DataFrame(
+                    [
+                        [np.nan, np.nan, np.nan, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                        [9.0, 9.0, np.nan, np.nan],
+                        [15.0, 15.0, 12.0, 12.0],
+                        [21.0, 21.0, 18.0, 18.0],
+                    ],
+                    index=data.index,
+                    columns=pd.MultiIndex.from_tuples(
+                        [
+                            ("f1", "real", "S1"),
+                            ("f1", "real", "S2"),
+                            ("f2", "real", "S1"),
+                            ("f2", "real", "S2"),
+                        ],
+                        names=["run_func", "output", "symbol"],
+                    ),
+                ),
+            )
+            assert_frame_equal(
+                data.run(
+                    ["talib_sma", "talib_ema"],
                     timeperiod=vbt.run_func_dict(talib_sma=3, talib_ema=4),
                     hide_params=True,
                 ),

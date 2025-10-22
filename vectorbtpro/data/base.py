@@ -5143,6 +5143,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         data: "Data",
         func_name: str,
         *args,
+        pass_func_name: bool = False,
         raise_errors: bool = False,
         silence_warnings: bool = False,
         **kwargs,
@@ -5157,6 +5158,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             data (Data): Data instance on which to execute the function.
             func_name (str): Name identifying the function to run.
             *args: Positional arguments for `Data.run`.
+            pass_func_name (bool): If True, passes `func_name` as a keyword argument to `Data.run`.
             raise_errors (bool): If True, raises any exceptions encountered.
             silence_warnings (bool): Flag to suppress warning messages.
             **kwargs: Keyword arguments for `Data.run`.
@@ -5165,6 +5167,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             Any: Result of executing `Data.run`, or `vectorbtpro.utils.execution.NoResult`
                 if execution fails without raising an error.
         """
+        if pass_func_name:
+            kwargs["func_name"] = func_name
         try:
             return data.run(*args, **kwargs)
         except Exception as e:
@@ -5175,7 +5179,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return NoResult
 
     @classmethod
-    def select_run_func_args(cls, i: int, func_name: str, args: tp.Args) -> tuple:
+    def select_run_func_args(cls, i: int, func_name: str, args: tp.Union[tp.Args, run_func_dict]) -> tuple:
         """Select positional arguments corresponding to a function index or name.
 
         Iterates over the provided arguments and, for items that are instances of `run_func_dict`,
@@ -5186,11 +5190,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Args:
             i (int): Index used to look up an argument.
             func_name (str): Name used to look up an argument.
-            args (Args): Tuple of positional arguments to search through.
+            args (Union[Args, run_func_dict]): Tuple of positional arguments to search through,
+                or a `run_func_dict` that maps function names or indices to tuples of argument values.
 
         Returns:
             tuple: Tuple containing the selected arguments corresponding to the given function index or name.
         """
+        if isinstance(args, run_func_dict):
+            if func_name in args:
+                return args[func_name]
+            if i in args:
+                return args[i]
+            if "_def" in args:
+                return args["_def"]
         _args = ()
         for v in args:
             if isinstance(v, run_func_dict):
@@ -5205,7 +5217,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         return _args
 
     @classmethod
-    def select_run_func_kwargs(cls, i: int, func_name: str, kwargs: tp.Kwargs) -> dict:
+    def select_run_func_kwargs(cls, i: int, func_name: str, kwargs: tp.Union[tp.Kwargs, run_func_dict]) -> dict:
         """Select keyword arguments corresponding to a runnable function based on its index or name.
 
         Args:
@@ -5213,14 +5225,23 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             func_name (str): Name of the function to match during argument selection.
             kwargs (Kwargs): Dictionary where each value can be:
 
-                * `run_func_dict` mapping function names or indices to specific argument values.
+                * `run_func_dict` that maps function names or indices to specific argument values.
                 * `run_arg_dict` that updates arguments if its key matches the provided function name or index.
                 * Direct value if no special type is applicable.
+
+                Also, `kwargs` itself can be a `run_func_dict`.
 
         Returns:
             dict: Dictionary containing the keyword arguments selected based
                 on the provided index or function name.
         """
+        if isinstance(kwargs, run_func_dict):
+            if func_name in kwargs:
+                return kwargs[func_name]
+            if i in kwargs:
+                return kwargs[i]
+            if "_def" in kwargs:
+                return kwargs["_def"]
         _kwargs = {}
         for k, v in kwargs.items():
             if isinstance(v, run_func_dict):
@@ -5243,8 +5264,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         *args,
         on_features: tp.Optional[tp.MaybeFeatures] = None,
         on_symbols: tp.Optional[tp.MaybeSymbols] = None,
-        func_args: tp.ArgsLike = None,
-        func_kwargs: tp.KwargsLike = None,
+        func_name: tp.Union[None, str, run_func_dict] = None,
+        func_args: tp.Union[tp.ArgsLike, run_func_dict] = None,
+        func_kwargs: tp.Union[tp.KwargsLike, run_func_dict] = None,
         magnet_kwargs: tp.KwargsLike = None,
         ignore_args: tp.Optional[tp.Sequence[str]] = None,
         rename_args: tp.DictLike = None,
@@ -5262,7 +5284,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         merge_kwargs: tp.KwargsLike = None,
         template_context: tp.KwargsLike = None,
         return_keys: bool = False,
-        _func_name: tp.Optional[str] = None,
         **kwargs,
     ) -> tp.Any:
         """Run a function on data.
@@ -5292,8 +5313,17 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             *args: Positional arguments for the function.
             on_features (Optional[MaybeFeatures]): Features identifier(s) used to filter the data.
             on_symbols (Optional[MaybeSymbols]): Symbols identifier(s) used to filter the data.
-            func_args (ArgsLike): Extra positional arguments for the function.
-            func_kwargs (KwargsLike): Extra keyword arguments for the function.
+            func_name (Union[None, str, run_func_dict]): Name of the function.
+
+                Can be used to rename the function, such as when the same function is called multiple times.
+
+                Can be provided per function using `run_func_dict`.
+            func_args (Union[ArgsLike, run_func_dict]): Extra positional arguments for the function.
+
+                Can be provided per function using `run_func_dict`.
+            func_kwargs (Union[KwargsLike, run_func_dict]): Extra keyword arguments for the function.
+
+                Can be provided per function using `run_func_dict`.
             magnet_kwargs (KwargsLike): Keyword arguments injected only if they
                 match the function signature.
             ignore_args (Optional[Sequence[str]]): Names of arguments to ignore when
@@ -5351,35 +5381,54 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             for i, f in enumerate(func):
                 _location = location
                 if callable(f):
-                    func_name = f.__name__
+                    true_name = f.__name__
                 elif isinstance(f, str):
                     if _location is not None:
-                        func_name = f.lower().strip()
-                        if func_name == "*":
-                            func_name = "all"
+                        true_name = f.lower().strip()
+                        if true_name == "*":
+                            true_name = "all"
                         if prepend_location is True:
-                            func_name = _location + "_" + func_name
+                            true_name = _location + "_" + true_name
                     else:
                         _location, f = IndicatorFactory.split_indicator_name(f)
                         if f is None:
                             raise ValueError("Sequence of locations is not supported")
-                        func_name = f.lower().strip()
-                        if func_name == "*":
-                            func_name = "all"
+                        true_name = f.lower().strip()
+                        if true_name == "*":
+                            true_name = "all"
                         if _location is not None:
                             if prepend_location in (None, True):
-                                func_name = _location + "_" + func_name
+                                true_name = _location + "_" + true_name
                 else:
-                    func_name = f
-                new_args = _self.select_run_func_args(i, func_name, args)
-                new_args = (_self, func_name, f, *new_args)
-                new_kwargs = _self.select_run_func_kwargs(i, func_name, kwargs)
+                    true_name = f
+                out_name = true_name
+                if func_name is not None:
+                    if isinstance(func_name, run_func_dict):
+                        if true_name in func_name:
+                            out_name = func_name[true_name]
+                        elif i in func_name:
+                            out_name = func_name[i]
+                        elif "_def" in func_name:
+                            out_name = func_name["_def"]
+                    else:
+                        out_name = func_name
+                new_args = _self.select_run_func_args(i, out_name, args)
+                new_args = (_self, out_name, f, *new_args)
+                new_kwargs = _self.select_run_func_kwargs(i, out_name, kwargs)
+                if func_args is not None:
+                    new_func_args = _self.select_run_func_args(i, out_name, func_args)
+                else:
+                    new_func_args = ()
+                if func_kwargs is not None:
+                    new_func_kwargs = _self.select_run_func_kwargs(i, out_name, func_kwargs)
+                else:
+                    new_func_kwargs = {}
                 if concat and _location == "talib_func":
                     new_kwargs["unpack_to"] = "frame"
                 new_kwargs = {
                     **dict(
-                        func_args=func_args,
-                        func_kwargs=func_kwargs,
+                        func_args=new_func_args,
+                        func_kwargs=new_func_kwargs,
                         magnet_kwargs=magnet_kwargs,
                         ignore_args=ignore_args,
                         rename_args=rename_args,
@@ -5395,13 +5444,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                         merge_kwargs=merge_kwargs,
                         template_context=template_context,
                         return_keys=return_keys,
-                        _func_name=func_name,
                     ),
                     **new_kwargs,
                 }
 
-                tasks.append(Task(self.try_run, *new_args, **new_kwargs))
-                keys.append(str(func_name))
+                tasks.append(Task(self.try_run, *new_args, pass_func_name=True, **new_kwargs))
+                keys.append(str(out_name))
 
             keys = pd.Index(keys, name="run_func")
             results = execute(tasks, size=len(keys), keys=keys, **execute_kwargs)
@@ -5440,6 +5488,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             return results
 
         if isinstance(func, str):
+            if func_name is not None:
+                if not isinstance(func_name, str):
+                    raise TypeError("func_name must be a string when func is a string")
+                out_name = func_name
+            else:
+                out_name = None
             func_name = func.lower().strip()
             if func_name.startswith("from_") and getattr(Portfolio, func_name):
                 func = getattr(Portfolio, func_name)
@@ -5499,6 +5553,8 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     func = IndicatorFactory.get_indicator(func_name, location=location)
             else:
                 func = IndicatorFactory.get_indicator(func_name)
+            if out_name is not None:
+                func_name = out_name
         if isinstance(func, type) and issubclass(func, IndicatorBase):
             func = func.run
 
@@ -5541,12 +5597,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         for k, v in magnet_kwargs.items():
             if k in func_arg_names:
                 kwargs[k] = v
-        new_args, new_kwargs = extend_args(func, args, kwargs, **with_kwargs)
         if func_args is None:
             func_args = ()
         if func_kwargs is None:
             func_kwargs = {}
-        out = func(*new_args, *func_args, **new_kwargs, **func_kwargs)
+        new_args = args + func_args
+        new_kwargs = {**kwargs, **func_kwargs}
+        new_args, new_kwargs = extend_args(func, new_args, new_kwargs, **with_kwargs)
+        out = func(*new_args, **new_kwargs)
         if isinstance(unpack, bool):
             if unpack:
                 if isinstance(out, IndicatorBase):
@@ -5555,10 +5613,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             if isinstance(out, IndicatorBase):
                 out = out.to_dict()
             else:
-                if _func_name is None:
+                if func_name is None:
                     feature_name = func.__name__
+                elif isinstance(func_name, str):
+                    feature_name = func_name
                 else:
-                    feature_name = _func_name
+                    raise TypeError("func_name must be a string when unpacking to dict")
                 out = {feature_name: out}
         elif isinstance(unpack, str) and unpack.lower() == "frame":
             if isinstance(out, IndicatorBase):
@@ -5569,10 +5629,12 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             if isinstance(out, IndicatorBase):
                 out = feature_dict(out.to_dict())
             else:
-                if _func_name is None:
+                if func_name is None:
                     feature_name = func.__name__
+                elif isinstance(func_name, str):
+                    feature_name = func_name
                 else:
-                    feature_name = _func_name
+                    raise TypeError("func_name must be a string when unpacking to Data")
                 out = feature_dict({feature_name: out})
             out = Data.from_data(out, **data_kwargs)
         else:
