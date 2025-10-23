@@ -86,7 +86,7 @@ class _RPROB(RPROB):
         2     True
         3     True
         4     True
-        Name: array_0, dtype: bool
+        Name: array, dtype: bool
         ```
     """
 

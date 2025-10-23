@@ -14,6 +14,7 @@ import inspect
 import string
 import traceback
 from pathlib import Path
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -5267,6 +5268,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         func_name: tp.Union[None, str, run_func_dict] = None,
         func_args: tp.Union[tp.ArgsLike, run_func_dict] = None,
         func_kwargs: tp.Union[tp.KwargsLike, run_func_dict] = None,
+        name_numbering: tp.Optional[str] = None,
         magnet_kwargs: tp.KwargsLike = None,
         ignore_args: tp.Optional[tp.Sequence[str]] = None,
         rename_args: tp.DictLike = None,
@@ -5324,6 +5326,13 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             func_kwargs (Union[KwargsLike, run_func_dict]): Extra keyword arguments for the function.
 
                 Can be provided per function using `run_func_dict`.
+            name_numbering (Optional[str]): Naming convention for duplicate types.
+
+                Available options are:
+
+                * 'none_based': First occurrence has no suffix, subsequent occurrences start from `_2`, `_3`, etc.
+                * 'zero_based': All occurrences are suffixed starting from `_0`, `_1`, `_2`, etc.
+                * 'one_based': All occurrences are suffixed starting from `_1`, `_2`, `_3`, etc.
             magnet_kwargs (KwargsLike): Keyword arguments injected only if they
                 match the function signature.
             ignore_args (Optional[Sequence[str]]): Names of arguments to ignore when
@@ -5355,11 +5364,19 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             Any: Result of applying the function(s) to the data. If `return_keys` is True,
                 returns a tuple of the results and the corresponding function keys.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.indexing`.
         """
         from vectorbtpro.indicators.factory import IndicatorBase, IndicatorFactory
         from vectorbtpro.indicators.talib_ import talib_func
         from vectorbtpro.portfolio.base import Portfolio
+        from vectorbtpro._settings import settings
 
+        indexing_cfg = settings["indexing"]
+
+        if name_numbering is None:
+            name_numbering = indexing_cfg["name_numbering"]
         if magnet_kwargs is None:
             magnet_kwargs = {}
         if data_kwargs is None:
@@ -5375,6 +5392,7 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         if on_symbols is not None:
             _self = _self.select_symbols(on_symbols)
 
+        f_id_number = {}
         if checks.is_complex_iterable(func):
             tasks = []
             keys = []
@@ -5401,7 +5419,27 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                                 true_name = _location + "_" + true_name
                 else:
                     true_name = f
-                out_name = true_name
+                if true_name not in f_id_number:
+                    f_id_number[true_name] = {}
+                if id(f) not in f_id_number[true_name]:
+                    f_id_number[true_name][id(f)] = len(f_id_number[true_name])
+                if name_numbering.lower() == "none_based":
+                    if f_id_number[true_name][id(f)] == 0:
+                        out_name = true_name
+                    else:
+                        out_name = "%s_%d" % (true_name, f_id_number[true_name][id(f)] + 1)
+                elif name_numbering.lower() == "zero_based":
+                    if f_id_number[true_name][id(f)] == 0:
+                        out_name = "%s_0" % true_name
+                    else:
+                        out_name = "%s_%d" % (true_name, f_id_number[true_name][id(f)])
+                elif name_numbering.lower() == "one_based":
+                    if f_id_number[true_name][id(f)] == 0:
+                        out_name = "%s_1" % true_name
+                    else:
+                        out_name = "%s_%d" % (true_name, f_id_number[true_name][id(f)] + 1)
+                else:
+                    raise ValueError(f"Invalid name_numbering: {name_numbering!r}")
                 if func_name is not None:
                     if isinstance(func_name, run_func_dict):
                         if true_name in func_name:

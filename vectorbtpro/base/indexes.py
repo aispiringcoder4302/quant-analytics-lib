@@ -91,6 +91,7 @@ def index_from_values(
     values: tp.Sequence,
     single_value: bool = False,
     name: tp.Optional[tp.Hashable] = None,
+    name_numbering: tp.Optional[str] = None,
 ) -> tp.Index:
     """Create a new Pandas Index from a sequence of values.
 
@@ -102,15 +103,58 @@ def index_from_values(
         single_value (bool): If True, uses only the first value from `values` for index creation,
             repeating it for all entries.
         name (Optional[Hashable]): Name to assign to the index.
+        name_numbering (Optional[str]): Naming convention for duplicate types.
+
+            Available options are:
+
+            * 'none_based': First occurrence has no suffix, subsequent occurrences start from `_2`, `_3`, etc.
+            * 'zero_based': All occurrences are suffixed starting from `_0`, `_1`, `_2`, etc.
+            * 'one_based': All occurrences are suffixed starting from `_1`, `_2`, `_3`, etc.
 
     Returns:
         Index: Pandas Index with labels generated from the provided values.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.indexing`.
     """
+    from vectorbtpro._settings import settings
+
+    indexing_cfg = settings["indexing"]
+
     scalar_types = (int, float, complex, str, bool, datetime, timedelta, np.generic)
     type_id_number = {}
     value_names = []
     if len(values) == 1:
         single_value = True
+    if name_numbering is None:
+        name_numbering = indexing_cfg["name_numbering"]
+
+    def _process_type_name(type_name):
+        if single_value:
+            value_names.append(type_name)
+        else:
+            if type_name not in type_id_number:
+                type_id_number[type_name] = {}
+            if id(v) not in type_id_number[type_name]:
+                type_id_number[type_name][id(v)] = len(type_id_number[type_name])
+            if name_numbering.lower() == "none_based":
+                if type_id_number[type_name][id(v)] == 0:
+                    value_names.append(type_name)
+                else:
+                    value_names.append("%s_%d" % (type_name, type_id_number[type_name][id(v)] + 1))
+            elif name_numbering.lower() == "zero_based":
+                if type_id_number[type_name][id(v)] == 0:
+                    value_names.append("%s_0" % type_name)
+                else:
+                    value_names.append("%s_%d" % (type_name, type_id_number[type_name][id(v)]))
+            elif name_numbering.lower() == "one_based":
+                if type_id_number[type_name][id(v)] == 0:
+                    value_names.append("%s_1" % type_name)
+                else:
+                    value_names.append("%s_%d" % (type_name, type_id_number[type_name][id(v)] + 1))
+            else:
+                raise ValueError(f"Invalid name_numbering: {name_numbering!r}")
+
     for i in range(len(values)):
         if i > 0 and single_value:
             break
@@ -130,24 +174,9 @@ def index_from_values(
             if all_same:
                 value_names.append(v.item(0))
             else:
-                if single_value:
-                    value_names.append("array")
-                else:
-                    if "array" not in type_id_number:
-                        type_id_number["array"] = {}
-                    if id(v) not in type_id_number["array"]:
-                        type_id_number["array"][id(v)] = len(type_id_number["array"])
-                    value_names.append("array_%d" % (type_id_number["array"][id(v)]))
+                _process_type_name("array")
         else:
-            type_name = str(type(v).__name__)
-            if single_value:
-                value_names.append("%s" % type_name)
-            else:
-                if type_name not in type_id_number:
-                    type_id_number[type_name] = {}
-                if id(v) not in type_id_number[type_name]:
-                    type_id_number[type_name][id(v)] = len(type_id_number[type_name])
-                value_names.append("%s_%d" % (type_name, type_id_number[type_name][id(v)]))
+            _process_type_name(str(type(v).__name__))
     if single_value and len(values) > 1:
         value_names *= len(values)
     return pd.Index(value_names, name=name)

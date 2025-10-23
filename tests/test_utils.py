@@ -1295,8 +1295,10 @@ class TestChecks:
         assert checks.is_deep_equal(0, 0)
         assert not checks.is_deep_equal(0, False)
         assert not checks.is_deep_equal(0, 1)
-        assert checks.is_deep_equal(lambda x: x, lambda x: x)
+        assert not checks.is_deep_equal(lambda x: x, lambda x: x)
         assert not checks.is_deep_equal(lambda x: x, lambda x: 2 * x)
+        y = lambda x: x + 1
+        assert checks.is_deep_equal(y, y)
 
     def test_is_instance_of(self):
         class _A:

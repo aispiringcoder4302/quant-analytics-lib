@@ -751,6 +751,7 @@ _settings["broadcasting"] = broadcasting
 indexing = frozen_cfg(
     rotate_rows=False,
     rotate_cols=False,
+    name_numbering="none_based",
 )
 """_"""
 
