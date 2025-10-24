@@ -163,6 +163,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
     Accessible via `pd.Series.vbt.returns` and `pd.DataFrame.vbt.returns`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.returns`.
+
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Pandas object containing return data.
@@ -175,9 +178,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         sim_start (Optional[ArrayLike]): Start index of the simulation range.
         sim_end (Optional[ArrayLike]): End index of the simulation range.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.returns`.
     """
 
     def __init__(
@@ -228,6 +228,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.Union[ReturnsAccessorT, tp.SeriesFrame]:
         """Return a new `ReturnsAccessor` instance with return calculations derived from `value`.
 
+        See:
+            `vectorbtpro.returns.nb.returns_nb`
+
         Args:
             value (ArrayLike): Input data from which returns are computed.
             init_value (ArrayLike): Initial value to broadcast for each column.
@@ -249,9 +252,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             Union[ReturnsAccessor, SeriesFrame]: New accessor instance or wrapped return values.
-
-        See:
-            `vectorbtpro.returns.nb.returns_nb`
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -428,11 +428,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     def bm_returns(self) -> tp.Optional[tp.SeriesFrame]:
         """Benchmark returns wrapped using the assigned array wrapper.
 
-        Returns:
-            Optional[SeriesFrame]: Benchmark returns if available; otherwise, None.
-
         !!! info
             For default settings, see `vectorbtpro._settings.returns`.
+
+        Returns:
+            Optional[SeriesFrame]: Benchmark returns if available; otherwise, None.
         """
         from vectorbtpro._settings import settings
 
@@ -600,6 +600,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         NumPy method is applied to the annualization factor. Similarly, if `year_freq` starts with "index_", the
         annualization factor is parsed using `ReturnsAccessor.parse_ann_factor`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.returns`.
+
         Args:
             year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
             index (Optional[Index]): Datetime index used for annualization factor detection.
@@ -609,9 +612,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             Optional[PandasFrequency]: Resolved year frequency, or None if it cannot be determined.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.returns`.
         """
         if not isinstance(cls_or_self, type):
             if year_freq is None:
@@ -676,6 +676,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.Optional[float]:
         """Return the annualization factor based on the given year frequency and data frequency.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.returns` and `vectorbtpro._settings.wrapping`.
+
         Args:
             year_freq (Optional[FrequencyLike]): Year frequency for annualization (e.g., "252 days", "auto").
             freq (Optional[FrequencyLike]): Frequency of the index (e.g., "daily", "15 min").
@@ -685,9 +688,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             Optional[float]: Computed annualization factor, or None if not determinable.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.returns` and `vectorbtpro._settings.wrapping`.
         """
         if isinstance(cls_or_self, type):
             from vectorbtpro._settings import settings
@@ -832,11 +832,11 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Merges defaults from `vectorbtpro._settings.returns` with the accessor's own defaults.
 
-        Returns:
-            Kwargs: Merged defaults dictionary.
-
         !!! info
             For default settings, see `defaults` in `vectorbtpro._settings.returns`.
+
+        Returns:
+            Kwargs: Merged defaults dictionary.
         """
         from vectorbtpro._settings import settings
 
@@ -856,6 +856,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.SeriesFrame:
         """Mirror returns based on simulation indices.
 
+        See:
+            `vectorbtpro.returns.nb.mirror_returns_nb`
+
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -871,9 +874,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             SeriesFrame: Mirrored returns.
-
-        See:
-            `vectorbtpro.returns.nb.mirror_returns_nb`
         """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
@@ -899,6 +899,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.SeriesFrame:
         """Calculate cumulative returns.
 
+        See:
+            `vectorbtpro.returns.nb.cumulative_returns_nb`
+
         Args:
             start_value (Optional[float]): Initial value for cumulative returns.
 
@@ -917,9 +920,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             SeriesFrame: Cumulative returns.
-
-        See:
-            `vectorbtpro.returns.nb.cumulative_returns_nb`
         """
         if start_value is None:
             start_value = self.defaults["start_value"]
@@ -996,6 +996,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.SeriesFrame:
         """Resample returns to a custom frequency, date offset, or index.
 
+        See:
+            `vectorbtpro.returns.nb.total_return_1d_nb`
+
         Args:
             rule (AnyRuleLike): Resampler-like specification.
 
@@ -1010,9 +1013,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             SeriesFrame: Resampled returns.
-
-        See:
-            `vectorbtpro.returns.nb.total_return_1d_nb`
         """
         checks.assert_instance_of(self.obj.index, (pd.DatetimeIndex, pd.PeriodIndex))
 
@@ -1091,6 +1091,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Calculate the final value of returns over a simulation period.
 
+        See:
+            `vectorbtpro.returns.nb.final_value_nb`
+
         Args:
             start_value (Optional[float]): Initial value for cumulative returns.
 
@@ -1109,9 +1112,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Final cumulative return value.
-
-        See:
-            `vectorbtpro.returns.nb.final_value_nb`
         """
         if start_value is None:
             start_value = self.defaults["start_value"]
@@ -1144,6 +1144,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.SeriesFrame:
         """Compute rolling final value.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_final_value_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -1168,9 +1171,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             SeriesFrame: Wrapped array of rolling final values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_final_value_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -1204,6 +1204,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute total return.
 
+        See:
+            `vectorbtpro.returns.nb.total_return_nb`
+
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -1219,9 +1222,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed total return.
-
-        See:
-            `vectorbtpro.returns.nb.total_return_nb`
         """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
@@ -1250,6 +1250,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.SeriesFrame:
         """Compute rolling total return.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_total_return_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -1271,9 +1274,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             SeriesFrame: Wrapped array of rolling total returns.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_total_return_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -1305,6 +1305,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute annualized return.
 
+        See:
+            `vectorbtpro.returns.nb.annualized_return_nb`
+
         Args:
             periods (Union[None, str, ArrayLike]): Period specification.
 
@@ -1323,9 +1326,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed annualized return.
-
-        See:
-            `vectorbtpro.returns.nb.annualized_return_nb`
         """
         periods = self.get_periods(periods=periods, sim_start=sim_start, sim_end=sim_end)
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
@@ -1357,6 +1357,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute rolling annualized return.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_annualized_return_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -1378,9 +1381,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed rolling annualized return.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_annualized_return_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -1414,6 +1414,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute annualized volatility.
 
+        See:
+            `vectorbtpro.returns.nb.annualized_volatility_nb`
+
         Args:
             levy_alpha (Optional[float]): Alpha parameter for Lévy correction.
 
@@ -1435,9 +1438,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed annualized volatility.
-
-        See:
-            `vectorbtpro.returns.nb.annualized_volatility_nb`
         """
         if levy_alpha is None:
             levy_alpha = self.defaults["levy_alpha"]
@@ -1474,6 +1474,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Calculate rolling annualized volatility.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_annualized_volatility_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -1501,9 +1504,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Series of rolling annualized volatility values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_annualized_volatility_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -1541,6 +1541,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Calculate Calmar ratio.
 
+        See:
+            `vectorbtpro.returns.nb.calmar_ratio_nb`
+
         Args:
             periods (Union[None, str, ArrayLike]): Period specification.
 
@@ -1559,9 +1562,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Series of Calmar ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.calmar_ratio_nb`
         """
         periods = self.get_periods(periods=periods, sim_start=sim_start, sim_end=sim_end)
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
@@ -1593,6 +1593,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Calculate rolling Calmar ratio.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_calmar_ratio_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -1614,9 +1617,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Series of rolling Calmar ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_calmar_ratio_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -1650,6 +1650,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Calculate Omega ratio.
 
+        See:
+            `vectorbtpro.returns.nb.omega_ratio_nb`
+
         Args:
             risk_free (Optional[float]): Risk-free return used to compute excess returns.
 
@@ -1671,9 +1674,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Series of Omega ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.omega_ratio_nb`
         """
         if risk_free is None:
             risk_free = self.defaults["risk_free"]
@@ -1709,6 +1709,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Calculate rolling Omega ratio.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_omega_ratio_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -1736,9 +1739,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Series of rolling Omega ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_omega_ratio_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -1777,6 +1777,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Calculate Sharpe ratio.
 
+        See:
+            `vectorbtpro.returns.nb.sharpe_ratio_nb`
+
         Args:
             annualized (bool): Whether to annualize the Sharpe ratio.
             risk_free (Optional[float]): Risk-free return used to compute excess returns.
@@ -1799,9 +1802,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Series of Sharpe ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.sharpe_ratio_nb`
         """
         if risk_free is None:
             risk_free = self.defaults["risk_free"]
@@ -1846,6 +1846,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         Computes the rolling Sharpe ratio over a specified window using excess returns relative
         to the risk-free rate.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_sharpe_ratio_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -1875,9 +1878,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Series representing the rolling Sharpe ratio.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_sharpe_ratio_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -2075,6 +2075,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Computes the downside risk of the returns relative to a specified required return.
 
+        See:
+            `vectorbtpro.returns.nb.downside_risk_nb`
+
         Args:
             required_return (Optional[float]): Required return threshold used to compute excess returns.
 
@@ -2093,9 +2096,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Calculated downside risk.
-
-        See:
-            `vectorbtpro.returns.nb.downside_risk_nb`
         """
         if required_return is None:
             required_return = self.defaults["required_return"]
@@ -2127,6 +2127,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute rolling downside risk.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_downside_risk_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -2151,9 +2154,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling downside risk series wrapped with the configured wrapper.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_downside_risk_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -2187,6 +2187,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute sortino ratio.
 
+        See:
+            `vectorbtpro.returns.nb.sortino_ratio_nb`
+
         Args:
             required_return (Optional[float]): Required return threshold used to compute excess returns.
 
@@ -2205,9 +2208,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Sortino ratio values wrapped with the configured wrapper.
-
-        See:
-            `vectorbtpro.returns.nb.sortino_ratio_nb`
         """
         if required_return is None:
             required_return = self.defaults["required_return"]
@@ -2239,6 +2239,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute rolling sortino ratio.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_sortino_ratio_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -2263,9 +2266,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling sortino ratio series wrapped with the configured wrapper.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_sortino_ratio_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -2300,6 +2300,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute information ratio.
 
+        See:
+            `vectorbtpro.returns.nb.information_ratio_nb`
+
         Args:
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
@@ -2321,9 +2324,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Information ratio series wrapped with the configured wrapper.
-
-        See:
-            `vectorbtpro.returns.nb.information_ratio_nb`
         """
         if ddof is None:
             ddof = self.defaults["ddof"]
@@ -2360,6 +2360,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute rolling information ratio.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_information_ratio_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -2387,9 +2390,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling information ratio series wrapped with the configured wrapper.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_information_ratio_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -2428,6 +2428,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute beta.
 
+        See:
+            `vectorbtpro.returns.nb.beta_nb`
+
         Args:
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
@@ -2449,9 +2452,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Beta values wrapped with the configured wrapper.
-
-        See:
-            `vectorbtpro.returns.nb.beta_nb`
         """
         if ddof is None:
             ddof = self.defaults["ddof"]
@@ -2489,6 +2489,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute rolling beta values.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_beta_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -2516,9 +2519,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed rolling beta values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_beta_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -2558,6 +2558,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute alpha values.
 
+        See:
+            `vectorbtpro.returns.nb.alpha_nb`
+
         Args:
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
@@ -2579,9 +2582,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed alpha values.
-
-        See:
-            `vectorbtpro.returns.nb.alpha_nb`
         """
         if risk_free is None:
             risk_free = self.defaults["risk_free"]
@@ -2619,6 +2619,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute rolling alpha values.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_alpha_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -2646,9 +2649,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed rolling alpha values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_alpha_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -2687,6 +2687,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute tail ratio values.
 
+        See:
+            `vectorbtpro.returns.nb.tail_ratio_nb`
+
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -2703,9 +2706,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed tail ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.tail_ratio_nb`
         """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
@@ -2735,6 +2735,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute rolling tail ratio values.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_tail_ratio_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -2757,9 +2760,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed rolling tail ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_tail_ratio_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -2790,6 +2790,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute the profit factor.
 
+        See:
+            `vectorbtpro.returns.nb.profit_factor_nb`
+
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -2805,9 +2808,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed profit factor values.
-
-        See:
-            `vectorbtpro.returns.nb.profit_factor_nb`
         """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
@@ -2835,6 +2835,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute rolling profit factor.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_profit_factor_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -2856,9 +2859,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling profit factor.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_profit_factor_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -2888,6 +2888,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute Common Sense Ratio (CSR).
 
+        See:
+            `vectorbtpro.returns.nb.common_sense_ratio_nb`
+
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -2903,9 +2906,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed Common Sense Ratio.
-
-        See:
-            `vectorbtpro.returns.nb.common_sense_ratio_nb`
         """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
@@ -2933,6 +2933,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute rolling Common Sense Ratio (CSR) over a specified window.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_common_sense_ratio_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -2954,9 +2957,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling Common Sense Ratio.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_common_sense_ratio_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -2988,6 +2988,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute Value at Risk (VaR).
 
+        See:
+            `vectorbtpro.returns.nb.value_at_risk_nb`
+
         Args:
             cutoff (Optional[float]): Fractional cutoff level.
 
@@ -3007,9 +3010,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed Value at Risk.
-
-        See:
-            `vectorbtpro.returns.nb.value_at_risk_nb`
         """
         if cutoff is None:
             cutoff = self.defaults["cutoff"]
@@ -3043,6 +3043,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute rolling Value at Risk (VaR) over a specified window.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_value_at_risk_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -3068,9 +3071,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling Value at Risk.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_value_at_risk_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -3106,6 +3106,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute Conditional Value at Risk (CVaR).
 
+        See:
+            `vectorbtpro.returns.nb.cond_value_at_risk_nb`
+
         Args:
             cutoff (Optional[float]): Fractional cutoff level.
 
@@ -3125,9 +3128,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed Conditional Value at Risk.
-
-        See:
-            `vectorbtpro.returns.nb.cond_value_at_risk_nb`
         """
         if cutoff is None:
             cutoff = self.defaults["cutoff"]
@@ -3161,6 +3161,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Rolling Conditional Value at Risk (CVaR).
 
+        See:
+            `vectorbtpro.returns.nb.rolling_cond_value_at_risk_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -3186,9 +3189,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling CVaR values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_cond_value_at_risk_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -3224,6 +3224,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute the capture ratio.
 
+        See:
+            `vectorbtpro.returns.nb.capture_ratio_nb`
+
         Args:
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
@@ -3245,9 +3248,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Computed capture ratio.
-
-        See:
-            `vectorbtpro.returns.nb.capture_ratio_nb`
         """
         if bm_returns is None:
             bm_returns = self.bm_returns
@@ -3285,6 +3285,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute the rolling capture ratio.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_capture_ratio_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -3309,9 +3312,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling capture ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_capture_ratio_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -3350,6 +3350,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute the up-market capture ratio.
 
+        See:
+            `vectorbtpro.returns.nb.up_capture_ratio_nb`
+
         Args:
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
@@ -3371,9 +3374,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Up-market capture ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.up_capture_ratio_nb`
         """
         if bm_returns is None:
             bm_returns = self.bm_returns
@@ -3411,6 +3411,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute the rolling up-market capture ratio.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_up_capture_ratio_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -3435,9 +3438,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling up-market capture ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_up_capture_ratio_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -3476,6 +3476,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute the down-market capture ratio against benchmark returns.
 
+        See:
+            `vectorbtpro.returns.nb.down_capture_ratio_nb`
+
         Args:
             bm_returns (Optional[ArrayLike]): Benchmark returns.
 
@@ -3497,9 +3500,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Wrapped Series or DataFrame containing the down-market capture ratio.
-
-        See:
-            `vectorbtpro.returns.nb.down_capture_ratio_nb`
         """
         if bm_returns is None:
             bm_returns = self.bm_returns
@@ -3537,6 +3537,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Compute the rolling down-market capture ratio over a specified window.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_down_capture_ratio_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -3561,9 +3564,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling down-market capture ratio values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_down_capture_ratio_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -3639,6 +3639,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         """Calculate the maximum drawdown (MDD) from returns, yielding the same output as
         `vectorbtpro.generic.drawdowns.Drawdowns.max_drawdown`.
 
+        See:
+            `vectorbtpro.returns.nb.max_drawdown_nb`
+
         Args:
             sim_start (Optional[ArrayLike]): Start index of the simulation range.
             sim_end (Optional[ArrayLike]): End index of the simulation range.
@@ -3654,9 +3657,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Maximum drawdown values.
-
-        See:
-            `vectorbtpro.returns.nb.max_drawdown_nb`
         """
         sim_start = self.resolve_sim_start(sim_start=sim_start, group_by=False)
         sim_end = self.resolve_sim_end(sim_end=sim_end, group_by=False)
@@ -3685,6 +3685,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.MaybeSeries:
         """Calculate rolling maximum drawdown (MDD) over a specified window.
 
+        See:
+            `vectorbtpro.returns.nb.rolling_max_drawdown_nb`
+
         Args:
             window (Optional[int]): Window size.
 
@@ -3706,9 +3709,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             MaybeSeries: Rolling maximum drawdown values.
-
-        See:
-            `vectorbtpro.returns.nb.rolling_max_drawdown_nb`
         """
         if window is None:
             window = self.defaults["window"]
@@ -4004,6 +4004,9 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
     ) -> tp.BaseFigure:
         """Plot cumulative returns.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             bm_returns (Optional[ArrayLike]): Benchmark returns.
@@ -4034,9 +4037,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
 
         Returns:
             BaseFigure: Figure displaying the cumulative returns plot.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

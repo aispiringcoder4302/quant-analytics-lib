@@ -25,15 +25,15 @@ class Hashable(Base):
     def get_hash(*args, **kwargs) -> int:
         """Compute a hash value based on the provided arguments.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             *args: Positional arguments for hash computation.
             **kwargs: Keyword arguments for hash computation.
 
         Returns:
             int: Computed hash value.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -41,11 +41,11 @@ class Hashable(Base):
     def hash_key(self) -> tuple:
         """Unique key used for computing the instance's hash.
 
-        Returns:
-            tuple: Unique key for hash computation.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            tuple: Unique key for hash computation.
         """
         raise NotImplementedError
 

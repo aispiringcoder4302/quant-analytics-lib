@@ -112,11 +112,11 @@ class BaseDataMixin(Base):
     def feature_wrapper(self) -> ArrayWrapper:
         """Column wrapper for feature data.
 
-        Returns:
-            ArrayWrapper: Column wrapper for feature data.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            ArrayWrapper: Column wrapper for feature data.
         """
         raise NotImplementedError
 
@@ -124,11 +124,11 @@ class BaseDataMixin(Base):
     def symbol_wrapper(self) -> ArrayWrapper:
         """Column wrapper for symbol data.
 
-        Returns:
-            ArrayWrapper: Column wrapper for symbol data.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            ArrayWrapper: Column wrapper for symbol data.
         """
         raise NotImplementedError
 
@@ -254,20 +254,23 @@ class BaseDataMixin(Base):
     def select_feature_idxs(self: BaseDataMixinT, idxs: tp.MaybeSequence[int], **kwargs) -> BaseDataMixinT:
         """Select one or more features by their index positions.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             idxs (MaybeSequence[int]): Index or indices of the features to select.
             **kwargs: Keyword arguments for feature selection.
 
         Returns:
             BaseDataMixin: New instance with the selected features.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def select_symbol_idxs(self: BaseDataMixinT, idxs: tp.MaybeSequence[int], **kwargs) -> BaseDataMixinT:
         """Select one or more symbols by their index positions.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             idxs (MaybeSequence[int]): Index or indices of the symbols to select.
@@ -275,9 +278,6 @@ class BaseDataMixin(Base):
 
         Returns:
             BaseDataMixin: New instance with the selected symbols.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -323,6 +323,9 @@ class BaseDataMixin(Base):
     ) -> tp.MaybeTuple[tp.SeriesFrame]:
         """Retrieve data for specified features and symbols.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             features (Optional[MaybeFeatures]): Feature identifier(s).
             symbols (Optional[MaybeSymbols]): Symbol identifier(s).
@@ -332,9 +335,6 @@ class BaseDataMixin(Base):
 
         Returns:
             MaybeTuple[SeriesFrame]: Retrieved data.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -766,6 +766,9 @@ class MetaData(type(Analyzable)):
 class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     """Class for downloading, updating, and managing data from a data source.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.data`.
+
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
 
@@ -796,9 +799,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
             See `Data.align_columns`.
         **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.data`.
     """
 
     _settings_path: tp.SettingsPath = dict(base="data")
@@ -1054,6 +1054,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.Optional[tp.MaybeIterable[tp.Hashable]]:
         """Determine level name(s) for data keys.
 
+        !!! note
+            If `level_name` is boolean `False`, no level names are applied.
+
         Args:
             keys (Optional[Keys]): List of keys; required for class method calls.
             level_name (Union[None, bool, MaybeIterable[Hashable]]): Specification for level name(s).
@@ -1066,9 +1069,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             Optional[MaybeIterable[Hashable]]: Level name(s) for the keys.
 
                 Returns a tuple when keys are multi-level.
-
-        !!! note
-            If `level_name` is boolean `False`, no level names are applied.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(keys, arg_name="keys")
@@ -2463,6 +2463,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.SeriesFrame:
         """Prepare a timezone-aware index for a Pandas object.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+
         Args:
             obj (SeriesFrame): Pandas Series or DataFrame.
             tz_localize (Union[None, bool, TimezoneLike]): Flag or specification for timezone localization.
@@ -2474,9 +2477,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             SeriesFrame: Object with a timezone-aware index.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.data`.
         """
         obj = obj.copy(deep=False)
         tz_localize = cls.resolve_base_setting(tz_localize, "tz_localize")
@@ -2509,6 +2509,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> dict:
         """Align data to share a common index.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+
         Args:
             data (dict): Data dictionary.
             missing (Optional[str]): Specifies how to handle missing indices when aligning data.
@@ -2520,9 +2523,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             dict: Dictionary with all data reindexed to a common index.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.data`.
         """
         missing = cls.resolve_base_setting(missing, "missing_index")
         silence_warnings = cls.resolve_base_setting(silence_warnings, "silence_warnings")
@@ -2820,6 +2820,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> DataT:
         """Create a new `Data` instance from provided data.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+
         Args:
             data (Union[dict, SeriesFrame]): Dictionary or DataFrame/Series used to construct the instance.
             columns_are_symbols (bool): Flag indicating whether the columns represent symbols.
@@ -2859,9 +2862,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             Data: New `Data` instance constructed from the provided data.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.data`.
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -3882,15 +3882,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         returned dictionary includes the keyword arguments `tz_localize`, `tz_convert`, or `freq`, they
         will be used to override global settings.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             feature (Feature): Feature identifier.
             **kwargs: Keyword arguments for fetching the feature.
 
         Returns:
             FeatureData: Fetched data and (optionally) a metadata dictionary, or None.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -3944,15 +3944,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         * `tz_convert`
         * `freq`
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments for fetching the symbol.
 
         Returns:
             SymbolData: Fetched data and (optionally) a metadata dictionary, or None.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -4103,6 +4103,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Iteration over features or symbols is performed using `vectorbtpro.utils.execution.execute`
         to allow parallelized execution.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.data`.
+
         Args:
             keys (Union[None, dict, MaybeKeys]): Feature or symbol identifier(s).
 
@@ -4157,9 +4160,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             PullOutput: `Data` instance or a list of execution outputs if `return_raw` is True.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.data`.
         """
         keys_meta = cls.resolve_keys_meta(
             keys=keys,
@@ -4388,15 +4388,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.FeatureData:
         """Update a feature.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             feature (Feature): Feature identifier.
             **kwargs: Keyword arguments passed for feature update.
 
         Returns:
             FeatureData: Updated data and (optionally) a metadata dictionary, or None.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -4441,15 +4441,15 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> tp.SymbolData:
         """Update a symbol.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             symbol (Symbol): Symbol identifier.
             **kwargs: Keyword arguments passed for symbol update.
 
         Returns:
             SymbolData: Updated data and (optionally) a metadata dictionary, or None.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -4502,6 +4502,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Fetch new data for each feature or symbol by calling the appropriate update function via
         `Data.update_feature` or `Data.update_symbol`.
 
+        !!! note
+            Returns a new `Data` instance instead of modifying the current data in place.
+
         Args:
             concat (bool): Whether to concatenate existing data with updated/new data.
             skip_on_error (Optional[bool]): Whether to skip updating a feature or symbol if an exception occurs.
@@ -4520,9 +4523,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             PullOutput: `Data` instance or a list of execution outputs if `return_raw` is True.
-
-        !!! note
-            Returns a new `Data` instance instead of modifying the current data in place.
         """
         skip_on_error = self.resolve_base_setting(skip_on_error, "skip_on_error")
         silence_warnings = self.resolve_base_setting(silence_warnings, "silence_warnings")
@@ -4747,6 +4747,14 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         is aligned using `Data.align_data`. If the output is not a Pandas object, it is broadcast to match
         the original data using `broadcast_kwargs`.
 
+        !!! note
+            The returned object retains the same type and dimensionality as the input.
+
+            * Number and names of columns remain unchanged.
+            * To remove columns, use indexing or `Data.select`.
+            * To add columns, use column stacking or `Data.merge`.
+            * Index may change freely.
+
         Args:
             transform_func (Callable): Function to apply to the data.
             *args: Positional arguments for `transform_func`.
@@ -4762,14 +4770,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             Data: New instance with the transformed data.
-
-        !!! note
-            The returned object retains the same type and dimensionality as the input.
-
-            * Number and names of columns remain unchanged.
-            * To remove columns, use indexing or `Data.select`.
-            * To add columns, use column stacking or `Data.merge`.
-            * Index may change freely.
         """
         if key_wrapper_kwargs is None:
             key_wrapper_kwargs = {}
@@ -4935,6 +4935,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
     ) -> DataT:
         """Mirror OHLC features in the data.
 
+        See:
+            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -4949,9 +4952,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
         Returns:
             Data: New data instance with mirrored OHLC features.
-
-        See:
-            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
         """
         if isinstance(ref_feature, str):
             ref_feature = map_enum_fields(ref_feature, PriceFeature)
@@ -5309,6 +5309,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Set `unpack` to True, "dict", or "frame" to automatically post-process the result using the corresponding
         methods: `vectorbtpro.indicators.factory.IndicatorBase.unpack`, `to_dict`, or `to_frame`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.indexing`.
+
         Args:
             func (MaybeIterable[Union[Hashable, Callable]]): Function, location, indicator name,
                 or simulation method to run, or an iterable of such.
@@ -5364,9 +5367,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         Returns:
             Any: Result of applying the function(s) to the data. If `return_keys` is True,
                 returns a tuple of the results and the corresponding function keys.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.indexing`.
         """
         from vectorbtpro.indicators.factory import IndicatorBase, IndicatorFactory
         from vectorbtpro.indicators.talib_ import talib_func

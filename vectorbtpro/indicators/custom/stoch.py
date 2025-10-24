@@ -125,6 +125,9 @@ class _STOCH(STOCH):
     ) -> tp.BaseFigure:
         """Plot `STOCH.slow_k` and `STOCH.slow_d`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             limits (Tuple[float, float]): Lower and upper y-axis limits for the filled range.
@@ -139,9 +142,6 @@ class _STOCH(STOCH):
 
         Returns:
             BaseFigure: Updated or newly created figure with the plotted STOCH traces and filled range.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

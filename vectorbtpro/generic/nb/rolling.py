@@ -121,6 +121,9 @@ def rolling_sum_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
 
     Uses `rolling_sum_1d_nb` to compute the rolling sum for each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Two-dimensional array of numerical values, with each column processed independently.
         window (int): Window size.
@@ -128,9 +131,6 @@ def rolling_sum_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
 
     Returns:
         Array2d: Two-dimensional array with the rolling sum computed column-wise.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -232,6 +232,9 @@ def rolling_prod_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None)
 
     Uses `rolling_prod_1d_nb` to compute the rolling product for each column independently.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Two-dimensional array of numerical values, with each column processed separately.
         window (int): Window size.
@@ -239,9 +242,6 @@ def rolling_prod_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None)
 
     Returns:
         Array2d: Two-dimensional array with the rolling product computed column-wise.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -344,6 +344,9 @@ def rolling_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None)
 
     Applies `rolling_mean_1d_nb` to each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Two-dimensional array of numeric data.
         window (int): Window size.
@@ -351,9 +354,6 @@ def rolling_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None)
 
     Returns:
         Array2d: Array containing column-wise rolling mean values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -465,6 +465,9 @@ def rolling_std_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, 
 
     Applies `rolling_std_1d_nb` to each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Two-dimensional array of numeric data.
         window (int): Window size.
@@ -473,9 +476,6 @@ def rolling_std_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, 
 
     Returns:
         Array2d: Array containing column-wise rolling standard deviation values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -586,6 +586,9 @@ def rolling_zscore_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = 
 def rolling_zscore_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, ddof: int = 0) -> tp.Array2d:
     """Compute rolling z-score for each column of a 2D array using `rolling_zscore_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Input 2D array.
         window (int): Window size.
@@ -594,9 +597,6 @@ def rolling_zscore_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = Non
 
     Returns:
         Array2d: 2D array of computed z-scores.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -698,6 +698,9 @@ def wm_mean_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -
 def wm_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """Compute the weighted moving average for each column of a 2D array using `wm_mean_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Input 2D array.
         window (int): Window size.
@@ -705,9 +708,6 @@ def wm_mean_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> t
 
     Returns:
         Array2d: 2D array of weighted moving averages computed column-wise.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -822,6 +822,9 @@ def ewm_mean_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, ad
     `pd.Series(arr).ewm(span=span, min_periods=minp, adjust=adjust).mean()`, and is adapted from
     `pd._libs.window.aggregations.window_aggregations.ewma` with default arguments.
 
+    !!! note
+        In contrast to the Pandas implementation, `minp` is applied within `span`.
+
     Args:
         arr (Array1d): Input 1D array.
         span (int): Window span for the exponential weighting.
@@ -830,9 +833,6 @@ def ewm_mean_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, ad
 
     Returns:
         Array1d: Array of computed exponential weighted moving averages.
-
-    !!! note
-        In contrast to the Pandas implementation, `minp` is applied within `span`.
     """
     if minp is None:
         minp = span
@@ -881,6 +881,9 @@ def ewm_mean_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjus
     """Compute the 2-dimensional exponential weighted moving average for each column
     independently using `ewm_mean_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Input 2-dimensional data array.
         span (int): Window span for the exponential weighting.
@@ -889,9 +892,6 @@ def ewm_mean_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjus
 
     Returns:
         Array2d: Computed 2-dimensional exponential weighted moving average.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -998,6 +998,9 @@ def ewm_std_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, adj
     Numba equivalent to `pd.Series(arr).ewm(span=span, min_periods=minp).std()`
     and adapted from `pd._libs.window.aggregations.window_aggregations.ewmcov`.
 
+    !!! note
+        In contrast to Pandas, the parameter `minp` is applied within the span.
+
     Args:
         arr (Array1d): Input data array.
         span (int): Window span for the exponential weighting.
@@ -1006,9 +1009,6 @@ def ewm_std_1d_nb(arr: tp.Array1d, span: int, minp: tp.Optional[int] = None, adj
 
     Returns:
         Array1d: Computed exponential weighted moving standard deviation.
-
-    !!! note
-        In contrast to Pandas, the parameter `minp` is applied within the span.
     """
     if minp is None:
         minp = span
@@ -1069,6 +1069,9 @@ def ewm_std_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjust
     """Compute the 2-dimensional exponential weighted moving standard deviation for each
     column independently using `ewm_std_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Input 2-dimensional data array.
         span (int): Window span for the exponential weighting.
@@ -1077,9 +1080,6 @@ def ewm_std_nb(arr: tp.Array2d, span: int, minp: tp.Optional[int] = None, adjust
 
     Returns:
         Array2d: Computed 2-dimensional exponential weighted moving standard deviation.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -1117,6 +1117,9 @@ def wwm_mean_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adj
     """Compute the 2-dimensional Wilder's exponential weighted moving average for each column
     independently using `wwm_mean_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Input 2-dimensional data array.
         period (int): Period used for the moving average computation.
@@ -1125,9 +1128,6 @@ def wwm_mean_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adj
 
     Returns:
         Array2d: Computed 2-dimensional Wilder's exponential weighted moving average.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -1162,6 +1162,9 @@ def wwm_std_1d_nb(arr: tp.Array1d, period: int, minp: tp.Optional[int] = None, a
 def wwm_std_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adjust: bool = False) -> tp.Array2d:
     """Compute a 2-dimensional version of Wilder's exponential weighted moving standard deviation.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2-dimensional input array.
         period (int): Period used for computing the standard deviation.
@@ -1170,9 +1173,6 @@ def wwm_std_nb(arr: tp.Array2d, period: int, minp: tp.Optional[int] = None, adju
 
     Returns:
         Array2d: 2-dimensional array containing the computed standard deviations.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -1311,6 +1311,9 @@ def vidya_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = None) -> 
 def vidya_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """Compute a 2-dimensional VIDYA by applying the 1-dimensional VIDYA calculation to each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2-dimensional input array.
         window (int): Window size.
@@ -1318,9 +1321,6 @@ def vidya_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.
 
     Returns:
         Array2d: 2-dimensional array containing the computed VIDYA values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -1378,6 +1378,9 @@ def ma_nb(
 ) -> tp.Array2d:
     """Compute a 2-dimensional moving average by applying the 1-dimensional calculation column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2-dimensional input array.
         window (int): Window size.
@@ -1389,9 +1392,6 @@ def ma_nb(
 
     Returns:
         Array2d: 2-dimensional array containing the computed moving average values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -1450,6 +1450,9 @@ def msd_nb(
 ) -> tp.Array2d:
     """Compute moving standard deviation for each column in a 2-dimensional array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2-dimensional input array of numerical values.
         window (int): Window size.
@@ -1462,9 +1465,6 @@ def msd_nb(
 
     Returns:
         Array2d: Array with computed moving standard deviation for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -1604,6 +1604,9 @@ def rolling_cov_nb(
 ) -> tp.Array2d:
     """Compute rolling covariance column-wise between two 2-dimensional arrays.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr1 (Array2d): First 2-dimensional input array.
         arr2 (Array2d): Second 2-dimensional input array.
@@ -1613,9 +1616,6 @@ def rolling_cov_nb(
 
     Returns:
         Array2d: Array with computed rolling covariance for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr1, dtype=float_)
     for col in prange(arr1.shape[1]):
@@ -1757,6 +1757,9 @@ def rolling_corr_1d_nb(arr1: tp.Array1d, arr2: tp.Array1d, window: int, minp: tp
 def rolling_corr_nb(arr1: tp.Array2d, arr2: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """Compute rolling correlation coefficient for each column in two-dimensional arrays.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr1 (Array2d): First input two-dimensional array.
         arr2 (Array2d): Second input two-dimensional array.
@@ -1765,9 +1768,6 @@ def rolling_corr_nb(arr1: tp.Array2d, arr2: tp.Array2d, window: int, minp: tp.Op
 
     Returns:
         Array2d: Two-dimensional array of rolling correlation coefficients computed column-wise.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr1, dtype=float_)
     for col in prange(arr1.shape[1]):
@@ -1923,6 +1923,9 @@ def rolling_ols_nb(
 ) -> tp.Tuple[tp.Array1d, tp.Array1d]:
     """2-dim version of `rolling_ols_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr1 (Array2d): 2-dimensional array of independent variable values.
         arr2 (Array2d): 2-dimensional array of dependent variable values.
@@ -1931,9 +1934,6 @@ def rolling_ols_nb(
 
     Returns:
         Tuple[Array2d, Array2d]: Tuple containing the slope and intercept arrays.
-
-    !!! tip
-        This function is parallelizable.
     """
     slope_out = np.empty_like(arr1, dtype=float_)
     intercept_out = np.empty_like(arr1, dtype=float_)
@@ -1989,6 +1989,9 @@ def rolling_rank_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = No
 def rolling_rank_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, pct: bool = False) -> tp.Array2d:
     """2-dim version of `rolling_rank_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2-dimensional array of values.
         window (int): Window size.
@@ -1997,9 +2000,6 @@ def rolling_rank_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None,
 
     Returns:
         Array2d: Array of rolling ranks.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -2053,6 +2053,9 @@ def rolling_min_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 def rolling_min_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """2-dim version of `rolling_min_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2-dimensional array of values.
         window (int): Window size.
@@ -2060,9 +2063,6 @@ def rolling_min_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
 
     Returns:
         Array2d: Array of rolling minimum values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -2116,6 +2116,9 @@ def rolling_max_1d_nb(arr: tp.Array1d, window: int, minp: tp.Optional[int] = Non
 def rolling_max_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) -> tp.Array2d:
     """2-dim version of `rolling_max_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2-dimensional array of values.
         window (int): Window size.
@@ -2123,9 +2126,6 @@ def rolling_max_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None) 
 
     Returns:
         Array2d: Array of rolling maximum values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -2195,6 +2195,9 @@ def rolling_argmin_1d_nb(
 def rolling_argmin_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, local: bool = False) -> tp.Array2d:
     """Return a 2D array of rolling minimum indices computed column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2D array of numerical values.
         window (int): Window size.
@@ -2207,9 +2210,6 @@ def rolling_argmin_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = Non
             the minimum value in its rolling window.
 
             Positions with fewer than the required non-NaN values are set to -1.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=int_)
     for col in prange(arr.shape[1]):
@@ -2279,6 +2279,9 @@ def rolling_argmax_1d_nb(
 def rolling_argmax_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = None, local: bool = False) -> tp.Array2d:
     """Return a 2D array of rolling maximum indices computed column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2D array of numerical values.
         window (int): Window size.
@@ -2291,9 +2294,6 @@ def rolling_argmax_nb(arr: tp.Array2d, window: int, minp: tp.Optional[int] = Non
             the maximum value in its rolling window.
 
             Positions with fewer than the required non-NaN values are set to -1.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=int_)
     for col in prange(arr.shape[1]):
@@ -2336,6 +2336,9 @@ def rolling_any_nb(arr: tp.Array2d, window: int) -> tp.Array2d:
     """Return a 2D boolean array computed column-wise, indicating the presence
     of any True value in each rolling window.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2D array of boolean or numerical values.
         window (int): Window size.
@@ -2343,9 +2346,6 @@ def rolling_any_nb(arr: tp.Array2d, window: int) -> tp.Array2d:
     Returns:
         Array2d: 2D boolean array where each column contains True if any True value is
             detected in the corresponding rolling window, otherwise False.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=np.bool_)
     for col in prange(arr.shape[1]):
@@ -2388,6 +2388,9 @@ def rolling_all_nb(arr: tp.Array2d, window: int) -> tp.Array2d:
     """Return a 2D boolean array computed column-wise, indicating whether
     all elements in each rolling window are True.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2D array of boolean or numerical values.
         window (int): Window size.
@@ -2395,9 +2398,6 @@ def rolling_all_nb(arr: tp.Array2d, window: int) -> tp.Array2d:
     Returns:
         Array2d: 2D boolean array where each column contains True if all values in
             the corresponding rolling window are True, otherwise False.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=np.bool_)
     for col in prange(arr.shape[1]):
@@ -2657,6 +2657,9 @@ def rolling_pattern_similarity_nb(
 
     Each column of the input array is processed using `rolling_pattern_similarity_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2D input array where similarity is computed for each column.
         pattern (Array1d): 1D array representing the pattern to locate.
@@ -2735,9 +2738,6 @@ def rolling_pattern_similarity_nb(
 
     Returns:
         Array2d: 2D array where each column contains the computed similarity values.
-
-    !!! tip
-        This function is parallelizable.
     """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 
@@ -2817,15 +2817,15 @@ def expanding_min_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
 
     Applies `expanding_min_1d_nb` column-wise to compute the expanding minimum.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2D input array.
         minp (int): Minimum number of observations required.
 
     Returns:
         Array2d: 2D array where each column contains the expanding minimum values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -2872,15 +2872,15 @@ def expanding_max_nb(arr: tp.Array2d, minp: int = 1) -> tp.Array2d:
 
     Column-wise computation is parallelized using `prange` and leverages `expanding_max_1d_nb` for each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Input two-dimensional array.
         minp (int): Minimum number of observations required.
 
     Returns:
         Array2d: Two-dimensional array containing the expanding maximum computed column-wise.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):

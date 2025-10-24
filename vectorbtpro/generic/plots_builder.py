@@ -143,6 +143,19 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
     ) -> tp.Optional[tp.BaseFigure]:
         """Plot various parts of this object.
 
+        !!! note
+            `PlotsBuilderMixin` and `vectorbtpro.generic.stats_builder.StatsBuilderMixin`
+            share similar designs, differing mainly in nomenclature:
+
+            * `plots_defaults` vs `stats_defaults`
+            * `subplots` vs `metrics`
+            * `subplot_settings` vs `metric_settings`
+
+            See further details in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             subplots (Optional[MaybeIterable[Union[str, Tuple[str, Kwargs]]]]): Subplots to plot.
 
@@ -231,19 +244,6 @@ class PlotsBuilderMixin(Base, metaclass=MetaPlotsBuilderMixin):
 
         Returns:
             Optional[BaseFigure]: Plotly figure containing subplots.
-
-        !!! note
-            `PlotsBuilderMixin` and `vectorbtpro.generic.stats_builder.StatsBuilderMixin`
-            share similar designs, differing mainly in nomenclature:
-
-            * `plots_defaults` vs `stats_defaults`
-            * `subplots` vs `metrics`
-            * `subplot_settings` vs `metric_settings`
-
-            See further details in `vectorbtpro.generic.stats_builder.StatsBuilderMixin`.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
         # Plot per column
         if column is None:

@@ -230,6 +230,9 @@ def mirror_ohlc_nb(
 ) -> tp.Tuple[tp.Array2d, tp.Array2d, tp.Array2d, tp.Array2d]:
     """Generate mirrored OHLC arrays for two-dimensional inputs by applying the 1D operation column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         open (Optional[Array2d]): 2D array of open prices.
@@ -251,9 +254,6 @@ def mirror_ohlc_nb(
     Returns:
         Tuple[Array2d, Array2d, Array2d, Array2d]: Mirrored open, high, low, and
             close arrays with the specified shape.
-
-    !!! tip
-        This function is parallelizable.
     """
     start_value_ = to_1d_array_nb(np.asarray(start_value))
     ref_feature_ = to_1d_array_nb(np.asarray(ref_feature))

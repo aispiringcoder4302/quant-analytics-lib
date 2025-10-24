@@ -57,6 +57,9 @@ class AssetFunc(Base):
     def call(cls, d: tp.Any, *args, **kwargs) -> tp.Any:
         """Call the asset function.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             d: Input data.
             *args: Additional positional arguments.
@@ -64,9 +67,6 @@ class AssetFunc(Base):
 
         Returns:
             Any: Result of the asset function call.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

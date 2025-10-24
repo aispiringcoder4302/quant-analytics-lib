@@ -45,6 +45,9 @@ __all__ = [
 def get_platform_dir(dir_type: tp.Optional[str] = None, per_vbt_version: tp.Optional[bool] = None, **kwargs) -> str:
     """Return a platform-specific directory.
 
+    !!! info
+        For default settings, see `platformdirs` in `vectorbtpro._settings.path`.
+
     Args:
         dir_type (Optional[str]): Type of directory to retrieve (e.g., 'user_data_dir').
         per_vbt_version (Optional[bool]): Whether to create a VBT-version-specific directory.
@@ -52,9 +55,6 @@ def get_platform_dir(dir_type: tp.Optional[str] = None, per_vbt_version: tp.Opti
 
     Returns:
         str: Path to the platform-specific directory.
-
-    !!! info
-        For default settings, see `platformdirs` in `vectorbtpro._settings.path`.
     """
     from vectorbtpro._version import __version__
     from vectorbtpro._settings import settings
@@ -213,6 +213,9 @@ def check_mkdir(
 ) -> None:
     """Ensure that the specified directory exists or create it if necessary.
 
+    !!! info
+        For default settings, see `mkdir` in `vectorbtpro._settings.path`.
+
     Args:
         dir_path (PathLike): Directory path to check.
         mkdir (Optional[bool]): Whether to create the directory if it does not exist.
@@ -230,9 +233,6 @@ def check_mkdir(
 
     Returns:
         None
-
-    !!! info
-        For default settings, see `mkdir` in `vectorbtpro._settings.path`.
     """
     from vectorbtpro._settings import settings
 

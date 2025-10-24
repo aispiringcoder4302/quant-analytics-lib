@@ -122,6 +122,9 @@ def from_orders_nb(
     This function processes market data and portfolio inputs to create simulation orders and
     update simulation state arrays.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -283,9 +286,6 @@ def from_orders_nb(
     Returns:
         SimulationOutput: Simulation output containing order and log records, cash deposits,
             earnings, and other aggregated metrics.
-
-    !!! tip
-        This function is parallelizable.
 
     Examples:
         Buy and hold using all cash and close price (default):

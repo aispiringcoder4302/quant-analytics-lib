@@ -248,6 +248,16 @@ def register_chunkable(
     * `override_options` from `vectorbtpro._settings.chunking`
     * `override_setup_options.{setup_id}` from `vectorbtpro._settings.chunking`
 
+    !!! note
+        Calling the `register_chunkable` decorator before (or below) the
+        `vectorbtpro.registries.jit_registry.register_jitted` decorator with `return_wrapped` set
+        to True won't work. Using it after (or above) `vectorbtpro.registries.jit_registry.register_jitted`
+        works for Python calls but not for Numba. Generally, avoid wrapping immediately and use
+        `ChunkableRegistry.decorate` for decoration.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
+
     Args:
         func (Optional[Callable]): Function to register.
 
@@ -262,16 +272,6 @@ def register_chunkable(
 
     Returns:
         Callable: Registered function, optionally wrapped with chunking.
-
-    !!! note
-        Calling the `register_chunkable` decorator before (or below) the
-        `vectorbtpro.registries.jit_registry.register_jitted` decorator with `return_wrapped` set
-        to True won't work. Using it after (or above) `vectorbtpro.registries.jit_registry.register_jitted`
-        works for Python calls but not for Numba. Generally, avoid wrapping immediately and use
-        `ChunkableRegistry.decorate` for decoration.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.chunking`.
     """
 
     def decorator(_func: tp.Callable) -> tp.Callable:

@@ -113,13 +113,13 @@ VBTAssetT = tp.TypeVar("VBTAssetT", bound="VBTAsset")
 class VBTAsset(KnowledgeAsset):
     """Class for working with VBT content.
 
+    !!! info
+        For default settings, see `assets.vbt` in `vectorbtpro._settings.knowledge`.
+
     Args:
         *args: Positional arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
         release_name (Optional[str]): Release name.
         **kwargs: Keyword arguments for `vectorbtpro.knowledge.base_assets.KnowledgeAsset`.
-
-    !!! info
-        For default settings, see `assets.vbt` in `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = "knowledge.assets.vbt"
@@ -908,6 +908,9 @@ class VBTAsset(KnowledgeAsset):
     ) -> tp.Union[Path, tp.Tuple[Path, dict]]:
         """Save asset content as HTML files and open them in a web browser.
 
+        !!! note
+            An index page is created if there are multiple top-level parent entries.
+
         Args:
             cache (Optional[bool]): Flag to determine whether to use the cache directory.
 
@@ -930,9 +933,6 @@ class VBTAsset(KnowledgeAsset):
         Returns:
             Union[Path, Tuple[Path, dict]]: Directory where HTML files are stored, and optionally
                 a mapping of links to file paths.
-
-        !!! note
-            An index page is created if there are multiple top-level parent entries.
         """
         from vectorbtpro.knowledge.custom_asset_funcs import ToHTMLAssetFunc
 
@@ -1067,6 +1067,9 @@ class VBTAsset(KnowledgeAsset):
         pagination using `vectorbtpro.knowledge.formatting.FormatHTML`. Opens the default web
         browser and returns the file path of the generated HTML page.
 
+        !!! note
+            The file __won't__ be deleted automatically.
+
         Args:
             link (Optional[str]): Link identifier of the page to display.
 
@@ -1085,9 +1088,6 @@ class VBTAsset(KnowledgeAsset):
 
         Returns:
             Path: File path of the generated HTML file.
-
-        !!! note
-            The file __won't__ be deleted automatically.
         """
         open_browser = self.resolve_setting(open_browser, "open_browser", sub_path="display")
 
@@ -3853,6 +3853,10 @@ def find_messages(
 ) -> tp.MaybeMessagesAsset:
     """Find messages associated with an object or query.
 
+    !!! note
+        If `obj_or_query` is provided and not treated as a query, messages are retrieved using
+        `MessagesAsset.find_obj_messages`. Otherwise, messages are filtered by ranking via `MessagesAsset.rank`.
+
     Args:
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
 
@@ -3871,10 +3875,6 @@ def find_messages(
 
     Returns:
         MaybeMessagesAsset: New messages asset of messages processed according to the specified parameters.
-
-    !!! note
-        If `obj_or_query` is provided and not treated as a query, messages are retrieved using
-        `MessagesAsset.find_obj_messages`. Otherwise, messages are filtered by ranking via `MessagesAsset.rank`.
     """
     if messages_asset is None:
         messages_asset = MessagesAsset
@@ -3921,6 +3921,10 @@ def find_examples(
 ) -> tp.MaybeExamplesAsset:
     """Find code examples associated with an object or query.
 
+    !!! note
+        If `obj_or_query` is provided and not treated as a query, examples are retrieved using
+        `ExamplesAsset.find_obj_examples`. Otherwise, examples are filtered by ranking via `ExamplesAsset.rank`.
+
     Args:
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
 
@@ -3938,10 +3942,6 @@ def find_examples(
 
     Returns:
         MaybeExamplesAsset: New examples asset of code examples processed according to the specified parameters.
-
-    !!! note
-        If `obj_or_query` is provided and not treated as a query, examples are retrieved using
-        `ExamplesAsset.find_obj_examples`. Otherwise, examples are filtered by ranking via `ExamplesAsset.rank`.
     """
     if examples_asset is None:
         examples_asset = ExamplesAsset
@@ -4004,6 +4004,14 @@ def find_assets(
 ) -> tp.MaybeDict[tp.VBTAsset]:
     """Return a dictionary of assets relevant to a given object(s) or query.
 
+    !!! note
+        Keyword arguments are passed to all functions (except for `find_api` when `obj_or_query` is an object
+        since it doesn't share common arguments with other three functions), unless `combine` and `as_query`
+        are both True; in this case they are passed to `VBTAsset.rank`. Use specialized arguments like
+        `api_kwargs` to provide keyword arguments to the respective function.
+
+        If `obj_or_query` is a query, will rank the combined asset. Otherwise, will rank each individual asset.
+
     Args:
         obj_or_query (Optional[MaybeList]): Object reference, query, or list of such.
         as_query (Optional[bool]): Flag indicating whether to treat `obj_or_query` as a query.
@@ -4061,14 +4069,6 @@ def find_assets(
     Returns:
         Dict[VBTAsset]: Dictionary mapping asset names to their corresponding assets;
             entries with no content are omitted.
-
-    !!! note
-        Keyword arguments are passed to all functions (except for `find_api` when `obj_or_query` is an object
-        since it doesn't share common arguments with other three functions), unless `combine` and `as_query`
-        are both True; in this case they are passed to `VBTAsset.rank`. Use specialized arguments like
-        `api_kwargs` to provide keyword arguments to the respective function.
-
-        If `obj_or_query` is a query, will rank the combined asset. Otherwise, will rank each individual asset.
     """
     if as_query is None:
         as_query = obj_or_query is not None and not is_obj_or_query_ref(obj_or_query)

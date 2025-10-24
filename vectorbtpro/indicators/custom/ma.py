@@ -81,6 +81,9 @@ class _MA(MA):
     ) -> tp.BaseFigure:
         """Plot the moving average alongside the close price.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to plot the close price.
@@ -93,9 +96,6 @@ class _MA(MA):
 
         Returns:
             BaseFigure: Figure with the plotted moving average and close price traces.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

@@ -428,6 +428,10 @@ def deep_getattr(
 ) -> tp.Any:
     """Retrieve attributes from an object following a specified chain.
 
+    !!! tip
+        If your attribute chain contains only attributes and methods without arguments,
+        represent it as a single string.
+
     Args:
         obj (Any): Root object from which to retrieve attributes.
         attr_chain (Union[str, tuple, Iterable]): Chain of attributes to access.
@@ -445,10 +449,6 @@ def deep_getattr(
 
     Returns:
         Any: Resulting attribute value or the result from calling the attribute.
-
-    !!! tip
-        If your attribute chain contains only attributes and methods without arguments,
-        represent it as a single string.
     """
     checks.assert_instance_of(attr_chain, (str, tuple, Iterable))
 
@@ -523,6 +523,9 @@ class AttrResolverMixin(Base):
     ) -> AttrResolverMixinT:
         """Resolve self with optional keyword conditions.
 
+        !!! note
+            `cond_kwargs` can be modified in-place.
+
         Args:
             cond_kwargs (KwargsLike): Keyword arguments for conditional resolution.
             custom_arg_names (Optional[Set[str]]): Set of custom argument names for resolution.
@@ -531,9 +534,6 @@ class AttrResolverMixin(Base):
 
         Returns:
             AttrResolverMixin: Resolved self.
-
-        !!! note
-            `cond_kwargs` can be modified in-place.
         """
         return self
 

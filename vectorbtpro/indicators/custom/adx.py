@@ -95,6 +95,9 @@ class _ADX(ADX):
     ) -> tp.BaseFigure:
         """Plot ADX traces including `ADX.plus_di`, `ADX.minus_di`, and `ADX.adx`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plus_di_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ADX.plus_di`.
@@ -107,9 +110,6 @@ class _ADX(ADX):
 
         Returns:
             BaseFigure: Figure containing the plotted ADX traces.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

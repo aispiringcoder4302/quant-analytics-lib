@@ -104,6 +104,9 @@ def asset_flow_nb(
     The asset flow is determined by computing changes in position from the orders and may be filtered
     by direction using the `direction` parameter.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         order_records (RecordArray): Array of order records.
@@ -125,9 +128,6 @@ def asset_flow_nb(
 
     Returns:
         Array2d: Array representing asset flow at each bar per column.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
 
@@ -203,6 +203,9 @@ def assets_nb(
     Calculates the current asset position at each bar by cumulatively summing the asset flow.
     Positions are adjusted based on the specified `direction`, which filters long or short exposures.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         asset_flow (Array2d): Array of asset flow values.
         direction (int): Position direction.
@@ -220,9 +223,6 @@ def assets_nb(
 
     Returns:
         Array2d: Array containing the updated asset position at each bar per column.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
 
@@ -274,6 +274,9 @@ def position_mask_nb(
     Generates a boolean mask that indicates whether a non-zero asset position exists at each bar.
     The mask is computed within the simulation range defined by `sim_start` and `sim_end`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         assets (Array2d): Array of asset positions per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -285,9 +288,6 @@ def position_mask_nb(
 
     Returns:
         Array2d: Boolean array indicating the presence of an asset position per column at each bar.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(assets.shape, False, dtype=np.bool_)
 
@@ -327,6 +327,9 @@ def position_mask_grouped_nb(
 ) -> tp.Array2d:
     """Generate a boolean mask indicating active positions for each group based on asset data.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         assets (Array2d): Array of asset positions per column.
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -340,9 +343,6 @@ def position_mask_grouped_nb(
     Returns:
         Array2d: Boolean array of shape (number of bars, number of groups) where True indicates
             at least one active position in the corresponding group.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full((assets.shape[0], len(group_lens)), False, dtype=np.bool_)
 
@@ -386,6 +386,9 @@ def position_coverage_nb(
 ) -> tp.Array1d:
     """Compute the position coverage ratio for each asset column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         assets (Array2d): Array of asset positions per column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -397,9 +400,6 @@ def position_coverage_nb(
 
     Returns:
         Array1d: Array containing the coverage ratio (fraction of non-zero positions) for each asset column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(assets.shape[1], 0.0, dtype=float_)
 
@@ -444,6 +444,9 @@ def position_coverage_grouped_nb(
 ) -> tp.Array1d:
     """Compute the position coverage ratio for each group of asset columns.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         assets (Array2d): Array of asset positions per column.
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -460,9 +463,6 @@ def position_coverage_grouped_nb(
 
             Each ratio is the fraction of bars with active positions within
             the aggregated simulation range, or NaN if no valid simulation range exists.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(len(group_lens), 0.0, dtype=float_)
 
@@ -553,6 +553,9 @@ def cash_deposits_nb(
 ) -> tp.Array2d:
     """Calculate cash deposit series per column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -573,9 +576,6 @@ def cash_deposits_nb(
 
     Returns:
         Array2d: 2D array containing the cash deposit series per column.
-
-    !!! tip
-        This function is parallelizable.
     """
     cash_deposits_raw_ = to_2d_array_nb(np.asarray(cash_deposits_raw))
     if weights is None:
@@ -663,6 +663,9 @@ def cash_deposits_grouped_nb(
 ) -> tp.Array2d:
     """Calculate cash deposit series aggregated by group.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -682,9 +685,6 @@ def cash_deposits_grouped_nb(
 
     Returns:
         Array2d: 2D array containing the grouped cash deposit series.
-
-    !!! tip
-        This function is parallelizable.
     """
     cash_deposits_raw_ = to_2d_array_nb(np.asarray(cash_deposits_raw))
     if weights is None:
@@ -781,6 +781,9 @@ def cash_earnings_nb(
 ) -> tp.Array2d:
     """Calculate cash earning series per column by applying weight adjustments and simulation range filters.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         cash_earnings_raw (FlexArray2dLike): Raw cash earnings.
@@ -798,9 +801,6 @@ def cash_earnings_nb(
 
     Returns:
         Array2d: 2D array with calculated cash earnings per column.
-
-    !!! tip
-        This function is parallelizable.
     """
     cash_earnings_raw_ = to_2d_array_nb(np.asarray(cash_earnings_raw))
     if weights is None:
@@ -854,6 +854,9 @@ def cash_earnings_grouped_nb(
 ) -> tp.Array2d:
     """Calculate aggregated cash earning series per group by summing weighted cash earnings of grouped columns.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -872,9 +875,6 @@ def cash_earnings_grouped_nb(
 
     Returns:
         Array2d: 2D array with aggregated cash earnings per group.
-
-    !!! tip
-        This function is parallelizable.
     """
     cash_earnings_raw_ = to_2d_array_nb(np.asarray(cash_earnings_raw))
     if weights is None:
@@ -995,6 +995,9 @@ def cash_flow_nb(
     and simulation ranges. If `free` is True, computes free cash flow differences;
     otherwise, computes standard cash flow.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         order_records (RecordArray): Array of order records.
@@ -1014,9 +1017,6 @@ def cash_flow_nb(
 
     Returns:
         Array2d: Array representing the cash flow series.
-
-    !!! tip
-        This function is parallelizable.
     """
     cash_earnings_ = to_2d_array_nb(np.asarray(cash_earnings))
 
@@ -1105,6 +1105,9 @@ def cash_flow_grouped_nb(
     group lengths. The function sums cash flow values across columns within each group over
     the simulation range.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         cash_flow (Array2d): Array of cash flow values.
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -1117,9 +1120,6 @@ def cash_flow_grouped_nb(
 
     Returns:
         Array2d: Aggregated cash flow series for each group.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full((cash_flow.shape[0], len(group_lens)), np.nan, dtype=float_)
 
@@ -1174,6 +1174,9 @@ def align_init_cash_nb(
     maximum negative cash requirement. If `init_cash_raw` equals auto-align mode, all columns
     are adjusted to the maximum required cash across columns.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         init_cash_raw (int): Raw initial cash value or mode indicator for auto alignment.
         free_cash_flow (Array2d): Array of free cash flow values.
@@ -1189,9 +1192,6 @@ def align_init_cash_nb(
 
     Returns:
         Array1d: Aligned initial cash values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
@@ -1368,6 +1368,9 @@ def cash_nb(
 ) -> tp.Array2d:
     """Compute cash series per column or group using cash flow, initial cash, cash deposits, and simulation range.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         cash_flow (Array2d): 2D array of cash flow values.
         init_cash (FlexArray1d): Initial cash amounts per column.
@@ -1383,9 +1386,6 @@ def cash_nb(
 
     Returns:
         Array2d: 2D array of computed cash series.
-
-    !!! tip
-        This function is parallelizable.
     """
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
@@ -1525,6 +1525,9 @@ def asset_value_nb(
 ) -> tp.Array2d:
     """Compute asset value series per column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): Price series per column.
         assets (Array2d): Array of asset positions per column.
@@ -1538,9 +1541,6 @@ def asset_value_nb(
     Returns:
         Array2d: Asset value series computed as the product of price and asset quantity
             when assets are non-zero; otherwise, zero.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(close.shape, np.nan, dtype=float_)
 
@@ -1582,6 +1582,9 @@ def asset_value_grouped_nb(
 ) -> tp.Array2d:
     """Compute grouped asset value series.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         asset_value (Array2d): Asset value series per column.
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -1594,9 +1597,6 @@ def asset_value_grouped_nb(
 
     Returns:
         Array2d: Grouped asset value series computed by summing column values within each group.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full((asset_value.shape[0], len(group_lens)), np.nan, dtype=float_)
 
@@ -1644,6 +1644,9 @@ def value_nb(
 ) -> tp.Array2d:
     """Compute value series per column or group.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         cash (Array2d): Cash series per column.
         asset_value (Array2d): Asset value series per column.
@@ -1656,9 +1659,6 @@ def value_nb(
 
     Returns:
         Array2d: Value series computed as the sum of cash and asset value for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(cash.shape, np.nan, dtype=float_)
 
@@ -1697,6 +1697,9 @@ def gross_exposure_nb(
 ) -> tp.Array2d:
     """Compute gross exposure series per column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         asset_value (Array2d): Asset value series per column.
         value (Array2d): Total value series per column.
@@ -1710,9 +1713,6 @@ def gross_exposure_nb(
     Returns:
         Array2d: Gross exposure series calculated as the absolute ratio of
             asset value to total value for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(asset_value.shape, np.nan, dtype=float_)
 
@@ -1754,6 +1754,9 @@ def net_exposure_nb(
 ) -> tp.Array2d:
     """Compute net exposure series per column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         long_exposure (Array2d): Long exposure series per column.
         short_exposure (Array2d): Short exposure series per column.
@@ -1767,9 +1770,6 @@ def net_exposure_nb(
     Returns:
         Array2d: Net exposure series calculated as the difference between
             long and short exposures for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(long_exposure.shape, np.nan, dtype=float_)
 
@@ -1811,6 +1811,9 @@ def allocations_nb(
     """Calculate allocations for each column by computing the ratio of asset values to
     group totals over the simulation period.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         asset_value (Array2d): Matrix of asset values.
         value (Array2d): Matrix of group total values used for normalization.
@@ -1824,9 +1827,6 @@ def allocations_nb(
 
     Returns:
         Array2d: Matrix of calculated allocations per column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(asset_value.shape, np.nan, dtype=float_)
 
@@ -1885,6 +1885,9 @@ def total_profit_nb(
     """Compute total profit for each column by aggregating asset values, order records, and
     cash flows over the simulation period.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         close (Array2d): Matrix of close prices.
@@ -1910,9 +1913,6 @@ def total_profit_nb(
 
     Returns:
         Array1d: Array containing the computed total profit for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
@@ -2029,6 +2029,9 @@ def returns_nb(
 ) -> tp.Array2d:
     """Compute return series per column or group.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         value (Array2d): Array of asset values.
         init_value (FlexArray1d): Initial asset value per column.
@@ -2046,9 +2049,6 @@ def returns_nb(
 
     Returns:
         Array2d: Computed return series for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
@@ -2119,6 +2119,9 @@ def asset_pnl_nb(
 ) -> tp.Array2d:
     """Compute asset (realized and unrealized) profit and loss series per column or group.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         asset_value (Array2d): Array of asset values.
         cash_flow (Array2d): Array of cash flows.
@@ -2134,9 +2137,6 @@ def asset_pnl_nb(
 
     Returns:
         Array2d: Calculated asset profit and loss series for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_value_ = to_1d_array_nb(np.asarray(init_position_value))
 
@@ -2223,6 +2223,9 @@ def asset_returns_nb(
 ) -> tp.Array2d:
     """Compute asset return series per column or group.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         asset_value (Array2d): Array of asset values.
         cash_flow (Array2d): Array of cash flows corresponding to asset values.
@@ -2239,9 +2242,6 @@ def asset_returns_nb(
 
     Returns:
         Array2d: Computed asset return series for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_value_ = to_1d_array_nb(np.asarray(init_position_value))
 
@@ -2294,6 +2294,9 @@ def market_value_nb(
 ) -> tp.Array2d:
     """Compute market value for each column based on asset prices and cash deposits.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): Asset prices with rows as bars and columns as assets.
         init_value (FlexArray1d): Initial market values for each asset.
@@ -2309,9 +2312,6 @@ def market_value_nb(
 
     Returns:
         Array2d: Computed market values for each asset over the simulation period.
-
-    !!! tip
-        This function is parallelizable.
     """
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 
@@ -2361,6 +2361,9 @@ def market_value_grouped_nb(
     """Compute market value for each group by aggregating asset market values based on group lengths,
     asset prices, and cash deposits.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         close (Array2d): Asset prices with rows as bars and columns as individual assets.
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -2377,9 +2380,6 @@ def market_value_grouped_nb(
 
     Returns:
         Array2d: Aggregated market values per group over time.
-
-    !!! tip
-        This function is parallelizable.
     """
     cash_deposits_ = to_2d_array_nb(np.asarray(cash_deposits))
 

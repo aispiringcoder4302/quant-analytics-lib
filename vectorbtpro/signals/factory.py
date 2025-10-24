@@ -169,7 +169,7 @@ class SignalFactory(IndicatorFactory):
             plot.__doc__ = inspect.cleandoc(
                 """
                 Plot `{0}.{1}`.
-        
+
                 Args:
                     column (Optional[Column]): Identifier of the column to plot.
                     entry_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting entry markers.
@@ -178,7 +178,7 @@ class SignalFactory(IndicatorFactory):
                         `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_entries` for `{0}.{1}`.
                     fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
                     **kwargs: Keyword arguments for `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
-        
+
                 Returns:
                     BaseFigure: Updated figure with plotted signals.
                 """.format(
@@ -268,7 +268,7 @@ class SignalFactory(IndicatorFactory):
             plot.__doc__ = inspect.cleandoc(
                 """
                 Plot `{0}.{1}` and `{0}.exits`.
-        
+
                 Args:
                     column (Optional[Column]): Identifier of the column to plot.
                     entry_y (Optional[Union[str, ArrayLike]]): Y-axis values for plotting entry markers.
@@ -281,7 +281,7 @@ class SignalFactory(IndicatorFactory):
                         `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_exits` for `{0}.exits`.
                     fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
                     **kwargs: Keyword arguments for `vectorbtpro.signals.accessors.SignalsSRAccessor.plot_as_markers`.
-        
+
                 Returns:
                     BaseFigure: Updated figure with plotted signals.
                 """.format(
@@ -326,41 +326,6 @@ class SignalFactory(IndicatorFactory):
         of indices corresponding to the chosen signals. See `vectorbtpro.signals.nb.generate_nb`
         for more details.
 
-        Args:
-            entry_place_func_nb (Optional[PlaceFunc]): Callback function for placing entry signals.
-
-                Defaults to `vectorbtpro.signals.nb.first_place_nb` when used with `FactoryMode.Chain`.
-            exit_place_func_nb (Optional[PlaceFunc]): Callback function for placing exit signals.
-            generate_func_nb (Optional[Callable]): Generation function for entry signals.
-
-                Defaults to `vectorbtpro.signals.nb.generate_nb`.
-            generate_ex_func_nb (Optional[Callable]): Generation function for exit signals.
-
-                Defaults to `vectorbtpro.signals.nb.generate_ex_nb`.
-            generate_enex_func_nb (Optional[Callable]): Generation function for both entry and exit signals.
-
-                Defaults to `vectorbtpro.signals.nb.generate_enex_nb`.
-            cache_func (Callable): Caching function to preprocess data.
-
-                Its outputs are appended as the last arguments to placement functions.
-            entry_settings (KwargsLike): Settings dictionary for the entry placement function.
-            exit_settings (KwargsLike): Settings dictionary for the exit placement function.
-            cache_settings (KwargsLike): Settings dictionary for the cache function.
-            jit_kwargs (KwargsLike): Keyword arguments for the `@njit` decorator of the parameter
-                selection function.
-
-                Has `nogil` set to True by default.
-            jitted (JittedOption): Option to control JIT compilation.
-
-                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
-
-                If the generation function is not jitted, the apply function will not be jitted.
-            **kwargs: Keyword arguments for `IndicatorFactory.with_custom_func`.
-
-        Returns:
-            Type[IndicatorBase]: Custom signal generator class configured with
-                the specified placement and generation functions.
-
         The settings dictionary of each function can have the following options:
 
         Options:
@@ -401,6 +366,41 @@ class SignalFactory(IndicatorFactory):
 
             Passing keyword arguments directly to the placement functions is not supported.
             Use `pass_kwargs` in a settings dictionary to pass keyword arguments as positional.
+
+        Args:
+            entry_place_func_nb (Optional[PlaceFunc]): Callback function for placing entry signals.
+
+                Defaults to `vectorbtpro.signals.nb.first_place_nb` when used with `FactoryMode.Chain`.
+            exit_place_func_nb (Optional[PlaceFunc]): Callback function for placing exit signals.
+            generate_func_nb (Optional[Callable]): Generation function for entry signals.
+
+                Defaults to `vectorbtpro.signals.nb.generate_nb`.
+            generate_ex_func_nb (Optional[Callable]): Generation function for exit signals.
+
+                Defaults to `vectorbtpro.signals.nb.generate_ex_nb`.
+            generate_enex_func_nb (Optional[Callable]): Generation function for both entry and exit signals.
+
+                Defaults to `vectorbtpro.signals.nb.generate_enex_nb`.
+            cache_func (Callable): Caching function to preprocess data.
+
+                Its outputs are appended as the last arguments to placement functions.
+            entry_settings (KwargsLike): Settings dictionary for the entry placement function.
+            exit_settings (KwargsLike): Settings dictionary for the exit placement function.
+            cache_settings (KwargsLike): Settings dictionary for the cache function.
+            jit_kwargs (KwargsLike): Keyword arguments for the `@njit` decorator of the parameter
+                selection function.
+
+                Has `nogil` set to True by default.
+            jitted (JittedOption): Option to control JIT compilation.
+
+                See `vectorbtpro.utils.jitting.resolve_jitted_option`.
+
+                If the generation function is not jitted, the apply function will not be jitted.
+            **kwargs: Keyword arguments for `IndicatorFactory.with_custom_func`.
+
+        Returns:
+            Type[IndicatorBase]: Custom signal generator class configured with
+                the specified placement and generation functions.
 
         Examples:
             Simplest signal indicator that places True at the very first index:

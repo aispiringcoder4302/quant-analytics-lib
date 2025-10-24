@@ -125,6 +125,9 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
     (`utils`, `stats`, `plots`, and `reports`) and attaches them as methods
     to the decorated class if they accept a `returns` argument.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.qs_adapter`.
+
     Args:
         cls (Type[T]): Class to which QuantStats methods will be attached.
         replace_signature (bool): Whether to replace the method signature with that of the
@@ -132,9 +135,6 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
 
     Returns:
         Type[T]: Decorated class with QuantStats methods attached.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.qs_adapter`.
     """
     try:
         import quantstats as qs
@@ -316,11 +316,11 @@ class QSAdapter(Configured):
         Merges defaults from `vectorbtpro._settings.qs_adapter`, mapped values from
         `vectorbtpro.returns.accessors.ReturnsAccessor.defaults`, and user-provided defaults.
 
-        Returns:
-            Kwargs: Merged default settings for plots.
-
         !!! info
             For default settings, see `defaults` in `vectorbtpro._settings.qs_adapter`.
+
+        Returns:
+            Kwargs: Merged default settings for plots.
         """
         from vectorbtpro._settings import settings
 

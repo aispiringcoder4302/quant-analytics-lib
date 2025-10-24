@@ -310,6 +310,9 @@ class Drawdowns(Ranges):
     ) -> DrawdownsT:
         """Create a new `Drawdowns` instance from price data.
 
+        See:
+            `vectorbtpro.generic.nb.records.get_drawdowns_nb`
+
         Args:
             close (ArrayLike): Array of close prices.
             open (Optional[ArrayLike]): Array of open prices.
@@ -332,9 +335,6 @@ class Drawdowns(Ranges):
 
         Returns:
             Drawdowns: New instance of `Drawdowns` created from the provided price data.
-
-        See:
-            `vectorbtpro.generic.nb.records.get_drawdowns_nb`
         """
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
@@ -454,6 +454,12 @@ class Drawdowns(Ranges):
     def get_drawdown(self, jitted: tp.JittedOption = None, chunked: tp.ChunkedOption = None, **kwargs) -> MappedArray:
         """Return the drawdown values.
 
+        !!! note
+            Both recovered and active drawdowns are considered.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_drawdown_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -465,12 +471,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: Array of computed drawdown values.
-
-        See:
-            `vectorbtpro.generic.nb.records.dd_drawdown_nb`
-
-        !!! note
-            Both recovered and active drawdowns are considered.
         """
         func = jit_reg.resolve_option(nb.dd_drawdown_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -552,6 +552,9 @@ class Drawdowns(Ranges):
         !!! note
             Both recovered and active drawdowns are considered.
 
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_return_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -563,9 +566,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: Array containing the computed recovery return values.
-
-        See:
-            `vectorbtpro.generic.nb.records.dd_recovery_return_nb`
         """
         func = jit_reg.resolve_option(nb.dd_recovery_return_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -656,6 +656,12 @@ class Drawdowns(Ranges):
     ) -> MappedArray:
         """Compute the decline duration.
 
+        !!! note
+            Calculation accounts for both recovered and active drawdowns.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_decline_duration_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -667,12 +673,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: Computed decline duration.
-
-        See:
-            `vectorbtpro.generic.nb.records.dd_decline_duration_nb`
-
-        !!! note
-            Calculation accounts for both recovered and active drawdowns.
         """
         func = jit_reg.resolve_option(nb.dd_decline_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -687,6 +687,13 @@ class Drawdowns(Ranges):
     ) -> MappedArray:
         """Compute the recovery duration.
 
+        !!! note
+            A value higher than 1 indicates that recovery was slower than the decline.
+            Calculation accounts for both recovered and active drawdowns.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_duration_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -698,13 +705,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: Computed recovery duration.
-
-        See:
-            `vectorbtpro.generic.nb.records.dd_recovery_duration_nb`
-
-        !!! note
-            A value higher than 1 indicates that recovery was slower than the decline.
-            Calculation accounts for both recovered and active drawdowns.
         """
         func = jit_reg.resolve_option(nb.dd_recovery_duration_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -719,6 +719,12 @@ class Drawdowns(Ranges):
     ) -> MappedArray:
         """Compute the recovery duration ratio.
 
+        !!! note
+            Calculation accounts for both recovered and active drawdowns.
+
+        See:
+            `vectorbtpro.generic.nb.records.dd_recovery_duration_ratio_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -730,12 +736,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MappedArray: Computed recovery duration ratio.
-
-        See:
-            `vectorbtpro.generic.nb.records.dd_recovery_duration_ratio_nb`
-
-        !!! note
-            Calculation accounts for both recovered and active drawdowns.
         """
         func = jit_reg.resolve_option(nb.dd_recovery_duration_ratio_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -757,6 +757,9 @@ class Drawdowns(Ranges):
     ) -> tp.MaybeSeries:
         """Return the drawdown of the last active drawdown.
 
+        !!! note
+            Grouping is not supported by this method.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -773,9 +776,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MaybeSeries: Active drawdown.
-
-        !!! note
-            Grouping is not supported by this method.
         """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
@@ -796,6 +796,9 @@ class Drawdowns(Ranges):
     ) -> tp.MaybeSeries:
         """Return the duration of the last active drawdown.
 
+        !!! note
+            Grouping is not supported by this method.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -813,9 +816,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MaybeSeries: Duration of the active drawdown.
-
-        !!! note
-            Grouping is not supported by this method.
         """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
@@ -838,6 +838,9 @@ class Drawdowns(Ranges):
     ) -> tp.MaybeSeries:
         """Return the recovery of the last active drawdown.
 
+        !!! note
+            Grouping is not supported by this method.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -854,9 +857,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MaybeSeries: Active recovery.
-
-        !!! note
-            Grouping is not supported by this method.
         """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
@@ -878,6 +878,9 @@ class Drawdowns(Ranges):
     ) -> tp.MaybeSeries:
         """Return the recovery return of the last active drawdown.
 
+        !!! note
+            Grouping is not supported by this method.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -895,9 +898,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MaybeSeries: Recovery return of the active drawdown.
-
-        !!! note
-            Grouping is not supported by this method.
         """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
@@ -921,6 +921,9 @@ class Drawdowns(Ranges):
     ) -> tp.MaybeSeries:
         """Return the recovery duration of the last active drawdown.
 
+        !!! note
+            Grouping is not supported by this method.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -938,9 +941,6 @@ class Drawdowns(Ranges):
 
         Returns:
             MaybeSeries: Recovery duration of the active drawdown.
-
-        !!! note
-            Grouping is not supported by this method.
         """
         if self.wrapper.grouper.is_grouped(group_by=group_by):
             raise ValueError("Grouping is not supported by this method")
@@ -1129,6 +1129,9 @@ class Drawdowns(Ranges):
     ) -> tp.BaseFigure:
         """Plot drawdowns.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             top_n (Optional[int]): Display only the top N records sorted by maximum duration.
@@ -1157,9 +1160,6 @@ class Drawdowns(Ranges):
 
         Returns:
             BaseFigure: Figure object containing the plotted drawdowns and price data.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

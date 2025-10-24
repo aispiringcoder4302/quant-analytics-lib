@@ -31,12 +31,12 @@ class NDLData(RemoteData):
 
     This class provides methods to pull data from Nasdaq Data Link using its API.
 
+    !!! info
+        For default settings, see `custom.ndl` in `vectorbtpro._settings.data`.
+
     See:
         * https://github.com/Nasdaq/data-link-python for the official API documentation.
         * `NDLData.fetch_symbol` for argument details.
-
-    !!! info
-        For default settings, see `custom.ndl` in `vectorbtpro._settings.data`.
 
     Examples:
         Set up the API key globally (optional):

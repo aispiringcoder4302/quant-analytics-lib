@@ -450,14 +450,14 @@ class Itemable(Base):
     def items(self, **kwargs) -> tp.Items:
         """Return this instance as items.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             **kwargs: Keyword arguments for the underlying implementation.
 
         Returns:
             Items: Items representation of the instance.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -468,14 +468,14 @@ class Paramable(Base):
     def as_param(self, **kwargs) -> Param:
         """Return this instance as a parameter.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             **kwargs: Keyword arguments for the underlying implementation.
 
         Returns:
             Param: Parameter representation of the instance.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -532,6 +532,11 @@ def combine_params(
     Arguments `max_guesses` and `max_misses` are useful for limiting the number of guesses; without
     them, the search may continue forever. Once any of these two numbers is reached, the search will stop.
 
+    !!! note
+        The parameters `random_subset`, `max_guesses`, and `max_misses` only apply when conditions are defined.
+
+        The `grid_indices` parameter determines a subsequence of combinations prior to random selection.
+
     Args:
         param_dct (Dict[Hashable, Param]): Dictionary mapping keys to `Param` objects.
         build_grid (Optional[bool]): Flag indicating whether to materialize the full parameter grid.
@@ -568,11 +573,6 @@ def combine_params(
     Returns:
         Union[dict, Tuple[dict, pd.Index]]: Combined parameter dictionary,
             and if `build_index` is True, also an index.
-
-    !!! note
-        The parameters `random_subset`, `max_guesses`, and `max_misses` only apply when conditions are defined.
-
-        The `grid_indices` parameter determines a subsequence of combinations prior to random selection.
     """
     from vectorbtpro.base import indexes
 
@@ -1147,6 +1147,9 @@ class Parameterizer(Configured):
     If `vectorbtpro.utils.execution.NoResult` is returned, the current iteration is skipped and removed
     from the final index.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.params`.
+
     Args:
         param_search_kwargs (KwargsLike): Keyword arguments for parameter search.
 
@@ -1219,9 +1222,6 @@ class Parameterizer(Configured):
 
             See `vectorbtpro.utils.execution.execute`.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.params`.
     """
 
     _settings_path: tp.SettingsPath = "params"
@@ -2400,6 +2400,9 @@ def parameterized(
     If a `parameterizer` instance is provided and `replace_parameterizer` is True, create a new
     `Parameterizer` instance by replacing any arguments that are not None.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.params`.
+
     Args:
         func (Callable): Function to be decorated.
         parameterizer (Optional[Type[Parameterizer]]): `Parameterizer` class or instance for
@@ -2412,9 +2415,6 @@ def parameterized(
 
     Returns:
         Callable: New function with the same signature as the provided function.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.params`.
 
     Examples:
         No parameters, no parameter configs:

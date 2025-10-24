@@ -35,11 +35,11 @@ class CSVData(FileData):
     This class extends `FileData` and provides methods for verifying file types,
     resolving metadata keys, and reading CSV files using pandas.
 
-    See:
-        * `CSVData.fetch_key` for argument details.
-
     !!! info
         For default settings, see `custom.csv` in `vectorbtpro._settings.data`.
+
+    See:
+        * `CSVData.fetch_key` for argument details.
     """
 
     _settings_path: tp.SettingsPath = dict(custom="data.custom.csv")

@@ -58,6 +58,10 @@ __all__ = [
 class Embeddings(Configured):
     """Abstract class for embedding providers.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge` and
+        its sub-configurations `chat` and `chat.embeddings_config`.
+
     Args:
         batch_size (Optional[int]): Batch size for processing queries.
 
@@ -66,10 +70,6 @@ class Embeddings(Configured):
         pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
         template_context (Kwargs): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge` and
-        its sub-configurations `chat` and `chat.embeddings_config`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -156,14 +156,14 @@ class Embeddings(Configured):
     def get_embedding(self, query: str) -> tp.List[float]:
         """Return the embedding vector for the given query.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             query (str): Query text.
 
         Returns:
             List[float]: Embedding vector.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -214,14 +214,14 @@ class Embeddings(Configured):
 class OpenAIEmbeddings(Embeddings):
     """Embeddings class for OpenAI.
 
+    !!! info
+        For default settings, see `chat.embeddings_configs.openai` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): OpenAI model identifier.
         client_kwargs (KwargsLike): Keyword arguments for `openai.OpenAI`.
         embeddings_kwargs (KwargsLike): Keyword arguments for `openai.resources.embeddings.Embeddings.create`.
         **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `embeddings_kwargs`.
-
-    !!! info
-        For default settings, see `chat.embeddings_configs.openai` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "openai"
@@ -312,14 +312,14 @@ class OpenAIEmbeddings(Embeddings):
 class GeminiEmbeddings(Embeddings):
     """Embeddings class for Google GenAI (Gemini).
 
+    !!! info
+        For default settings, see `chat.embeddings_configs.gemini` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): Gemini model identifier.
         client_kwargs (KwargsLike): Keyword arguments for `google.genai.Client`.
         embeddings_kwargs (KwargsLike): Keyword arguments for `google.genai.Client.models.embed_content`.
         **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `embeddings_kwargs`.
-
-    !!! info
-        For default settings, see `chat.embeddings_configs.gemini` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "gemini"
@@ -446,14 +446,14 @@ class GeminiEmbeddings(Embeddings):
 class HFInferenceEmbeddings(Embeddings):
     """Embeddings class for HuggingFace Inference.
 
+    !!! info
+        For default settings, see `chat.embeddings_configs.hf_inference` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): HuggingFace model identifier.
         client_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient`.
         feature_extraction_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient.feature_extraction`.
         **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `feature_extraction_kwargs`.
-
-    !!! info
-        For default settings, see `chat.embeddings_configs.hf_inference` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "hf_inference"
@@ -546,13 +546,13 @@ class HFInferenceEmbeddings(Embeddings):
 class LiteLLMEmbeddings(Embeddings):
     """Embeddings class for LiteLLM.
 
+    !!! info
+        For default settings, see `chat.embeddings_configs.litellm` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): LiteLLM model identifier.
         embedding_kwargs (KwargsLike): Keyword arguments for `litellm.embedding`.
         **kwargs: Keyword arguments for `Embeddings` or used as `embedding_kwargs`.
-
-    !!! info
-        For default settings, see `chat.embeddings_configs.litellm` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "litellm"
@@ -625,15 +625,15 @@ class LlamaIndexEmbeddings(Embeddings):
     This class initializes embeddings for LlamaIndex using a specified identifier or instance.
     It combines configuration from `vectorbtpro._settings.knowledge` with provided parameters.
 
+    !!! info
+        For default settings, see `chat.embeddings_configs.llama_index` in `vectorbtpro._settings.knowledge`.
+
     Args:
         embedding (Union[None, str, BaseEmbedding]): Embedding identifier or instance.
 
             If None, a default from settings is used.
         embedding_kwargs (KwargsLike): Keyword arguments for embedding initialization.
         **kwargs: Keyword arguments for `Embeddings` or used as `embedding_kwargs`.
-
-    !!! info
-        For default settings, see `chat.embeddings_configs.llama_index` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "llama_index"
@@ -745,6 +745,9 @@ class LlamaIndexEmbeddings(Embeddings):
 class OllamaEmbeddings(Embeddings):
     """Embeddings class for Ollama.
 
+    !!! info
+        For default settings, see `chat.embeddings_configs.ollama` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): Ollama model identifier.
 
@@ -752,9 +755,6 @@ class OllamaEmbeddings(Embeddings):
         client_kwargs (KwargsLike): Keyword arguments for `ollama.Client`.
         embed_kwargs (KwargsLike): Keyword arguments for `ollama.Client.embed`.
         **kwargs: Keyword arguments for `Embeddings` or used as `client_kwargs` or `embed_kwargs`.
-
-    !!! info
-        For default settings, see `chat.embeddings_configs.ollama` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "ollama"
@@ -867,6 +867,9 @@ class OllamaEmbeddings(Embeddings):
 def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Embeddings]:
     """Return a subclass or instance of `Embeddings` based on the provided identifier or object.
 
+    !!! info
+        For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
+
     Args:
         embeddings (EmbeddingsLike): Identifier, subclass, or instance of `Embeddings`.
 
@@ -884,9 +887,6 @@ def resolve_embeddings(embeddings: tp.EmbeddingsLike = None) -> tp.MaybeType[Emb
 
     Returns:
         Embeddings: Resolved embeddings subclass or instance.
-
-    !!! info
-        For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
     """
     if embeddings is None:
         from vectorbtpro._settings import settings

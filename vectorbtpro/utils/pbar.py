@@ -39,6 +39,9 @@ __all__ = [
 class ProgressBar(Base):
     """Class for managing a progress bar.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.pbar`.
+
     Args:
         iterable (Optional[Iterable]): Iterable for tracking progress.
         bar_id (Optional[Hashable]): Identifier for the progress bar.
@@ -59,9 +62,6 @@ class ProgressBar(Base):
         registry (Optional[PBarRegistry]): Registry for managing progress bar instances.
         silence_warnings (Optional[bool]): Flag to suppress warning messages.
         **kwargs: Keyword arguments for the progress bar constructor.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.pbar`.
     """
 
     def __init__(
@@ -798,15 +798,15 @@ class ProgressBar(Base):
 class ProgressHidden(Base):
     """Context manager to temporarily hide progress globally.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.pbar`.
+
     Args:
         disable_registry (bool): Flag to disable registry operations.
         disable_machinery (bool): Flag to disable progress machinery.
 
     Returns:
         None
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.pbar`.
     """
 
     def __init__(self, disable_registry: bool = True, disable_machinery: bool = True) -> None:
@@ -896,12 +896,12 @@ def with_progress_hidden(*args) -> tp.Callable:
 class ProgressShown(Base):
     """Context manager to temporarily show progress globally.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.pbar`.
+
     Args:
         enable_registry (bool): Flag to enable registry operations.
         enable_machinery (bool): Flag to enable progress machinery.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.pbar`.
     """
 
     def __init__(self, enable_registry: bool = True, enable_machinery: bool = True) -> None:

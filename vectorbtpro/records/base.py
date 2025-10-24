@@ -462,6 +462,9 @@ class MetaRecords(type(Analyzable)):
 class Records(Analyzable, metaclass=MetaRecords):
     """Class for wrapping and analyzing record arrays.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.records`.
+
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
 
@@ -477,9 +480,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
                 `Records.replace` handles this automatically.
         **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.records`.
     """
 
     _writeable_attrs: tp.WriteableAttrs = {"_field_config"}
@@ -503,12 +503,12 @@ class Records(Analyzable, metaclass=MetaRecords):
         ${field_config}
         ```
 
+        To modify the fields, update the config in-place, override this property,
+        or set `${cls_name}._field_config` on the instance.
+
         Returns:
             Config: Field configuration copied for each instance. Changes to this configuration
                 do not affect the class-level configuration.
-
-        To modify the fields, update the config in-place, override this property,
-        or set `${cls_name}._field_config` on the instance.
         """
         return self._field_config
 
@@ -647,6 +647,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers and
         `Records.row_stack_records_arrs` to stack the record arrays.
 
+        !!! note
+            Will produce a column-sorted array.
+
         Args:
             *objs (MaybeSequence[Records]): (Additional) `Records` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
@@ -657,9 +660,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Records: New `Records` instance representing the row-stacked result.
-
-        !!! note
-            Will produce a column-sorted array.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -797,6 +797,9 @@ class Records(Analyzable, metaclass=MetaRecords):
         `Records.column_stack_records_arrs` to combine the record arrays. The `get_indexer_kwargs`
         are passed to `pd.Index.get_indexer` to map old indices to new ones after reindexing.
 
+        !!! note
+            Produces a column-sorted array.
+
         Args:
             *objs (MaybeSequence[Records]): (Additional) `Records` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
@@ -808,9 +811,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Records: New `Records` instance with column-stacked data.
-
-        !!! note
-            Produces a column-sorted array.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -866,6 +866,10 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Automatically determines whether to use column lengths or the column map for selecting the columns.
 
+        See:
+            * `vectorbtpro.records.nb.record_col_lens_select_nb` if `Records.col_mapper` is sorted.
+            * `vectorbtpro.records.nb.record_col_map_select_nb` if `Records.col_mapper` is not sorted.
+
         Args:
             col_idxs (MaybeIndexArray): Column indices or slice to select.
             jitted (JittedOption): Option to control JIT compilation.
@@ -874,10 +878,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Tuple[Array1d, RecordArray]: Tuple containing the selected indices and the new record array.
-
-        See:
-            * `vectorbtpro.records.nb.record_col_lens_select_nb` if `Records.col_mapper` is sorted.
-            * `vectorbtpro.records.nb.record_col_map_select_nb` if `Records.col_mapper` is not sorted.
         """
         if len(self.values) == 0:
             return np.arange(len(self.values)), self.values
@@ -1344,6 +1344,10 @@ class Records(Analyzable, metaclass=MetaRecords):
     def is_sorted(self, incl_id: bool = False, jitted: tp.JittedOption = None) -> bool:
         """Check whether the records are sorted.
 
+        See:
+            * `vectorbtpro.records.nb.is_col_id_sorted_nb` for sorting with IDs.
+            * `vectorbtpro.records.nb.is_col_sorted_nb` for sorting without IDs.
+
         Args:
             incl_id (bool): If True, include record ids in the sorting criteria.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1352,10 +1356,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             bool: True if the records are sorted, False otherwise.
-
-        See:
-            * `vectorbtpro.records.nb.is_col_id_sorted_nb` for sorting with IDs.
-            * `vectorbtpro.records.nb.is_col_sorted_nb` for sorting without IDs.
         """
         if incl_id:
             func = jit_reg.resolve_option(nb.is_col_id_sorted_nb, jitted)
@@ -1366,6 +1366,9 @@ class Records(Analyzable, metaclass=MetaRecords):
     def sort(self: RecordsT, incl_id: bool = False, group_by: tp.GroupByLike = None, **kwargs) -> RecordsT:
         """Sort records by column values with an optional secondary sort by record ids.
 
+        !!! note
+            Sorting is expensive. It is more efficient to append records that are already in the correct order.
+
         Args:
             incl_id (bool): If True, include record ids in the sorting criteria.
             group_by (GroupByLike): Grouping specification.
@@ -1375,9 +1378,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Records: New instance with sorted records.
-
-        !!! note
-            Sorting is expensive. It is more efficient to append records that are already in the correct order.
         """
         if self.is_sorted(incl_id=incl_id):
             return self.replace(**kwargs).regroup(group_by)
@@ -1414,6 +1414,9 @@ class Records(Analyzable, metaclass=MetaRecords):
     ) -> RecordsT:
         """Return a new records instance with the first N records retained in each column.
 
+        See:
+            `vectorbtpro.records.nb.first_n_nb`
+
         Args:
             n (int): Number of records to retain from the beginning of each column.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1426,9 +1429,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Records: New instance containing the first N records per column.
-
-        See:
-            `vectorbtpro.records.nb.first_n_nb`
         """
         col_map = self.col_mapper.get_col_map(group_by=False)
         func = jit_reg.resolve_option(nb.first_n_nb, jitted)
@@ -1444,6 +1444,9 @@ class Records(Analyzable, metaclass=MetaRecords):
     ) -> RecordsT:
         """Return a new records instance with the last N records retained in each column.
 
+        See:
+            `vectorbtpro.records.nb.last_n_nb`
+
         Args:
             n (int): Number of records to retain from the end of each column.
             jitted (JittedOption): Option to control JIT compilation.
@@ -1456,9 +1459,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Records: New instance containing the last N records per column.
-
-        See:
-            `vectorbtpro.records.nb.last_n_nb`
         """
         col_map = self.col_mapper.get_col_map(group_by=False)
         func = jit_reg.resolve_option(nb.last_n_nb, jitted)
@@ -1475,6 +1475,9 @@ class Records(Analyzable, metaclass=MetaRecords):
     ) -> RecordsT:
         """Return a new records instance with N randomly selected records from each column.
 
+        See:
+            `vectorbtpro.records.nb.random_n_nb`
+
         Args:
             n (int): Number of random records to select per column.
             seed (Optional[int]): Random seed for deterministic output.
@@ -1488,9 +1491,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             Records: New instance containing the randomly selected records.
-
-        See:
-            `vectorbtpro.records.nb.random_n_nb`
         """
         if seed is not None:
             set_seed_nb(seed)
@@ -1573,6 +1573,10 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         For class method calls, `col_mapper` must be provided.
 
+        See:
+            * `vectorbtpro.records.nb.map_records_nb` for regular application.
+            * `vectorbtpro.records.nb.map_records_meta_nb` for meta application.
+
         Args:
             map_func_nb (AnyRecordsMapFunc): Callback function for mapping records.
             *args: Positional arguments for `map_func_nb`.
@@ -1589,10 +1593,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             MappedArray: Mapped array with scalar values for each record.
-
-        See:
-            * `vectorbtpro.records.nb.map_records_nb` for regular application.
-            * `vectorbtpro.records.nb.map_records_meta_nb` for meta application.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(col_mapper, arg_name="col_mapper")
@@ -1625,6 +1625,10 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         If `apply_per_group` is True, the function is applied separately to each group.
 
+        See:
+            * `vectorbtpro.records.nb.apply_nb` for regular application.
+            * `vectorbtpro.records.nb.apply_meta_nb` for meta application.
+
         Args:
             apply_func_nb (AnyApplyFunc): Callback function for applying to records.
             *args: Positional arguments for `apply_func_nb`.
@@ -1645,10 +1649,6 @@ class Records(Analyzable, metaclass=MetaRecords):
 
         Returns:
             MappedArray: Mapped array resulting from applying the function to the records.
-
-        See:
-            * `vectorbtpro.records.nb.apply_nb` for regular application.
-            * `vectorbtpro.records.nb.apply_meta_nb` for meta application.
         """
         if isinstance(cls_or_self, type):
             checks.assert_not_none(col_mapper, arg_name="col_mapper")

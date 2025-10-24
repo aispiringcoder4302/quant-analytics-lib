@@ -39,6 +39,12 @@ class Comparable(Base):
     def equals(self, other: tp.Any, *args, **kwargs) -> bool:
         """Return whether the current object is deeply equal to another object.
 
+        !!! note
+            This method should accept all keyword arguments supported by `is_deep_equal`.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             other (Any): Object to compare against.
             *args: Positional arguments for `is_deep_equal`.
@@ -46,12 +52,6 @@ class Comparable(Base):
 
         Returns:
             bool: True if the objects are equal, False otherwise.
-
-        !!! note
-            This method should accept all keyword arguments supported by `is_deep_equal`.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -110,14 +110,14 @@ def is_numba_enabled() -> bool:
 def is_numba_func(obj: tp.Any) -> bool:
     """Return whether the object is identified as a Numba-compiled function based on configuration.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.numba`.
+
     Args:
         obj (Any): Object to check.
 
     Returns:
         bool: True if the object is a Numba-compiled function, False otherwise.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.numba`.
     """
     from vectorbtpro._settings import settings
 
@@ -517,14 +517,14 @@ def is_complex_sequence(obj: tp.Any) -> bool:
 def is_hashable(obj: tp.Any) -> bool:
     """Return whether the object can be hashed.
 
+    !!! note
+        An object with a `__hash__` method might still be unhashable if invoking `hash` raises a TypeError.
+
     Args:
         obj (Any): Object to check.
 
     Returns:
         bool: True if the object is hashable, False otherwise.
-
-    !!! note
-        An object with a `__hash__` method might still be unhashable if invoking `hash` raises a TypeError.
     """
     if not isinstance(obj, Hashable):
         return False
@@ -1308,6 +1308,9 @@ def assert_ndim(obj: tp.ArrayLike, ndims: tp.MaybeTuple[int]) -> None:
 def assert_len_equal(obj1: tp.Sized, obj2: tp.Sized) -> None:
     """Assert that the lengths of `obj1` and `obj2` are equal.
 
+    !!! note
+        The objects are not converted to NumPy arrays.
+
     Args:
         obj1 (Sized): First object whose length is compared.
         obj2 (Sized): Second object whose length is compared.
@@ -1317,9 +1320,6 @@ def assert_len_equal(obj1: tp.Sized, obj2: tp.Sized) -> None:
 
     Raises:
         AssertionError: If the lengths of `obj1` and `obj2` do not match.
-
-    !!! note
-        The objects are not converted to NumPy arrays.
     """
     if len(obj1) != len(obj2):
         raise AssertionError(f"Lengths of {obj1} and {obj2} do not match")

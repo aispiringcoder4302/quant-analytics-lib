@@ -52,6 +52,9 @@ asset_cache: tp.Dict[tp.Hashable, "KnowledgeAsset"] = {}
 class AssetCacheManager(Configured):
     """Class for managing cached knowledge assets.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge`.
+
     Args:
         persist_cache (Optional[bool]): Whether to persist the cache to disk.
         cache_dir (Optional[PathLike]): Directory for saving knowledge assets.
@@ -68,9 +71,6 @@ class AssetCacheManager(Configured):
             See `vectorbtpro.utils.pickling.load`.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = "knowledge"
@@ -266,15 +266,15 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
     This class behaves like a mutable sequence.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge`.
+
     Args:
         data (Optional[List[Any]]): List of data items for the asset.
 
             If more than one item is provided, the asset is not considered a single item.
         single_item (bool): Indicates whether the asset holds a single data item.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = "knowledge"
@@ -456,6 +456,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     ) -> KnowledgeAssetT:
         """Build a `KnowledgeAsset` instance from a JSON file.
 
+        See:
+            `vectorbtpro.utils.pickling.load_bytes`
+
         Args:
             path (PathLike): Path to the JSON file.
             compression (CompressionLike): Compression algorithm.
@@ -466,9 +469,6 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Returns:
             KnowledgeAsset: New asset populated with data from the JSON file.
-
-        See:
-            `vectorbtpro.utils.pickling.load_bytes`
         """
         bytes_ = load_bytes(path, compression=compression, decompress_kwargs=decompress_kwargs)
         json_str = bytes_.decode("utf-8")
@@ -484,6 +484,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
     ) -> KnowledgeAssetT:
         """Build a `KnowledgeAsset` instance from JSON bytes.
 
+        See:
+            `vectorbtpro.utils.pickling.decompress`
+
         Args:
             bytes_ (bytes): Byte stream containing the JSON object.
             compression (CompressionLike): Compression algorithm.
@@ -494,9 +497,6 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Returns:
             KnowledgeAsset: New asset containing data from the JSON bytes.
-
-        See:
-            `vectorbtpro.utils.pickling.decompress`
         """
         if decompress_kwargs is None:
             decompress_kwargs = {}
@@ -1795,6 +1795,9 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         This method constructs a regular expression based on the provided target, language, and block settings,
         and then uses `KnowledgeAsset.find` to search the asset data.
 
+        !!! info
+            For default settings, see `code` in `vectorbtpro._settings.knowledge`.
+
         Args:
             target (Optional[Iterable[Any]]): Target pattern(s) to locate in the asset.
             language (Union[None, bool, Iterable[str]]): Language specification(s) to filter code blocks.
@@ -1807,9 +1810,6 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Returns:
             MaybeKnowledgeAsset: New asset with segments that match the search criteria.
-
-        !!! info
-            For default settings, see `code` in `vectorbtpro._settings.knowledge`.
         """
         language = self.resolve_setting(language, "language", sub_path="code")
         in_blocks = self.resolve_setting(in_blocks, "in_blocks", sub_path="code")
@@ -2018,6 +2018,8 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
         This method applies a removal operation on nested data items using `KnowledgeAsset.apply` with
         `vectorbtpro.knowledge.base_asset_funcs.FindRemoveAssetFunc`.
 
+        Similar to `KnowledgeAsset.find_replace`.
+
         Args:
             target (Union[dict, MaybeList[Any]]): Value or mapping used to identify occurrences for removal.
             path (Optional[MaybeList[PathLikeKey]]): Path(s) within the data item to search (e.g. "x.y[0].z").
@@ -2032,8 +2034,6 @@ class KnowledgeAsset(RankContextable, Configured, MutableSequence, metaclass=Met
 
         Returns:
             MaybeKnowledgeAsset: New asset with the specified occurrences removed.
-
-        Similar to `KnowledgeAsset.find_replace`.
         """
         return self.apply(
             "find_remove",

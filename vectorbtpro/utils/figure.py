@@ -286,6 +286,9 @@ class FigureMixin(Base):
     ) -> tp.Tuple[tp.Args, tp.Kwargs]:
         """Resolve and return arguments for displaying the figure.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             *args: Positional arguments passed for display.
             auto_rangebreaks (Union[None, bool, dict]): Configuration for auto range breaks.
@@ -295,9 +298,6 @@ class FigureMixin(Base):
 
         Returns:
             Tuple[Args, Kwargs]: Tuple containing the resolved positional and keyword arguments.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -325,20 +325,23 @@ class FigureMixin(Base):
     def show(self, *args, **kwargs) -> None:
         """Display the figure.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             *args: Positional arguments for displaying the figure.
             **kwargs: Keyword arguments for displaying the figure.
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def write_image(self, *args, **kwargs) -> None:
         """Write the figure to disk.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             *args: Positional arguments for writing the figure.
@@ -346,14 +349,14 @@ class FigureMixin(Base):
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def update_layout(self, *args, **kwargs) -> None:
         """Update layout of the figure.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             *args: Positional arguments for updating the layout.
@@ -361,9 +364,6 @@ class FigureMixin(Base):
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -436,13 +436,13 @@ class Figure(_Figure, FigureMixin):
 
     Extends `plotly.graph_objects.Figure`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         *args: Positional arguments for `plotly.graph_objects.Figure`.
         empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
         **kwargs: Keyword arguments for `plotly.graph_objects.Figure`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
     """
 
     def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
@@ -481,13 +481,13 @@ class FigureWidget(_FigureWidget, FigureMixin):
 
     Extends `plotly.graph_objects.FigureWidget`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         *args: Positional arguments for `plotly.graph_objects.FigureWidget`.
         empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
         **kwargs: Keyword arguments for `plotly.graph_objects.FigureWidget`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
     """
 
     def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
@@ -529,13 +529,13 @@ try:
 
         Extends `plotly.graph_objects.Figure`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             *args: Positional arguments for `plotly_resampler.FigureResampler`.
             empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
             **kwargs: Keyword arguments for `plotly_resampler.FigureResampler`.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
 
         def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
@@ -572,13 +572,13 @@ try:
 
         Extends `plotly.graph_objects.FigureWidget`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             *args: Positional arguments for `plotly_resampler.FigureWidgetResampler`.
             empty_layout (bool): If True, use an empty layout; otherwise merge default plotting settings.
             **kwargs: Keyword arguments for `plotly_resampler.FigureWidgetResampler`.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
 
         def __init__(self, *args, empty_layout: bool = False, **kwargs) -> None:
@@ -627,6 +627,9 @@ def make_figure(
 
     If `use_resampler` is True, the figure is wrapped using `plotly_resampler`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         *args: Positional arguments for the Plotly figure constructor.
         use_widgets (Optional[bool]): Determines whether to use a widget-based figure.
@@ -635,9 +638,6 @@ def make_figure(
 
     Returns:
         BaseFigure: Plotly figure instance.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
     """
     from vectorbtpro._settings import settings
 

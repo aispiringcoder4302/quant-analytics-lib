@@ -121,6 +121,9 @@ def concat_merge(
 ) -> tp.MaybeTuple[tp.AnyArray]:
     """Merge multiple array-like objects by concatenation.
 
+    !!! note
+        All arrays are assumed to have the same type and dimensionality.
+
     Args:
         *objs (MaybeSequence[MaybeTuple[Any]]): Array-like objects to merge.
 
@@ -146,9 +149,6 @@ def concat_merge(
     Returns:
         MaybeTuple[AnyArray]: Merged array-like object, which may be a Pandas Series,
             a NumPy array, or a tuple/namedtuple of such objects.
-
-    !!! note
-        All arrays are assumed to have the same type and dimensionality.
     """
     if len(objs) == 1:
         objs = objs[0]
@@ -277,6 +277,9 @@ def row_stack_merge(
 ) -> tp.MaybeTuple[tp.AnyArray]:
     """Merge multiple array-like or `vectorbtpro.base.wrapping.Wrapping` objects via row stacking.
 
+    !!! note
+        All arrays are assumed to have the same type and dimensionality.
+
     Args:
         *objs (MaybeSequence[MaybeTuple[Any]]): Array-like or wrapping objects to merge.
 
@@ -307,9 +310,6 @@ def row_stack_merge(
 
     Returns:
         MaybeTuple[AnyArray]: Merged result after row stacking.
-
-    !!! note
-        All arrays are assumed to have the same type and dimensionality.
     """
     if len(objs) == 1:
         objs = objs[0]
@@ -440,6 +440,9 @@ def column_stack_merge(
 ) -> tp.MaybeTuple[tp.AnyArray]:
     """Merge multiple array-like or `vectorbtpro.base.wrapping.Wrapping` objects via column stacking.
 
+    !!! note
+        All arrays are assumed to have the same type and dimensionality.
+
     Args:
         *objs (MaybeSequence[MaybeTuple[Any]]): Array-like or wrapping objects to merge.
 
@@ -480,9 +483,6 @@ def column_stack_merge(
     Returns:
         MaybeTuple[AnyArray]: Merged column-stacked array-like object,
             or a tuple of such objects when merging a sequence of tuples.
-
-    !!! note
-        All arrays are assumed to have the same type and dimensionality.
     """
     if len(objs) == 1:
         objs = objs[0]

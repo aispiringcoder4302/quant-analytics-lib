@@ -56,6 +56,9 @@ def requests_retry_session(
 def text_to_giphy_url(text: str, api_key: tp.Optional[str] = None, weirdness: tp.Optional[int] = None) -> str:
     """Return the URL for a GIF corresponding to the provided text using the Giphy translate API.
 
+    !!! info
+        For default settings, see `giphy` in `vectorbtpro._settings.telegram`.
+
     Args:
         text (str): Text to translate into a GIF search query.
         api_key (Optional[str]): API key for accessing the Giphy service.
@@ -63,9 +66,6 @@ def text_to_giphy_url(text: str, api_key: tp.Optional[str] = None, weirdness: tp
 
     Returns:
         str: URL of the translated GIF.
-
-    !!! info
-        For default settings, see `giphy` in `vectorbtpro._settings.telegram`.
     """
     from vectorbtpro._settings import settings
 

@@ -807,6 +807,9 @@ def apply_patches(source: str, patch_output: str, start_line: int = 1, fuzzy_kwa
     If the output contains no patch blocks (`NO_PATCHES_SENTINEL`), the function returns
     the original text unchanged.
 
+    !!! note
+        Source should not contain line numbers.
+
     Args:
         source (str): Original source to which patches will be applied.
         patch_output (str): Output containing patch blocks.
@@ -815,9 +818,6 @@ def apply_patches(source: str, patch_output: str, start_line: int = 1, fuzzy_kwa
 
     Returns:
         str: Source with applied patches.
-
-    !!! note
-        Source should not contain line numbers.
     """
     m = ANY_CODE_FENCE_RE.match(patch_output.strip())
     if m:
@@ -1094,7 +1094,7 @@ Example output:
      sum = x + y
      print(sum)
 @@ -6,4 +6,4 @@
- 
+
  def greet():
 -    print("Hello, world!")
 +    print("Hi there!")

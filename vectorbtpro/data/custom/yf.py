@@ -29,12 +29,12 @@ __pdoc__ = {}
 class YFData(RemoteData):
     """Data class for fetching financial data from Yahoo Finance.
 
+    !!! info
+        For default settings, see `custom.yf` in `vectorbtpro._settings.data`.
+
     See:
         * https://github.com/ranaroussi/yfinance for the `yfinance` library.
         * `YFData.fetch_symbol` for argument details.
-
-    !!! info
-        For default settings, see `custom.yf` in `vectorbtpro._settings.data`.
 
     Examples:
         ```pycon
@@ -92,6 +92,10 @@ class YFData(RemoteData):
     ) -> tp.SymbolData:
         """Override `vectorbtpro.data.base.Data.fetch_symbol` to fetch a symbol from Yahoo Finance.
 
+        !!! warning
+            Data from Yahoo Finance may be unstable. Yahoo may modify data, introduce noise, or omit data points
+            (e.g., volume in the example). It is primarily intended for demonstration purposes.
+
         Args:
             symbol (Symbol): Symbol identifier.
             period (Optional[str]): Period string.
@@ -112,10 +116,6 @@ class YFData(RemoteData):
 
         Returns:
             SymbolData: Fetched data and a metadata dictionary.
-
-        !!! warning
-            Data from Yahoo Finance may be unstable. Yahoo may modify data, introduce noise, or omit data points
-            (e.g., volume in the example). It is primarily intended for demonstration purposes.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

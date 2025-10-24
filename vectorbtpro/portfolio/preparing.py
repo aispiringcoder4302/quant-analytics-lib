@@ -531,11 +531,11 @@ class BasePFPreparer(BasePreparer):
     def init_position(self) -> tp.Array1d:
         """Aligned initial position values for portfolio simulation.
 
-        Returns:
-            Array1d: Aligned initial position values.
-
         !!! note
             A warning is issued if non-zero positions are detected with undefined initial prices.
+
+        Returns:
+            Array1d: Aligned initial position values.
         """
         init_position = self.align_pc_arr(
             self.pre__init_position,

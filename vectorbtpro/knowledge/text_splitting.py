@@ -42,14 +42,14 @@ __all__ = [
 class TextSplitter(Configured):
     """Abstract class for text splitters.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge` and
+        its sub-configurations `chat` and `chat.text_splitter_config`.
+
     Args:
         chunk_template (Optional[CustomTemplateLike]): Template used to format each text chunk.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge` and
-        its sub-configurations `chat` and `chat.text_splitter_config`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -101,14 +101,14 @@ class TextSplitter(Configured):
     def split(self, text: str) -> tp.TSSpanChunks:
         """Yield the start and end character indices for each text chunk in the given text.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             text (str): Input text to split.
 
         Yields:
             Tuple[int, int]: Tuple representing the start and end indices of a text chunk.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -148,6 +148,9 @@ class TextSplitter(Configured):
 class TokenSplitter(TextSplitter):
     """Splitter class for tokens.
 
+    !!! info
+        For default settings, see `chat.text_splitter_configs.token` in `vectorbtpro._settings.knowledge`.
+
     Args:
         chunk_size (Optional[int]): Maximum number of tokens per chunk; None if disabled.
         chunk_overlap (Union[None, int, float]): Number or fraction of tokens
@@ -158,9 +161,6 @@ class TokenSplitter(TextSplitter):
             Resolved using `vectorbtpro.knowledge.tokenization.resolve_tokenizer`.
         tokenizer_kwargs (KwargsLike): Keyword arguments to initialize or update `tokenizer`.
         **kwargs: Keyword arguments for `TextSplitter`.
-
-    !!! info
-        For default settings, see `chat.text_splitter_configs.token` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "token"
@@ -290,6 +290,9 @@ class SegmentSplitter(TokenSplitter):
     count falls below the minimum, the next layer of separators is used. To split into tokens,
     set a separator to None; to split into individual characters, use an empty string.
 
+    !!! info
+        For default settings, see `chat.text_splitter_configs.segment` in `vectorbtpro._settings.knowledge`.
+
     Args:
         separators (List[List[Optional[str]]]): Nested list of separators grouped by layers used
             for splitting text.
@@ -298,9 +301,6 @@ class SegmentSplitter(TokenSplitter):
             If provided as a float between 0 and 1, it is interpreted relative to the chunk size.
         fixed_overlap (bool): Indicates whether fixed overlap is applied.
         **kwargs: Keyword arguments for `TokenSplitter`.
-
-    !!! info
-        For default settings, see `chat.text_splitter_configs.segment` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "segment"
@@ -604,14 +604,14 @@ class SourceSplitter(TokenSplitter):
     This class is used to split source code into chunks by parsing the structure of the code.
     It divides nodes of the code into levels and performs splitting based on the specified chunk size and overlap.
 
+    !!! info
+        For default settings, see `chat.text_splitter_configs.source` in `vectorbtpro._settings.knowledge`.
+
     Args:
         uniform_chunks (Optional[bool]): Whether each chunk should start and end at the same base level.
 
             If nested chunks (with level > base) are present, includes them only if they fit as a whole.
         **kwargs: Keyword arguments for `TokenSplitter`.
-
-    !!! info
-        For default settings, see `chat.text_splitter_configs.source` in `vectorbtpro._settings.knowledge`.
     """
 
     _settings_path: tp.SettingsPath = "knowledge.chat.text_splitter_configs.source"
@@ -645,14 +645,14 @@ class SourceSplitter(TokenSplitter):
     def split_source(self, source: str) -> tp.TSSourceChunks:
         """Split the source code into chunks.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             source (str): Source code to be split.
 
         Yields:
             Tuple[str, int]: Tuple containing the source code chunk and its base level.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -763,6 +763,9 @@ class PythonSplitter(SourceSplitter):
     statements based on a whitelist and blacklist of statement types. It also allows for limiting
     the maximum statement level.
 
+    !!! info
+        For default settings, see `chat.text_splitter_configs.python` in `vectorbtpro._settings.knowledge`.
+
     Args:
         stmt_whitelist (Optional[Iterable[str]]): Statement types to include in the split.
 
@@ -772,9 +775,6 @@ class PythonSplitter(SourceSplitter):
 
             If None, all levels are included.
         **kwargs: Keyword arguments for `SourceSplitter`.
-
-    !!! info
-        For default settings, see `chat.text_splitter_configs.python` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "python"
@@ -931,6 +931,9 @@ class MarkdownSplitter(SourceSplitter):
     based on headers and paragraphs. It uses a custom algorithm to identify headers
     and split the content accordingly.
 
+    !!! info
+        For default settings, see `chat.text_splitter_configs.markdown` in `vectorbtpro._settings.knowledge`.
+
     Args:
         split_by (Optional[str]): Method to split the source code.
 
@@ -939,9 +942,6 @@ class MarkdownSplitter(SourceSplitter):
 
             If None, all levels are included.
         **kwargs: Keyword arguments for `SourceSplitter`.
-
-    !!! info
-        For default settings, see `chat.text_splitter_configs.markdown` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "markdown"
@@ -1199,14 +1199,14 @@ class MarkdownSplitter(SourceSplitter):
 class LlamaIndexSplitter(TextSplitter):
     """Splitter class based on a node parser from LlamaIndex that divides text into chunks using nodes.
 
+    !!! info
+        For default settings, see `chat.text_splitter_configs.llama_index` in `vectorbtpro._settings.knowledge`.
+
     Args:
         node_parser (Union[None, str, NodeParser]): Node parser to use,
             specified as a string key, class, or instance.
         node_parser_kwargs (KwargsLike): Keyword arguments to node parser initialization.
         **kwargs: Keyword arguments for `TextSplitter` or used as `node_parser_kwargs`.
-
-    !!! info
-        For default settings, see `chat.text_splitter_configs.llama_index` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "llama_index"
@@ -1310,6 +1310,9 @@ class LlamaIndexSplitter(TextSplitter):
 def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.MaybeType[TextSplitter]:
     """Resolve a `TextSplitter` subclass or instance.
 
+    !!! info
+        For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
+
     Args:
         text_splitter (TextSplitterLike): Identifier, subclass, or instance of `TextSplitter`.
 
@@ -1321,9 +1324,6 @@ def resolve_text_splitter(text_splitter: tp.TextSplitterLike = None) -> tp.Maybe
 
     Returns:
         TextSplitter: Resolved text splitter subclass or instance.
-
-    !!! info
-        For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
     """
     if text_splitter is None:
         from vectorbtpro._settings import settings

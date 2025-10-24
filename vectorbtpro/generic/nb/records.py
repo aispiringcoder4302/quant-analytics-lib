@@ -42,6 +42,9 @@ from vectorbtpro.utils.template import Rep
 def get_ranges_nb(arr: tp.Array2d, gap_value: tp.Scalar) -> tp.RecordArray:
     """Fill range records in a 2D array by detecting gaps.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2D NumPy array where each column represents a time series.
         gap_value (Scalar): Value that signifies a gap in the data.
@@ -51,9 +54,6 @@ def get_ranges_nb(arr: tp.Array2d, gap_value: tp.Scalar) -> tp.RecordArray:
             `id`, `col`, `start_idx`, `end_idx`, and `status`.
 
             Has the `vectorbtpro.generic.enums.range_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
 
     Examples:
         Find ranges in time series:
@@ -157,6 +157,9 @@ def get_ranges_from_delta_nb(
 ) -> tp.RecordArray:
     """Build delta-based ranges for record indices.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         n_rows (int): Total number of rows in the dataset.
         idx_arr (Array1d): Array of row indices.
@@ -172,9 +175,6 @@ def get_ranges_from_delta_nb(
             and `status` indicating the computed ranges.
 
             Has the `vectorbtpro.generic.enums.range_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -257,6 +257,9 @@ def range_duration_nb(
 ) -> tp.Array1d:
     """Calculate the duration of each range record.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         start_idx_arr (Array1d): Array of starting row indices for each range record.
         end_idx_arr (Array1d): Array of ending row indices for each range record.
@@ -267,9 +270,6 @@ def range_duration_nb(
 
     Returns:
         Array1d: Array containing the computed durations of the range records.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(start_idx_arr.shape[0], dtype=int_)
     for r in prange(start_idx_arr.shape[0]):
@@ -305,6 +305,9 @@ def range_coverage_nb(
 ) -> tp.Array1d:
     """Calculate the coverage of range records for each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         start_idx_arr (Array1d): Array of starting row indices for each range record.
         end_idx_arr (Array1d): Array of ending row indices for each range record.
@@ -318,9 +321,6 @@ def range_coverage_nb(
 
     Returns:
         Array1d: Array containing the computed coverage values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -379,6 +379,9 @@ def ranges_to_mask_nb(
 ) -> tp.Array2d:
     """Convert range records into a 2-dimensional mask.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         start_idx_arr (Array1d): Array of starting row indices for each range record.
         end_idx_arr (Array1d): Array of ending row indices for each range record.
@@ -388,9 +391,6 @@ def ranges_to_mask_nb(
 
     Returns:
         Array2d: 2-dimensional boolean mask where True indicates that the position is within a range.
-
-    !!! tip
-        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -895,6 +895,9 @@ def find_pattern_nb(
 ) -> tp.RecordArray:
     """Find pattern records in a 2D array column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): Input 2D array in which pattern matching is performed per column.
         pattern (Array1d): 1D array representing the pattern to locate.
@@ -982,9 +985,6 @@ def find_pattern_nb(
         RecordArray: Array of records detailing the located pattern matches.
 
             Has the `vectorbtpro.generic.enums.pattern_range_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
     """
     max_error_ = to_1d_array_nb(np.asarray(max_error))
 
@@ -1067,14 +1067,14 @@ def drawdown_1d_nb(arr: tp.Array1d) -> tp.Array1d:
 def drawdown_nb(arr: tp.Array2d) -> tp.Array2d:
     """Compute the drawdown for a 2D array column-wise.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2D input array where the drawdown is computed separately for each column.
 
     Returns:
         Array2d: Array of drawdown values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(arr, dtype=float_)
     for col in prange(arr.shape[1]):
@@ -1156,25 +1156,25 @@ def get_drawdowns_nb(
     This function computes drawdown records using the provided price series arrays.
     Only `close` is mandatory; other arrays supply supplementary price information.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         open (Optional[Array2d]): Open price time series for each asset column.
         high (Optional[Array2d]): High price time series for each asset column.
         low (Optional[Array2d]): Low price time series for each asset column.
         close (Array2d): Close price time series for each asset column.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
-        
+
             Provided as a scalar or per column.
         sim_end (Optional[FlexArray1dLike]): End position of the simulation range (exclusive).
-        
+
             Provided as a scalar or per column.
 
     Returns:
         RecordArray: Array of computed drawdown records.
 
             Has the `vectorbtpro.generic.enums.drawdown_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
 
     Examples:
         ```pycon
@@ -1338,15 +1338,15 @@ def get_drawdowns_nb(
 def dd_drawdown_nb(start_val_arr: tp.Array1d, valley_val_arr: tp.Array1d) -> tp.Array1d:
     """Compute drawdown metrics for each record.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         start_val_arr (Array1d): Array of starting values from each drawdown record.
         valley_val_arr (Array1d): Array of valley values from each drawdown record.
 
     Returns:
         Array1d: Array of drawdown percentages for each record.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(valley_val_arr.shape[0], dtype=float_)
     for r in prange(valley_val_arr.shape[0]):
@@ -1366,15 +1366,15 @@ def dd_drawdown_nb(start_val_arr: tp.Array1d, valley_val_arr: tp.Array1d) -> tp.
 def dd_decline_duration_nb(start_idx_arr: tp.Array1d, valley_idx_arr: tp.Array1d) -> tp.Array1d:
     """Compute the duration of the drawdown decline phase.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         start_idx_arr (Array1d): Array of start row indices marking the peak of each drawdown.
         valley_idx_arr (Array1d): Array of valley row indices where each drawdown reaches its minimum.
 
     Returns:
         Array1d: Array of durations representing the time from peak to valley in each record.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(valley_idx_arr.shape[0], dtype=float_)
     for r in prange(valley_idx_arr.shape[0]):
@@ -1391,15 +1391,15 @@ def dd_decline_duration_nb(start_idx_arr: tp.Array1d, valley_idx_arr: tp.Array1d
 def dd_recovery_duration_nb(valley_idx_arr: tp.Array1d, end_idx_arr: tp.Array1d) -> tp.Array1d:
     """Compute the duration of the drawdown recovery phase.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         valley_idx_arr (Array1d): Array of valley row indices for each drawdown record.
         end_idx_arr (Array1d): Array of recovery row indices marking the end of each drawdown.
 
     Returns:
         Array1d: Array of durations representing the time from the drawdown valley to recovery.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(end_idx_arr.shape[0], dtype=float_)
     for r in prange(end_idx_arr.shape[0]):
@@ -1426,6 +1426,9 @@ def dd_recovery_duration_ratio_nb(
 
     This function computes the ratio between the recovery duration and the decline duration.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         start_idx_arr (Array1d): Array of starting row indices for the decline period.
         valley_idx_arr (Array1d): Array of row indices where the drawdown reaches its lowest point.
@@ -1436,9 +1439,6 @@ def dd_recovery_duration_ratio_nb(
             divided by (decline duration).
 
             NaN is returned when the decline duration is zero.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(start_idx_arr.shape[0], dtype=float_)
     for r in prange(start_idx_arr.shape[0]):
@@ -1461,6 +1461,9 @@ def dd_recovery_return_nb(valley_val_arr: tp.Array1d, end_val_arr: tp.Array1d) -
     This function calculates the recovery return as the relative change from
     the valley value to the end value.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         valley_val_arr (Array1d): Array of drawdown valley values.
         end_val_arr (Array1d): Array of values at the end of the recovery period.
@@ -1468,9 +1471,6 @@ def dd_recovery_return_nb(valley_val_arr: tp.Array1d, end_val_arr: tp.Array1d) -
     Returns:
         Array1d: Array of recovery returns computed as (end value - valley value)
             divided by the valley value.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(end_val_arr.shape[0], dtype=float_)
     for r in prange(end_val_arr.shape[0]):

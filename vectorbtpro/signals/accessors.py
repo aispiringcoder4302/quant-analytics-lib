@@ -210,13 +210,13 @@ class SignalsAccessor(GenericAccessor):
 
     Accessible via `pd.Series.vbt.signals` and `pd.DataFrame.vbt.signals`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.signals`.
+
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying object.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericAccessor`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.signals`.
     """
 
     def __init__(
@@ -298,6 +298,9 @@ class SignalsAccessor(GenericAccessor):
 
         Arguments to `place_func_nb` can be passed either as `*args` or `place_args` (but not both).
 
+        See:
+            `vectorbtpro.signals.nb.generate_nb`
+
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
@@ -327,9 +330,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             SeriesFrame: Wrapped output containing generated signals with bool dtype.
-
-        See:
-            `vectorbtpro.signals.nb.generate_nb`
 
         Examples:
             Generate random signals manually:
@@ -424,6 +424,9 @@ class SignalsAccessor(GenericAccessor):
         Arguments to `entry_place_func_nb` can be passed either as `*args` or `entry_place_args` (but not both).
         The same applies to `exit_place_func_nb` with `exit_place_args`.
 
+        See:
+            `vectorbtpro.signals.nb.generate_enex_nb`
+
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
@@ -465,9 +468,6 @@ class SignalsAccessor(GenericAccessor):
         Returns:
             Tuple[SeriesFrame, SeriesFrame]: Tuple containing the entry signals and
                 exit signals as wrapped arrays.
-
-        See:
-            `vectorbtpro.signals.nb.generate_enex_nb`
 
         Examples:
             Generate entry and exit signals one after another:
@@ -616,6 +616,9 @@ class SignalsAccessor(GenericAccessor):
 
         Arguments to `exit_place_func_nb` can be passed either as `*args` or `exit_place_args` (but not both).
 
+        See:
+            `vectorbtpro.signals.nb.generate_ex_nb`
+
         Args:
             exit_place_func_nb (PlaceFunc): Callback function for placing exit signals.
             *args: Alias for `exit_place_args`.
@@ -654,9 +657,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             SeriesFrame: Boolean DataFrame or Series indicating the generated exit signals.
-
-        See:
-            `vectorbtpro.signals.nb.generate_ex_nb`
 
         Examples:
             Generate an exit just before the next entry:
@@ -738,6 +738,9 @@ class SignalsAccessor(GenericAccessor):
         If one array is provided, it processes it using `SignalsAccessor.first`.
         If two arrays (entries and exits) are provided, it cleans them using `vectorbtpro.signals.nb.clean_enex_nb`.
 
+        See:
+            `vectorbtpro.signals.nb.clean_enex_nb`
+
         Args:
             *objs (ArrayLike): One or two array-like objects representing signal data.
 
@@ -762,9 +765,6 @@ class SignalsAccessor(GenericAccessor):
         Returns:
             MaybeTuple[SeriesFrame]: Cleaned signal array if one is provided,
                 or a tuple of cleaned entries and exits if two arrays are provided.
-
-        See:
-            `vectorbtpro.signals.nb.clean_enex_nb`
         """
         if broadcast_kwargs is None:
             broadcast_kwargs = {}
@@ -818,6 +818,10 @@ class SignalsAccessor(GenericAccessor):
 
         Generates random signals based on either a fixed number of signals per column or a probability.
 
+        See:
+            * `vectorbtpro.signals.nb.rand_place_nb` if `n` is provided.
+            * `vectorbtpro.signals.nb.rand_by_prob_place_nb` if `prob` is provided.
+
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
@@ -839,10 +843,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             SeriesFrame: Series or DataFrame containing the generated signals.
-
-        See:
-            * `vectorbtpro.signals.nb.rand_place_nb` if `n` is provided.
-            * `vectorbtpro.signals.nb.rand_by_prob_place_nb` if `prob` is provided.
 
         Examples:
             For each column, generate a variable number of signals:
@@ -961,6 +961,10 @@ class SignalsAccessor(GenericAccessor):
         `vectorbtpro.base.wrapping.ArrayWrapper`, it will be used as the wrapper; otherwise,
         the provided shape-like tuple is used to determine signal dimensions.
 
+        See:
+            * `vectorbtpro.signals.nb.generate_rand_enex_nb` if `n` is provided.
+            * `vectorbtpro.signals.nb.rand_by_prob_place_nb` if `entry_prob` and `exit_prob` are provided.
+
         Args:
             shape (Union[ShapeLike, ArrayWrapper]): Desired shape as a tuple or
                 an `vectorbtpro.base.wrapping.ArrayWrapper` instance.
@@ -1001,10 +1005,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Tuple[SeriesFrame, SeriesFrame]: Tuple containing the wrapped entry and exit signal arrays.
-
-        See:
-            * `vectorbtpro.signals.nb.generate_rand_enex_nb` if `n` is provided.
-            * `vectorbtpro.signals.nb.rand_by_prob_place_nb` if `entry_prob` and `exit_prob` are provided.
 
         Examples:
             For each column, generate two entries and exits randomly:
@@ -1137,6 +1137,10 @@ class SignalsAccessor(GenericAccessor):
 
         Specify `seed` to ensure deterministic output.
 
+        See:
+            * `vectorbtpro.signals.nb.rand_place_nb` if `prob` is not provided.
+            * `vectorbtpro.signals.nb.rand_by_prob_place_nb` if `prob` is provided.
+
         Args:
             prob (Optional[ArrayLike]): Probability of generating a signal.
             seed (Optional[int]): Random seed for deterministic output.
@@ -1170,10 +1174,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             SeriesFrame: Generated exit signals.
-
-        See:
-            * `vectorbtpro.signals.nb.rand_place_nb` if `prob` is not provided.
-            * `vectorbtpro.signals.nb.rand_by_prob_place_nb` if `prob` is provided.
 
         Examples:
             After each entry in `mask`, generate exactly one exit:
@@ -1286,6 +1286,20 @@ class SignalsAccessor(GenericAccessor):
         All array-like arguments, including stops and `out_dict`, will broadcast using
         `vectorbtpro.base.reshaping.broadcast` and `broadcast_kwargs`.
 
+        !!! tip
+            Default arguments will generate an exit signal strictly between two entry signals.
+            If both entry signals are too close to each other, no exit will be generated.
+
+            To ignore all entries that come between an entry and its exit, set `until_next` to False
+            and `skip_until_exit` to True.
+
+            To remove all entries that come between an entry and its exit, set `chain` to True.
+            This will return two arrays: new entries and exits.
+
+        See:
+            * `vectorbtpro.signals.nb.first_place_nb` as entry placement function.
+            * `vectorbtpro.signals.nb.stop_place_nb` as exit placement function.
+
         Args:
             entry_ts (ArrayLike): Entry time series.
             ts (ArrayLike): Time series used for evaluating stop signals.
@@ -1336,20 +1350,6 @@ class SignalsAccessor(GenericAccessor):
         Returns:
             MaybeTuple[SeriesFrame]: Exit signals array if `chain` is False, or
                 a tuple containing new entries and exit signals if `chain` is True.
-
-        See:
-            * `vectorbtpro.signals.nb.first_place_nb` as entry placement function.
-            * `vectorbtpro.signals.nb.stop_place_nb` as exit placement function.
-
-        !!! tip
-            Default arguments will generate an exit signal strictly between two entry signals.
-            If both entry signals are too close to each other, no exit will be generated.
-
-            To ignore all entries that come between an entry and its exit, set `until_next` to False
-            and `skip_until_exit` to True.
-
-            To remove all entries that come between an entry and its exit, set `chain` to True.
-            This will return two arrays: new entries and exits.
 
         Examples:
             Regular stop loss:
@@ -1538,6 +1538,24 @@ class SignalsAccessor(GenericAccessor):
         it calls `SignalsAccessor.generate_exits`. All array-like arguments, including stops and 
         `out_dict`, are broadcasted using `vectorbtpro.base.reshaping.broadcast` with `broadcast_kwargs`.
 
+        !!! tip
+            Default arguments will generate an exit signal strictly between two entry signals.
+            If both entry signals are too close to each other, no exit will be generated.
+
+            To ignore all entries that occur between an entry and its exit,
+            set `until_next` to False and `skip_until_exit` to True.
+
+            To remove all intermediate entries between an entry and its exit,
+            set `chain` to True. This will return two arrays: new entries and exits.
+
+        !!! warning
+            The last examples make entries dependent upon exits, which only makes sense
+            if no other exit arrays are combined with this stop exit array.
+
+        See:
+            * `vectorbtpro.signals.nb.first_place_nb` as entry placement function.
+            * `vectorbtpro.signals.nb.ohlc_stop_place_nb` as exit placement function.
+
         Args:
             entry_price (ArrayLike): Entry price array.
             open (ArrayLike): Array of open prices.
@@ -1587,7 +1605,7 @@ class SignalsAccessor(GenericAccessor):
 
                 See `vectorbtpro.utils.chunking.resolve_chunked_option`.
             wrap_kwargs (KwargsLike): Keyword arguments for wrapping the result.
-            
+
                 See `vectorbtpro.base.wrapping.ArrayWrapper.wrap`.
             **kwargs: Keyword arguments for `SignalsAccessor.generate_both` or
                 `SignalsAccessor.generate_exits`.
@@ -1595,24 +1613,6 @@ class SignalsAccessor(GenericAccessor):
         Returns:
             MaybeTuple[SeriesFrame]: If `chain` is True, returns a tuple (`new_entries`, `exits`);
                 otherwise, returns an array of exit signals.
-
-        See:
-            * `vectorbtpro.signals.nb.first_place_nb` as entry placement function.
-            * `vectorbtpro.signals.nb.ohlc_stop_place_nb` as exit placement function.
-
-        !!! tip
-            Default arguments will generate an exit signal strictly between two entry signals.
-            If both entry signals are too close to each other, no exit will be generated.
-
-            To ignore all entries that occur between an entry and its exit,
-            set `until_next` to False and `skip_until_exit` to True.
-
-            To remove all intermediate entries between an entry and its exit,
-            set `chain` to True. This will return two arrays: new entries and exits.
-
-        !!! warning
-            The last examples make entries dependent upon exits, which only makes sense
-            if no other exit arrays are combined with this stop exit array.
 
         Examples:
             Generate exits for TSL and TP of 10%:
@@ -1966,6 +1966,9 @@ class SignalsAccessor(GenericAccessor):
         Optionally, the returned result can be converted to a
         `vectorbtpro.records.mapped_array.MappedArray` when `as_mapped` is True.
 
+        See:
+            `vectorbtpro.signals.nb.rank_nb`
+
         Args:
             rank_func_nb (RankFunc): Compiled function for ranking.
             *args: Alias for `rank_args`.
@@ -2000,9 +2003,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Union[SeriesFrame, MappedArray]: Ranked positions as an array or a mapped array.
-
-        See:
-            `vectorbtpro.signals.nb.rank_nb`
         """
         if len(args) > 0 and rank_args is not None:
             raise ValueError("Must provide either *args or rank_args, not both")
@@ -2072,6 +2072,9 @@ class SignalsAccessor(GenericAccessor):
 
         The ranking is performed partition-wise on True values.
 
+        See:
+            `vectorbtpro.signals.nb.sig_pos_rank_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -2084,9 +2087,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Union[SeriesFrame, MappedArray]: Signal position ranks.
-
-        See:
-            `vectorbtpro.signals.nb.sig_pos_rank_nb`
 
         Examples:
             Rank each True value in each partition in `mask`:
@@ -2150,6 +2150,9 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.SeriesFrame, MappedArray]:
         """Return signal position ranks computed after each signal specified in `reset_by`.
 
+        !!! note
+            `allow_gaps` is enabled by default.
+
         Args:
             reset_by (ArrayLike): Array used to reset the ranking.
             after_reset (bool): If True, disregards the first True partition before a reset signal.
@@ -2158,9 +2161,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Union[SeriesFrame, MappedArray]: Signal position ranks after the reset.
-
-        !!! note
-            `allow_gaps` is enabled by default.
         """
         return self.pos_rank(reset_by=reset_by, after_reset=after_reset, allow_gaps=allow_gaps, **kwargs)
 
@@ -2171,6 +2171,9 @@ class SignalsAccessor(GenericAccessor):
         **kwargs,
     ) -> tp.Union[tp.SeriesFrame, MappedArray]:
         """Compute partition position ranks.
+
+        See:
+            `vectorbtpro.signals.nb.part_pos_rank_nb`
 
         Args:
             jitted (JittedOption): Option to control JIT compilation.
@@ -2183,9 +2186,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Union[SeriesFrame, MappedArray]: Partition position ranks.
-
-        See:
-            `vectorbtpro.signals.nb.part_pos_rank_nb`
 
         Examples:
             Rank each partition of True values in `mask`:
@@ -2446,6 +2446,9 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """Calculate the distance from the last signal occurrence.
 
+        See:
+            `vectorbtpro.signals.nb.distance_from_last_nb`
+
         Args:
             nth (int): Index of the last True value to measure the distance from.
             jitted (JittedOption): Option to control JIT compilation.
@@ -2460,9 +2463,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             SeriesFrame: Wrapped array representing the distance from the nth last signal.
-
-        See:
-            `vectorbtpro.signals.nb.distance_from_last_nb`
 
         Examples:
             Get the distance to the last signal:
@@ -2593,6 +2593,10 @@ class SignalsAccessor(GenericAccessor):
     ) -> Ranges:
         """Build a record array of ranges between signals.
 
+        See:
+            * `vectorbtpro.signals.nb.between_ranges_nb` if `target` is not provided.
+            * `vectorbtpro.signals.nb.between_two_ranges_nb` if `target` is provided.
+
         Args:
             target (Optional[ArrayLike]): Array-like target used for a two-range operation.
             relation (Union[int, str]): Relation mode for pairing signals.
@@ -2616,10 +2620,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Ranges: `vectorbtpro.generic.ranges.Ranges` instance representing the computed ranges.
-
-        See:
-            * `vectorbtpro.signals.nb.between_ranges_nb` if `target` is not provided.
-            * `vectorbtpro.signals.nb.between_two_ranges_nb` if `target` is provided.
 
         Examples:
             One array:
@@ -2714,6 +2714,9 @@ class SignalsAccessor(GenericAccessor):
     ) -> Ranges:
         """Build a record array of ranges from signal partitions.
 
+        See:
+            `vectorbtpro.signals.nb.partition_ranges_nb`
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -2728,9 +2731,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Ranges: `vectorbtpro.generic.ranges.Ranges` instance representing the partitioned ranges.
-
-        See:
-            `vectorbtpro.signals.nb.partition_ranges_nb`
 
         Examples:
             ```pycon
@@ -2756,6 +2756,9 @@ class SignalsAccessor(GenericAccessor):
     ) -> Ranges:
         """Build a record array of ranges between partitions.
 
+        See:
+            `vectorbtpro.signals.nb.between_partition_ranges_nb`
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -2770,9 +2773,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Ranges: `vectorbtpro.generic.ranges.Ranges` instance representing the computed ranges.
-
-        See:
-            `vectorbtpro.signals.nb.between_partition_ranges_nb`
 
         Examples:
             ```pycon
@@ -2840,6 +2840,9 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.MaybeTuple[tp.SeriesFrame]:
         """Unravel signals.
 
+        See:
+            `vectorbtpro.signals.nb.unravel_nb`
+
         Args:
             incl_empty_cols (bool): Whether to include columns that contain no resolved pairs.
             force_signal_index (bool): Force creation of a new signal index even
@@ -2864,9 +2867,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             MaybeTuple[SeriesFrame]: Wrapped result containing the unraveled signals.
-
-        See:
-            `vectorbtpro.signals.nb.unravel_nb`
 
         Examples:
             ```pycon
@@ -2921,6 +2921,10 @@ class SignalsAccessor(GenericAccessor):
 
         Selects the appropriate unraveling method based on the number of input arrays.
 
+        See:
+            * `vectorbtpro.signals.nb.unravel_between_nb` for one array.
+            * `vectorbtpro.signals.nb.unravel_between_two_nb` for two arrays.
+
         Args:
             *objs (ArrayLike): One or two array-like objects representing signal data.
 
@@ -2967,10 +2971,6 @@ class SignalsAccessor(GenericAccessor):
                 * If one array is provided, returns a wrapped signal mask with an updated index.
                 * If two arrays are provided, returns a tuple of wrapped source and target
                     signal masks with updated indices.
-
-        See:
-            * `vectorbtpro.signals.nb.unravel_between_nb` for one array.
-            * `vectorbtpro.signals.nb.unravel_between_two_nb` for two arrays.
 
         Examples:
             One mask:
@@ -3162,6 +3162,9 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.SeriesFrame:
         """Ravel signals.
 
+        See:
+            `vectorbtpro.signals.nb.ravel_nb`
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -3175,9 +3178,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             SeriesFrame: Wrapped array of raveled signals.
-
-        See:
-            `vectorbtpro.signals.nb.ravel_nb`
 
         Examples:
             ```pycon
@@ -3214,6 +3214,10 @@ class SignalsAccessor(GenericAccessor):
 
         Calls `vectorbtpro.signals.nb.nth_index_nb` to compute the desired index.
 
+        See:
+            * `vectorbtpro.signals.nb.nth_index_nb` regardless of grouping.
+            * `vectorbtpro.generic.nb.apply_reduce.any_reduce_nb` if grouping is enabled.
+
         Args:
             n (int): Index offset to select the nth signal.
             group_by (GroupByLike): Grouping specification.
@@ -3231,10 +3235,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             MaybeSeries: Series with the nth index for each column or group.
-
-        See:
-            * `vectorbtpro.signals.nb.nth_index_nb` regardless of grouping.
-            * `vectorbtpro.generic.nb.apply_reduce.any_reduce_nb` if grouping is enabled.
 
         Examples:
             ```pycon
@@ -3296,6 +3296,10 @@ class SignalsAccessor(GenericAccessor):
 
         Calls `vectorbtpro.signals.nb.norm_avg_index_nb` (or its grouped variant) to perform the computation.
 
+        See:
+            * `vectorbtpro.signals.nb.norm_avg_index_grouped_nb` if grouping is enabled.
+            * `vectorbtpro.signals.nb.norm_avg_index_nb` if grouping is disabled.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -3312,10 +3316,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             MaybeSeries: Series with the normalized average index for each column or group.
-
-        See:
-            * `vectorbtpro.signals.nb.norm_avg_index_grouped_nb` if grouping is enabled.
-            * `vectorbtpro.signals.nb.norm_avg_index_nb` if grouping is disabled.
 
         Examples:
             ```pycon
@@ -3620,6 +3620,9 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot series as markers.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             y (ArrayLike): Y-axis values to plot markers on.
             column (hashable): Column to plot.
@@ -3627,9 +3630,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater instance produced by the scatter plot.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -3699,6 +3699,12 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot signals as entry markers.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        See:
+            `SignalsSRAccessor.plot_as_markers`
+
         Args:
             y (Optional[ArrayLike]): Y-axis values for entry markers.
             column (Optional[Column]): Identifier of the column to plot.
@@ -3706,12 +3712,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater instance representing the entry markers.
-
-        See:
-            `SignalsSRAccessor.plot_as_markers`
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -3743,6 +3743,12 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot signals as exit markers.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        See:
+            `SignalsSRAccessor.plot_as_markers`
+
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting exit signals.
             column (Optional[Column]): Identifier of the column to plot.
@@ -3750,12 +3756,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater with plotted exit markers.
-
-        See:
-            `SignalsSRAccessor.plot_as_markers`
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -3787,6 +3787,12 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot signals as marked entry markers.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        See:
+            `SignalsSRAccessor.plot_as_markers`
+
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting entry markers.
             column (Optional[Column]): Identifier of the column to plot.
@@ -3794,12 +3800,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Union[BaseFigure, TraceUpdater]: Figure or trace updater with plotted entry markers.
-
-        See:
-            `SignalsSRAccessor.plot_as_markers`
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 
@@ -3835,6 +3835,12 @@ class SignalsAccessor(GenericAccessor):
     ) -> tp.Union[tp.BaseFigure, tp.TraceUpdater]:
         """Plot signals as marked exit markers.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
+        See:
+            `SignalsSRAccessor.plot_as_markers`
+
         Args:
             y (Optional[ArrayLike]): Array-like data for plotting exit markers.
             column (Optional[Column]): Identifier of the column to plot.
@@ -3842,12 +3848,6 @@ class SignalsAccessor(GenericAccessor):
 
         Returns:
             Union[BaseFigure, tp.TraceUpdater]: Figure or trace updater with plotted exit markers.
-
-        See:
-            `SignalsSRAccessor.plot_as_markers`
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro._settings import settings
 

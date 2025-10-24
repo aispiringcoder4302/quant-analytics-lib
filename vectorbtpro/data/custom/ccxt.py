@@ -40,14 +40,14 @@ class CCXTData(RemoteData):
 
     This class provides functionality to retrieve market data via the CCXT API.
 
-    See:
-        * https://github.com/ccxt/ccxt for more information on CCXT.
-        * `CCXTData.fetch_symbol` for argument details.
-
     !!! info
         For default settings, see `custom.ccxt` in `vectorbtpro._settings.data`.
 
         Global settings can be configured per exchange identifier using the `exchanges` dictionary.
+
+    See:
+        * https://github.com/ccxt/ccxt for more information on CCXT.
+        * `CCXTData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally (optional):

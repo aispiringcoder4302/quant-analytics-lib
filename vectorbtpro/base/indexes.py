@@ -98,6 +98,9 @@ def index_from_values(
     Processes each element in the sequence to generate corresponding index labels.
     When the `single_value` flag is True, only the first value is used and repeated for all entries.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.indexing`.
+
     Args:
         values (Sequence): Iterable of values to generate index entries.
         single_value (bool): If True, uses only the first value from `values` for index creation,
@@ -113,9 +116,6 @@ def index_from_values(
 
     Returns:
         Index: Pandas Index with labels generated from the provided values.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.indexing`.
     """
     from vectorbtpro._settings import settings
 
@@ -185,6 +185,9 @@ def index_from_values(
 def repeat_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] = None) -> tp.Index:
     """Repeat each element in the provided index n times.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
     Args:
         index (IndexLike): Input index to be repeated.
         n (int): Number of repetitions for each element.
@@ -192,9 +195,6 @@ def repeat_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] =
 
     Returns:
         Index: New index with each element repeated n times.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -214,6 +214,9 @@ def repeat_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] =
 def tile_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] = None) -> tp.Index:
     """Tile the entire index by repeating its sequence n times.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
     Args:
         index (IndexLike): Input index to be tiled.
         n (int): Number of times to tile the index.
@@ -223,9 +226,6 @@ def tile_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] = N
         Index: Tiled index.
 
             If the input is a MultiIndex, the resulting index is a MultiIndex with tiled levels.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -252,6 +252,9 @@ def clean_index(
 ) -> tp.Index:
     """Clean the provided index by removing duplicate or redundant levels based on configuration.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
     Args:
         index (IndexLike): Index to be cleaned.
         drop_duplicates (Optional[bool]): If True, remove duplicate levels.
@@ -260,9 +263,6 @@ def clean_index(
 
     Returns:
         Index: Cleaned index.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -771,15 +771,15 @@ def drop_duplicate_levels(index: tp.Index, keep: tp.Optional[str] = None) -> tp.
 
     If level names are identical, the duplicate level is removed based on the specified retention strategy.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
     Args:
         index (Index): Index from which duplicate levels are removed.
         keep (Optional[str]): Indicates which duplicate to retain; valid options are "first" or "last".
 
     Returns:
         Index: Index with duplicate levels dropped.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -1248,6 +1248,9 @@ class IndexApplier(Base):
     def apply_to_index(self: IndexApplierT, apply_func: tp.Callable, *args, **kwargs) -> IndexApplierT:
         """Apply the specified function to the instance's index and return a new instance.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             apply_func (Callable): Callable to apply to the instance's index.
             *args: Positional arguments for `apply_func`.
@@ -1255,9 +1258,6 @@ class IndexApplier(Base):
 
         Returns:
             IndexApplier: New instance with the updated index.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

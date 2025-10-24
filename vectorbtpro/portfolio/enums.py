@@ -132,22 +132,22 @@ __pdoc__[
 
 Fields:
     Open: Open price.
-        
+
         Replaced by `-np.inf`.
     Close: Close price.
-        
+
         Replaced by `np.inf`.
     NextOpen: Next open price.
-        
+
         Replaced by `-np.inf` with `from_ago` set to 1.
     NextClose: Next close price.
-        
+
         Replaced by `np.inf` with `from_ago` set to 1.
     NextValidOpen: Next valid (non-NA) open price.
-        
+
         Replaced by `-np.inf` with `from_ago` set to the distance to the previous valid value.
     NextValidClose: Next valid (non-NA) close price.
-        
+
         Replaced by `np.inf` with `from_ago` set to the distance to the previous valid value.
 """
 
@@ -170,10 +170,10 @@ __pdoc__[
 
 Fields:
     Latest: Latest price.
-        
+
         Replaced by `-np.inf`.
     Price: Order price.
-        
+
         Replaced by `np.inf`.
 """
 
@@ -437,7 +437,7 @@ Fields:
 
         Does not require an index.
     Index: Index-based format where a value of 1 indicates that one position in the index has passed. 
-    
+
         If the index is datetime-like, 1 corresponds to one nanosecond; the index must be provided.
 """
 
@@ -532,7 +532,7 @@ Specifies the price to use when exiting a position upon a stop signal.
 
 Fields:
     Stop: Uses the stop price. 
-    
+
         If the target price is first reached by the open price, the open price is used.
         The same applies to the close price if OHLC is not available.
 
@@ -629,7 +629,7 @@ __pdoc__[
 Fields:
     Amount: Specifies the number of assets to trade.
     Value: Specifies the monetary value of assets to trade. 
-    
+
         It is converted to `SizeType.Amount` using `ExecState.val_price`.
     Percent: Specifies the percentage of available resources to use for trading, where 0.01 represents 1%.
 
@@ -640,17 +640,17 @@ Fields:
           * When reversing, applies to the final position
     Percent100: Equivalent to `SizeType.Percent` with a scale where 1.0 represents 1%.
     ValuePercent: Represents a percentage of the total value using `ExecState.value`. 
-    
+
         Converted to `SizeType.Value`.
     ValuePercent100: Equivalent to `SizeType.ValuePercent` with 1.0 representing 1%.
     TargetAmount: Specifies the target number of assets (target position) using `ExecState.position`. 
-    
+
         Converted to `SizeType.Amount`.
     TargetValue: Specifies the target asset value using `ExecState.val_price`. 
-    
+
         Converted to `SizeType.TargetAmount`.
     TargetPercent: Specifies the target percentage of total value using `ExecState.value`. 
-    
+
         Converted to `SizeType.TargetValue`.
     TargetPercent100: Equivalent to `SizeType.TargetPercent` where 1.0 represents 1%.
 """
@@ -886,7 +886,7 @@ Determines which price to use when executing a limit order.
 
 Fields:
     Limit: Limit price. 
-    
+
         If the target price is first reached at the opening, the open price is used.
         The same applies to the close price if OHLC is not available.
 
@@ -1281,10 +1281,10 @@ If not provided, this field is set to None.
     To use `sort_call_seq_1d_nb`, the sequence must be generated using `CallSeqType.Default`.
 
     To modify the call sequence dynamically, change `SegmentContext.call_seq_now` in place.
-    
+
 Examples:
     Default call sequence for three data points and two groups with three columns each:
-    
+
     ```python
     np.array([
         [0, 1, 2, 0, 1, 2],
@@ -1379,12 +1379,12 @@ The mask must broadcast to shape `(target_shape[0], group_lens.shape[0])`.
 
 Examples:
     Consider two groups with two columns each and the following activity mask:
-    
+
     ```python
     np.array([[ True, False], 
               [False,  True]])
     ```
-    
+
     The first group is only executed in the first row and the second group is only executed in the second row.
 """
 __pdoc__["SimulationContext.call_pre_segment"] = (
@@ -1494,13 +1494,13 @@ To retrieve all order records filled thus far in a column, use `order_records[:o
 
 Examples:
     Before filling, an order record appears as:
-    
+
     ```python
     np.array([(-8070450532247928832, -8070450532247928832, 4, 0., 0., 0., 5764616306889786413)]
     ```
-    
+
     After filling, it becomes:
-    
+
     ```python
     np.array([(0, 0, 1, 50., 1., 0., 1)]
     ```
@@ -1764,7 +1764,7 @@ Used in `pre_group_func_nb` and `post_group_func_nb`.
 
 Examples:
     Consider a configuration with a group of three columns, one of two columns, and one standalone column:
-    
+
     | group | group_len | from_col | to_col |
     | ----- | --------- | -------- | ------ |
     | 0     | 3         | 0        | 3      |

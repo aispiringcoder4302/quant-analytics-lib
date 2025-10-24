@@ -33,14 +33,14 @@ def attach_px_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
     This decorator scans the functions defined in `plotly.express` and attaches those
     that accept a `data_frame` parameter or are named `imshow` as methods to the given class.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         cls (Type): Class to decorate by adding Plotly Express methods.
 
     Returns:
         Type: Decorated class with Plotly Express methods attached.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
     """
     for px_func_name, px_func in inspect.getmembers(px, inspect.isfunction):
         if checks.func_accepts_arg(px_func, "data_frame") or px_func_name == "imshow":

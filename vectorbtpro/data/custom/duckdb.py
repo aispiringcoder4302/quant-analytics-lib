@@ -41,12 +41,12 @@ class DuckDBData(DBData):
 
     This class provides methods to pull tables, execute queries, and read Parquet files.
 
+    !!! info
+        For default settings, see `custom.duckdb` in `vectorbtpro._settings.data`.
+
     See:
         * `DuckDBData.pull` for argument details.
         * `DuckDBData.fetch_key` for argument details.
-
-    !!! info
-        For default settings, see `custom.duckdb` in `vectorbtpro._settings.data`.
 
     Examples:
         Set up the connection settings globally (optional):

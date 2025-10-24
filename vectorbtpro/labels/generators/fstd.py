@@ -79,6 +79,9 @@ class _FSTD(FSTD):
     ) -> tp.BaseFigure:
         """Plot the `FSTD.fstd` indicator.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             fstd_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `FSTD.fstd`.
@@ -89,9 +92,6 @@ class _FSTD(FSTD):
 
         Returns:
             BaseFigure: Updated figure with the `FSTD.fstd` indicator plotted.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

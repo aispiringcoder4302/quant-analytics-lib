@@ -521,6 +521,9 @@ def broadcast_shapes(
 ) -> tp.Tuple[tp.Shape, ...]:
     """Broadcast shape-like objects following vectorbtpro's broadcasting rules.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
     Args:
         *shapes (ArrayLike): Shape-like objects to broadcast.
         axis (Optional[MaybeSequence[int]]): Axis to broadcast along; allows for
@@ -530,9 +533,6 @@ def broadcast_shapes(
 
     Returns:
         Tuple[Shape, ...]: Tuple of broadcasted shapes.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -590,6 +590,9 @@ def broadcast_array_to(
     """Broadcast an array-like object to a specified target shape following
     vectorbtpro's broadcasting rules.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
     Args:
         arr (ArrayLike): Input array-like object.
         target_shape (ShapeLike): Desired target shape, which must have one or two dimensions.
@@ -598,9 +601,6 @@ def broadcast_array_to(
 
     Returns:
         Array: Broadcasted array.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
     """
     from vectorbtpro._settings import settings
 
@@ -687,6 +687,14 @@ def broadcast_index(
 ) -> tp.Optional[tp.Index]:
     """Return a broadcasted index or columns based on the provided array-like objects.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
+    !!! note
+        Series names are interpreted as columns with a single element but without a name.
+        If a column level without a name loses its meaning, consider converting Series to DataFrames
+        with a single column.Alternatively, if the Series name is insignificant, set it to None.
+
     Args:
         objs (Sequence[AnyArray]): Array-like objects.
         to_shape (tuple[int]): Target shape.
@@ -711,14 +719,6 @@ def broadcast_index(
 
     Returns:
         Optional[Index]: Broadcasted index/columns, or None if original index/columns should be retained.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
-
-    !!! note
-        Series names are interpreted as columns with a single element but without a name.
-        If a column level without a name loses its meaning, consider converting Series to DataFrames
-        with a single column.Alternatively, if the Series name is insignificant, set it to None.
     """
     from vectorbtpro._settings import settings
 
@@ -1116,6 +1116,12 @@ def broadcast(
     Additionally, any object can be wrapped with `BCO` to override the corresponding
     global arguments if its attributes are not None.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.broadcasting`.
+
+    !!! important
+        The major difference to NumPy is that one-dimensional arrays always broadcast against the row axis!
+
     Args:
         *objs (Any): Objects to broadcast.
 
@@ -1192,12 +1198,6 @@ def broadcast(
 
     Returns:
         Any: Broadcasted object(s) and the associated wrapper if `return_wrapper` is True.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.broadcasting`.
-
-    !!! important
-        The major difference to NumPy is that one-dimensional arrays always broadcast against the row axis!
 
     Examples:
         Without broadcasting index and columns:
@@ -2141,6 +2141,11 @@ def broadcast_to_axis_of(
 ) -> tp.Array:
     """Broadcast `arg1` to match the length of a specified axis in `arg2`.
 
+    !!! note
+        If `arg2` has fewer dimensions than `axis + 1`, `arg1` is broadcast to a single number.
+
+        For additional keyword arguments, refer to the behavior of `broadcast`.
+
     Args:
         arg1 (ArrayLike): Input value or array to be broadcast.
         arg2 (ArrayLike): Array whose specified axis determines the target length.
@@ -2149,11 +2154,6 @@ def broadcast_to_axis_of(
 
     Returns:
         Array: Broadcasted array.
-
-    !!! note
-        If `arg2` has fewer dimensions than `axis + 1`, `arg1` is broadcast to a single number.
-
-        For additional keyword arguments, refer to the behavior of `broadcast`.
     """
     if require_kwargs is None:
         require_kwargs = {}
@@ -2249,6 +2249,9 @@ def broadcast_combs(
 def get_multiindex_series(obj: tp.SeriesFrame) -> tp.Series:
     """Return a Series with a MultiIndex.
 
+    !!! note
+        If a DataFrame with more than one row and more than one column is provided, a `ValueError` is raised.
+
     Args:
         obj (SeriesFrame): Pandas Series or DataFrame.
 
@@ -2256,9 +2259,6 @@ def get_multiindex_series(obj: tp.SeriesFrame) -> tp.Series:
 
     Returns:
         Series: Resulting Series with a MultiIndex.
-
-    !!! note
-        If a DataFrame with more than one row and more than one column is provided, a `ValueError` is raised.
     """
     checks.assert_instance_of(obj, (pd.Series, pd.DataFrame))
     if checks.is_frame(obj):

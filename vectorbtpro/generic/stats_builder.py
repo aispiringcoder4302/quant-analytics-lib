@@ -78,6 +78,9 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
     ) -> tp.Any:
         """Resolve and return a configuration setting for `StatsBuilderMixin.stats`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.stats_builder`.
+
         Args:
             value (Optional[Any]): Provided value for the setting.
             key (str): Key identifying the stats setting.
@@ -85,9 +88,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
 
         Returns:
             Any: Resolved configuration setting.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.stats_builder`.
         """
         from vectorbtpro._settings import settings as _settings
 
@@ -163,6 +163,22 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         metric_settings: tp.KwargsLike = None,
     ) -> tp.Optional[tp.SeriesFrame]:
         """Compute various metrics on this object.
+
+        !!! info
+            For default settings, see `vectorbtpro._settings.stats_builder` and `StatsBuilderMixin.stats_defaults`.
+
+            See `vectorbtpro.utils.template` for template logic.
+
+        !!! tip
+            Optional (resolution) arguments are passed only if they appear in the function's signature,
+            while mandatory arguments are always passed. Optional arguments are defined via `settings`
+            (globally), whereas mandatory arguments can be set using default metric settings or
+            `{metric_name}_kwargs`. Overriding optional arguments does not make them mandatory;
+            use `pass_{arg}=True` to enforce passing.
+
+        !!! tip
+            Resolve and reuse object attributes wherever possible to leverage built-in caching,
+            even if global caching is disabled.
 
         Args:
             metrics (Optional[MaybeIterable[Union[str, Tuple[str, Kwargs]]]]): Metric or metrics to calculate.
@@ -293,22 +309,6 @@ class StatsBuilderMixin(Base, metaclass=MetaStatsBuilderMixin):
         Returns:
             Optional[SeriesFrame]: Computed metrics as a Pandas Series
                 (for single-dimensional output) or DataFrame (for multi-dimensional output).
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.stats_builder` and `StatsBuilderMixin.stats_defaults`.
-
-            See `vectorbtpro.utils.template` for template logic.
-
-        !!! tip
-            Optional (resolution) arguments are passed only if they appear in the function's signature,
-            while mandatory arguments are always passed. Optional arguments are defined via `settings`
-            (globally), whereas mandatory arguments can be set using default metric settings or
-            `{metric_name}_kwargs`. Overriding optional arguments does not make them mandatory;
-            use `pass_{arg}=True` to enforce passing.
-
-        !!! tip
-            Resolve and reuse object attributes wherever possible to leverage built-in caching,
-            even if global caching is disabled.
         """
         # Compute per column
         if column is None:

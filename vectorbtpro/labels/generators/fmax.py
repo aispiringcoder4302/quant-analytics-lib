@@ -70,6 +70,9 @@ class _FMAX(FMAX):
     ) -> tp.BaseFigure:
         """Plot `FMAX.fmax` against `FMAX.close`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to plot the close price.
@@ -82,9 +85,6 @@ class _FMAX(FMAX):
 
         Returns:
             BaseFigure: Figure with the indicator traces plotted.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

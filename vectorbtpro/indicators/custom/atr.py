@@ -90,6 +90,9 @@ class _ATR(ATR):
     ) -> tp.BaseFigure:
         """Plot the TR and ATR series.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             tr_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `ATR.tr`.
@@ -101,9 +104,6 @@ class _ATR(ATR):
 
         Returns:
             BaseFigure: Updated figure with the TR and ATR traces plotted.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

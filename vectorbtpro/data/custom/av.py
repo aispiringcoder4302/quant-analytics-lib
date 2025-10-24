@@ -53,12 +53,12 @@ class AVData(RemoteData):
     If parsing fails, disable it and manually specify the required parameters by
     setting `function` and disabling `match_params`.
 
+    !!! info
+        For default settings, see `custom.av` in `vectorbtpro._settings.data`.
+
     See:
         * https://www.alphavantage.co/documentation/ for API endpoints and parameters.
         * `AVData.fetch_symbol` for argument details.
-
-    !!! info
-        For default settings, see `custom.av` in `vectorbtpro._settings.data`.
 
     Examples:
         Set up the API key globally (optional):
@@ -207,6 +207,9 @@ class AVData(RemoteData):
         the package is installed. Otherwise, parses the API documentation directly to retrieve data.
         When using the parser, refer to https://www.alphavantage.co/documentation/ for API endpoints and parameters.
 
+        !!! note
+            Supports the CSV format only.
+
         Args:
             symbol (Symbol): Symbol identifier.
 
@@ -272,9 +275,6 @@ class AVData(RemoteData):
 
         Returns:
             SymbolData: Fetched data and a metadata dictionary.
-
-        !!! note
-            Supports the CSV format only.
         """
         use_parser = cls.resolve_custom_setting(use_parser, "use_parser")
         apikey = cls.resolve_custom_setting(apikey, "apikey")

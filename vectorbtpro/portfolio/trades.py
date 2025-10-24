@@ -757,28 +757,28 @@ class Trades(Ranges):
     def get_winning_streak(self, **kwargs) -> MappedArray:
         """Return the winning streak count for each trade in the current column.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.trade_winning_streak_nb`
+
         Args:
             **kwargs: Keyword arguments for `Trades.apply`.
 
         Returns:
             MappedArray: Array of winning streak counts for each trade.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.trade_winning_streak_nb`
         """
         return self.apply(nb.trade_winning_streak_nb, dtype=int_, **kwargs)
 
     def get_losing_streak(self, **kwargs) -> MappedArray:
         """Return the losing streak count for each trade in the current column.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.trade_losing_streak_nb`
+
         Args:
             **kwargs: Keyword arguments for `Trades.apply`.
 
         Returns:
             MappedArray: Array of losing streak counts for each trade.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.trade_losing_streak_nb`
         """
         return self.apply(nb.trade_losing_streak_nb, dtype=int_, **kwargs)
 
@@ -964,6 +964,9 @@ class Trades(Ranges):
     ) -> MappedArray:
         """Return the best price computed from trade data.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.best_price_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -972,9 +975,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Array of best prices.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.best_price_nb`
         """
         return self.apply(
             nb.best_price_nb,
@@ -997,6 +997,9 @@ class Trades(Ranges):
     ) -> MappedArray:
         """Return the worst price computed from trade data.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.worst_price_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1005,9 +1008,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Array of worst prices.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.worst_price_nb`
         """
         return self.apply(
             nb.worst_price_nb,
@@ -1031,6 +1031,9 @@ class Trades(Ranges):
     ) -> MappedArray:
         """Return the index of the best price for each trade.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.best_price_idx_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1040,9 +1043,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Array of indices for the best price locations.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.best_price_idx_nb`
         """
         return self.apply(
             nb.best_price_idx_nb,
@@ -1068,6 +1068,9 @@ class Trades(Ranges):
     ) -> MappedArray:
         """Return the index of the worst price for each trade.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.worst_price_idx_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1077,9 +1080,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Array of indices for the worst price locations.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.worst_price_idx_nb`
         """
         return self.apply(
             nb.worst_price_idx_nb,
@@ -1108,6 +1108,9 @@ class Trades(Ranges):
 
         Computes the expanding best price over the duration of trades using the corresponding nb function.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_best_price_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1124,9 +1127,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Wrapped Series or DataFrame of expanding best prices.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.expanding_best_price_nb`
         """
         func = jit_reg.resolve_option(nb.expanding_best_price_nb, jitted)
         out = func(
@@ -1167,6 +1167,9 @@ class Trades(Ranges):
 
         Computes the expanding worst price over the duration of trades using the corresponding nb function.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_worst_price_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1183,9 +1186,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Wrapped Series or DataFrame of expanding worst prices.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.expanding_worst_price_nb`
         """
         func = jit_reg.resolve_option(nb.expanding_worst_price_nb, jitted)
         out = func(
@@ -1227,6 +1227,9 @@ class Trades(Ranges):
 
         Computes the MFE for trades based on price movements and trade directions.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.mfe_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1242,9 +1245,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Mapped array containing the computed MFE values.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.mfe_nb`
         """
         best_price = self.resolve_shortcut_attr(
             "best_price",
@@ -1279,6 +1279,9 @@ class Trades(Ranges):
 
         Computes the MAE for trades based on price movements and trade directions.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.mae_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1294,9 +1297,6 @@ class Trades(Ranges):
 
         Returns:
             MappedArray: Mapped array containing the computed MAE values.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.mae_nb`
         """
         worst_price = self.resolve_shortcut_attr(
             "worst_price",
@@ -1331,6 +1331,9 @@ class Trades(Ranges):
 
         Computes the expanding maximum favorable excursion (MFE) using an expanding best price as a reference.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_mfe_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1346,9 +1349,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Wrapped Series or DataFrame containing the computed expanding MFE values.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.expanding_mfe_nb`
         """
         expanding_best_price = self.resolve_shortcut_attr(
             "expanding_best_price",
@@ -1381,6 +1381,9 @@ class Trades(Ranges):
 
         Computes the expanding maximum adverse excursion (MAE) using an expanding worst price as a reference.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.expanding_mae_nb`
+
         Args:
             entry_price_open (bool): Include the open price of the entry bar when evaluating prices.
             exit_price_close (bool): Include the close price of the exit bar when evaluating prices.
@@ -1396,9 +1399,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Wrapped Series or DataFrame containing the computed expanding MAE values.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.expanding_mae_nb`
         """
         expanding_worst_price = self.resolve_shortcut_attr(
             "expanding_worst_price",
@@ -1432,6 +1432,9 @@ class Trades(Ranges):
     ) -> tp.SeriesFrame:
         """Compute edge ratio.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.edge_ratio_nb`
+
         Args:
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
@@ -1459,9 +1462,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Computed edge ratio.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.edge_ratio_nb`
         """
         if self._close is None:
             raise ValueError("Must provide close")
@@ -1526,6 +1526,9 @@ class Trades(Ranges):
     ) -> tp.SeriesFrame:
         """Compute running edge ratio.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.running_edge_ratio_nb`
+
         Args:
             volatility (Optional[ArrayLike]): Volatility values used in the edge ratio calculation.
 
@@ -1551,9 +1554,6 @@ class Trades(Ranges):
 
         Returns:
             SeriesFrame: Computed running edge ratio.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.running_edge_ratio_nb`
         """
         if self._close is None:
             raise ValueError("Must provide close")
@@ -1783,6 +1783,9 @@ class Trades(Ranges):
     ) -> tp.BaseFigure:
         """Plot trades' profit and loss (PnL) or returns.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column or group to plot.
             group_by (GroupByLike): Grouping specification.
@@ -1805,9 +1808,6 @@ class Trades(Ranges):
 
         Returns:
             BaseFigure: Plotly figure object containing the plot of trade PnL or returns.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -1993,6 +1993,9 @@ class Trades(Ranges):
     ) -> tp.BaseFigure:
         """Plot a field against PnL or returns.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             field (Union[str, Array1d, MappedArray]): Field to be plotted.
 
@@ -2019,9 +2022,6 @@ class Trades(Ranges):
 
         Returns:
             BaseFigure: Updated figure with the plotted field against PnL or returns.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -2540,6 +2540,9 @@ class Trades(Ranges):
     ) -> tp.BaseFigure:
         """Plot trades on a Plotly figure.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_ohlc (bool): Whether to plot the OHLC data.
@@ -2570,9 +2573,6 @@ class Trades(Ranges):
 
         Returns:
             BaseFigure: Updated Plotly figure with the plotted trades.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -2956,6 +2956,9 @@ class EntryTrades(Trades):
     ) -> EntryTradesT:
         """Build an `EntryTrades` instance from `vectorbtpro.portfolio.orders.Orders`.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.get_entry_trades_nb`
+
         Args:
             orders (vectorbtpro.portfolio.orders.Orders): Orders instance from which to derive entry trades.
             open (Optional[ArrayLike]): Open prices.
@@ -2984,9 +2987,6 @@ class EntryTrades(Trades):
 
         Returns:
             EntryTrades: Constructed `EntryTrades` instance.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.get_entry_trades_nb`
         """
         if open is None:
             open = orders._open
@@ -3033,6 +3033,9 @@ class EntryTrades(Trades):
     ) -> tp.BaseFigure:
         """Plot entry trade signals.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_ohlc (bool): Whether to plot the OHLC data.
@@ -3051,9 +3054,6 @@ class EntryTrades(Trades):
 
         Returns:
             BaseFigure: Updated or newly created figure.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -3245,6 +3245,9 @@ class ExitTrades(Trades):
     ) -> ExitTradesT:
         """Build an `ExitTrades` instance from `Orders`.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.get_exit_trades_nb`
+
         Args:
             orders (vectorbtpro.portfolio.orders.Orders): Orders instance from which to derive exit trades.
             open (Optional[ArrayLike]): Open prices.
@@ -3273,9 +3276,6 @@ class ExitTrades(Trades):
 
         Returns:
             ExitTrades: An `ExitTrades` instance generated from the provided orders.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.get_exit_trades_nb`
         """
         if open is None:
             open = orders._open
@@ -3322,6 +3322,9 @@ class ExitTrades(Trades):
     ) -> tp.BaseFigure:
         """Plot exit trade signals.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_ohlc (bool): Whether to plot the OHLC data.
@@ -3340,9 +3343,6 @@ class ExitTrades(Trades):
 
         Returns:
             BaseFigure: Plotly figure with exit trade signals plotted.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -3531,6 +3531,9 @@ class Positions(Trades):
         Converts the provided trades into position records by applying default price arrays
         when necessary and processing the data with optionally JIT-compiled and chunked functions.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.get_positions_nb`
+
         Args:
             trades (Trades): Source trades instance from which positions are derived.
             open (Optional[ArrayLike]): Open prices.
@@ -3559,9 +3562,6 @@ class Positions(Trades):
 
         Returns:
             Positions: New instance of `Positions` created from the source trades.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.get_positions_nb`
         """
         if open is None:
             open = trades._open

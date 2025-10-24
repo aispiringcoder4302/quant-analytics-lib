@@ -80,6 +80,9 @@ class _FMEAN(FMEAN):
     ) -> tp.BaseFigure:
         """Plot the `FMEAN.fmean` indicator against the `FMEAN.close` price.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to plot the close price.
@@ -92,9 +95,6 @@ class _FMEAN(FMEAN):
 
         Returns:
             BaseFigure: Figure object with the plotted indicators.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

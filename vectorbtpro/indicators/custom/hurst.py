@@ -116,6 +116,9 @@ class _HURST(HURST):
     ) -> tp.BaseFigure:
         """Plot the HURST traces.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             hurst_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `HURST.hurst`.
@@ -126,9 +129,6 @@ class _HURST(HURST):
 
         Returns:
             BaseFigure: Figure updated with the Hurst exponent plot.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

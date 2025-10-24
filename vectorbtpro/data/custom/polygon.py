@@ -39,12 +39,12 @@ PolygonDataT = tp.TypeVar("PolygonDataT", bound="PolygonData")
 class PolygonData(RemoteData):
     """Data class for fetching data from Polygon's API.
 
+    !!! info
+        For default settings, see `custom.polygon` in `vectorbtpro._settings.data`.
+
     See:
         * https://github.com/polygon-io/client-python for the official Polygon Python client.
         * `PolygonData.fetch_symbol` for argument details.
-
-    !!! info
-        For default settings, see `custom.polygon` in `vectorbtpro._settings.data`.
 
     Examples:
         Set up the API key globally:
@@ -178,6 +178,10 @@ class PolygonData(RemoteData):
     ) -> tp.SymbolData:
         """Overrides `vectorbtpro.data.base.Data.fetch_symbol` to fetch data for a given symbol from Polygon.
 
+        !!! note
+            If you're using a free plan with a rate limit of several requests per minute,
+            set `delay` to a higher value (e.g., 12 to allow 5 requests per minute).
+
         Args:
             symbol (Symbol): Symbol identifier.
 
@@ -219,10 +223,6 @@ class PolygonData(RemoteData):
 
         Returns:
             SymbolData: Updated data and a metadata dictionary.
-
-        !!! note
-            If you're using a free plan with a rate limit of several requests per minute,
-            set `delay` to a higher value (e.g., 12 to allow 5 requests per minute).
         """
         if client_config is None:
             client_config = {}

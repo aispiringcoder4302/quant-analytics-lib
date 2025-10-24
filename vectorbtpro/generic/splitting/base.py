@@ -369,6 +369,9 @@ class ZeroLengthError(ValueError):
 class Splitter(Analyzable):
     """Base class for splitting.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.splitter`.
+
     Args:
         wrapper (ArrayWrapper): Array wrapper instance.
 
@@ -380,9 +383,6 @@ class Splitter(Analyzable):
             Each element is a range defined as a slice, a sequence of indices, a mask,
             or a callable returning such.
         **kwargs: Keyword arguments for `vectorbtpro.generic.analyzable.Analyzable`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.splitter`.
     """
 
     def __init__(
@@ -1474,6 +1474,10 @@ class Splitter(Analyzable):
         (adjusted to accommodate the chosen range length) using `start_choice_func`.
         Optionally, `start_p_func` returns probability weights for the start selection.
 
+        !!! note
+            Both choice functions must accept two arguments: the iteration index and the array of
+            possible values.
+
         Args:
             index (IndexLike): Index from which ranges are generated.
             n (int): Number of random ranges to generate.
@@ -1514,10 +1518,6 @@ class Splitter(Analyzable):
 
         Returns:
             Splitter: New `Splitter` instance.
-
-        !!! note
-            Both choice functions must accept two arguments: the iteration index and the array of
-            possible values.
 
         Examples:
             Generate 20 random ranges with a length from [40, 100], and split each into 3/4:
@@ -3845,7 +3845,7 @@ class Splitter(Analyzable):
             template_context (KwargsLike): Additional context for template substitution.
             silence_warnings (bool): Flag to suppress warning messages.
             index_combine_kwargs (KwargsLike): Keyword arguments for combining indexes.
-            
+
                 See `vectorbtpro.base.indexes.combine_indexes`.
             stack_axis (int): Axis along which to stack slices (0 for rows, 1 for columns).
             stack_kwargs (KwargsLike): Keyword arguments for the stacking merge function.
@@ -5140,6 +5140,10 @@ class Splitter(Analyzable):
     ) -> SplitterT:
         """Divide each split into multiple sub-splits using a new splitting specification.
 
+        !!! note
+            Ensure that there is only one set before breaking up splits.
+            Merge multiple sets into one if necessary.
+
         Args:
             new_split (SplitLike): Specification for splitting ranges.
 
@@ -5154,10 +5158,6 @@ class Splitter(Analyzable):
 
         Returns:
             Splitter: New splitter instance with updated splits.
-
-        !!! note
-            Ensure that there is only one set before breaking up splits.
-            Merge multiple sets into one if necessary.
         """
         if self.n_sets > 1:
             raise ValueError("Cannot break up splits with more than one set. Merge sets first.")
@@ -5212,6 +5212,9 @@ class Splitter(Analyzable):
         This method applies `Splitter.split_range` to a specific column (or the only set)
         to generate new ranges.
 
+        !!! note
+            The `column` parameter must be provided when multiple sets exist.
+
         Args:
             new_split (SplitLike): Specification for splitting ranges.
 
@@ -5230,9 +5233,6 @@ class Splitter(Analyzable):
 
         Returns:
             Splitter: New splitter instance with the updated sets.
-
-        !!! note
-            The `column` parameter must be provided when multiple sets exist.
         """
         if self.n_sets == 0:
             raise ValueError("There are no sets to split")
@@ -5449,6 +5449,9 @@ class Splitter(Analyzable):
     ) -> tp.Tuple[tp.Any, tp.Any]:
         """Get the inclusive left and exclusive right bounds of a range.
 
+        !!! note
+            Even when mapped to the index, the right bound remains exclusive.
+
         Args:
             range_ (FixRangeLike): Range specification to process.
             index_bounds (bool): If True, map the bounds to the provided index.
@@ -5466,9 +5469,6 @@ class Splitter(Analyzable):
 
         Returns:
             Tuple[Any, Any]: Tuple with the calculated left and right bounds.
-
-        !!! note
-            Even when mapped to the index, the right bound remains exclusive.
         """
         if index is None:
             if isinstance(cls_or_self, type):
@@ -5973,6 +5973,9 @@ class Splitter(Analyzable):
 
         The returned object uses `Splitter.index` as the index and contains the splits as columns.
 
+        !!! warning
+            Boolean arrays for a high number of splits may consume substantial memory.
+
         Args:
             split_group_by (AnyGroupByLike): Grouping specification for defining splits.
 
@@ -5989,9 +5992,6 @@ class Splitter(Analyzable):
 
         Returns:
             SeriesFrame: Pandas Series or DataFrame representing the split mask.
-
-        !!! warning
-            Boolean arrays for a high number of splits may consume substantial memory.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)
@@ -6279,6 +6279,14 @@ class Splitter(Analyzable):
     ) -> tp.Frame:
         """Get the overlap matrix between each pair of ranges.
 
+        See:
+            * `vectorbtpro.generic.splitting.nb.norm_split_overlap_matrix_nb` for `by="split"` and `normalize=True`.
+            * `vectorbtpro.generic.splitting.nb.split_overlap_matrix_nb` for `by="split"` and `normalize=False`.
+            * `vectorbtpro.generic.splitting.nb.norm_set_overlap_matrix_nb` for `by="set"` and `normalize=True`.
+            * `vectorbtpro.generic.splitting.nb.set_overlap_matrix_nb` for `by="set"` and `normalize=False`.
+            * `vectorbtpro.generic.splitting.nb.norm_range_overlap_matrix_nb` for `by="range"` and `normalize=True`.
+            * `vectorbtpro.generic.splitting.nb.range_overlap_matrix_nb` for `by="range"` and `normalize=False`.
+
         Args:
             by (str): Specifies which overlap matrix to compute; must be one of "split", "set", or "range".
             normalize (bool): Flag indicating whether to normalize overlaps relative to the
@@ -6301,14 +6309,6 @@ class Splitter(Analyzable):
 
         Returns:
             Frame: DataFrame representing the computed overlap matrix, or a scalar if the result is squeezed.
-
-        See:
-            * `vectorbtpro.generic.splitting.nb.norm_split_overlap_matrix_nb` for `by="split"` and `normalize=True`.
-            * `vectorbtpro.generic.splitting.nb.split_overlap_matrix_nb` for `by="split"` and `normalize=False`.
-            * `vectorbtpro.generic.splitting.nb.norm_set_overlap_matrix_nb` for `by="set"` and `normalize=True`.
-            * `vectorbtpro.generic.splitting.nb.set_overlap_matrix_nb` for `by="set"` and `normalize=False`.
-            * `vectorbtpro.generic.splitting.nb.norm_range_overlap_matrix_nb` for `by="range"` and `normalize=True`.
-            * `vectorbtpro.generic.splitting.nb.range_overlap_matrix_nb` for `by="range"` and `normalize=False`.
         """
         split_group_by = self.get_split_grouper(split_group_by=split_group_by)
         split_labels = self.get_split_labels(split_group_by=split_group_by)

@@ -219,7 +219,7 @@ def resolve_refnames(refnames: tp.List[str]) -> str:
 
             A reference can be a fully-qualified dotted name (e.g., "vectorbtpro.data.base.Data")
             or a short name (e.g., "Data", "vbt.Portfolio") that uniquely identifies the object.
-    
+
     Returns:
         str: Output string containing the resolution results.
     """

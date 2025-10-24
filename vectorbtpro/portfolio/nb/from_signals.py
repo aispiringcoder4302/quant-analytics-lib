@@ -628,6 +628,9 @@ def from_basic_signals_nb(
 
     Iterate in column-major order using flexible broadcasting.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -834,9 +837,6 @@ def from_basic_signals_nb(
 
     Returns:
         SimulationOutput: Simulation output containing order records, log records, and portfolio results.
-
-    !!! tip
-        This function is parallelizable.
     """
     check_group_lens_nb(group_lens, target_shape[1])
     cash_sharing = is_grouped_nb(group_lens)
@@ -1607,6 +1607,9 @@ def from_signals_nb(
 ) -> SimulationOutput:
     """Simulate signals with limit and/or stop orders.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -1963,9 +1966,6 @@ def from_signals_nb(
 
     Returns:
         SimulationOutput: Simulation output containing order records, log records, and portfolio results.
-
-    !!! tip
-        This function is parallelizable.
     """
     check_group_lens_nb(group_lens, target_shape[1])
     cash_sharing = is_grouped_nb(group_lens)
@@ -4505,6 +4505,9 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
     is called to generate trading signals based on current market data. Additionally, custom post-signal
     and post-segment functions can process order executions and update segment-level statistics.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         group_lens (GroupLens): Array defining the number of columns in each group.
@@ -4861,9 +4864,6 @@ def from_signal_func_nb(  # %? line.replace("from_signal_func_nb", new_func_name
 
     Returns:
         SimulationOutput: Simulation output containing order records, log records, and portfolio results.
-
-    !!! tip
-        This function is parallelizable.
     """
     check_group_lens_nb(group_lens, target_shape[1])
 
@@ -7303,6 +7303,9 @@ def dir_to_ls_signals_nb(
     only to the long arrays; if the direction is `Direction.ShortOnly`, they contribute to the short arrays;
     otherwise, they are allocated as a long entry and a short exit.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         target_shape (Shape): Base dimensions (rows, columns).
         entries (FlexArray2d): 2D array of boolean entry signals.
@@ -7318,9 +7321,6 @@ def dir_to_ls_signals_nb(
             * long exits,
             * short entries,
             * short exits.
-
-    !!! tip
-        This function is parallelizable.
     """
     long_entries_out = np.empty(target_shape, dtype=np.bool_)
     long_exits_out = np.empty(target_shape, dtype=np.bool_)

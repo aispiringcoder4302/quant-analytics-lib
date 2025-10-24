@@ -91,6 +91,9 @@ class _SUPERTREND(SUPERTREND):
     ) -> tp.BaseFigure:
         """Plot the long and short signals of the Supertrend indicator, and optionally the close prices.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to plot the close price.
@@ -104,9 +107,6 @@ class _SUPERTREND(SUPERTREND):
 
         Returns:
             BaseFigure: Figure containing the plotted indicator traces.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

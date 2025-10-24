@@ -42,16 +42,16 @@ BinanceDataT = tp.TypeVar("BinanceDataT", bound="BinanceData")
 class BinanceData(RemoteData):
     """Data class for fetching data from Binance using the Python Binance API.
 
-    See:
-        * https://github.com/sammchardy/python-binance for the API client.
-        * `BinanceData.fetch_symbol` for argument details.
-
     !!! info
         For default settings, see `custom.binance` in `vectorbtpro._settings.data`.
 
     !!! note
         If using an exchange from the US, Japan, or another TLD, pass `tld="us"` in
         `client_config` when creating the client.
+
+    See:
+        * https://github.com/sammchardy/python-binance for the API client.
+        * `BinanceData.fetch_symbol` for argument details.
 
     Examples:
         Set up the API key globally (optional):

@@ -1108,6 +1108,9 @@ def to_timezone(
 
     If `to_fixed_offset` is True, converts the timezone to a fixed offset.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         tz (TimezoneLike): Timezone specification (e.g., "UTC", "America/New_York").
         to_fixed_offset (Optional[bool]): Flag to convert the timezone to a fixed offset.
@@ -1116,9 +1119,6 @@ def to_timezone(
 
     Returns:
         tzinfo: Parsed timezone object.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     import dateparser
     from vectorbtpro._settings import settings
@@ -1175,6 +1175,9 @@ def to_timestamp(
     If `dt` is a string, parsing is attempted with Pandas and with dateparser if
     `parse_with_dateparser` is True. For numerical inputs, `dt` is interpreted using the specified `unit`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         dt (DatetimeLike): Datetime input to parse.
 
@@ -1188,9 +1191,6 @@ def to_timestamp(
 
     Returns:
         Timestamp: Parsed and timezone-adjusted timestamp.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1289,6 +1289,9 @@ def to_tzaware_timestamp(
     (or the default setting). To explicitly convert the timestamp to a different timezone, provide `tz`, which
     is processed by `to_timezone`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         dt (DatetimeLike): Datetime input to parse.
         naive_tz (TimezoneLike): Timezone specification for TZ-naive datetime (e.g., "UTC", "America/New_York").
@@ -1297,9 +1300,6 @@ def to_tzaware_timestamp(
 
     Returns:
         Timestamp: Timezone-aware timestamp.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1433,6 +1433,9 @@ def readable_datetime(
     of the input timestamp and an optional frequency parameter. Timezone information can be
     dropped based on configuration.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         dt (DatetimeLike): Datetime-like input to format.
         drop_tz (Optional[bool]): If True, exclude timezone information from the output.
@@ -1441,9 +1444,6 @@ def readable_datetime(
 
     Returns:
         str: Formatted human-readable datetime string.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1558,15 +1558,15 @@ def to_ns(obj: tp.ArrayLike, tz_naive_ns: tp.Optional[bool] = None) -> tp.ArrayL
     The function supports conversion of datetime, date, timedelta, and array-like objects,
     including Pandas and NumPy types. Timezone handling is determined by the `tz_naive_ns` flag.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         obj (ArrayLike): Object representing a time value.
         tz_naive_ns (Optional[bool]): Flag indicating whether to enforce a timezone-naive conversion.
 
     Returns:
         ArrayLike: Nanosecond representation of the input.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 
@@ -1716,6 +1716,9 @@ def prepare_dt_index(
     If `index` has an object dtype and `parse_index` is enabled, it attempts parsing with `pd.to_datetime`.
     When `parse_with_dateparser` is True, a fallback using `dateparser.parse` is applied.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         index (IndexLike): Input index to convert.
         parse_index (Optional[bool]): Flag to convert the index to a datetime index with `pd.to_datetime`.
@@ -1725,9 +1728,6 @@ def prepare_dt_index(
 
     Returns:
         Index: Converted index, which will be a DatetimeIndex if conversion succeeded.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     import dateparser
     from vectorbtpro._settings import settings
@@ -1918,6 +1918,9 @@ def infer_index_freq(
     If `freq_from_n` is an integer (positive or negative), the index is limited to the first or last
     N elements respectively.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.datetime`.
+
     Args:
         index (Index): Pandas datetime index.
         freq (Optional[FrequencyLike]): Frequency representation (string, offset, or timedelta).
@@ -1927,9 +1930,6 @@ def infer_index_freq(
 
     Returns:
         Union[None, int, float, PandasFrequency]: Inferred or converted frequency.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.datetime`.
     """
     from vectorbtpro._settings import settings
 

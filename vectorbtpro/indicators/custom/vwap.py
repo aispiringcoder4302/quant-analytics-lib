@@ -111,6 +111,9 @@ class _VWAP(VWAP):
     ) -> tp.BaseFigure:
         """Plot `VWAP.vwap` against `VWAP.close` values.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to plot the close price.
@@ -123,9 +126,6 @@ class _VWAP(VWAP):
 
         Returns:
             BaseFigure: Updated figure containing the plotted traces.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

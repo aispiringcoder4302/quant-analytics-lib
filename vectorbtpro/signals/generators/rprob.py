@@ -48,15 +48,15 @@ RPROB = SignalFactory(
 class _RPROB(RPROB):
     """Class representing a random entry signal generator based on probabilities.
 
-    See:
-        * `RPROB.run` for the main entry point.
-        * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the entry placement.
-
     !!! tip
         All parameters can be provided as a single value (per frame) or as a NumPy array
         (per row, column, or element).
 
         To generate multiple combinations, pass them as lists.
+
+    See:
+        * `RPROB.run` for the main entry point.
+        * `vectorbtpro.signals.nb.rand_by_prob_place_nb` for details on the entry placement.
 
     Examples:
         Generate three columns with different entry probabilities:

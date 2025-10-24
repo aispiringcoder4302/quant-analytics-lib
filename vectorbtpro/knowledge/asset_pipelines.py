@@ -132,14 +132,14 @@ class AssetPipeline(Base):
     def run(self, d: tp.Any) -> tp.Any:
         """Execute the asset pipeline on the provided data by applying all tasks sequentially.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             d (Any): Data item to be processed.
 
         Returns:
             Any: Result of executing the pipeline on the data item.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

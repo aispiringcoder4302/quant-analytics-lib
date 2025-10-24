@@ -74,20 +74,23 @@ class IndexingBase(Base):
     def indexing_func(self: IndexingBaseT, pd_indexing_func: tp.PandasIndexingFunc, **kwargs) -> IndexingBaseT:
         """Apply the given Pandas indexing function on all associated Pandas objects and return a new instance.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             pd_indexing_func (PandasIndexingFunc): Function to perform Pandas-style indexing.
             **kwargs: Keyword arguments for the indexing function.
 
         Returns:
             IndexingBase: New instance of the class with the applied indexing function.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def indexing_setter_func(self, pd_indexing_setter_func: tp.Callable, **kwargs) -> None:
         """Apply the provided Pandas indexing setter function on all associated Pandas objects.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             pd_indexing_setter_func (Callable): Pandas indexing setter function.
@@ -95,9 +98,6 @@ class IndexingBase(Base):
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -166,21 +166,24 @@ class pdLoc(LocBase):
     def pd_indexing_func(cls, obj: tp.SeriesFrame, key: tp.Any) -> tp.MaybeSeriesFrame:
         """Perform a Pandas-like indexing operation on a Series or DataFrame.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             obj (SeriesFrame): Pandas Series or DataFrame to index.
             key (Any): Key to use for indexing.
 
         Returns:
             MaybeSeriesFrame: Result of the indexing operation.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     @classmethod
     def pd_indexing_setter_func(cls, obj: tp.SeriesFrame, key: tp.Any, value: tp.Any) -> None:
         """Perform a Pandas-like indexing setter operation on a Series or DataFrame.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             obj (SeriesFrame): Pandas Series or DataFrame to modify.
@@ -189,9 +192,6 @@ class pdLoc(LocBase):
 
         Returns:
             None: Function modifies the Series or DataFrame in place.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -631,7 +631,7 @@ def build_param_indexer(
         param_loc.__doc__ = inspect.cleandoc(
             f"""
             Return the parameter locator for the `{param_name}` mapping using `pd.Series.loc`.
-    
+
             The locator forwards indexing operations to each Series/DataFrame and returns a new instance.
             """
         )
@@ -708,15 +708,15 @@ class IdxrBase(Base):
     def get(self, *args, **kwargs) -> tp.Any:
         """Return indices computed by the indexer.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             *args: Additional positional arguments.
             **kwargs: Additional keyword arguments.
 
         Returns:
             Any: Computed indices based on the indexer.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1230,11 +1230,11 @@ class PointIdxr(UniIdxr, DefineMixin):
 
     every: tp.Optional[tp.FrequencyLike] = define.field(default=None)
     """Frequency either as an integer or timedelta.
-    
+
     Gets translated into `on` array by creating a range. If integer, an index sequence from 
     `start` to `end` (exclusive) is created and 'indices' as `kind` is used. If timedelta-like, 
     a date sequence from `start` to `end` (inclusive) is created and 'labels' as `kind` is used.
-    
+
     If `at_time` is not None and `every` and `on` are None, `every` defaults to one day.
     """
 
@@ -1243,7 +1243,7 @@ class PointIdxr(UniIdxr, DefineMixin):
 
     at_time: tp.Optional[tp.TimeLike] = define.field(default=None)
     """Time of the day either as a (human-readable) string or `datetime.time`. 
-    
+
     Every datetime in `on` gets floored to the daily frequency, while `at_time` gets converted into 
     a timedelta using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_delta`. 
     Index must be datetime-like.
@@ -1251,44 +1251,44 @@ class PointIdxr(UniIdxr, DefineMixin):
 
     start: tp.Optional[tp.Union[int, tp.DatetimeLike]] = define.field(default=None)
     """Start index/date.
-    
+
     If (human-readable) string, gets converted into a datetime.
-    
+
     If `every` is None, gets used to filter the final index array.
     """
 
     end: tp.Optional[tp.Union[int, tp.DatetimeLike]] = define.field(default=None)
     """End index/date.
-    
+
     If (human-readable) string, gets converted into a datetime.
-    
+
     If `every` is None, gets used to filter the final index array.
     """
 
     exact_start: bool = define.field(default=False)
     """Whether the first index should be exactly `start`.
-    
+
     Depending on `every`, the first index picked by `pd.date_range` may happen after `start`.
     In such a case, `start` gets injected before the first index generated by `pd.date_range`.
     """
 
     on: tp.Optional[tp.Union[int, tp.DatetimeLike, tp.IndexLike]] = define.field(default=None)
     """Index/label or a sequence of such.
-    
+
     Gets converted into datetime format whenever possible.
     """
 
     add_delta: tp.Optional[tp.FrequencyLike] = define.field(default=None)
     """Offset to be added to each in `on`.
-    
+
     Gets converted to a proper offset/timedelta using `vectorbtpro.utils.datetime_.to_freq`.
     """
 
     kind: tp.Optional[str] = define.field(default=None)
     """Kind of data in `on`: indices or labels.
-    
+
     If None, gets assigned to `indices` if `on` contains integer data, otherwise to `labels`.
-    
+
     If `kind` is 'labels', `on` gets converted into indices using `pd.Index.get_indexer`. 
     Prior to this, gets its timezone aligned to the timezone of the index. If `kind` is 'indices', 
     `on` gets wrapped with NumPy.
@@ -1296,13 +1296,13 @@ class PointIdxr(UniIdxr, DefineMixin):
 
     indexer_method: str = define.field(default="bfill")
     """Method for `pd.Index.get_indexer`.
-    
+
     Allows two additional values: "before" and "after".
     """
 
     indexer_tolerance: tp.Optional[tp.Union[int, tp.TimedeltaLike, tp.IndexLike]] = define.field(default=None)
     """Tolerance for `pd.Index.get_indexer`.
-    
+
     If `at_time` is set and `indexer_method` is neither exact nor nearest, `indexer_tolerance` 
     becomes such that the next element must be within the current day.
     """
@@ -1582,7 +1582,7 @@ class RangeIdxr(UniIdxr, DefineMixin):
 
     Each datetime in `start` is floored to a daily frequency. The `start_time` is converted to a timedelta 
     using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_start_delta`.
-    
+
     The index must be datetime-like.
     """
 
@@ -1591,7 +1591,7 @@ class RangeIdxr(UniIdxr, DefineMixin):
 
     Each datetime in `end` is floored to a daily frequency. The `end_time` is converted to a timedelta 
     using `vectorbtpro.utils.datetime_.time_to_timedelta` and added to `add_end_delta`.
-    
+
     The index must be datetime-like.
     """
 
@@ -1622,7 +1622,7 @@ class RangeIdxr(UniIdxr, DefineMixin):
 
     If `every` is provided and the first index from `pd.date_range` occurs after `start`, 
     the specified `start` is prepended.
-    
+
     Cannot be used with `lookback_period`.
     """
 
@@ -1654,14 +1654,14 @@ class RangeIdxr(UniIdxr, DefineMixin):
 
     kind: tp.Optional[str] = define.field(default=None)
     """Type of data to be used.
-    
+
     * "labels": `start` and `end` are converted to indices using `pd.Index.get_indexer` 
         after aligning their timezones with the index.
     * "indices": `start` and `end` are wrapped with NumPy.
     * "bounds": `vectorbtpro.base.resampling.base.Resampler.map_bounds_to_source_ranges` is used.
 
     If not specified, it defaults to:
-    
+
     * `indices` if `start` and `end` contain integer values,
     * `bounds` if `start`, `end`, and the index are datetime-like,
     * `labels` otherwise.
@@ -2255,7 +2255,7 @@ class AutoIdxr(UniIdxr, DefineMixin):
     """Specifies the kind of the provided value.
 
     Allowed values:
-    
+
     * "position(s)" for `PosIdxr`
     * "mask" for `MaskIdxr`
     * "label(s)" for `LabelIdxr`
@@ -3005,12 +3005,12 @@ class IdxSetterFactory(Base):
     def get(self) -> tp.Union[IdxSetter, tp.Dict[tp.Label, IdxSetter]]:
         """Return an `IdxSetter` instance or a dictionary mapping array names to `IdxSetter` instances.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Returns:
             Union[IdxSetter, Dict[Label, IdxSetter]]: An `IdxSetter` instance or
                 a dictionary of `IdxSetter` instances.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

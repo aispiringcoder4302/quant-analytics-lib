@@ -132,6 +132,9 @@ class Sizer(Evaluable, Annotatable, DefineMixin):
     def get_size(self, ann_args: tp.AnnArgs, **kwargs) -> int:
         """Retrieve the size based on the provided annotated arguments.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             ann_args (AnnArgs): Annotated arguments.
 
@@ -139,9 +142,6 @@ class Sizer(Evaluable, Annotatable, DefineMixin):
 
         Returns:
             int: Retrieved size.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -324,6 +324,9 @@ class ChunkMetaGenerator(Base):
     def get_chunk_meta(self, ann_args: tp.AnnArgs, **kwargs) -> tp.Iterable[ChunkMeta]:
         """Generate an iterable of chunk metadata from the provided annotated arguments.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             ann_args (AnnArgs): Annotated arguments.
 
@@ -331,9 +334,6 @@ class ChunkMetaGenerator(Base):
 
         Returns:
             Iterable[ChunkMeta]: Argument value.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -500,15 +500,15 @@ class ChunkMapper(DefineMixin):
     def map(self, chunk_meta: ChunkMeta, **kwargs) -> ChunkMeta:
         """Map the input `ChunkMeta` to a new `ChunkMeta`.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
             **kwargs: Additional keyword arguments.
 
         Returns:
             ChunkMeta: Mapped chunk metadata.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -547,15 +547,15 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
     def get_size(self, obj: tp.Any, **kwargs) -> int:
         """Return the actual size of the given object.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             obj (Any): Input object.
             **kwargs: Additional keyword arguments.
 
         Returns:
             int: Size of the object.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -618,6 +618,9 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
     def take(self, obj: tp.Any, chunk_meta: ChunkMeta, **kwargs) -> tp.Any:
         """Extract a subset of data from the given object using the provided chunk metadata.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             obj (Any): Input object from which to extract data.
             chunk_meta (ChunkMeta): Metadata specifying the chunk boundaries.
@@ -625,9 +628,6 @@ class ChunkTaker(Evaluable, Annotatable, DefineMixin):
 
         Returns:
             Any: Extracted subset of data.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1111,22 +1111,22 @@ class Chunkable(Evaluable, Annotatable):
     def get_value(self) -> tp.Any:
         """Return the encapsulated value.
 
-        Returns:
-            Any: Encapsulated value.
-
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            Any: Encapsulated value.
         """
         raise NotImplementedError
 
     def get_take_spec(self) -> tp.TakeSpec:
         """Return the associated chunk-taking specification.
 
-        Returns:
-            TakeSpec: Chunk-taking specification.
-
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            TakeSpec: Chunk-taking specification.
         """
         raise NotImplementedError
 
@@ -1206,12 +1206,12 @@ class Chunked(Chunkable, DefineMixin):
     def resolve_take_spec(self) -> tp.TakeSpec:
         """Return the resolved chunk-taking specification.
 
-        Returns:
-            TakeSpec: Chunk-taking strategy determined by the instance configuration.
-
         !!! note
             If `take_spec` is missing, returns `ChunkSelector` when `select` is True,
             otherwise returns `ChunkSlicer`.
+
+        Returns:
+            TakeSpec: Chunk-taking strategy determined by the instance configuration.
         """
         if self.take_spec_missing:
             if self.select:
@@ -1305,6 +1305,9 @@ class Chunker(Configured):
     3. Executes all chunks by passing `**execute_kwargs` to `vectorbtpro.utils.execution.execute`.
     4. Optionally, post-processes and merges the results by passing them and `**merge_kwargs` to `merge_func`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
+
     Args:
         size (Optional[int]): Chunk size used for metadata generation.
 
@@ -1343,9 +1346,6 @@ class Chunker(Configured):
             See `vectorbtpro.utils.execution.execute`.
         disable (Optional[bool]): Flag to disable chunking.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.chunking`.
     """
 
     _settings_path: tp.SettingsPath = "chunking"
@@ -1487,11 +1487,11 @@ class Chunker(Configured):
     def arg_take_spec(self) -> tp.Optional[tp.ArgTakeSpecLike]:
         """Specification for selecting function arguments during chunking.
 
-        Returns:
-            Optional[ArgTakeSpecLike]: Specification dict or object for argument extraction.
-
         See:
             `Chunker.iter_tasks`
+
+        Returns:
+            Optional[ArgTakeSpecLike]: Specification dict or object for argument extraction.
         """
         return self._arg_take_spec
 
@@ -2351,6 +2351,9 @@ def chunked(
     `Chunker`. Additionally, if a chunker instance is provided and `replace_chunker` is True, a new
     `Chunker` instance is created by replacing any arguments that are not None.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
+
     Args:
         func (Callable): Function to be decorated.
         chunker (Optional[Chunker]): `Chunker` type used for splitting the inputs.
@@ -2364,9 +2367,6 @@ def chunked(
 
     Returns:
         Callable: Decorated function with chunking capability.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.chunking`.
 
     Examples:
         For testing purposes, let's divide the input array into 2 chunks and compute
@@ -2697,6 +2697,9 @@ def chunked(
 def resolve_chunked_option(option: tp.ChunkedOption = None) -> tp.KwargsLike:
     """Return keyword arguments for `chunked` based on a given option.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
+
     Args:
         option (ChunkedOption): Option to control chunked processing.
 
@@ -2707,9 +2710,6 @@ def resolve_chunked_option(option: tp.ChunkedOption = None) -> tp.KwargsLike:
 
     Returns:
         KwargsLike: Dictionary of keyword arguments for chunking configuration, or None if chunking is disabled.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.chunking`.
     """
     from vectorbtpro._settings import settings
 
@@ -2750,6 +2750,9 @@ def specialize_chunked_option(option: tp.ChunkedOption = None, **kwargs) -> tp.K
 def resolve_chunked(func: tp.Callable, option: tp.ChunkedOption = None, **kwargs) -> tp.Callable:
     """Decorate a function with chunked processing according to a given option.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.chunking`.
+
     Args:
         func (Callable): Function to decorate.
         option (ChunkedOption): Option to control chunked processing.
@@ -2762,9 +2765,6 @@ def resolve_chunked(func: tp.Callable, option: tp.ChunkedOption = None, **kwargs
     Returns:
         Callable: Decorated function with chunked processing applied if enabled;
             otherwise, the original function.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.chunking`.
     """
     from vectorbtpro._settings import settings
 

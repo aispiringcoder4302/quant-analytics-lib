@@ -118,6 +118,9 @@ class _SIGDET(SIGDET):
     ) -> tp.BaseFigure:
         """Plot the signal from `SIGDET.signal`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             signal_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `SIGDET.signal`.
@@ -128,9 +131,6 @@ class _SIGDET(SIGDET):
 
         Returns:
             BaseFigure: Figure object containing the plotted signal.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -173,6 +173,9 @@ class _SIGDET(SIGDET):
         """Plot the upper and lower bands from `SIGDET.upper_band` and `SIGDET.lower_band`
         against the close values from `SIGDET.close`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to plot the close price.
@@ -186,9 +189,6 @@ class _SIGDET(SIGDET):
 
         Returns:
             BaseFigure: Figure object containing the plotted bands (and close line if requested).
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

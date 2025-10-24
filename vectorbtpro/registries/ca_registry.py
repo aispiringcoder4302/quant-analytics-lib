@@ -584,6 +584,10 @@ class CAQuery(DefineMixin):
     def parse(cls: tp.Type[CAQueryT], query_like: tp.Any, use_base_cls: bool = True) -> CAQueryT:
         """Parse a query-like object.
 
+        !!! note
+            Not all attribute combinations can be safely parsed by this function.
+            For example, you cannot combine cacheable together with options.
+
         Args:
             query_like (Any): Object representing the query.
 
@@ -592,10 +596,6 @@ class CAQuery(DefineMixin):
 
         Returns:
             CAQuery: New `CAQuery` instance parsed from the input.
-
-        !!! note
-            Not all attribute combinations can be safely parsed by this function.
-            For example, you cannot combine cacheable together with options.
 
         Examples:
             ```pycon
@@ -1142,6 +1142,9 @@ class CacheableRegistry(Base):
         a set of setups that match any of the queries. If `collapse` is True, child setups
         of a matched parent setup are excluded from the final results.
 
+        !!! note
+            `exclude_children` is applied only when `collapse` is True.
+
         Args:
             query_like (MaybeIterable[Any]): One or multiple query-like objects to match setups.
 
@@ -1166,9 +1169,6 @@ class CacheableRegistry(Base):
 
         Returns:
             Set[CABaseSetup]: Set of setups matching the given criteria.
-
-        !!! note
-            `exclude_children` is applied only when `collapse` is True.
         """
         if not checks.is_iterable(query_like) or isinstance(query_like, (str, tuple)):
             query_like = [query_like]
@@ -1286,11 +1286,11 @@ class CAMetrics(Base):
 
         A cache hit occurs when a requested object is found in the cache.
 
-        Returns:
-            int: Total count of times a cached object was successfully retrieved.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            int: Total count of times a cached object was successfully retrieved.
         """
         raise NotImplementedError
 
@@ -1300,11 +1300,11 @@ class CAMetrics(Base):
 
         A cache miss occurs when a requested object is not found in the cache.
 
-        Returns:
-            int: Total count of times an object retrieval failed due to absence in the cache.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            int: Total count of times an object retrieval failed due to absence in the cache.
         """
         raise NotImplementedError
 
@@ -1312,11 +1312,11 @@ class CAMetrics(Base):
     def total_size(self) -> int:
         """Total size of all cached objects.
 
-        Returns:
-            int: Aggregate memory size in bytes of all objects stored in the cache.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            int: Aggregate memory size in bytes of all objects stored in the cache.
         """
         raise NotImplementedError
 
@@ -1324,12 +1324,12 @@ class CAMetrics(Base):
     def total_elapsed(self) -> tp.Optional[timedelta]:
         """Cumulative elapsed time during function execution.
 
+        !!! abstract
+            This property should be overridden in a subclass.
+
         Returns:
             Optional[timedelta]: Sum of execution durations for all cached function runs,
                 or None if the metric is not available.
-
-        !!! abstract
-            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1337,12 +1337,12 @@ class CAMetrics(Base):
     def total_saved(self) -> tp.Optional[timedelta]:
         """Cumulative time saved by caching.
 
+        !!! abstract
+            This property should be overridden in a subclass.
+
         Returns:
             Optional[timedelta]: Total time saved by fetching results from the cache
                 instead of executing the function, or None if not determined.
-
-        !!! abstract
-            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1350,12 +1350,12 @@ class CAMetrics(Base):
     def first_run_time(self) -> tp.Optional[datetime]:
         """Timestamp of the first function execution.
 
+        !!! abstract
+            This property should be overridden in a subclass.
+
         Returns:
             Optional[datetime]: Datetime when the function was first executed,
                 or None if it has never been run.
-
-        !!! abstract
-            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1363,12 +1363,12 @@ class CAMetrics(Base):
     def last_run_time(self) -> tp.Optional[datetime]:
         """Timestamp of the most recent function execution.
 
+        !!! abstract
+            This property should be overridden in a subclass.
+
         Returns:
             Optional[datetime]: Datetime of the most recent function run,
                 or None if the function has not been executed.
-
-        !!! abstract
-            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1376,12 +1376,12 @@ class CAMetrics(Base):
     def first_hit_time(self) -> tp.Optional[datetime]:
         """Timestamp of the first cache hit.
 
+        !!! abstract
+            This property should be overridden in a subclass.
+
         Returns:
             Optional[datetime]: Datetime when the cache was hit for the first time,
                 or None if there have been no cache hits.
-
-        !!! abstract
-            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1389,12 +1389,12 @@ class CAMetrics(Base):
     def last_hit_time(self) -> tp.Optional[datetime]:
         """Timestamp of the most recent cache hit.
 
+        !!! abstract
+            This property should be overridden in a subclass.
+
         Returns:
             Optional[datetime]: Datetime when the cache was hit most recently,
                 or None if no cache hit has occurred.
-
-        !!! abstract
-            This property should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1453,11 +1453,11 @@ class CABaseSetup(CAMetrics, DefineMixin):
     def query(self) -> CAQuery:
         """Query used to match this setup.
 
-        Returns:
-            CAQuery: Query instance that identifies or filters setups.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            CAQuery: Query instance that identifies or filters setups.
         """
         raise NotImplementedError
 
@@ -1471,15 +1471,15 @@ class CABaseSetup(CAMetrics, DefineMixin):
         * Global caching is disabled (via settings["caching"]["disable"]) and the setup is not whitelisted.
         * Both global caching and whitelisting are disabled.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+
         Returns:
             Optional[bool]: Indicates the caching status:
 
                 * True if caching is enabled for this setup.
                 * False if caching is disabled.
                 * None if the caching flag is undefined.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.caching`.
         """
         from vectorbtpro._settings import settings
 
@@ -1568,15 +1568,15 @@ class CABaseSetup(CAMetrics, DefineMixin):
     def enable_caching(self, force: bool = False, silence_warnings: tp.Optional[bool] = None) -> None:
         """Enable caching for this setup.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+
         Args:
             force (bool): Enable whitelisting when set to True.
             silence_warnings (bool): Flag to suppress warning messages.
 
         Returns:
             None
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.caching`.
         """
         from vectorbtpro._settings import settings
 
@@ -1657,11 +1657,11 @@ class CABaseSetup(CAMetrics, DefineMixin):
     def clear_cache(self) -> None:
         """Clear the cache associated with this setup.
 
-        Returns:
-            None
-
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            None
         """
         raise NotImplementedError
 
@@ -1669,11 +1669,11 @@ class CABaseSetup(CAMetrics, DefineMixin):
     def same_type_setups(self) -> ValuesView:
         """Setups of the same type.
 
-        Returns:
-            ValuesView: Collection view of setups that are of the same type as this setup.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            ValuesView: Collection view of setups that are of the same type as this setup.
         """
         raise NotImplementedError
 
@@ -1681,11 +1681,11 @@ class CABaseSetup(CAMetrics, DefineMixin):
     def short_str(self) -> str:
         """Concise string representation of the setup.
 
-        Returns:
-            str: Brief string that summarizes the setup.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            str: Brief string that summarizes the setup.
         """
         raise NotImplementedError
 
@@ -1693,11 +1693,11 @@ class CABaseSetup(CAMetrics, DefineMixin):
     def readable_name(self) -> str:
         """Human-readable name for the object associated with this setup.
 
-        Returns:
-            str: User-friendly name representing the setup's associated object.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            str: User-friendly name representing the setup's associated object.
         """
         raise NotImplementedError
 
@@ -1838,11 +1838,11 @@ class CASetupDelegatorMixin(CAMetrics):
     def child_setups(self) -> tp.Set[CABaseSetup]:
         """Set of child setup instances.
 
-        Returns:
-            Set[CABaseSetup]: Set of child setups associated with this setup.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            Set[CABaseSetup]: Set of child setups associated with this setup.
         """
         raise NotImplementedError
 
@@ -2299,6 +2299,9 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
     ) -> tp.Optional[CAClassSetupT]:
         """Retrieve or create a cacheable class setup.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+
         Args:
             cls_ (Type[Cacheable]): Cacheable class to retrieve or register.
             registry (CacheableRegistry): Registry to use for retrieving the setup.
@@ -2307,9 +2310,6 @@ class CAClassSetup(CABaseDelegatorSetup, DefineMixin):
         Returns:
             Optional[CAClassSetup]: Retrieved or newly registered setup,
                 or None if caching machinery is disabled or the setup is inactive.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.caching`.
         """
         from vectorbtpro._settings import settings
 
@@ -2475,6 +2475,9 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
     ) -> tp.Optional[CAInstanceSetupT]:
         """Get or register a new instance setup from a `CacheableRegistry`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+
         Args:
             instance (Cacheable): Cacheable instance for which to retrieve or create a setup.
             registry (CacheableRegistry): Registry to query for an existing setup.
@@ -2482,9 +2485,6 @@ class CAInstanceSetup(CABaseDelegatorSetup, DefineMixin):
 
         Returns:
             Optional[CAInstanceSetup]: Active setup for the instance if found, otherwise None.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.caching`.
         """
         from vectorbtpro._settings import settings
 
@@ -2653,6 +2653,9 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
     ) -> tp.Optional[CAUnboundSetupT]:
         """Get or register a new unbound setup from a `CacheableRegistry`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+
         Args:
             cacheable (cacheable): Cacheable property or method for which to retrieve or create a setup.
             registry (CacheableRegistry): Registry to query for an existing setup.
@@ -2660,9 +2663,6 @@ class CAUnboundSetup(CABaseDelegatorSetup, DefineMixin):
 
         Returns:
             Optional[CAUnboundSetup]: Active unbound setup if found, otherwise None.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.caching`.
         """
         from vectorbtpro._settings import settings
 
@@ -2882,6 +2882,9 @@ class CARunSetup(CABaseSetup, DefineMixin):
 
         Additional arguments are passed to the `CARunSetup` constructor.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+
         Args:
             cacheable (cacheable): Cacheable object (callable, property, or method)
                 that defines caching behavior.
@@ -2892,9 +2895,6 @@ class CARunSetup(CABaseSetup, DefineMixin):
         Returns:
             Optional[CARunSetupT]: Existing or newly registered run setup,
                 or None if caching machinery is disabled.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.caching`.
         """
         from vectorbtpro._settings import settings
 
@@ -3110,15 +3110,15 @@ class CARunSetup(CABaseSetup, DefineMixin):
         This method extends `CARunSetup.ignore_args` with additional ignore arguments defined
         in `vectorbtpro._settings.caching`. If no arguments are provided, it returns the hash of None.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.caching`.
+
         Args:
             *args: Positional arguments to be included in the hash computation.
             **kwargs: Keyword arguments to be included in the hash computation.
 
         Returns:
             Optional[int]: Computed hash of the provided arguments.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.caching`.
         """
         if len(args) == 0 and len(kwargs) == 0:
             return hash(None)
@@ -3365,14 +3365,14 @@ def flush() -> None:
 def disable_caching(clear_cache: bool = True) -> None:
     """Disable caching globally.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
+
     Args:
         clear_cache (bool): Whether to clear the cache when disabling caching.
 
     Returns:
         None
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.caching`.
     """
     from vectorbtpro._settings import settings
 
@@ -3389,11 +3389,11 @@ def disable_caching(clear_cache: bool = True) -> None:
 def enable_caching() -> None:
     """Enable caching globally.
 
-    Returns:
-        None
-
     !!! info
         For default settings, see `vectorbtpro._settings.caching`.
+
+    Returns:
+        None
     """
     from vectorbtpro._settings import settings
 
@@ -3406,6 +3406,9 @@ def enable_caching() -> None:
 
 class CachingDisabled(Base):
     """Context manager to temporarily disable caching based on a query.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
 
     Args:
         query_like (Optional[Any]): Value used for parsing the query via `CAQuery.parse`.
@@ -3425,9 +3428,6 @@ class CachingDisabled(Base):
         disable_machinery (bool): Flag to disable caching machinery.
         clear_cache (bool): Whether to clear the cache when disabling caching.
         silence_warnings (bool): Flag to suppress warning messages.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.caching`.
     """
 
     def __init__(
@@ -3681,6 +3681,9 @@ def with_caching_disabled(*args, **caching_disabled_kwargs) -> tp.Callable:
 class CachingEnabled(Base):
     """Context manager to temporarily enable caching based on a query.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.caching`.
+
     Args:
         query_like (Optional[Any]): Query specification to restrict caching behavior.
         use_base_cls (bool): Flag indicating whether the base class is used in query parsing.
@@ -3699,9 +3702,6 @@ class CachingEnabled(Base):
         enable_machinery (bool): Flag to enable caching machinery.
         clear_cache (bool): Flag to clear caches upon exiting the context.
         silence_warnings (bool): Flag to suppress warning messages.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.caching`.
     """
 
     def __init__(

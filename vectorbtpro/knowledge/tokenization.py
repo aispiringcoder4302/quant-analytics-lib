@@ -34,13 +34,13 @@ __all__ = [
 class Tokenizer(Configured):
     """Abstract class for tokenizers.
 
-    Args:
-        template_context (KwargsLike): Additional context for template substitution.
-        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
     !!! info
         For default settings, see `vectorbtpro._settings.knowledge` and
         its sub-configurations `chat` and `chat.tokenizer_config`.
+
+    Args:
+        template_context (KwargsLike): Additional context for template substitution.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -67,28 +67,28 @@ class Tokenizer(Configured):
     def encode(self, text: str) -> tp.Tokens:
         """Return a list of tokens corresponding to the given text.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             text (str): Text to encode.
 
         Returns:
             list: List of tokens representing the input text.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def decode(self, tokens: tp.Tokens) -> str:
         """Return the text obtained by decoding the given list of tokens.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             tokens (list): List of tokens to decode.
 
         Returns:
             str: Decoded text.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -136,14 +136,14 @@ class Tokenizer(Configured):
     def count_tokens_in_messages(self, messages: tp.ChatMessages) -> int:
         """Return the total number of tokens across the provided messages.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             messages (ChatMessages): List of dictionaries representing the conversation history.
 
         Returns:
             int: Total token count.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -153,6 +153,9 @@ class TikTokenizer(Tokenizer):
 
     Encoding can be a model name, an encoding name, or an encoding object for tokenization.
 
+    !!! info
+        For default settings, see `chat.tokenizer_configs.tiktoken` in `vectorbtpro._settings.knowledge`.
+
     Args:
         encoding (Union[None, str, Encoding]): Encoding specification as a model name,
             encoding name, or encoding object.
@@ -160,9 +163,6 @@ class TikTokenizer(Tokenizer):
         tokens_per_message (Optional[int]): Number of tokens charged per message.
         tokens_per_name (Optional[int]): Additional token count for message names.
         **kwargs: Keyword arguments for `Tokenizer`.
-
-    !!! info
-        For default settings, see `chat.tokenizer_configs.tiktoken` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "tiktoken"
@@ -261,6 +261,9 @@ class TikTokenizer(Tokenizer):
 def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokenizer]:
     """Resolve a `Tokenizer` subclass or instance.
 
+    !!! info
+        For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
+
     Args:
         tokenizer (TokenizerLike): Identifier, subclass, or instance of `Tokenizer`.
 
@@ -270,9 +273,6 @@ def resolve_tokenizer(tokenizer: tp.TokenizerLike = None) -> tp.MaybeType[Tokeni
 
     Returns:
         Tokenizer: Resolved tokenizer type or instance.
-
-    !!! info
-        For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
     """
     if tokenizer is None:
         from vectorbtpro._settings import settings

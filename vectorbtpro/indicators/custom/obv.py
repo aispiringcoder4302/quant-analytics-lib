@@ -66,6 +66,9 @@ class _OBV(OBV):
     ) -> tp.BaseFigure:
         """Plot `OBV.obv`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             obv_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `OBV.obv`.
@@ -76,9 +79,6 @@ class _OBV(OBV):
 
         Returns:
             BaseFigure: Updated figure displaying the plotted OBV data.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

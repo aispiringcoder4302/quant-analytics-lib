@@ -83,15 +83,15 @@ class atomic_dict(pdict):
 def convert_to_dict(dct: tp.DictLike, nested: bool = True) -> dict:
     """Convert a configuration object to a dictionary.
 
+    !!! note
+        When the input is an instance of `AtomicConfig`, it is converted to an `atomic_dict`.
+
     Args:
         dct (DictLike): Configuration input to convert.
         nested (bool): If True, recursively convert nested dictionaries.
 
     Returns:
         dict: Dictionary representing the configuration.
-
-    !!! note
-        When the input is an instance of `AtomicConfig`, it is converted to an `atomic_dict`.
     """
     if dct is None:
         dct = {}
@@ -131,7 +131,7 @@ def has(obj: tp.Any, attr: str) -> bool:
 
 def get(obj: tp.Any, attr: str, default: tp.Optional[tp.Any] = None) -> tp.Any:
     """Retrieve an attribute or dictionary item from an object.
-    
+
     Args:
         obj (Any): Object to retrieve the attribute from.
         attr (str): Attribute name to retrieve.
@@ -259,6 +259,11 @@ def update_dict(
 ) -> None:
     """Update a dictionary with keys and values from another dictionary.
 
+    !!! note
+        When updating a nested configuration (an instance of `Configured`), if the corresponding
+        value in `y` is a dictionary, the method `Configured.replace` is invoked. Additionally,
+        if the child dictionary is not atomic, only its values are copied, not its metadata.
+
     Args:
         x (DictLike): Target dictionary to update.
         y (DictLike): Source dictionary with values to update.
@@ -268,11 +273,6 @@ def update_dict(
 
     Returns:
         None: Dictionary is updated in place.
-
-    !!! note
-        When updating a nested configuration (an instance of `Configured`), if the corresponding
-        value in `y` is a dictionary, the method `Configured.replace` is invoked. Additionally,
-        if the child dictionary is not atomic, only its values are copied, not its metadata.
     """
     if x is None:
         return
@@ -562,13 +562,6 @@ class Config(pdict):
     """Configuration class that extends a pickleable dictionary with enhanced configuration features
     including nested updates, freezing, and resetting.
 
-    Args:
-        *args: Positional arguments for `dict`.
-        options_ (KwargsLike): Configuration options.
-
-            See details below.
-        **kwargs: Keyword arguments for `dict`.
-
     Options:
         copy_kwargs (dict): Keyword arguments used by `copy_dict` when copying the main
             dictionary and `reset_dct`.
@@ -625,6 +618,13 @@ class Config(pdict):
 
     !!! note
         All arguments are applied only once during initialization.
+
+    Args:
+        *args: Positional arguments for `dict`.
+        options_ (KwargsLike): Configuration options.
+
+            See details below.
+        **kwargs: Keyword arguments for `dict`.
     """
 
     def __init__(self, *args, options_: tp.KwargsLike = None, **kwargs) -> None:
@@ -2051,9 +2051,6 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
     All subclasses of `Configured` are initialized using `Config`, which facilitates
     pickling and configuration merging.
 
-    Args:
-        **config: Keyword arguments for initialization configuration.
-
     !!! info
         For default settings, see `vectorbtpro._settings.configured`.
 
@@ -2062,13 +2059,16 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
         or if any `Configured` argument depends on global defaults, those values will
         not be copied. Pass them explicitly to ensure the saved, loaded, or copied instance
         remains resilient to changes in globals.
+
+    Args:
+        **config: Keyword arguments for initialization configuration.
     """
 
     _expected_keys_mode: tp.ExpectedKeysMode = "auto"
     """Mode of expected keys.
 
     Accepted values are:
-    
+
     * "auto": Combines keys from bases and signature. Disabled if any base is disabled.
     * "inherit": Combines keys from bases only. Disabled if any base is disabled.
     * "disable": Disables key checking.
@@ -2226,6 +2226,11 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
     ) -> ConfiguredT:
         """Create a new instance with a modified configuration.
 
+        !!! warning
+            This method returns a new instance initialized with the same configuration and
+            writable attributes (or their copies, depending on `copy_mode_`) rather than a direct
+            copy of the current instance.
+
         Args:
             copy_mode_ (str): Copy mode for copying the configuration and attributes.
             nested_ (bool): Whether to copy nested objects.
@@ -2235,11 +2240,6 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
 
         Returns:
             Configured: New instance with the updated configuration.
-
-        !!! warning
-            This method returns a new instance initialized with the same configuration and
-            writable attributes (or their copies, depending on `copy_mode_`) rather than a direct
-            copy of the current instance.
         """
         if cls_ is None:
             cls_ = type(self)

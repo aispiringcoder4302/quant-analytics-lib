@@ -222,6 +222,9 @@ class Orders(PriceRecords):
     ) -> OrdersT:
         """Return a long view of order records.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.get_long_view_orders_nb`
+
         Args:
             init_position (ArrayLike): Initial position.
             init_price (ArrayLike): Initial position price.
@@ -234,9 +237,6 @@ class Orders(PriceRecords):
 
         Returns:
             Orders: New instance with long view orders.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.get_long_view_orders_nb`
         """
         func = jit_reg.resolve_option(nb.get_long_view_orders_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -258,6 +258,9 @@ class Orders(PriceRecords):
     ) -> OrdersT:
         """Return a short view of order records.
 
+        See:
+            `vectorbtpro.portfolio.nb.records.get_short_view_orders_nb`
+
         Args:
             init_position (ArrayLike): Initial position.
             init_price (ArrayLike): Initial position price.
@@ -270,9 +273,6 @@ class Orders(PriceRecords):
 
         Returns:
             Orders: New instance with short view orders.
-
-        See:
-            `vectorbtpro.portfolio.nb.records.get_short_view_orders_nb`
         """
         func = jit_reg.resolve_option(nb.get_short_view_orders_nb, jitted)
         func = ch_reg.resolve_option(func, chunked)
@@ -480,6 +480,9 @@ class Orders(PriceRecords):
 
         Plot the order data on a Plotly figure by overlaying OHLC and close price data with buy and sell markers.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_ohlc (bool): Whether to plot the OHLC data.
@@ -498,9 +501,6 @@ class Orders(PriceRecords):
 
         Returns:
             BaseFigure: Updated Plotly figure with the plotted orders.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

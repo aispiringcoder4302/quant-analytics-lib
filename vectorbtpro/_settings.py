@@ -304,7 +304,7 @@ caching = frozen_cfg(
 __pdoc__["caching"] = Sub(
     """Sub-configuration with settings applied across `vectorbtpro.registries.ca_registry`, 
 `vectorbtpro.utils.caching`, and the cacheable decorators in `vectorbtpro.utils.decorators`.
-    
+
 !!! note
     The `use_cached_accessors` setting is applied only at import.
 
@@ -1547,7 +1547,7 @@ signals = frozen_cfg(
 
 __pdoc__["signals"] = Sub(
     """Sub-configuration with settings applied to `vectorbtpro.signals.accessors.SignalsAccessor`.
-    
+
 ```python
 ${config_doc}
 ```
@@ -1630,7 +1630,7 @@ records = frozen_cfg(
 
 __pdoc__["records"] = Sub(
     """Sub-configuration with settings applied to `vectorbtpro.records.base.Records`.
-    
+
 ```python
 ${config_doc}
 ```
@@ -2608,7 +2608,7 @@ $context
         text_splitter="segment",
         text_splitter_config=flex_cfg(
             chunk_template=r"""... (previous text omitted)
-            
+
 $chunk_text""",
         ),
         text_splitter_configs=flex_cfg(

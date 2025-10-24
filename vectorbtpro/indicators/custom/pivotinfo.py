@@ -147,6 +147,9 @@ class _PIVOTINFO(PIVOTINFO):
     ) -> tp.BaseFigure:
         """Plot the confirmed and last pivot value lines on a figure.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             conf_value_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PIVOTINFO.conf_value`.
@@ -158,9 +161,6 @@ class _PIVOTINFO(PIVOTINFO):
 
         Returns:
             BaseFigure: Updated figure with the plotted confirmed and last pivot values.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -218,6 +218,9 @@ class _PIVOTINFO(PIVOTINFO):
     ) -> tp.BaseFigure:
         """Plot the zigzag line based on pivot data.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
 
@@ -229,9 +232,6 @@ class _PIVOTINFO(PIVOTINFO):
 
         Returns:
             BaseFigure: Updated figure with the plotted zigzag line.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

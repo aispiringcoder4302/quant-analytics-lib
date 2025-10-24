@@ -38,11 +38,11 @@ class Jitter(Configured):
     def wrapping_disabled(self) -> bool:
         """Global flag indicating whether jitting wrapping is disabled.
 
-        Returns:
-            bool: True if jitting wrapping is disabled, False otherwise.
-
         !!! info
             For default settings, see `vectorbtpro._settings.jitting`.
+
+        Returns:
+            bool: True if jitting wrapping is disabled, False otherwise.
         """
         from vectorbtpro._settings import settings
 
@@ -53,15 +53,15 @@ class Jitter(Configured):
     def decorate(self, py_func: tp.Callable, tags: tp.Optional[set] = None) -> tp.Callable:
         """Apply jitting decoration to a Python function.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             py_func (Callable): Python function to decorate.
             tags (Optional[set]): Tags associated with the function.
 
         Returns:
             Callable: Decorated function.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         if self.wrapping_disabled:
             return py_func
@@ -81,6 +81,9 @@ class NumPyJitter(Jitter):
 class NumbaJitter(Jitter):
     """Class for decorating functions using Numba.
 
+    !!! note
+        If `fix_cannot_parallel` is True, then `parallel=True` is ignored when the 'can_parallel' tag is absent.
+
     Args:
         fix_cannot_parallel (bool): Flag indicating whether to disable parallel execution if
             the 'can_parallel' tag is missing.
@@ -90,9 +93,6 @@ class NumbaJitter(Jitter):
         cache (bool): Flag indicating whether the compiled function should be cached on disk.
         boundscheck (bool): Flag indicating whether array bounds checking is enabled.
         **options: Keyword arguments provided to the Numba decorator.
-
-    !!! note
-        If `fix_cannot_parallel` is True, then `parallel=True` is ignored when the 'can_parallel' tag is absent.
     """
 
     def __init__(
@@ -213,14 +213,14 @@ class NumbaJitter(Jitter):
 def get_func_suffix(py_func: tp.Callable) -> tp.Optional[str]:
     """Retrieve the suffix from a function's name if it corresponds to a registered jitter configuration.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+
     Args:
         py_func (Callable): Python function to decorate.
 
     Returns:
         Optional[str]: Suffix in lowercase if recognized; otherwise, None.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.jitting`.
     """
     from vectorbtpro._settings import settings
 
@@ -241,6 +241,9 @@ def resolve_jitter_type(
 ) -> tp.Type[Jitter]:
     """Resolve the jitter type based on the provided parameter.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+
     Args:
         jitter (Optional[JitterLike]): Identifier, subclass, or instance of `Jitter`.
 
@@ -254,9 +257,6 @@ def resolve_jitter_type(
 
     Returns:
         Type[Jitter]: Resolved jitter class.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.jitting`.
     """
     from vectorbtpro._settings import settings
 
@@ -297,14 +297,14 @@ def resolve_jitter_type(
 def get_id_of_jitter_type(jitter_type: tp.Type[Jitter]) -> tp.Optional[tp.Hashable]:
     """Retrieve the identifier of a jitter type from the configuration in `vectorbtpro._settings.jitting`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+
     Args:
         jitter_type (Type[Jitter]): Jitter class to look up.
 
     Returns:
         Optional[Hashable]: Identifier if found; otherwise, None.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.jitting`.
     """
     from vectorbtpro._settings import settings
 
@@ -326,6 +326,9 @@ def get_id_of_jitter_type(jitter_type: tp.Type[Jitter]) -> tp.Optional[tp.Hashab
 def resolve_jitted_option(option: tp.JittedOption = None) -> tp.KwargsLike:
     """Resolve and return keyword arguments for jitting based on the provided option.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+
     Args:
         option (JittedOption): Option to control JIT compilation.
 
@@ -336,9 +339,6 @@ def resolve_jitted_option(option: tp.JittedOption = None) -> tp.KwargsLike:
 
     Returns:
         KwargsLike: Dictionary of keyword arguments for jitting, or None if jitting is disabled.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.jitting`.
     """
     from vectorbtpro._settings import settings
 
@@ -380,6 +380,12 @@ def resolve_jitted_kwargs(option: tp.JittedOption = None, **kwargs) -> tp.Kwargs
     """Resolve keyword arguments for a jitted function by resolving an option and merging it with
     additional keyword arguments.
 
+    !!! note
+        Keys in `option` have more priority than in `kwargs`.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.jitting`.
+
     Args:
         option (JittedOption): Option to control JIT compilation.
 
@@ -388,12 +394,6 @@ def resolve_jitted_kwargs(option: tp.JittedOption = None, **kwargs) -> tp.Kwargs
 
     Returns:
         KwargsLike: Merged dictionary of keyword arguments with keys from `option` taking precedence.
-
-    !!! note
-        Keys in `option` have more priority than in `kwargs`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.jitting`.
     """
     from vectorbtpro._settings import settings
 
@@ -416,6 +416,9 @@ def resolve_jitter(
 ) -> Jitter:
     """Resolve a jitter instance.
 
+    !!! note
+        If `jitter` is already an instance of `Jitter` and there are other keyword arguments, they are discarded.
+
     Args:
         jitter (Optional[JitterLike]): Identifier, subclass, or instance of `Jitter`.
 
@@ -425,9 +428,6 @@ def resolve_jitter(
 
     Returns:
         Jitter: Jitter instance based on the resolved configuration.
-
-    !!! note
-        If `jitter` is already an instance of `Jitter` and there are other keyword arguments, they are discarded.
     """
     if not isinstance(jitter, Jitter):
         jitter_type = resolve_jitter_type(jitter=jitter, py_func=py_func)

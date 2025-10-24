@@ -3678,6 +3678,9 @@ def set_sl_info_nb(
 ) -> None:
     """Set SL (stop loss) order information in the provided record.
 
+    See:
+        `vectorbtpro.portfolio.enums.sl_info_dt`
+
     Args:
         sl_info (Record): Record containing SL order information.
 
@@ -3711,9 +3714,6 @@ def set_sl_info_nb(
 
     Returns:
         None: Function modifies the `sl_info` record in place.
-
-    See:
-        `vectorbtpro.portfolio.enums.sl_info_dt`
     """
     sl_info["init_idx"] = init_idx
     sl_info["init_price"] = init_price
@@ -3782,6 +3782,9 @@ def set_tsl_info_nb(
 ) -> None:
     """Set TSL/TTP order information.
 
+    See:
+        `vectorbtpro.portfolio.enums.tsl_info_dt`
+
     Args:
         tsl_info (Record): Record containing TSL order information.
 
@@ -3822,9 +3825,6 @@ def set_tsl_info_nb(
 
     Returns:
         None: Function modifies the `tsl_info` record in place.
-
-    See:
-        `vectorbtpro.portfolio.enums.tsl_info_dt`
     """
     tsl_info["init_idx"] = init_idx
     tsl_info["init_price"] = init_price
@@ -3896,6 +3896,9 @@ def set_tp_info_nb(
 ) -> None:
     """Set TP order information.
 
+    See:
+        `vectorbtpro.portfolio.enums.tp_info_dt`
+
     Args:
         tp_info (Record): Record containing TP order information.
 
@@ -3929,9 +3932,6 @@ def set_tp_info_nb(
 
     Returns:
         None: Function modifies the `tp_info` record in place.
-
-    See:
-        `vectorbtpro.portfolio.enums.tp_info_dt`
     """
     tp_info["init_idx"] = init_idx
     tp_info["init_price"] = init_price
@@ -3997,6 +3997,9 @@ def set_time_info_nb(
 ) -> None:
     """Set time order information.
 
+    See:
+        `vectorbtpro.portfolio.enums.time_info_dt`
+
     Args:
         time_info (Record): Record containing time-based order information.
 
@@ -4032,9 +4035,6 @@ def set_time_info_nb(
 
     Returns:
         None: Function modifies the `time_info` record in place.
-
-    See:
-        `vectorbtpro.portfolio.enums.time_info_dt`
     """
     time_info["init_idx"] = init_idx
     time_info["init_position"] = init_position

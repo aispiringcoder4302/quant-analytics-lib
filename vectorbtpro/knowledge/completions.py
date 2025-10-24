@@ -102,6 +102,10 @@ __all__ = [
 class Completions(ThoughtProcessor):
     """Abstract class for completion providers.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge` and
+        its sub-configurations `chat` and `chat.completions_config`.
+
     Args:
         context (str): Context string to be used as a user message.
         chat_history (Optional[ChatHistory]): Chat history, a list of dictionaries with defined roles.
@@ -175,10 +179,6 @@ class Completions(ThoughtProcessor):
         pbar_kwargs (Kwargs): Keyword arguments for configuring the progress bar.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.knowledge.formatting.ThoughtProcessor`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge` and
-        its sub-configurations `chat` and `chat.completions_config`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -626,6 +626,9 @@ class Completions(ThoughtProcessor):
     def get_chat_response(self, messages: tp.ChatMessages, enable_tools: bool = True, **kwargs) -> tp.Any:
         """Return a chat response based on the provided messages.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             messages (ChatMessages): List representing the conversation history.
             enable_tools (bool): Whether to enable tool usage.
@@ -633,28 +636,28 @@ class Completions(ThoughtProcessor):
 
         Returns:
             Any: Chat response generated from the provided messages.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def get_message_content(self, response: tp.Any) -> tp.Optional[str]:
         """Return the content extracted from a chat response.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             response (Any): Chat response object.
 
         Returns:
             Optional[str]: Content extracted from the chat response.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def get_stream_response(self, messages: tp.ChatMessages, enable_tools: bool = True, **kwargs) -> tp.Any:
         """Return a streaming response generated from the provided messages.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             messages (ChatMessages): List representing the conversation history.
@@ -663,23 +666,20 @@ class Completions(ThoughtProcessor):
 
         Returns:
             Any: Streaming response generated from the provided messages.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def get_delta_content(self, response_chunk: tp.Any) -> tp.Optional[str]:
         """Return the content extracted from a streaming response chunk.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             response_chunk (Any): Streaming response chunk object.
 
         Returns:
             Optional[str]: Content extracted from the streaming response chunk.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1744,6 +1744,9 @@ class OpenAICompatibleCompletions(Completions):
 class OpenAICompletions(OpenAICompatibleCompletions):
     """Completions class for OpenAI.
 
+    !!! info
+        For default settings, see `chat.completions_configs.openai` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): Identifier for the model to use.
         strict_schema (Optional[bool]): Whether to enforce strict schema validation.
@@ -1755,9 +1758,6 @@ class OpenAICompletions(OpenAICompatibleCompletions):
         completions_kwargs (KwargsLike): Keyword arguments for `openai.Completions.create`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs`,
             `responses_kwargs`, or `completions_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.openai` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "openai"
@@ -2094,6 +2094,9 @@ class OpenAICompletions(OpenAICompatibleCompletions):
 class AnthropicCompletions(Completions):
     """Completions class for Anthropic (Claude).
 
+    !!! info
+        For default settings, see `chat.completions_configs.anthropic` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): Anthropic model identifier.
         client_type (Union[None, str, type]): Anthropic client type.
@@ -2107,9 +2110,6 @@ class AnthropicCompletions(Completions):
         client_kwargs (KwargsLike): Keyword arguments for `client_type`
         messages_kwargs (KwargsLike): Keyword arguments for `anthropic.Client.messages.create`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `messages_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.anthropic` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "anthropic"
@@ -2409,14 +2409,14 @@ class AnthropicCompletions(Completions):
 class GeminiCompletions(Completions):
     """Completions class for Google GenAI (Gemini).
 
+    !!! info
+        For default settings, see `chat.completions_configs.gemini` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): Gemini model identifier.
         client_kwargs (KwargsLike): Keyword arguments for `google.genai.Client`.
         completions_kwargs (KwargsLike): Keyword arguments for `google.genai.Client.models.generate_content`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `completions_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.gemini` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "gemini"
@@ -2718,14 +2718,14 @@ class GeminiCompletions(Completions):
 class HFInferenceCompletions(OpenAICompatibleCompletions):
     """Completions class for HuggingFace Inference.
 
+    !!! info
+        For default settings, see `chat.completions_configs.hf_inference` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): HuggingFace model identifier.
         client_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient`.
         chat_completion_kwargs (KwargsLike): Keyword arguments for `huggingface_hub.InferenceClient.chat_completion`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `chat_completion_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.hf_inference` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "hf_inference"
@@ -2871,13 +2871,13 @@ class HFInferenceCompletions(OpenAICompatibleCompletions):
 class LiteLLMCompletions(OpenAICompatibleCompletions):
     """Completions class for LiteLLM.
 
+    !!! info
+        For default settings, see `chat.completions_configs.litellm` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): Identifier for the model to use.
         completion_kwargs (KwargsLike): Keyword arguments for `litellm.completion`.
         **kwargs: Keyword arguments for `Completions` or used as `completion_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.litellm` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "litellm"
@@ -2988,14 +2988,14 @@ class LlamaIndexCompletions(Completions):
     the path or its suffix to the class (case matters), or a subclass or an instance of
     `llama_index.core.llms.LLM`.
 
+    !!! info
+        For default settings, see `chat.completions_configs.llama_index` in `vectorbtpro._settings.knowledge`.
+
     Args:
         llm (Union[None, str, MaybeType[LLM]]): Identifier, class path, subclass, or instance of
             `llama_index.core.llms.LLM`.
         llm_kwargs (KwargsLike): Additional parameters for LLM initialization.
         **kwargs: Keyword arguments for `Completions` or used as `llm_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.llama_index` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "llama_index"
@@ -3232,6 +3232,9 @@ class LlamaIndexCompletions(Completions):
 class OllamaCompletions(OpenAICompatibleCompletions):
     """Completions class for Ollama.
 
+    !!! info
+        For default settings, see `chat.completions_configs.ollama` in `vectorbtpro._settings.knowledge`.
+
     Args:
         model (Optional[str]): Ollama model identifier.
 
@@ -3239,9 +3242,6 @@ class OllamaCompletions(OpenAICompatibleCompletions):
         client_kwargs (KwargsLike): Keyword arguments for `ollama.Client`.
         chat_kwargs (KwargsLike): Keyword arguments for `ollama.Client.chat`.
         **kwargs: Keyword arguments for `Completions` or used as `client_kwargs` or `chat_kwargs`.
-
-    !!! info
-        For default settings, see `chat.completions_configs.ollama` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "ollama"
@@ -3418,6 +3418,9 @@ class OllamaCompletions(OpenAICompatibleCompletions):
 def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[Completions]:
     """Resolve and return a `Completions` subclass or instance.
 
+    !!! info
+        For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
+
     Args:
         completions (CompletionsLike): Identifier, subclass, or instance of `Completions`.
 
@@ -3434,9 +3437,6 @@ def resolve_completions(completions: tp.CompletionsLike = None) -> tp.MaybeType[
 
     Returns:
         Completions: Resolved completions class or instance.
-
-    !!! info
-        For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
     """
     if completions is None:
         from vectorbtpro._settings import settings

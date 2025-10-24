@@ -85,6 +85,9 @@ class _RSI(RSI):
     ) -> tp.BaseFigure:
         """Plot the `RSI.rsi` output of the RSI indicator.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             limits (Tuple[float, float]): Tuple representing the lower and upper boundaries for the RSI plot.
@@ -98,9 +101,6 @@ class _RSI(RSI):
         Returns:
             BaseFigure: Figure object containing the RSI line plot and
                 the shaded area between the specified limits.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

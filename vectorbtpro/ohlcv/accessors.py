@@ -130,14 +130,14 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
     Accessible via `pd.DataFrame.vbt.ohlcv`.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.ohlcv`.
+
     Args:
         wrapper (Union[ArrayWrapper, ArrayLike]): Array wrapper instance or array-like object.
         obj (Optional[ArrayLike]): Underlying data object.
         feature_map (KwargsLike): Dictionary mapping feature names to OHLCV components.
         **kwargs: Keyword arguments for `vectorbtpro.generic.accessors.GenericDFAccessor`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.ohlcv`.
     """
 
     def __init__(
@@ -234,6 +234,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         Applies a mirror transformation to the OHLC columns ("Open", "High", "Low", "Close")
         using the specified starting value and reference feature.
 
+        See:
+            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -248,9 +251,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Returns:
             Frame: DataFrame with mirrored OHLC features.
-
-        See:
-            `vectorbtpro.ohlcv.nb.mirror_ohlc_nb`
         """
         if isinstance(ref_feature, str):
             ref_feature = map_enum_fields(ref_feature, enums.PriceFeature)
@@ -479,6 +479,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
     ) -> tp.BaseFigure:
         """Plot OHLC data.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.ohlcv` and `vectorbtpro._settings.plotting`.
+
         Args:
             ohlc_type (Union[None, str, BaseTraceType]): Specifies the OHLC plot type.
 
@@ -491,9 +494,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Returns:
             BaseFigure: Updated figure containing the OHLC plot.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.ohlcv` and `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
@@ -566,6 +566,9 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
     ) -> tp.BaseFigure:
         """Plot volume data.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Bar`.
             add_trace_kwargs (KwargsLike): Keyword arguments for `fig.add_trace` for each trace;
@@ -575,9 +578,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
 
         Returns:
             BaseFigure: Updated figure with the volume bar plot.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
         """
         from vectorbtpro.utils.module_ import assert_can_import
 

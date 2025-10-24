@@ -57,17 +57,17 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         select_method.__doc__ = inspect.cleandoc(
             f"""
             Select a feature or symbol from the attribute `{cls.__name__}.{target_name}`.
-            
-            Args:
-                key (Key): Feature or symbol identifier.
-                **kwargs: Keyword arguments for selection.
-                
-            Returns:
-                Any: Selected feature or symbol.
-            
+
             !!! note
                 If the attribute name ends with "_kwargs", selection is performed using 
                 `{cls.__name__}.select_key_kwargs`, otherwise `{cls.__name__}.select_key_from_dict` is used.
+
+            Args:
+                key (Key): Feature or symbol identifier.
+                **kwargs: Keyword arguments for selection.
+
+            Returns:
+                Any: Selected feature or symbol.
             """
         )
         setattr(cls, select_method.__name__, select_method)
@@ -98,11 +98,11 @@ def attach_symbol_dict_methods(cls: tp.Type[tp.T]) -> tp.Type[tp.T]:
         update_method.__doc__ = inspect.cleandoc(
             f"""
             Update the attribute `{cls.__name__}.{target_name}` by merging provided updates and return a new instance.
-            
+
             Args:
                 check_dict_type (bool): Flag indicating whether to validate the type of provided updates.
                 **kwargs: Keyword arguments representing update values for each symbol key.
-            
+
             Returns:
                 {cls.__name__}: New instance with the updated attribute.
             """

@@ -366,6 +366,9 @@ def get_entry_trades_nb(
 
     Entry trade records are defined as buy orders in a long position and sell orders in a short position.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         order_records (RecordArray): Array of order records.
 
@@ -394,13 +397,10 @@ def get_entry_trades_nb(
 
             Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
 
-    !!! tip
-        This function is parallelizable.
-
     Examples:
         ```pycon
         >>> from vectorbtpro import *
-    
+
         >>> close = order_price = np.array([
         ...     [1, 6],
         ...     [2, 5],
@@ -420,7 +420,7 @@ def get_entry_trades_nb(
         >>> target_shape = close.shape
         >>> group_lens = np.full(target_shape[1], 1)
         >>> init_cash = np.full(target_shape[1], 100)
-    
+
         >>> sim_out = vbt.pf_nb.from_orders_nb(
         ...     target_shape,
         ...     group_lens,
@@ -430,7 +430,7 @@ def get_entry_trades_nb(
         ...     fees=np.asarray([[0.01]]),
         ...     slippage=np.asarray([[0.01]])
         ... )
-    
+
         >>> col_map = vbt.rec_nb.col_map_nb(sim_out.order_records['col'], target_shape[1])
         >>> entry_trade_records = vbt.pf_nb.get_entry_trades_nb(sim_out.order_records, close, col_map)
         >>> pd.DataFrame.from_records(entry_trade_records)
@@ -443,7 +443,7 @@ def get_entry_trades_nb(
         5   1    1   0.1               1          1         4.95     0.00495
         6   2    1   1.0               4          4         1.98     0.01980
         7   3    1   1.0               5          5         1.01     0.01010
-    
+
            exit_order_id  exit_idx  exit_price  exit_fees       pnl    return  \\
         0              3         3    3.060000   0.030600  2.009300  1.989406
         1              3         3    3.060000   0.003060  0.098920  0.489703
@@ -453,7 +453,7 @@ def get_entry_trades_nb(
         5              3         3    3.948182   0.003948  0.091284  0.184411
         6              5         5    1.010000   0.010100  0.940100  0.474798
         7             -1         5    1.000000   0.000000 -0.020100 -0.019901
-    
+
            direction  status  parent_id
         0          0       1          0
         1          0       1          0
@@ -715,6 +715,9 @@ def get_exit_trades_nb(
 
     Exit trade records correspond to sell orders in a long position and buy orders in a short position.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         order_records (RecordArray): Array of order records.
 
@@ -740,9 +743,6 @@ def get_exit_trades_nb(
         RecordArray: Array of aggregated exit trade records.
 
             Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
 
     Examples:
         Building upon the example in `get_exit_trades_nb`:
@@ -1119,6 +1119,9 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
     Trades—whether entry trades, exit trades, or positions—are processed uniformly to calculate
     aggregated metrics such as size, weighted entry and exit prices, fees, profit, and return.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -1129,9 +1132,6 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
         RecordArray: Array of aggregated position records after repartitioning based on column counts.
 
             Has the `vectorbtpro.portfolio.enums.trade_dt` dtype.
-
-    !!! tip
-        This function is parallelizable.
 
     Examples:
         Building upon the example in `get_exit_trades_nb`:
@@ -1234,6 +1234,9 @@ def get_long_view_orders_nb(
 ) -> tp.RecordArray:
     """Return a view of order records corresponding to long positions only.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         order_records (RecordArray): Array of order records.
 
@@ -1255,9 +1258,6 @@ def get_long_view_orders_nb(
 
     Returns:
         RecordArray: Filtered order records containing only long position entries.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
@@ -1416,6 +1416,9 @@ def get_short_view_orders_nb(
     The function simulates the evolution of trading positions for each column using the provided
     initial position and price, and applies simulation range filters defined by `sim_start` and `sim_end`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         order_records (RecordArray): Array of order records.
 
@@ -1437,9 +1440,6 @@ def get_short_view_orders_nb(
 
     Returns:
         RecordArray: Filtered order records corresponding to short positions.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
@@ -1604,6 +1604,9 @@ def get_position_feature_nb(
     and close prices across multiple columns. The calculation adapts based on the selected
     `feature` and the flags controlling the treatment of open and closed positions.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         order_records (RecordArray): Array of order records.
 
@@ -1632,9 +1635,6 @@ def get_position_feature_nb(
 
     Returns:
         Array2d: Array of computed feature values matching the shape of `close`.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_position_ = to_1d_array_nb(np.asarray(init_position))
     init_price_ = to_1d_array_nb(np.asarray(init_price))
@@ -2151,6 +2151,9 @@ def best_price_nb(
 ) -> tp.Array1d:
     """Compute the best price for each trade using `trade_best_worst_price_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2165,9 +2168,6 @@ def best_price_nb(
 
     Returns:
         Array1d: Array of best prices computed for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(len(trade_records), dtype=float_)
     for r in prange(len(trade_records)):
@@ -2212,6 +2212,9 @@ def worst_price_nb(
 ) -> tp.Array1d:
     """Compute the worst price for each trade using `trade_best_worst_price_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2226,9 +2229,6 @@ def worst_price_nb(
 
     Returns:
         Array1d: Array of worst prices computed for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(len(trade_records), dtype=float_)
     for r in prange(len(trade_records)):
@@ -2275,6 +2275,9 @@ def best_price_idx_nb(
 ) -> tp.Array1d:
     """Compute the index of the best price for each trade using `trade_best_worst_price_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2290,9 +2293,6 @@ def best_price_idx_nb(
 
     Returns:
         Array1d: Array of indices corresponding to the best prices for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(len(trade_records), dtype=float_)
     for r in prange(len(trade_records)):
@@ -2340,6 +2340,9 @@ def worst_price_idx_nb(
 ) -> tp.Array1d:
     """Return worst price index for each trade by applying `trade_best_worst_price_nb` on each trade.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2355,9 +2358,6 @@ def worst_price_idx_nb(
 
     Returns:
         Array1d: Array of worst price indexes for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(len(trade_records), dtype=float_)
     for r in prange(len(trade_records)):
@@ -2392,6 +2392,9 @@ def expanding_best_price_nb(
     Calculates a 2D array where each column corresponds to a trade and each row represents
     the best price reached up to that time index, starting from the trade's entry.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2407,9 +2410,6 @@ def expanding_best_price_nb(
     Returns:
         Array2d: 2D array where each column represents a trade and each row contains
             the best price up to that time index.
-
-    !!! tip
-        This function is parallelizable.
     """
     if max_duration is None:
         _max_duration = 0
@@ -2470,6 +2470,9 @@ def expanding_worst_price_nb(
     Calculates a 2D array where each column corresponds to a trade and each row represents
     the worst price reached up to that time index, starting from the trade's entry.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2485,9 +2488,6 @@ def expanding_worst_price_nb(
     Returns:
         Array2d: 2D array where each column represents a trade and each row contains
             the worst price up to that time index.
-
-    !!! tip
-        This function is parallelizable.
     """
     if max_duration is None:
         _max_duration = 0
@@ -2588,6 +2588,9 @@ def mfe_nb(
 
     Iterates over the provided arrays and computes the MFE for each trade using the `trade_mfe_nb` function.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         size (Array1d): Array of trade sizes.
         direction (Array1d): Array of trade direction indicators.
@@ -2597,9 +2600,6 @@ def mfe_nb(
 
     Returns:
         Array1d: Array containing the MFE values for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(size.shape[0], dtype=float_)
     for r in prange(size.shape[0]):
@@ -2669,6 +2669,9 @@ def mae_nb(
 
     Iterates over the provided arrays and computes the MAE for each trade using the `trade_mae_nb` function.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         size (Array1d): Array of trade sizes.
         direction (Array1d): Array of trade direction indicators.
@@ -2678,9 +2681,6 @@ def mae_nb(
 
     Returns:
         Array1d: Array containing the MAE values for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty(size.shape[0], dtype=float_)
     for r in prange(size.shape[0]):
@@ -2711,6 +2711,9 @@ def expanding_mfe_nb(
 ) -> tp.Array2d:
     """Get expanding maximum favorable excursion (MFE) for each trade using expanding best prices.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2720,9 +2723,6 @@ def expanding_mfe_nb(
 
     Returns:
         Array2d: 2D array of expanding MFE values for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(expanding_best_price, dtype=float_)
     for r in prange(expanding_best_price.shape[1]):
@@ -2754,6 +2754,9 @@ def expanding_mae_nb(
 ) -> tp.Array2d:
     """Get expanding maximum adverse excursion (MAE) for each trade using expanding worst prices.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2763,9 +2766,6 @@ def expanding_mae_nb(
 
     Returns:
         Array2d: 2D array of expanding MAE values for each trade.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty_like(expanding_worst_price, dtype=float_)
     for r in prange(expanding_worst_price.shape[1]):
@@ -2811,6 +2811,9 @@ def edge_ratio_nb(
 ) -> tp.Array1d:
     """Get the edge ratio for each column based on normalized trade outcomes.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2828,9 +2831,6 @@ def edge_ratio_nb(
     Returns:
         Array1d: 1D array containing the edge ratio for each column, computed as the ratio of
             the mean normalized MFE to the mean normalized MAE.
-
-    !!! tip
-        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
@@ -2926,6 +2926,9 @@ def running_edge_ratio_nb(
     excursion (MAE) for trades associated with each column. Normalization is performed using
     the provided volatility array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         trade_records (RecordArray): Array of trade records.
 
@@ -2945,9 +2948,6 @@ def running_edge_ratio_nb(
 
     Returns:
         Array2d: 2D array with shape (max_duration, number of columns) containing the running edge ratio.
-
-    !!! tip
-        This function is parallelizable.
     """
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens

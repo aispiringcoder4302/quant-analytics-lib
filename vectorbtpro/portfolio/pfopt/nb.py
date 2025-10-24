@@ -89,6 +89,9 @@ def optimize_meta_nb(
 
     Apply the provided optimization function to each range defined by `range_starts` and `range_ends`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         n_cols (int): Number of columns for the output allocation.
         range_starts (Array1d): Array of starting indices for each range.
@@ -100,9 +103,6 @@ def optimize_meta_nb(
 
     Returns:
         Array2d: 2D array where each row contains the optimized allocation for a range.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty((range_starts.shape[0], n_cols), dtype=float_)
     for i in prange(len(range_starts)):
@@ -131,6 +131,9 @@ def allocate_meta_nb(
 
     Apply the provided allocation function to each index point in `index_points`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         n_cols (int): Number of columns for the allocation.
         index_points (Array1d): Array of index points for allocation.
@@ -141,9 +144,6 @@ def allocate_meta_nb(
 
     Returns:
         Array2d: 2D array where each row represents the allocation for an index point.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.empty((index_points.shape[0], n_cols), dtype=float_)
     for i in prange(len(index_points)):

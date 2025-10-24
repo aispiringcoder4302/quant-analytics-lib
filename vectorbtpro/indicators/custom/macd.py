@@ -126,6 +126,9 @@ class _MACD(MACD):
     ) -> tp.BaseFigure:
         """Plot the `MACD.macd`, `MACD.signal`, and `MACD.hist` values of the indicator.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             macd_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MACD.macd`.
@@ -138,9 +141,6 @@ class _MACD(MACD):
 
         Returns:
             BaseFigure: Updated figure with the MACD indicator plots.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

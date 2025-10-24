@@ -60,11 +60,11 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
     def unwrapped(self) -> tp.Any:
         """Underlying unwrapped object.
 
-        Returns:
-            Any: Unwrapped object.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            Any: Unwrapped object.
         """
         raise NotImplementedError
 
@@ -80,11 +80,11 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
     def wrapper(self) -> "ArrayWrapper":
         """Underlying array wrapper of type `ArrayWrapper` used for data manipulation.
 
-        Returns:
-            ArrayWrapper: Array wrapper instance.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            ArrayWrapper: Array wrapper instance.
         """
         raise NotImplementedError
 
@@ -92,11 +92,11 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
     def column_only_select(self) -> bool:
         """Indicates whether indexing is restricted to columns.
 
-        Returns:
-            bool: True if indexing is limited to columns, False otherwise.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            bool: True if indexing is limited to columns, False otherwise.
         """
         raise NotImplementedError
 
@@ -104,11 +104,11 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
     def range_only_select(self) -> bool:
         """Indicates whether row indexing should be performed using slices only.
 
-        Returns:
-            bool: True if row indexing is limited to slices, False otherwise.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            bool: True if row indexing is limited to slices, False otherwise.
         """
         raise NotImplementedError
 
@@ -116,16 +116,19 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
     def group_select(self) -> bool:
         """Indicates whether indexing operations can be performed on groups.
 
-        Returns:
-            bool: True if indexing operations can be performed on groups, False otherwise.
-
         !!! abstract
             This property should be overridden in a subclass.
+
+        Returns:
+            bool: True if indexing operations can be performed on groups, False otherwise.
         """
         raise NotImplementedError
 
     def regroup(self: HasWrapperT, group_by: tp.GroupByLike, **kwargs) -> HasWrapperT:
         """Regroup the instance based on the specified grouping criterion.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             group_by (GroupByLike): Grouping specification.
@@ -135,9 +138,6 @@ class HasWrapper(ExtPandasIndexer, ItemParamable):
 
         Returns:
             HasWrapper: Regrouped instance.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -607,6 +607,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
     If the underlying object is a Series, pass `[sr.name]` as `columns`.
 
+    !!! note
+        This class is immutable. To modify attributes, use `ArrayWrapper.replace`.
+
+        Use methods starting with `get_` for group-aware results.
+
     Args:
         index (IndexLike): Index to be associated with the array.
 
@@ -626,11 +631,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         grouper (Optional[Grouper]): `vectorbtpro.base.grouping.base.Grouper` instance for grouping columns.
         **kwargs: Keyword arguments for `vectorbtpro.base.grouping.base.Grouper`
             and `vectorbtpro.utils.config.Configured`.
-
-    !!! note
-        This class is immutable. To modify attributes, use `ArrayWrapper.replace`.
-
-        Use methods starting with `get_` for group-aware results.
     """
 
     def __init__(
@@ -1200,6 +1200,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         selection to slices. If `group_select` is True and grouping is enabled, selection is
         performed based on groups; otherwise, indexing is applied to columns.
 
+        !!! note
+            If `column_only_select` is True, ensure that the array wrapper is indexed as a Series
+            of columns rather than a DataFrame. For example, use `.iloc[:2]` instead of `.iloc[:, :2]`.
+            Operations are not allowed if the instance already contains a single column/group.
+
         Args:
             pd_indexing_func (PandasIndexingFunc): Function to perform Pandas-style indexing.
             index (Optional[IndexLike]): Index for selecting rows.
@@ -1225,11 +1230,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 * `columns_changed`: Boolean indicating whether the column axis was changed in any way.
                 * `group_idxs`: Selected group indices, or the same as column indices if grouping is disabled.
                 * `groups_changed`: Boolean indicating whether the group axis was changed in any way.
-
-        !!! note
-            If `column_only_select` is True, ensure that the array wrapper is indexed as a Series
-            of columns rather than a DataFrame. For example, use `.iloc[:2]` instead of `.iloc[:, :2]`.
-            Operations are not allowed if the instance already contains a single column/group.
         """
         if column_only_select is None:
             column_only_select = self.column_only_select
@@ -1928,6 +1928,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     def resolve(self: ArrayWrapperT, group_by: tp.GroupByLike = None, **kwargs) -> ArrayWrapperT:
         """Resolve the instance by regrouping and updating metadata.
 
+        !!! note
+            If the grouper indicates a valid grouping, replaces the instance's columns and
+            related attributes with the grouped configuration. Returns the updated instance
+            while preserving cache integrity.
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -1936,11 +1941,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Returns:
             ArrayWrapper: Resolved `ArrayWrapper` instance.
-
-        !!! note
-            If the grouper indicates a valid grouping, replaces the instance's columns and
-            related attributes with the grouped configuration. Returns the updated instance
-            while preserving cache integrity.
         """
         _self = self.regroup(group_by=group_by, **kwargs)
         if _self.grouper.is_grouped():
@@ -1995,6 +1995,9 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         * Optionally map output values to the original index.
         * Optionally convert data to timedelta using `ArrayWrapper.arr_to_timedelta`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
+
         Args:
             arr (ArrayLike): Array to be wrapped.
             group_by (GroupByLike): Grouping specification.
@@ -2022,9 +2025,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Returns:
             SeriesFrame: Wrapped Pandas Series or DataFrame with applied metadata.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.wrapping`.
         """
         from vectorbtpro._settings import settings
 
@@ -2130,6 +2130,12 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
     ) -> tp.MaybeSeriesFrame:
         """Wrap the result of a reduction operation.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.wrapping`.
+
+        !!! info
+            See `ArrayWrapper.wrap` for details on the wrapping pipeline.
+
         Args:
             arr (ArrayLike): Input array to be wrapped.
             group_by (GroupByLike): Grouping specification.
@@ -2146,12 +2152,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         Returns:
             MaybeSeriesFrame: Wrapped Series or DataFrame resulting from the reduction operation.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.wrapping`.
-
-        !!! info
-            See `ArrayWrapper.wrap` for details on the wrapping pipeline.
         """
         from vectorbtpro._settings import settings
 
@@ -2852,15 +2852,15 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
     def resolve_stack_kwargs(cls, *wrappings: tp.MaybeSequence[WrappingT], **kwargs) -> tp.Kwargs:
         """Resolve keyword arguments for initializing `Wrapping` after stacking.
 
+        !!! note
+            Should be called after `Wrapping.resolve_row_stack_kwargs` or `Wrapping.resolve_column_stack_kwargs`.
+
         Args:
             *wrappings (MaybeSequence[Wrapping]): Wrapping instances to be stacked.
             **kwargs: Keyword arguments for `Wrapping.resolve_merge_kwargs`.
 
         Returns:
             Kwargs: Resolved keyword arguments.
-
-        !!! note
-            Should be called after `Wrapping.resolve_row_stack_kwargs` or `Wrapping.resolve_column_stack_kwargs`.
         """
         return cls.resolve_merge_kwargs(*[wrapping.config for wrapping in wrappings], **kwargs)
 
@@ -2873,6 +2873,12 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
     ) -> WrappingT:
         """Stack multiple `Wrapping` instances along rows.
 
+        !!! note
+            Should use `ArrayWrapper.row_stack` for stacking.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             *objs (MaybeSequence[Wrapping]): Wrapping instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
@@ -2882,12 +2888,6 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
         Returns:
             Wrapping: New wrapping instance resulting from stacking.
-
-        !!! note
-            Should use `ArrayWrapper.row_stack` for stacking.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -2900,6 +2900,12 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
     ) -> WrappingT:
         """Stack multiple `Wrapping` instances along columns.
 
+        !!! note
+            Should use `ArrayWrapper.column_stack` for stacking.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             *objs (MaybeSequence[Wrapping]): Wrapping instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
@@ -2909,12 +2915,6 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
 
         Returns:
             Wrapping: New wrapping instance resulting from stacking.
-
-        !!! note
-            Should use `ArrayWrapper.column_stack` for stacking.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -2940,18 +2940,18 @@ class Wrapping(Configured, HasWrapper, IndexApplier, AttrResolverMixin):
     def resample(self: WrappingT, *args, **kwargs) -> WrappingT:
         """Perform resampling on `Wrapping`.
 
+        !!! note
+            When overriding, pass `*args` and `**kwargs` to `ArrayWrapper.get_resampler` to create a resampler.
+
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             *args: Additional positional arguments.
             **kwargs: Additional keyword arguments.
 
         Returns:
             Wrapping: New wrapping instance resulting from resampling.
-
-        !!! note
-            When overriding, pass `*args` and `**kwargs` to `ArrayWrapper.get_resampler` to create a resampler.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

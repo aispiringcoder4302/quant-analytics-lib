@@ -127,6 +127,9 @@ class _OLS(OLS):
     ) -> tp.BaseFigure:
         """Plot the `OLS.pred` and (optionally) `OLS.y` values.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_y (bool): Whether to plot `OLS.y`.
@@ -139,9 +142,6 @@ class _OLS(OLS):
 
         Returns:
             BaseFigure: Figure with plotted OLS predictions and actual values.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -201,6 +201,9 @@ class _OLS(OLS):
     ) -> tp.BaseFigure:
         """Plot the `OLS.zscore` values with confidence intervals.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             alpha (float): Alpha level for the confidence interval.
@@ -215,9 +218,6 @@ class _OLS(OLS):
 
         Returns:
             BaseFigure: Figure with plotted OLS z-score and confidence intervals.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

@@ -125,22 +125,22 @@ class StoreDocument(StoreData, DefineMixin):
     def get_content(self, for_embed: bool = False) -> tp.Optional[str]:
         """Return the document content.
 
-        Returns:
-            Optional[str]: Content if available, otherwise None.
-
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            Optional[str]: Content if available, otherwise None.
         """
         raise NotImplementedError
 
     def split(self: StoreDocumentT) -> tp.List[StoreDocumentT]:
         """Return a list of document instances resulting from splitting the current document.
 
-        Returns:
-            List[StoreDocument]: List of document chunks.
-
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            List[StoreDocument]: List of document chunks.
         """
         raise NotImplementedError
 
@@ -177,7 +177,7 @@ class TextDocument(StoreDocument, DefineMixin):
 
     excl_metadata: tp.Union[bool, tp.MaybeList[tp.PathLikeKey]] = define.field(default=False)
     """Indicates whether to exclude metadata or specify fields to exclude. 
-    
+
     If False, metadata includes all fields except text.
     """
 
@@ -367,15 +367,15 @@ class MetaObjectStore(type(Configured), type(MutableMapping)):
 class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
     """Class for managing an object store.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge` and
+        its sub-configurations `chat` and `chat.obj_store_config`.
+
     Args:
         store_id (Optional[str]): Identifier for the store.
         purge_on_open (Optional[bool]): Indicates if the store should be purged upon opening.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge` and
-        its sub-configurations `chat` and `chat.obj_store_config`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = None
@@ -514,19 +514,22 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
     def __getitem__(self, id_: str) -> StoreObjectT:
         """Retrieve an object from the store using its identifier.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             id_ (str): Identifier of the object to retrieve.
 
         Returns:
             StoreObject: Object associated with the given identifier.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def __setitem__(self, id_: str, obj: StoreObjectT) -> None:
         """Store an object in the store using its identifier.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             id_ (str): Identifier for the object to store.
@@ -534,45 +537,42 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def __delitem__(self, id_: str) -> None:
         """Delete an object from the store using its identifier.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             id_ (str): Identifier of the object to delete.
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def __iter__(self) -> tp.Iterator[str]:
         """Return an iterator over the identifiers of the objects in the store.
 
-        Returns:
-            Iterator[str]: Iterator over the identifiers of the objects in the store.
-
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            Iterator[str]: Iterator over the identifiers of the objects in the store.
         """
         raise NotImplementedError
 
     def __len__(self) -> int:
         """Return the number of objects in the store.
 
-        Returns:
-            int: Number of objects in the store.
-
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            int: Number of objects in the store.
         """
         raise NotImplementedError
 
@@ -594,11 +594,11 @@ class ObjectStore(Configured, MutableMapping, metaclass=MetaObjectStore):
 class DictStore(ObjectStore):
     """Store class based on a dictionary that holds objects in memory.
 
-    Args:
-        **kwargs: Keyword arguments for `ObjectStore`.
-
     !!! info
         For default settings, see `chat.obj_store_configs.dict` in `vectorbtpro._settings.knowledge`.
+
+    Args:
+        **kwargs: Keyword arguments for `ObjectStore`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "dict"
@@ -651,11 +651,11 @@ memory_store: tp.Dict[str, tp.Dict[str, StoreObjectT]] = {}
 class MemoryStore(DictStore):
     """Store class for in-memory object storage that commits changes to `memory_store`.
 
-    Args:
-        **kwargs: Keyword arguments for `DictStore`.
-
     !!! info
         For default settings, see `chat.obj_store_configs.memory` in `vectorbtpro._settings.knowledge`.
+
+    Args:
+        **kwargs: Keyword arguments for `DictStore`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "memory"
@@ -699,6 +699,9 @@ class FileStore(DictStore):
     (with the file name corresponding to the index id) or applies an initial commit to a base
     file and subsequent modifications as patch files (with the directory name serving as the index id).
 
+    !!! info
+        For default settings, see `chat.obj_store_configs.file` in `vectorbtpro._settings.knowledge`.
+
     Args:
         dir_path (Optional[PathLike]): Directory path used for file storage.
         compression (CompressionLike): Compression algorithm.
@@ -713,9 +716,6 @@ class FileStore(DictStore):
         use_patching (Optional[bool]): Whether patch files are used instead of a single file.
         consolidate (Optional[bool]): Whether patch files should be consolidated.
         **kwargs: Keyword arguments for `DictStore`.
-
-    !!! info
-        For default settings, see `chat.obj_store_configs.file` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "file"
@@ -1005,6 +1005,9 @@ class FileStore(DictStore):
 class LMDBStore(ObjectStore):
     """Store class based on LMDB (Lightning Memory-Mapped Database) using the `lmdbm` package.
 
+    !!! info
+        For default settings, see `chat.obj_store_configs.lmdb` in `vectorbtpro._settings.knowledge`.
+
     Args:
         dir_path (Optional[PathLike]): Directory path used for the LMDB store.
         mkdir_kwargs (KwargsLike): Keyword arguments for directory creation.
@@ -1018,9 +1021,6 @@ class LMDBStore(ObjectStore):
             See `vectorbtpro.utils.pickling.loads`.
         open_kwargs (KwargsLike): Keyword arguments used when opening the LMDB database via `Lmdb.open`.
         **kwargs: Keyword arguments for `ObjectStore`.
-
-    !!! info
-        For default settings, see `chat.obj_store_configs.lmdb` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "lmdb"
@@ -1244,14 +1244,14 @@ class LMDBStore(ObjectStore):
 class CachedStore(DictStore):
     """Store class acting as a temporary cache for another store.
 
+    !!! info
+        For default settings, see `chat.obj_store_configs.cached` in `vectorbtpro._settings.knowledge`.
+
     Args:
         obj_store (ObjectStore): Underlying object store to cache.
         lazy_open (Optional[bool]): Flag indicating whether to open the store lazily.
         mirror (Optional[bool]): Flag indicating whether to mirror the store in `memory_store`.
         **kwargs: Keyword arguments for `DictStore`.
-
-    !!! info
-        For default settings, see `chat.obj_store_configs.cached` in `vectorbtpro._settings.knowledge`.
     """
 
     _short_name: tp.ClassVar[tp.Optional[str]] = "cached"
@@ -1383,6 +1383,9 @@ class CachedStore(DictStore):
 def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[ObjectStore]:
     """Resolve a subclass or an instance of `ObjectStore`.
 
+    !!! info
+        For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
+
     Args:
         obj_store (ObjectStoreLike): Identifier, subclass, or instance of `ObjectStore`.
 
@@ -1396,9 +1399,6 @@ def resolve_obj_store(obj_store: tp.ObjectStoreLike = None) -> tp.MaybeType[Obje
 
     Returns:
         ObjectStore: Resolved object store.
-
-    !!! info
-        For default settings, see `chat` in `vectorbtpro._settings.knowledge`.
     """
     if obj_store is None:
         from vectorbtpro._settings import settings

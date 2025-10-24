@@ -129,6 +129,9 @@ class TraceUpdater(Base):
     def update_trace(cls, trace: BaseTraceType, data: tp.ArrayLike, *args, **kwargs) -> None:
         """Update a single Plotly trace with new data.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             trace (BaseTraceType): Plotly trace to update.
             data (ArrayLike): New data for the trace.
@@ -137,14 +140,14 @@ class TraceUpdater(Base):
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
     def update(self, *args, **kwargs) -> None:
         """Update all Plotly traces with new data.
+
+        !!! abstract
+            This method should be overridden in a subclass.
 
         Args:
             *args: Additional positional arguments.
@@ -152,15 +155,15 @@ class TraceUpdater(Base):
 
         Returns:
             None
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
 
 class Gauge(TraceType, TraceUpdater):
     """Class for creating a gauge plot.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
 
     Args:
         value (Optional[float]): Value to display on the gauge.
@@ -177,9 +180,6 @@ class Gauge(TraceType, TraceUpdater):
             See `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon
@@ -466,6 +466,9 @@ class Bar(TraceType, TraceUpdater):
 class Scatter(TraceType, TraceUpdater):
     """Class for creating a scatter plot.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
@@ -486,9 +489,6 @@ class Scatter(TraceType, TraceUpdater):
             Defaults to the global setting. If the global configuration is None and the data has
             more than 10,000 points, this flag is set to True.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon
@@ -1099,6 +1099,9 @@ class Box(TraceType, TraceUpdater):
 class Heatmap(TraceType, TraceUpdater):
     """Class for creating a heatmap plot.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
@@ -1115,9 +1118,6 @@ class Heatmap(TraceType, TraceUpdater):
             See `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon
@@ -1257,6 +1257,12 @@ class Heatmap(TraceType, TraceUpdater):
 class Volume(TraceType, TraceUpdater):
     """Class for creating a volume plot.
 
+    !!! note
+        Figure widgets currently have issues displaying NaNs. Use the `.show()` method for rendering.
+
+    !!! info
+        For default settings, see `vectorbtpro._settings.plotting`.
+
     Args:
         data (Optional[ArrayLike]): Data convertible to a NumPy array.
 
@@ -1273,12 +1279,6 @@ class Volume(TraceType, TraceUpdater):
             See `vectorbtpro.utils.figure.make_figure`.
         fig (Optional[BaseFigure]): Figure to update; if None, a new figure is created.
         **layout_kwargs: Keyword arguments for `fig.update_layout`.
-
-    !!! note
-        Figure widgets currently have issues displaying NaNs. Use the `.show()` method for rendering.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.plotting`.
 
     Examples:
         ```pycon

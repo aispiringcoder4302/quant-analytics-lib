@@ -90,6 +90,10 @@ class FallbackError(Exception):
 class DocumentRanker(Configured):
     """Class for embedding, scoring, and ranking documents.
 
+    !!! info
+        For default settings, see `vectorbtpro._settings.knowledge` and
+        its sub-configurations `chat` and `chat.doc_ranker_config`.
+
     Args:
         dataset_id (Optional[str]): Identifier for the dataset.
         embeddings (EmbeddingsLike): Identifier, subclass, or instance of `vectorbtpro.knowledge.embeddings.Embeddings`.
@@ -143,10 +147,6 @@ class DocumentRanker(Configured):
             See `vectorbtpro.utils.pbar.ProgressBar`.
         template_context (KwargsLike): Additional context for template substitution.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! info
-        For default settings, see `vectorbtpro._settings.knowledge` and
-        its sub-configurations `chat` and `chat.doc_ranker_config`.
     """
 
     _settings_path: tp.SettingsPath = ["knowledge", "knowledge.chat", "knowledge.chat.doc_ranker_config"]
@@ -1651,6 +1651,9 @@ class Rankable(HasSettings):
     ) -> tp.Optional[RankableT]:
         """Embed the instance's documents.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             refresh (bool): Flag to refresh both documents and embeddings.
             refresh_documents (Optional[bool]): Flag to refresh documents; defaults to `refresh`.
@@ -1661,9 +1664,6 @@ class Rankable(HasSettings):
 
         Returns:
             Optional[Rankable]: Updated instance with embedded documents, if available.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1683,6 +1683,9 @@ class Rankable(HasSettings):
     ) -> RankableT:
         """Rank documents based on their relevance to a provided query.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             query (str): Query string to evaluate document relevance.
             top_k (TopKLike): Number or percentage of top documents to return, or a method to determine it.
@@ -1698,9 +1701,6 @@ class Rankable(HasSettings):
 
         Returns:
             Rankable: Updated instance with ranked documents.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1717,15 +1717,15 @@ class Contextable(HasSettings):
     def to_context(self, *args, **kwargs) -> str:
         """Convert the instance into a textual context.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             *args: Additional positional arguments.
             **kwargs: Additional keyword arguments.
 
         Returns:
             str: Textual context representation.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 
@@ -1736,6 +1736,7 @@ class Contextable(HasSettings):
         tokenizer_kwargs: tp.KwargsLike = None,
     ) -> int:
         """Count the number of tokens in the generated context.
+        tokenizer_kwargs (KwargsLike): Keyword arguments to initialize or update `tokenizer`.
 
         Args:
             to_context_kwargs (KwargsLike): Keyword arguments for `Contextable.to_context`.
@@ -1743,7 +1744,6 @@ class Contextable(HasSettings):
                 `vectorbtpro.knowledge.tokenization.Tokenizer`.
 
                 Resolved using `vectorbtpro.knowledge.tokenization.resolve_tokenizer`.
-        tokenizer_kwargs (KwargsLike): Keyword arguments to initialize or update `tokenizer`.
 
         Returns:
             int: Number of tokens in the context.
@@ -1811,6 +1811,10 @@ class Contextable(HasSettings):
     ) -> tp.MaybeChatOutput:
         """Chat with a language model using the instance as context.
 
+        !!! note
+            Context is recalculated each time this method is invoked. For multiple turns,
+            it's more efficient to use `Contextable.create_chat`.
+
         Args:
             message (str): Message to send to the language model.
             chat_history (Optional[ChatHistory]): Chat history, a list of dictionaries with defined roles.
@@ -1819,10 +1823,6 @@ class Contextable(HasSettings):
 
         Returns:
             MaybeChatOutput: Completion response or a tuple of the response and the chat instance.
-
-        !!! note
-            Context is recalculated each time this method is invoked. For multiple turns,
-            it's more efficient to use `Contextable.create_chat`.
 
         Examples:
             ```pycon

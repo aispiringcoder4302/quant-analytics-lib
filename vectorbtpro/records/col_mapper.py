@@ -70,6 +70,9 @@ class ColumnMapper(Wrapping):
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.row_stack` to stack the wrappers.
 
+        !!! note
+            Will produce a column-sorted array.
+
         Args:
             *objs (MaybeSequence[ColumnMapper]): (Additional) `ColumnMapper` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
@@ -80,9 +83,6 @@ class ColumnMapper(Wrapping):
 
         Returns:
             ColumnMapper: New column mapper instance with row-stacked wrappers and updated column metadata.
-
-        !!! note
-            Will produce a column-sorted array.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -126,6 +126,9 @@ class ColumnMapper(Wrapping):
 
         Uses `vectorbtpro.base.wrapping.ArrayWrapper.column_stack` to stack the wrappers.
 
+        !!! note
+            Will produce a column-sorted array.
+
         Args:
             *objs (MaybeSequence[ColumnMapper]): (Additional) `ColumnMapper` instances to stack.
             wrapper_kwargs (KwargsLike): Keyword arguments for configuring the wrapper.
@@ -136,9 +139,6 @@ class ColumnMapper(Wrapping):
 
         Returns:
             ColumnMapper: New column mapper instance with column-stacked wrappers and updated column metadata.
-
-        !!! note
-            Will produce a column-sorted array.
         """
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self, *objs)
@@ -181,6 +181,10 @@ class ColumnMapper(Wrapping):
 
         Automatically chooses between using column lengths or column map based on sorted status.
 
+        See:
+            * `vectorbtpro.base.grouping.nb.group_lens_select_nb` if `ColumnMapper.is_sorted` returns True.
+            * `vectorbtpro.base.grouping.nb.group_map_select_nb` if `ColumnMapper.is_sorted` returns False.
+
         Args:
             col_idxs (MaybeIndexArray): Column indices or slice to select.
             jitted (JittedOption): Option to control JIT compilation.
@@ -189,10 +193,6 @@ class ColumnMapper(Wrapping):
 
         Returns:
             Tuple[Array1d, Array1d]: Tuple containing the new indices and the updated column array.
-
-        See:
-            * `vectorbtpro.base.grouping.nb.group_lens_select_nb` if `ColumnMapper.is_sorted` returns True.
-            * `vectorbtpro.base.grouping.nb.group_map_select_nb` if `ColumnMapper.is_sorted` returns False.
         """
         if len(self.col_arr) == 0:
             return np.arange(len(self.col_arr)), self.col_arr
@@ -282,11 +282,11 @@ class ColumnMapper(Wrapping):
 
         Faster than `ColumnMapper.col_map` but only compatible with sorted columns.
 
-        Returns:
-            GroupLens: Column lengths.
-
         See:
             `vectorbtpro.records.nb.col_lens_nb`
+
+        Returns:
+            GroupLens: Column lengths.
         """
         func = jit_reg.resolve_option(nb.col_lens_nb, None)
         return func(self.col_arr, len(self.wrapper.columns))
@@ -294,6 +294,9 @@ class ColumnMapper(Wrapping):
     @cached_method(whitelist=True)
     def get_col_lens(self, group_by: tp.GroupByLike = None, jitted: tp.JittedOption = None) -> tp.GroupLens:
         """Get group-aware column lengths.
+
+        See:
+            `vectorbtpro.records.nb.col_lens_nb`
 
         Args:
             group_by (GroupByLike): Grouping specification.
@@ -305,9 +308,6 @@ class ColumnMapper(Wrapping):
 
         Returns:
             GroupLens: Group-aware column lengths.
-
-        See:
-            `vectorbtpro.records.nb.col_lens_nb`
         """
         if not self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.col_lens
@@ -322,11 +322,11 @@ class ColumnMapper(Wrapping):
 
         More flexible than `ColumnMapper.col_lens` and more suited for mapped arrays.
 
-        Returns:
-            GroupMap: Column mapping.
-
         See:
             `vectorbtpro.records.nb.col_map_nb`
+
+        Returns:
+            GroupMap: Column mapping.
         """
         func = jit_reg.resolve_option(nb.col_map_nb, None)
         return func(self.col_arr, len(self.wrapper.columns))
@@ -334,6 +334,9 @@ class ColumnMapper(Wrapping):
     @cached_method(whitelist=True)
     def get_col_map(self, group_by: tp.GroupByLike = None, jitted: tp.JittedOption = None) -> tp.GroupMap:
         """Get group-aware column map.
+
+        See:
+            `vectorbtpro.records.nb.col_map_nb`
 
         Args:
             group_by (GroupByLike): Grouping specification.
@@ -345,9 +348,6 @@ class ColumnMapper(Wrapping):
 
         Returns:
             GroupMap: Group-aware column mapping.
-
-        See:
-            `vectorbtpro.records.nb.col_map_nb`
         """
         if not self.wrapper.grouper.is_grouped(group_by=group_by):
             return self.col_map
@@ -360,6 +360,9 @@ class ColumnMapper(Wrapping):
     def is_sorted(self, jitted: tp.JittedOption = None) -> bool:
         """Check whether the column array is sorted.
 
+        See:
+            `vectorbtpro.records.nb.is_col_sorted_nb`
+
         Args:
             jitted (JittedOption): Option to control JIT compilation.
 
@@ -367,9 +370,6 @@ class ColumnMapper(Wrapping):
 
         Returns:
             bool: True if the column array is sorted, otherwise False.
-
-        See:
-            `vectorbtpro.records.nb.is_col_sorted_nb`
         """
         func = jit_reg.resolve_option(nb.is_col_sorted_nb, jitted)
         return func(self.col_arr)
@@ -378,11 +378,11 @@ class ColumnMapper(Wrapping):
     def new_id_arr(self) -> tp.Array1d:
         """New ID array derived from the column array and the wrapper's 2D shape.
 
-        Returns:
-            Array1d: New ID array.
-
         See:
             `vectorbtpro.records.nb.generate_ids_nb`
+
+        Returns:
+            Array1d: New ID array.
         """
         func = jit_reg.resolve_option(nb.generate_ids_nb, None)
         return func(self.col_arr, self.wrapper.shape_2d[1])
@@ -395,6 +395,9 @@ class ColumnMapper(Wrapping):
         If a valid grouping specification is provided, `ColumnMapper.col_arr` is mapped using
         the grouping before generating the id array.
 
+        See:
+            `vectorbtpro.records.nb.generate_ids_nb`
+
         Args:
             group_by (GroupByLike): Grouping specification.
 
@@ -402,9 +405,6 @@ class ColumnMapper(Wrapping):
 
         Returns:
             Array1d: New group-aware id array.
-
-        See:
-            `vectorbtpro.records.nb.generate_ids_nb`
         """
         group_arr = self.wrapper.grouper.get_groups(group_by=group_by)
         if group_arr is not None:

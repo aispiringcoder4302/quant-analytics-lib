@@ -135,6 +135,9 @@ def returns_nb(
 ) -> tp.Array2d:
     """Calculate returns for a 2-dimensional array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         arr (Array2d): 2-dimensional array of asset prices or values.
         init_value (FlexArray1dLike): Initial value.
@@ -152,9 +155,6 @@ def returns_nb(
 
     Returns:
         Array2d: 2-dimensional array containing calculated return values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     init_value_ = to_1d_array_nb(np.asarray(init_value))
 
@@ -225,6 +225,9 @@ def mirror_returns_nb(
 ) -> tp.Array2d:
     """Calculate mirrored returns for a 2-dimensional array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2-dimensional array of return values.
         log_returns (bool): Flag indicating whether returns are logarithmic.
@@ -237,9 +240,6 @@ def mirror_returns_nb(
 
     Returns:
         Array2d: 2-dimensional array of mirrored return values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -320,6 +320,9 @@ def cumulative_returns_nb(
 ) -> tp.Array2d:
     """Compute cumulative returns from a 2D array of returns.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of periodic returns.
         start_value (float): Initial value used to scale the cumulative returns.
@@ -333,9 +336,6 @@ def cumulative_returns_nb(
 
     Returns:
         Array2d: Array of cumulative returns computed column-wise.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -413,6 +413,9 @@ def final_value_nb(
 ) -> tp.Array1d:
     """Compute final portfolio values for each column from a 2D array of returns.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of periodic returns.
         start_value (float): Initial value used to scale the cumulative returns.
@@ -426,9 +429,6 @@ def final_value_nb(
 
     Returns:
         Array1d: Array of final portfolio values computed for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -476,6 +476,9 @@ def rolling_final_value_nb(
 ) -> tp.Array2d:
     """Compute rolling final portfolio values from a 2D array of returns.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of periodic returns.
         window (int): Window size.
@@ -491,9 +494,6 @@ def rolling_final_value_nb(
 
     Returns:
         Array2d: 2D array containing rolling final portfolio values computed column-wise.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -552,6 +552,9 @@ def total_return_nb(
 ) -> tp.Array1d:
     """Compute total returns for each column from a 2D array of returns.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of periodic returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
@@ -564,9 +567,6 @@ def total_return_nb(
 
     Returns:
         Array1d: Array of total returns computed for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -608,6 +608,9 @@ def rolling_total_return_nb(
 ) -> tp.Array2d:
     """Compute rolling total returns from a 2D array of returns.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of periodic returns.
         window (int): Window size.
@@ -622,9 +625,6 @@ def rolling_total_return_nb(
 
     Returns:
         Array2d: 2D array containing rolling total returns computed for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -702,6 +702,9 @@ def annualized_return_nb(
 ) -> tp.Array1d:
     """2-dim version of `annualized_return_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Two-dimensional array of returns.
         ann_factor (float): Annualization factor.
@@ -720,9 +723,6 @@ def annualized_return_nb(
 
     Returns:
         Array1d: Annualized returns for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -776,6 +776,9 @@ def rolling_annualized_return_nb(
 ) -> tp.Array2d:
     """Rolling version of `annualized_return_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Two-dimensional array of returns.
         window (int): Window size.
@@ -791,9 +794,6 @@ def rolling_annualized_return_nb(
 
     Returns:
         Array2d: Rolling annualized returns computed over the specified window.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -863,6 +863,9 @@ def annualized_volatility_nb(
 ) -> tp.Array1d:
     """2-dim version of `annualized_volatility_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Two-dimensional array of returns.
         ann_factor (float): Annualization factor.
@@ -877,9 +880,6 @@ def annualized_volatility_nb(
 
     Returns:
         Array1d: Annualized volatility for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -930,6 +930,9 @@ def rolling_annualized_volatility_nb(
 ) -> tp.Array2d:
     """Rolling version of `annualized_volatility_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Two-dimensional array of returns.
         window (int): Window size.
@@ -946,9 +949,6 @@ def rolling_annualized_volatility_nb(
 
     Returns:
         Array2d: Rolling annualized volatility computed over the window.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -1028,6 +1028,9 @@ def max_drawdown_nb(
 ) -> tp.Array1d:
     """Return the maximum drawdown values for each column using a 1-dimensional drawdown computation.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2-dimensional array of returns.
         log_returns (bool): Flag indicating whether returns are logarithmic.
@@ -1040,9 +1043,6 @@ def max_drawdown_nb(
 
     Returns:
         Array1d: Array containing the maximum drawdown for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -1084,6 +1084,9 @@ def rolling_max_drawdown_nb(
 ) -> tp.Array2d:
     """Return the rolling maximum drawdown values over a specified window for each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2-dimensional array of returns.
         window (int): Window size.
@@ -1098,9 +1101,6 @@ def rolling_max_drawdown_nb(
 
     Returns:
         Array2d: 2-dimensional array of rolling maximum drawdown values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -1186,6 +1186,9 @@ def calmar_ratio_nb(
 ) -> tp.Array1d:
     """Return the Calmar ratio for each column of a 2-dimensional returns array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2-dimensional array of returns.
         ann_factor (float): Annualization factor.
@@ -1204,9 +1207,6 @@ def calmar_ratio_nb(
 
     Returns:
         Array1d: Array containing the Calmar ratio for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -1260,6 +1260,9 @@ def rolling_calmar_ratio_nb(
 ) -> tp.Array2d:
     """Return the rolling Calmar ratio values over a specified window for each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2-dimensional array of returns.
         window (int): Window size.
@@ -1275,9 +1278,6 @@ def rolling_calmar_ratio_nb(
 
     Returns:
         Array2d: 2-dimensional array containing the rolling Calmar ratios for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -1369,6 +1369,9 @@ def omega_ratio_nb(
 
     Computes the omega ratio for each column in a 2D returns array using a specified simulation range.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -1380,9 +1383,6 @@ def omega_ratio_nb(
 
     Returns:
         Array1d: Computed omega ratio for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -1424,6 +1424,9 @@ def rolling_omega_ratio_nb(
 
     Computes a rolling omega ratio for each column in a 2D returns array based on a given window.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns.
         window (int): Window size.
@@ -1437,9 +1440,6 @@ def rolling_omega_ratio_nb(
 
     Returns:
         Array2d: Array of rolling omega ratio values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -1514,6 +1514,9 @@ def sharpe_ratio_nb(
 
     Calculates the Sharpe ratio for each column in a 2D returns array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns.
         ann_factor (float): Annualization factor.
@@ -1527,9 +1530,6 @@ def sharpe_ratio_nb(
 
     Returns:
         Array1d: Sharpe ratio for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -1629,6 +1629,9 @@ def rolling_sharpe_ratio_stream_nb(
     Computes the Sharpe ratio over a rolling window for each column of a 2D returns array,
     updating the state iteratively via `rolling_sharpe_ratio_acc_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of strategy returns.
         window (int): Window size.
@@ -1644,9 +1647,6 @@ def rolling_sharpe_ratio_stream_nb(
 
     Returns:
         Array2d: Array of rolling Sharpe ratio values for each asset.
-
-    !!! tip
-        This function is parallelizable.
     """
     if window is None:
         window = returns.shape[0]
@@ -1722,6 +1722,9 @@ def rolling_sharpe_ratio_nb(
 
     Applies a rolling window to compute the Sharpe ratio using `sharpe_ratio_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Two-dimensional array of returns.
         window (int): Window size.
@@ -1738,9 +1741,6 @@ def rolling_sharpe_ratio_nb(
 
     Returns:
         Array2d: Array containing the rolling Sharpe ratio for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     if stream_mode:
         return rolling_sharpe_ratio_stream_nb(
@@ -1827,6 +1827,9 @@ def downside_risk_nb(
 
     Applies `downside_risk_1d_nb` column-wise within a specified simulation range.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Two-dimensional array of returns.
         ann_factor (float): Annualization factor.
@@ -1839,9 +1842,6 @@ def downside_risk_nb(
 
     Returns:
         Array1d: One-dimensional array of downside risk values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -1885,6 +1885,9 @@ def rolling_downside_risk_nb(
 
     Uses a rolling window to apply `downside_risk_1d_nb` along each column within a simulation range.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Two-dimensional array of returns.
         window (int): Window size.
@@ -1899,9 +1902,6 @@ def rolling_downside_risk_nb(
 
     Returns:
         Array2d: Array of rolling downside risk values computed column-wise.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -1971,6 +1971,9 @@ def sortino_ratio_nb(
 
     Applies `sortino_ratio_1d_nb` column-wise within a specified simulation range.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Two-dimensional array of returns.
         ann_factor (float): Annualization factor.
@@ -1983,9 +1986,6 @@ def sortino_ratio_nb(
 
     Returns:
         Array1d: One-dimensional array of Sortino ratios for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -2027,6 +2027,9 @@ def rolling_sortino_ratio_nb(
 ) -> tp.Array2d:
     """Calculate the rolling sortino ratio over a specified window.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Array of returns.
         window (int): Window size.
@@ -2041,9 +2044,6 @@ def rolling_sortino_ratio_nb(
 
     Returns:
         Array2d: Array with rolling sortino ratios.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -2107,6 +2107,9 @@ def information_ratio_nb(
 ) -> tp.Array1d:
     """Calculate the 2-dim information ratio for each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of strategy returns.
         ddof (int): Delta degrees of freedom.
@@ -2119,9 +2122,6 @@ def information_ratio_nb(
 
     Returns:
         Array1d: Array of information ratios for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -2163,6 +2163,9 @@ def rolling_information_ratio_nb(
 ) -> tp.Array2d:
     """Calculate the rolling information ratio over a specified window.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of strategy returns.
         window (int): Window size.
@@ -2177,9 +2180,6 @@ def rolling_information_ratio_nb(
 
     Returns:
         Array2d: 2D array with rolling information ratios.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -2250,6 +2250,9 @@ def beta_nb(
 ) -> tp.Array1d:
     """Calculate the 2-dim beta for each column.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of strategy returns.
         bm_returns (Array2d): 2D array of benchmark returns.
@@ -2263,9 +2266,6 @@ def beta_nb(
 
     Returns:
         Array1d: Array of beta coefficients for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -2313,6 +2313,9 @@ def rolling_beta_nb(
 ) -> tp.Array2d:
     """Calculate the rolling beta over a specified window.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of strategy returns.
         bm_returns (Array2d): 2D array of benchmark returns.
@@ -2328,9 +2331,6 @@ def rolling_beta_nb(
 
     Returns:
         Array2d: 2D array with rolling beta coefficients.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -2397,6 +2397,9 @@ def alpha_nb(
 ) -> tp.Array1d:
     """Calculate the annualized alpha for a 2-dimensional array of returns.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns.
         bm_returns (Array2d): 2D array of benchmark returns.
@@ -2410,9 +2413,6 @@ def alpha_nb(
 
     Returns:
         Array1d: Array containing annualized alpha values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -2460,6 +2460,9 @@ def rolling_alpha_nb(
 ) -> tp.Array2d:
     """Calculate the rolling annualized alpha for a 2-dimensional array of returns.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns.
         bm_returns (Array2d): 2D array of benchmark returns.
@@ -2475,9 +2478,6 @@ def rolling_alpha_nb(
 
     Returns:
         Array2d: Array with the rolling annualized alpha values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -2561,6 +2561,9 @@ def tail_ratio_nb(
     """Calculate the tail ratio for each column of a 2-dimensional returns array using
     either an array-allocating or no-array approach.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -2573,9 +2576,6 @@ def tail_ratio_nb(
 
     Returns:
         Array1d: Array of tail ratio values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -2620,6 +2620,9 @@ def rolling_tail_ratio_nb(
 ) -> tp.Array2d:
     """Calculate the rolling tail ratio for a 2-dimensional returns array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns.
         window (int): Window size.
@@ -2634,9 +2637,6 @@ def rolling_tail_ratio_nb(
 
     Returns:
         Array2d: 2D array with rolling tail ratio values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -2711,6 +2711,9 @@ def profit_factor_nb(
 ) -> tp.Array1d:
     """Compute the profit factor for each column in a 2D returns array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -2722,9 +2725,6 @@ def profit_factor_nb(
 
     Returns:
         Array1d: 1D array containing the profit factor for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -2764,6 +2764,9 @@ def rolling_profit_factor_nb(
 ) -> tp.Array2d:
     """Compute the rolling profit factor over a specified window for each column of a 2D returns array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         window (int): Window size.
@@ -2777,9 +2780,6 @@ def rolling_profit_factor_nb(
 
     Returns:
         Array2d: 2D array containing the rolling profit factor values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -2837,6 +2837,9 @@ def common_sense_ratio_nb(
 ) -> tp.Array1d:
     """Compute the common sense ratio for each column in a 2D returns array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         sim_start (Optional[FlexArray1dLike]): Start position of the simulation range (inclusive).
@@ -2848,9 +2851,6 @@ def common_sense_ratio_nb(
 
     Returns:
         Array1d: 1D array containing the common sense ratio for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -2890,6 +2890,9 @@ def rolling_common_sense_ratio_nb(
 ) -> tp.Array2d:
     """Compute the rolling common sense ratio over a specified window for each column in a 2D returns array.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         window (int): Window size.
@@ -2903,9 +2906,6 @@ def rolling_common_sense_ratio_nb(
 
     Returns:
         Array2d: 2D array containing the rolling common sense ratio for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -2981,6 +2981,9 @@ def value_at_risk_nb(
     Depending on the `noarr_mode` flag, this function uses either a no-allocation method or
     the standard approach to compute VaR.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns where each column represents a distinct series.
         cutoff (float): Fractional cutoff level.
@@ -2996,9 +2999,6 @@ def value_at_risk_nb(
 
     Returns:
         Array1d: 1D array containing the VaR values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -3047,6 +3047,9 @@ def rolling_value_at_risk_nb(
 
     Computes the rolling value at risk for each column in a 2D returns array using the specified window.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns.
         window (int): Window size.
@@ -3062,9 +3065,6 @@ def rolling_value_at_risk_nb(
 
     Returns:
         Array2d: 2D array containing the computed rolling value at risk values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -3150,6 +3150,9 @@ def cond_value_at_risk_nb(
 
     Computes the CVaR for each column in a 2D returns array based on the provided cutoff level.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns.
         cutoff (float): Fractional cutoff level.
@@ -3163,9 +3166,6 @@ def cond_value_at_risk_nb(
 
     Returns:
         Array1d: Array of computed CVaR values for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -3214,6 +3214,9 @@ def rolling_cond_value_at_risk_nb(
 
     Computes the rolling CVaR for each column in a 2D returns array using the specified rolling window.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2D array of returns.
         window (int): Window size.
@@ -3229,9 +3232,6 @@ def rolling_cond_value_at_risk_nb(
 
     Returns:
         Array2d: 2D array containing the computed rolling CVaR values.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -3335,6 +3335,9 @@ def capture_ratio_nb(
 ) -> tp.Array1d:
     """Return the 2-d version of `capture_ratio_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Returns array with shape (n_periods, n_assets).
         bm_returns (Array2d): Benchmark returns array with matching dimensions.
@@ -3354,9 +3357,6 @@ def capture_ratio_nb(
 
     Returns:
         Array1d: Capture ratios computed for each column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -3413,6 +3413,9 @@ def rolling_capture_ratio_nb(
 ) -> tp.Array2d:
     """Return the rolling version of `capture_ratio_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): Array of returns with shape (n_periods, n_assets).
         bm_returns (Array2d): Array of benchmark returns with matching dimensions.
@@ -3429,9 +3432,6 @@ def rolling_capture_ratio_nb(
 
     Returns:
         Array2d: Rolling capture ratios with the same shape as `returns`.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -3537,6 +3537,9 @@ def up_capture_ratio_nb(
 ) -> tp.Array1d:
     """Return the 2-d version of `up_capture_ratio_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2-d array of returns.
         bm_returns (Array2d): 2-d array of benchmark returns.
@@ -3556,9 +3559,6 @@ def up_capture_ratio_nb(
 
     Returns:
         Array1d: Up capture ratios computed for each series.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -3615,6 +3615,9 @@ def rolling_up_capture_ratio_nb(
 ) -> tp.Array2d:
     """Return the rolling version of `up_capture_ratio_1d_nb`.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2-d array of returns.
         bm_returns (Array2d): 2-d array of benchmark returns.
@@ -3631,9 +3634,6 @@ def rolling_up_capture_ratio_nb(
 
     Returns:
         Array2d: Rolling up capture ratios with the same shape as `returns`.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 
@@ -3750,6 +3750,9 @@ def down_capture_ratio_nb(
     asset's annualized negative return to the benchmark's annualized negative return.
     Only periods with negative benchmark returns are considered.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2-dimensional array of asset returns.
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
@@ -3771,9 +3774,6 @@ def down_capture_ratio_nb(
         Array1d: Array of down capture ratios for each column.
 
             Each element is `np.nan` or `np.inf` if the computation is invalid for that column.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape[1], np.nan, dtype=float_)
 
@@ -3834,6 +3834,9 @@ def rolling_down_capture_ratio_nb(
     to segments of the asset and benchmark returns. It returns a 2-dimensional array where each column
     contains the rolling down capture ratio.
 
+    !!! tip
+        This function is parallelizable.
+
     Args:
         returns (Array2d): 2-dimensional array of asset returns.
         bm_returns (Array2d): 2-dimensional array of benchmark returns.
@@ -3851,9 +3854,6 @@ def rolling_down_capture_ratio_nb(
     Returns:
         Array2d: 2-dimensional array of rolling down capture ratios for each column,
             with invalid computations represented by `np.nan`.
-
-    !!! tip
-        This function is parallelizable.
     """
     out = np.full(returns.shape, np.nan, dtype=float_)
 

@@ -676,11 +676,6 @@ TVDataT = tp.TypeVar("TVDataT", bound="TVData")
 class TVData(RemoteData):
     """Data class for fetching data from TradingView.
 
-    See:
-        * https://www.tradingview.com/ for TradingView.
-        * `TVClient` for the client class used to fetch data.
-        * `TVData.fetch_symbol` for argument details.
-
     !!! info
         For default settings, see `custom.tv` in `vectorbtpro._settings.data`.
 
@@ -689,6 +684,11 @@ class TVData(RemoteData):
         during authentication, use the `auth_token` parameter instead of `username` and `password`.
         To obtain your authentication token, log in to TradingView, open any chart, access your
         browser's developer tools, and search for "auth_token".
+
+    See:
+        * https://www.tradingview.com/ for TradingView.
+        * `TVClient` for the client class used to fetch data.
+        * `TVData.fetch_symbol` for argument details.
 
     Examples:
         Set up the credentials globally (optional):

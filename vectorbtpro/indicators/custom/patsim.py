@@ -182,6 +182,9 @@ class _PATSIM(PATSIM):
     ) -> tp.BaseFigure:
         """Plot `PATSIM.similarity` against `PATSIM.close`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
 
@@ -193,9 +196,6 @@ class _PATSIM(PATSIM):
 
         Returns:
             BaseFigure: Updated or newly created figure with the similarity line plotted.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
@@ -243,6 +243,9 @@ class _PATSIM(PATSIM):
     ) -> tp.BaseFigure:
         """Overlay `PATSIM.similarity` as a heatmap on top of `PATSIM.close`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             close_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `PATSIM.close`.
@@ -254,9 +257,6 @@ class _PATSIM(PATSIM):
 
         Returns:
             BaseFigure: Updated or newly created figure with the heatmap overlay on `PATSIM.close`.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

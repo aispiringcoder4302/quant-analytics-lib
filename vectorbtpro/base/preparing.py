@@ -89,12 +89,12 @@ class MetaBasePreparer(type(Configured)):
 class BasePreparer(Configured, metaclass=MetaBasePreparer):
     """Base class for preparing target functions and arguments.
 
+    !!! warning
+        Most properties are force-cached - create a new instance to override any attribute.
+
     Args:
         arg_config (KwargsLike): Optional configuration for target function arguments.
         **kwargs: Keyword arguments for `vectorbtpro.utils.config.Configured`.
-
-    !!! warning
-        Most properties are force-cached - create a new instance to override any attribute.
     """
 
     _expected_keys_mode: tp.ExpectedKeysMode = "disable"
@@ -564,14 +564,14 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
     def find_target_func(cls, target_func_name: str) -> tp.Callable:
         """Find the target function by its name.
 
+        !!! abstract
+            This method should be overridden in a subclass.
+
         Args:
             target_func_name (str): Name of the target function.
 
         Returns:
             Callable: Found target function.
-
-        !!! abstract
-            This method should be overridden in a subclass.
         """
         raise NotImplementedError
 

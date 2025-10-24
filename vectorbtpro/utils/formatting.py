@@ -53,14 +53,14 @@ class Prettified(Base):
     def prettify(self, **kwargs) -> str:
         """Prettify the object.
 
-        Returns:
-            str: Prettified representation of the object.
-
         !!! warning
             Calling `prettify` can lead to an infinite recursion. Make sure to pre-process this object.
 
         !!! abstract
             This method should be overridden in a subclass.
+
+        Returns:
+            str: Prettified representation of the object.
         """
         raise NotImplementedError
 

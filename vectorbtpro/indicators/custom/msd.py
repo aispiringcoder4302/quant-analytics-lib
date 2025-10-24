@@ -80,6 +80,9 @@ class _MSD(MSD):
     ) -> tp.BaseFigure:
         """Plot the `MSD.msd` indicator.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             msd_trace_kwargs (KwargsLike): Keyword arguments for `plotly.graph_objects.Scatter` for `MSD.msd`.
@@ -90,9 +93,6 @@ class _MSD(MSD):
 
         Returns:
             BaseFigure: Figure instance containing the plotted MSD indicator.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon

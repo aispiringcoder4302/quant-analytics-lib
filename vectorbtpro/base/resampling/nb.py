@@ -178,6 +178,9 @@ def map_index_to_source_ranges_nb(
     by the frequency interval; otherwise, it extends to the next target index. If no valid mapping is
     found, both start and end are set to -1.
 
+    !!! note
+        Both index arrays must be increasing. Repeating values are allowed.
+
     Args:
         source_index (Array1d): Array of source indices in increasing order.
         target_index (Array1d): Array of target indices, which must be strictly increasing.
@@ -190,9 +193,6 @@ def map_index_to_source_ranges_nb(
 
             * Inclusive start indices in `source_index`.
             * Exclusive end indices in `source_index`.
-
-    !!! note
-        Both index arrays must be increasing. Repeating values are allowed.
     """
     range_starts_out = np.empty(len(target_index), dtype=int_)
     range_ends_out = np.empty(len(target_index), dtype=int_)
@@ -263,6 +263,9 @@ def map_bounds_to_source_ranges_nb(
     to a contiguous range in `source_index`. If no valid mapping is found for a target range,
     both the start and end indices are set to -1.
 
+    !!! note
+        Both index arrays must be increasing. Repeating values are allowed.
+
     Args:
         source_index (Array1d): Array of source indices, sorted in increasing order.
         target_lbound_index (Array1d): Array of target left-bound indices, sorted in increasing order.
@@ -274,9 +277,6 @@ def map_bounds_to_source_ranges_nb(
     Returns:
         Tuple[Array1d, Array1d]: Tuple where the first array contains inclusive start indices and the
         second array contains exclusive end indices corresponding to the source ranges.
-
-    !!! note
-        Both index arrays must be increasing. Repeating values are allowed.
     """
     range_starts_out = np.empty(len(target_lbound_index), dtype=int_)
     range_ends_out = np.empty(len(target_lbound_index), dtype=int_)

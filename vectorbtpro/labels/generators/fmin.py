@@ -70,6 +70,9 @@ class _FMIN(FMIN):
     ) -> tp.BaseFigure:
         """Plot `FMIN.fmin` against `FMIN.close`.
 
+        !!! info
+            For default settings, see `vectorbtpro._settings.plotting`.
+
         Args:
             column (Optional[Column]): Identifier of the column to plot.
             plot_close (bool): Whether to plot the close price.
@@ -82,9 +85,6 @@ class _FMIN(FMIN):
 
         Returns:
             BaseFigure: Updated figure object with the plotted traces.
-
-        !!! info
-            For default settings, see `vectorbtpro._settings.plotting`.
 
         Examples:
             ```pycon
