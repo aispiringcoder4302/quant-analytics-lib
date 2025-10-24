@@ -17,6 +17,7 @@ from pathlib import Path
 import json
 import re
 import io
+import textwrap
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter, ThoughtProcessor
@@ -1000,6 +1001,26 @@ class Completions(ThoughtProcessor):
             try:
                 docstring = parse(desc)
                 desc = docstring.description
+                if getattr(docstring, "deprecation", None):
+                    if not desc.endswith("\n"):
+                        desc += "\n"
+                    desc += "\nDeprecated:\n"
+                    d = docstring.deprecation.description
+                    desc += textwrap.indent(d, " " * 4)
+                if getattr(docstring, "raises", []):
+                    if not desc.endswith("\n"):
+                        desc += "\n"
+                    desc += "\nRaises:\n"
+                    for raise_doc in docstring.raises:
+                        d = f"{raise_doc.type_name}: {raise_doc.description}"
+                        desc += textwrap.indent(d, " " * 4)
+                if getattr(docstring, "examples", []):
+                    if not desc.endswith("\n"):
+                        desc += "\n"
+                    desc += "\nExamples:\n"
+                    for example_doc in docstring.examples:
+                        d = example_doc.description
+                        desc += textwrap.indent(d, " " * 4)
                 param_docs = {param.arg_name: param for param in docstring.params}
             except Exception:
                 pass

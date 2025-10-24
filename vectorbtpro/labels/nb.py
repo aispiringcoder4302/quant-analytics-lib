@@ -755,7 +755,7 @@ def bin_trend_labels_1d_nb(pivots: tp.Array1d) -> tp.Array1d:
 @register_jitted(cache=True, tags={"can_parallel"})
 def bin_trend_labels_nb(pivots: tp.Array2d) -> tp.Array2d:
     """Generate trend labels for two-dimensional pivot arrays by applying
-    one-dimensional classification column‐wise.
+    one-dimensional classification column-wise.
 
     Args:
         pivots (Array2d): Two-dimensional array of pivot indicators.
@@ -814,7 +814,7 @@ def binc_trend_labels_1d_nb(high: tp.Array1d, low: tp.Array1d, pivots: tp.Array1
 )
 @register_jitted(cache=True, tags={"can_parallel"})
 def binc_trend_labels_nb(high: tp.Array2d, low: tp.Array2d, pivots: tp.Array2d) -> tp.Array2d:
-    """Apply one-dimensional median-based normalization for trend labels to two-dimensional arrays column‐wise.
+    """Apply one-dimensional median-based normalization for trend labels to two-dimensional arrays column-wise.
 
     Args:
         high (Array2d): Two-dimensional array of high values.
@@ -918,7 +918,7 @@ def bincs_trend_labels_nb(
     down_th: tp.FlexArray2dLike,
 ) -> tp.Array2d:
     """Compute capped trend labels for two-dimensional arrays by applying
-    one-dimensional capped normalization column‐wise.
+    one-dimensional capped normalization column-wise.
 
     Args:
         high (Array2d): Two-dimensional array of high values.

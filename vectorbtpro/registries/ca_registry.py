@@ -171,7 +171,7 @@ Consider how to change caching rules for an entire instance or class at once. Ev
 function declared in a class is updated, ensuring that each future subclass or instance inherits
 these changes can be challenging. To address this, vectorbtpro provides a set of stateful setups that
 delegate operations to their child setups—all the way down to `CARunSetup`. The setup hierarchy
-mirrors the inheritance hierarchy in object‐oriented programming.
+mirrors the inheritance hierarchy in object-oriented programming.
 
 ![](/assets/images/api/setup_hierarchy.svg){: loading=lazy style="width:700px;" }
 
