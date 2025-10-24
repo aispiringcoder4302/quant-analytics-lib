@@ -212,7 +212,7 @@ def resolve_refnames(refnames: tp.List[str]) -> str:
     Output format:
 
     * Success: `OK <input> <resolved>`
-	* Failure: `FAIL <input>`
+    * Failure: `FAIL <input>`
 
     Args:
         refnames (List[str]): Reference names to resolve.
