@@ -11,9 +11,9 @@
 """Module providing custom asset function classes."""
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils.config import flat_merge_dicts
 from vectorbtpro.knowledge.base_asset_funcs import AssetFunc, RemoveAssetFunc
 from vectorbtpro.knowledge.formatting import to_markdown, to_html, format_html
+from vectorbtpro.utils.config import flat_merge_dicts
 
 __all__ = []
 

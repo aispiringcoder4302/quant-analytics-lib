@@ -12,8 +12,8 @@
 
 import datetime
 import traceback
-from functools import partial
 from collections.abc import Collection, Iterable, Sequence, Hashable, Mapping
+from functools import partial
 from inspect import signature, getmro
 from keyword import iskeyword
 from types import FunctionType, BuiltinFunctionType, MethodType

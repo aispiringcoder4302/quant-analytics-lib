@@ -18,9 +18,9 @@ import concurrent.futures
 import enum
 import inspect
 import time
+from contextlib import nullcontext
 from functools import partial, wraps
 from pathlib import Path
-from contextlib import nullcontext
 
 import pandas as pd
 from numba.core.registry import CPUDispatcher

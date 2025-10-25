@@ -24,10 +24,10 @@ from vectorbtpro._dtypes import *
 from vectorbtpro.base import chunking as base_ch
 from vectorbtpro.base.flex_indexing import flex_select_1d_pr_nb, flex_select_1d_nb
 from vectorbtpro.base.reshaping import to_1d_array_nb
+from vectorbtpro.ohlcv.enums import PriceFeature
 from vectorbtpro.registries.ch_registry import register_chunkable
 from vectorbtpro.registries.jit_registry import register_jitted
 from vectorbtpro.utils import chunking as ch
-from vectorbtpro.ohlcv.enums import PriceFeature
 
 __all__ = []
 

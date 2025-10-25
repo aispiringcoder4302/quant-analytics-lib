@@ -397,13 +397,14 @@ def find(
                 context += detokenize(info_tokens)
         return context
 
+
 @register_tool
 def get_page(url: str, return_metadata: str = "none") -> str:
     """Get the content of a documentation page by its URL.
 
     Args:
         url (str): URL of the documentation page. Supported formats:
-        
+
             * Full URL (e.g., "https://vectorbt.pro/.../getting-started/installation/").
             * Relative path (e.g., "/getting-started/installation/").
             * Fragment identifier (e.g., "getting-started/installation/#windows").

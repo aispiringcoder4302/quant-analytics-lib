@@ -15,13 +15,13 @@
 """
 
 import ast
+import base64
+import datetime
 import io
 import zipfile
-from pathlib import Path
-import base64
-from types import MethodType
 from graphlib import TopologicalSorter
-import datetime
+from pathlib import Path
+from types import MethodType
 
 import humanize
 import numpy as np
@@ -1872,7 +1872,7 @@ class Pickleable(Base):
                 if not value.startswith("base64,"):
                     raise ConstructorError(None, None, "Pickle payload must be base64-encoded", node.start_mark)
                 return loads(base64.b64decode(value[7:]))
-            
+
             if tag == "!expr":
                 if not run_code:
                     raise ConstructorError(None, None, "Running code is disabled", node.start_mark)

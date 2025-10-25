@@ -14,7 +14,6 @@ import inspect
 import string
 import traceback
 from pathlib import Path
-from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -28,8 +27,10 @@ from vectorbtpro.data.decorators import attach_symbol_dict_methods
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.generic.analyzable import Analyzable
 from vectorbtpro.generic.drawdowns import Drawdowns
-from vectorbtpro.ohlcv.nb import mirror_ohlc_nb
 from vectorbtpro.ohlcv.enums import PriceFeature
+from vectorbtpro.ohlcv.nb import mirror_ohlc_nb
+from vectorbtpro.registries.ch_registry import ch_reg
+from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.returns.accessors import ReturnsAccessor
 from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.attr_ import get_dict_attr
@@ -44,8 +45,6 @@ from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.pickling import pdict, RecState
 from vectorbtpro.utils.template import Rep, RepEval, CustomTemplate, substitute_templates
 from vectorbtpro.utils.warnings_ import warn
-from vectorbtpro.registries.ch_registry import ch_reg
-from vectorbtpro.registries.jit_registry import jit_reg
 
 if tp.TYPE_CHECKING:
     from sqlalchemy import Engine as EngineT

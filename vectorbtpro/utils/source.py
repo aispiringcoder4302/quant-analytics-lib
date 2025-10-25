@@ -14,9 +14,9 @@ import ast
 import importlib
 import inspect
 import os
-import textwrap
 import re
 import tempfile
+import textwrap
 import webbrowser
 from collections import defaultdict
 from difflib import HtmlDiff, SequenceMatcher
@@ -24,9 +24,9 @@ from pathlib import Path
 from types import ModuleType, FunctionType
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.knowledge.text_splitting import split_text
 from vectorbtpro.knowledge.completions import completed
 from vectorbtpro.knowledge.custom_assets import search
+from vectorbtpro.knowledge.text_splitting import split_text
 from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.formatting import dump, get_dump_language

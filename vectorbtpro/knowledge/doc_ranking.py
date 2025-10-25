@@ -15,7 +15,7 @@ import re
 import numpy as np
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.knowledge.embeddings import Embeddings, resolve_embeddings
+from vectorbtpro.knowledge.completions import resolve_completions
 from vectorbtpro.knowledge.doc_storing import (
     StoreDocument,
     MemoryStore,
@@ -25,8 +25,8 @@ from vectorbtpro.knowledge.doc_storing import (
     CachedStore,
     resolve_obj_store,
 )
+from vectorbtpro.knowledge.embeddings import Embeddings, resolve_embeddings
 from vectorbtpro.knowledge.tokenization import resolve_tokenizer
-from vectorbtpro.knowledge.completions import resolve_completions
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.attr_ import DefineMixin, define
 from vectorbtpro.utils.config import merge_dicts, Configured, HasSettings, ExtSettingsPath

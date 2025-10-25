@@ -35,8 +35,8 @@ from vectorbtpro.utils import checks, datetime_ as dt
 from vectorbtpro.utils.chunking import ChunkMeta, iter_chunk_meta, get_chunk_meta_key, ArraySelector, ArraySlicer
 from vectorbtpro.utils.config import merge_dicts, resolve_dict, Configured
 from vectorbtpro.utils.decorators import hybrid_property, hybrid_method
-from vectorbtpro.utils.execution import Task, execute
 from vectorbtpro.utils.eval_ import evaluate
+from vectorbtpro.utils.execution import Task, execute
 from vectorbtpro.utils.magic_decorators import attach_binary_magic_methods, attach_unary_magic_methods
 from vectorbtpro.utils.parsing import get_context_vars, get_func_arg_names
 from vectorbtpro.utils.template import substitute_templates

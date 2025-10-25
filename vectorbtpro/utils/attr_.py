@@ -13,9 +13,9 @@
 import enum
 import inspect
 import re
-from pathlib import Path
 from collections.abc import Iterable
 from functools import cached_property as cachedproperty
+from pathlib import Path
 
 import attr
 import pandas as pd

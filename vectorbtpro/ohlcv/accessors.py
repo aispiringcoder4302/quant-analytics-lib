@@ -97,18 +97,18 @@ import pandas as pd
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.accessors import register_df_vbt_accessor
-from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.base.reshaping import to_1d_array, to_2d_array
+from vectorbtpro.base.wrapping import ArrayWrapper
 from vectorbtpro.data.base import OHLCDataMixin
 from vectorbtpro.generic import nb as generic_nb
 from vectorbtpro.generic.accessors import GenericAccessor, GenericDFAccessor
 from vectorbtpro.ohlcv import nb, enums
+from vectorbtpro.registries.ch_registry import ch_reg
+from vectorbtpro.registries.jit_registry import jit_reg
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, Config, HybridConfig
 from vectorbtpro.utils.decorators import hybrid_property
 from vectorbtpro.utils.enum_ import map_enum_fields
-from vectorbtpro.registries.ch_registry import ch_reg
-from vectorbtpro.registries.jit_registry import jit_reg
 
 if tp.TYPE_CHECKING:
     from vectorbtpro.data.base import Data as DataT

@@ -12,9 +12,9 @@
 
 import ast
 import builtins
+import concurrent.futures as cf
 import inspect
 import symtable
-import concurrent.futures as cf
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks

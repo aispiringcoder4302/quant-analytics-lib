@@ -10,11 +10,11 @@
 
 """Module providing content formatting classes."""
 
+import inspect
 import io
 import re
-import inspect
-import time
 import sys
+import time
 from pathlib import Path
 
 from vectorbtpro import _typing as tp

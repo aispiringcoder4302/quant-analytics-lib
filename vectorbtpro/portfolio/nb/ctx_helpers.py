@@ -910,7 +910,7 @@ def order_filled_nb(
     c: tp.Union[
         PostOrderContext,
         PostSignalContext,
-    ]
+    ],
 ) -> bool:
     """Determine if the order has been filled.
 
@@ -929,7 +929,7 @@ def order_opened_position_nb(
     c: tp.Union[
         PostOrderContext,
         PostSignalContext,
-    ]
+    ],
 ) -> bool:
     """Determine if the order has opened a new position.
 
@@ -950,7 +950,7 @@ def order_increased_position_nb(
     c: tp.Union[
         PostOrderContext,
         PostSignalContext,
-    ]
+    ],
 ) -> bool:
     """Determine if the order has opened a new position or increased an existing position.
 
@@ -973,7 +973,7 @@ def order_decreased_position_nb(
     c: tp.Union[
         PostOrderContext,
         PostSignalContext,
-    ]
+    ],
 ) -> bool:
     """Determine if the order has decreased or closed an existing position.
 
@@ -998,7 +998,7 @@ def order_closed_position_nb(
     c: tp.Union[
         PostOrderContext,
         PostSignalContext,
-    ]
+    ],
 ) -> bool:
     """Determine if the order has completely closed an existing position.
 
@@ -1019,7 +1019,7 @@ def order_reversed_position_nb(
     c: tp.Union[
         PostOrderContext,
         PostSignalContext,
-    ]
+    ],
 ) -> bool:
     """Check whether the order has reversed an existing position.
 

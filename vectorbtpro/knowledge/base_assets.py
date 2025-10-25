@@ -16,10 +16,10 @@ See `vectorbtpro.knowledge` for the toy dataset.
 import hashlib
 import json
 import re
-from collections.abc import MutableSequence
-from pathlib import Path
-from functools import partial
 import textwrap
+from collections.abc import MutableSequence
+from functools import partial
+from pathlib import Path
 
 import pandas as pd
 

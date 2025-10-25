@@ -13,8 +13,8 @@
 import hashlib
 import inspect
 import sys
-from pathlib import Path
 from collections.abc import MutableMapping
+from pathlib import Path
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.knowledge.text_splitting import split_text

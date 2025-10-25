@@ -11,13 +11,13 @@
 """Module providing classes and utilities for completions."""
 
 import inspect
-import sys
-import time
-from pathlib import Path
+import io
 import json
 import re
-import io
+import sys
 import textwrap
+import time
+from pathlib import Path
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.knowledge.formatting import ContentFormatter, HTMLFileFormatter, resolve_formatter, ThoughtProcessor

@@ -10,28 +10,28 @@
 
 """Module providing custom asset classes."""
 
+import base64
+import hashlib
 import inspect
 import io
 import os
 import pkgutil
 import re
-import base64
-import hashlib
 import tempfile
 import webbrowser
 from collections import defaultdict, deque
+from functools import partial
 from pathlib import Path
 from types import ModuleType
-from functools import partial
 from urllib.parse import urlparse, urlunparse
 
 from vectorbtpro import _typing as tp
-from vectorbtpro.utils import checks
-from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
-from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.knowledge.asset_pipelines import EarlyReturn, BasicAssetPipeline
 from vectorbtpro.knowledge.base_assets import AssetCacheManager, KnowledgeAsset
 from vectorbtpro.knowledge.formatting import FormatHTML
+from vectorbtpro.utils import checks
+from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
+from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.module_ import prepare_refname, get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths

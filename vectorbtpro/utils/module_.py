@@ -17,9 +17,9 @@ import pkgutil
 import sys
 import urllib.request
 import webbrowser
+from functools import cached_property
 from pathlib import Path
 from types import ModuleType
-from functools import cached_property
 
 from vectorbtpro import _typing as tp
 from vectorbtpro._opt_deps import opt_dep_config

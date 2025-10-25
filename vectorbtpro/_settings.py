@@ -2538,7 +2538,9 @@ $context
                 dump_engine="json",
             ),
             tool_request_template="**🛠️ Tool request [`$name`]**\n$payload",
-            tool_response_template=RepEval("f\"**{'✅' if success else '❌'} Tool response [`{name}`, {token_count} tokens]**\\n{payload}\""),
+            tool_response_template=RepEval(
+                "f\"**{'✅' if success else '❌'} Tool response [`{name}`, {token_count} tokens]**\\n{payload}\""
+            ),
             tool_display_format="minimal",
         ),
         completions_configs=flex_cfg(

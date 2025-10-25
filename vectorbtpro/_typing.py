@@ -14,11 +14,11 @@ This module provides foundational type aliases, protocols, and utilities for com
 such as sequences, scalars, arrays, and datetime representations within vectorbtpro.
 """
 
+import ast
+import sys
 from datetime import datetime, timedelta, tzinfo, date, time
 from enum import EnumMeta
 from pathlib import Path
-import sys
-import ast
 
 if sys.version_info < (3, 9):
     import typing

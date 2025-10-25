@@ -343,6 +343,7 @@ def talib_plot_func(func_name: str) -> tp.Callable:
 
     assert_can_import("talib")
     from talib.abstract import Function
+
     try:
         from talib.abstract import TA_OUTPUT_FLAGS
     except ImportError:

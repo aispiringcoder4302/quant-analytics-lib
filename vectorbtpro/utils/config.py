@@ -11,8 +11,8 @@
 """Module providing utility functions for configuration management."""
 
 import inspect
-from copy import copy, deepcopy
 import uuid
+from copy import copy, deepcopy
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import MISSING
@@ -2131,7 +2131,7 @@ class Configured(HasSettings, Cacheable, Comparable, Pickleable, Prettified, Cha
             if issubclass(cls, Configured) and cls._writeable_attrs is not None:
                 writeable_attrs |= cls._writeable_attrs
         return writeable_attrs
-    
+
     @classmethod
     def get_init_arg_names(cls) -> tp.Set[str]:
         """Return the initialization argument names for this class and its base configuration classes.

@@ -10,8 +10,8 @@
 
 """Module providing class and function decorators."""
 
-from functools import wraps
 import threading
+from functools import wraps
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.base import Base
