@@ -12,6 +12,7 @@
 
 import datetime
 import traceback
+from functools import partial
 from collections.abc import Collection, Iterable, Sequence, Hashable, Mapping
 from inspect import signature, getmro
 from keyword import iskeyword
@@ -135,7 +136,8 @@ def is_numba_func(obj: tp.Any) -> bool:
 
 
 def is_function(obj: tp.Any) -> bool:
-    """Return whether the object is a lambda function, built-in function, method, or Numba-compiled function.
+    """Return whether the object is a lambda function, built-in function, method, Numba-compiled function,
+    a `functools.partial` object wrapping a function, or a NumPy ufunc.
 
     Args:
         obj (Any): Object to check.
@@ -143,7 +145,14 @@ def is_function(obj: tp.Any) -> bool:
     Returns:
         bool: True if the object is a function, False otherwise.
     """
-    return is_classic_func(obj) or is_builtin_func(obj) or is_method(obj) or is_numba_func(obj)
+    return (
+        is_classic_func(obj)
+        or is_builtin_func(obj)
+        or is_method(obj)
+        or is_numba_func(obj)
+        or (isinstance(obj, partial) and is_function(obj.func))
+        or isinstance(obj, np.ufunc)
+    )
 
 
 def is_bool(obj: tp.Any) -> bool:

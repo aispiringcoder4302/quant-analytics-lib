@@ -71,7 +71,7 @@ def search(
     query: str,
     asset_names: tp.Optional[tp.List[str]] = None,
     search_method: str = "hybrid",
-    bm25_fallback: bool = __name__ == "__main__",
+    with_fallback: bool = __name__ == "__main__",
     return_chunks: bool = True,
     return_metadata: str = "none",
     max_tokens: tp.Optional[int] = 2_000,
@@ -113,7 +113,7 @@ def search(
             * "hybrid": Combines both embeddings and BM25. Best for balanced search.
 
             Defaults to "hybrid".
-        bm25_fallback (bool): Whether to fallback to BM25 if some embeddings are not available;
+        with_fallback (bool): Whether to fallback to class search if some embeddings are not available;
             otherwise, missing embeddings will be generated, which may take longer.
 
             Defaults to True when running in MCP, False otherwise.
@@ -158,9 +158,9 @@ def search(
 
         if asset_names is None:
             asset_names = "all"
-        if bm25_fallback and search_method == "embeddings":
+        if with_fallback and search_method == "embeddings":
             search_method = "embeddings_fallback"
-        elif bm25_fallback and search_method == "hybrid":
+        elif with_fallback and search_method == "hybrid":
             search_method = "hybrid_fallback"
 
         results = search(
@@ -187,15 +187,17 @@ def search(
             raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
 
         dumps = results.dump()
-        context = ["==== Result 1 ====\n\n"]
-        context += [dumps[0]]
-        for i, dump in enumerate(dumps[1:], start=2):
-            context += ["\n\n==== Result " + str(i) + " ====\n\n"]
-            context += [dump]
-        if context:
-            context = "".join(context)
-        else:
+        if len(dumps) == 0:
             context = "No results found"
+        elif len(dumps) == 1:
+            context = dumps[0]
+        else:
+            context = ["==== Result 1 ====\n\n"]
+            context += [dumps[0]]
+            for i, dump in enumerate(dumps[1:], start=2):
+                context += ["\n\n==== Result " + str(i) + " ====\n\n"]
+                context += [dump]
+            context = "".join(context)
         if max_tokens is not None:
             tokens = tokenize(context)
             if len(tokens) > max_tokens:
@@ -376,15 +378,17 @@ def find(
             raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
 
         dumps = results.dump()
-        context = ["==== Result 1 ====\n\n"]
-        context += [dumps[0]]
-        for i, dump in enumerate(dumps[1:], start=2):
-            context += ["\n\n==== Result " + str(i) + " ====\n\n"]
-            context += [dump]
-        if context:
-            context = "".join(context)
-        else:
+        if len(dumps) == 0:
             context = "No results found"
+        elif len(dumps) == 1:
+            context = dumps[0]
+        else:
+            context = ["==== Result 1 ====\n\n"]
+            context += [dumps[0]]
+            for i, dump in enumerate(dumps[1:], start=2):
+                context += ["\n\n==== Result " + str(i) + " ====\n\n"]
+                context += [dump]
+            context = "".join(context)
         if max_tokens is not None:
             tokens = tokenize(context)
             if len(tokens) > max_tokens:
@@ -392,6 +396,132 @@ def find(
                 context = detokenize(tokens[: max_tokens - len(info_tokens)])
                 context += detokenize(info_tokens)
         return context
+
+@register_tool
+def get_page(url: str, return_metadata: str = "none") -> str:
+    """Get the content of a documentation page by its URL.
+
+    Args:
+        url (str): URL of the documentation page. Supported formats:
+        
+            * Full URL (e.g., "https://vectorbt.pro/.../getting-started/installation/").
+            * Relative path (e.g., "/getting-started/installation/").
+            * Fragment identifier (e.g., "getting-started/installation/#windows").
+            * Fully-qualified dotted name of a VBT object (e.g., "vectorbtpro.data.base.Data").
+        return_metadata (str): Metadata to return with the results. Supported options:
+
+            * "none": No metadata.
+            * "minimal": Minimal metadata, such as title and URL.
+            * "full": Full metadata, including hierarchy and relationships.
+
+            Defaults to "none".
+
+    Returns:
+        str: Content of the documentation page.
+    """
+    from vectorbtpro.knowledge.custom_assets import PagesAsset
+
+    results = PagesAsset.pull().find_page(url, aggregate=True)
+    if return_metadata.lower() == "minimal":
+        results = results.minimize_metadata()
+    elif return_metadata.lower() == "none":
+        results = results.remove_metadata()
+    elif return_metadata.lower() != "full":
+        raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
+    return results.to_context()
+
+
+@register_tool
+def get_message(url: str, return_metadata: str = "none") -> str:
+    """Get the content of a Discord message by its URL.
+
+    Args:
+        url (str): URL of the Discord message.
+        return_metadata (str): Metadata to return with the results. Supported options:
+
+            * "none": No metadata.
+            * "minimal": Minimal metadata, such as channel and author.
+            * "full": Full metadata, including hierarchy and relationships.
+
+            Defaults to "none".
+
+    Returns:
+        str: Content of the Discord message.
+    """
+    from vectorbtpro.knowledge.custom_assets import MessagesAsset
+
+    results = MessagesAsset.pull().find_link(url)
+    if return_metadata.lower() == "minimal":
+        results = results.minimize_metadata()
+    elif return_metadata.lower() == "none":
+        results = results.remove_metadata()
+    elif return_metadata.lower() != "full":
+        raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
+    return results.to_context()
+
+
+@register_tool
+def get_message_block(url: str, return_metadata: str = "none") -> str:
+    """Get the content of a Discord message block by its URL.
+
+    A block is a group of messages sent by the same user in a short time frame.
+    The URL of a block is the same as the URL of the first message in the block.
+
+    Args:
+        url (str): URL of the Discord message block.
+        return_metadata (str): Metadata to return with the results. Supported options:
+
+            * "none": No metadata.
+            * "minimal": Minimal metadata, such as channel and author.
+            * "full": Full metadata, including hierarchy and relationships.
+
+            Defaults to "none".
+
+    Returns:
+        str: Content of the Discord message block.
+    """
+    from vectorbtpro.knowledge.custom_assets import MessagesAsset
+
+    results = MessagesAsset.pull().find_link(url, field="block", single_item=False)
+    if return_metadata.lower() == "minimal":
+        results = results.minimize_metadata()
+    elif return_metadata.lower() == "none":
+        results = results.remove_metadata()
+    elif return_metadata.lower() != "full":
+        raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
+    return results.to_context()
+
+
+@register_tool
+def get_message_thread(url: str, return_metadata: str = "none") -> str:
+    """Get the content of a Discord message thread by its URL.
+
+    A thread is a question-reply chain. The URL of a thread is the same as the URL of the
+    initial message in the thread.
+
+    Args:
+        url (str): URL of the Discord message thread.
+        return_metadata (str): Metadata to return with the results. Supported options:
+
+            * "none": No metadata.
+            * "minimal": Minimal metadata, such as channel and author.
+            * "full": Full metadata, including hierarchy and relationships.
+
+            Defaults to "none".
+
+    Returns:
+        str: Content of the Discord message thread.
+    """
+    from vectorbtpro.knowledge.custom_assets import MessagesAsset
+
+    results = MessagesAsset.pull().find_link(url, field="thread", single_item=False)
+    if return_metadata.lower() == "minimal":
+        results = results.minimize_metadata()
+    elif return_metadata.lower() == "none":
+        results = results.remove_metadata()
+    elif return_metadata.lower() != "full":
+        raise ValueError(f"Invalid return_metadata: {return_metadata!r}")
+    return results.to_context()
 
 
 @register_tool

@@ -633,11 +633,13 @@ Fields:
         It is converted to `SizeType.Amount` using `ExecState.val_price`.
     Percent: Specifies the percentage of available resources to use for trading, where 0.01 represents 1%.
 
-          * When long buying, applies to `ExecState.free_cash`
-          * When long selling, applies to `ExecState.position`
-          * When short selling, applies to `ExecState.free_cash`
-          * When short buying, applies to `ExecState.free_cash`, `ExecState.debt`, and `ExecState.locked_cash`
-          * When reversing, applies to the final position
+        * When long buying, applies to `ExecState.free_cash`
+        * When long selling, applies to `ExecState.position`
+        * When short selling, applies to `ExecState.free_cash`
+        * When short buying, applies to `ExecState.free_cash`, `ExecState.debt`, and `ExecState.locked_cash`
+        * When reversing, applies to the final position
+
+        Takes into account leverage.
     Percent100: Equivalent to `SizeType.Percent` with a scale where 1.0 represents 1%.
     ValuePercent: Represents a percentage of the total value using `ExecState.value`. 
 

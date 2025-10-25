@@ -2536,14 +2536,7 @@ class GeminiCompletions(Completions):
         Returns:
             Kwargs: Keyword arguments for the API call.
         """
-        from google.genai.types import (
-            GenerateContentConfig,
-            AutomaticFunctionCallingConfig,
-            Tool,
-            ToolConfig,
-            FunctionCallingConfig,
-            FunctionCallingConfigMode,
-        )
+        from google.genai.types import GenerateContentConfig, AutomaticFunctionCallingConfig, Tool
 
         if not enable_tools:
             messages = list(messages)

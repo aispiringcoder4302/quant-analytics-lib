@@ -392,6 +392,7 @@ class VBTAsset(KnowledgeAsset):
     def find_link(
         self: VBTAssetT,
         link: tp.MaybeList[str],
+        field: str = "link",
         mode: str = "end",
         per_path: bool = False,
         single_item: bool = True,
@@ -403,6 +404,7 @@ class VBTAsset(KnowledgeAsset):
 
         Args:
             link (MaybeList[str]): Link or list of links to search for.
+            field (str): Field to search in.
             mode (str): Search mode.
 
                 See `vectorbtpro.utils.search_.find`.
@@ -433,7 +435,7 @@ class VBTAsset(KnowledgeAsset):
                 links = list(chain(*map(_extend_link, link)))
             else:
                 raise TypeError("Link must be either string or list")
-        found = self.find(links, path="link", mode=mode, per_path=per_path, single_item=single_item, **kwargs)
+        found = self.find(links, path=field, mode=mode, per_path=per_path, single_item=single_item, **kwargs)
         if isinstance(found, (type(self), list)):
             if len(found) == 0:
                 if allow_empty:
@@ -444,11 +446,11 @@ class VBTAsset(KnowledgeAsset):
                     top_parents = self.get_top_parent_links(list(found))
                     if len(top_parents) == 1:
                         for i, d in enumerate(found):
-                            if d["link"] == top_parents[0]:
+                            if d[field] == top_parents[0]:
                                 if isinstance(found, type(self)):
                                     return found.replace(data=[d], single_item=True)
                                 return d
-                links_block = "\n".join([d["link"] for d in found])
+                links_block = "\n".join([d[field] for d in found])
                 raise MultipleItemsFoundError(f"Multiple items matching {link!r}:\n\n{links_block}")
         elif found is None:
             if allow_empty:
