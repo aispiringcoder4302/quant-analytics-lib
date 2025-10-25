@@ -1194,6 +1194,46 @@ class TestFromOrders:
                 dtype=order_dt,
             ),
         )
+        pf1 = from_orders_longonly(
+            close=[[1, 1], [2, 2]],
+            size=[200, -np.inf],
+            group_by=True,
+            cash_sharing=True,
+            leverage=3,
+            leverage_mode="lazymult",
+        )
+        pf2 = from_orders_longonly(
+            close=[[1, 1], [2, 2]],
+            size=[600, -np.inf],
+            group_by=True,
+            cash_sharing=True,
+            leverage=3,
+            leverage_mode="lazy",
+        )
+        assert_records_close(
+            pf1.order_records,
+            pf2.order_records,
+        )
+        pf1 = from_orders_longonly(
+            close=[[1, 1], [2, 2]],
+            size=[200, -np.inf],
+            group_by=True,
+            cash_sharing=True,
+            leverage=3,
+            leverage_mode="eagermult",
+        )
+        pf2 = from_orders_longonly(
+            close=[[1, 1], [2, 2]],
+            size=[600, -np.inf],
+            group_by=True,
+            cash_sharing=True,
+            leverage=3,
+            leverage_mode="eager",
+        )
+        assert_records_close(
+            pf1.order_records,
+            pf2.order_records,
+        )
         pf = from_orders_longonly(
             close=[[1, 1], [2, 2]],
             size=[[50, 200], [-50, -200]],

@@ -685,6 +685,8 @@ Fields:
 class LeverageModeT(tp.NamedTuple):
     Lazy: int = 0
     Eager: int = 1
+    LazyMult: int = 2
+    EagerMult: int = 3
 
 
 LeverageMode = LeverageModeT()
@@ -700,7 +702,17 @@ __pdoc__[
 
 Fields:
     Lazy: Leverage is applied only when free cash is exhausted.
+
+        Does not multiply size.
     Eager: Leverage is applied to each order.
+
+        Does not multiply size.
+    LazyMult: Leverage is applied only when free cash is exhausted.
+
+        Multiplies size.
+    EagerMult: Leverage is applied to each order.
+
+        Multiplies size.
 """
 
 

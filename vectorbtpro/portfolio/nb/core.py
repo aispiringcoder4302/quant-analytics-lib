@@ -211,6 +211,13 @@ def long_buy_nb(
     """
     _account_state = cast_account_state_nb(account_state)
 
+    if leverage_mode == LeverageMode.LazyMult:
+        size = size * leverage
+        leverage_mode = LeverageMode.Lazy
+    elif leverage_mode == LeverageMode.EagerMult:
+        size = size * leverage
+        leverage_mode = LeverageMode.Eager
+
     cash_limit = _account_state.free_cash
     if not np.isnan(percent):
         cash_limit = cash_limit * percent
@@ -485,6 +492,7 @@ def short_sell_nb(
     max_size: float = np.nan,
     size_granularity: float = np.nan,
     leverage: float = 1.0,
+    leverage_mode: int = LeverageMode.Lazy,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
     allow_partial: bool = True,
     percent: float = np.nan,
@@ -506,6 +514,9 @@ def short_sell_nb(
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage factor.
+        leverage_mode (int): Leverage mode.
+
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
@@ -521,6 +532,13 @@ def short_sell_nb(
             the updated account state.
     """
     _account_state = cast_account_state_nb(account_state)
+
+    if leverage_mode == LeverageMode.LazyMult:
+        size = size * leverage
+        leverage_mode = LeverageMode.Lazy
+    elif leverage_mode == LeverageMode.EagerMult:
+        size = size * leverage
+        leverage_mode = LeverageMode.Eager
 
     cash_limit = _account_state.free_cash
     if not np.isnan(percent):
@@ -1032,6 +1050,7 @@ def sell_nb(
     max_size: float = np.nan,
     size_granularity: float = np.nan,
     leverage: float = 1.0,
+    leverage_mode: int = LeverageMode.Lazy,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
     allow_partial: bool = True,
     percent: float = np.nan,
@@ -1061,6 +1080,9 @@ def sell_nb(
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
         leverage (float): Leverage factor.
+        leverage_mode (int): Leverage mode.
+
+            See `vectorbtpro.portfolio.enums.LeverageMode`.
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
@@ -1105,6 +1127,7 @@ def sell_nb(
             max_size=max_size,
             size_granularity=size_granularity,
             leverage=leverage,
+            leverage_mode=leverage_mode,
             price_area_vio_mode=price_area_vio_mode,
             allow_partial=allow_partial,
             percent=percent,
@@ -1162,6 +1185,7 @@ def sell_nb(
         max_size=max_size2,
         size_granularity=size_granularity,
         leverage=leverage,
+        leverage_mode=leverage_mode,
         price_area_vio_mode=price_area_vio_mode,
         allow_partial=allow_partial,
         percent=percent,
@@ -1614,6 +1638,7 @@ def execute_order_nb(
             max_size=max_order_size,
             size_granularity=order.size_granularity,
             leverage=order.leverage,
+            leverage_mode=order.leverage_mode,
             price_area_vio_mode=order.price_area_vio_mode,
             allow_partial=order.allow_partial,
             percent=percent,
