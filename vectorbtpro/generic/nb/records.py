@@ -96,26 +96,22 @@ def get_ranges_nb(arr: tp.Array2d, gap_value: tp.Scalar) -> tp.RecordArray:
 
             if cur_val == gap_value or np.isnan(cur_val) and np.isnan(gap_value):
                 if range_started:
-                    # If stopped, save the current range
                     end_idx = i
                     range_started = False
                     store_record = True
                     status = RangeStatus.Closed
             else:
                 if not range_started:
-                    # If started, register a new range
                     start_idx = i
                     range_started = True
 
             if i == arr.shape[0] - 1 and range_started:
-                # If still running, mark for save
                 end_idx = arr.shape[0] - 1
                 range_started = False
                 store_record = True
                 status = RangeStatus.Open
 
             if store_record:
-                # Save range to the records
                 r = counts[col]
                 new_records["id"][r, col] = r
                 new_records["col"][r, col] = col
@@ -124,7 +120,6 @@ def get_ranges_nb(arr: tp.Array2d, gap_value: tp.Scalar) -> tp.RecordArray:
                 new_records["status"][r, col] = status
                 counts[col] += 1
 
-                # Reset running vars for a new range
                 store_record = False
 
     return repartition_nb(new_records, counts)

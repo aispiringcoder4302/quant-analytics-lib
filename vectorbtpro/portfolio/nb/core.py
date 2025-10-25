@@ -211,7 +211,6 @@ def long_buy_nb(
     """
     _account_state = cast_account_state_nb(account_state)
 
-    # Get cash limit
     cash_limit = _account_state.free_cash
     if not np.isnan(percent):
         cash_limit = cash_limit * percent
@@ -219,11 +218,9 @@ def long_buy_nb(
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
     cash_limit = cash_limit * leverage
 
-    # Adjust for granularity
     if should_apply_size_granularity_nb(size, size_granularity):
         size = apply_size_granularity_nb(size, size_granularity)
 
-    # Adjust for max size
     if not np.isnan(max_size) and size > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
@@ -232,11 +229,9 @@ def long_buy_nb(
     if np.isinf(size) and np.isinf(cash_limit):
         raise ValueError("Attempt to go in long direction infinitely")
 
-    # Get price adjusted with slippage
     adj_price = price * (1 + slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
 
-    # Get cash required to complete this order
     if np.isinf(size):
         req_cash = np.inf
         req_fees = np.inf
@@ -246,21 +241,16 @@ def long_buy_nb(
         req_cash = order_value + req_fees
 
     if is_close_or_less_nb(req_cash, cash_limit):
-        # Sufficient amount of cash
         final_size = size
         fees_paid = req_fees
     else:
-        # Insufficient amount of cash, size will be less than requested
 
-        # For fees of 10% and 1$ per transaction, you can buy for 90$ (new_req_cash)
-        # to spend 100$ (cash_limit) in total
         max_req_cash = add_nb(cash_limit, -fixed_fees) / (1 + fees)
         if max_req_cash <= 0:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
         max_acq_size = max_req_cash / adj_price
 
-        # Adjust for granularity
         if should_apply_size_granularity_nb(max_acq_size, size_granularity):
             final_size = apply_size_granularity_nb(max_acq_size, size_granularity)
             new_order_value = final_size * adj_price
@@ -271,19 +261,15 @@ def long_buy_nb(
             fees_paid = cash_limit - max_req_cash
             req_cash = cash_limit
 
-    # Check against size of zero
     if is_close_nb(final_size, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
 
-    # Check against minimum size
     if not np.isnan(min_size) and is_less_nb(final_size, min_size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.MinSizeNotReached), _account_state
 
-    # Check against partial fill (np.inf doesn't count)
     if np.isfinite(size) and is_less_nb(final_size, size) and not allow_partial:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
-    # Create a filled order
     order_result = OrderResult(
         float(final_size),
         float(adj_price),
@@ -293,7 +279,6 @@ def long_buy_nb(
         -1,
     )
 
-    # Update the current account state
     new_cash = add_nb(_account_state.cash, -req_cash)
     new_position = add_nb(_account_state.position, final_size)
     if leverage_mode == LeverageMode.Lazy:
@@ -403,55 +388,43 @@ def long_sell_nb(
     """
     _account_state = cast_account_state_nb(account_state)
 
-    # Check for open position
     if _account_state.position == 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoOpenPosition), _account_state
 
-    # Get size limit
     size_limit = min(size, _account_state.position)
     if not np.isnan(percent):
         size_limit = size_limit * percent
 
-    # Adjust for granularity
     if should_apply_size_granularity_nb(size_limit, size_granularity):
         size = apply_size_granularity_nb(size, size_granularity)
         size_limit = apply_size_granularity_nb(size_limit, size_granularity)
 
-    # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
 
         size_limit = max_size
 
-    # Check against size of zero
     if is_close_nb(size_limit, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
 
-    # Check against minimum size
     if not np.isnan(min_size) and is_less_nb(size_limit, min_size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.MinSizeNotReached), _account_state
 
-    # Check against partial fill
     if np.isfinite(size) and is_less_nb(size_limit, size) and not allow_partial:  # np.inf doesn't count
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
-    # Get price adjusted with slippage
     adj_price = price * (1 - slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
 
-    # Get acquired cash
     acq_cash = size_limit * adj_price
 
-    # Update fees
     fees_paid = acq_cash * fees + fixed_fees
 
-    # Get final cash by subtracting costs
     final_acq_cash = add_nb(acq_cash, -fees_paid)
     if final_acq_cash < 0 and is_less_nb(_account_state.free_cash, -final_acq_cash):
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
-    # Create a filled order
     order_result = OrderResult(
         float(size_limit),
         float(adj_price),
@@ -461,7 +434,6 @@ def long_sell_nb(
         -1,
     )
 
-    # Update the current account state
     new_cash = _account_state.cash + final_acq_cash
     new_position = add_nb(_account_state.position, -size_limit)
     new_pos_fraction = abs(new_position) / abs(_account_state.position)
@@ -550,7 +522,6 @@ def short_sell_nb(
     """
     _account_state = cast_account_state_nb(account_state)
 
-    # Get cash limit
     cash_limit = _account_state.free_cash
     if not np.isnan(percent):
         cash_limit = cash_limit * percent
@@ -558,11 +529,9 @@ def short_sell_nb(
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
     cash_limit = cash_limit * leverage
 
-    # Get price adjusted with slippage
     adj_price = price * (1 - slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
 
-    # Get size limit
     fees_adj_price = adj_price * (1 + fees)
     if fees_adj_price == 0:
         max_size_limit = np.inf
@@ -572,12 +541,10 @@ def short_sell_nb(
     if size_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
-    # Adjust for granularity
     if should_apply_size_granularity_nb(size_limit, size_granularity):
         size = apply_size_granularity_nb(size, size_granularity)
         size_limit = apply_size_granularity_nb(size_limit, size_granularity)
 
-    # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
@@ -586,30 +553,23 @@ def short_sell_nb(
     if np.isinf(size_limit):
         raise ValueError("Attempt to go in short direction infinitely")
 
-    # Check against size of zero
     if is_close_nb(size_limit, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
 
-    # Check against minimum size
     if not np.isnan(min_size) and is_less_nb(size_limit, min_size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.MinSizeNotReached), _account_state
 
-    # Check against partial fill
     if np.isfinite(size) and is_less_nb(size_limit, size) and not allow_partial:  # np.inf doesn't count
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
-    # Get acquired cash
     order_value = size_limit * adj_price
 
-    # Update fees
     fees_paid = order_value * fees + fixed_fees
 
-    # Get final cash by subtracting costs
     final_acq_cash = add_nb(order_value, -fees_paid)
     if final_acq_cash < 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
-    # Create a filled order
     order_result = OrderResult(
         float(size_limit),
         float(adj_price),
@@ -619,7 +579,6 @@ def short_sell_nb(
         -1,
     )
 
-    # Update the current account state
     new_cash = _account_state.cash + final_acq_cash
     new_position = _account_state.position - size_limit
     new_debt = _account_state.debt + order_value
@@ -723,36 +682,29 @@ def short_buy_nb(
     """
     _account_state = cast_account_state_nb(account_state)
 
-    # Check for open position
     if _account_state.position == 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoOpenPosition), _account_state
 
-    # Get cash limit
     cash_limit = _account_state.free_cash + _account_state.debt + _account_state.locked_cash
     if cash_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
 
-    # Get size limit
     size_limit = min(size, abs(_account_state.position))
     if not np.isnan(percent):
         size_limit = size_limit * percent
 
-    # Adjust for granularity
     if should_apply_size_granularity_nb(size_limit, size_granularity):
         size_limit = apply_size_granularity_nb(size_limit, size_granularity)
 
-    # Adjust for max size
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
 
         size_limit = max_size
 
-    # Get price adjusted with slippage
     adj_price = price * (1 + slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
 
-    # Get cash required to complete this order
     if np.isinf(size_limit):
         req_cash = np.inf
         req_fees = np.inf
@@ -762,21 +714,16 @@ def short_buy_nb(
         req_cash = order_value + req_fees
 
     if is_close_or_less_nb(req_cash, cash_limit):
-        # Sufficient amount of cash
         final_size = size_limit
         fees_paid = req_fees
     else:
-        # Insufficient amount of cash, size will be less than requested
 
-        # For fees of 10% and 1$ per transaction, you can buy for 90$ (new_req_cash)
-        # to spend 100$ (cash_limit) in total
         max_req_cash = add_nb(cash_limit, -fixed_fees) / (1 + fees)
         if max_req_cash <= 0:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
         max_acq_size = max_req_cash / adj_price
 
-        # Adjust for granularity
         if should_apply_size_granularity_nb(max_acq_size, size_granularity):
             final_size = apply_size_granularity_nb(max_acq_size, size_granularity)
             new_order_value = final_size * adj_price
@@ -787,19 +734,15 @@ def short_buy_nb(
             fees_paid = cash_limit - max_req_cash
             req_cash = cash_limit
 
-    # Check size of zero
     if is_close_nb(final_size, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
 
-    # Check against minimum size
     if not np.isnan(min_size) and is_less_nb(final_size, min_size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.MinSizeNotReached), _account_state
 
-    # Check against partial fill (np.inf doesn't count)
     if np.isfinite(size_limit) and is_less_nb(final_size, size_limit) and not allow_partial:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
-    # Create a filled order
     order_result = OrderResult(
         float(final_size),
         float(adj_price),
@@ -809,7 +752,6 @@ def short_buy_nb(
         -1,
     )
 
-    # Update the current account state
     new_cash = add_nb(_account_state.cash, -req_cash)
     new_position = add_nb(_account_state.position, final_size)
     new_pos_fraction = abs(new_position) / abs(_account_state.position)
@@ -1488,7 +1430,6 @@ def execute_order_nb(
         Tuple[OrderResult, ExecState]: Tuple containing the order execution result and
             the updated execution state.
     """
-    # numerical stability
     cash = float(exec_state.cash)
     if is_close_nb(cash, 0):
         cash = 0.0
@@ -1511,7 +1452,6 @@ def execute_order_nb(
     if is_close_nb(value, 0):
         value = 0.0
 
-    # Pre-fill account state
     account_state = AccountState(
         cash=cash,
         position=position,
@@ -1520,7 +1460,6 @@ def execute_order_nb(
         free_cash=free_cash,
     )
 
-    # Check price area
     if np.isinf(price_area.open) or price_area.open < 0:
         raise ValueError("price_area.open must be either NaN, or finite and 0 or greater")
     if np.isinf(price_area.high) or price_area.high < 0:
@@ -1530,7 +1469,6 @@ def execute_order_nb(
     if np.isinf(price_area.close) or price_area.close < 0:
         raise ValueError("price_area.close must be either NaN, or finite and 0 or greater")
 
-    # Resolve price
     order_price = order.price
     is_closing_price = False
     if np.isinf(order_price):
@@ -1544,13 +1482,11 @@ def execute_order_nb(
     elif order_price == PriceType.NextClose:
         raise ValueError("Next close must be handled higher in the stack")
 
-    # Ignore order if size or price is nan
     if np.isnan(order.size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeNaN), exec_state
     if np.isnan(order_price):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.PriceNaN), exec_state
 
-    # Check account state
     if np.isnan(cash):
         raise ValueError("exec_state.cash cannot be NaN")
     if not np.isfinite(position):
@@ -1562,7 +1498,6 @@ def execute_order_nb(
     if np.isnan(free_cash):
         raise ValueError("exec_state.free_cash cannot be NaN")
 
-    # Check order
     if not np.isfinite(order_price) or order_price < 0:
         raise ValueError("order.price must be finite and 0 or greater")
     if order.size_type < 0 or order.size_type >= len(SizeType):
@@ -1588,7 +1523,6 @@ def execute_order_nb(
     if not np.isfinite(order.reject_prob) or order.reject_prob < 0 or order.reject_prob > 1:
         raise ValueError("order.reject_prob must be between 0 and 1")
 
-    # Positive/negative size in short direction should be treated as negative/positive
     order_size = get_diraware_size_nb(order.size, order.direction)
     min_order_size = order.min_size
     max_order_size = order.max_size
@@ -1929,7 +1863,6 @@ def process_order_nb(
         Tuple[OrderResult, ExecState]: Tuple containing the result of the order execution and
             the updated execution state.
     """
-    # Execute the order
     order_result, new_exec_state = execute_order_nb(
         exec_state=exec_state,
         order=order,
@@ -1940,7 +1873,6 @@ def process_order_nb(
     is_filled = order_result.status == OrderStatus.Filled
     if order_records is not None and order_counts is not None:
         if is_filled and order_records.shape[0] > 0:
-            # Fill order record
             if order_counts[col] >= order_records.shape[0]:
                 raise IndexError("order_records index out of range. Set a higher max_order_records.")
             fill_order_record_nb(order_records, order_counts[col], col, i, order_result)
@@ -1948,7 +1880,6 @@ def process_order_nb(
 
     if log_records is not None and log_counts is not None:
         if order.log and log_records.shape[0] > 0:
-            # Fill log record
             if log_counts[col] >= log_records.shape[0]:
                 raise IndexError("log_records index out of range. Set a higher max_log_records.")
             fill_log_record_nb(
@@ -2475,7 +2406,6 @@ def fill_init_pos_info_nb(record: tp.Record, col: int, position_now: float, pric
     record["status"] = TradeStatus.Open
     record["parent_id"] = record["id"]
 
-    # Update open position stats
     update_open_pos_info_stats_nb(record, position_now, np.nan)
 
 
@@ -2509,7 +2439,6 @@ def update_pos_info_nb(
     """
     if order_result.status == OrderStatus.Filled:
         if position_before == 0 and position_now != 0:
-            # New position opened
             record["id"] += 1
             record["col"] = col
             record["size"] = order_result.size
@@ -2528,7 +2457,6 @@ def update_pos_info_nb(
             record["status"] = TradeStatus.Open
             record["parent_id"] = record["id"]
         elif position_before != 0 and position_now == 0:
-            # Position closed
             record["exit_order_id"] = order_id
             record["exit_idx"] = i
             if np.isnan(record["exit_price"]):
@@ -2552,7 +2480,6 @@ def update_pos_info_nb(
             record["return"] = ret
             record["status"] = TradeStatus.Closed
         elif np.sign(position_before) != np.sign(position_now):
-            # Position reversed
             record["id"] += 1
             record["size"] = abs(position_now)
             record["entry_order_id"] = order_id
@@ -2571,9 +2498,7 @@ def update_pos_info_nb(
             record["status"] = TradeStatus.Open
             record["parent_id"] = record["id"]
         else:
-            # Position changed
             if abs(position_before) <= abs(position_now):
-                # Position increased
                 entry_gross_sum = record["size"] * record["entry_price"]
                 entry_gross_sum += order_result.size * order_result.price
                 entry_price = entry_gross_sum / (record["size"] + order_result.size)
@@ -2581,7 +2506,6 @@ def update_pos_info_nb(
                 record["entry_fees"] += order_result.fees
                 record["size"] += order_result.size
             else:
-                # Position decreased
                 record["exit_order_id"] = order_id
                 if np.isnan(record["exit_price"]):
                     exit_price = order_result.price
@@ -2593,7 +2517,6 @@ def update_pos_info_nb(
                 record["exit_price"] = exit_price
                 record["exit_fees"] += order_result.fees
 
-        # Update open position stats
         update_open_pos_info_stats_nb(record, position_now, order_result.price)
 
 

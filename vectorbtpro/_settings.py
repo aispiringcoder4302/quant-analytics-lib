@@ -855,7 +855,6 @@ data = frozen_cfg(
     missing_index="nan",
     missing_columns="raise",
     custom=flex_cfg(
-        # Synthetic
         synthetic=flex_cfg(
             start=None,
             end=None,
@@ -896,9 +895,7 @@ data = frozen_cfg(
             dt=1.0,
             seed=None,
         ),
-        # Local
         local=flex_cfg(),
-        # File
         file=flex_cfg(
             match_paths=True,
             match_regex=None,
@@ -938,7 +935,6 @@ data = frozen_cfg(
             engine="auto",
             read_kwargs=flex_cfg(),
         ),
-        # Database
         db=flex_cfg(),
         sql=flex_cfg(
             engine=None,
@@ -980,7 +976,6 @@ data = frozen_cfg(
             df_kwargs=flex_cfg(),
             sql_kwargs=flex_cfg(),
         ),
-        # Remote
         remote=flex_cfg(),
         yf=flex_cfg(
             period="max",
@@ -1725,7 +1720,6 @@ ${config_doc}
 _settings["logs"] = logs
 
 portfolio = frozen_cfg(
-    # Setup
     data=None,
     open=None,
     high=None,
@@ -1769,7 +1763,6 @@ portfolio = frozen_cfg(
     chunked=None,
     staticized=False,
     records=None,
-    # Orders
     size=np.inf,
     size_type="amount",
     direction="both",
@@ -1788,7 +1781,6 @@ portfolio = frozen_cfg(
     raise_reject=False,
     log=False,
     from_orders=flex_cfg(),
-    # Signals
     from_signals=flex_cfg(
         direction="longonly",
         adjust_func_nb=None,
@@ -1833,10 +1825,8 @@ portfolio = frozen_cfg(
         delta_format="percent",
         time_delta_format="index",
     ),
-    # Holding
     hold_direction="longonly",
     close_at_end=False,
-    # Order function
     from_order_func=flex_cfg(
         segment_mask=True,
         call_pre_segment=False,
@@ -1868,7 +1858,6 @@ portfolio = frozen_cfg(
     from_def_order_func=flex_cfg(
         flexible=False,
     ),
-    # Portfolio
     freq=None,
     year_freq=None,
     use_in_outputs=True,

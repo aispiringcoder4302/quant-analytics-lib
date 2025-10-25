@@ -545,7 +545,6 @@ class Orders(PriceRecords):
             fig = make_figure()
         fig.update_layout(**layout_kwargs)
 
-        # Plot price
         if (
             plot_ohlc
             and self_col._open is not None
@@ -578,14 +577,12 @@ class Orders(PriceRecords):
             )
 
         if self_col.count() > 0:
-            # Extract information
             idx = self_col.get_map_field_to_index("idx")
             price = self_col.get_field_arr("price")
             side = self_col.get_field_arr("side")
 
             buy_mask = side == OrderSide.Buy
             if buy_mask.any():
-                # Plot buy markers
                 buy_customdata, buy_hovertemplate = self_col.prepare_customdata(mask=buy_mask)
                 _buy_trace_kwargs = merge_dicts(
                     dict(
@@ -609,7 +606,6 @@ class Orders(PriceRecords):
 
             sell_mask = side == OrderSide.Sell
             if sell_mask.any():
-                # Plot sell markers
                 sell_customdata, sell_hovertemplate = self_col.prepare_customdata(mask=sell_mask)
                 _sell_trace_kwargs = merge_dicts(
                     dict(

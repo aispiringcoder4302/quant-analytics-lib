@@ -47,7 +47,6 @@ class ColumnMapper(Wrapping):
 
         self._col_arr = col_arr
 
-        # Cannot select rows
         self._column_only_select = True
 
     @property

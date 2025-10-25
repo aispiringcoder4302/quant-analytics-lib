@@ -2534,10 +2534,8 @@ class BaseAccessor(Wrapping):
         if not isinstance(cls_or_self, type):
             objs = (cls_or_self.obj,) + objs
         if checks.is_numba_func(combine_func):
-            # Numba requires writeable arrays and in the same order
             broadcast_kwargs = merge_dicts(dict(require_kwargs=dict(requirements=["W", "C"])), broadcast_kwargs)
 
-        # Broadcast and substitute templates
         broadcast_named_args = {**{"obj_" + str(i): obj for i, obj in enumerate(objs)}, **broadcast_named_args}
         broadcast_named_args, wrapper = reshaping.broadcast(
             broadcast_named_args,
@@ -2556,7 +2554,6 @@ class BaseAccessor(Wrapping):
         if concat is None:
             concat = len(inputs) > 2
         if concat:
-            # Concat the results horizontally
             if isinstance(cls_or_self, type):
                 raise TypeError("Use instance method to concatenate")
             out = combining.combine_and_concat(inputs[0], inputs[1:], combine_func, *args, **kwargs)
@@ -2567,7 +2564,6 @@ class BaseAccessor(Wrapping):
                 new_columns = indexes.combine_indexes([top_columns, wrapper.columns])
             return wrapper.wrap(out, **merge_dicts(dict(columns=new_columns, force_2d=True), wrap_kwargs))
         else:
-            # Combine arguments pairwise into one object
             out = combining.combine_multiple(inputs, combine_func, *args, **kwargs)
             return wrapper.wrap(out, **resolve_dict(wrap_kwargs))
 

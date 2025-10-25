@@ -797,7 +797,6 @@ def ewm_mean_acc_nb(in_state: EWMMeanAIS) -> EWMMeanAOS:
         if not np.isnan(weighted_avg):
             old_wt *= old_wt_factor
             if is_observation:
-                # avoid numerical errors on constant series
                 if weighted_avg != value:
                     weighted_avg = ((old_wt * weighted_avg) + (new_wt * value)) / (old_wt + new_wt)
                 if adjust:
@@ -941,11 +940,9 @@ def ewm_std_acc_nb(in_state: EWMStdAIS) -> EWMStdAOS:
                 old_mean_x = mean_x
                 old_mean_y = mean_y
 
-                # avoid numerical errors on constant series
                 if mean_x != cur_x:
                     mean_x = ((old_wt * old_mean_x) + (new_wt * cur_x)) / (old_wt + new_wt)
 
-                # avoid numerical errors on constant series
                 if mean_y != cur_y:
                     mean_y = ((old_wt * old_mean_y) + (new_wt * cur_y)) / (old_wt + new_wt)
                 cov = (

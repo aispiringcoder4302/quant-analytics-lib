@@ -1182,7 +1182,6 @@ class Drawdowns(Ranges):
 
         self_col = self.select_col(column=column, group_by=False)
         if top_n is not None:
-            # Drawdowns is negative, thus top_n becomes bottom_n
             self_col = self_col.apply_mask(self_col.drawdown.bottom_n_mask(top_n))
 
         if ohlc_trace_kwargs is None:
@@ -1249,7 +1248,6 @@ class Drawdowns(Ranges):
             )
 
         if self_col.count() > 0:
-            # Extract information
             id_ = self_col.get_field_arr("id")
             start_idx = self_col.get_map_field_to_index("start_idx")
             if not plotting_ohlc and self_col._close is not None:
@@ -1286,11 +1284,9 @@ class Drawdowns(Ranges):
                 )
             )
 
-            # Peak and recovery at same time -> recovery wins
             peak_mask = (start_val != np.roll(end_val, 1)) | (start_idx != np.roll(end_idx, 1))
             if peak_mask.any():
                 if plot_markers:
-                    # Plot peak markers
                     peak_customdata, peak_hovertemplate = self_col.prepare_customdata(
                         incl_fields=["id", "start_idx", "start_val"], mask=peak_mask
                     )
@@ -1319,7 +1315,6 @@ class Drawdowns(Ranges):
             recovered_mask = status == DrawdownStatus.Recovered
             if recovered_mask.any():
                 if plot_markers:
-                    # Plot valley markers
                     valley_customdata, valley_hovertemplate = self_col.prepare_customdata(
                         incl_fields=["id", "valley_idx", "valley_val"],
                         append_info=[
@@ -1351,7 +1346,6 @@ class Drawdowns(Ranges):
                     fig.add_trace(valley_scatter, **add_trace_kwargs)
 
                 if plot_markers:
-                    # Plot recovery markers
                     recovery_customdata, recovery_hovertemplate = self_col.prepare_customdata(
                         incl_fields=["id", "end_idx", "end_val"],
                         append_info=[
@@ -1387,7 +1381,6 @@ class Drawdowns(Ranges):
             active_mask = status == DrawdownStatus.Active
             if active_mask.any():
                 if plot_markers:
-                    # Plot active markers
                     active_customdata, active_hovertemplate = self_col.prepare_customdata(
                         incl_fields=["id"],
                         append_info=[
@@ -1419,7 +1412,6 @@ class Drawdowns(Ranges):
                     fig.add_trace(active_scatter, **add_trace_kwargs)
 
             if plot_zones:
-                # Plot drawdown zones
                 self_col.status_recovered.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -1437,7 +1429,6 @@ class Drawdowns(Ranges):
                     fig=fig,
                 )
 
-                # Plot recovery zones
                 self_col.status_recovered.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -1455,7 +1446,6 @@ class Drawdowns(Ranges):
                     fig=fig,
                 )
 
-                # Plot active drawdown zones
                 self_col.status_active.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,

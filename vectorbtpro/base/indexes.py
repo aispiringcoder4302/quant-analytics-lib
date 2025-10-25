@@ -1058,11 +1058,9 @@ def cross_index_with(
                     raise ValueError(f"Candidate block level {name1!r} in both indexes has different values")
 
     if len(levels1) == 0:
-        # Regular index product
         indices1 = np.repeat(np.arange(len(index1)), len(index2))
         indices2 = np.tile(np.arange(len(index2)), len(index1))
     else:
-        # Block index product
         index_levels1 = select_levels(index1, levels1)
         index_levels2 = select_levels(index2, levels2)
 

@@ -1862,7 +1862,6 @@ class Trades(Ranges):
         y_domain = get_domain(yref, fig)
 
         if self_col.count() > 0:
-            # Extract information
             exit_idx = self_col.get_map_field_to_index("exit_idx")
             pnl = self_col.get_field_arr("pnl")
             returns = self_col.get_field_arr("return")
@@ -1912,10 +1911,8 @@ class Trades(Ranges):
                     scatter = go.Scatter(**_kwargs)
                     fig.add_trace(scatter, **add_trace_kwargs)
 
-            # Plot Closed - Neutral scatter
             _plot_scatter(neutral_mask, "Closed", plotting_cfg["contrast_color_schema"]["gray"], closed_trace_kwargs)
 
-            # Plot Closed - Profit scatter
             _plot_scatter(
                 closed_profit_mask,
                 "Closed - Profit",
@@ -1923,7 +1920,6 @@ class Trades(Ranges):
                 closed_profit_trace_kwargs,
             )
 
-            # Plot Closed - Loss scatter
             _plot_scatter(
                 closed_loss_mask,
                 "Closed - Loss",
@@ -1931,10 +1927,8 @@ class Trades(Ranges):
                 closed_loss_trace_kwargs,
             )
 
-            # Plot Open scatter
             _plot_scatter(open_mask, "Open", plotting_cfg["contrast_color_schema"]["orange"], open_trace_kwargs)
 
-        # Plot zeroline
         fig.add_shape(
             **merge_dicts(
                 dict(
@@ -2088,7 +2082,6 @@ class Trades(Ranges):
         y_domain = get_domain(yref, fig)
 
         if self_col.count() > 0:
-            # Extract information
             pnl = self_col.get_field_arr("pnl")
             returns = self_col.get_field_arr("return")
             status = self_col.get_field_arr("status")
@@ -2133,10 +2126,8 @@ class Trades(Ranges):
                     scatter = go.Scatter(**_kwargs)
                     fig.add_trace(scatter, **add_trace_kwargs)
 
-            # Plot Closed - Neutral scatter
             _plot_scatter(neutral_mask, "Closed", plotting_cfg["contrast_color_schema"]["gray"], closed_trace_kwargs)
 
-            # Plot Closed - Profit scatter
             _plot_scatter(
                 closed_profit_mask,
                 "Closed - Profit",
@@ -2144,7 +2135,6 @@ class Trades(Ranges):
                 closed_profit_trace_kwargs,
             )
 
-            # Plot Closed - Loss scatter
             _plot_scatter(
                 closed_loss_mask,
                 "Closed - Loss",
@@ -2152,10 +2142,8 @@ class Trades(Ranges):
                 closed_loss_trace_kwargs,
             )
 
-            # Plot Open scatter
             _plot_scatter(open_mask, "Open", plotting_cfg["contrast_color_schema"]["orange"], open_trace_kwargs)
 
-        # Plot zerolines
         fig.add_shape(
             **merge_dicts(
                 dict(
@@ -2626,7 +2614,6 @@ class Trades(Ranges):
             fig = make_figure()
         fig.update_layout(**layout_kwargs)
 
-        # Plot close
         if (
             plot_ohlc
             and self_col._open is not None
@@ -2659,7 +2646,6 @@ class Trades(Ranges):
             )
 
         if self_col.count() > 0:
-            # Extract information
             entry_idx = self_col.get_map_field_to_index("entry_idx", minus_one_to_zero=True)
             entry_price = self_col.get_field_arr("entry_price")
             exit_idx = self_col.get_map_field_to_index("exit_idx")
@@ -2675,7 +2661,6 @@ class Trades(Ranges):
             )
 
             if plot_markers:
-                # Plot Entry markers
                 if self_col.get_field_setting("parent_id", "ignore", False):
                     entry_customdata, entry_hovertemplate = self_col.prepare_customdata(
                         incl_fields=[
@@ -2721,7 +2706,6 @@ class Trades(Ranges):
                 entry_scatter = go.Scatter(**_entry_trace_kwargs)
                 fig.add_trace(entry_scatter, **add_trace_kwargs)
 
-                # Plot end markers
                 def _plot_end_markers(mask, name, color, kwargs, incl_status=False) -> None:
                     if np.any(mask):
                         if self_col.get_field_setting("parent_id", "ignore", False):
@@ -2780,7 +2764,6 @@ class Trades(Ranges):
                         fig.add_trace(scatter, **add_trace_kwargs)
 
                 if plot_by_type:
-                    # Plot Exit markers
                     _plot_end_markers(
                         (status == TradeStatus.Closed) & (pnl == 0.0),
                         "Exit",
@@ -2788,7 +2771,6 @@ class Trades(Ranges):
                         exit_trace_kwargs,
                     )
 
-                    # Plot Exit - Profit markers
                     _plot_end_markers(
                         (status == TradeStatus.Closed) & (pnl > 0.0),
                         "Exit - Profit",
@@ -2796,7 +2778,6 @@ class Trades(Ranges):
                         exit_profit_trace_kwargs,
                     )
 
-                    # Plot Exit - Loss markers
                     _plot_end_markers(
                         (status == TradeStatus.Closed) & (pnl < 0.0),
                         "Exit - Loss",
@@ -2804,7 +2785,6 @@ class Trades(Ranges):
                         exit_loss_trace_kwargs,
                     )
 
-                    # Plot Active markers
                     _plot_end_markers(
                         status == TradeStatus.Open,
                         "Active",
@@ -2812,7 +2792,6 @@ class Trades(Ranges):
                         active_trace_kwargs,
                     )
                 else:
-                    # Plot Exit markers
                     _plot_end_markers(
                         np.full(len(status), True),
                         "Exit",
@@ -2822,7 +2801,6 @@ class Trades(Ranges):
                     )
 
             if plot_zones:
-                # Plot profit zones
                 self_col.winning.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -2841,7 +2819,6 @@ class Trades(Ranges):
                     fig=fig,
                 )
 
-                # Plot loss zones
                 self_col.losing.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -3097,7 +3074,6 @@ class EntryTrades(Trades):
             fig = make_figure()
         fig.update_layout(**layout_kwargs)
 
-        # Plot close
         if (
             plot_ohlc
             and self_col._open is not None
@@ -3130,7 +3106,6 @@ class EntryTrades(Trades):
             )
 
         if self_col.count() > 0:
-            # Extract information
             entry_idx = self_col.get_map_field_to_index("entry_idx", minus_one_to_zero=True)
             entry_price = self_col.get_field_arr("entry_price")
             direction = self_col.get_field_arr("direction")
@@ -3175,7 +3150,6 @@ class EntryTrades(Trades):
                     scatter = go.Scatter(**_kwargs)
                     fig.add_trace(scatter, **add_trace_kwargs)
 
-            # Plot Long Entry markers
             _plot_entry_markers(
                 direction == TradeDirection.Long,
                 "Long Entry",
@@ -3183,7 +3157,6 @@ class EntryTrades(Trades):
                 long_entry_trace_kwargs,
             )
 
-            # Plot Short Entry markers
             _plot_entry_markers(
                 direction == TradeDirection.Short,
                 "Short Entry",
@@ -3386,7 +3359,6 @@ class ExitTrades(Trades):
             fig = make_figure()
         fig.update_layout(**layout_kwargs)
 
-        # Plot close
         if (
             plot_ohlc
             and self_col._open is not None
@@ -3419,7 +3391,6 @@ class ExitTrades(Trades):
             )
 
         if self_col.count() > 0:
-            # Extract information
             exit_idx = self_col.get_map_field_to_index("exit_idx", minus_one_to_zero=True)
             exit_price = self_col.get_field_arr("exit_price")
             direction = self_col.get_field_arr("direction")
@@ -3460,7 +3431,6 @@ class ExitTrades(Trades):
                     scatter = go.Scatter(**_kwargs)
                     fig.add_trace(scatter, **add_trace_kwargs)
 
-            # Plot Long Exit markers
             _plot_exit_markers(
                 direction == TradeDirection.Long,
                 "Long Exit",
@@ -3468,7 +3438,6 @@ class ExitTrades(Trades):
                 long_exit_trace_kwargs,
             )
 
-            # Plot Short Exit markers
             _plot_exit_markers(
                 direction == TradeDirection.Short,
                 "Short Exit",

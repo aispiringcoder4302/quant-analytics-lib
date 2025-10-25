@@ -657,7 +657,6 @@ def get_context_vars(
                 a = global_dict[var_name]
             args.append(a)
     finally:
-        # See https://github.com/pydata/numexpr/issues/310
         if clear_local_dict:
             local_dict.clear()
     return args

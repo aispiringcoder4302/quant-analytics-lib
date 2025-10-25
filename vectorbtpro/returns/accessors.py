@@ -4072,7 +4072,6 @@ class ReturnsAccessor(GenericAccessor, SimRangeMixin):
         fill_to_benchmark = fill_to_benchmark and bm_returns is not None
 
         if bm_returns is not None:
-            # Plot benchmark
             bm_returns = broadcast_to(bm_returns, self.obj)
             bm_returns = self.select_col_from_obj(bm_returns, column=column, group_by=False)
             if bm_kwargs is None:

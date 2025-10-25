@@ -1253,10 +1253,8 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
         if not isinstance(columns, pd.Index):
             columns = pd.Index(columns)
         if group_select:
-            # Groups as columns
             i_wrapper = ArrayWrapper(index, columns, _self.get_ndim())
         else:
-            # Columns as columns
             i_wrapper = ArrayWrapper(index, columns, _self.ndim)
         n_rows = len(index)
         n_cols = len(columns)
@@ -1318,7 +1316,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 col_mapper = pd_indexing_func(init_col_mapper)
 
                 if checks.is_frame(col_mapper):
-                    # Multiple rows and columns selected
                     row_idxs = row_mapper.values[:, 0]
                     col_idxs = col_mapper.values[0]
                     new_index = indexes.get_index(row_mapper, 0)
@@ -1346,21 +1343,18 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                     if (one_row and one_col) or (not one_row and not one_col):
                         raise IndexingError("Could not parse indexing operation")
                     if one_row:
-                        # One row selected
                         row_idxs = row_mapper.values[[0]]
                         col_idxs = col_mapper.values
                         new_index = index[row_idxs]
                         new_columns = indexes.get_index(col_mapper, 0)
                         new_ndim = 2
                     else:
-                        # One column selected
                         row_idxs = row_mapper.values
                         col_idxs = col_mapper.values[0]
                         new_index = indexes.get_index(row_mapper, 0)
                         new_columns = columns[[col_idxs]]
                         new_ndim = 1
                 else:
-                    # One row and column selected
                     row_idxs = np.array([row_mapper])
                     col_idxs = col_mapper
                     new_index = index[row_idxs]
@@ -1368,13 +1362,10 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                     new_ndim = 1
 
         if _self.grouper.is_grouped():
-            # Grouping enabled
             if np.asarray(row_idxs).ndim == 0:
                 raise IndexingError("Flipping index and columns is not allowed")
 
             if group_select:
-                # Selection based on groups
-                # Get indices of columns corresponding to selected groups
                 group_idxs = col_idxs
                 col_idxs, new_groups = _self.grouper.select_groups(group_idxs)
                 ungrouped_columns = _self.columns[col_idxs]
@@ -1413,7 +1404,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                     groups_changed=groups_changed,
                 )
 
-            # Selection based on columns
             group_idxs = _self.grouper.get_groups()[col_idxs]
             new_group_by = _self.grouper.group_by[reshaping.to_1d_array(col_idxs)]
             row_idxs, rows_changed = _resolve_arr(row_idxs, _self.shape[0])
@@ -1445,7 +1435,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 groups_changed=groups_changed,
             )
 
-        # Grouping disabled
         row_idxs, rows_changed = _resolve_arr(row_idxs, _self.shape[0])
         if range_only_select and rows_changed:
             if not isinstance(row_idxs, slice):
@@ -2105,13 +2094,11 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         out = _wrap(arr)
         if to_index:
-            # Convert to index
             if checks.is_series(out):
                 out = out.map(lambda x: self.index[x] if x != -1 else np.nan)
             else:
                 out = out.applymap(lambda x: self.index[x] if x != -1 else np.nan)
         if to_timedelta:
-            # Convert to timedelta
             out = self.arr_to_timedelta(out, silence_warnings=silence_warnings)
         return out
 
@@ -2196,35 +2183,29 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
                 else:
                     arr[pd.isnull(arr)] = fillna
             if arr.ndim == 0:
-                # Scalar per Series/DataFrame
                 return _apply_dtype(pd.Series(arr[None]))[0]
             if arr.ndim == 1:
                 if not force_1d and _self.ndim == 1:
                     if arr.shape[0] == 1:
-                        # Scalar per Series/DataFrame with one column
                         return _apply_dtype(pd.Series(arr))[0]
-                    # Array per Series
                     sr_name = columns[0]
                     if sr_name == 0:
                         sr_name = None
                     if isinstance(name_or_index, str):
                         name_or_index = None
                     return _apply_dtype(pd.Series(arr, index=name_or_index, name=sr_name))
-                # Scalar per column in DataFrame
                 if arr.shape[0] == 1 and len(columns) > 1:
                     arr = reshaping.broadcast_array_to(arr, len(columns))
                 return _apply_dtype(pd.Series(arr, index=columns, name=name_or_index))
             if arr.ndim == 2:
                 if arr.shape[1] == 1 and _self.ndim == 1:
                     arr = reshaping.soft_to_ndim(arr, 1)
-                    # Array per Series
                     sr_name = columns[0]
                     if sr_name == 0:
                         sr_name = None
                     if isinstance(name_or_index, str):
                         name_or_index = None
                     return _apply_dtype(pd.Series(arr, index=name_or_index, name=sr_name))
-                # Array per column in DataFrame
                 if isinstance(name_or_index, str):
                     name_or_index = None
                 if arr.shape[0] == 1 and len(columns) > 1:
@@ -2234,7 +2215,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
 
         out = _wrap_reduced(arr)
         if to_index:
-            # Convert to index
             if checks.is_series(out):
                 out = out.map(lambda x: self.index[x] if x != -1 else np.nan)
             elif checks.is_frame(out):
@@ -2242,7 +2222,6 @@ class ArrayWrapper(Configured, HasWrapper, IndexApplier):
             else:
                 out = self.index[out] if out != -1 else np.nan
         if to_timedelta:
-            # Convert to timedelta
             out = self.arr_to_timedelta(out, silence_warnings=silence_warnings)
         return out
 

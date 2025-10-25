@@ -1963,7 +1963,6 @@ def total_profit_nb(
                 raise ValueError("Ids must come in ascending order per column")
             last_id = order_record["id"]
 
-            # Fill assets
             if order_record["side"] == OrderSide.Buy:
                 order_size = order_record["size"]
                 assets[col] = add_nb(assets[col], order_size)
@@ -1971,7 +1970,6 @@ def total_profit_nb(
                 order_size = order_record["size"]
                 assets[col] = add_nb(assets[col], -order_size)
 
-            # Fill cash balance
             if order_record["side"] == OrderSide.Buy:
                 order_cash = order_record["size"] * order_record["price"] + order_record["fees"]
                 cash[col] = add_nb(cash[col], -order_cash)

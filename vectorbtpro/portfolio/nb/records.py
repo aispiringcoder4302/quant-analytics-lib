@@ -185,10 +185,8 @@ def fill_trade_record_nb(
     Returns:
         None: Function modifies `new_records` in place.
     """
-    # Calculate PnL and return
     pnl, ret = get_trade_stats_nb(size, entry_price, entry_fees, exit_price, exit_fees, direction)
 
-    # Save trade
     new_records["id"][r] = r
     new_records["col"][r] = col
     new_records["size"][r] = size
@@ -270,7 +268,6 @@ def fill_entry_trades_in_position_nb(
     col_idxs, col_lens = col_map
     col_start_idxs = np.cumsum(col_lens) - col_lens
 
-    # Iterate over orders located within a single position
     for c in range(first_c, last_c + 1):
         if c == -1:
             entry_order_id = -1
@@ -287,7 +284,6 @@ def fill_entry_trades_in_position_nb(
             entry_price = order_record["price"]
             order_side = order_record["side"]
 
-            # Ignore exit orders
             if (direction == TradeDirection.Long and order_side == OrderSide.Sell) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
@@ -300,14 +296,11 @@ def fill_entry_trades_in_position_nb(
                 entry_size = order_record["size"]
                 entry_fees = order_record["fees"]
 
-        # Take a size-weighted average of exit price
         exit_price = exit_gross_sum / exit_size_sum
 
-        # Take a fraction of exit fees
         size_fraction = entry_size / exit_size_sum
         exit_fees = size_fraction * exit_fees_sum
 
-        # Fill the record
         if status == TradeStatus.Closed:
             exit_order_record = order_records[col_idxs[col_start_idxs[col] + last_c]]
             if exit_order_record["idx"] < sim_start or exit_order_record["idx"] >= sim_end:
@@ -490,7 +483,6 @@ def get_entry_trades_nb(
         _init_price = float(flex_select_1d_pc_nb(init_price_, col))
 
         if _init_position != 0:
-            # Prepare initial position
             first_c = -1
             in_position = True
             parent_id = 0
@@ -536,7 +528,6 @@ def get_entry_trades_nb(
                 raise ValueError(invalid_price_msg)
 
             if not in_position:
-                # New position opened
                 first_c = c
                 in_position = True
                 parent_id += 1
@@ -556,7 +547,6 @@ def get_entry_trades_nb(
             if (direction == TradeDirection.Long and order_side == OrderSide.Buy) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Sell
             ):
-                # Position increased
                 entry_size_sum += order_size
                 entry_gross_sum += order_size * order_price
                 entry_fees_sum += order_fees
@@ -565,14 +555,12 @@ def get_entry_trades_nb(
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
                 if is_close_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position closed
                     last_c = c
                     in_position = False
                     exit_size_sum = entry_size_sum
                     exit_gross_sum += order_size * order_price
                     exit_fees_sum += order_fees
 
-                    # Fill trade records
                     counts[col] = fill_entry_trades_in_position_nb(
                         order_records,
                         col_map,
@@ -595,19 +583,16 @@ def get_entry_trades_nb(
                         counts[col],
                     )
                 elif is_less_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position decreased
                     exit_size_sum += order_size
                     exit_gross_sum += order_size * order_price
                     exit_fees_sum += order_fees
                 else:
-                    # Position closed
                     last_c = c
                     remaining_size = add_nb(entry_size_sum, -exit_size_sum)
                     exit_size_sum = entry_size_sum
                     exit_gross_sum += remaining_size * order_price
                     exit_fees_sum += remaining_size / order_size * order_fees
 
-                    # Fill trade records
                     counts[col] = fill_entry_trades_in_position_nb(
                         order_records,
                         col_map,
@@ -630,7 +615,6 @@ def get_entry_trades_nb(
                         counts[col],
                     )
 
-                    # New position opened
                     first_c = c
                     parent_id += 1
                     if order_side == OrderSide.Buy:
@@ -647,7 +631,6 @@ def get_entry_trades_nb(
                     exit_fees_sum = 0.0
 
         if in_position and is_less_nb(exit_size_sum, entry_size_sum):
-            # Position hasn't been closed
             last_c = col_len - 1
             remaining_size = add_nb(entry_size_sum, -exit_size_sum)
             exit_size_sum = entry_size_sum
@@ -661,7 +644,6 @@ def get_entry_trades_nb(
             exit_gross_sum += remaining_size * last_close
             exit_idx = _sim_end - 1
 
-            # Fill trade records
             counts[col] = fill_entry_trades_in_position_nb(
                 order_records,
                 col_map,
@@ -806,7 +788,6 @@ def get_exit_trades_nb(
         _init_price = float(flex_select_1d_pc_nb(init_price_, col))
 
         if _init_position != 0:
-            # Prepare initial position
             in_position = True
             parent_id = 0
             entry_order_id = -1
@@ -849,7 +830,6 @@ def get_exit_trades_nb(
                 raise ValueError(invalid_price_msg)
 
             if not in_position:
-                # Trade opened
                 in_position = True
                 entry_order_id = order_id
                 entry_idx = order_idx
@@ -865,7 +845,6 @@ def get_exit_trades_nb(
             if (direction == TradeDirection.Long and order_side == OrderSide.Buy) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Sell
             ):
-                # Position increased
                 entry_size_sum += order_size
                 entry_gross_sum += order_size * order_price
                 entry_fees_sum += order_fees
@@ -874,7 +853,6 @@ def get_exit_trades_nb(
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
                 if is_close_or_less_nb(order_size, entry_size_sum):
-                    # Trade closed
                     if is_close_nb(order_size, entry_size_sum):
                         exit_size = entry_size_sum
                     else:
@@ -884,10 +862,8 @@ def get_exit_trades_nb(
                     exit_order_id = order_id
                     exit_idx = order_idx
 
-                    # Take a size-weighted average of entry price
                     entry_price = entry_gross_sum / entry_size_sum
 
-                    # Take a fraction of entry fees
                     size_fraction = exit_size / entry_size_sum
                     entry_fees = size_fraction * entry_fees_sum
 
@@ -911,30 +887,24 @@ def get_exit_trades_nb(
                     counts[col] += 1
 
                     if is_close_nb(order_size, entry_size_sum):
-                        # Position closed
                         entry_order_id = -1
                         entry_idx = -1
                         direction = -1
                         in_position = False
                     else:
-                        # Position decreased, previous orders have now less impact
                         size_fraction = (entry_size_sum - order_size) / entry_size_sum
                         entry_size_sum *= size_fraction
                         entry_gross_sum *= size_fraction
                         entry_fees_sum *= size_fraction
                 else:
-                    # Trade reversed
-                    # Close current trade
                     cl_exit_size = entry_size_sum
                     cl_exit_price = order_price
                     cl_exit_fees = cl_exit_size / order_size * order_fees
                     cl_exit_order_id = order_id
                     cl_exit_idx = order_idx
 
-                    # Take a size-weighted average of entry price
                     entry_price = entry_gross_sum / entry_size_sum
 
-                    # Take a fraction of entry fees
                     size_fraction = cl_exit_size / entry_size_sum
                     entry_fees = size_fraction * entry_fees_sum
 
@@ -957,7 +927,6 @@ def get_exit_trades_nb(
                     )
                     counts[col] += 1
 
-                    # Open a new trade
                     entry_size_sum = order_size - cl_exit_size
                     entry_gross_sum = entry_size_sum * order_price
                     entry_fees_sum = order_fees - cl_exit_fees
@@ -970,7 +939,6 @@ def get_exit_trades_nb(
                     parent_id += 1
 
         if in_position and is_less_nb(-entry_size_sum, 0):
-            # Trade hasn't been closed
             exit_size = entry_size_sum
             last_close = flex_select_nb(close_, _sim_end - 1, col)
             if np.isnan(last_close):
@@ -984,10 +952,8 @@ def get_exit_trades_nb(
             exit_order_id = -1
             exit_idx = _sim_end - 1
 
-            # Take a size-weighted average of entry price
             entry_price = entry_gross_sum / entry_size_sum
 
-            # Take a fraction of entry fees
             size_fraction = exit_size / entry_size_sum
             entry_fees = size_fraction * entry_fees_sum
 
@@ -1033,7 +999,6 @@ def fill_position_record_nb(new_records: tp.RecordArray, r: int, trade_records: 
     Returns:
         None: Function modifies `new_records` in place.
     """
-    # Aggregate trades
     col = trade_records["col"][0]
     size = np.sum(trade_records["size"])
     entry_order_id = trade_records["entry_order_id"][0]
@@ -1048,7 +1013,6 @@ def fill_position_record_nb(new_records: tp.RecordArray, r: int, trade_records: 
     status = trade_records["status"][-1]
     pnl, ret = get_trade_stats_nb(size, entry_price, entry_fees, exit_price, exit_fees, direction)
 
-    # Save position
     new_records["id"][r] = r
     new_records["col"][r] = col
     new_records["size"][r] = size
@@ -1193,7 +1157,6 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
                     if trade_r - from_trade_r > 1:
                         fill_position_record_nb(new_records[:, col], counts[col], trade_records[from_trade_r:trade_r])
                     else:
-                        # Speed up
                         copy_trade_record_nb(new_records[:, col], counts[col], trade_records[from_trade_r])
                     counts[col] += 1
                 from_trade_r = trade_r
@@ -1202,7 +1165,6 @@ def get_positions_nb(trade_records: tp.RecordArray, col_map: tp.GroupMap) -> tp.
         if trade_r - from_trade_r > 0:
             fill_position_record_nb(new_records[:, col], counts[col], trade_records[from_trade_r : trade_r + 1])
         else:
-            # Speed up
             copy_trade_record_nb(new_records[:, col], counts[col], trade_records[from_trade_r])
         counts[col] += 1
 
@@ -1284,7 +1246,6 @@ def get_long_view_orders_nb(
         _init_price = float(flex_select_1d_pc_nb(init_price_, col))
 
         if _init_position != 0:
-            # Prepare initial position
             in_position = True
             if _init_position >= 0:
                 direction = TradeDirection.Long
@@ -1322,7 +1283,6 @@ def get_long_view_orders_nb(
                 raise ValueError(invalid_price_msg)
 
             if not in_position:
-                # New position opened
                 in_position = True
                 if order_side == OrderSide.Buy:
                     direction = TradeDirection.Long
@@ -1336,7 +1296,6 @@ def get_long_view_orders_nb(
             if (direction == TradeDirection.Long and order_side == OrderSide.Buy) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Sell
             ):
-                # Position increased
                 entry_size_sum += order_size
                 entry_gross_sum += order_size * order_price
                 if direction == TradeDirection.Long:
@@ -1346,7 +1305,6 @@ def get_long_view_orders_nb(
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
                 if is_close_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position closed
                     in_position = False
                     exit_size_sum = entry_size_sum
                     exit_gross_sum += order_size * order_price
@@ -1354,17 +1312,14 @@ def get_long_view_orders_nb(
                         out[r] = order_record
                         r += 1
                 elif is_less_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position decreased
                     exit_size_sum += order_size
                     exit_gross_sum += order_size * order_price
                     if direction == TradeDirection.Long:
                         out[r] = order_record
                         r += 1
                 else:
-                    # Position closed
                     remaining_size = add_nb(entry_size_sum, -exit_size_sum)
 
-                    # New position opened
                     entry_size_sum = add_nb(order_size, -remaining_size)
                     entry_gross_sum = entry_size_sum * order_price
                     exit_size_sum = 0.0
@@ -1466,7 +1421,6 @@ def get_short_view_orders_nb(
         _init_price = float(flex_select_1d_pc_nb(init_price_, col))
 
         if _init_position != 0:
-            # Prepare initial position
             in_position = True
             if _init_position >= 0:
                 direction = TradeDirection.Long
@@ -1504,7 +1458,6 @@ def get_short_view_orders_nb(
                 raise ValueError(invalid_price_msg)
 
             if not in_position:
-                # New position opened
                 in_position = True
                 if order_side == OrderSide.Buy:
                     direction = TradeDirection.Long
@@ -1518,7 +1471,6 @@ def get_short_view_orders_nb(
             if (direction == TradeDirection.Long and order_side == OrderSide.Buy) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Sell
             ):
-                # Position increased
                 entry_size_sum += order_size
                 entry_gross_sum += order_size * order_price
                 if direction == TradeDirection.Short:
@@ -1528,7 +1480,6 @@ def get_short_view_orders_nb(
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
                 if is_close_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position closed
                     in_position = False
                     exit_size_sum = entry_size_sum
                     exit_gross_sum += order_size * order_price
@@ -1536,17 +1487,14 @@ def get_short_view_orders_nb(
                         out[r] = order_record
                         r += 1
                 elif is_less_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position decreased
                     exit_size_sum += order_size
                     exit_gross_sum += order_size * order_price
                     if direction == TradeDirection.Short:
                         out[r] = order_record
                         r += 1
                 else:
-                    # Position closed
                     remaining_size = add_nb(entry_size_sum, -exit_size_sum)
 
-                    # New position opened
                     entry_size_sum = add_nb(order_size, -remaining_size)
                     entry_gross_sum = entry_size_sum * order_price
                     exit_size_sum = 0.0
@@ -1659,7 +1607,6 @@ def get_position_feature_nb(
         _init_price = float(flex_select_1d_pc_nb(init_price_, col))
 
         if _init_position != 0:
-            # Prepare initial position
             in_position = True
             was_in_position = True
             if _init_position >= 0:
@@ -1727,7 +1674,6 @@ def get_position_feature_nb(
                             exit_price = exit_gross_sum / exit_size_sum
                             out[last_order_idx:order_idx, col] = exit_price
 
-                # New position opened
                 in_position = True
                 was_in_position = True
                 if order_side == OrderSide.Buy:
@@ -1742,26 +1688,21 @@ def get_position_feature_nb(
             if (direction == TradeDirection.Long and order_side == OrderSide.Buy) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Sell
             ):
-                # Position increased
                 entry_size_sum += order_size
                 entry_gross_sum += order_size * order_price
             elif (direction == TradeDirection.Long and order_side == OrderSide.Sell) or (
                 direction == TradeDirection.Short and order_side == OrderSide.Buy
             ):
                 if is_close_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position closed
                     in_position = False
                     exit_size_sum = entry_size_sum
                     exit_gross_sum += order_size * order_price
                 elif is_less_nb(exit_size_sum + order_size, entry_size_sum):
-                    # Position decreased
                     exit_size_sum += order_size
                     exit_gross_sum += order_size * order_price
                 else:
-                    # Position closed
                     remaining_size = add_nb(entry_size_sum, -exit_size_sum)
 
-                    # New position opened
                     if order_side == OrderSide.Buy:
                         direction = TradeDirection.Long
                     else:

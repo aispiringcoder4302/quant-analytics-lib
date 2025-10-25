@@ -191,7 +191,6 @@ def resolve_pypfopt_func_kwargs(
         orig_arg_name = arg_name
         if pypfopt_func.__name__ in ("market_implied_prior_returns", "bl_weights"):
             if arg_name == "risk_aversion":
-                # In some methods, risk_aversion is expected as array and means delta
                 arg_name = "delta"
 
         def _get_kwarg(*args):
@@ -1517,7 +1516,6 @@ def riskfolio_optimize(
 
     try:
         with WarningsFiltered(entries="ignore" if silence_warnings else None):
-            # Prepare returns
             new_returns = prepare_returns(
                 returns,
                 nan_to_zero=nan_to_zero,
@@ -1530,7 +1528,6 @@ def riskfolio_optimize(
             if returns.size == 0:
                 return {}
 
-            # Pre-optimize
             if pre_opt:
                 w, port = riskfolio_optimize(returns, port=port, return_port=True, **pre_opt_kwargs)
                 if pre_opt_as_w:
@@ -1538,7 +1535,6 @@ def riskfolio_optimize(
                     kwargs["w"] = w
                     unused_arg_names.add("w")
 
-            # Build portfolio
             if port_cls is None:
                 port_cls = rp.Portfolio
             elif isinstance(port_cls, str) and port_cls.lower() in ("hc", "hcportfolio"):
@@ -1566,7 +1562,6 @@ def riskfolio_optimize(
                 factors = to_pd_array(factors).dropna()
                 port.factors = factors
 
-            # Resolve optimization and stats methods
             if opt_method is None:
                 if len(func_kwargs) > 0:
                     for name_or_func in func_kwargs:
@@ -1656,7 +1651,6 @@ def riskfolio_optimize(
             if stats_methods is None:
                 stats_methods = []
 
-            # Apply constraints
             if constraints is not None:
                 if constraints_method is None:
                     if isinstance(port, rp.Portfolio):
@@ -1725,7 +1719,6 @@ def riskfolio_optimize(
                 else:
                     raise NotImplementedError(f"Constraints method {constraints_method!r} is not supported")
 
-            # Resolve views
             if views is not None:
                 if views_method is None:
                     if "blfactors_stats" in stats_methods:
@@ -1795,7 +1788,6 @@ def riskfolio_optimize(
                 else:
                     raise NotImplementedError(f"Views method {views_method!r} is not supported")
 
-            # Run stats
             for stats_method in stats_methods:
                 stats_func = getattr(port, stats_method)
                 matched_kwargs = resolve_riskfolio_func_kwargs(
@@ -1806,7 +1798,6 @@ def riskfolio_optimize(
                 )
                 warn_stdout(stats_func)(**matched_kwargs)
 
-            # Run optimization
             matched_kwargs = resolve_riskfolio_func_kwargs(
                 opt_func,
                 unused_arg_names=unused_arg_names,
@@ -1815,7 +1806,6 @@ def riskfolio_optimize(
             )
             weights = warn_stdout(opt_func)(**matched_kwargs)
 
-            # Post-process weights
             if len(unused_arg_names) > 0:
                 warn(f"Some arguments were not used: {unused_arg_names}")
             if weights is None:
@@ -1869,7 +1859,6 @@ class PortfolioOptimizer(Analyzable):
         self._alloc_records = alloc_records
         self._allocations = allocations
 
-        # Only slices of rows can be selected
         self._range_only_select = True
 
     @hybrid_method
@@ -2487,7 +2476,6 @@ class PortfolioOptimizer(Analyzable):
         if clean_index_kwargs is None:
             clean_index_kwargs = {}
 
-        # Prepare group config names
         gc_names = []
         gc_names_none = True
         n_configs = 0
@@ -2519,7 +2507,6 @@ class PortfolioOptimizer(Analyzable):
         else:
             group_configs = []
 
-        # Combine parameters
         paramable_kwargs = {
             "every": every,
             "normalize_every": normalize_every,
@@ -2561,7 +2548,6 @@ class PortfolioOptimizer(Analyzable):
                         new_group_configs.append(new_group_config)
                 group_configs = new_group_configs
 
-        # Build group index
         n_config_params = len(gc_names)
         if param_columns is not None:
             if n_config_params == 0 or (n_config_params == 1 and gc_names_none):
@@ -2580,14 +2566,12 @@ class PortfolioOptimizer(Analyzable):
             else:
                 group_index = pd.Index(gc_names, name="group_config")
 
-        # Create group config from arguments if empty
         if len(group_configs) == 0:
             single_group = True
             group_configs.append(dict())
         else:
             single_group = False
 
-        # Resolve each group
         groupable_kwargs = {
             "allocate_func": allocate_func,
             **paramable_kwargs,
@@ -2610,7 +2594,6 @@ class PortfolioOptimizer(Analyzable):
             new_group_configs.append(new_group_config)
         group_configs = new_group_configs
 
-        # Generate allocations
         tasks = []
         for group_idx, group_config in enumerate(group_configs):
             tasks.append(
@@ -2627,10 +2610,8 @@ class PortfolioOptimizer(Analyzable):
         results = execute(tasks, keys=group_index, **group_execute_kwargs)
         alloc_points, allocations = zip(*results)
 
-        # Build column hierarchy
         new_columns = combine_indexes((group_index, wrapper.columns), **clean_index_kwargs)
 
-        # Create instance
         wrapper_kwargs = merge_dicts(
             dict(
                 index=wrapper.index,
@@ -3597,7 +3578,6 @@ class PortfolioOptimizer(Analyzable):
         if clean_index_kwargs is None:
             clean_index_kwargs = {}
 
-        # Prepare group config names
         gc_names = []
         gc_names_none = True
         n_configs = 0
@@ -3629,7 +3609,6 @@ class PortfolioOptimizer(Analyzable):
         else:
             group_configs = []
 
-        # Combine parameters
         paramable_kwargs = {
             "every": every,
             "normalize_every": normalize_every,
@@ -3677,7 +3656,6 @@ class PortfolioOptimizer(Analyzable):
                         new_group_configs.append(new_group_config)
                 group_configs = new_group_configs
 
-        # Build group index
         n_config_params = len(gc_names)
         if param_columns is not None:
             if n_config_params == 0 or (n_config_params == 1 and gc_names_none):
@@ -3696,14 +3674,12 @@ class PortfolioOptimizer(Analyzable):
             else:
                 group_index = pd.Index(gc_names, name="group_config")
 
-        # Create group config from arguments if empty
         if len(group_configs) == 0:
             single_group = True
             group_configs.append(dict())
         else:
             single_group = False
 
-        # Resolve each group
         groupable_kwargs = {
             "optimize_func": optimize_func,
             **paramable_kwargs,
@@ -3728,7 +3704,6 @@ class PortfolioOptimizer(Analyzable):
             new_group_configs.append(new_group_config)
         group_configs = new_group_configs
 
-        # Generate allocations
         tasks = []
         for group_idx, group_config in enumerate(group_configs):
             tasks.append(
@@ -3745,10 +3720,8 @@ class PortfolioOptimizer(Analyzable):
         results = execute(tasks, keys=group_index, **group_execute_kwargs)
         alloc_ranges, allocations = zip(*results)
 
-        # Build column hierarchy
         new_columns = combine_indexes((group_index, wrapper.columns), **clean_index_kwargs)
 
-        # Create instance
         wrapper_kwargs = merge_dicts(
             dict(
                 index=wrapper.index,

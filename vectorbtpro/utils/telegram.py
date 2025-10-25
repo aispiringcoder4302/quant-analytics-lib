@@ -162,7 +162,6 @@ if __version_info__ < (20, 0):
             if __version_info__ >= (20, 0):
                 raise RuntimeError(f"This implementation is not compatible with telegram version {TG_VER}")
 
-            # Enable logging
             logging.basicConfig(
                 format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
             )
@@ -672,7 +671,6 @@ else:
             if __version_info__ < (20, 0):
                 raise RuntimeError(f"This implementation is not compatible with telegram version {TG_VER}")
 
-            # Enable logging
             logging.basicConfig(
                 format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
             )

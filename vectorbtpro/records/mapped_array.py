@@ -542,7 +542,6 @@ class MappedArray(Analyzable):
         self._mapping = mapping
         self._col_mapper = col_mapper
 
-        # Only slices of rows can be selected
         self._range_only_select = True
 
     @hybrid_method

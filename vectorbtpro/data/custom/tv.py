@@ -409,7 +409,6 @@ class TVClient(Configured):
             ts = datetime.datetime.utcfromtimestamp(float(xi[4]))
             row = [ts]
             for i in range(5, 10):
-                # skip converting volume data if does not exists
                 if not volume_data and i == 9:
                     row.append(0.0)
                     continue

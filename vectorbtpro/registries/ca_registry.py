@@ -2948,7 +2948,6 @@ class CARunSetup(CABaseSetup, DefineMixin):
                         instance_setup.class_setup.any_use_cache_lut is None
                         or unbound_setup.use_cache_lut > instance_setup.class_setup.any_use_cache_lut
                     ):
-                        # Unbound setup was updated more recently than any superclass setup
                         object.__setattr__(self, "use_cache", unbound_setup.use_cache)
                     else:
                         object.__setattr__(self, "use_cache", instance_setup.use_cache)
@@ -2967,7 +2966,6 @@ class CARunSetup(CABaseSetup, DefineMixin):
                         instance_setup.class_setup.any_whitelist_lut is None
                         or unbound_setup.whitelist_lut > instance_setup.class_setup.any_whitelist_lut
                     ):
-                        # Unbound setup was updated more recently than any superclass setup
                         object.__setattr__(self, "whitelist", unbound_setup.whitelist)
                     else:
                         object.__setattr__(self, "whitelist", instance_setup.whitelist)

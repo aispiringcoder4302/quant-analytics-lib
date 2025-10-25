@@ -3069,7 +3069,6 @@ class Splitter(Analyzable):
         else:
             index = dt.prepare_dt_index(index)
 
-        # Prepare source range
         range_meta = cls_or_self.get_ready_range(
             range_,
             allow_zero_len=allow_zero_len,
@@ -3091,12 +3090,10 @@ class Splitter(Analyzable):
             else:
                 range_format = "slice_or_any"
 
-        # Substitute template
         if isinstance(new_split, CustomTemplate):
             _template_context = merge_dicts(dict(index=index[range_]), template_context)
             new_split = substitute_templates(new_split, _template_context, eval_id="new_split")
 
-        # Split by gap
         if isinstance(new_split, str) and new_split.lower() == "by_gap":
             if isinstance(range_, np.ndarray) and np.issubdtype(range_.dtype, np.integer):
                 range_arr = range_
@@ -3105,7 +3102,6 @@ class Splitter(Analyzable):
             start_idxs, stop_idxs = nb.split_range_by_gap_nb(range_arr)
             new_split = list(map(lambda x: slice(x[0], x[1]), zip(start_idxs, stop_idxs)))
 
-        # Prepare target ranges
         if checks.is_number(new_split):
             if new_split < 0:
                 backwards = not backwards
@@ -3126,7 +3122,6 @@ class Splitter(Analyzable):
         elif not checks.is_iterable(new_split):
             new_split = (new_split,)
 
-        # Perform split
         new_ranges = []
         if backwards:
             new_split = new_split[::-1]
@@ -3136,7 +3131,6 @@ class Splitter(Analyzable):
             prev_start = 0
             prev_end = 0
         for new_range in new_split:
-            # Resolve new range
             new_range_meta = cls_or_self.get_ready_range(
                 new_range,
                 allow_relative=True,
@@ -3163,7 +3157,6 @@ class Splitter(Analyzable):
             else:
                 new_range_is_gap = False
 
-            # Update previous bounds
             if isinstance(new_range, slice):
                 prev_start = new_range.start
                 prev_end = new_range.stop
@@ -3171,7 +3164,6 @@ class Splitter(Analyzable):
                 prev_start = new_range_meta["start"]
                 prev_end = new_range_meta["stop"]
 
-            # Remap new range to index
             if new_range_is_gap:
                 continue
             if isinstance(range_, slice) and isinstance(new_range, slice):

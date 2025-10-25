@@ -243,7 +243,6 @@ class PolygonData(RemoteData):
             pbar_kwargs["bar_id"] = "polygon"
         silence_warnings = cls.resolve_custom_setting(silence_warnings, "silence_warnings")
 
-        # Resolve the timeframe
         if not isinstance(timeframe, str):
             raise ValueError(f"Invalid timeframe: {timeframe!r}")
         split = dt.split_freq_str(timeframe)
@@ -267,7 +266,6 @@ class PolygonData(RemoteData):
         elif unit == "Y":
             unit = "year"
 
-        # Establish the timestamps
         if start is not None:
             start_ts = dt.datetime_to_ms(dt.to_tzaware_datetime(start, naive_tz=tz, tz="utc"))
         else:
@@ -288,7 +286,6 @@ class PolygonData(RemoteData):
                         if isinstance(e, requests.exceptions.HTTPError) and e.response.status_code == 429:
                             if not silence_warnings:
                                 warn(traceback.format_exc())
-                                # Polygon.io API rate limit is per minute
                                 warn("Waiting 1 minute...")
                             time.sleep(60)
                         else:
@@ -352,17 +349,14 @@ class PolygonData(RemoteData):
                     return False
             return True
 
-        # Iteratively collect the data
         data = []
         try:
             with ProgressBar(show_progress=show_progress, **pbar_kwargs) as pbar:
                 pbar.set_description("{} → ?".format(_ts_to_str(start_ts if prev_end_ts is None else prev_end_ts)))
                 while True:
-                    # Fetch the klines for the next timeframe
                     next_data = _fetch(start_ts if prev_end_ts is None else prev_end_ts, limit)
                     next_data = list(filter(partial(_filter_func, _prev_end_ts=prev_end_ts), next_data))
 
-                    # Update the timestamps and the progress bar
                     if not len(next_data):
                         break
                     data += next_data

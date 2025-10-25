@@ -89,7 +89,6 @@ def attach_nb_methods(config: Config) -> tp.ClassWrapper:
                 return self.wrapper.wrap(a, **wrap_kwargs)
 
             if replace_signature:
-                # Replace the function's signature with the original one
                 source_sig = inspect.signature(func)
                 new_method_params = tuple(inspect.signature(new_method).parameters.values())
                 self_arg = new_method_params[0]

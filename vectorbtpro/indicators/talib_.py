@@ -416,22 +416,18 @@ def talib_plot_func(func_name: str) -> tp.Callable:
             plot_func_name = "lineplot"
 
             if TA_OUTPUT_FLAGS[2] in flags:
-                # Dotted Line
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = dict()
                 trace_kwargs["line"]["dash"] = "dashdot"
             if TA_OUTPUT_FLAGS[4] in flags:
-                # Dashed Line
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = dict()
                 trace_kwargs["line"]["dash"] = "dash"
             if TA_OUTPUT_FLAGS[8] in flags:
-                # Dot
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = dict()
                 trace_kwargs["line"]["dash"] = "dot"
             if TA_OUTPUT_FLAGS[16] in flags:
-                # Histogram
                 hist = np.asarray(output)
                 hist_diff = generic_nb.diff_1d_nb(hist)
                 marker_colors = np.full(hist.shape, adjust_opacity("silver", 0.75), dtype=object)
@@ -448,14 +444,12 @@ def talib_plot_func(func_name: str) -> tp.Callable:
                 kwargs["bargap"] = 0
                 plot_func_name = "barplot"
             if TA_OUTPUT_FLAGS[2048] in flags:
-                # Values represent an upper limit
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = {}
                 trace_kwargs["line"]["color"] = adjust_opacity(plotting_cfg["color_schema"]["gray"], 0.75)
                 trace_kwargs["fill"] = "tonexty"
                 trace_kwargs["fillcolor"] = "rgba(128, 128, 128, 0.2)"
             if TA_OUTPUT_FLAGS[4096] in flags:
-                # Values represent a lower limit
                 if "line" not in trace_kwargs:
                     trace_kwargs["line"] = {}
                 trace_kwargs["line"]["color"] = adjust_opacity(plotting_cfg["color_schema"]["gray"], 0.75)

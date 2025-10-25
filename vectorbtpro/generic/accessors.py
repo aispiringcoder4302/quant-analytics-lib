@@ -242,7 +242,6 @@ try:
     nanargmax = bn.nanargmax
     nanargmin = bn.nanargmin
 except ImportError:
-    # slower NumPy
     nanmean = np.nanmean
     nanstd = np.nanstd
     nansum = np.nansum
@@ -4015,7 +4014,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         if use_jitted:
             func = jit_reg.resolve_option(nb.nanmin_nb, jitted)
         elif arr.dtype != int and arr.dtype != float:
-            # bottleneck can't consume other than that
             func = partial(np.nanmin, axis=0)
         else:
             func = partial(nanmin, axis=0)
@@ -4078,7 +4076,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         if use_jitted:
             func = jit_reg.resolve_option(nb.nanmax_nb, jitted)
         elif arr.dtype != int and arr.dtype != float:
-            # bottleneck can't consume other than that
             func = partial(np.nanmax, axis=0)
         else:
             func = partial(nanmax, axis=0)
@@ -4141,7 +4138,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         if use_jitted:
             func = jit_reg.resolve_option(nb.nanmean_nb, jitted)
         elif arr.dtype != int and arr.dtype != float:
-            # bottleneck can't consume other than that
             func = partial(np.nanmean, axis=0)
         else:
             func = partial(nanmean, axis=0)
@@ -4204,7 +4200,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         if use_jitted:
             func = jit_reg.resolve_option(nb.nanmedian_nb, jitted)
         elif arr.dtype != int and arr.dtype != float:
-            # bottleneck can't consume other than that
             func = partial(np.nanmedian, axis=0)
         else:
             func = partial(nanmedian, axis=0)
@@ -4270,7 +4265,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         if use_jitted:
             func = jit_reg.resolve_option(nb.nanstd_nb, jitted)
         elif arr.dtype != int and arr.dtype != float:
-            # bottleneck can't consume other than that
             func = partial(np.nanstd, axis=0)
         else:
             func = partial(nanstd, axis=0)
@@ -4333,7 +4327,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         if use_jitted:
             func = jit_reg.resolve_option(nb.nansum_nb, jitted)
         elif arr.dtype != int and arr.dtype != float:
-            # bottleneck can't consume other than that
             func = partial(np.nansum, axis=0)
         else:
             func = partial(nansum, axis=0)
@@ -5962,10 +5955,8 @@ class GenericAccessor(BaseAccessor, Analyzable):
             fig = make_figure()
         fig.update_layout(**layout_kwargs)
 
-        # TODO: Using masks feels hacky
         pos_mask = obj > other
         if pos_mask.any():
-            # Fill positive area
             pos_obj = obj.copy()
             pos_obj[~pos_mask] = other[~pos_mask]
             other.vbt.lineplot(
@@ -6001,7 +5992,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
             )
         neg_mask = obj < other
         if neg_mask.any():
-            # Fill negative area
             neg_obj = obj.copy()
             neg_obj[~neg_mask] = other[~neg_mask]
             other.vbt.lineplot(
@@ -6036,7 +6026,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 fig=fig,
             )
 
-        # Plot main traces
         obj.vbt.lineplot(trace_kwargs=trace_kwargs, add_trace_kwargs=add_trace_kwargs, fig=fig)
         if other_trace_kwargs == "hidden":
             other_trace_kwargs = dict(
@@ -6250,7 +6239,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         )
 
         if slider_level is None:
-            # No grouping
             df = _self.unstack_to_df(
                 index_levels=y_level,
                 column_levels=x_level,
@@ -6265,8 +6253,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
                 **kwargs,
             )
 
-        # Requires grouping
-        # See https://plotly.com/python/sliders/
         if not return_fig:
             raise ValueError("Cannot use return_fig=False and slider_level simultaneously")
         _slider_labels = []
@@ -6439,7 +6425,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
         x_level_vals = self_col.wrapper.index.get_level_values(x_level)
         y_level_vals = self_col.wrapper.index.get_level_values(y_level)
         z_level_vals = self_col.wrapper.index.get_level_values(z_level)
-        # Labels are just unique level values
         if x_labels is None:
             x_labels = np.unique(x_level_vals)
         if y_labels is None:
@@ -6467,7 +6452,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         contains_nan = False
         if slider_level is None:
-            # No grouping
             v = self_col.unstack_to_array(levels=(x_level, y_level, z_level))
             if fillna is not None:
                 v = np.nan_to_num(v, nan=fillna)
@@ -6479,8 +6463,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
             else:
                 fig = volume
         else:
-            # Requires grouping
-            # See https://plotly.com/python/sliders/
             if not return_fig:
                 raise ValueError("Cannot use return_fig=False and slider_level simultaneously")
             _slider_labels = []
@@ -6806,14 +6788,12 @@ class GenericAccessor(BaseAccessor, Analyzable):
 
         self_col = self.select_col(column=column, group_by=False)
         if plot_obj:
-            # Plot object
             fig = self_col.lineplot(
                 trace_kwargs=obj_trace_kwargs,
                 add_trace_kwargs=add_trace_kwargs,
                 fig=fig,
             )
 
-        # Reconstruct pattern and max error bands
         pattern_sr, max_error_sr = self_col.fit_pattern(
             pattern,
             interp_mode=interp_mode,
@@ -6828,7 +6808,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
             max_error_interp_mode=max_error_interp_mode,
         )
 
-        # Plot pattern and max error bands
         def_pattern_trace_kwargs = dict(
             name=f"Pattern",
             connectgaps=True,
@@ -6870,7 +6849,6 @@ class GenericAccessor(BaseAccessor, Analyzable):
             fig=fig,
         )
 
-        # Plot max error bounds
         if not np.isnan(max_error).all():
             def_max_error_trace_kwargs = dict(
                 name="Max error",
@@ -7480,7 +7458,6 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
         if add_trace_kwargs is None:
             add_trace_kwargs = {}
 
-        # Resolve band functions and names
         if len(self.obj.columns) == 1:
             plot_bands = False
         if not plot_bands:
@@ -7563,7 +7540,6 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
 
         if len(self.obj.columns) > 0:
             if plot_projections:
-                # Plot projections
                 for col in range(self.wrapper.shape[1]):
                     proj_sr = self.obj.iloc[:, col].dropna()
                     hovertemplate = f"(%{{x}}, %{{y}})"
@@ -7628,7 +7604,6 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                     )
 
         if plot_bands and len(self.obj.columns) > 1:
-            # Calculate bands
             if plot_lower is not None:
                 lower_band = plot_lower(self.obj).dropna()
             else:
@@ -7647,7 +7622,6 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 aux_middle_band = None
 
             if lower_band is not None:
-                # Plot lower band
                 def_lower_trace_kwargs = dict(name=lower_name)
                 if colorize is not None:
                     lower_color = map_value_to_cmap(
@@ -7672,7 +7646,6 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 )
 
             if middle_band is not None:
-                # Plot middle band
                 def_middle_trace_kwargs = dict(name=middle_name)
                 if colorize is not None:
                     middle_color = map_value_to_cmap(
@@ -7699,7 +7672,6 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 )
 
             if upper_band is not None:
-                # Plot upper band
                 def_upper_trace_kwargs = dict(name=upper_name)
                 if colorize is not None:
                     upper_color = map_value_to_cmap(
@@ -7727,7 +7699,6 @@ class GenericDFAccessor(GenericAccessor, BaseDFAccessor):
                 )
 
             if aux_middle_band is not None:
-                # Plot auxiliary band
                 def_aux_middle_trace_kwargs = dict(name=aux_middle_name)
                 if colorize is not None:
                     aux_middle_color = map_value_to_cmap(

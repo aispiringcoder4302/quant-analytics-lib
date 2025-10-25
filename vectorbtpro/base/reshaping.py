@@ -1466,7 +1466,6 @@ def broadcast(
          'c': array([[False,  True, False,  True, False]])}
         ```
     """
-    # Get defaults
     from vectorbtpro._settings import settings
 
     broadcasting_cfg = settings["broadcasting"]
@@ -1518,7 +1517,6 @@ def broadcast(
             return global_value[i]
         return global_value
 
-    # Build BCO instances
     none_keys = set()
     default_keys = set()
     param_keys = set()
@@ -1634,7 +1632,6 @@ def broadcast(
             context=_context,
         )
 
-    # Check whether we should broadcast Pandas metadata and work on 2-dim data
     is_pd = False
     is_2d = False
 
@@ -1668,7 +1665,6 @@ def broadcast(
     if to_pd is not None:
         is_pd = to_pd or (return_wrapper and is_pd)
 
-    # Align Pandas arrays
     if index_from is not None and not isinstance(index_from, (int, str, pd.Index)):
         index_from = pd.Index(index_from)
     if columns_from is not None and not isinstance(columns_from, (int, str, pd.Index)):
@@ -1686,7 +1682,6 @@ def broadcast(
         aligned_objs = (aligned_objs,)
     aligned_objs = dict(zip(old_objs.keys(), aligned_objs))
 
-    # Convert to NumPy
     ready_objs = {}
     for k, obj in aligned_objs.items():
         _expand_axis = bco_instances[k].expand_axis
@@ -1699,7 +1694,6 @@ def broadcast(
                 new_obj = np.expand_dims(new_obj, _expand_axis)
         ready_objs[k] = new_obj
 
-    # Get final shape
     if to_shape is None:
         try:
             to_shape = broadcast_shapes(
@@ -1722,8 +1716,6 @@ def broadcast(
     to_shape_2d = to_shape if len(to_shape) > 1 else (*to_shape, 1)
 
     if is_pd:
-        # Decide on index and columns
-        # NOTE: Important to pass aligned_objs, not ready_objs, to preserve original shape info
         new_index = broadcast_index(
             [v for k, v in aligned_objs.items() if obj_axis[k] in (None, 0)],
             to_shape,
@@ -1748,12 +1740,10 @@ def broadcast(
         new_index = pd.RangeIndex(stop=to_shape_2d[0])
         new_columns = pd.RangeIndex(stop=to_shape_2d[1])
 
-    # Build a product
     param_product = None
     param_columns = None
     n_params = 0
     if len(param_keys) > 0:
-        # Combine parameters
         param_dct = {}
         for k, bco_obj in bco_instances.items():
             if k not in param_keys:
@@ -1767,11 +1757,9 @@ def broadcast(
         )
         n_params = len(param_columns)
 
-        # Combine parameter columns with new columns
         if param_columns is not None and new_columns is not None:
             new_columns = indexes.combine_indexes([param_columns, new_columns], **clean_index_kwargs)
 
-    # Tile
     if tile is not None:
         if isinstance(tile, int):
             if new_columns is not None:
@@ -1782,7 +1770,6 @@ def broadcast(
             tile = len(tile)
         n_params = max(n_params, 1) * tile
 
-    # Build wrapper
     if n_params == 0:
         new_shape = to_shape
     else:
@@ -1815,7 +1802,6 @@ def broadcast(
                 new_obj = np.expand_dims(new_obj, _expand_axis)
         return new_obj
 
-    # Perform broadcasting
     aligned_objs2 = {}
     new_objs = {}
     for i, k in enumerate(all_keys):
@@ -1832,7 +1818,6 @@ def broadcast(
         _fill_value = _reindex_kwargs.get("fill_value", np.nan)
 
         if k in param_keys:
-            # Broadcast parameters
             from vectorbtpro.base.merging import column_stack_merge
 
             if _axis == 0:
@@ -1890,7 +1875,6 @@ def broadcast(
             old_obj = obj
             new_obj = obj
         else:
-            # Broadcast regular objects
             old_obj = aligned_objs[k]
             new_obj = ready_objs[k]
             if _axis in (None, 0) and new_obj.ndim >= 1 and new_obj.shape[0] > 1 and new_obj.shape[0] != to_shape[0]:
@@ -1918,7 +1902,6 @@ def broadcast(
         aligned_objs2[k] = old_obj
         new_objs[k] = new_obj
 
-    # Resolve special objects
     new_objs2 = {}
     for i, k in enumerate(all_keys):
         if k in none_keys:
@@ -1959,11 +1942,9 @@ def broadcast(
         else:
             new_obj = new_objs[k]
 
-        # Force to match requirements
         new_obj = np.require(new_obj, **resolve_dict(bco_instances[k].require_kwargs))
         new_objs2[k] = new_obj
 
-    # Perform wrapping and post-processing
     new_objs3 = {}
     for i, k in enumerate(all_keys):
         if k in none_keys:
@@ -1973,7 +1954,6 @@ def broadcast(
         _keep_flex = bco_instances[k].keep_flex
 
         if not _keep_flex:
-            # Wrap array
             _is_pd = bco_instances[k].to_pd
             if _is_pd is None:
                 _is_pd = is_pd
@@ -1987,13 +1967,11 @@ def broadcast(
                 ignore_ranges=ignore_ranges,
             )
 
-        # Post-process array
         _post_func = bco_instances[k].post_func
         if _post_func is not None:
             new_obj = _post_func(new_obj)
         new_objs3[k] = new_obj
 
-    # Prepare outputs
     return_objs = []
     for k in all_keys:
         if k not in none_keys:
@@ -2077,7 +2055,6 @@ def broadcast_to(
         if to_pd is None:
             to_pd = checks.is_pandas(arg2)
         if to_pd:
-            # Take index and columns from arg2
             if index_from is None:
                 index_from = indexes.get_index(arg2, 0)
             if columns_from is None:
@@ -2121,7 +2098,6 @@ def broadcast_to_array_of(arg1: tp.ArrayLike, arg2: tp.ArrayLike) -> tp.Array:
     if arg1.ndim == arg2.ndim + 1:
         if arg1.shape[1:] == arg2.shape:
             return arg1
-    # From here on arg1 can be only a 1-dim array
     if arg1.ndim == 0:
         arg1 = to_1d(arg1)
     checks.assert_ndim(arg1, 1)

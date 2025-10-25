@@ -198,7 +198,6 @@ class BaseDataMixin(Base):
         Raises:
             ValueError: If multiple features match the specified key.
         """
-        # shortcut
         columns = self.feature_wrapper.columns
         if not columns.has_duplicates:
             if feature in columns:
@@ -231,7 +230,6 @@ class BaseDataMixin(Base):
         Raises:
             ValueError: If multiple symbols match the specified key.
         """
-        # shortcut
         columns = self.symbol_wrapper.columns
         if not columns.has_duplicates:
             if symbol in columns:
@@ -887,7 +885,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
         for k, v in attr_kwargs.items():
             setattr(self, "_" + k, v)
 
-        # Copy writeable attrs
         self._feature_config = type(self)._feature_config.copy()
 
     @property
@@ -1339,7 +1336,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
 
     @classmethod
     def modify_state(cls, rec_state: RecState) -> RecState:
-        # Ensure backward compatibility
         if "_column_config" in rec_state.attr_dct and "_feature_config" not in rec_state.attr_dct:
             new_attr_dct = dict(rec_state.attr_dct)
             new_attr_dct["_feature_config"] = new_attr_dct.pop("_column_config")
@@ -4620,7 +4616,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 new_data[k] = obj.iloc[0:0]
                 new_last_index[k] = self.last_index[k]
 
-        # Get the last index in the old data from where the new data should begin
         from_index = None
         for k, new_obj in new_data.items():
             if len(new_obj.index) > 0:
@@ -4637,7 +4632,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                     warn(f"None of the symbols were updated")
             return self.copy()
 
-        # Concatenate the updated old data and the new data
         for k, new_obj in new_data.items():
             if len(new_obj.index) > 0:
                 to_index = new_obj.index[0]
@@ -4664,11 +4658,9 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 new_obj = new_obj[~new_obj.index.duplicated(keep="last")]
             new_data[k] = new_obj
 
-        # Align the index and columns in the new data
         new_data = self.align_index(new_data, missing=self.missing_index, silence_warnings=silence_warnings)
         new_data = self.align_columns(new_data, missing=self.missing_columns, silence_warnings=silence_warnings)
 
-        # Align the columns and data type in the old and new data
         for k, new_obj in new_data.items():
             obj = self.data[k]
             if isinstance(obj, pd.DataFrame) and isinstance(new_obj, pd.DataFrame):
@@ -4685,7 +4677,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
             new_data[k] = new_obj
 
         if not concat:
-            # Do not concatenate with the old data
             for k, new_obj in new_data.items():
                 if isinstance(new_obj.index, pd.DatetimeIndex):
                     new_obj.index.freq = new_obj.index.inferred_freq
@@ -4697,7 +4688,6 @@ class Data(Analyzable, OHLCDataMixin, metaclass=MetaData):
                 last_index=self.dict_type(new_last_index),
             )
 
-        # Append the new data to the old data
         for k, new_obj in new_data.items():
             obj = self.data[k]
             obj = obj.loc[:from_index]

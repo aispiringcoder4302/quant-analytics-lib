@@ -653,7 +653,6 @@ class SignalFactory(IndicatorFactory):
         checks.assert_dict_valid(exit_settings, valid_keys)
         checks.assert_dict_valid(cache_settings, valid_keys)
 
-        # Get input names for each function
         def _get_func_names(func_settings: tp.Kwargs, setting: str, all_names: tp.Sequence[str]) -> tp.List[str]:
             func_input_names = func_settings.get(setting, None)
             if func_input_names is None:
@@ -675,7 +674,6 @@ class SignalFactory(IndicatorFactory):
         exit_param_names = _get_func_names(exit_settings, "pass_params", param_names)
         cache_param_names = _get_func_names(cache_settings, "pass_params", param_names)
 
-        # Build a function that selects a parameter tuple
         if mode == FactoryMode.Entries:
             _0 = "i"
             _0 += ", target_shape"
@@ -862,7 +860,6 @@ class SignalFactory(IndicatorFactory):
                     * List of 2D arrays.
                     * None.
             """
-            # Get arguments
             if len(input_list) == 0:
                 if input_shape is None:
                     raise ValueError("Pass input_shape if no input time series were passed")
@@ -938,7 +935,6 @@ class SignalFactory(IndicatorFactory):
             until_next = exit_kwargs["until_next"]
             skip_until_exit = exit_kwargs["skip_until_exit"]
 
-            # Distribute arguments across functions
             entry_input_list = []
             exit_input_list = []
             cache_input_list = []
@@ -991,7 +987,6 @@ class SignalFactory(IndicatorFactory):
             exit_more_args = _build_more_args(exit_settings, exit_kwargs)
             cache_more_args = _build_more_args(cache_settings, cache_kwargs)
 
-            # Caching
             cache = use_cache
             if cache is None and cache_func is not None:
                 _cache_in_output_list = cache_in_output_list
@@ -1021,7 +1016,6 @@ class SignalFactory(IndicatorFactory):
             if exit_settings.get("pass_cache", False):
                 exit_cache = cache
 
-            # Apply and concatenate
             if mode == FactoryMode.Entries:
                 _entry_in_output_list = list(map(to_typed_list, entry_in_output_list))
                 _entry_param_list = list(map(to_typed_list, entry_param_list))

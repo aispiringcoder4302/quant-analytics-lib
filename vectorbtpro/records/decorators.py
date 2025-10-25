@@ -122,7 +122,6 @@ def attach_fields(*args, on_conflict: str = "raise") -> tp.FlexClassWrapper:
 
         def _check_attr_name(attr_name, _on_conflict: str = on_conflict) -> None:
             if attr_name not in cls.field_config.get("settings", {}):
-                # Consider only attributes that are not listed in the field config
                 if hasattr(cls, attr_name):
                     if _on_conflict.lower() == "raise":
                         raise ValueError(f"An attribute with the name {attr_name!r} already exists in {cls}")

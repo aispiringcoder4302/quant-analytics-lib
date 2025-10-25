@@ -519,7 +519,6 @@ class Records(Analyzable, metaclass=MetaRecords):
         col_mapper: tp.Optional[ColumnMapper] = None,
         **kwargs,
     ) -> None:
-        # Check fields
         records_arr = np.asarray(records_arr)
         checks.assert_not_none(records_arr.dtype.fields)
         field_names = {dct.get("name", field_name) for field_name, dct in self.field_config.get("settings", {}).items()}
@@ -537,10 +536,8 @@ class Records(Analyzable, metaclass=MetaRecords):
         self._records_arr = records_arr
         self._col_mapper = col_mapper
 
-        # Only slices of rows can be selected
         self._range_only_select = True
 
-        # Copy writeable attrs
         self._field_config = type(self)._field_config.copy()
 
     @classmethod

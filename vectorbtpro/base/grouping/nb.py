@@ -44,14 +44,12 @@ def get_group_lens_nb(groups: tp.Array1d) -> tp.GroupLens:
             raise ValueError("Columns must form monolithic, sorted groups")
         if cur_group != last_group:
             if last_group != -1:
-                # Process previous group
                 result[j] = group_len
                 j += 1
                 group_len = 0
             last_group = cur_group
         group_len += 1
         if i == groups.shape[0] - 1:
-            # Process last group
             result[j] = group_len
             j += 1
             group_len = 0

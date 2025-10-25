@@ -1084,13 +1084,11 @@ class RayEngine(ExecutionEngine):
         obj_id_refs = {}
         task_refs = []
         for func, args, kwargs in tasks:
-            # Get remote function
             if isinstance(func, RemoteFunction):
                 func_remote = func
             else:
                 if not reuse_refs or id(func) not in func_id_remotes:
                     if isinstance(func, CPUDispatcher):
-                        # Numba-wrapped function is not recognized by ray as a function
                         _func = lambda *_args, **_kwargs: func(*_args, **_kwargs)
                     else:
                         _func = func
@@ -1103,7 +1101,6 @@ class RayEngine(ExecutionEngine):
                 else:
                     func_remote = func_id_remotes[id(func)]
 
-            # Get id of each (unique) arg
             arg_refs = ()
             for arg in args:
                 if isinstance(arg, ObjectRef):
@@ -1116,7 +1113,6 @@ class RayEngine(ExecutionEngine):
                         arg_ref = obj_id_refs[id(arg)]
                 arg_refs += (arg_ref,)
 
-            # Get id of each (unique) kwarg
             kwarg_refs = {}
             for kwarg_name, kwarg in kwargs.items():
                 if isinstance(kwarg, ObjectRef):
@@ -1161,7 +1157,6 @@ class RayEngine(ExecutionEngine):
                 results = ray.get(result_refs)
             finally:
                 if self.del_refs:
-                    # clear object store
                     del result_refs
                 if self.shutdown:
                     ray.shutdown()

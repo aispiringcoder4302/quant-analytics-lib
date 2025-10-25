@@ -96,7 +96,6 @@ class DataUpdater(Configured):
         Returns:
             None
         """
-        # In case the method was called by the user
         kwargs = merge_dicts(self.update_kwargs, kwargs)
 
         self._data = self.data.update(**kwargs)

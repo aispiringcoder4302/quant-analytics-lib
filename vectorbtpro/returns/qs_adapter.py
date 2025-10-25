@@ -229,7 +229,6 @@ def attach_qs_methods(cls: tp.Type[tp.T], replace_signature: bool = True) -> tp.
                     return _func(returns=returns, **pass_kwargs)
 
                 if replace_signature:
-                    # Replace the function's signature with the original one
                     source_sig = signature(qs_func)
                     new_method_params = tuple(signature(new_method).parameters.values())
                     self_arg = new_method_params[0]

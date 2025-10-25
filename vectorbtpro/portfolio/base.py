@@ -743,10 +743,8 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         self._drawdowns_cls = drawdowns_cls
         self._weights = weights
 
-        # Only slices of rows can be selected
         self._range_only_select = True
 
-        # Copy writeable attrs
         self._in_output_config = type(self)._in_output_config.copy()
 
     @classmethod

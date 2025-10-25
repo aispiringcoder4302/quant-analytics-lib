@@ -120,7 +120,6 @@ class DataSaver(DataUpdater):
         Returns:
             None
         """
-        # In case the method was called by the user
         kwargs = merge_dicts(
             dict(save_kwargs=self.save_kwargs),
             self.update_kwargs,

@@ -143,7 +143,6 @@ def sort_call_seq_out_1d_nb(
             _size_type,
             _direction,
         )
-    # Sort by order value
     insert_argsort_nb(order_value_out, call_seq_out)
 
 
@@ -244,7 +243,6 @@ def sort_call_seq_out_nb(
             _size_type,
             _direction,
         )
-    # Sort by order value
     insert_argsort_nb(order_value_out, call_seq_out)
 
 
@@ -1110,7 +1108,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         sim_end=sim_end,
     )
 
-    # Call function before the simulation
     pre_sim_ctx = SimulationContext(
         target_shape=target_shape,
         group_lens=group_lens,
@@ -1159,7 +1156,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         to_col = group_end_idxs[group]
         group_len = to_col - from_col
 
-        # Call function before the group
         pre_group_ctx = GroupContext(
             target_shape=target_shape,
             group_lens=group_lens,
@@ -1219,13 +1215,11 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                 call_seq_now = call_seq[i, from_col:to_col]
 
             if track_value:
-                # Update valuation price using current open
                 for col in range(from_col, to_col):
                     _open = flex_select_nb(open_, i, col)
                     if not np.isnan(_open) or not ffill_val_price:
                         last_val_price[col] = _open
 
-                # Update previous value, current value, and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -1243,15 +1237,12 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                             last_value[col] = last_cash[col] + last_position[col] * last_val_price[col]
                         last_return[col] = returns_nb_.get_return_nb(prev_close_value[col], last_value[col])
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             is_segment_active = flex_select_nb(segment_mask_, i, group)
             if call_pre_segment or is_segment_active:
-                # Call function before the segment
                 pre_seg_ctx = SegmentContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
@@ -1301,7 +1292,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                 )
                 pre_segment_out = pre_segment_func_nb(pre_seg_ctx, *pre_group_out, *pre_segment_args)
 
-            # Add cash
             if cash_sharing:
                 _cash_deposits = flex_select_nb(cash_deposits_, i, group)
                 last_cash[group] += _cash_deposits
@@ -1315,7 +1305,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                     last_cash_deposits[col] = _cash_deposits
 
             if track_value:
-                # Update value and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -1339,12 +1328,10 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                             last_value[col] - last_cash_deposits[col],
                         )
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             if is_segment_active:
                 for k in range(group_len):
                     if cash_sharing:
@@ -1355,7 +1342,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                         ci = k
                     col = from_col + ci
 
-                    # Get current values
                     position_now = last_position[col]
                     debt_now = last_debt[col]
                     locked_cash_now = last_locked_cash[col]
@@ -1374,7 +1360,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                         return_now = last_return[col]
                         cash_deposits_now = last_cash_deposits[col]
 
-                    # Generate the next order
                     order_ctx = OrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -1443,7 +1428,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                         ):
                             raise ValueError("Cannot use size type that depends on not tracked value")
 
-                    # Process the order
                     price_area = PriceArea(
                         open=flex_select_nb(open_, i, col),
                         high=flex_select_nb(high_, i, col),
@@ -1473,7 +1457,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                         log_counts=log_counts,
                     )
 
-                    # Update execution state
                     cash_now = new_exec_state.cash
                     position_now = new_exec_state.position
                     debt_now = new_exec_state.debt
@@ -1491,7 +1474,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                         else:
                             return_now = returns_nb_.get_return_nb(prev_close_value[col], value_now - cash_deposits_now)
 
-                    # Now becomes last
                     last_position[col] = position_now
                     last_debt[col] = debt_now
                     last_locked_cash[col] = locked_cash_now
@@ -1512,7 +1494,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                             last_value[col] = value_now
                             last_return[col] = return_now
 
-                    # Update position record
                     if fill_pos_info:
                         if order_result.status == OrderStatus.Filled:
                             if order_counts[col] > 0:
@@ -1529,7 +1510,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                                 order_id,
                             )
 
-                    # Post-order function
                     post_order_ctx = PostOrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -1598,8 +1578,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                     )
                     post_order_func_nb(post_order_ctx, *pre_segment_out, *post_order_args)
 
-            # NOTE: Regardless of segment_mask, we still need to update stats for future rows
-            # Add earnings in cash
             for col in range(from_col, to_col):
                 _cash_earnings = flex_select_nb(cash_earnings_, i, col)
                 if cash_sharing:
@@ -1610,13 +1588,11 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                     last_free_cash[col] += _cash_earnings
 
             if track_value:
-                # Update valuation price using current close
                 for col in range(from_col, to_col):
                     _close = flex_select_nb(close_, i, col)
                     if not np.isnan(_close) or not ffill_val_price:
                         last_val_price[col] = _close
 
-                # Update previous value, current value, and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -1642,14 +1618,11 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
                         )
                         prev_close_value[col] = last_value[col]
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             if call_post_segment or is_segment_active:
-                # Call function after the segment
                 post_seg_ctx = SegmentContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
@@ -1702,7 +1675,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
             if i >= sim_end_[group] - 1:
                 break
 
-        # Call function after the group
         post_group_ctx = GroupContext(
             target_shape=target_shape,
             group_lens=group_lens,
@@ -1750,7 +1722,6 @@ def from_order_func_nb(  # %? line.replace("from_order_func_nb", new_func_name)
         )
         post_group_func_nb(post_group_ctx, *pre_sim_out, *post_group_args)
 
-    # Call function after the simulation
     post_sim_ctx = SimulationContext(
         target_shape=target_shape,
         group_lens=group_lens,
@@ -2303,7 +2274,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
         sim_end=sim_end,
     )
 
-    # Call function before the simulation
     pre_sim_ctx = SimulationContext(
         target_shape=target_shape,
         group_lens=group_lens,
@@ -2351,7 +2321,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
     _sim_end = sim_end_.max()
     for i in range(_sim_start, _sim_end):
 
-        # Call function before the row
         pre_row_ctx = RowContext(
             target_shape=target_shape,
             group_lens=group_lens,
@@ -2412,13 +2381,11 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                 call_seq_now = call_seq[i, from_col:to_col]
 
             if track_value:
-                # Update valuation price using current open
                 for col in range(from_col, to_col):
                     _open = flex_select_nb(open_, i, col)
                     if not np.isnan(_open) or not ffill_val_price:
                         last_val_price[col] = _open
 
-                # Update previous value, current value, and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -2436,15 +2403,12 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                             last_value[col] = last_cash[col] + last_position[col] * last_val_price[col]
                         last_return[col] = returns_nb_.get_return_nb(prev_close_value[col], last_value[col])
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             is_segment_active = flex_select_nb(segment_mask_, i, group)
             if call_pre_segment or is_segment_active:
-                # Call function before the segment
                 pre_seg_ctx = SegmentContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
@@ -2494,7 +2458,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                 )
                 pre_segment_out = pre_segment_func_nb(pre_seg_ctx, *pre_row_out, *pre_segment_args)
 
-            # Add cash
             if cash_sharing:
                 _cash_deposits = flex_select_nb(cash_deposits_, i, group)
                 last_cash[group] += _cash_deposits
@@ -2508,7 +2471,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                     last_cash_deposits[col] = _cash_deposits
 
             if track_value:
-                # Update value and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -2532,12 +2494,10 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                             last_value[col] - last_cash_deposits[col],
                         )
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             if is_segment_active:
                 for k in range(group_len):
                     if cash_sharing:
@@ -2548,7 +2508,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                         ci = k
                     col = from_col + ci
 
-                    # Get current values
                     position_now = last_position[col]
                     debt_now = last_debt[col]
                     locked_cash_now = last_locked_cash[col]
@@ -2567,7 +2526,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                         return_now = last_return[col]
                         cash_deposits_now = last_cash_deposits[col]
 
-                    # Generate the next order
                     order_ctx = OrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -2636,7 +2594,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                         ):
                             raise ValueError("Cannot use size type that depends on not tracked value")
 
-                    # Process the order
                     price_area = PriceArea(
                         open=flex_select_nb(open_, i, col),
                         high=flex_select_nb(high_, i, col),
@@ -2666,7 +2623,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                         log_counts=log_counts,
                     )
 
-                    # Update execution state
                     cash_now = new_exec_state.cash
                     position_now = new_exec_state.position
                     debt_now = new_exec_state.debt
@@ -2684,7 +2640,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                         else:
                             return_now = returns_nb_.get_return_nb(prev_close_value[col], value_now - cash_deposits_now)
 
-                    # Now becomes last
                     last_position[col] = position_now
                     last_debt[col] = debt_now
                     last_locked_cash[col] = locked_cash_now
@@ -2705,7 +2660,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                             last_value[col] = value_now
                             last_return[col] = return_now
 
-                    # Update position record
                     if fill_pos_info:
                         if order_result.status == OrderStatus.Filled:
                             if order_counts[col] > 0:
@@ -2722,7 +2676,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                                 order_id,
                             )
 
-                    # Post-order function
                     post_order_ctx = PostOrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -2791,8 +2744,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                     )
                     post_order_func_nb(post_order_ctx, *pre_segment_out, *post_order_args)
 
-            # NOTE: Regardless of segment_mask, we still need to update stats for future rows
-            # Add earnings in cash
             for col in range(from_col, to_col):
                 _cash_earnings = flex_select_nb(cash_earnings_, i, col)
                 if cash_sharing:
@@ -2803,13 +2754,11 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                     last_free_cash[col] += _cash_earnings
 
             if track_value:
-                # Update valuation price using current close
                 for col in range(from_col, to_col):
                     _close = flex_select_nb(close_, i, col)
                     if not np.isnan(_close) or not ffill_val_price:
                         last_val_price[col] = _close
 
-                # Update previous value, current value, and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -2835,14 +2784,11 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                         )
                         prev_close_value[col] = last_value[col]
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             if call_post_segment or is_segment_active:
-                # Call function after the segment
                 post_seg_ctx = SegmentContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
@@ -2892,7 +2838,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
                 )
                 post_segment_func_nb(post_seg_ctx, *pre_row_out, *post_segment_args)
 
-        # Call function after the row
         post_row_ctx = RowContext(
             target_shape=target_shape,
             group_lens=group_lens,
@@ -2945,7 +2890,6 @@ def from_order_func_rw_nb(  # %? line.replace("from_order_func_rw_nb", new_func_
         if sim_end_reached:
             break
 
-    # Call function after the simulation
     post_sim_ctx = SimulationContext(
         target_shape=target_shape,
         group_lens=group_lens,
@@ -3562,7 +3506,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         sim_end=sim_end,
     )
 
-    # Call function before the simulation
     pre_sim_ctx = SimulationContext(
         target_shape=target_shape,
         group_lens=group_lens,
@@ -3611,7 +3554,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         to_col = group_end_idxs[group]
         group_len = to_col - from_col
 
-        # Call function before the group
         pre_group_ctx = GroupContext(
             target_shape=target_shape,
             group_lens=group_lens,
@@ -3664,13 +3606,11 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         for i in range(_sim_start, _sim_end):
 
             if track_value:
-                # Update valuation price using current open
                 for col in range(from_col, to_col):
                     _open = flex_select_nb(open_, i, col)
                     if not np.isnan(_open) or not ffill_val_price:
                         last_val_price[col] = _open
 
-                # Update previous value, current value, and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -3688,15 +3628,12 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                             last_value[col] = last_cash[col] + last_position[col] * last_val_price[col]
                         last_return[col] = returns_nb_.get_return_nb(prev_close_value[col], last_value[col])
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             is_segment_active = flex_select_nb(segment_mask_, i, group)
             if call_pre_segment or is_segment_active:
-                # Call function before the segment
                 pre_seg_ctx = SegmentContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
@@ -3746,7 +3683,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                 )
                 pre_segment_out = pre_segment_func_nb(pre_seg_ctx, *pre_group_out, *pre_segment_args)
 
-            # Add cash
             if cash_sharing:
                 _cash_deposits = flex_select_nb(cash_deposits_, i, group)
                 last_cash[group] += _cash_deposits
@@ -3760,7 +3696,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                     last_cash_deposits[col] = _cash_deposits
 
             if track_value:
-                # Update value and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -3784,12 +3719,10 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                             last_value[col] - last_cash_deposits[col],
                         )
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             is_segment_active = flex_select_nb(segment_mask_, i, group)
             if is_segment_active:
 
@@ -3797,7 +3730,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                 while True:
                     call_idx += 1
 
-                    # Generate the next order
                     flex_order_ctx = FlexOrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -3860,7 +3792,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                         ):
                             raise ValueError("Cannot use size type that depends on not tracked value")
 
-                    # Get current values
                     position_now = last_position[col]
                     debt_now = last_debt[col]
                     locked_cash_now = last_locked_cash[col]
@@ -3879,7 +3810,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                         return_now = last_return[col]
                         cash_deposits_now = last_cash_deposits[col]
 
-                    # Process the order
                     price_area = PriceArea(
                         open=flex_select_nb(open_, i, col),
                         high=flex_select_nb(high_, i, col),
@@ -3909,7 +3839,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                         log_counts=log_counts,
                     )
 
-                    # Update execution state
                     cash_now = new_exec_state.cash
                     position_now = new_exec_state.position
                     debt_now = new_exec_state.debt
@@ -3927,7 +3856,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                         else:
                             return_now = returns_nb_.get_return_nb(prev_close_value[col], value_now - cash_deposits_now)
 
-                    # Now becomes last
                     last_position[col] = position_now
                     last_debt[col] = debt_now
                     last_locked_cash[col] = locked_cash_now
@@ -3954,7 +3882,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                             last_value[col] = value_now
                             last_return[col] = return_now
 
-                    # Update position record
                     if fill_pos_info:
                         if order_result.status == OrderStatus.Filled:
                             if order_counts[col] > 0:
@@ -3971,7 +3898,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                                 order_id,
                             )
 
-                    # Post-order function
                     post_order_ctx = PostOrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -4040,8 +3966,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                     )
                     post_order_func_nb(post_order_ctx, *pre_segment_out, *post_order_args)
 
-            # NOTE: Regardless of segment_mask, we still need to update stats for future rows
-            # Add earnings in cash
             for col in range(from_col, to_col):
                 _cash_earnings = flex_select_nb(cash_earnings_, i, col)
                 if cash_sharing:
@@ -4052,13 +3976,11 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                     last_free_cash[col] += _cash_earnings
 
             if track_value:
-                # Update valuation price using current close
                 for col in range(from_col, to_col):
                     _close = flex_select_nb(close_, i, col)
                     if not np.isnan(_close) or not ffill_val_price:
                         last_val_price[col] = _close
 
-                # Update previous value, current value, and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -4084,14 +4006,11 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
                         )
                         prev_close_value[col] = last_value[col]
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             if call_post_segment or is_segment_active:
-                # Call function after the segment
                 post_seg_ctx = SegmentContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
@@ -4144,7 +4063,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
             if i >= sim_end_[group] - 1:
                 break
 
-        # Call function after the group
         post_group_ctx = GroupContext(
             target_shape=target_shape,
             group_lens=group_lens,
@@ -4192,7 +4110,6 @@ def from_flex_order_func_nb(  # %? line.replace("from_flex_order_func_nb", new_f
         )
         post_group_func_nb(post_group_ctx, *pre_sim_out, *post_group_args)
 
-    # Call function after the simulation
     post_sim_ctx = SimulationContext(
         target_shape=target_shape,
         group_lens=group_lens,
@@ -4635,7 +4552,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         sim_end=sim_end,
     )
 
-    # Call function before the simulation
     pre_sim_ctx = SimulationContext(
         target_shape=target_shape,
         group_lens=group_lens,
@@ -4683,7 +4599,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
     _sim_end = sim_end_.max()
     for i in range(_sim_start, _sim_end):
 
-        # Call function before the row
         pre_row_ctx = RowContext(
             target_shape=target_shape,
             group_lens=group_lens,
@@ -4737,13 +4652,11 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
             group_len = to_col - from_col
 
             if track_value:
-                # Update valuation price using current open
                 for col in range(from_col, to_col):
                     _open = flex_select_nb(open_, i, col)
                     if not np.isnan(_open) or not ffill_val_price:
                         last_val_price[col] = _open
 
-                # Update previous value, current value, and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -4761,15 +4674,12 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                             last_value[col] = last_cash[col] + last_position[col] * last_val_price[col]
                         last_return[col] = returns_nb_.get_return_nb(prev_close_value[col], last_value[col])
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             is_segment_active = flex_select_nb(segment_mask_, i, group)
             if call_pre_segment or is_segment_active:
-                # Call function before the segment
                 pre_seg_ctx = SegmentContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
@@ -4819,7 +4729,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                 )
                 pre_segment_out = pre_segment_func_nb(pre_seg_ctx, *pre_row_out, *pre_segment_args)
 
-            # Add cash
             if cash_sharing:
                 _cash_deposits = flex_select_nb(cash_deposits_, i, group)
                 last_cash[group] += _cash_deposits
@@ -4833,7 +4742,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                     last_cash_deposits[col] = _cash_deposits
 
             if track_value:
-                # Update value and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -4857,12 +4765,10 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                             last_value[col] - last_cash_deposits[col],
                         )
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             is_segment_active = flex_select_nb(segment_mask_, i, group)
             if is_segment_active:
 
@@ -4870,7 +4776,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                 while True:
                     call_idx += 1
 
-                    # Generate the next order
                     flex_order_ctx = FlexOrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -4933,7 +4838,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                         ):
                             raise ValueError("Cannot use size type that depends on not tracked value")
 
-                    # Get current values
                     position_now = last_position[col]
                     debt_now = last_debt[col]
                     locked_cash_now = last_locked_cash[col]
@@ -4952,7 +4856,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                         return_now = last_return[col]
                         cash_deposits_now = last_cash_deposits[col]
 
-                    # Process the order
                     price_area = PriceArea(
                         open=flex_select_nb(open_, i, col),
                         high=flex_select_nb(high_, i, col),
@@ -4982,7 +4885,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                         log_counts=log_counts,
                     )
 
-                    # Update execution state
                     cash_now = new_exec_state.cash
                     position_now = new_exec_state.position
                     debt_now = new_exec_state.debt
@@ -5000,7 +4902,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                         else:
                             return_now = returns_nb_.get_return_nb(prev_close_value[col], value_now - cash_deposits_now)
 
-                    # Now becomes last
                     last_position[col] = position_now
                     last_debt[col] = debt_now
                     last_locked_cash[col] = locked_cash_now
@@ -5027,7 +4928,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                             last_value[col] = value_now
                             last_return[col] = return_now
 
-                    # Update position record
                     if fill_pos_info:
                         if order_result.status == OrderStatus.Filled:
                             if order_counts[col] > 0:
@@ -5044,7 +4944,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                                 order_id,
                             )
 
-                    # Post-order function
                     post_order_ctx = PostOrderContext(
                         target_shape=target_shape,
                         group_lens=group_lens,
@@ -5113,8 +5012,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                     )
                     post_order_func_nb(post_order_ctx, *pre_segment_out, *post_order_args)
 
-            # NOTE: Regardless of segment_mask, we still need to update stats for future rows
-            # Add earnings in cash
             for col in range(from_col, to_col):
                 _cash_earnings = flex_select_nb(cash_earnings_, i, col)
                 if cash_sharing:
@@ -5125,13 +5022,11 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                     last_free_cash[col] += _cash_earnings
 
             if track_value:
-                # Update valuation price using current close
                 for col in range(from_col, to_col):
                     _close = flex_select_nb(close_, i, col)
                     if not np.isnan(_close) or not ffill_val_price:
                         last_val_price[col] = _close
 
-                # Update previous value, current value, and return
                 if cash_sharing:
                     last_value[group] = calc_group_value_nb(
                         from_col,
@@ -5157,14 +5052,11 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                         )
                         prev_close_value[col] = last_value[col]
 
-                # Update open position stats
                 if fill_pos_info:
                     for col in range(from_col, to_col):
                         update_open_pos_info_stats_nb(last_pos_info[col], last_position[col], last_val_price[col])
 
-            # Is this segment active?
             if call_post_segment or is_segment_active:
-                # Call function after the segment
                 post_seg_ctx = SegmentContext(
                     target_shape=target_shape,
                     group_lens=group_lens,
@@ -5214,7 +5106,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
                 )
                 post_segment_func_nb(post_seg_ctx, *pre_row_out, *post_segment_args)
 
-        # Call function after the row
         post_row_ctx = RowContext(
             target_shape=target_shape,
             group_lens=group_lens,
@@ -5267,7 +5158,6 @@ def from_flex_order_func_rw_nb(  # %? line.replace("from_flex_order_func_rw_nb",
         if sim_end_reached:
             break
 
-    # Call function after the simulation
     post_sim_ctx = SimulationContext(
         target_shape=target_shape,
         group_lens=group_lens,

@@ -27,7 +27,6 @@ binary_magic_config = ReadonlyConfig(
         "__gt__": dict(func=np.greater),
         "__le__": dict(func=np.less_equal),
         "__ge__": dict(func=np.greater_equal),
-        # arithmetic ops
         "__add__": dict(func=np.add),
         "__sub__": dict(func=np.subtract),
         "__mul__": dict(func=np.multiply),
@@ -42,7 +41,6 @@ binary_magic_config = ReadonlyConfig(
         "__rmod__": dict(func=lambda x, y: np.mod(y, x)),
         "__rfloordiv__": dict(func=lambda x, y: np.floor_divide(y, x)),
         "__rtruediv__": dict(func=lambda x, y: np.true_divide(y, x)),
-        # mask ops
         "__and__": dict(func=np.bitwise_and),
         "__or__": dict(func=np.bitwise_or),
         "__xor__": dict(func=np.bitwise_xor),

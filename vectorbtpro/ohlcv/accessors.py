@@ -510,7 +510,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         if add_trace_kwargs is None:
             add_trace_kwargs = {}
 
-        # Set up figure
         if fig is None:
             fig = make_figure()
         fig.update_layout(**layout_kwargs)
@@ -593,7 +592,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
         if add_trace_kwargs is None:
             add_trace_kwargs = {}
 
-        # Set up figure
         if fig is None:
             fig = make_figure()
         fig.update_layout(**layout_kwargs)
@@ -668,7 +666,6 @@ class OHLCVDFAccessor(OHLCDataMixin, GenericDFAccessor):
             add_trace_kwargs = merge_dicts(dict(row=1, col=1), add_trace_kwargs)
             volume_add_trace_kwargs = merge_dicts(dict(row=2, col=1), volume_add_trace_kwargs)
 
-        # Set up figure
         if fig is None:
             if plot_volume:
                 fig = make_subplots(

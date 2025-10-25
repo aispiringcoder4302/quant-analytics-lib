@@ -201,7 +201,6 @@ class _STOCH(STOCH):
         fig.update_layout(**default_layout)
         fig.update_layout(**layout_kwargs)
 
-        # Fill void between limits
         add_shape_kwargs = merge_dicts(
             dict(
                 type="rect",

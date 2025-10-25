@@ -451,7 +451,6 @@ def generate_rand_enex_nb(
         raise ValueError("entry_wait and exit_wait cannot be both 0")
 
     if entry_wait == 1 and exit_wait == 1:
-        # Basic case
         both = generate_nb(target_shape, rand_place_nb, (n * 2,), only_once=True, wait=1)
         for col in prange(both.shape[1]):
             both_idxs = np.flatnonzero(both[:, col])
@@ -638,15 +637,12 @@ def stop_place_nb(
         if not np.isnan(init_stop):
             if init_trailing:
                 if init_stop >= 0:
-                    # Trailing stop buy
                     curr_stop_price = min_low * (1 + abs(init_stop))
                 else:
-                    # Trailing stop sell
                     curr_stop_price = max_high * (1 - abs(init_stop))
             else:
                 curr_stop_price = init_entry_ts * (1 + init_stop)
 
-        # Check if stop price is within bar
         if not np.isnan(init_stop):
             if init_stop >= 0:
                 exit_signal = curr_ts >= curr_stop_price
@@ -658,7 +654,6 @@ def stop_place_nb(
                 last_i = i - c.from_i
                 break
 
-        # Keep track of lowest low and highest high if trailing
         if init_trailing:
             if curr_follow_ts < min_low:
                 min_low = curr_follow_ts
@@ -753,7 +748,6 @@ def ohlc_stop_place_nb(
 
     last_i = -1
     for i in range(c.from_i - c.wait, c.to_i):
-        # Resolve current bar
         _entry_price = flex_select_nb(entry_price, i, c.col)
         _open = flex_select_nb(open, i, c.col)
         _high = flex_select_nb(high, i, c.col)
@@ -784,7 +778,6 @@ def ohlc_stop_place_nb(
             curr_high = curr_low = _close
 
         if i >= c.from_i:
-            # Calculate stop prices
             if not np.isnan(init_sl_stop):
                 if init_reverse:
                     curr_sl_stop_price = init_entry_price * (1 + init_sl_stop)
@@ -813,10 +806,8 @@ def ohlc_stop_place_nb(
                 else:
                     curr_tp_stop_price = init_entry_price * (1 + init_tp_stop)
 
-            # Check if stop price is within bar
             exit_signal = False
             if not np.isnan(init_sl_stop):
-                # SL hit?
                 stop_price = np.nan
                 if not init_reverse:
                     if _open <= curr_sl_stop_price:
@@ -834,7 +825,6 @@ def ohlc_stop_place_nb(
                     exit_signal = True
 
             if not exit_signal and not np.isnan(init_tsl_stop):
-                # TSL/TTP hit?
                 stop_price = np.nan
                 if not init_reverse:
                     if _open <= curr_tsl_stop_price:
@@ -855,7 +845,6 @@ def ohlc_stop_place_nb(
                     exit_signal = True
 
             if not exit_signal and not np.isnan(init_tp_stop):
-                # TP hit?
                 stop_price = np.nan
                 if not init_reverse:
                     if _open >= curr_tp_stop_price:
@@ -878,7 +867,6 @@ def ohlc_stop_place_nb(
                 break
 
         if i > init_i or is_entry_open:
-            # Keep track of the lowest low and the highest high
             if curr_low < last_low:
                 last_low = curr_low
             if curr_high > last_high:

@@ -249,7 +249,6 @@ class _OLS(OLS):
             fig=fig,
         )
 
-        # Fill void between limits
         xref = fig.data[-1]["xaxis"] if fig.data[-1]["xaxis"] is not None else "x"
         yref = fig.data[-1]["yaxis"] if fig.data[-1]["yaxis"] is not None else "y"
         xaxis = "xaxis" + xref[1:]

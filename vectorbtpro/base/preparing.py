@@ -121,7 +121,6 @@ class BasePreparer(Configured, metaclass=MetaBasePreparer):
     def __init__(self, arg_config: tp.KwargsLike = None, **kwargs) -> None:
         Configured.__init__(self, arg_config=arg_config, **kwargs)
 
-        # Copy writeable attrs
         self._arg_config = type(self)._arg_config.copy()
         if arg_config is not None:
             self._arg_config = merge_dicts(self._arg_config, arg_config)

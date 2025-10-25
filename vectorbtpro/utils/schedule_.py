@@ -352,7 +352,6 @@ class ScheduleManager(Base):
             Every 1 minute at 00:00:17 do job_func() (last run: [never], next run: 2021-03-18 19:07:17)
             ```
         """
-        # Parse arguments
         interval = 1
         unit = None
         start_day = None

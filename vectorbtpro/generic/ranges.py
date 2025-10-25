@@ -1247,7 +1247,6 @@ class Ranges(PriceRecords):
         if close is None:
             raise ValueError("Close cannot be None")
 
-        # Resolve windows
         def _resolve_period(period):
             if self_col.count() == 0:
                 period = None
@@ -1300,7 +1299,6 @@ class Ranges(PriceRecords):
             fig = make_figure()
         fig.update_layout(**layout_kwargs)
 
-        # Plot OHLC/close
         if plot_ohlc and ohlc is not None:
             if plot_past_period is not None:
                 if isinstance(plot_past_period, int):
@@ -1337,7 +1335,6 @@ class Ranges(PriceRecords):
                 )
 
         if self_col.count() > 0:
-            # Get projections
             projections = self_col.get_projections(
                 close=close,
                 proj_start=proj_start,
@@ -1352,7 +1349,6 @@ class Ranges(PriceRecords):
             )
 
             if len(projections.columns) > 0:
-                # Plot projections
                 rename_levels = dict(range_id=self_col.get_field_title("id"))
                 fig = projections.vbt.plot_projections(
                     plot_projections=plot_projections,
@@ -1493,7 +1489,6 @@ class Ranges(PriceRecords):
         x_domain = get_domain(yref, fig)
         y_domain = get_domain(yref, fig)
 
-        # Plot OHLC/close
         if plot_ohlc and ohlc is not None:
             if "opacity" not in ohlc_trace_kwargs:
                 ohlc_trace_kwargs["opacity"] = 0.5
@@ -1686,7 +1681,6 @@ class Ranges(PriceRecords):
         fig.update_layout(**layout_kwargs)
         y_domain = get_domain(yref, fig)
 
-        # Plot OHLC/close
         plotting_ohlc = False
         if plot_ohlc and ohlc is not None:
             if "opacity" not in ohlc_trace_kwargs:
@@ -1707,7 +1701,6 @@ class Ranges(PriceRecords):
             )
 
         if self_col.count() > 0:
-            # Extract information
             start_idx = self_col.get_map_field_to_index("start_idx", minus_one_to_zero=True)
             if plotting_ohlc and self_col.open is not None:
                 start_val = self_col.open.loc[start_idx]
@@ -1723,7 +1716,6 @@ class Ranges(PriceRecords):
             status = self_col.get_field_arr("status")
 
             if plot_markers:
-                # Plot start markers
                 start_customdata, start_hovertemplate = self_col.prepare_customdata(incl_fields=["id", "start_idx"])
                 _start_trace_kwargs = merge_dicts(
                     dict(
@@ -1748,7 +1740,6 @@ class Ranges(PriceRecords):
             closed_mask = status == enums.RangeStatus.Closed
             if closed_mask.any():
                 if plot_markers:
-                    # Plot end markers
                     closed_end_customdata, closed_end_hovertemplate = self_col.prepare_customdata(mask=closed_mask)
                     _end_trace_kwargs = merge_dicts(
                         dict(
@@ -1775,7 +1766,6 @@ class Ranges(PriceRecords):
             open_mask = status == enums.RangeStatus.Open
             if open_mask.any():
                 if plot_markers:
-                    # Plot end markers
                     open_end_customdata, open_end_hovertemplate = self_col.prepare_customdata(
                         excl_fields=["end_idx"], mask=open_mask
                     )
@@ -1802,7 +1792,6 @@ class Ranges(PriceRecords):
                     fig.add_trace(open_end_scatter, **add_trace_kwargs)
 
             if plot_zones:
-                # Plot closed range zones
                 self_col.status_closed.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -1816,7 +1805,6 @@ class Ranges(PriceRecords):
                     fig=fig,
                 )
 
-                # Plot open range zones
                 self_col.status_open.plot_shapes(
                     plot_ohlc=False,
                     plot_close=False,
@@ -2289,7 +2277,6 @@ class PatternRanges(Ranges):
         method_locals = locals()
         method_locals = {k: v for k, v in method_locals.items() if k in psc_keys}
 
-        # Flatten search configs
         flat_search_configs = []
         psc_names = []
         psc_names_none = True
@@ -2321,7 +2308,6 @@ class PatternRanges(Ranges):
                             psc_names.append(n_configs)
                         n_configs += 1
 
-        # Combine parameters
         param_dct = {}
         for k, v in method_locals.items():
             if k in psc_keys and isinstance(v, Param):
@@ -2356,7 +2342,6 @@ class PatternRanges(Ranges):
                         new_flat_search_configs.append(PSC(**new_search_config))
                 flat_search_configs = new_flat_search_configs
 
-        # Create config from arguments if empty
         if len(flat_search_configs) == 0:
             single_group = True
             for col in range(arr_2d.shape[1]):
@@ -2364,7 +2349,6 @@ class PatternRanges(Ranges):
         else:
             single_group = False
 
-        # Prepare function and arguments
         tasks = []
         func = jit_reg.resolve_option(nb.find_pattern_1d_nb, jitted)
         def_func_kwargs = get_func_kwargs(func)
@@ -2388,7 +2372,6 @@ class PatternRanges(Ranges):
             tasks.append(Task(func, **func_kwargs))
             new_search_configs.append(new_search_config)
 
-        # Build column hierarchy
         n_config_params = len(psc_names) // arr_2d.shape[1]
         if param_columns is not None:
             if n_config_params == 0 or (n_config_params == 1 and psc_names_none):
@@ -2410,12 +2393,10 @@ class PatternRanges(Ranges):
                     **clean_index_kwargs,
                 )
 
-        # Execute each configuration
         execute_kwargs = merge_dicts(dict(show_progress=False if single_group else None), execute_kwargs)
         result_list = execute(tasks, keys=new_columns, **execute_kwargs)
         records_arr = np.concatenate(result_list)
 
-        # Wrap with class
         wrapper = ArrayWrapper(
             **merge_dicts(
                 dict(
@@ -2662,13 +2643,11 @@ class PatternRanges(Ranges):
         )
 
         if self_col.count() > 0:
-            # Extract information
             start_idx = self_col.get_map_field_to_index("start_idx", minus_one_to_zero=True)
             end_idx = self_col.get_map_field_to_index("end_idx")
             status = self_col.get_field_arr("status")
 
             if plot_patterns:
-                # Plot pattern
                 for r in range(len(start_idx)):
                     _start_idx = start_idx[r]
                     _end_idx = end_idx[r]

@@ -234,7 +234,6 @@ class Gauge(TraceType, TraceUpdater):
         if fig is None:
             fig = make_figure(**resolve_dict(make_figure_kwargs))
             if "width" in layout_cfg:
-                # Calculate nice width and height
                 width = layout_cfg.get("width", None)
                 if width is not None:
                     width *= 0.7
@@ -1186,7 +1185,6 @@ class Heatmap(TraceType, TraceUpdater):
             fig = make_figure(**resolve_dict(make_figure_kwargs))
             max_width = layout_cfg.get("width", None)
             if max_width is not None:
-                # Calculate nice width and height
                 if data is not None:
                     x_len = data.shape[1]
                     y_len = data.shape[0]
@@ -1367,13 +1365,10 @@ class Volume(TraceType, TraceUpdater):
         if fig is None:
             fig = make_figure(**resolve_dict(make_figure_kwargs))
             if "width" in layout_cfg:
-                # Calculate nice width and height
                 width = layout_cfg.get("width", None)
                 if width is not None:
                     fig.update_layout(width=width, height=0.7 * width)
 
-        # Non-numeric data types are not supported by go.Volume, so use ticktext
-        # Note: Currently plotly displays the entire tick array, in future versions it will be more sensible
         more_layout = dict()
         more_layout[scene_name] = dict()
         if not np.issubdtype(x_labels.dtype, np.number):
@@ -1391,7 +1386,6 @@ class Volume(TraceType, TraceUpdater):
         fig.update_layout(**more_layout)
         fig.update_layout(**layout_kwargs)
 
-        # Arrays must have the same length as the flattened data array
         x = np.repeat(x_labels, len(y_labels) * len(z_labels))
         y = np.tile(np.repeat(y_labels, len(z_labels)), len(x_labels))
         z = np.tile(z_labels, len(x_labels) * len(y_labels))

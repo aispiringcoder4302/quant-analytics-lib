@@ -332,9 +332,6 @@ class AlpacaData(RemoteData):
         from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
         if client_type is None:
-            # If client_type is not provided, determine it based on the symbol
-            # Crypto symbols contain "/", while stock symbols do not
-            # Options symbols must follow the regex pattern ^[A-Z]{1,5}\\d{6,7}[CP]\\d{8}$
             if "/" in symbol:
                 client_type = "crypto"
             elif re.match(r"^[A-Z]{1,5}\d{6,7}[CP]\d{8}$", symbol):

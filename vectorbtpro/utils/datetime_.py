@@ -242,26 +242,22 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
             unit = "s"
         elif unit == "m":  # case!
             unit = "min"
-        # hour
         elif unit.lower() == "h":
             unit = "h"
         elif unit.lower() in ("businesshour", "bh"):
             unit = "bh"
         elif unit.lower() in ("custombusinesshour", "cbh"):
             unit = "cbh"
-        # day
         elif unit.lower() == "d":
             unit = "D"
         elif unit.lower() in ("b", "bd", "bday", "businessday"):
             unit = "B"
         elif unit.lower() in ("c", "cd", "cday", "custombusinessday"):
             unit = "C"
-        # week
         elif unit.lower() in ("w", "ws", "weekstart", "weekbegin"):
             unit = "W-MON"
         elif unit.lower() in ("we", "weekend"):
             unit = "W-SUN"
-        # month
         elif unit.lower() in ("m", "ms", "monthstart", "monthbegin"):
             unit = "MS"
         elif unit.lower() in ("me", "monthend"):
@@ -269,7 +265,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "M"
             else:
                 unit = "ME"
-        # business month
         elif unit.lower() in (
             "bm",
             "bms",
@@ -284,7 +279,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "BM"
             else:
                 unit = "BME"
-        # custom business month
         elif unit.lower() in (
             "cbm",
             "cbms",
@@ -299,7 +293,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "CBM"
             else:
                 unit = "CBME"
-        # semi-month
         elif unit.lower() in ("sm", "sms", "semimonthstart", "semimonthbegin"):
             unit = "SMS"
         elif unit.lower() in ("sme", "semimonthend"):
@@ -307,7 +300,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "SM"
             else:
                 unit = "SME"
-        # quarter
         elif unit.lower() in ("q", "qs", "quarterstart", "quarterbegin"):
             unit = "QS"
         elif unit.lower() in ("qe", "quarterend"):
@@ -315,7 +307,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "Q"
             else:
                 unit = "QE"
-        # business quarter
         elif unit.lower() in (
             "bq",
             "bqs",
@@ -330,10 +321,8 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "BQ"
             else:
                 unit = "BQE"
-        # retail quarter
         elif unit.lower() in ("req", "retailquarter", "fy5253quarter"):
             unit = "REQ"
-        # year
         elif unit.lower() in ("a", "y", "as", "ys", "yearstart", "yearbegin"):
             unit = year_prefix + "S"
         elif unit.lower() in ("ae", "ye", "yearend"):
@@ -341,7 +330,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = year_prefix
             else:
                 unit = year_prefix + "E"
-        # business year
         elif unit.lower() in (
             "ba",
             "by",
@@ -358,10 +346,8 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
                 unit = "B" + year_prefix
             else:
                 unit = "B" + year_prefix + "E"
-        # retail year
         elif unit.lower() in ("re", "retailyear", "fy5253"):
             unit = "RE"
-        # day of week
         elif unit.lower() in ("mon", "monday"):
             unit = "W-MON"
         elif unit.lower() in ("tue", "tuesday"):
@@ -376,7 +362,6 @@ def prepare_offset_str(offset_str: str, allow_space: bool = False) -> str:
             unit = "W-SAT"
         elif unit.lower() in ("sun", "sunday"):
             unit = "W-SUN"
-        # month of year
         elif unit.lower() in ("jan", "january"):
             unit = year_prefix + "S-JAN"
         elif unit.lower() in ("feb", "february"):
@@ -565,7 +550,6 @@ def to_timedelta(freq: tp.FrequencyLike = 1, approximate: bool = False) -> tp.Pa
         if not isinstance(freq, BaseOffset):
             try:
                 if isinstance(freq, str) and not freq[0].isdigit():
-                    # Otherwise "ValueError: unit abbreviation w/o a number"
                     freq = pd.Timedelta(1, unit=freq)
                 else:
                     freq = pd.Timedelta(freq)

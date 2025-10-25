@@ -190,7 +190,6 @@ class _MACD(MACD):
             fig=fig,
         )
 
-        # Plot hist
         hist = self_col.hist.values
         hist_diff = generic_nb.diff_1d_nb(hist)
         marker_colors = np.full(hist.shape, adjust_opacity("silver", 0.75), dtype=object)

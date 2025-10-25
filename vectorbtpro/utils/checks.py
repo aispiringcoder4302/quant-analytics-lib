@@ -537,7 +537,6 @@ def is_hashable(obj: tp.Any) -> bool:
     """
     if not isinstance(obj, Hashable):
         return False
-    # Having __hash__() method does not mean that it's hashable
     try:
         hash(obj)
     except TypeError:

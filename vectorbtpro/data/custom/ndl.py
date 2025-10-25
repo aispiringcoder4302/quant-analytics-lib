@@ -131,7 +131,6 @@ class NDLData(RemoteData):
             dataset = symbol
         params = cls.resolve_custom_setting(params, "params", merge=True)
 
-        # Establish the timestamps
         if start is not None:
             start = dt.to_tzaware_datetime(start, naive_tz=tz, tz="utc")
             start_date = pd.Timestamp(start).isoformat()
@@ -147,7 +146,6 @@ class NDLData(RemoteData):
         else:
             end_date = None
 
-        # Collect and format the data
         if data_format.lower() == "dataset":
             df = nasdaqdatalink.get(
                 dataset,
