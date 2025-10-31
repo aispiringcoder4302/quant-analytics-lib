@@ -269,8 +269,11 @@ def build_columns(
                 dtype = to_value_mapping(dtype, reverse=True)
             param_values = apply_mapping(param_values, dtype)
         _per_column = _param_settings.get("per_column", False)
+        _pre_index_func = _param_settings.get("pre_index_func", None)
         _post_index_func = _param_settings.get("post_index_func", None)
 
+        if _pre_index_func is not None:
+            param_values = _pre_index_func(param_values)
         if per_column:
             param_index = indexes.index_from_values(param_values, single_value=_single_value, name=level_name)
             repeat_index = False
@@ -678,6 +681,7 @@ class IndicatorBase(Analyzable):
                 * `bc_to_input`: Broadcast the parameter to the input shape or along a specific axis.
                 * `broadcast_kwargs`: Keyword arguments for input broadcasting.
                 * `per_column`: Allow splitting parameter values per column for multi-indexing.
+                * `pre_index_func`: Function to transform the initial parameter values before building the index.
                 * `post_index_func`: Function to transform the final parameter index level.
                 * `doc`: Documentation string for the parameter.
             run_unique (bool): Flag to run only on unique parameter combinations.
@@ -808,6 +812,7 @@ class IndicatorBase(Analyzable):
                         "bc_to_input",
                         "broadcast_kwargs",
                         "per_column",
+                        "pre_index_func",
                         "post_index_func",
                         "doc",
                     ],
