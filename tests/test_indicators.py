@@ -920,9 +920,9 @@ class TestFactory:
             index=ts.index,
             columns=pd.MultiIndex.from_tuples(
                 [
-                    ("tuple", "a"),
-                    ("tuple", "b"),
-                    ("tuple", "c"),
+                    ((0, 1), "a"),
+                    ((0, 1), "b"),
+                    ((0, 1), "c"),
                 ],
                 names=["custom_p", None],
             ),

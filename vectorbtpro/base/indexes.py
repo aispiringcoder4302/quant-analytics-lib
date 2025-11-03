@@ -121,9 +121,8 @@ def index_from_values(
 
     indexing_cfg = settings["indexing"]
 
-    scalar_types = (int, float, complex, str, bool, datetime, timedelta, np.generic)
     type_id_number = {}
-    value_names = []
+    new_values = []
     if len(values) == 1:
         single_value = True
     if name_numbering is None:
@@ -131,7 +130,7 @@ def index_from_values(
 
     def _process_type_name(type_name):
         if single_value:
-            value_names.append(type_name)
+            new_values.append(type_name)
         else:
             if type_name not in type_id_number:
                 type_id_number[type_name] = {}
@@ -139,19 +138,19 @@ def index_from_values(
                 type_id_number[type_name][id(v)] = len(type_id_number[type_name])
             if name_numbering.lower() == "none_based":
                 if type_id_number[type_name][id(v)] == 0:
-                    value_names.append(type_name)
+                    new_values.append(type_name)
                 else:
-                    value_names.append("%s_%d" % (type_name, type_id_number[type_name][id(v)] + 1))
+                    new_values.append("%s_%d" % (type_name, type_id_number[type_name][id(v)] + 1))
             elif name_numbering.lower() == "zero_based":
                 if type_id_number[type_name][id(v)] == 0:
-                    value_names.append("%s_0" % type_name)
+                    new_values.append("%s_0" % type_name)
                 else:
-                    value_names.append("%s_%d" % (type_name, type_id_number[type_name][id(v)]))
+                    new_values.append("%s_%d" % (type_name, type_id_number[type_name][id(v)]))
             elif name_numbering.lower() == "one_based":
                 if type_id_number[type_name][id(v)] == 0:
-                    value_names.append("%s_1" % type_name)
+                    new_values.append("%s_1" % type_name)
                 else:
-                    value_names.append("%s_%d" % (type_name, type_id_number[type_name][id(v)] + 1))
+                    new_values.append("%s_%d" % (type_name, type_id_number[type_name][id(v)] + 1))
             else:
                 raise ValueError(f"Invalid name_numbering: {name_numbering!r}")
 
@@ -159,8 +158,8 @@ def index_from_values(
         if i > 0 and single_value:
             break
         v = values[i]
-        if v is None or isinstance(v, scalar_types):
-            value_names.append(v)
+        if v is None or checks.is_hashable(v):
+            new_values.append(v)
         elif isinstance(v, np.ndarray):
             all_same = False
             if np.issubdtype(v.dtype, np.floating):
@@ -172,14 +171,14 @@ def index_from_values(
                 if np.equal(v, v.item(0)).all():
                     all_same = True
             if all_same:
-                value_names.append(v.item(0))
+                new_values.append(v.item(0))
             else:
                 _process_type_name("array")
         else:
             _process_type_name(str(type(v).__name__))
     if single_value and len(values) > 1:
-        value_names *= len(values)
-    return pd.Index(value_names, name=name)
+        new_values *= len(values)
+    return pd.Index(new_values, name=name, tupleize_cols=False)
 
 
 def repeat_index(index: tp.IndexLike, n: int, ignore_ranges: tp.Optional[bool] = None) -> tp.Index:

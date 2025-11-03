@@ -99,7 +99,7 @@ class TestIndexes:
         )
         assert_index_equal(
             indexes.index_from_values([(1, 2), (3, 4), (5, 6)], name="c"),
-            pd.Index(["tuple", "tuple_2", "tuple_3"], dtype="object", name="c"),
+            pd.Index([(1, 2), (3, 4), (5, 6)], dtype="object", name="c", tupleize_cols=False),
         )
 
         class A:
@@ -111,16 +111,12 @@ class TestIndexes:
         class C:
             pass
 
-        assert_index_equal(
-            indexes.index_from_values([A(), B(), B(), C()], name="c"),
-            pd.Index(["A", "B", "B_2", "C"], dtype="object", name="c"),
-        )
         a = A()
         b = B()
         c = C()
         assert_index_equal(
             indexes.index_from_values([a, b, b, c], name="c"),
-            pd.Index(["A", "B", "B", "C"], dtype="object", name="c"),
+            pd.Index([a, b, b, c], dtype="object", name="c"),
         )
 
     def test_repeat_index(self):
