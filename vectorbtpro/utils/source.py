@@ -407,7 +407,7 @@ def cut_and_save(
     return path
 
 
-def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> Path:
+def cut_and_save_module(module: tp.ModuleLike, *args, **kwargs) -> Path:
     """Extract an annotated section from a module's source code and save it to a file.
 
     If a module is provided as an import path string, it is imported prior to processing.
@@ -415,7 +415,7 @@ def cut_and_save_module(module: tp.Union[str, ModuleType], *args, **kwargs) -> P
     is extracted and saved using `cut_and_save`.
 
     Args:
-        module (Union[str, ModuleType]): Target module or its import path.
+        module (ModuleLike): Target module or its import path.
         *args: Positional arguments for `cut_and_save`.
         **kwargs: Keyword arguments for `cut_and_save`.
 

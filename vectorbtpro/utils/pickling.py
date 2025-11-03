@@ -584,15 +584,15 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
     """Obtain the reconstruction identifier for a class or instance.
 
     If the object is an instance or subclass of `Pickleable` with a defined `_rec_id`, that value is returned.
-    Otherwise, returns the fully qualified class path derived using `vectorbtpro.utils.module_.find_class`.
+    Otherwise, returns the fully qualified name (FQN) derived using `vectorbtpro.utils.module_.get_fqn_obj`.
 
     Args:
         obj (Any): Class or instance to evaluate.
 
     Returns:
-        Optional[str]: Reconstruction identifier or class path, or None if not found.
+        Optional[str]: Reconstruction identifier or class FQN, or None if not found.
     """
-    from vectorbtpro.utils.module_ import find_class
+    from vectorbtpro.utils.module_ import get_fqn_obj
 
     if isinstance(obj, type):
         cls = obj
@@ -603,9 +603,9 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
             if not isinstance(cls._rec_id, str):
                 raise TypeError(f"Reconstructing id of class {cls} must be a string")
             return cls._rec_id
-    class_path = cls.__module__ + "." + cls.__name__
-    if find_class(class_path) is not None:
-        return class_path
+    fqn = cls.__module__ + "." + cls.__name__
+    if get_fqn_obj(fqn, raise_missing=False) is not None:
+        return fqn
     return None
 
 
@@ -618,11 +618,11 @@ def get_class_from_id(class_id: str) -> tp.Optional[tp.Type]:
     Returns:
         Type: Class associated with the provided identifier.
     """
-    from vectorbtpro.utils.module_ import find_class
+    from vectorbtpro.utils.module_ import get_obj
 
     if class_id in rec_info_registry:
         return rec_info_registry[class_id].cls
-    cls = find_class(class_id)
+    cls = get_obj(class_id)
     if cls is not None:
         return cls
     raise ValueError(f"Please register an instance of RecInfo for {class_id!r}")
@@ -633,7 +633,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
 
     The function uses the reconstruction state to initialize a new instance, setting initialization
     arguments and updating attributes. If the provided class is not directly a type, it attempts to
-    resolve the class using `rec_info_registry` or `vectorbtpro.utils.module_.find_class`.
+    resolve the class using `rec_info_registry` or `vectorbtpro.utils.module_.get_obj`.
 
     Args:
         cls (Union[Hashable, Type]): Class or its reconstruction identifier.
@@ -643,7 +643,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
     Returns:
         Any: Reconstructed instance.
     """
-    from vectorbtpro.utils.module_ import find_class
+    from vectorbtpro.utils.module_ import get_obj
 
     found_rec = False
     if not isinstance(cls, type):
@@ -657,7 +657,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
     if not isinstance(cls, type):
         if isinstance(cls, str):
             cls_name = cls
-            cls = find_class(cls_name)
+            cls = get_obj(cls_name)
             if cls is None:
                 cls = cls_name
     if not isinstance(cls, type):

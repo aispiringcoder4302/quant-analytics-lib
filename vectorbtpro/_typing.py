@@ -19,6 +19,7 @@ import sys
 from datetime import datetime, timedelta, tzinfo, date, time
 from enum import EnumMeta
 from pathlib import Path
+from types import ModuleType
 
 if sys.version_info < (3, 9):
     import typing
@@ -542,6 +543,7 @@ PipeTasks = Iterable[PipeTask]
 CompressionLike = Union[None, bool, str]
 
 # Source
+ModuleLike = Union[str, ModuleType]
 RefactorSourceOutput = Union[None, str, Path, Tuple[str, Path], Tuple[Path, Path]]
 RefactorSourceOutputs = List[Tuple[Any, RefactorSourceOutput]]
 MaybeRefactorSourceOutput = Union[RefactorSourceOutput, RefactorSourceOutputs]

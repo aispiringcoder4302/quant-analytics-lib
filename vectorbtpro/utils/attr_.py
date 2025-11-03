@@ -695,10 +695,29 @@ class AttrResolverMixin(Base):
             Any: Value of the nested attribute.
         """
         return deep_getattr(self, *args, **kwargs)
+    
 
+def get_attr(obj: tp.Any, attr_name: str, default: tp.Any = MISSING) -> tp.Any:
+    """Get an attribute of an object.
+
+    Args:
+        obj (Any): Object to retrieve the attribute from.
+        attr_name (str): Name of the attribute to retrieve.
+        default (Any): Default value to return if the attribute is not found.
+
+    Returns:
+        Any: Value of the attribute.
+    """
+    try:
+        return inspect.getattr_static(obj, attr_name)
+    except AttributeError as e:
+        value = getattr(obj, attr_name, default)
+        if value is MISSING:
+            raise e
+        return value
 
 def get_attrs(
-    obj,
+    obj: tp.Any,
     own_only: bool = False,
     incl_private: bool = False,
     sort_by: tp.Optional[tp.MaybeIterable[str]] = "attr",
@@ -712,9 +731,9 @@ def get_attrs(
         sort_by (Optional[MaybeIterable[str]]): Column name (or sequence of names) used to sort the resulting DataFrame.
 
     Returns:
-        Frame: DataFrame with columns describing each attribute (name, type, and reference name).
+        Frame: DataFrame with columns describing each attribute (name, type, and fully qualified name).
     """
-    from vectorbtpro.utils.module_ import get_refname, resolve_refname
+    from vectorbtpro.utils.module_ import get_fqn, resolve_refname
 
     cls = obj if inspect.isclass(obj) or inspect.ismodule(obj) else type(obj)
     is_mod = inspect.ismodule(cls)
@@ -728,50 +747,60 @@ def get_attrs(
             attrs.update(slots)
     if not incl_private:
         attrs = {a for a in attrs if not a.startswith("_")}
-    obj_refname = get_refname(obj)
+    obj_fqn = get_fqn(obj)
 
     rows = []
     for name in attrs:
         target = obj if not is_mod else cls
         try:
-            value = inspect.getattr_static(target, name)
-            value_is_none = False
+            raw = inspect.getattr_static(target, name)
+            raw_is_none = False
         except AttributeError:
             try:
-                value = inspect.getattr_static(cls, name)
-                value_is_none = False
+                raw = inspect.getattr_static(cls, name)
+                raw_is_none = False
             except AttributeError:
                 try:
-                    value = getattr(obj, name)
-                    value_is_none = False
+                    raw = getattr(obj, name)
+                    raw_is_none = False
                 except Exception:
-                    value = None
-                    value_is_none = True
+                    raw = None
+                    raw_is_none = True
 
-        refname = get_refname(value)
-        if refname is None:
-            refname = resolve_refname(obj_refname + "." + name)
-        if own_only and refname is not None and refname != obj_refname + "." + name:
+        fqn = get_fqn(raw)
+        if fqn is None:
+            fqn = resolve_refname(obj_fqn + "." + name)
+        if own_only and fqn is not None and fqn != obj_fqn + "." + name:
             continue
 
         dct = {"attr": name}
-        if not value_is_none:
-            dct["type"] = type(value).__name__
+        if not raw_is_none:
+            dct["type"] = type(raw).__name__
+            if inspect.ismodule(raw):
+                dct["kind"] = "modules"
+            elif inspect.isclass(raw) or isinstance(raw, type):
+                dct["kind"] = "classes"
+            elif inspect.isroutine(raw) or callable(raw):
+                dct["kind"] = "callables"
+            else:
+                dct["kind"] = "data"
         else:
             dct["type"] = "?"
-        if refname is not None:
-            dct["refname"] = refname
+            dct["kind"] = "?"
+        if fqn is not None:
+            dct["fqn"] = fqn
         else:
-            dct["refname"] = "?"
+            dct["fqn"] = "?"
         rows.append(dct)
 
     df = pd.DataFrame(rows)
-    df.set_index("attr", inplace=True, verify_integrity=True)
-    if sort_by is not None:
-        sort_cols = [sort_by] if isinstance(sort_by, str) else list(sort_by)
-        if "attr" not in sort_cols:
-            sort_cols.append("attr")
-        df = df.sort_values(by=sort_cols, kind="mergesort")
+    if not df.empty:
+        df.set_index("attr", inplace=True, verify_integrity=True)
+        if sort_by is not None:
+            sort_cols = [sort_by] if isinstance(sort_by, str) else list(sort_by)
+            if "attr" not in sort_cols:
+                sort_cols.append("attr")
+            df = df.sort_values(by=sort_cols, kind="mergesort")
     return df
 
 
@@ -785,9 +814,9 @@ def attr_tree(obj: tp.Any = None, own_only: bool = False, incl_private: bool = F
     Each attribute is represented as a leaf in the tree, whereas the tree structure
     represents the hierarchy of modules and classes from which the attributes are inherited.
 
-    Each leaf in the tree is formatted as `<name> [<type>] (@ <refname>)`, where the `@ <refname>` suffix
-    is shown only when the attribute's reference name either differs from the attribute's own name
-    (indicating an alias or re-export).
+    Each leaf in the tree is formatted as `<name> [<type>] (@ <fqn>)`, where the `@ <fqn>` suffix
+    is shown only when the attribute's fully qualified name (FQN) either differs from the attribute's
+    own name (indicating an alias or re-export).
 
     Args:
         obj (Any): Object, class, or module whose attributes are to be visualized.
@@ -802,13 +831,13 @@ def attr_tree(obj: tp.Any = None, own_only: bool = False, incl_private: bool = F
     paths, display_names = [], []
 
     for a, r in df.iterrows():
-        paths.append(Path(r["refname"].replace(".", "/")))
+        paths.append(Path(r["fqn"].replace(".", "/")))
         disp = f"{a} [{r['type']}]"
-        refname = r["refname"]
-        if refname != "?":
-            refname_last = refname.rsplit(".", 1)[-1]
-            if refname_last != a:
-                disp += f" @ {refname}"
+        fqn = r["fqn"]
+        if fqn != "?":
+            fqn_last = fqn.rsplit(".", 1)[-1]
+            if fqn_last != a:
+                disp += f" @ {fqn}"
         display_names.append(disp)
 
     return dir_tree_from_paths(
