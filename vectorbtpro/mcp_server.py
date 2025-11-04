@@ -209,7 +209,7 @@ def search(
 
 @register_tool
 def resolve_refnames(refnames: tp.List[str]) -> str:
-    """Resolve reference names to their fully-qualified names (FQNs).
+    """Resolve reference names to their fully-qualified names.
 
     Output format:
 
@@ -231,9 +231,9 @@ def resolve_refnames(refnames: tp.List[str]) -> str:
     output = []
     for refname in refnames:
         refname = auto_cast(refname)
-        fqn = resolve_refname(refname)
-        if fqn:
-            output.append(f"OK {refname} {fqn}")
+        resolved_refname = resolve_refname(refname)
+        if resolved_refname:
+            output.append(f"OK {refname} {resolved_refname}")
         else:
             output.append(f"FAIL {refname}")
     return "\n".join(output)
@@ -533,15 +533,15 @@ def get_attrs(
     own_only: bool = False,
     incl_private: bool = False,
     incl_types: bool = False,
-    incl_fqns: bool = False,
+    incl_refnames: bool = False,
 ) -> str:
-    """Get a list of attributes of an object (similar to `dir()`) with their types and fully qualified names (FQNs).
+    """Get a list of attributes of an object (similar to `dir()`) with their types and reference names.
 
     Can be used to discover the API of VectorBT PRO (vectorbtpro, VBT). For example, use it to
     find out what methods and properties are available on a specific class, or to explore the
     objects defined in a module.
 
-    Each line is formatted as `<name> [<type>] (@ <fqn>)`, where the `@ <fqn>` suffix
+    Each line is formatted as `<name> [<type>] (@ <refname>)`, where the `@ <refname>` suffix
     is shown only when the attribute is not defined directly on the object.
 
     Args:
@@ -556,28 +556,29 @@ def get_attrs(
             (i.e., attributes defined elsewhere, such as inherited attributes, will be excluded).
         incl_private (bool): If True, include private attributes (those starting with an underscore).
         incl_types (bool): If True, include attribute types in the output (e.g., `classmethod`).
-        incl_fqns (bool): If True, include attribute FQNs in the output (e.g., `vectorbtpro.utils.base.Base.chat`).
+        incl_refnames (bool): If True, include attribute reference names in the output
+            (e.g., `vectorbtpro.utils.base.Base.chat`).
 
     Returns:
         str: String containing the list of attributes, each on a new line.
     """
     from vectorbtpro.utils.attr_ import get_attrs
-    from vectorbtpro.utils.module_ import resolve_refname, get_fqn_obj
+    from vectorbtpro.utils.module_ import resolve_refname, get_refname_obj
 
     refname = auto_cast(refname)
-    fqn = resolve_refname(refname)
-    if not fqn:
+    resolved_refname = resolve_refname(refname)
+    if not resolved_refname:
         raise ValueError(f"Reference name {refname!r} cannot be resolved to an object")
-    obj = get_fqn_obj(fqn)
+    obj = get_refname_obj(resolved_refname)
     df = get_attrs(obj=obj, own_only=own_only, incl_private=incl_private)
 
     display_lines = []
-    for attr_name, attr_type, attr_fqn in df.itertuples():
+    for attr_name, attr_type, attr_refname in df.itertuples():
         line = attr_name
         if incl_types and attr_type != "?":
             line += f" [{attr_type}]"
-        if incl_fqns and attr_fqn != "?" and attr_fqn != fqn + "." + attr_name:
-            line += f" @ {attr_fqn}"
+        if incl_refnames and attr_refname != "?" and attr_refname != resolved_refname + "." + attr_name:
+            line += f" @ {attr_refname}"
         display_lines.append(line)
     return "\n".join(display_lines)
 
@@ -608,10 +609,10 @@ def get_source(refname: str) -> str:
     from vectorbtpro.utils.module_ import resolve_refname
 
     refname = auto_cast(refname)
-    fqn = resolve_refname(refname)
-    if not fqn:
+    resolved_refname = resolve_refname(refname)
+    if not resolved_refname:
         raise ValueError(f"Reference name {refname!r} cannot be resolved to an object")
-    return get_source(fqn)
+    return get_source(resolved_refname)
 
 
 current_kernel = None

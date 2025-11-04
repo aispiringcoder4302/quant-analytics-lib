@@ -584,15 +584,15 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
     """Obtain the reconstruction identifier for a class or instance.
 
     If the object is an instance or subclass of `Pickleable` with a defined `_rec_id`, that value is returned.
-    Otherwise, returns the fully qualified name (FQN) derived using `vectorbtpro.utils.module_.get_fqn_obj`.
+    Otherwise, returns the reference name derived using `vectorbtpro.utils.module_.get_refname_obj`.
 
     Args:
         obj (Any): Class or instance to evaluate.
 
     Returns:
-        Optional[str]: Reconstruction identifier or class FQN, or None if not found.
+        Optional[str]: Reconstruction identifier or class reference name, or None if not found.
     """
-    from vectorbtpro.utils.module_ import get_fqn_obj
+    from vectorbtpro.utils.module_ import get_refname_obj
 
     if isinstance(obj, type):
         cls = obj
@@ -603,9 +603,9 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
             if not isinstance(cls._rec_id, str):
                 raise TypeError(f"Reconstructing id of class {cls} must be a string")
             return cls._rec_id
-    fqn = cls.__module__ + "." + cls.__name__
-    if get_fqn_obj(fqn, raise_missing=False) is not None:
-        return fqn
+    refname = cls.__module__ + "." + cls.__name__
+    if get_refname_obj(refname, raise_missing=False) is not None:
+        return refname
     return None
 
 

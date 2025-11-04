@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from vectorbtpro.utils.pickling import *
     from vectorbtpro.utils.profiling import *
     from vectorbtpro.utils.random_ import *
+    from vectorbtpro.utils.refs import *
     from vectorbtpro.utils.requests_ import *
     from vectorbtpro.utils.schedule_ import *
     from vectorbtpro.utils.search_ import *

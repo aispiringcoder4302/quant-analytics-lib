@@ -180,13 +180,13 @@ def whats_imported() -> None:
     import pandas as pd
 
     from vectorbtpro.utils.formatting import ptable
-    from vectorbtpro.utils.module_ import get_fqn
+    from vectorbtpro.utils.module_ import get_refname
 
     values = {}
     for k, v in imported_star.items():
-        fqn = get_fqn(v)
-        if fqn is not None and str(v).startswith("<"):
-            values[k] = fqn
+        refname = get_refname(v)
+        if refname is not None and str(v).startswith("<"):
+            values[k] = refname
         else:
             values[k] = str(v)
     sr = pd.Series(values, name="value")

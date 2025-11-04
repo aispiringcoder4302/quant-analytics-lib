@@ -733,7 +733,7 @@ def get_attrs(
     Returns:
         Frame: DataFrame with columns describing each attribute (name, type, and fully qualified name).
     """
-    from vectorbtpro.utils.module_ import get_fqn, resolve_refname
+    from vectorbtpro.utils.module_ import get_refname, resolve_refname
 
     cls = obj if inspect.isclass(obj) or inspect.ismodule(obj) else type(obj)
     is_mod = inspect.ismodule(cls)
@@ -747,7 +747,7 @@ def get_attrs(
             attrs.update(slots)
     if not incl_private:
         attrs = {a for a in attrs if not a.startswith("_")}
-    obj_fqn = get_fqn(obj)
+    obj_refname = get_refname(obj)
 
     rows = []
     for name in attrs:
@@ -767,10 +767,10 @@ def get_attrs(
                     raw = None
                     raw_is_none = True
 
-        fqn = get_fqn(raw)
-        if fqn is None:
-            fqn = resolve_refname(obj_fqn + "." + name)
-        if own_only and fqn is not None and fqn != obj_fqn + "." + name:
+        refname = get_refname(raw)
+        if refname is None:
+            refname = resolve_refname(obj_refname + "." + name)
+        if own_only and refname is not None and refname != obj_refname + "." + name:
             continue
 
         dct = {"attr": name}
@@ -787,10 +787,10 @@ def get_attrs(
         else:
             dct["type"] = "?"
             dct["kind"] = "?"
-        if fqn is not None:
-            dct["fqn"] = fqn
+        if refname is not None:
+            dct["refname"] = refname
         else:
-            dct["fqn"] = "?"
+            dct["refname"] = "?"
         rows.append(dct)
 
     df = pd.DataFrame(rows)
@@ -814,8 +814,8 @@ def attr_tree(obj: tp.Any = None, own_only: bool = False, incl_private: bool = F
     Each attribute is represented as a leaf in the tree, whereas the tree structure
     represents the hierarchy of modules and classes from which the attributes are inherited.
 
-    Each leaf in the tree is formatted as `<name> [<type>] (@ <fqn>)`, where the `@ <fqn>` suffix
-    is shown only when the attribute's fully qualified name (FQN) either differs from the attribute's
+    Each leaf in the tree is formatted as `<name> [<type>] (@ <refname>)`, where the `@ <refname>` suffix
+    is shown only when the attribute's reference name either differs from the attribute's
     own name (indicating an alias or re-export).
 
     Args:
@@ -831,13 +831,13 @@ def attr_tree(obj: tp.Any = None, own_only: bool = False, incl_private: bool = F
     paths, display_names = [], []
 
     for a, r in df.iterrows():
-        paths.append(Path(r["fqn"].replace(".", "/")))
+        paths.append(Path(r["refname"].replace(".", "/")))
         disp = f"{a} [{r['type']}]"
-        fqn = r["fqn"]
-        if fqn != "?":
-            fqn_last = fqn.rsplit(".", 1)[-1]
-            if fqn_last != a:
-                disp += f" @ {fqn}"
+        refname = r["refname"]
+        if refname != "?":
+            refname_last = refname.rsplit(".", 1)[-1]
+            if refname_last != a:
+                disp += f" @ {refname}"
         display_names.append(disp)
 
     return dir_tree_from_paths(

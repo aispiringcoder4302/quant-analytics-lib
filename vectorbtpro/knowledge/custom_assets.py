@@ -32,7 +32,7 @@ from vectorbtpro.knowledge.formatting import FormatHTML
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
 from vectorbtpro.utils.decorators import hybrid_method
-from vectorbtpro.utils.module_ import ensure_fqn, get_caller_qualname
+from vectorbtpro.utils.module_ import ensure_refname, get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
@@ -1213,9 +1213,9 @@ class VBTAsset(KnowledgeAsset):
         return snake_case_names
 
     @classmethod
-    def generate_fqn_targets(
+    def generate_refname_targets(
         cls,
-        fqn: str,
+        refname: str,
         resolve: bool = True,
         incl_shortcuts: tp.Optional[bool] = None,
         incl_shortcut_access: tp.Optional[bool] = None,
@@ -1226,7 +1226,7 @@ class VBTAsset(KnowledgeAsset):
         allow_prefix: tp.Optional[bool] = None,
         allow_suffix: tp.Optional[bool] = None,
     ) -> tp.List[str]:
-        """Generate targets based on a fully qualified name (FQN).
+        """Generate targets based on a reference name.
 
         This method constructs a list of targets representing a module, class, attribute, or callable.
         It optionally includes:
@@ -1239,7 +1239,7 @@ class VBTAsset(KnowledgeAsset):
         Each target is formatted using `VBTAsset.prepare_mention_target`.
 
         Args:
-            fqn (str): FQN.
+            refname (str): Reference name.
             resolve (bool): Whether to resolve the reference to an actual object.
             incl_shortcuts (Optional[bool]): Include shortcuts from `import vectorbtpro as vbt`.
             incl_shortcut_access (Optional[bool]): Include attribute access forms when applicable.
@@ -1253,9 +1253,9 @@ class VBTAsset(KnowledgeAsset):
             allow_suffix (Optional[bool]): Allow a suffix in target formatting.
 
         Returns:
-            List[str]: Sorted list of generated FQN targets.
+            List[str]: Sorted list of generated reference name targets.
         """
-        from vectorbtpro.utils.module_ import annotate_fqn_parts
+        from vectorbtpro.utils.module_ import annotate_refname_parts
         import vectorbtpro as vbt
 
         incl_shortcuts = cls.resolve_setting(incl_shortcuts, "incl_shortcuts")
@@ -1283,21 +1283,21 @@ class VBTAsset(KnowledgeAsset):
             )
 
         targets = set()
-        new_target = _prepare_target(fqn)
+        new_target = _prepare_target(refname)
         targets.add(new_target)
         if resolve:
-            fqn_parts = fqn.split(".")
-            annotated_parts = annotate_fqn_parts(fqn)
+            refname_parts = refname.split(".")
+            annotated_parts = annotate_refname_parts(refname)
             if len(annotated_parts) >= 2 and isinstance(annotated_parts[-2]["obj"], type):
-                cls_fqn = ".".join(fqn_parts[:-1])
+                cls_refname = ".".join(refname_parts[:-1])
                 cls_aliases = {annotated_parts[-2]["name"]}
                 attr_aliases = set()
                 for k, v in vbt.__dict__.items():
-                    v_fqn = ensure_fqn(v, raise_error=False)
-                    if v_fqn is not None:
-                        if v_fqn == cls_fqn:
+                    v_refname = ensure_refname(v, raise_error=False)
+                    if v_refname is not None:
+                        if v_refname == cls_refname:
                             cls_aliases.add(k)
-                        elif v_fqn == fqn:
+                        elif v_refname == refname:
                             attr_aliases.add(k)
                             if incl_shortcuts:
                                 new_target = _prepare_target("vbt." + k)
@@ -1316,16 +1316,16 @@ class VBTAsset(KnowledgeAsset):
                             new_target = _prepare_target(class_abbr + "." + annotated_parts[-1]["name"])
                             targets.add(new_target)
             else:
-                if len(fqn_parts) >= 2:
-                    module_name = ".".join(fqn_parts[:-1])
-                    attr_name = fqn_parts[-1]
+                if len(refname_parts) >= 2:
+                    module_name = ".".join(refname_parts[:-1])
+                    attr_name = refname_parts[-1]
                     new_target = _prepare_target("from {} import {}".format(module_name, attr_name))
                     targets.add(new_target)
                 aliases = {annotated_parts[-1]["name"]}
                 for k, v in vbt.__dict__.items():
-                    v_fqn = ensure_fqn(v, raise_error=False)
-                    if v_fqn is not None:
-                        if v_fqn == fqn:
+                    v_refname = ensure_refname(v, raise_error=False)
+                    if v_refname is not None:
+                        if v_refname == refname:
                             aliases.add(k)
                             if incl_shortcuts:
                                 new_target = _prepare_target("vbt." + k)
@@ -1367,11 +1367,11 @@ class VBTAsset(KnowledgeAsset):
         """Generate mention targets for an object.
 
         This method generates a list of mention targets for a given object or list of objects.
-        It first resolves the object reference using `vectorbtpro.utils.module_.ensure_fqn`.
+        It first resolves the object reference name using `vectorbtpro.utils.module_.ensure_refname`.
         If an attribute is specified, the method checks whether it is defined on the object
         itself or on a base class. When the attribute belongs to a base class and `incl_base_attr` is True,
         targets are generated for both the object attribute and the corresponding base class attribute.
-        Final targets are produced via `VBTAsset.generate_fqn_targets`.
+        Final targets are produced via `VBTAsset.generate_refname_targets`.
 
         Args:
             obj (MaybeList): Object or list of objects to generate mention targets for.
@@ -1393,7 +1393,7 @@ class VBTAsset(KnowledgeAsset):
         Returns:
             List[str]: List of generated mention targets.
         """
-        from vectorbtpro.utils.module_ import ensure_fqn
+        from vectorbtpro.utils.module_ import ensure_refname
 
         incl_base_attr = self.resolve_setting(incl_base_attr, "incl_base_attr")
 
@@ -1403,23 +1403,23 @@ class VBTAsset(KnowledgeAsset):
         else:
             objs = obj
         for obj in objs:
-            obj_fqn = ensure_fqn(obj, module=module, resolve=resolve)
+            obj_refname = ensure_refname(obj, module=module, resolve=resolve)
             if attr is not None:
                 checks.assert_instance_of(attr, str, arg_name="attr")
                 if isinstance(obj, tuple):
                     attr_obj = (*obj, attr)
                 else:
                     attr_obj = (obj, attr)
-                base_attr_fqn = ensure_fqn(attr_obj, module=module, resolve=resolve)
-                obj_fqn += "." + attr
-                if base_attr_fqn == obj_fqn:
-                    obj_fqn = base_attr_fqn
-                    base_attr_fqn = None
+                base_attr_refname = ensure_refname(attr_obj, module=module, resolve=resolve)
+                obj_refname += "." + attr
+                if base_attr_refname == obj_refname:
+                    obj_refname = base_attr_refname
+                    base_attr_refname = None
             else:
-                base_attr_fqn = None
+                base_attr_refname = None
             targets.extend(
-                self.generate_fqn_targets(
-                    obj_fqn,
+                self.generate_refname_targets(
+                    obj_refname,
                     resolve=resolve,
                     incl_shortcuts=incl_shortcuts,
                     incl_shortcut_access=incl_shortcut_access,
@@ -1431,10 +1431,10 @@ class VBTAsset(KnowledgeAsset):
                     allow_suffix=allow_suffix,
                 )
             )
-            if incl_base_attr and base_attr_fqn is not None:
+            if incl_base_attr and base_attr_refname is not None:
                 targets.extend(
-                    self.generate_fqn_targets(
-                        base_attr_fqn,
+                    self.generate_refname_targets(
+                        base_attr_refname,
                         resolve=resolve,
                         incl_shortcuts=incl_shortcuts,
                         incl_shortcut_access=incl_shortcut_access,
@@ -1850,26 +1850,26 @@ class PagesAsset(VBTAsset):
             )
         return found
 
-    def find_fqn(
+    def find_refname(
         self,
-        fqn: tp.MaybeList[str],
+        refname: tp.MaybeList[str],
         **kwargs,
     ) -> tp.MaybePagesAsset:
-        """Return the page asset corresponding to the given fully qualified name (FQN).
+        """Return the page asset corresponding to the given reference name.
 
-        Transforms the FQN(s) into a link format and searches for the matching page asset.
+        Transforms the reference name(s) into a link format and searches for the matching page asset.
 
         Args:
-            fqn (MaybeList[str]): FQN or list of FQNs.
+            refname (MaybeList[str]): Reference name or list of reference names.
             **kwargs: Keyword arguments for `PagesAsset.find_page`.
 
         Returns:
-            MaybePagesAsset: New pages asset corresponding to the FQN.
+            MaybePagesAsset: New pages asset corresponding to the reference name.
         """
-        if isinstance(fqn, list):
-            link = list(map(lambda x: f"#({re.escape(x)})$", fqn))
+        if isinstance(refname, list):
+            link = list(map(lambda x: f"#({re.escape(x)})$", refname))
         else:
-            link = f"#({re.escape(fqn)})$"
+            link = f"#({re.escape(refname)})$"
         return self.find_page(link, mode="regex", **kwargs)
 
     def find_obj(
@@ -1883,15 +1883,15 @@ class PagesAsset(VBTAsset):
     ) -> tp.MaybePagesAsset:
         """Return the page corresponding to an object or its reference name.
 
-        If an attribute is provided, it is appended to the object reference.
-        The object reference is resolved using `vectorbtpro.utils.module_.ensure_fqn`.
+        If an attribute is provided, it is appended to the object reference name.
+        The object reference name is resolved using `vectorbtpro.utils.module_.ensure_refname`.
 
         Args:
             obj (Any): Object to search for.
             attr (Optional[str]): Attribute name to target on the object.
             module (Optional[ModuleLike]): Module context used in reference resolution.
             resolve (bool): Whether to resolve the reference to an actual object.
-            **kwargs: Keyword arguments for `PagesAsset.find_fqn`.
+            **kwargs: Keyword arguments for `PagesAsset.find_refname`.
 
         Returns:
             MaybePagesAsset: New pages asset corresponding to the object or reference name.
@@ -1902,8 +1902,8 @@ class PagesAsset(VBTAsset):
                 obj = (*obj, attr)
             else:
                 obj = (obj, attr)
-        fqn = ensure_fqn(obj, module=module, resolve=resolve)
-        return self.find_fqn(fqn, **kwargs)
+        refname = ensure_refname(obj, module=module, resolve=resolve)
+        return self.find_refname(refname, **kwargs)
 
     @classmethod
     def parse_content_links(cls, content: str) -> tp.List[str]:
@@ -1921,24 +1921,24 @@ class PagesAsset(VBTAsset):
         return re.findall(link_pattern, content)
 
     @classmethod
-    def parse_link_fqn(cls, link: str) -> tp.Optional[str]:
-        """Return the fully qualified name (FQN) extracted from the given link, if available.
+    def parse_link_refname(cls, link: str) -> tp.Optional[str]:
+        """Return the reference name extracted from the given link, if available.
 
         Examines the link for an API reference. If a fragment is present and starts with "vectorbtpro",
-        returns the fragment as the FQN. Otherwise, constructs a FQN from the link.
+        returns the fragment as the reference name. Otherwise, constructs a reference name from the link.
 
         Args:
             link (str): URL to parse.
 
         Returns:
-            Optional[str]: Extracted FQN or None.
+            Optional[str]: Extracted reference name or None.
         """
         if "/api/" not in link:
             return None
         if "#" in link:
-            fqn = link.split("#")[1]
-            if fqn.startswith("vectorbtpro"):
-                return fqn
+            refname = link.split("#")[1]
+            if refname.startswith("vectorbtpro"):
+                return refname
             return None
         return "vectorbtpro." + ".".join(link.split("/api/")[1].strip("/").split("/"))
 
@@ -1958,8 +1958,8 @@ class PagesAsset(VBTAsset):
             return False
         if "#" not in link:
             return True
-        fqn = link.split("#")[1]
-        if "/".join(fqn.split(".")) in link:
+        refname = link.split("#")[1]
+        if "/".join(refname.split(".")) in link:
             return True
         return False
 
@@ -1986,13 +1986,13 @@ class PagesAsset(VBTAsset):
         aggregate_refs: tp.Optional[bool] = None,
         aggregate_kwargs: tp.KwargsLike = None,
         topo_sort: tp.Optional[bool] = None,
-        return_fqn_graph: bool = False,
+        return_refname_graph: bool = False,
     ) -> tp.Union[PagesAssetT, tp.Tuple[PagesAssetT, dict]]:
         """Return API pages and headings relevant to the provided object(s).
 
-        Resolves the object reference using `vectorbtpro.utils.module_.ensure_fqn` and extends the asset
-        with related pages based on various options. This includes incorporating base classes/attributes,
-        ancestors, reference descendants, and aggregation of links. Operates on fully qualified names (FQNs).
+        Resolves the object reference name using `vectorbtpro.utils.module_.ensure_refname` and
+        extends the asset with related pages based on various options. This includes incorporating
+        base classes/attributes, ancestors, reference descendants, and aggregation of links.
 
         Args:
             obj (MaybeList): Object or list of objects to find API pages for.
@@ -2033,16 +2033,17 @@ class PagesAsset(VBTAsset):
             aggregate_ancestors (Optional[bool]): Override aggregation for ancestor headings.
             aggregate_refs (Optional[bool]): Override aggregation for reference headings.
             aggregate_kwargs (KwargsLike): Keyword arguments for `PagesAsset.aggregate`.
-            topo_sort (Optional[bool]): Create a topological graph from FQNs and sort pages and headings.
+            topo_sort (Optional[bool]): Create a topological graph from reference names and
+                sort pages and headings.
 
-                Set `return_fqn_graph` to True to also return the graph.
-            return_fqn_graph (bool): Return a tuple of the asset and FQN graph if True.
+                Set `return_refname_graph` to True to also return the graph.
+            return_refname_graph (bool): Return a tuple of the asset and reference name graph if True.
 
         Returns:
             Union[PagesAsset, Tuple[PagesAsset, dict]]: Asset with relevant API pages and headings,
-                optionally accompanied by a FQN graph.
+                optionally accompanied by a reference name graph.
         """
-        from vectorbtpro.utils.module_ import ensure_fqn, annotate_fqn_parts
+        from vectorbtpro.utils.module_ import ensure_refname, annotate_refname_parts
 
         incl_bases = self.resolve_setting(incl_bases, "incl_bases")
         incl_ancestors = self.resolve_setting(incl_ancestors, "incl_ancestors")
@@ -2065,8 +2066,8 @@ class PagesAsset(VBTAsset):
             incl_ancestor_descendants = False
             incl_ref_descendants = False
 
-        base_fqns = []
-        base_fqns_set = set()
+        base_refnames = []
+        base_refnames_set = set()
         if not isinstance(obj, list):
             objs = [obj]
         else:
@@ -2078,10 +2079,10 @@ class PagesAsset(VBTAsset):
                     obj = (*obj, attr)
                 else:
                     obj = (obj, attr)
-            obj_fqn = ensure_fqn(obj, module=module, resolve=resolve)
-            fqn_graph = defaultdict(list)
+            obj_refname = ensure_refname(obj, module=module, resolve=resolve)
+            refname_graph = defaultdict(list)
             if resolve:
-                annotated_parts = annotate_fqn_parts(obj_fqn)
+                annotated_parts = annotate_refname_parts(obj_refname)
                 if isinstance(annotated_parts[-1]["obj"], ModuleType):
                     _module = annotated_parts[-1]["obj"]
                     _cls = None
@@ -2133,55 +2134,55 @@ class PagesAsset(VBTAsset):
                         if _attr is not None:
                             if not hasattr(c, _attr):
                                 continue
-                            fqn = ensure_fqn((c, _attr))
+                            refname = ensure_refname((c, _attr))
                         else:
-                            fqn = ensure_fqn(c)
-                        if (use_parent and fqn == obj_fqn) or use_base_parents:
-                            fqn = ".".join(fqn.split(".")[:-1])
-                        if fqn not in base_fqns_set:
-                            base_fqns.append(fqn)
-                            base_fqns_set.add(fqn)
+                            refname = ensure_refname(c)
+                        if (use_parent and refname == obj_refname) or use_base_parents:
+                            refname = ".".join(refname.split(".")[:-1])
+                        if refname not in base_refnames_set:
+                            base_refnames.append(refname)
+                            base_refnames_set.add(refname)
                             for b in c.__bases__:
                                 if b.__module__.split(".")[0] == "vectorbtpro":
                                     if _attr is not None:
                                         if not hasattr(b, _attr):
                                             continue
-                                        b_fqn = ensure_fqn((b, _attr))
+                                        b_refname = ensure_refname((b, _attr))
                                     else:
-                                        b_fqn = ensure_fqn(b)
+                                        b_refname = ensure_refname(b)
                                     if use_base_parents:
-                                        b_fqn = ".".join(b_fqn.split(".")[:-1])
-                                    if fqn != b_fqn:
-                                        fqn_graph[fqn].append(b_fqn)
+                                        b_refname = ".".join(b_refname.split(".")[:-1])
+                                    if refname != b_refname:
+                                        refname_graph[refname].append(b_refname)
                 elif _module is not None and hasattr(_module, "__path__") and incl_bases:
-                    base_fqns.append(_module.__name__)
-                    base_fqns_set.add(_module.__name__)
-                    fqn_level = {}
-                    fqn_level[_module.__name__] = 0
-                    for _, fqn, _ in pkgutil.walk_packages(_module.__path__, prefix=f"{_module.__name__}."):
-                        if fqn not in base_fqns_set:
-                            parent_fqn = ".".join(fqn.split(".")[:-1])
+                    base_refnames.append(_module.__name__)
+                    base_refnames_set.add(_module.__name__)
+                    refname_level = {}
+                    refname_level[_module.__name__] = 0
+                    for _, refname, _ in pkgutil.walk_packages(_module.__path__, prefix=f"{_module.__name__}."):
+                        if refname not in base_refnames_set:
+                            parent_refname = ".".join(refname.split(".")[:-1])
                             if not isinstance(incl_bases, bool):
                                 if isinstance(incl_bases, int):
-                                    if fqn_level[parent_fqn] + 1 > incl_bases:
+                                    if refname_level[parent_refname] + 1 > incl_bases:
                                         continue
                                 else:
                                     raise ValueError(f"Invalid incl_bases: {incl_bases!r}")
-                            base_fqns.append(fqn)
-                            base_fqns_set.add(fqn)
-                            fqn_level[fqn] = fqn_level[parent_fqn] + 1
-                            if parent_fqn != fqn:
-                                fqn_graph[parent_fqn].append(fqn)
+                            base_refnames.append(refname)
+                            base_refnames_set.add(refname)
+                            refname_level[refname] = refname_level[parent_refname] + 1
+                            if parent_refname != refname:
+                                refname_graph[parent_refname].append(refname)
                 else:
-                    base_fqns.append(obj_fqn)
-                    base_fqns_set.add(obj_fqn)
+                    base_refnames.append(obj_refname)
+                    base_refnames_set.add(obj_refname)
             else:
                 if incl_refs is None:
                     incl_refs = False
-                base_fqns.append(obj_fqn)
-                base_fqns_set.add(obj_fqn)
-        api_asset = self.find_fqn(
-            base_fqns,
+                base_refnames.append(obj_refname)
+                base_refnames_set.add(obj_refname)
+        api_asset = self.find_refname(
+            base_refnames,
             single_item=False,
             incl_descendants=incl_descendants,
             aggregate=aggregate,
@@ -2192,40 +2193,40 @@ class PagesAsset(VBTAsset):
         if len(api_asset) == 0:
             return api_asset
         if not topo_sort:
-            fqn_indices = {fqn: [] for fqn in base_fqns}
+            refname_indices = {refname: [] for refname in base_refnames}
             remaining_indices = []
             for i, d in enumerate(api_asset):
-                fqn = self.parse_link_fqn(d["link"])
-                if fqn is not None:
-                    while fqn not in fqn_indices:
-                        if not fqn:
+                refname = self.parse_link_refname(d["link"])
+                if refname is not None:
+                    while refname not in refname_indices:
+                        if not refname:
                             break
-                        fqn = ".".join(fqn.split(".")[:-1])
-                if fqn:
-                    fqn_indices[fqn].append(i)
+                        refname = ".".join(refname.split(".")[:-1])
+                if refname:
+                    refname_indices[refname].append(i)
                 else:
                     remaining_indices.append(i)
-            get_indices = [i for v in fqn_indices.values() for i in v] + remaining_indices
+            get_indices = [i for v in refname_indices.values() for i in v] + remaining_indices
             api_asset = api_asset.get_items(get_indices)
 
         if incl_ancestors or incl_refs:
-            fqns_aggregated = {}
+            refnames_aggregated = {}
             for d in api_asset:
-                fqn = self.parse_link_fqn(d["link"])
-                if fqn is not None:
-                    fqns_aggregated[fqn] = aggregate
+                refname = self.parse_link_refname(d["link"])
+                if refname is not None:
+                    refnames_aggregated[refname] = aggregate
             to_ref_api_asset = api_asset
             if incl_ancestors:
-                anc_fqns = []
-                anc_fqns_set = set(fqns_aggregated.keys())
+                anc_refnames = []
+                anc_refnames_set = set(refnames_aggregated.keys())
                 for d in api_asset:
-                    child_fqn = fqn = self.parse_link_fqn(d["link"])
-                    if fqn is not None:
-                        if incl_base_ancestors or fqn == obj_fqn:
-                            fqn = ".".join(fqn.split(".")[:-1])
+                    child_refname = refname = self.parse_link_refname(d["link"])
+                    if refname is not None:
+                        if incl_base_ancestors or refname == obj_refname:
+                            refname = ".".join(refname.split(".")[:-1])
                             anc_level = 1
-                            while fqn:
-                                if isinstance(incl_base_ancestors, bool) or fqn == obj_fqn:
+                            while refname:
+                                if isinstance(incl_base_ancestors, bool) or refname == obj_refname:
                                     if not isinstance(incl_ancestors, bool):
                                         if isinstance(incl_ancestors, int):
                                             if anc_level > incl_ancestors:
@@ -2239,16 +2240,16 @@ class PagesAsset(VBTAsset):
                                                 break
                                         else:
                                             raise ValueError(f"Invalid incl_base_ancestors: {incl_base_ancestors!r}")
-                                if fqn not in anc_fqns_set:
-                                    anc_fqns.append(fqn)
-                                    anc_fqns_set.add(fqn)
-                                    if fqn != child_fqn:
-                                        fqn_graph[fqn].append(child_fqn)
-                                child_fqn = fqn
-                                fqn = ".".join(fqn.split(".")[:-1])
+                                if refname not in anc_refnames_set:
+                                    anc_refnames.append(refname)
+                                    anc_refnames_set.add(refname)
+                                    if refname != child_refname:
+                                        refname_graph[refname].append(child_refname)
+                                child_refname = refname
+                                refname = ".".join(refname.split(".")[:-1])
                                 anc_level += 1
-                anc_api_asset = self.find_fqn(
-                    anc_fqns,
+                anc_api_asset = self.find_refname(
+                    anc_refnames,
                     single_item=False,
                     incl_descendants=incl_ancestor_descendants,
                     aggregate=aggregate_ancestors,
@@ -2259,16 +2260,16 @@ class PagesAsset(VBTAsset):
                 if aggregate_ancestors or incl_ancestor_descendants:
                     obj_index = None
                     for i, d in enumerate(api_asset):
-                        d_fqn = self.parse_link_fqn(d["link"])
-                        if d_fqn == obj_fqn:
+                        d_refname = self.parse_link_refname(d["link"])
+                        if d_refname == obj_refname:
                             obj_index = i
                             break
                     if obj_index is not None:
                         del api_asset[obj_index]
                 for d in anc_api_asset:
-                    fqn = self.parse_link_fqn(d["link"])
-                    if fqn is not None:
-                        fqns_aggregated[fqn] = aggregate_ancestors
+                    refname = self.parse_link_refname(d["link"])
+                    if refname is not None:
+                        refnames_aggregated[refname] = aggregate_ancestors
                 api_asset = anc_api_asset + api_asset
 
             if incl_refs:
@@ -2277,38 +2278,38 @@ class PagesAsset(VBTAsset):
                 main_ref_api_asset = None
                 ref_api_asset = to_ref_api_asset
                 while incl_refs:
-                    content_fqns = []
-                    content_fqns_set = set()
+                    content_refnames = []
+                    content_refnames_set = set()
                     for d in ref_api_asset:
-                        d_fqn = self.parse_link_fqn(d["link"])
-                        if d_fqn is not None:
+                        d_refname = self.parse_link_refname(d["link"])
+                        if d_refname is not None:
                             for link in self.parse_content_links(d["content"]):
                                 if "/api/" in link:
-                                    fqn = self.parse_link_fqn(link)
-                                    if fqn is not None:
+                                    refname = self.parse_link_refname(link)
+                                    if refname is not None:
                                         if use_ref_parents and not self.is_link_module(link):
-                                            fqn = ".".join(fqn.split(".")[:-1])
-                                        if fqn not in content_fqns_set:
-                                            content_fqns.append(fqn)
-                                            content_fqns_set.add(fqn)
-                                            if d_fqn != fqn and fqn not in fqn_graph:
-                                                fqn_graph[d_fqn].append(fqn)
-                    ref_fqns = []
-                    ref_fqns_set = set(fqns_aggregated.keys()) | content_fqns_set
-                    for fqn in content_fqns:
-                        if fqn in fqns_aggregated and (fqns_aggregated[fqn] or not aggregate_refs):
+                                            refname = ".".join(refname.split(".")[:-1])
+                                        if refname not in content_refnames_set:
+                                            content_refnames.append(refname)
+                                            content_refnames_set.add(refname)
+                                            if d_refname != refname and refname not in refname_graph:
+                                                refname_graph[d_refname].append(refname)
+                    ref_refnames = []
+                    ref_refnames_set = set(refnames_aggregated.keys()) | content_refnames_set
+                    for refname in content_refnames:
+                        if refname in refnames_aggregated and (refnames_aggregated[refname] or not aggregate_refs):
                             continue
-                        _fqn = fqn
-                        while _fqn:
-                            _fqn = ".".join(_fqn.split(".")[:-1])
-                            if _fqn in ref_fqns_set and fqns_aggregated.get(_fqn, aggregate_refs):
+                        _refname = refname
+                        while _refname:
+                            _refname = ".".join(_refname.split(".")[:-1])
+                            if _refname in ref_refnames_set and refnames_aggregated.get(_refname, aggregate_refs):
                                 break
-                        if not _fqn:
-                            ref_fqns.append(fqn)
-                    if len(ref_fqns) == 0:
+                        if not _refname:
+                            ref_refnames.append(refname)
+                    if len(ref_refnames) == 0:
                         break
-                    ref_api_asset = self.find_fqn(
-                        ref_fqns,
+                    ref_api_asset = self.find_refname(
+                        ref_refnames,
                         single_item=False,
                         incl_descendants=incl_ref_descendants,
                         aggregate=aggregate_refs,
@@ -2317,9 +2318,9 @@ class PagesAsset(VBTAsset):
                         wrap=True,
                     )
                     for d in ref_api_asset:
-                        fqn = self.parse_link_fqn(d["link"])
-                        if fqn is not None:
-                            fqns_aggregated[fqn] = aggregate_refs
+                        refname = self.parse_link_refname(d["link"])
+                        if refname is not None:
+                            refnames_aggregated[refname] = aggregate_refs
                     if main_ref_api_asset is None:
                         main_ref_api_asset = ref_api_asset
                     else:
@@ -2327,22 +2328,22 @@ class PagesAsset(VBTAsset):
                     incl_refs -= 1
                 if main_ref_api_asset is not None:
                     api_asset += main_ref_api_asset
-                    aggregated_fqns_set = set()
-                    for fqn, aggregated in fqns_aggregated.items():
+                    aggregated_refnames_set = set()
+                    for refname, aggregated in refnames_aggregated.items():
                         if aggregated:
-                            aggregated_fqns_set.add(fqn)
+                            aggregated_refnames_set.add(refname)
                     delete_indices = []
                     for i, d in enumerate(api_asset):
-                        fqn = self.parse_link_fqn(d["link"])
-                        if fqn is not None:
-                            if not fqns_aggregated[fqn] and fqn in aggregated_fqns_set:
+                        refname = self.parse_link_refname(d["link"])
+                        if refname is not None:
+                            if not refnames_aggregated[refname] and refname in aggregated_refnames_set:
                                 delete_indices.append(i)
                                 continue
-                            while fqn:
-                                fqn = ".".join(fqn.split(".")[:-1])
-                                if fqn in aggregated_fqns_set:
+                            while refname:
+                                refname = ".".join(refname.split(".")[:-1])
+                                if refname in aggregated_refnames_set:
                                     break
-                        if fqn:
+                        if refname:
                             delete_indices.append(i)
                     if len(delete_indices) > 0:
                         api_asset.delete_items(delete_indices, inplace=True)
@@ -2350,32 +2351,32 @@ class PagesAsset(VBTAsset):
         if topo_sort:
             from graphlib import TopologicalSorter
 
-            fqn_topo_graph = defaultdict(set)
-            fqn_topo_sorter = TopologicalSorter(fqn_topo_graph)
-            for parent_node, child_nodes in fqn_graph.items():
+            refname_topo_graph = defaultdict(set)
+            refname_topo_sorter = TopologicalSorter(refname_topo_graph)
+            for parent_node, child_nodes in refname_graph.items():
                 for child_node in child_nodes:
-                    fqn_topo_sorter.add(child_node, parent_node)
-            fqn_topo_order = fqn_topo_sorter.static_order()
-            fqn_indices = {fqn: [] for fqn in fqn_topo_order}
+                    refname_topo_sorter.add(child_node, parent_node)
+            refname_topo_order = refname_topo_sorter.static_order()
+            refname_indices = {refname: [] for refname in refname_topo_order}
             remaining_indices = []
             for i, d in enumerate(api_asset):
-                fqn = self.parse_link_fqn(d["link"])
-                if fqn is not None:
-                    while fqn not in fqn_indices:
-                        if not fqn:
+                refname = self.parse_link_refname(d["link"])
+                if refname is not None:
+                    while refname not in refname_indices:
+                        if not refname:
                             break
-                        fqn = ".".join(fqn.split(".")[:-1])
-                    if fqn:
-                        fqn_indices[fqn].append(i)
+                        refname = ".".join(refname.split(".")[:-1])
+                    if refname:
+                        refname_indices[refname].append(i)
                     else:
                         remaining_indices.append(i)
                 else:
                     remaining_indices.append(i)
-            get_indices = [i for v in fqn_indices.values() for i in v] + remaining_indices
+            get_indices = [i for v in refname_indices.values() for i in v] + remaining_indices
             api_asset = api_asset.get_items(get_indices)
 
-        if return_fqn_graph:
-            return api_asset, fqn_graph
+        if return_refname_graph:
+            return api_asset, refname_graph
         return api_asset
 
     def find_obj_docs(
