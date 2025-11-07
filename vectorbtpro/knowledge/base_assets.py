@@ -30,11 +30,11 @@ from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts
 from vectorbtpro.utils.decorators import hybrid_method
 from vectorbtpro.utils.execution import Task, execute, NoResult
-from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import dir_tree_from_paths, remove_dir, check_mkdir
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import decompress, dumps, load_bytes, save, load
+from vectorbtpro.utils.refs import get_caller_qualname
 from vectorbtpro.utils.search_ import flatten_obj, unflatten_obj
 from vectorbtpro.utils.template import CustomTemplate, RepEval, RepFunc
 from vectorbtpro.utils.warnings_ import warn

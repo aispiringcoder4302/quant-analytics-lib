@@ -25,9 +25,9 @@ from vectorbtpro.knowledge.tokenization import Tokenizer, TikTokenizer, resolve_
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, has, get
 from vectorbtpro.utils.formatting import dump, get_dump_language, head_and_tail
-from vectorbtpro.utils.module_ import get_obj
 from vectorbtpro.utils.parsing import get_func_arg_names, get_func_kwargs
 from vectorbtpro.utils.pbar import ProgressBar
+from vectorbtpro.utils.refs import get_obj
 from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
 from vectorbtpro.utils.warnings_ import warn
 

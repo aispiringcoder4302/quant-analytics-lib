@@ -122,11 +122,7 @@ def compress(
     Returns:
         bytes: Compressed data.
     """
-    from vectorbtpro.utils.module_ import (
-        assert_can_import,
-        assert_can_import_any,
-        check_installed,
-    )
+    from vectorbtpro.utils.module_ import assert_can_import, assert_can_import_any, check_installed
 
     if isinstance(compression, bool) and compression:
         from vectorbtpro._settings import settings
@@ -219,11 +215,7 @@ def decompress(
     Returns:
         bytes: Decompressed data.
     """
-    from vectorbtpro.utils.module_ import (
-        assert_can_import,
-        assert_can_import_any,
-        check_installed,
-    )
+    from vectorbtpro.utils.module_ import assert_can_import, assert_can_import_any, check_installed
 
     if isinstance(compression, bool) and compression:
         from vectorbtpro._settings import settings
@@ -584,7 +576,7 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
     """Obtain the reconstruction identifier for a class or instance.
 
     If the object is an instance or subclass of `Pickleable` with a defined `_rec_id`, that value is returned.
-    Otherwise, returns the reference name derived using `vectorbtpro.utils.module_.get_refname_obj`.
+    Otherwise, returns the reference name derived using `vectorbtpro.utils.refs.get_refname_obj`.
 
     Args:
         obj (Any): Class or instance to evaluate.
@@ -592,7 +584,7 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
     Returns:
         Optional[str]: Reconstruction identifier or class reference name, or None if not found.
     """
-    from vectorbtpro.utils.module_ import get_refname_obj
+    from vectorbtpro.utils.refs import get_refname_obj
 
     if isinstance(obj, type):
         cls = obj
@@ -604,7 +596,7 @@ def get_id_from_class(obj: tp.Any) -> tp.Optional[str]:
                 raise TypeError(f"Reconstructing id of class {cls} must be a string")
             return cls._rec_id
     refname = cls.__module__ + "." + cls.__name__
-    if get_refname_obj(refname, raise_missing=False) is not None:
+    if get_refname_obj(refname, raise_error=False) is not None:
         return refname
     return None
 
@@ -618,7 +610,7 @@ def get_class_from_id(class_id: str) -> tp.Optional[tp.Type]:
     Returns:
         Type: Class associated with the provided identifier.
     """
-    from vectorbtpro.utils.module_ import get_obj
+    from vectorbtpro.utils.refs import get_obj
 
     if class_id in rec_info_registry:
         return rec_info_registry[class_id].cls
@@ -633,7 +625,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
 
     The function uses the reconstruction state to initialize a new instance, setting initialization
     arguments and updating attributes. If the provided class is not directly a type, it attempts to
-    resolve the class using `rec_info_registry` or `vectorbtpro.utils.module_.get_obj`.
+    resolve the class using `rec_info_registry` or `vectorbtpro.utils.refs.get_obj`.
 
     Args:
         cls (Union[Hashable, Type]): Class or its reconstruction identifier.
@@ -643,7 +635,7 @@ def reconstruct(cls: tp.Union[tp.Hashable, tp.Type], rec_state: RecState) -> tp.
     Returns:
         Any: Reconstructed instance.
     """
-    from vectorbtpro.utils.module_ import get_obj
+    from vectorbtpro.utils.refs import get_obj
 
     found_rec = False
     if not isinstance(cls, type):

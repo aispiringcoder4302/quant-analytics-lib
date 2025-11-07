@@ -32,11 +32,11 @@ from vectorbtpro.knowledge.formatting import FormatHTML
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import merge_dicts, flat_merge_dicts, reorder_list, HybridConfig, SpecSettingsPath
 from vectorbtpro.utils.decorators import hybrid_method
-from vectorbtpro.utils.module_ import ensure_refname, get_caller_qualname
 from vectorbtpro.utils.parsing import get_func_arg_names
 from vectorbtpro.utils.path_ import check_mkdir, remove_dir, get_common_prefix, dir_tree_from_paths
 from vectorbtpro.utils.pbar import ProgressBar
 from vectorbtpro.utils.pickling import suggest_compression
+from vectorbtpro.utils.refs import ensure_refname, get_caller_qualname
 from vectorbtpro.utils.search_ import find, replace
 from vectorbtpro.utils.template import CustomTemplate
 from vectorbtpro.utils.warnings_ import warn
@@ -1255,7 +1255,7 @@ class VBTAsset(KnowledgeAsset):
         Returns:
             List[str]: Sorted list of generated reference name targets.
         """
-        from vectorbtpro.utils.module_ import annotate_refname_parts
+        from vectorbtpro.utils.refs import annotate_refname_parts
         import vectorbtpro as vbt
 
         incl_shortcuts = cls.resolve_setting(incl_shortcuts, "incl_shortcuts")
@@ -1293,7 +1293,7 @@ class VBTAsset(KnowledgeAsset):
                 cls_aliases = {annotated_parts[-2]["name"]}
                 attr_aliases = set()
                 for k, v in vbt.__dict__.items():
-                    v_refname = ensure_refname(v, raise_error=False)
+                    v_refname = ensure_refname(v, can_be_refname=False, raise_error=False)
                     if v_refname is not None:
                         if v_refname == cls_refname:
                             cls_aliases.add(k)
@@ -1323,7 +1323,7 @@ class VBTAsset(KnowledgeAsset):
                     targets.add(new_target)
                 aliases = {annotated_parts[-1]["name"]}
                 for k, v in vbt.__dict__.items():
-                    v_refname = ensure_refname(v, raise_error=False)
+                    v_refname = ensure_refname(v, can_be_refname=False, raise_error=False)
                     if v_refname is not None:
                         if v_refname == refname:
                             aliases.add(k)
@@ -1367,7 +1367,7 @@ class VBTAsset(KnowledgeAsset):
         """Generate mention targets for an object.
 
         This method generates a list of mention targets for a given object or list of objects.
-        It first resolves the object reference name using `vectorbtpro.utils.module_.ensure_refname`.
+        It first resolves the object reference name using `vectorbtpro.utils.refs.ensure_refname`.
         If an attribute is specified, the method checks whether it is defined on the object
         itself or on a base class. When the attribute belongs to a base class and `incl_base_attr` is True,
         targets are generated for both the object attribute and the corresponding base class attribute.
@@ -1393,7 +1393,7 @@ class VBTAsset(KnowledgeAsset):
         Returns:
             List[str]: List of generated mention targets.
         """
-        from vectorbtpro.utils.module_ import ensure_refname
+        from vectorbtpro.utils.refs import ensure_refname
 
         incl_base_attr = self.resolve_setting(incl_base_attr, "incl_base_attr")
 
@@ -1884,7 +1884,7 @@ class PagesAsset(VBTAsset):
         """Return the page corresponding to an object or its reference name.
 
         If an attribute is provided, it is appended to the object reference name.
-        The object reference name is resolved using `vectorbtpro.utils.module_.ensure_refname`.
+        The object reference name is resolved using `vectorbtpro.utils.refs.ensure_refname`.
 
         Args:
             obj (Any): Object to search for.
@@ -1990,7 +1990,7 @@ class PagesAsset(VBTAsset):
     ) -> tp.Union[PagesAssetT, tp.Tuple[PagesAssetT, dict]]:
         """Return API pages and headings relevant to the provided object(s).
 
-        Resolves the object reference name using `vectorbtpro.utils.module_.ensure_refname` and
+        Resolves the object reference name using `vectorbtpro.utils.refs.ensure_refname` and
         extends the asset with related pages based on various options. This includes incorporating
         base classes/attributes, ancestors, reference descendants, and aggregation of links.
 
@@ -2043,7 +2043,7 @@ class PagesAsset(VBTAsset):
             Union[PagesAsset, Tuple[PagesAsset, dict]]: Asset with relevant API pages and headings,
                 optionally accompanied by a reference name graph.
         """
-        from vectorbtpro.utils.module_ import ensure_refname, annotate_refname_parts
+        from vectorbtpro.utils.refs import ensure_refname, annotate_refname_parts
 
         incl_bases = self.resolve_setting(incl_bases, "incl_bases")
         incl_ancestors = self.resolve_setting(incl_ancestors, "incl_ancestors")

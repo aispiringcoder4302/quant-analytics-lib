@@ -14,10 +14,12 @@ import ast
 import importlib
 import inspect
 import os
+import pathlib
 import re
 import tempfile
 import textwrap
 import webbrowser
+import zipimport
 from collections import defaultdict
 from difflib import HtmlDiff, SequenceMatcher
 from pathlib import Path
@@ -30,9 +32,10 @@ from vectorbtpro.knowledge.text_splitting import split_text
 from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
 from vectorbtpro.utils.config import merge_dicts
 from vectorbtpro.utils.formatting import dump, get_dump_language
-from vectorbtpro.utils.module_ import assert_can_import
+from vectorbtpro.utils.module_ import assert_can_import, resolve_module
 from vectorbtpro.utils.path_ import check_mkdir, get_common_prefix
 from vectorbtpro.utils.pbar import ProgressBar
+from vectorbtpro.utils.refs import ensure_refname
 from vectorbtpro.utils.template import CustomTemplate, RepEval
 
 __all__ = [
@@ -45,14 +48,69 @@ __all__ = [
 ]
 
 
-def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = False) -> tp.Union[str, dict]:
-    """Return the exact source that defines *qualname* by parsing the module AST.
+def get_module_source_path(module: tp.ModuleLike) -> tp.Optional[str]:
+    """Return the file path to the pure-Python source of a module.
+
+    Args:
+        module (ModuleLike): Module reference name or object.
+
+    Returns:
+        Optional[str]: File path to the module's source, or None if not available.
+    """
+    module = resolve_module(module)
+    spec = getattr(module, "__spec__", None)
+    candidate = getattr(module, "__file__", None)
+
+    if spec is not None:
+        if spec.origin in ("built-in", "frozen"):
+            return None
+        if getattr(spec, "has_location", True) is False:
+            return None
+        if getattr(spec, "submodule_search_locations", None) and spec.origin is None:
+            return None
+        if not candidate:
+            candidate = getattr(spec, "origin", None)
+
+    if not candidate:
+        try:
+            candidate = inspect.getsourcefile(module)
+        except Exception:
+            candidate = None
+    if not candidate:
+        try:
+            candidate = inspect.getfile(module)
+        except Exception:
+            candidate = None
+    if not candidate:
+        return None
+    if any(candidate.endswith(sfx) for sfx in importlib.machinery.EXTENSION_SUFFIXES):
+        return None
+
+    p = pathlib.Path(candidate)
+    if p.suffix == ".pyc":
+        try:
+            src = importlib.util.source_from_cache(str(p))
+            if src:
+                p = pathlib.Path(src)
+        except Exception:
+            return None
+    if spec is not None and isinstance(getattr(spec, "loader", None), zipimport.zipimporter):
+        return str(p)
+    try:
+        p = p.resolve()
+    except Exception:
+        pass
+    return str(p) if p.exists() else None
+
+
+def get_source(refname: str, clean_indent: bool = True, return_meta: bool = False) -> tp.Union[str, dict]:
+    """Return the exact source that defines the provided reference name by parsing the module AST.
 
     Handles modules, classes, (async) functions, methods, top-level assignments
     and annotated class variables (together with their inline docstrings).
 
     Args:
-        qualname: Fully-qualified dotted name (e.g. "pkg.mod.Class.attr").
+        refname: Fully-qualified dotted name (e.g. "pkg.mod.Class.attr").
         clean_indent: If True, the leading indent of the snippet is removed and
             the block is dedented to column 0.
         return_meta: If True, a dictionary with the code and its file/line metadata
@@ -64,7 +122,7 @@ def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = 
             start line, and end line (both 1-based).
 
     Raises:
-        ImportError: No component of *qualname* can be imported.
+        ImportError: No component of reference name can be imported.
         FileNotFoundError: The discovered module has no readable *.py* file.
         ValueError: The object cannot be located in the module AST.
     """
@@ -87,27 +145,17 @@ def get_source(qualname: str, *, clean_indent: bool = True, return_meta: bool = 
         if spaces == 0:
             return lines
         pad = " " * spaces
-        return [l[len(pad) :] if l.startswith(pad) else l for l in lines]
+        return [line[len(pad) :] if line.startswith(pad) else line for line in lines]
 
-    parts = qualname.split(".")
-    module = None
-    for i in range(len(parts), 0, -1):
-        try:
-            module = importlib.import_module(".".join(parts[:i]))
-            chain = parts[i:]
-            break
-        except ModuleNotFoundError:
-            continue
-    if module is None:
-        raise ImportError(f"Could not import any part of {qualname!r}")
-
-    filepath = inspect.getsourcefile(module) or inspect.getfile(module)
+    refname, module, qualname = ensure_refname(refname, return_parts=True)
+    filepath = get_module_source_path(module)
     if not filepath or not os.path.exists(filepath):
         raise FileNotFoundError(f"No pure-Python source for {module.__name__!r}")
 
     with open(filepath, encoding="utf-8") as fh:
         source = fh.read()
 
+    chain = qualname.split(".") if qualname else []
     if not chain:
         code = source if not clean_indent else textwrap.dedent(source)
         if return_meta:
@@ -415,7 +463,7 @@ def cut_and_save_module(module: tp.ModuleLike, *args, **kwargs) -> Path:
     is extracted and saved using `cut_and_save`.
 
     Args:
-        module (ModuleLike): Target module or its import path.
+        module (ModuleLike): Module reference name or object.
         *args: Positional arguments for `cut_and_save`.
         **kwargs: Keyword arguments for `cut_and_save`.
 

@@ -180,11 +180,11 @@ def whats_imported() -> None:
     import pandas as pd
 
     from vectorbtpro.utils.formatting import ptable
-    from vectorbtpro.utils.module_ import get_refname
+    from vectorbtpro.utils.refs import ensure_refname
 
     values = {}
     for k, v in imported_star.items():
-        refname = get_refname(v)
+        refname = ensure_refname(v, can_be_refname=False, raise_error=False)
         if refname is not None and str(v).startswith("<"):
             values[k] = refname
         else:

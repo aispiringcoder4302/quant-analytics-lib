@@ -658,15 +658,15 @@ def pdir(*args, **kwargs) -> None:
     """Print parsed attributes of an object.
 
     Args:
-        *args: Positional arguments for `vectorbtpro.utils.attr_.get_attrs`.
-        **kwargs: Keyword arguments for `vectorbtpro.utils.attr_.get_attrs`.
+        *args: Positional arguments for `vectorbtpro.utils.attr_.get_attr_df`.
+        **kwargs: Keyword arguments for `vectorbtpro.utils.attr_.get_attr_df`.
 
     Returns:
         None
     """
-    from vectorbtpro.utils.attr_ import get_attrs
+    from vectorbtpro.utils.attr_ import get_attr_df
 
-    ptable(get_attrs(*args, **kwargs))
+    ptable(get_attr_df(*args, **kwargs))
 
 
 def dump(obj: tp.Any, dump_engine: str = "prettify", **kwargs) -> str:

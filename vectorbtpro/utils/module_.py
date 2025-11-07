@@ -49,6 +49,34 @@ __pdoc__[
 """
 
 
+def safe_unwrap(obj: tp.Any, max_depth: int = 64) -> tp.Any:
+    """Safely unwrap decorated functions up to a maximum depth.
+
+    Args:
+        obj (Any): Object to unwrap.
+        max_depth (int): Maximum depth to unwrap.
+
+    Returns:
+        Any: Unwrapped object.
+    """
+    seen = set()
+    cur = obj
+    for _ in range(max_depth):
+        oid = id(cur)
+        if oid in seen:
+            break
+        seen.add(oid)
+        nxt = None
+        try:
+            nxt = inspect.getattr_static(cur, "__wrapped__")
+        except AttributeError:
+            pass
+        if nxt is None:
+            break
+        cur = nxt
+    return cur
+
+
 def get_module(obj: tp.Any) -> tp.Optional[ModuleType]:
     """Return the module in which the given object is defined.
 
@@ -58,26 +86,47 @@ def get_module(obj: tp.Any) -> tp.Optional[ModuleType]:
     Returns:
         Optional[ModuleType]: Module where the object is defined; None if the module cannot be determined.
     """
+    from vectorbtpro.utils.attr_ import get_attr
+
     if isinstance(obj, ModuleType):
         return obj
-    target = inspect.unwrap(obj) if callable(obj) else obj
-    modname = getattr(target, "__module__", None) or getattr(type(target), "__module__", None)
-    if not modname:
+    target = safe_unwrap(obj)
+    modname = get_attr(target, "__module__", None)
+    if modname is None:
+        modname = get_attr(type(target), "__module__", None)
+    if modname is None:
         return None
-    return sys.modules.get(modname)
+    mod = sys.modules.get(modname)
+    if mod is not None:
+        return mod
+    try:
+        return importlib.import_module(modname)
+    except Exception:
+        return None
 
 
 def resolve_module(module: tp.ModuleLike) -> ModuleType:
     """Return the module object for the given module name or module.
 
     Args:
-        module (ModuleLike): Module name or module object.
+        module (ModuleLike): Module reference name or object.
 
     Returns:
         ModuleType: Resolved module object.
     """
+    from vectorbtpro.utils.refs import get_obj
+
     if isinstance(module, str):
-        return sys.modules[module]
+        if module in sys.modules:
+            return sys.modules[module]
+        obj = get_obj(module)
+        if obj is None:
+            raise ModuleNotFoundError(f"Module {module!r} not found")
+        if not isinstance(obj, ModuleType):
+            raise TypeError(f"Expected module or module name, got {type(obj)}")
+        return obj
+    if not isinstance(module, ModuleType):
+        raise TypeError(f"Expected module or module name, got {type(module)}")
     return module
 
 
@@ -86,7 +135,7 @@ def is_from_module(obj: tp.Any, module: tp.ModuleLike) -> bool:
 
     Args:
         obj (Any): Object to verify.
-        module (ModuleLike): Module to check against.
+        module (ModuleLike): Module reference name or object.
 
     Returns:
         bool: True if the object is from the specified module; otherwise, False.
@@ -97,14 +146,14 @@ def is_from_module(obj: tp.Any, module: tp.ModuleLike) -> bool:
 
 
 def list_module_keys(
-    module_or_name: tp.ModuleLike,
+    module: tp.ModuleLike,
     whitelist: tp.Optional[tp.List[str]] = None,
     blacklist: tp.Optional[tp.List[str]] = None,
 ) -> tp.List[str]:
     """Return a list of names for all public functions and classes in the specified module.
 
     Args:
-        module_or_name (ModuleLike): Module or its name to inspect.
+        module (ModuleLike): Module reference name or object.
         whitelist (Optional[List[str]]): Additional names to include.
         blacklist (Optional[List[str]]): Names to exclude from the list.
 
@@ -115,10 +164,8 @@ def list_module_keys(
         whitelist = []
     if blacklist is None:
         blacklist = []
-    if isinstance(module_or_name, str):
-        module = sys.modules[module_or_name]
-    else:
-        module = module_or_name
+    if isinstance(module, str):
+        module = sys.modules[module]
     return [
         name
         for name, obj in inspect.getmembers(module)
@@ -145,7 +192,7 @@ def search_package(
     The matching function should accept the name of an object and the object itself, and return a boolean.
 
     Args:
-        package (ModuleLike): Package or its name to search.
+        package (ModuleLike): Module reference name or object.
         match_func (Callable): Function that takes an object's name and the object, returning a boolean.
         blacklist (Optional[Sequence[str]]): Names to exclude from the search.
         path_attrs (bool): If True, use reference names for object attributes.

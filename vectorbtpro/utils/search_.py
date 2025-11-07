@@ -508,7 +508,7 @@ def contains_in_obj(
 
             Uses `vectorbtpro.utils.checks.is_instance_of` to check.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
-        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal, None = unlimited).
         **kwargs: Keyword arguments for `match_func`.
 
     Returns:
@@ -614,7 +614,7 @@ def find_in_obj(
             Uses `vectorbtpro.utils.checks.is_instance_of` to check.
         stringify_keys (bool): If True, convert path keys to a string representation.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
-        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal, None = unlimited).
         **kwargs: Keyword arguments for `match_func`.
 
     Returns:
@@ -790,7 +790,7 @@ def find_and_replace_in_obj(
 
             Uses `vectorbtpro.utils.checks.is_instance_of` to check.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
-        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal, None = unlimited).
         make_copy (bool): Flag to indicate whether to modify a copy of the object.
         check_any_first (bool): If True, checks if any element matches before processing.
         **kwargs: Keyword arguments for `match_func` and `replace_func`.
@@ -946,7 +946,7 @@ def flatten_obj(
             Uses `vectorbtpro.utils.checks.is_instance_of` to check.
         stringify_keys (bool): If True, convert path keys to a string representation.
         max_len (Optional[int]): Limit processing to objects with a length not exceeding this value.
-        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal of iterables).
+        max_depth (Optional[int]): Limit recursion to the specified depth (0 disables traversal, None = unlimited).
 
     Returns:
         PathDict: Mapping of path-like keys (using tuples for nested levels) to their corresponding values.

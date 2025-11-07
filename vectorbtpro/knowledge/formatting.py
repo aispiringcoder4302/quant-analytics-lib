@@ -20,7 +20,6 @@ from pathlib import Path
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils import checks
 from vectorbtpro.utils.config import Configured, flat_merge_dicts
-from vectorbtpro.utils.module_ import get_caller_qualname
 from vectorbtpro.utils.path_ import check_mkdir
 from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
 

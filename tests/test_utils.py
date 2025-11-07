@@ -1,11 +1,16 @@
 import asyncio
 import inspect
 import os
+import textwrap
+import types
 from collections import namedtuple
 from copy import copy, deepcopy
-from datetime import datetime as _datetime, timedelta as _timedelta, time as _time, timezone as _timezone
+from datetime import datetime as _datetime
+from datetime import time as _time
+from datetime import timedelta as _timedelta
+from datetime import timezone as _timezone
 from functools import wraps
-from itertools import product, combinations
+from itertools import combinations, product
 
 import pytest
 from numba import njit
@@ -13,29 +18,30 @@ from numba.core.registry import CPUDispatcher
 from pandas.tseries.frequencies import to_offset
 
 import vectorbtpro as vbt
-from vectorbtpro._dtypes import *
 from tests.utils import *
+from vectorbtpro._dtypes import *
 from vectorbtpro.utils import (
-    checks,
-    config,
-    decorators,
-    math_,
     array_,
-    random_,
-    mapping,
-    enum_,
-    params,
     attr_,
+    checks,
+    chunking,
+    config,
     datetime_,
+    decorators,
+    enum_,
+    execution,
+    hashing,
+    jitting,
+    mapping,
+    math_,
+    params,
+    parsing,
+    pickling,
+    random_,
+    refs,
     schedule_,
     tagging,
     template,
-    parsing,
-    execution,
-    pickling,
-    chunking,
-    jitting,
-    hashing,
 )
 
 pathos_available = True
@@ -3905,10 +3911,10 @@ class TestJitting:
         assert dict(func_my.config) == dict(test="test")
 
 
-# ############# module_ ############# #
+# ############# refs ############# #
 
 
-class TestModule:
+class TestRefs:
     def test_get_api_ref(self):
         pf = vbt.PF.from_holding([1, 2, 3])
 
@@ -3989,6 +3995,61 @@ class TestModule:
         assert vbt.get_refname("ADX") == "vectorbtpro.indicators.custom.adx.ADX"
         assert vbt.get_refname("ADX.adx") == "vectorbtpro.indicators.custom.adx.ADX.adx"
         assert vbt.get_refname("ADX.adx_above") == "vectorbtpro.indicators.custom.adx.ADX.adx_above"
+
+    def test_RefIndex(self):
+        ref_index = vbt.RefIndex()
+        ref_info = ref_index.get_info("DHitMeta")
+        assert isinstance(ref_info, refs.RefInfo)
+        assert ref_info.refname == "vectorbtpro.utils.refs.DHitMeta"
+        assert ref_info.container == "vectorbtpro.utils.refs"
+        assert ref_info.members == [
+            "vectorbtpro.utils.attr_.DefineMixin.asdict",
+            "vectorbtpro.utils.attr_.DefineMixin.assert_field_not_missing",
+            "vectorbtpro.utils.base.Base.chat",
+            "vectorbtpro.utils.attr_.DefineMixin.fields",
+            "vectorbtpro.utils.attr_.DefineMixin.fields_dict",
+            "vectorbtpro.utils.base.Base.find_api",
+            "vectorbtpro.utils.base.Base.find_assets",
+            "vectorbtpro.utils.base.Base.find_docs",
+            "vectorbtpro.utils.base.Base.find_examples",
+            "vectorbtpro.utils.base.Base.find_messages",
+            "vectorbtpro.utils.attr_.DefineMixin.get_field",
+            "vectorbtpro.utils.hashing.Hashable.get_hash",
+            "vectorbtpro.utils.hashing.Hashable.hash",
+            "vectorbtpro.utils.attr_.DefineMixin.hash_key",
+            "vectorbtpro.utils.refs.DHitMeta.is_builtin",
+            "vectorbtpro.utils.attr_.DefineMixin.is_field_missing",
+            "vectorbtpro.utils.attr_.DefineMixin.is_field_optional",
+            "vectorbtpro.utils.attr_.DefineMixin.is_field_required",
+            "vectorbtpro.utils.refs.DHitMeta.is_private",
+            "vectorbtpro.utils.refs.DHitMeta.is_unreachable",
+            "vectorbtpro.utils.attr_.DefineMixin.merge_over",
+            "vectorbtpro.utils.attr_.DefineMixin.merge_with",
+            "vectorbtpro.utils.attr_.DefineMixin.replace",
+            "vectorbtpro.utils.attr_.DefineMixin.resolve",
+            "vectorbtpro.utils.attr_.DefineMixin.resolve_field",
+        ]
+        assert ref_info.bases == [
+            "vectorbtpro.utils.attr_.DefineMixin",
+            "vectorbtpro.utils.hashing.Hashable",
+            "vectorbtpro.utils.base.Base",
+            "builtins.object",
+        ]
+        assert ref_info.dependencies == [
+            "vectorbtpro.utils.attr_.define",
+            "vectorbtpro.utils.attr_.DefineMixin",
+            "vectorbtpro.utils.attr_.define.field",
+            "vectorbtpro._typing.Optional",
+            "vectorbtpro.utils.refs.DBlock",
+            "vectorbtpro.utils.refs.DRole",
+        ]
+        ref_info = ref_index.collect_info("DHitMeta")
+        assert list(map(lambda x: x.refname, ref_info)) == [
+            "vectorbtpro.utils.refs.DHitMeta",
+            "vectorbtpro.utils.refs.DHitMeta.is_builtin",
+            "vectorbtpro.utils.refs.DHitMeta.is_private",
+            "vectorbtpro.utils.refs.DHitMeta.is_unreachable",
+        ]
 
 
 # ############# knowledge ############# #

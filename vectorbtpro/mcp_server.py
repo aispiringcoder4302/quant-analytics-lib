@@ -226,7 +226,7 @@ def resolve_refnames(refnames: tp.List[str]) -> str:
     Returns:
         str: Output string containing the resolution results.
     """
-    from vectorbtpro.utils.module_ import resolve_refname
+    from vectorbtpro.utils.refs import resolve_refname
 
     output = []
     for refname in refnames:
@@ -562,15 +562,15 @@ def get_attrs(
     Returns:
         str: String containing the list of attributes, each on a new line.
     """
-    from vectorbtpro.utils.attr_ import get_attrs
-    from vectorbtpro.utils.module_ import resolve_refname, get_refname_obj
+    from vectorbtpro.utils.attr_ import get_attr_df
+    from vectorbtpro.utils.refs import resolve_refname, get_refname_obj
 
     refname = auto_cast(refname)
     resolved_refname = resolve_refname(refname)
     if not resolved_refname:
         raise ValueError(f"Reference name {refname!r} cannot be resolved to an object")
     obj = get_refname_obj(resolved_refname)
-    df = get_attrs(obj=obj, own_only=own_only, incl_private=incl_private)
+    df = get_attr_df(obj=obj, own_only=own_only, incl_private=incl_private)
 
     display_lines = []
     for attr_name, attr_type, attr_refname in df.itertuples():
@@ -606,7 +606,7 @@ def get_source(refname: str) -> str:
             is concatenated together, separated by two newlines.
     """
     from vectorbtpro.utils.source import get_source
-    from vectorbtpro.utils.module_ import resolve_refname
+    from vectorbtpro.utils.refs import resolve_refname
 
     refname = auto_cast(refname)
     resolved_refname = resolve_refname(refname)
