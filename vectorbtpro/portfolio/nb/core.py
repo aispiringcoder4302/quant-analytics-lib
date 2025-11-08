@@ -170,6 +170,7 @@ def long_buy_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
     leverage_mode: int = LeverageMode.Lazy,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
@@ -192,6 +193,7 @@ def long_buy_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
@@ -218,12 +220,17 @@ def long_buy_nb(
         size = size * leverage
         leverage_mode = LeverageMode.Eager
 
-    cash_limit = _account_state.free_cash
+    if np.isnan(cash_limit):
+        base_cash_limit = _account_state.free_cash
+    else:
+        base_cash_limit = min(cash_limit, _account_state.free_cash)
     if not np.isnan(percent):
-        cash_limit = cash_limit * percent
-    if cash_limit <= 0:
+        base_cash_limit = base_cash_limit * percent
+    base_cash_limit = min(base_cash_limit, _account_state.free_cash)
+    if base_cash_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
-    cash_limit = cash_limit * leverage
+
+    order_value_limit = base_cash_limit * leverage
 
     if should_apply_size_granularity_nb(size, size_granularity):
         size = apply_size_granularity_nb(size, size_granularity)
@@ -231,9 +238,8 @@ def long_buy_nb(
     if not np.isnan(max_size) and size > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
-
         size = max_size
-    if np.isinf(size) and np.isinf(cash_limit):
+    if np.isinf(size) and np.isinf(order_value_limit):
         raise ValueError("Attempt to go in long direction infinitely")
 
     adj_price = price * (1 + slippage)
@@ -247,12 +253,11 @@ def long_buy_nb(
         req_fees = order_value * fees + fixed_fees
         req_cash = order_value + req_fees
 
-    if is_close_or_less_nb(req_cash, cash_limit):
+    if is_close_or_less_nb(req_cash, order_value_limit):
         final_size = size
         fees_paid = req_fees
     else:
-
-        max_req_cash = add_nb(cash_limit, -fixed_fees) / (1 + fees)
+        max_req_cash = add_nb(order_value_limit, -fixed_fees) / (1.0 + fees)
         if max_req_cash <= 0:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
@@ -265,8 +270,8 @@ def long_buy_nb(
             req_cash = new_order_value + fees_paid
         else:
             final_size = max_acq_size
-            fees_paid = cash_limit - max_req_cash
-            req_cash = cash_limit
+            fees_paid = order_value_limit - max_req_cash
+            req_cash = order_value_limit
 
     if is_close_nb(final_size, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
@@ -277,6 +282,13 @@ def long_buy_nb(
     if np.isfinite(size) and is_less_nb(final_size, size) and not allow_partial:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
+    if leverage_mode == LeverageMode.Eager and leverage > 1.0:
+        order_value = final_size * adj_price
+        margin_cash = order_value / leverage
+        total_eager_cash = margin_cash + fees_paid
+        if is_less_nb(base_cash_limit, total_eager_cash):
+            return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
+
     order_result = OrderResult(
         float(final_size),
         float(adj_price),
@@ -286,9 +298,9 @@ def long_buy_nb(
         -1,
     )
 
-    new_cash = add_nb(_account_state.cash, -req_cash)
-    new_position = add_nb(_account_state.position, final_size)
     if leverage_mode == LeverageMode.Lazy:
+        new_cash = add_nb(_account_state.cash, -req_cash)
+        new_position = add_nb(_account_state.position, final_size)
         debt_diff = max(add_nb(req_cash, -_account_state.free_cash), 0.0)
         if debt_diff > 0:
             new_debt = _account_state.debt + debt_diff
@@ -299,17 +311,22 @@ def long_buy_nb(
             new_locked_cash = _account_state.locked_cash
             new_free_cash = add_nb(_account_state.free_cash, -req_cash)
     else:
-        if leverage > 1:
-            if np.isinf(leverage):
-                raise ValueError("Leverage must be finite for LeverageMode.Eager")
+        new_position = add_nb(_account_state.position, final_size)
+        if leverage > 1.0:
             order_value = final_size * adj_price
-            new_debt = _account_state.debt + order_value * (leverage - 1) / leverage
-            new_locked_cash = _account_state.locked_cash + order_value / leverage
-            new_free_cash = add_nb(_account_state.free_cash, -order_value / leverage - fees_paid)
+            margin_cash = order_value / leverage
+            total_eager_cash = margin_cash + fees_paid
+
+            new_cash = add_nb(_account_state.cash, -total_eager_cash)
+            new_debt = _account_state.debt + order_value * (leverage - 1.0) / leverage
+            new_locked_cash = _account_state.locked_cash + margin_cash
+            new_free_cash = add_nb(_account_state.free_cash, -total_eager_cash)
         else:
+            new_cash = add_nb(_account_state.cash, -req_cash)
             new_debt = _account_state.debt
             new_locked_cash = _account_state.locked_cash
             new_free_cash = add_nb(_account_state.free_cash, -req_cash)
+
     new_account_state = AccountState(
         cash=float(new_cash),
         position=float(new_position),
@@ -357,6 +374,7 @@ def long_sell_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
     allow_partial: bool = True,
     percent: float = np.nan,
@@ -379,6 +397,7 @@ def long_sell_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
@@ -409,7 +428,6 @@ def long_sell_nb(
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
-
         size_limit = max_size
 
     if is_close_nb(size_limit, 0):
@@ -418,19 +436,22 @@ def long_sell_nb(
     if not np.isnan(min_size) and is_less_nb(size_limit, min_size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.MinSizeNotReached), _account_state
 
-    if np.isfinite(size) and is_less_nb(size_limit, size) and not allow_partial:  # np.inf doesn't count
+    if np.isfinite(size) and is_less_nb(size_limit, size) and not allow_partial:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
     adj_price = price * (1 - slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
-
     acq_cash = size_limit * adj_price
-
     fees_paid = acq_cash * fees + fixed_fees
-
     final_acq_cash = add_nb(acq_cash, -fees_paid)
-    if final_acq_cash < 0 and is_less_nb(_account_state.free_cash, -final_acq_cash):
-        return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
+
+    if final_acq_cash < 0:
+        if np.isnan(cash_limit):
+            allowed_to_spend = _account_state.free_cash
+        else:
+            allowed_to_spend = min(cash_limit, _account_state.free_cash)
+        if is_less_nb(allowed_to_spend, -final_acq_cash):
+            return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
     order_result = OrderResult(
         float(size_limit),
@@ -449,6 +470,7 @@ def long_sell_nb(
     size_fraction = size_limit / _account_state.position
     released_debt = size_fraction * _account_state.debt
     new_free_cash = add_nb(_account_state.free_cash, final_acq_cash - released_debt)
+
     new_account_state = AccountState(
         cash=float(new_cash),
         position=float(new_position),
@@ -491,6 +513,7 @@ def short_sell_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
     leverage_mode: int = LeverageMode.Lazy,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
@@ -513,6 +536,7 @@ def short_sell_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
@@ -540,12 +564,17 @@ def short_sell_nb(
         size = size * leverage
         leverage_mode = LeverageMode.Eager
 
-    cash_limit = _account_state.free_cash
+    if np.isnan(cash_limit):
+        base_cash_limit = _account_state.free_cash
+    else:
+        base_cash_limit = min(cash_limit, _account_state.free_cash)
     if not np.isnan(percent):
-        cash_limit = cash_limit * percent
-    if cash_limit <= 0:
+        base_cash_limit = base_cash_limit * percent
+    base_cash_limit = min(base_cash_limit, _account_state.free_cash)
+    if base_cash_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
-    cash_limit = cash_limit * leverage
+
+    order_value_limit = base_cash_limit * leverage
 
     adj_price = price * (1 - slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
@@ -554,7 +583,8 @@ def short_sell_nb(
     if fees_adj_price == 0:
         max_size_limit = np.inf
     else:
-        max_size_limit = add_nb(cash_limit, -fixed_fees) / (adj_price * (1 + fees))
+        max_size_limit = add_nb(order_value_limit, -fixed_fees) / fees_adj_price
+
     size_limit = min(size, max_size_limit)
     if size_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
@@ -566,8 +596,8 @@ def short_sell_nb(
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
-
         size_limit = max_size
+
     if np.isinf(size_limit):
         raise ValueError("Attempt to go in short direction infinitely")
 
@@ -577,15 +607,29 @@ def short_sell_nb(
     if not np.isnan(min_size) and is_less_nb(size_limit, min_size):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.MinSizeNotReached), _account_state
 
-    if np.isfinite(size) and is_less_nb(size_limit, size) and not allow_partial:  # np.inf doesn't count
+    if np.isfinite(size) and is_less_nb(size_limit, size) and not allow_partial:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
     order_value = size_limit * adj_price
-
     fees_paid = order_value * fees + fixed_fees
-
     final_acq_cash = add_nb(order_value, -fees_paid)
-    if final_acq_cash < 0:
+
+    if final_acq_cash < 0 and is_less_nb(base_cash_limit, -final_acq_cash):
+        return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
+
+    if np.isinf(leverage):
+        if np.isinf(_account_state.free_cash):
+            raise ValueError("Leverage must be finite when account_state.free_cash is infinite")
+        if is_close_or_less_nb(_account_state.free_cash, fees_paid):
+            return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
+        effective_leverage = order_value / (_account_state.free_cash - fees_paid)
+    else:
+        effective_leverage = float(leverage)
+
+    margin_cash = order_value / effective_leverage
+    actual_cash_out = margin_cash + fees_paid
+
+    if is_less_nb(base_cash_limit, actual_cash_out):
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
     order_result = OrderResult(
@@ -600,16 +644,9 @@ def short_sell_nb(
     new_cash = _account_state.cash + final_acq_cash
     new_position = _account_state.position - size_limit
     new_debt = _account_state.debt + order_value
-    if np.isinf(leverage):
-        if np.isinf(_account_state.free_cash):
-            raise ValueError("Leverage must be finite when _account_state.free_cash is infinite")
-        if is_close_or_less_nb(_account_state.free_cash, fees_paid):
-            return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
-        leverage_ = order_value / (_account_state.free_cash - fees_paid)
-    else:
-        leverage_ = float(leverage)
-    new_locked_cash = _account_state.locked_cash + order_value / leverage_
-    new_free_cash = add_nb(_account_state.free_cash, -order_value / leverage_ - fees_paid)
+    new_locked_cash = _account_state.locked_cash + margin_cash
+    new_free_cash = add_nb(_account_state.free_cash, -actual_cash_out)
+
     new_account_state = AccountState(
         cash=float(new_cash),
         position=float(new_position),
@@ -659,6 +696,7 @@ def short_buy_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
     allow_partial: bool = True,
     percent: float = np.nan,
@@ -684,6 +722,7 @@ def short_buy_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         price_area_vio_mode (int): Mode for handling price area violations.
 
             See `vectorbtpro.portfolio.enums.PriceAreaVioMode`.
@@ -703,8 +742,12 @@ def short_buy_nb(
     if _account_state.position == 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoOpenPosition), _account_state
 
-    cash_limit = _account_state.free_cash + _account_state.debt + _account_state.locked_cash
-    if cash_limit <= 0:
+    cover_capacity = _account_state.free_cash + _account_state.debt + _account_state.locked_cash
+    if np.isnan(cash_limit):
+        cover_limit = cover_capacity
+    else:
+        cover_limit = min(cash_limit, cover_capacity)
+    if cover_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
 
     size_limit = min(size, abs(_account_state.position))
@@ -717,7 +760,6 @@ def short_buy_nb(
     if not np.isnan(max_size) and size_limit > max_size:
         if not allow_partial:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.MaxSizeExceeded), _account_state
-
         size_limit = max_size
 
     adj_price = price * (1 + slippage)
@@ -731,12 +773,11 @@ def short_buy_nb(
         req_fees = order_value * fees + fixed_fees
         req_cash = order_value + req_fees
 
-    if is_close_or_less_nb(req_cash, cash_limit):
+    if is_close_or_less_nb(req_cash, cover_limit):
         final_size = size_limit
         fees_paid = req_fees
     else:
-
-        max_req_cash = add_nb(cash_limit, -fixed_fees) / (1 + fees)
+        max_req_cash = add_nb(cover_limit, -fixed_fees) / (1 + fees)
         if max_req_cash <= 0:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
@@ -749,8 +790,8 @@ def short_buy_nb(
             req_cash = new_order_value + fees_paid
         else:
             final_size = max_acq_size
-            fees_paid = cash_limit - max_req_cash
-            req_cash = cash_limit
+            fees_paid = cover_limit - max_req_cash
+            req_cash = cover_limit
 
     if is_close_nb(final_size, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
@@ -779,6 +820,7 @@ def short_buy_nb(
     released_debt = size_fraction * _account_state.debt
     released_cash = size_fraction * _account_state.locked_cash
     new_free_cash = add_nb(_account_state.free_cash, released_cash + released_debt - req_cash)
+
     new_account_state = AccountState(
         cash=float(new_cash),
         position=float(new_position),
@@ -842,6 +884,7 @@ def buy_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
     leverage_mode: int = LeverageMode.Lazy,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
@@ -868,6 +911,7 @@ def buy_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
@@ -899,6 +943,7 @@ def buy_nb(
             min_size=min_size,
             max_size=max_size,
             size_granularity=size_granularity,
+            cash_limit=cash_limit,
             price_area_vio_mode=price_area_vio_mode,
             allow_partial=allow_partial,
             percent=percent,
@@ -916,6 +961,7 @@ def buy_nb(
             min_size=min_size,
             max_size=max_size,
             size_granularity=size_granularity,
+            cash_limit=cash_limit,
             leverage=leverage,
             leverage_mode=leverage_mode,
             price_area_vio_mode=price_area_vio_mode,
@@ -943,6 +989,7 @@ def buy_nb(
         min_size=min_size1,
         max_size=max_size1,
         size_granularity=size_granularity,
+        cash_limit=cash_limit,
         price_area_vio_mode=price_area_vio_mode,
         allow_partial=allow_partial,
         percent=np.nan,
@@ -974,6 +1021,7 @@ def buy_nb(
         min_size=min_size2,
         max_size=max_size2,
         size_granularity=size_granularity,
+        cash_limit=cash_limit,
         leverage=leverage,
         leverage_mode=leverage_mode,
         price_area_vio_mode=price_area_vio_mode,
@@ -1049,6 +1097,7 @@ def sell_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
     leverage_mode: int = LeverageMode.Lazy,
     price_area_vio_mode: int = PriceAreaVioMode.Ignore,
@@ -1079,6 +1128,7 @@ def sell_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
@@ -1109,6 +1159,7 @@ def sell_nb(
             min_size=min_size,
             max_size=max_size,
             size_granularity=size_granularity,
+            cash_limit=cash_limit,
             price_area_vio_mode=price_area_vio_mode,
             allow_partial=allow_partial,
             percent=percent,
@@ -1126,6 +1177,7 @@ def sell_nb(
             min_size=min_size,
             max_size=max_size,
             size_granularity=size_granularity,
+            cash_limit=cash_limit,
             leverage=leverage,
             leverage_mode=leverage_mode,
             price_area_vio_mode=price_area_vio_mode,
@@ -1153,6 +1205,7 @@ def sell_nb(
         min_size=min_size1,
         max_size=max_size1,
         size_granularity=size_granularity,
+        cash_limit=cash_limit,
         price_area_vio_mode=price_area_vio_mode,
         allow_partial=allow_partial,
         percent=np.nan,
@@ -1184,6 +1237,7 @@ def sell_nb(
         min_size=min_size2,
         max_size=max_size2,
         size_granularity=size_granularity,
+        cash_limit=cash_limit,
         leverage=leverage,
         leverage_mode=leverage_mode,
         price_area_vio_mode=price_area_vio_mode,
@@ -1540,6 +1594,8 @@ def execute_order_nb(
         raise ValueError("order.max_size must be either NaN or greater than 0")
     if np.isinf(order.size_granularity) or order.size_granularity <= 0:
         raise ValueError("order.size_granularity must be either NaN, or finite and greater than 0")
+    if np.isinf(order.cash_limit) or order.cash_limit < 0:
+        raise ValueError("order.cash_limit must be either NaN, 0, or greater")
     if np.isnan(order.leverage) or order.leverage <= 0:
         raise ValueError("order.leverage must be greater than 0")
     if order.leverage_mode < 0 or order.leverage_mode >= len(LeverageMode):
@@ -1617,6 +1673,7 @@ def execute_order_nb(
             min_size=min_order_size,
             max_size=max_order_size,
             size_granularity=order.size_granularity,
+            cash_limit=order.cash_limit,
             leverage=order.leverage,
             leverage_mode=order.leverage_mode,
             price_area_vio_mode=order.price_area_vio_mode,
@@ -1637,6 +1694,7 @@ def execute_order_nb(
             min_size=min_order_size,
             max_size=max_order_size,
             size_granularity=order.size_granularity,
+            cash_limit=order.cash_limit,
             leverage=order.leverage,
             leverage_mode=order.leverage_mode,
             price_area_vio_mode=order.price_area_vio_mode,
@@ -1752,6 +1810,7 @@ def fill_log_record_nb(
     records["req_min_size"][r, col] = order.min_size
     records["req_max_size"][r, col] = order.max_size
     records["req_size_granularity"][r, col] = order.size_granularity
+    records["req_cash_limit"][r, col] = order.cash_limit
     records["req_leverage"][r, col] = order.leverage
     records["req_leverage_mode"][r, col] = order.leverage_mode
     records["req_reject_prob"][r, col] = order.reject_prob
@@ -1937,6 +1996,7 @@ def order_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
     leverage_mode: int = LeverageMode.Lazy,
     reject_prob: float = 0.0,
@@ -1962,6 +2022,7 @@ def order_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
@@ -1988,6 +2049,7 @@ def order_nb(
         min_size=float(min_size),
         max_size=float(max_size),
         size_granularity=float(size_granularity),
+        cash_limit=float(cash_limit),
         leverage=float(leverage),
         leverage_mode=int(leverage_mode),
         reject_prob=float(reject_prob),
@@ -2007,6 +2069,7 @@ def close_position_nb(
     min_size: float = np.nan,
     max_size: float = np.nan,
     size_granularity: float = np.nan,
+    cash_limit: float = np.nan,
     leverage: float = 1.0,
     leverage_mode: int = LeverageMode.Lazy,
     reject_prob: float = 0.0,
@@ -2025,6 +2088,7 @@ def close_position_nb(
         min_size (float): Minimum allowed order size.
         max_size (float): Maximum allowed order size.
         size_granularity (float): Granularity factor for order size (e.g., 1 for whole shares)
+        cash_limit (float): Max own cash the order is allowed to use.
         leverage (float): Leverage factor.
         leverage_mode (int): Leverage mode.
 
@@ -2051,6 +2115,7 @@ def close_position_nb(
         min_size=min_size,
         max_size=max_size,
         size_granularity=size_granularity,
+        cash_limit=cash_limit,
         leverage=leverage,
         leverage_mode=leverage_mode,
         reject_prob=reject_prob,

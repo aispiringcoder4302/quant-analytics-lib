@@ -2300,6 +2300,7 @@ class Order(tp.NamedTuple):
     min_size: float = np.nan
     max_size: float = np.nan
     size_granularity: float = np.nan
+    cash_limit: float = np.nan
     leverage: float = 1.0
     leverage_mode: int = LeverageMode.Lazy
     reject_prob: float = 0.0
@@ -2396,6 +2397,7 @@ placing an order for 12.5 shares will result in ordering exactly 12.0 shares.
 !!! note
     The filled size is still represented as a floating-point number.
 """
+__pdoc__["Order.cash_limit"] = "Max own cash the order is allowed to use."
 __pdoc__["Order.leverage"] = "Leverage factor."
 __pdoc__["Order.leverage_mode"] = "See `LeverageMode`."
 __pdoc__[
@@ -2437,6 +2439,7 @@ NoOrder = Order(
     min_size=np.nan,
     max_size=np.nan,
     size_granularity=np.nan,
+    cash_limit=np.nan,
     leverage=1.0,
     leverage_mode=LeverageMode.Lazy,
     reject_prob=np.nan,
@@ -2994,6 +2997,7 @@ log_fields = [
     ("req_min_size", float_),
     ("req_max_size", float_),
     ("req_size_granularity", float_),
+    ("req_cash_limit", float_),
     ("req_leverage", float_),
     ("req_leverage_mode", int_),
     ("req_reject_prob", float_),
@@ -3059,6 +3063,7 @@ Fields:
     req_min_size: Requested minimum size for the order.
     req_max_size: Requested maximum size for the order.
     req_size_granularity: Requested size granularity for the order.
+    req_cash_limit: Requested cash limit for the order.
     req_leverage: Requested leverage for the order.
     req_leverage_mode: Requested leverage mode for the order.
 

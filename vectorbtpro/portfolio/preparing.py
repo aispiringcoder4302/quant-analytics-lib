@@ -830,6 +830,11 @@ order_arg_config = ReadonlyConfig(
             subdtype=np.number,
             broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=np.nan)),
         ),
+        cash_limit=dict(
+            broadcast=True,
+            subdtype=np.number,
+            broadcast_kwargs=dict(reindex_kwargs=dict(fill_value=np.nan)),
+        ),
         leverage=dict(
             broadcast=True,
             subdtype=np.number,
@@ -2952,6 +2957,7 @@ class FDOFPreparer(FOFPreparer):
             self.min_size,
             self.max_size,
             self.size_granularity,
+            self.cash_limit,
             self.leverage,
             self.leverage_mode,
             self.reject_prob,

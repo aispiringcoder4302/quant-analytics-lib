@@ -2691,6 +2691,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         min_size: tp.Optional[tp.ArrayLike] = None,
         max_size: tp.Optional[tp.ArrayLike] = None,
         size_granularity: tp.Optional[tp.ArrayLike] = None,
+        cash_limit: tp.Optional[tp.ArrayLike] = None,
         leverage: tp.Optional[tp.ArrayLike] = None,
         leverage_mode: tp.Optional[tp.ArrayLike] = None,
         reject_prob: tp.Optional[tp.ArrayLike] = None,
@@ -2804,6 +2805,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             size_granularity (Optional[ArrayLike]): Granularity of the order size.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.size_granularity`.
+            cash_limit (Optional[ArrayLike]): Max own cash the order is allowed to use.
+
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.cash_limit`.
             leverage (Optional[ArrayLike]): Leverage applied in the order.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.leverage`.
@@ -3188,6 +3192,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         min_size: tp.Optional[tp.ArrayLike] = None,
         max_size: tp.Optional[tp.ArrayLike] = None,
         size_granularity: tp.Optional[tp.ArrayLike] = None,
+        cash_limit: tp.Optional[tp.ArrayLike] = None,
         leverage: tp.Optional[tp.ArrayLike] = None,
         leverage_mode: tp.Optional[tp.ArrayLike] = None,
         reject_prob: tp.Optional[tp.ArrayLike] = None,
@@ -3429,6 +3434,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             size_granularity (Optional[ArrayLike]): Granularity of the order size.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.size_granularity`.
+            cash_limit (Optional[ArrayLike]): Max own cash the order is allowed to use.
+
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.cash_limit`.
             leverage (Optional[ArrayLike]): Leverage applied in the order.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.leverage`.
@@ -5305,6 +5313,7 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
         min_size: tp.Optional[tp.ArrayLike] = None,
         max_size: tp.Optional[tp.ArrayLike] = None,
         size_granularity: tp.Optional[tp.ArrayLike] = None,
+        cash_limit: tp.Optional[tp.ArrayLike] = None,
         leverage: tp.Optional[tp.ArrayLike] = None,
         leverage_mode: tp.Optional[tp.ArrayLike] = None,
         reject_prob: tp.Optional[tp.ArrayLike] = None,
@@ -5407,6 +5416,9 @@ class Portfolio(Analyzable, SimRangeMixin, metaclass=MetaPortfolio):
             size_granularity (Optional[ArrayLike]): Granularity of the order size.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.size_granularity`.
+            cash_limit (Optional[ArrayLike]): Max own cash the order is allowed to use.
+
+                Broadcasts. See `vectorbtpro.portfolio.enums.Order.cash_limit`.
             leverage (Optional[ArrayLike]): Leverage applied in the order.
 
                 Broadcasts. See `vectorbtpro.portfolio.enums.Order.leverage`.

@@ -1773,6 +1773,7 @@ portfolio = frozen_cfg(
     min_size=np.nan,
     max_size=np.nan,
     size_granularity=np.nan,
+    cash_limit=np.nan,
     leverage=1.0,
     leverage_mode="lazy",
     reject_prob=0.0,

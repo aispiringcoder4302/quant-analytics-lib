@@ -47,6 +47,7 @@ from vectorbtpro.utils.array_ import insert_argsort_nb
         min_size=base_ch.flex_array_gl_slicer,
         max_size=base_ch.flex_array_gl_slicer,
         size_granularity=base_ch.flex_array_gl_slicer,
+        cash_limit=base_ch.flex_array_gl_slicer,
         leverage=base_ch.flex_array_gl_slicer,
         leverage_mode=base_ch.flex_array_gl_slicer,
         reject_prob=base_ch.flex_array_gl_slicer,
@@ -95,6 +96,7 @@ def from_orders_nb(
     min_size: tp.FlexArray2dLike = np.nan,
     max_size: tp.FlexArray2dLike = np.nan,
     size_granularity: tp.FlexArray2dLike = np.nan,
+    cash_limit: tp.FlexArray2dLike = np.nan,
     leverage: tp.FlexArray2dLike = 1.0,
     leverage_mode: tp.FlexArray2dLike = LeverageMode.Lazy,
     reject_prob: tp.FlexArray2dLike = 0.0,
@@ -206,6 +208,11 @@ def from_orders_nb(
             Provided as a scalar, or per row, column, or element.
 
             See `vectorbtpro.portfolio.enums.Order.size_granularity`.
+        cash_limit (FlexArray2dLike): Max own cash the order is allowed to use.
+
+            Provided as a scalar, or per row, column, or element.
+
+            See `vectorbtpro.portfolio.enums.Order.cash_limit`.
         leverage (FlexArray2dLike): Leverage factor.
 
             Provided as a scalar, or per row, column, or element.
@@ -335,6 +342,7 @@ def from_orders_nb(
     min_size_ = to_2d_array_nb(np.asarray(min_size))
     max_size_ = to_2d_array_nb(np.asarray(max_size))
     size_granularity_ = to_2d_array_nb(np.asarray(size_granularity))
+    cash_limit_ = to_2d_array_nb(np.asarray(cash_limit))
     leverage_ = to_2d_array_nb(np.asarray(leverage))
     leverage_mode_ = to_2d_array_nb(np.asarray(leverage_mode))
     reject_prob_ = to_2d_array_nb(np.asarray(reject_prob))
@@ -568,6 +576,7 @@ def from_orders_nb(
                         min_size=flex_select_nb(min_size_, _i, col),
                         max_size=flex_select_nb(max_size_, _i, col),
                         size_granularity=flex_select_nb(size_granularity_, _i, col),
+                        cash_limit=flex_select_nb(cash_limit_, _i, col),
                         leverage=flex_select_nb(leverage_, _i, col),
                         leverage_mode=flex_select_nb(leverage_mode_, _i, col),
                         reject_prob=flex_select_nb(reject_prob_, _i, col),

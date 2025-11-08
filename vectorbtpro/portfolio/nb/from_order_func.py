@@ -5315,6 +5315,7 @@ def def_order_func_nb(  # % line.replace("def_order_func_nb", "order_func_nb")
     min_size: tp.FlexArray2d,
     max_size: tp.FlexArray2d,
     size_granularity: tp.FlexArray2d,
+    cash_limit: tp.FlexArray2d,
     leverage: tp.FlexArray2d,
     leverage_mode: tp.FlexArray2d,
     reject_prob: tp.FlexArray2d,
@@ -5344,6 +5345,7 @@ def def_order_func_nb(  # % line.replace("def_order_func_nb", "order_func_nb")
         min_size (FlexArray2d): Array of minimum order sizes.
         max_size (FlexArray2d): Array of maximum order sizes.
         size_granularity (FlexArray2d): Array defining granularity for order sizes.
+        cash_limit (FlexArray2d): Array of cash limit values.
         leverage (FlexArray2d): Array of leverage amounts.
         leverage_mode (FlexArray2d): Array indicating leverage modes.
 
@@ -5371,6 +5373,7 @@ def def_order_func_nb(  # % line.replace("def_order_func_nb", "order_func_nb")
         min_size=select_nb(c, min_size),
         max_size=select_nb(c, max_size),
         size_granularity=select_nb(c, size_granularity),
+        cash_limit=select_nb(c, cash_limit),
         leverage=select_nb(c, leverage),
         leverage_mode=select_nb(c, leverage_mode),
         reject_prob=select_nb(c, reject_prob),
@@ -5443,6 +5446,7 @@ def def_flex_order_func_nb(  # % line.replace("def_flex_order_func_nb", "flex_or
     min_size: tp.FlexArray2d,
     max_size: tp.FlexArray2d,
     size_granularity: tp.FlexArray2d,
+    cash_limit: tp.FlexArray2d,
     leverage: tp.FlexArray2d,
     leverage_mode: tp.FlexArray2d,
     reject_prob: tp.FlexArray2d,
@@ -5473,6 +5477,7 @@ def def_flex_order_func_nb(  # % line.replace("def_flex_order_func_nb", "flex_or
         min_size (FlexArray2d): Array of minimum order sizes.
         max_size (FlexArray2d): Array of maximum order sizes.
         size_granularity (FlexArray2d): Array defining granularity for order sizes.
+        cash_limit (FlexArray2d): Array of cash limit values.
         leverage (FlexArray2d): Array of leverage amounts.
         leverage_mode (FlexArray2d): Array indicating leverage modes.
 
@@ -5502,6 +5507,7 @@ def def_flex_order_func_nb(  # % line.replace("def_flex_order_func_nb", "flex_or
             min_size=select_from_col_nb(c, col, min_size),
             max_size=select_from_col_nb(c, col, max_size),
             size_granularity=select_from_col_nb(c, col, size_granularity),
+            cash_limit=select_from_col_nb(c, col, cash_limit),
             leverage=select_from_col_nb(c, col, leverage),
             leverage_mode=select_from_col_nb(c, col, leverage_mode),
             reject_prob=select_from_col_nb(c, col, reject_prob),

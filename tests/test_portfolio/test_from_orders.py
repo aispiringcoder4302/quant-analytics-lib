@@ -222,6 +222,44 @@ class TestFromOrders:
             np.array([(0, 0, 0, 90.0, 1.0, 9.1, 1), (1, 0, 1, 82.0, 2.0, 16.5, 0)], dtype=order_dt),
         )
 
+    def test_cash_limit(self):
+        assert_records_close(
+            from_orders_both(cash_limit=50).order_records,
+            np.array(
+                [
+                    (0, 0, 0, 50.0, 1.0, 0.0, 0),
+                    (1, 0, 1, 75.0, 2.0, 0.0, 1),
+                    (2, 0, 3, 12.5, 4.0, 0.0, 0),
+                    (3, 0, 4, 10.0, 5.0, 0.0, 1),
+                ],
+                dtype=order_dt,
+            ),
+        )
+        assert_records_close(
+            from_orders_longonly(cash_limit=50).order_records,
+            np.array(
+                [
+                    (0, 0, 0, 50.0, 1.0, 0.0, 0),
+                    (1, 0, 1, 50.0, 2.0, 0.0, 1),
+                    (2, 0, 3, 12.5, 4.0, 0.0, 0),
+                    (3, 0, 4, 12.5, 5.0, 0.0, 1),
+                ],
+                dtype=order_dt,
+            ),
+        )
+        assert_records_close(
+            from_orders_shortonly(cash_limit=50).order_records,
+            np.array(
+                [
+                    (0, 0, 0, 50.0, 1.0, 0.0, 1),
+                    (1, 0, 1, 25.0, 2.0, 0.0, 0),
+                    (2, 0, 3, 12.5, 4.0, 0.0, 1),
+                    (3, 0, 4, 10.0, 5.0, 0.0, 0),
+                ],
+                dtype=order_dt,
+            ),
+        )
+
     def test_price(self):
         assert_records_close(
             from_orders_both(price=price * 1.01).order_records,
@@ -1422,6 +1460,7 @@ class TestFromOrders:
                         np.nan,
                         np.nan,
                         np.nan,
+                        np.nan,
                         1.0,
                         0,
                         0.0,
@@ -1470,6 +1509,7 @@ class TestFromOrders:
                         np.nan,
                         np.nan,
                         np.nan,
+                        np.nan,
                         1.0,
                         0,
                         0.0,
@@ -1515,6 +1555,7 @@ class TestFromOrders:
                         0.0,
                         0.0,
                         0.0,
+                        np.nan,
                         np.nan,
                         np.nan,
                         np.nan,
@@ -1566,6 +1607,7 @@ class TestFromOrders:
                         np.nan,
                         np.nan,
                         np.nan,
+                        np.nan,
                         1.0,
                         0,
                         0.0,
@@ -1611,6 +1653,7 @@ class TestFromOrders:
                         0.0,
                         0.0,
                         0.0,
+                        np.nan,
                         np.nan,
                         np.nan,
                         np.nan,
