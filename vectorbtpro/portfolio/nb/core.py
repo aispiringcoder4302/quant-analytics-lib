@@ -425,8 +425,7 @@ def long_sell_nb(
     new_locked_cash = new_pos_fraction * _account_state.locked_cash
     size_fraction = size_limit / _account_state.position
     released_debt = size_fraction * _account_state.debt
-    released_cash = size_fraction * _account_state.locked_cash
-    new_free_cash = add_nb(_account_state.free_cash, final_acq_cash + released_cash - released_debt)
+    new_free_cash = add_nb(_account_state.free_cash, final_acq_cash - released_debt)
 
     new_account_state = AccountState(
         cash=float(new_cash),
