@@ -85,27 +85,6 @@ def check_adj_price_nb(
 
 
 @register_jitted(cache=True)
-def approx_long_buy_value_nb(val_price: float, size: float) -> float:
-    """Approximate the value of a long-buy operation.
-
-    Calculates the order value as the product of the absolute order size and the valuation price,
-    and returns it as a negative value to represent spending.
-
-    Args:
-        val_price (float): Valuation price of the asset.
-        size (float): Order size.
-
-    Returns:
-        float: Negative value representing spending, or 0.0 if the order size is zero.
-    """
-    if size == 0:
-        return 0.0
-    order_value = abs(size) * val_price
-    add_free_cash = -order_value
-    return -add_free_cash
-
-
-@register_jitted(cache=True)
 def should_apply_size_granularity_nb(size: float, size_granularity: float) -> bool:
     """Determine whether size granularity should be applied to the given size.
 
@@ -232,6 +211,15 @@ def long_buy_nb(
 
     order_value_limit = base_cash_limit * leverage
 
+    if leverage_mode == LeverageMode.Eager and leverage > 1.0:
+        max_order_value = add_nb(base_cash_limit, -fixed_fees) / ((1.0 / leverage) + fees)
+        if max_order_value <= 0:
+            return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
+
+        fees_for_max_value = max_order_value * fees + fixed_fees
+        eager_order_value_limit = max_order_value + fees_for_max_value
+        order_value_limit = min(order_value_limit, eager_order_value_limit)
+
     if should_apply_size_granularity_nb(size, size_granularity):
         size = apply_size_granularity_nb(size, size_granularity)
 
@@ -282,13 +270,6 @@ def long_buy_nb(
     if np.isfinite(size) and is_less_nb(final_size, size) and not allow_partial:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.PartialFill), _account_state
 
-    if leverage_mode == LeverageMode.Eager and leverage > 1.0:
-        order_value = final_size * adj_price
-        margin_cash = order_value / leverage
-        total_eager_cash = margin_cash + fees_paid
-        if is_less_nb(base_cash_limit, total_eager_cash):
-            return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
-
     order_result = OrderResult(
         float(final_size),
         float(adj_price),
@@ -299,28 +280,29 @@ def long_buy_nb(
     )
 
     if leverage_mode == LeverageMode.Lazy:
-        new_cash = add_nb(_account_state.cash, -req_cash)
+        own_cash_used = min(req_cash, base_cash_limit)
+        new_cash = add_nb(_account_state.cash, -own_cash_used)
         new_position = add_nb(_account_state.position, final_size)
-        debt_diff = max(add_nb(req_cash, -_account_state.free_cash), 0.0)
+        new_free_cash = add_nb(_account_state.free_cash, -own_cash_used)
+        debt_diff = max(add_nb(req_cash, -own_cash_used), 0.0)
         if debt_diff > 0:
             new_debt = _account_state.debt + debt_diff
-            new_locked_cash = _account_state.locked_cash + _account_state.free_cash
-            new_free_cash = 0.0
+            new_locked_cash = _account_state.locked_cash + own_cash_used
         else:
             new_debt = _account_state.debt
             new_locked_cash = _account_state.locked_cash
-            new_free_cash = add_nb(_account_state.free_cash, -req_cash)
     else:
         new_position = add_nb(_account_state.position, final_size)
         if leverage > 1.0:
             order_value = final_size * adj_price
             margin_cash = order_value / leverage
             total_eager_cash = margin_cash + fees_paid
-
-            new_cash = add_nb(_account_state.cash, -total_eager_cash)
-            new_debt = _account_state.debt + order_value * (leverage - 1.0) / leverage
+            own_cash_used = min(total_eager_cash, base_cash_limit)
+            extra_debt = max(add_nb(total_eager_cash, -own_cash_used), 0.0)
+            new_cash = add_nb(_account_state.cash, -own_cash_used)
+            new_free_cash = add_nb(_account_state.free_cash, -own_cash_used)
             new_locked_cash = _account_state.locked_cash + margin_cash
-            new_free_cash = add_nb(_account_state.free_cash, -total_eager_cash)
+            new_debt = _account_state.debt + order_value * (leverage - 1.0) / leverage + extra_debt
         else:
             new_cash = add_nb(_account_state.cash, -req_cash)
             new_debt = _account_state.debt
@@ -335,32 +317,6 @@ def long_buy_nb(
         free_cash=float(new_free_cash),
     )
     return order_result, new_account_state
-
-
-@register_jitted(cache=True)
-def approx_long_sell_value_nb(position: float, debt: float, val_price: float, size: float) -> float:
-    """Approximate the value of a long-sell operation.
-
-    The computed value represents the spending amount for sorting purposes,
-    where a positive value indicates spending.
-
-    Args:
-        position (float): Current position size.
-        debt (float): Current account debt.
-        val_price (float): Valuation price of the asset.
-        size (float): Requested order size for the long-sell operation.
-
-    Returns:
-        float: Approximate value of the long-sell operation.
-    """
-    if size == 0 or position == 0:
-        return 0.0
-    size_limit = min(abs(size), position)
-    order_value = size_limit * val_price
-    size_fraction = size_limit / position
-    released_debt = size_fraction * debt
-    add_free_cash = order_value - released_debt
-    return -add_free_cash
 
 
 @register_jitted(cache=True)
@@ -469,7 +425,8 @@ def long_sell_nb(
     new_locked_cash = new_pos_fraction * _account_state.locked_cash
     size_fraction = size_limit / _account_state.position
     released_debt = size_fraction * _account_state.debt
-    new_free_cash = add_nb(_account_state.free_cash, final_acq_cash - released_debt)
+    released_cash = size_fraction * _account_state.locked_cash
+    new_free_cash = add_nb(_account_state.free_cash, final_acq_cash + released_cash - released_debt)
 
     new_account_state = AccountState(
         cash=float(new_cash),
@@ -479,27 +436,6 @@ def long_sell_nb(
         free_cash=float(new_free_cash),
     )
     return order_result, new_account_state
-
-
-@register_jitted(cache=True)
-def approx_short_sell_value_nb(val_price: float, size: float) -> float:
-    """Approximate the value of a short-sell operation.
-
-    Calculates the transaction value based on the provided price and position size.
-    A positive result indicates expenditure (for sorting purposes).
-
-    Args:
-        val_price (float): Valuation price of the asset.
-        size (float): Size of the short position.
-
-    Returns:
-        float: Approximated value of the short-sell operation.
-    """
-    if size == 0:
-        return 0.0
-    order_value = abs(size) * val_price
-    add_free_cash = -order_value
-    return -add_free_cash
 
 
 @register_jitted(cache=True)
@@ -574,16 +510,14 @@ def short_sell_nb(
     if base_cash_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
 
-    order_value_limit = base_cash_limit * leverage
-
     adj_price = price * (1 - slippage)
     adj_price = check_adj_price_nb(adj_price, price_area, is_closing_price, price_area_vio_mode)
 
-    fees_adj_price = adj_price * (1 + fees)
+    fees_adj_price = adj_price * ((1.0 / leverage) + fees)
     if fees_adj_price == 0:
         max_size_limit = np.inf
     else:
-        max_size_limit = add_nb(order_value_limit, -fixed_fees) / fees_adj_price
+        max_size_limit = add_nb(base_cash_limit, -fixed_fees) / fees_adj_price
 
     size_limit = min(size, max_size_limit)
     if size_limit <= 0:
@@ -658,34 +592,6 @@ def short_sell_nb(
 
 
 @register_jitted(cache=True)
-def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, val_price: float, size: float) -> float:
-    """Approximate the cash value adjustment for a short-buy operation.
-
-    Computes the additional cash required or freed by comparing the released debt and locked cash
-    against the order value. A positive return value indicates a spending requirement.
-
-    Args:
-        position (float): Current short position size.
-        debt (float): Total debt associated with the short position.
-        locked_cash (float): Cash currently locked as collateral.
-        val_price (float): Valuation price of the asset.
-        size (float): Desired order size for the short-buy operation.
-
-    Returns:
-        float: Approximate cash value adjustment, where a positive value signifies spending.
-    """
-    if size == 0 or position == 0:
-        return 0.0
-    size_limit = min(abs(size), abs(position))
-    order_value = size_limit * val_price
-    size_fraction = size_limit / abs(position)
-    released_debt = size_fraction * debt
-    released_cash = size_fraction * locked_cash
-    add_free_cash = released_cash + released_debt - order_value
-    return -add_free_cash
-
-
-@register_jitted(cache=True)
 def short_buy_nb(
     account_state: AccountState,
     size: float,
@@ -742,12 +648,12 @@ def short_buy_nb(
     if _account_state.position == 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoOpenPosition), _account_state
 
-    cover_capacity = _account_state.free_cash + _account_state.debt + _account_state.locked_cash
     if np.isnan(cash_limit):
-        cover_limit = cover_capacity
+        base_cash_limit = _account_state.free_cash
     else:
-        cover_limit = min(cash_limit, cover_capacity)
-    if cover_limit <= 0:
+        base_cash_limit = min(cash_limit, _account_state.free_cash)
+    order_value_limit = base_cash_limit + _account_state.debt + _account_state.locked_cash
+    if order_value_limit <= 0:
         return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.NoCash), _account_state
 
     size_limit = min(size, abs(_account_state.position))
@@ -773,11 +679,11 @@ def short_buy_nb(
         req_fees = order_value * fees + fixed_fees
         req_cash = order_value + req_fees
 
-    if is_close_or_less_nb(req_cash, cover_limit):
+    if is_close_or_less_nb(req_cash, order_value_limit):
         final_size = size_limit
         fees_paid = req_fees
     else:
-        max_req_cash = add_nb(cover_limit, -fixed_fees) / (1 + fees)
+        max_req_cash = add_nb(order_value_limit, -fixed_fees) / (1 + fees)
         if max_req_cash <= 0:
             return order_not_filled_nb(OrderStatus.Rejected, OrderStatusInfo.CantCoverFees), _account_state
 
@@ -790,8 +696,8 @@ def short_buy_nb(
             req_cash = new_order_value + fees_paid
         else:
             final_size = max_acq_size
-            fees_paid = cover_limit - max_req_cash
-            req_cash = cover_limit
+            fees_paid = order_value_limit - max_req_cash
+            req_cash = order_value_limit
 
     if is_close_nb(final_size, 0):
         return order_not_filled_nb(OrderStatus.Ignored, OrderStatusInfo.SizeZero), _account_state
@@ -829,47 +735,6 @@ def short_buy_nb(
         free_cash=float(new_free_cash),
     )
     return order_result, new_account_state
-
-
-@register_jitted(cache=True)
-def approx_buy_value_nb(
-    position: float,
-    debt: float,
-    locked_cash: float,
-    val_price: float,
-    size: float,
-    direction: int,
-) -> float:
-    """Approximate value of a buy operation.
-
-    Calculates an estimated order value based on the current position, debt, locked cash,
-    valuation price, and desired order size. Depending on the position and trade direction,
-    it uses a short or long buy approximation or a combination of both. A positive return
-    value indicates spending, which is useful for sorting.
-
-    Args:
-        position (float): Current position amount.
-        debt (float): Current debt amount.
-        locked_cash (float): Cash currently locked as collateral.
-        val_price (float): Valuation price of the asset.
-        size (float): Requested order size.
-        direction (int): Order direction.
-
-            See `vectorbtpro.portfolio.enums.Direction`.
-
-    Returns:
-        float: Approximate order value representing the spending amount.
-    """
-    if position <= 0 and direction == Direction.ShortOnly:
-        return approx_short_buy_value_nb(position, debt, locked_cash, val_price, size)
-    if position >= 0:
-        return approx_long_buy_value_nb(val_price, size)
-    value1 = approx_short_buy_value_nb(position, debt, locked_cash, val_price, size)
-    new_size = add_nb(size, -abs(position))
-    if new_size <= 0:
-        return value1
-    value2 = approx_long_buy_value_nb(val_price, new_size)
-    return value1 + value2
 
 
 @register_jitted(cache=True)
@@ -1011,6 +876,11 @@ def buy_nb(
         max_size2 = max(max_size - abs(_account_state.position), 0.0)
     else:
         max_size2 = np.nan
+    cash_limit1 = max(add_nb(_account_state.free_cash, -new_account_state1.free_cash), 0.0)
+    if np.isnan(cash_limit):
+        cash_limit2 = np.nan
+    else:
+        cash_limit2 = max(add_nb(cash_limit, -cash_limit1), 0.0)
     new_order_result2, new_account_state2 = long_buy_nb(
         account_state=new_account_state1,
         size=new_size,
@@ -1021,7 +891,7 @@ def buy_nb(
         min_size=min_size2,
         max_size=max_size2,
         size_granularity=size_granularity,
-        cash_limit=cash_limit,
+        cash_limit=cash_limit2,
         leverage=leverage,
         leverage_mode=leverage_mode,
         price_area_vio_mode=price_area_vio_mode,
@@ -1046,43 +916,6 @@ def buy_nb(
         new_order_result2.status_info,
     )
     return new_order_result, new_account_state2
-
-
-@register_jitted(cache=True)
-def approx_sell_value_nb(
-    position: float,
-    debt: float,
-    val_price: float,
-    size: float,
-    direction: int,
-) -> float:
-    """Approximate the sell operation value based on asset position, debt, and valuation price.
-
-    Calculates an estimated sell value given the current position, associated debt, valuation price,
-    and order size. A positive result represents spending, which is useful for sorting operations.
-
-    Args:
-        position (float): Current asset position.
-        debt (float): Debt associated with the asset.
-        val_price (float): Valuation price of the asset.
-        size (float): Size of the sell order.
-        direction (int): Order direction.
-
-            See `vectorbtpro.portfolio.enums.Direction`.
-
-    Returns:
-        float: Approximate value of the sell operation.
-    """
-    if position >= 0 and direction == Direction.LongOnly:
-        return approx_long_sell_value_nb(position, debt, val_price, size)
-    if position <= 0:
-        return approx_short_sell_value_nb(val_price, size)
-    value1 = approx_long_sell_value_nb(position, debt, val_price, size)
-    new_size = add_nb(size, -abs(position))
-    if new_size <= 0:
-        return value1
-    value2 = approx_short_sell_value_nb(val_price, new_size)
-    return value1 + value2
 
 
 @register_jitted(cache=True)
@@ -1227,6 +1060,11 @@ def sell_nb(
         max_size2 = max(max_size - _account_state.position, 0.0)
     else:
         max_size2 = np.nan
+    cash_limit1 = max(add_nb(_account_state.free_cash, -new_account_state1.free_cash), 0.0)
+    if np.isnan(cash_limit):
+        cash_limit2 = np.nan
+    else:
+        cash_limit2 = max(add_nb(cash_limit, -cash_limit1), 0.0)
     new_order_result2, new_account_state2 = short_sell_nb(
         account_state=new_account_state1,
         size=new_size,
@@ -1237,7 +1075,7 @@ def sell_nb(
         min_size=min_size2,
         max_size=max_size2,
         size_granularity=size_granularity,
-        cash_limit=cash_limit,
+        cash_limit=cash_limit2,
         leverage=leverage,
         leverage_mode=leverage_mode,
         price_area_vio_mode=price_area_vio_mode,
@@ -1420,6 +1258,180 @@ def resolve_size_nb(
     if as_requirement:
         size = abs(size)
     return float(size), percent
+
+
+@register_jitted(cache=True)
+def approx_long_buy_value_nb(val_price: float, size: float) -> float:
+    """Approximate the value of a long-buy operation.
+
+    Calculates the order value as the product of the absolute order size and the valuation price,
+    and returns it as a negative value to represent spending.
+
+    Args:
+        val_price (float): Valuation price of the asset.
+        size (float): Order size.
+
+    Returns:
+        float: Negative value representing spending, or 0.0 if the order size is zero.
+    """
+    if size == 0:
+        return 0.0
+    order_value = abs(size) * val_price
+    add_free_cash = -order_value
+    return -add_free_cash
+
+
+@register_jitted(cache=True)
+def approx_long_sell_value_nb(position: float, debt: float, val_price: float, size: float) -> float:
+    """Approximate the value of a long-sell operation.
+
+    The computed value represents the spending amount for sorting purposes,
+    where a positive value indicates spending.
+
+    Args:
+        position (float): Current position size.
+        debt (float): Current account debt.
+        val_price (float): Valuation price of the asset.
+        size (float): Requested order size for the long-sell operation.
+
+    Returns:
+        float: Approximate value of the long-sell operation.
+    """
+    if size == 0 or position == 0:
+        return 0.0
+    size_limit = min(abs(size), position)
+    order_value = size_limit * val_price
+    size_fraction = size_limit / position
+    released_debt = size_fraction * debt
+    add_free_cash = order_value - released_debt
+    return -add_free_cash
+
+
+@register_jitted(cache=True)
+def approx_short_sell_value_nb(val_price: float, size: float) -> float:
+    """Approximate the value of a short-sell operation.
+
+    Calculates the transaction value based on the provided price and position size.
+    A positive result indicates expenditure (for sorting purposes).
+
+    Args:
+        val_price (float): Valuation price of the asset.
+        size (float): Size of the short position.
+
+    Returns:
+        float: Approximated value of the short-sell operation.
+    """
+    if size == 0:
+        return 0.0
+    order_value = abs(size) * val_price
+    add_free_cash = -order_value
+    return -add_free_cash
+
+
+@register_jitted(cache=True)
+def approx_short_buy_value_nb(position: float, debt: float, locked_cash: float, val_price: float, size: float) -> float:
+    """Approximate the cash value adjustment for a short-buy operation.
+
+    Computes the additional cash required or freed by comparing the released debt and locked cash
+    against the order value. A positive return value indicates a spending requirement.
+
+    Args:
+        position (float): Current short position size.
+        debt (float): Total debt associated with the short position.
+        locked_cash (float): Cash currently locked as collateral.
+        val_price (float): Valuation price of the asset.
+        size (float): Desired order size for the short-buy operation.
+
+    Returns:
+        float: Approximate cash value adjustment, where a positive value signifies spending.
+    """
+    if size == 0 or position == 0:
+        return 0.0
+    size_limit = min(abs(size), abs(position))
+    order_value = size_limit * val_price
+    size_fraction = size_limit / abs(position)
+    released_debt = size_fraction * debt
+    released_cash = size_fraction * locked_cash
+    add_free_cash = released_cash + released_debt - order_value
+    return -add_free_cash
+
+
+@register_jitted(cache=True)
+def approx_buy_value_nb(
+    position: float,
+    debt: float,
+    locked_cash: float,
+    val_price: float,
+    size: float,
+    direction: int,
+) -> float:
+    """Approximate value of a buy operation.
+
+    Calculates an estimated order value based on the current position, debt, locked cash,
+    valuation price, and desired order size. Depending on the position and trade direction,
+    it uses a short or long buy approximation or a combination of both. A positive return
+    value indicates spending, which is useful for sorting.
+
+    Args:
+        position (float): Current position amount.
+        debt (float): Current debt amount.
+        locked_cash (float): Cash currently locked as collateral.
+        val_price (float): Valuation price of the asset.
+        size (float): Requested order size.
+        direction (int): Order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+
+    Returns:
+        float: Approximate order value representing the spending amount.
+    """
+    if position <= 0 and direction == Direction.ShortOnly:
+        return approx_short_buy_value_nb(position, debt, locked_cash, val_price, size)
+    if position >= 0:
+        return approx_long_buy_value_nb(val_price, size)
+    value1 = approx_short_buy_value_nb(position, debt, locked_cash, val_price, size)
+    new_size = add_nb(size, -abs(position))
+    if new_size <= 0:
+        return value1
+    value2 = approx_long_buy_value_nb(val_price, new_size)
+    return value1 + value2
+
+
+@register_jitted(cache=True)
+def approx_sell_value_nb(
+    position: float,
+    debt: float,
+    val_price: float,
+    size: float,
+    direction: int,
+) -> float:
+    """Approximate the sell operation value based on asset position, debt, and valuation price.
+
+    Calculates an estimated sell value given the current position, associated debt, valuation price,
+    and order size. A positive result represents spending, which is useful for sorting operations.
+
+    Args:
+        position (float): Current asset position.
+        debt (float): Debt associated with the asset.
+        val_price (float): Valuation price of the asset.
+        size (float): Size of the sell order.
+        direction (int): Order direction.
+
+            See `vectorbtpro.portfolio.enums.Direction`.
+
+    Returns:
+        float: Approximate value of the sell operation.
+    """
+    if position >= 0 and direction == Direction.LongOnly:
+        return approx_long_sell_value_nb(position, debt, val_price, size)
+    if position <= 0:
+        return approx_short_sell_value_nb(val_price, size)
+    value1 = approx_long_sell_value_nb(position, debt, val_price, size)
+    new_size = add_nb(size, -abs(position))
+    if new_size <= 0:
+        return value1
+    value2 = approx_short_sell_value_nb(val_price, new_size)
+    return value1 + value2
 
 
 @register_jitted(cache=True)
