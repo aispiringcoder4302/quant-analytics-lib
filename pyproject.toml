@@ -155,6 +155,7 @@ knwl-base = [
     "bm25s",
     "PyStemmer",
     "docstring_parser",
+    "networkx",
 ]
 knwl = [
     "vectorbtpro[knwl-base]",
@@ -174,7 +175,7 @@ knwl = [
 ]
 mcp-base = [
     "mcp",
-    "jupyter_client"
+    "ipykernel"
 ]
 mcp = [
     "vectorbtpro[mcp-base]"

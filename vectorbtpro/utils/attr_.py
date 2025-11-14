@@ -386,8 +386,9 @@ def get_dict_attr(obj: tp.Union[object, type], attr: str) -> tp.Any:
     else:
         cls = type(obj)
     for obj in [obj] + cls.mro():
-        if attr in obj.__dict__:
-            return obj.__dict__[attr]
+        dct = get_attr(obj, "__dict__", {})
+        if attr in dct:
+            return dct[attr]
     raise AttributeError
 
 
@@ -722,7 +723,7 @@ def get_attr(
     except AttributeError as e:
         if safe:
             cls = type(obj)
-            if any("__getattr__" in c.__dict__ for c in cls.__mro__):
+            if any("__getattr__" in get_attr(c, "__dict__", {}) for c in cls.__mro__):
                 if default is not MISSING:
                     return default
                 raise e
@@ -745,6 +746,7 @@ def get_attr(
             "__name__",
             "__qualname__",
             "__module__",
+            "__dict__",
         }
         if is_descriptor and (resolve_descriptor or attr_name in safe_descriptors):
             try:
@@ -815,7 +817,7 @@ def iter_attr_names(obj: tp.Any) -> tp.Generator[str, None, None]:
 
 @define
 class AttrMeta(DefineMixin):
-    """Class representing metadata of an attribute."""
+    """Class representing metadata of an attribute of an object."""
 
     name: str = define.field()
     """Name of the attribute."""
@@ -824,10 +826,54 @@ class AttrMeta(DefineMixin):
     """Type name of the attribute."""
 
     kind: tp.Optional[str] = define.field(default=None)
-    """Kind of the attribute (e.g., 'modules', 'classes', 'callables', 'data')."""
+    """Kind of the attribute."""
 
     refname: tp.Optional[str] = define.field(default=None)
     """Fully qualified reference name of the attribute."""
+
+    is_own: bool = define.field(default=False)
+    """Indicates whether the attribute is defined directly on the object."""
+
+
+def get_type_and_kind(obj: tp.Any) -> tp.Tuple[str, str]:
+    """Get the type name and kind of an object.
+
+    Args:
+        obj (Any): Object whose type and kind are to be determined.
+
+    Returns:
+        Tuple[str, str]: Type name and kind of the object.
+    """
+    type_name = type(obj).__name__
+    if inspect.ismodule(obj):
+        kind = "module"
+    elif inspect.isclass(obj) or isinstance(obj, type):
+        kind = "class"
+    elif inspect.isroutine(obj) or callable(obj):
+        kind = "callable"
+    else:
+        kind = "data"
+    return type_name, kind
+
+
+def is_own(obj: tp.Any, name: str) -> bool:
+    """Check if an attribute is defined directly on a class, object, or module.
+    
+    Args:
+        obj (Any): Object, class, or module to check.
+        name (str): Name of the attribute to check.
+    
+    Returns:
+        bool: True if the attribute is defined directly on the object, False otherwise.
+    """
+    if inspect.ismodule(obj):
+        return name in get_attr(obj, "__dict__", {})
+    if inspect.isclass(obj):
+        return name in get_attr(obj, "__dict__", {})
+    inst_dict = get_attr(obj, "__dict__", {})
+    if name in inst_dict:
+        return True
+    return False
 
 
 def get_attrs(
@@ -856,6 +902,7 @@ def get_attrs(
     if not incl_private:
         attrs = {a for a in attrs if not a.startswith("_")}
     obj_refname = ensure_refname(obj, can_be_refname=False, raise_error=False)
+    obj_root = obj_refname.split(".", 1)[0] if obj_refname is not None else None
 
     attr_meta = []
     for name in sorted(attrs):
@@ -875,24 +922,35 @@ def get_attrs(
                     raw = None
                     raw_is_none = True
 
-        refname = ensure_refname(raw, can_be_refname=False, raise_error=False)
-        if refname is None and obj_refname is not None:
-            refname = ensure_refname(obj_refname + "." + name, raise_error=False)
-        if own_only and refname is not None and ensure_refname is not None and refname != obj_refname + "." + name:
+        refname = ensure_refname(f"{obj_refname}.{name}", raise_error=False) if obj_refname is not None else None
+        raw_refname = ensure_refname(raw, can_be_refname=False, allow_type_fallback=False, raise_error=False)
+        if raw_refname is not None:
+            raw_root = raw_refname.split(".", 1)[0]
+            use_raw = False
+            if refname is None:
+                use_raw = True
+            elif obj_root is None:
+                use_raw = True
+            elif raw_root == obj_root:
+                use_raw = True
+            else:
+                use_raw = False
+            if use_raw:
+                if refname is not None and raw_refname != refname:
+                    print(raw_refname, refname)
+                refname = raw_refname
+
+        _is_own = is_own(cls if is_mod else obj, name)
+        if own_only and not _is_own:
             continue
 
         dct = {"name": name}
         if not raw_is_none:
-            dct["type"] = type(raw).__name__
-            if inspect.ismodule(raw):
-                dct["kind"] = "modules"
-            elif inspect.isclass(raw) or isinstance(raw, type):
-                dct["kind"] = "classes"
-            elif inspect.isroutine(raw) or callable(raw):
-                dct["kind"] = "callables"
-            else:
-                dct["kind"] = "data"
+            dct["type"], dct["kind"] = get_type_and_kind(raw)
+        else:
+            dct["type"], dct["kind"] = None, None
         dct["refname"] = refname
+        dct["is_own"] = _is_own
         attr_meta.append(AttrMeta(**dct))
 
     if not return_meta:

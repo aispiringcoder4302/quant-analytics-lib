@@ -368,7 +368,7 @@ class JupyterKernel(Configured):
         """
         from vectorbtpro.utils.module_ import assert_can_import
 
-        assert_can_import("jupyter_client")
+        assert_can_import("ipykernel")
         from jupyter_client import KernelManager
 
         self._manager = KernelManager(**self.manager_kwargs)

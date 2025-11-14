@@ -84,12 +84,13 @@ opt_dep_config = HybridConfig(
         "pyperclip": {},
         "platformdirs": {},
         "mcp": {},
-        "jupyter_client": {},
+        "ipykernel": {},
         "huggingface_hub": {"dist_name": "huggingface-hub"},
         "google.genai": {"dist_name": "google-genai"},
         "anthropic": {},
         "ollama": {},
         "docstring_parser": {},
+        "networkx": {},
     }
 )
 """_"""

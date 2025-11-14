@@ -2525,7 +2525,7 @@ $context
                 ),
             ),
             ollama=flex_cfg(
-                model="dengcao/Qwen3-Embedding-0.6B",
+                model="qwen3-embedding:0.6b",
                 client_kwargs=flex_cfg(),
                 embed_kwargs=flex_cfg(),
             ),
