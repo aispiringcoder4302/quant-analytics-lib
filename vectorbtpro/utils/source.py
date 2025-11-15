@@ -31,6 +31,7 @@ from vectorbtpro.knowledge.custom_assets import search
 from vectorbtpro.knowledge.text_splitting import split_text
 from vectorbtpro.utils.checks import is_numba_func, is_complex_iterable
 from vectorbtpro.utils.config import merge_dicts
+from vectorbtpro.utils.decorators import cached
 from vectorbtpro.utils.formatting import dump, get_dump_language
 from vectorbtpro.utils.module_ import assert_can_import, resolve_module
 from vectorbtpro.utils.path_ import check_mkdir, get_common_prefix
@@ -122,7 +123,7 @@ def get_source(refname: str, clean_indent: bool = True, return_meta: bool = Fals
             start line, and end line (both 1-based).
 
     Raises:
-        ImportError: No component of reference name can be imported.
+        ReferenceResolutionError: No component of reference name can be imported.
         FileNotFoundError: The discovered module has no readable *.py* file.
         ValueError: The object cannot be located in the module AST.
     """
@@ -207,6 +208,223 @@ def get_source(refname: str, clean_indent: bool = True, return_meta: bool = Fals
     if return_meta:
         return {"code": snippet, "file": filepath, "start_line": start + 1, "end_line": end}
     return snippet
+
+
+def get_defined_names(module: tp.ModuleLike, raise_error: bool = True) -> tp.Set[str]:
+    """Return a set of names defined in the given module.
+
+    Args:
+        module (ModuleLike): Module reference name or object.
+        raise_error (bool): Whether to raise an error if the source code cannot be retrieved or parsed.
+
+    Returns:
+        Set[str]: Set of names defined in the module.
+    """
+    module = resolve_module(module)
+    if not hasattr(get_defined_names, "_cache"):
+        get_defined_names._cache = {}
+    cache = get_defined_names._cache
+    cache_key = module.__name__
+    if cache_key in cache:
+        return cache[cache_key]
+
+    try:
+        source = get_source(module.__name__)
+        tree = ast.parse(source)
+    except Exception:
+        if raise_error:
+            raise
+        cache[cache_key] = set()
+        return cache[cache_key]
+
+    defined = set()
+
+    def _collect_target(target):
+        if isinstance(target, ast.Name):
+            defined.add(target.id)
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            for elt in target.elts:
+                _collect_target(elt)
+
+    Match = getattr(ast, "Match", None)
+    MatchAs = getattr(ast, "MatchAs", None)
+    MatchStar = getattr(ast, "MatchStar", None)
+    MatchSequence = getattr(ast, "MatchSequence", None)
+    MatchMapping = getattr(ast, "MatchMapping", None)
+    MatchClass = getattr(ast, "MatchClass", None)
+    MatchOr = getattr(ast, "MatchOr", None)
+
+    def _collect_pattern_bindings(pattern):
+        if MatchAs is not None and isinstance(pattern, MatchAs):
+            if pattern.name:
+                defined.add(pattern.name)
+            if pattern.pattern:
+                _collect_pattern_bindings(pattern.pattern)
+        elif MatchStar is not None and isinstance(pattern, MatchStar):
+            if pattern.name:
+                defined.add(pattern.name)
+        elif MatchSequence is not None and isinstance(pattern, MatchSequence):
+            for p in pattern.patterns:
+                _collect_pattern_bindings(p)
+        elif MatchMapping is not None and isinstance(pattern, MatchMapping):
+            for p in pattern.patterns:
+                _collect_pattern_bindings(p)
+            if isinstance(pattern.rest, str):
+                defined.add(pattern.rest)
+        elif MatchClass is not None and isinstance(pattern, MatchClass):
+            for p in pattern.patterns:
+                _collect_pattern_bindings(p)
+            for p in pattern.kwd_patterns:
+                _collect_pattern_bindings(p)
+        elif MatchOr is not None and isinstance(pattern, MatchOr):
+            for p in pattern.patterns:
+                _collect_pattern_bindings(p)
+
+    def _visit_stmt_list(stmts):
+        for node in stmts:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                defined.add(node.name)
+                continue
+            if isinstance(node, ast.Assign):
+                for t in node.targets:
+                    _collect_target(t)
+                continue
+            if isinstance(node, ast.AnnAssign):
+                if node.target is not None:
+                    _collect_target(node.target)
+                continue
+            if isinstance(node, ast.AugAssign):
+                _collect_target(node.target)
+                continue
+            if isinstance(node, (ast.For, ast.AsyncFor)):
+                _collect_target(node.target)
+                _visit_stmt_list(node.body)
+                _visit_stmt_list(node.orelse)
+                continue
+            if isinstance(node, (ast.With, ast.AsyncWith)):
+                for item in node.items:
+                    if item.optional_vars is not None:
+                        _collect_target(item.optional_vars)
+                _visit_stmt_list(node.body)
+                continue
+            if isinstance(node, ast.If):
+                _visit_stmt_list(node.body)
+                _visit_stmt_list(node.orelse)
+                continue
+            if isinstance(node, ast.While):
+                _visit_stmt_list(node.body)
+                _visit_stmt_list(node.orelse)
+                continue
+            if isinstance(node, ast.Try):
+                _visit_stmt_list(node.body)
+                _visit_stmt_list(node.orelse)
+                _visit_stmt_list(node.finalbody)
+                for handler in node.handlers:
+                    if handler.name:
+                        defined.add(handler.name)
+                    _visit_stmt_list(handler.body)
+                continue
+            if Match is not None and isinstance(node, Match):
+                for case in node.cases:
+                    _collect_pattern_bindings(case.pattern)
+                    _visit_stmt_list(case.body)
+                continue
+
+    _visit_stmt_list(tree.body)
+    if module.__name__ == "vectorbtpro":
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name == "_import_more_stuff":
+                _visit_stmt_list(node.body)
+                break
+
+    cache[cache_key] = defined
+    return cache[cache_key]
+
+
+def absolutize_import(module: tp.ModuleType, level: int, name: str) -> tp.Optional[str]:
+    """Return the absolute import path given a module, relative level, and module name.
+
+    Args:
+        module (ModuleType): Module object.
+        level (int): Relative import level (0 for absolute imports).
+        name (str): Module name.
+
+    Returns:
+        Optional[str]: Absolute import path, or None if it cannot be resolved.
+    """
+    if level == 0:
+        return name
+    pkg = getattr(module, "__package__", None) or module.__name__ or ""
+    if not pkg:
+        return None
+    parts = pkg.split(".")
+    keep = len(parts) - (level - 1)
+    if keep <= 0:
+        return None
+    base = ".".join(parts[:keep])
+    if name:
+        return f"{base}.{name}"
+    return base
+
+
+def get_import_alias_map(module: tp.ModuleLike, top_only: bool = True, raise_error: bool = True) -> tp.Dict[str, str]:
+    """Return a mapping of local import aliases to their fully qualified names in the given module.
+
+    Args:
+        module (ModuleLike): Module reference name or object.
+        top_only (bool): If True, only consider top-level (global) import statements.
+        raise_error (bool): Whether to raise an error if the source code cannot be retrieved or parsed.
+
+    Returns:
+        Dict[str, str]: Mapping of local import aliases to fully qualified names.
+    """
+    module = resolve_module(module)
+    if not hasattr(get_import_alias_map, "_cache"):
+        get_import_alias_map._cache = {}
+    cache = get_import_alias_map._cache
+    cache_key = (module.__name__, top_only)
+    if cache_key in cache:
+        return cache[cache_key]
+
+    try:
+        source = get_source(module.__name__)
+        tree = ast.parse(source)
+    except Exception:
+        if raise_error:
+            raise
+        cache[cache_key] = {}
+        return cache[cache_key]
+
+    alias_map = {}
+
+    def _process_import_nodes(nodes):
+        for node in nodes:
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    local = alias.asname or alias.name.split(".", 1)[0]
+                    target = alias.name if alias.asname else alias.name.split(".", 1)[0]
+                    alias_map[local] = target
+            elif isinstance(node, ast.ImportFrom):
+                abs_mod = absolutize_import(module, node.level or 0, node.module)
+                for alias in node.names:
+                    if alias.name == "*":
+                        continue
+                    local = alias.asname or alias.name
+                    if abs_mod:
+                        alias_map[local] = f"{abs_mod}.{alias.name}"
+                    else:
+                        alias_map[local] = alias.name
+
+    nodes = tree.body if top_only else ast.walk(tree)
+    _process_import_nodes(nodes)
+    if module.__name__ == "vectorbtpro" and top_only:
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name == "_import_more_stuff":
+                _process_import_nodes(node.body)
+                break
+
+    cache[cache_key] = alias_map
+    return alias_map
 
 
 def collect_blocks(lines: tp.Iterable[str]) -> tp.Dict[str, tp.List[str]]:

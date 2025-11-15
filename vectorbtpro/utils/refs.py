@@ -29,9 +29,9 @@ from types import ModuleType, MethodWrapperType
 
 from vectorbtpro import _typing as tp
 from vectorbtpro.utils.attr_ import DefineMixin, define, get_type_and_kind, get_attr, get_attrs
-from vectorbtpro.utils.config import Configured, flat_merge_dicts
+from vectorbtpro.utils.config import Configured
 from vectorbtpro.utils.module_ import resolve_module, get_module, package_shortcut_config
-from vectorbtpro.utils.template import CustomTemplate, SafeSub, RepFunc
+from vectorbtpro.utils.warnings_ import warn
 
 __all__ = [
     "get_refname",
@@ -320,7 +320,8 @@ def split_refname(
 def resolve_refname(
     refname: str,
     module: tp.Optional[tp.ModuleLike] = None,
-    _verify: bool = True,
+    _call_stack: tp.Optional[tp.List[tp.Tuple[str, tp.Optional[str]]]] = None,
+    _test_no_module: bool = True,
 ) -> tp.Optional[tp.MaybeList[str]]:
     """Resolve a reference name into its fully qualified form using the provided module context.
 
@@ -339,8 +340,25 @@ def resolve_refname(
     Returns:
         Optional[MaybeList[str]]: Reference name(s), or None if resolution fails.
     """
+    from vectorbtpro.utils.source import get_import_alias_map, get_defined_names
+
+    if _call_stack is None:
+        _call_stack = []
+    else:
+        _call_stack = list(_call_stack)
+
     if module is not None:
         module = resolve_module(module)
+
+    def _make_key(refname, module):
+        return (refname, module.__name__ if module is not None else None)
+
+    def _key_to_str(key):
+        return f"{key[1] + '.' if key[1] is not None else ''}{key[0]}"
+
+    def _resolve(refname, module=None, _call_stack=_call_stack, _test_no_module=False):
+        return resolve_refname(refname, module=module, _call_stack=_call_stack, _test_no_module=_test_no_module)
+
     if refname == "":
         if module is None:
             return None
@@ -358,21 +376,32 @@ def resolve_refname(
                 refname_parts = refname_parts[1:]
             except ImportError:
                 module = importlib.import_module("vectorbtpro")
-    elif _verify:
-        resolved_refname = resolve_refname(refname, module=None, _verify=False)
-        if resolved_refname is not None:
-            if not isinstance(resolved_refname, list):
-                resolved_refnames = [resolved_refname]
-                made_list = True
+    elif _test_no_module:
+        should_test = False
+        if refname_parts[0] in package_shortcut_config:
+            should_test = True
+        else:
+            try:
+                module = importlib.import_module(refname_parts[0])
+            except ImportError:
+                pass
             else:
-                resolved_refnames = resolved_refname
-                made_list = False
-            for r in resolved_refnames:
-                if r != module.__name__ and not r.startswith(module.__name__ + "."):
-                    return None
-            if made_list:
-                return resolved_refnames[0]
-            return resolved_refnames
+                should_test = True
+        if should_test:
+            resolved_refname = _resolve(refname)
+            if resolved_refname is not None:
+                if not isinstance(resolved_refname, list):
+                    resolved_refnames = [resolved_refname]
+                    made_list = True
+                else:
+                    resolved_refnames = resolved_refname
+                    made_list = False
+                for r in resolved_refnames:
+                    if r != module.__name__ and not r.startswith(module.__name__ + "."):
+                        return None
+                if made_list:
+                    return resolved_refnames[0]
+                return resolved_refnames
 
     if len(refname_parts) == 0:
         return module.__name__
@@ -383,6 +412,27 @@ def resolve_refname(
         refname_parts = refname_parts[1:]
         if len(refname_parts) == 0:
             return module.__name__
+
+    stack_key = _make_key(".".join(refname_parts), module)
+    if stack_key in _call_stack:
+        call_stack_str = map(_key_to_str, _call_stack + [stack_key])
+        stack_key_str = _key_to_str(stack_key)
+        warn(f"Cyclic reference detected: {' -> '.join(call_stack_str)}. Using {stack_key_str!r}.")
+        return stack_key_str
+    _call_stack.append(stack_key)
+
+    if len(refname_parts) == 1:
+        defined_names = get_defined_names(module, raise_error=False)
+        if refname_parts[0] in defined_names:
+            return f"{module.__name__}.{refname_parts[0]}"
+        alias_map = get_import_alias_map(module, raise_error=False)
+        if refname_parts[0] in alias_map:
+            target = alias_map[refname_parts[0]]
+            if target == refname:
+                return refname
+            if target == f"{module.__name__}.{refname_parts[0]}":
+                return target
+            return _resolve(target)
 
     obj = get_attr(module, refname_parts[0], None)
     if obj is not None:
@@ -396,7 +446,8 @@ def resolve_refname(
                     if len(refname_parts) == 1:
                         return canon
                     new_refname = canon + "." + ".".join(refname_parts[1:])
-                    return resolve_refname(new_refname, module=None, _verify=False)
+                    return _resolve(new_refname)
+
         if inspect.ismodule(obj):
             parent_module = ".".join(obj.__name__.split(".")[:-1])
         else:
@@ -408,9 +459,11 @@ def resolve_refname(
                         parent_module = parent_mod.__name__
         if parent_module is None or parent_module == module.__name__:
             if inspect.ismodule(obj):
-                module = get_attr(module, refname_parts[0])
+                module = obj
                 refname_parts = refname_parts[1:]
-                return resolve_refname(".".join(refname_parts), module=module, _verify=False)
+                if not refname_parts:
+                    return module.__name__
+                return _resolve(".".join(refname_parts), module=module)
             name = get_attr(obj, "__name__", None)
             if name is not None and isinstance(name, str) and name in module.__dict__:
                 obj = module.__dict__[name]
@@ -436,7 +489,16 @@ def resolve_refname(
         if inspect.ismodule(obj):
             parent_module = obj
             refname_parts = refname_parts[1:]
-        return resolve_refname(".".join(refname_parts), module=parent_module, _verify=False)
+        return _resolve(".".join(refname_parts), module=parent_module)
+
+    if len(refname_parts) > 1:
+        alias_map = get_import_alias_map(module, raise_error=False)
+        if refname_parts[0] in alias_map:
+            target = alias_map[refname_parts[0]]
+            tail = ".".join(refname_parts[1:])
+            new_refname = f"{target}.{tail}"
+            if new_refname != refname:
+                return _resolve(new_refname)
 
     refnames = []
     visited_modules = set()
@@ -444,7 +506,7 @@ def resolve_refname(
         if v is not module:
             if inspect.ismodule(v) and v.__name__.startswith(module.__name__) and v.__name__ not in visited_modules:
                 visited_modules.add(v.__name__)
-                refname = resolve_refname(".".join(refname_parts), module=v, _verify=False)
+                refname = _resolve(".".join(refname_parts), module=v)
                 if refname is not None:
                     if isinstance(refname, str):
                         refname = [refname]
@@ -921,7 +983,7 @@ class RefIndex(Configured):
                 otherwise a list of reference name strings.
 
         """
-        from vectorbtpro.utils.source import get_source
+        from vectorbtpro.utils.source import get_source, absolutize_import
 
         module = resolve_module(module)
         source = get_source(module.__name__)
@@ -982,20 +1044,6 @@ class RefIndex(Configured):
                     _add_pattern_binds(p, out)
                 for kp in getattr(pat, "kwd_patterns", []):
                     _add_pattern_binds(kp, out)
-
-        def _absolutize(level, name):
-            if level == 0:
-                return name
-            if not module.__name__:
-                return None
-            parts = module.__name__.split(".")
-            if level > len(parts):
-                return None
-            base_parts = parts[:-level]
-            if not base_parts:
-                return name or None
-            base = ".".join(base_parts)
-            return f"{base}.{name}" if name else base
 
         class ScopeInfo:
             def __init__(self, node, parent, refname):
@@ -1101,7 +1149,7 @@ class RefIndex(Configured):
                                 sc.imports[local] = target
                             continue
                         if isinstance(child, ast.ImportFrom):
-                            abs_mod = _absolutize(child.level or 0, child.module)
+                            abs_mod = absolutize_import(module, child.level or 0, child.module)
                             for alias in child.names:
                                 if alias.name == "*":
                                     if abs_mod:
@@ -1590,7 +1638,7 @@ class RefIndex(Configured):
 
         Args:
             kind (Optional[str]): Kind to check.
-        
+
         Returns:
             bool: True if the kind is a container kind, False otherwise.
         """
